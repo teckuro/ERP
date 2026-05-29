@@ -107,7 +107,7 @@ describe('proceso-mensual-workspace.rules', () => {
       accionPeriodoEnCurso: false,
     });
 
-    expect(vm.chip).toBe('Liquidaciones disponibles');
+    expect(vm.chip).toBe('Liquidaciones emitidas');
     expect(vm.info.toLowerCase()).not.toContain('snapshot');
   });
 

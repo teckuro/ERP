@@ -1121,8 +1121,9 @@ describe('ProcesoMensualContainer', () => {
       const text = fixture.nativeElement.textContent as string;
       expectTexto(text, 'Generar nómina');
       expectTexto(text, 'Revisar trabajadores');
-      expectTexto(text, 'Confirmar nomina');
+      expectTexto(text, 'Aprobar nómina');
       expectTexto(text, 'Generar liquidaciones');
+      expectTexto(text, 'Cerrar proceso mensual');
     });
 
     it('estado inicial muestra workspace operativo y CTA en shell', async () => {
@@ -1662,7 +1663,7 @@ describe('ProcesoMensualContainer', () => {
 
       await invocarCtaShell(localFixture);
       expect(c.overlay().kind).toBe('decision');
-      expectTexto(c.confirmacionProceso()?.titulo ?? '', 'Confirmar revisión de nómina');
+      expectTexto(c.confirmacionProceso()?.titulo ?? '', 'Aprobar nómina');
     });
 
     it('tras registrar revision RRHH shell dirige a emitir liquidaciones del periodo', async () => {

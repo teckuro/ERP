@@ -37,6 +37,7 @@ function inputChecklist(overrides: Partial<NominaConfiguracionPeriodoInput> = {}
     nominaGenerada: false,
     tienePrevalidacion: false,
     nominaConfirmada: false,
+    nominaAprobada: false,
     liquidacionesGeneradas: 0,
     ...overrides,
   };
@@ -281,17 +282,18 @@ describe('proceso-mensual-workspace-presentacion.rules', () => {
     });
   });
 
-  it('buildNominaConfiguracionPeriodoItems habilita liquidaciones con nómina confirmada', () => {
+  it('buildNominaConfiguracionPeriodoItems habilita liquidaciones con proceso cerrado', () => {
     const items = buildNominaConfiguracionPeriodoItems(inputChecklist({
       nominaFrame: 'confirmada',
       nominaGenerada: true,
       tienePrevalidacion: true,
       nominaConfirmada: true,
+      nominaAprobada: true,
     }));
 
     expect(items.find((item) => item.id === 'nomina_revision')).toMatchObject({
       estado: 'Cerrada',
-      valor: 'Nómina confirmada',
+      valor: 'Proceso cerrado',
     });
 
     expect(items.find((item) => item.id === 'liquidaciones')).toMatchObject({

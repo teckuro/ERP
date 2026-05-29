@@ -1,3 +1,9 @@
+## 2026-05-29 - Nómina mensual: copy y bitácora alineados a aprobar → emitir → cerrar (UI fase 1)
+
+- **Cambio:** Terminología visible unificada: **Aprobar nómina** → **Generar liquidaciones** → **Cerrar proceso mensual** → **Proceso cerrado** / **Cerrada**. Timeline de 5 pasos; bitácora lateral con etapas separadas (aprobar, liquidaciones, cierre). Modales de aprobar y cierre con copy coherente. Configuración del período distingue aprobada vs cerrada. Liquidaciones: copy «aprobada», shell CTA «Volver a Nómina mensual para cerrar el período» tras emitir. Estado `nomina_cerrada` sin CTA activo de generar.
+- **Archivos:** `proceso-mensual-estado-operativo.rules.ts`, `proceso-mensual-workspace.rules.ts`, `proceso-mensual-workspace-presentacion.rules.ts`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-revision-aprobacion.rules.ts`, `proceso-mensual-expediente-periodo.rules.ts`, `liquidaciones-oficiales-container.*`, `liquidaciones-oficiales.rules.ts`, specs.
+- **No tocado:** SQL, motor, repos, estilos globales, `angular.json`, P7 errores, P9 estilos Liquidaciones, P10 capturas.
+
 ## 2026-05-28 - Nómina mensual: flujo explícito aprobar → emitir → cerrar
 
 - **Cambio:** El flujo operativo del período se separa en pasos visibles. Tras guardar la revisión, la acción principal pasa a ser **«Aprobar nómina»** (antes «Confirmar nómina», que aprobaba y cerraba en un paso). Con la nómina aprobada y sin liquidaciones emitidas, la acción principal es **«Generar liquidaciones»** (dirige a la pantalla de Liquidaciones); recién con liquidaciones emitidas aparece **«Confirmar nómina»** como cierre final. Copy y descripciones alineadas al nuevo orden. Orquestación: la aprobación valida primero (`fn_validar_prenomina_periodo`) y luego aprueba (`fn_aprobar_prenomina_periodo`).

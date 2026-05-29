@@ -1,6 +1,6 @@
 <div class="liq-page">
   <p class="liq-lead text-sm text-gray-600">
-    Comprobantes generados desde la nómina mensual confirmada. No recalculan montos ni generan salidas legales.
+    Comprobantes generados desde la nómina mensual aprobada. No recalculan montos ni generan salidas legales.
   </p>
 
   <div class="liq-actions">
@@ -17,8 +17,8 @@
   @if (!estadoPeriodo()?.liquidacion && !estadoPeriodo()?.snapshot) {
     <section class="liq-status-strip">
       <div>
-        <strong>No hay nómina mensual confirmada disponible.</strong>
-        <span>Para generar liquidaciones, primero confirma la nómina mensual del período.</span>
+        <strong>No hay nómina mensual aprobada disponible.</strong>
+        <span>Para generar liquidaciones, primero aprueba la nómina mensual del período.</span>
       </div>
       <a routerLink="/remuneraciones/proceso-mensual" [queryParams]="volverNominaQuery()">Volver a Nómina mensual</a>
     </section>
@@ -56,7 +56,7 @@
           </dl>
         } @else {
           <p class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-gray-700">
-            {{ cargando() ? 'Consultando periodo...' : 'No hay nómina mensual confirmada disponible para liquidaciones oficiales.' }}
+            {{ cargando() ? 'Consultando periodo...' : 'No hay nómina mensual aprobada disponible para liquidaciones oficiales.' }}
           </p>
         }
       </app-card-content>
@@ -103,7 +103,7 @@
               </p>
             } @else {
               <p class="mt-2 text-sm text-gray-700">
-                La nómina mensual está confirmada y lista para generar liquidaciones oficiales.
+                La nómina mensual está aprobada y lista para generar liquidaciones oficiales.
               </p>
             }
 

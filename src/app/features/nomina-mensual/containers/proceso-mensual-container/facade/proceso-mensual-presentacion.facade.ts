@@ -1157,10 +1157,10 @@ export class ProcesoMensualPresentacionFacade {
 
     if (cierre) {
       return {
-        estadoLabel: 'Nómina confirmada',
-        descripcion: 'La nómina mensual quedó confirmada como base oficial del período.',
+        estadoLabel: 'Proceso cerrado',
+        descripcion: 'El proceso mensual del período quedó cerrado operativamente.',
         puedeCerrar: false,
-        razonNoPuedeCerrar: 'La nómina mensual ya está confirmada.',
+        razonNoPuedeCerrar: 'El proceso mensual ya está cerrado.',
         fechaCierreLabel: this.formatoFechaHora(cierre.fecha),
         usuarioLabel: cierre.usuarioLabel,
         observacionLabel: cierre.observacion ?? undefined,
@@ -1170,8 +1170,8 @@ export class ProcesoMensualPresentacionFacade {
 
     const razonNoPuedeCerrar = this.motivoNoPuedeCerrarNomina();
     return {
-      estadoLabel: razonNoPuedeCerrar ? 'Confirmación no disponible' : 'Lista para confirmar',
-      descripcion: 'La confirmación congela esta versión como base oficial para generar liquidaciones.',
+      estadoLabel: razonNoPuedeCerrar ? 'Cierre no disponible' : 'Pendiente de cierre',
+      descripcion: 'El cierre congela esta versión como base oficial del período.',
       puedeCerrar: !razonNoPuedeCerrar,
       razonNoPuedeCerrar,
       resumen,
@@ -1573,7 +1573,11 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   readonly nominaGuiaPanel = computed(() =>
-    buildNominaGuiaPanelCopy(this.nominaVisualFrame(), this.periodoActivo.etiqueta()),
+    buildNominaGuiaPanelCopy(
+      this.nominaVisualFrame(),
+      this.periodoActivo.etiqueta(),
+      this.estadoOperativo().estadoClave,
+    ),
   );
 
   readonly nominaDetallePanel = computed(() => buildNominaDetallePanelCopy(this.nominaVisualFrame()));
@@ -1787,6 +1791,7 @@ export class ProcesoMensualPresentacionFacade {
       nominaGenerada: ctx.baseGenerada,
       tienePrevalidacion: ctx.tienePrevalidacion,
       nominaConfirmada: this.nominaEstaCerradaOperativamente(),
+      nominaAprobada: this.store.snapshotActivo()?.aprobacionOperativa?.estado === 'aprobado_operativamente',
       liquidacionesGeneradas: this.liquidacionesGeneradasCount(),
     });
   }
@@ -2114,11 +2119,11 @@ export class ProcesoMensualPresentacionFacade {
         trabajador: 'Período',
         conceptoSituacion: generadas > 0
           ? `${generadas} liquidación${generadas === 1 ? '' : 'es'} del período`
-          : 'Nómina confirmada. Puede generar liquidaciones',
+          : 'Nómina aprobada. Puede generar liquidaciones',
         origenDuracion: '—',
         vigencia: this.periodoActivo.etiqueta(),
         monto: '—',
-        accion: generadas > 0 || cerrada ? 'Ir a liquidaciones' : 'Confirmar nómina',
+        accion: generadas > 0 || cerrada ? 'Ir a liquidaciones' : 'Generar liquidaciones',
         severity: generadas > 0 ? 'listo' as const : 'atencion' as const,
         ruta: generadas > 0 || cerrada ? '/remuneraciones/liquidaciones' : undefined,
       },
@@ -2948,9 +2953,9 @@ export class ProcesoMensualPresentacionFacade {
       tipo: 'aprobar_preliminar',
       variant: 'decision',
       eyebrow: 'Revisión de nómina',
-      titulo: 'Confirmar revisión de nómina',
-      mensaje: 'Indica que remuneraciones revisó la versión guardada de este período.',
-      detalle: 'No confirma la nómina oficial ni genera liquidaciones.',
+      titulo: 'Aprobar nómina',
+      mensaje: 'Registra que remuneraciones revisó y aprobó la versión guardada de este período.',
+      detalle: 'No cierra el período ni genera liquidaciones en este paso.',
       puntosTitulo: 'Qué implica',
       puntos: advertenciasAprobacion.length > 0
         ? [
@@ -2958,12 +2963,12 @@ export class ProcesoMensualPresentacionFacade {
             'Puede continuar si no bloquean el proceso.',
           ]
         : [
-            'Queda respaldo interno de la revisión del período.',
-            'El siguiente paso es confirmar la nómina del período en la barra superior.',
+            'Queda respaldo interno de la aprobación operativa.',
+            'El siguiente paso es emitir liquidaciones desde la barra superior.',
       ],
       mostrarProximaAccion: true,
-      proximaAccion: 'Confirmar la nómina del período como base oficial para liquidaciones.',
-      primaryLabel: 'Confirmar revisión',
+      proximaAccion: 'Generar liquidaciones del período antes de cerrar el proceso mensual.',
+      primaryLabel: 'Aprobar nómina',
       secondaryLabel: 'Cancelar',
       advertenciasAprobacion,
     });
@@ -3246,8 +3251,8 @@ export class ProcesoMensualPresentacionFacade {
     const snapshot = this.store.snapshotActivo();
     if (!validarPeriodoEntradaMensual(this.store.periodoSeleccionado())) return 'El periodo seleccionado no es valido.';
     if (!snapshot?.idCalculoPeriodo) return 'Primero debe existir una version revisable guardada vigente.';
-    if (snapshot.cierreOperativo?.estado === 'cerrado_operativamente') return 'La nomina mensual ya esta confirmada.';
-    if (snapshot.aprobacionOperativa?.estado !== 'aprobado_operativamente') return 'La revision debe estar confirmada antes de confirmar la nomina.';
+    if (snapshot.cierreOperativo?.estado === 'cerrado_operativamente') return 'El proceso mensual ya está cerrado.';
+    if (snapshot.aprobacionOperativa?.estado !== 'aprobado_operativamente') return 'Primero aprueba la nómina del período.';
     // Orden del flujo: aprobar -> emitir -> cerrar. El cierre exige liquidaciones ya emitidas.
     if (this.store.liquidacionesGeneradasCount() <= 0) return 'Primero emite las liquidaciones del período antes de cerrarlo.';
     if (this.resultadoPreliminar().estado === 'actualizado_sin_guardar') return 'Hay una version actualizada sin guardar.';
@@ -3260,10 +3265,10 @@ export class ProcesoMensualPresentacionFacade {
     this.abrirOverlayDecision({
       tipo: 'cerrar_nomina',
       variant: 'warning',
-      eyebrow: 'Confirmación oficial',
-      titulo: 'Confirmar nómina',
-      mensaje: `Confirma la nómina mensual de ${this.periodoActivo.etiqueta() || this.store.periodoSeleccionado()} como versión oficial.`,
-      detalle: 'La versión revisada quedará congelada como base del período para liquidaciones.',
+      eyebrow: 'Cierre del período',
+      titulo: 'Cerrar proceso mensual',
+      mensaje: `Cierra el proceso mensual de ${this.periodoActivo.etiqueta() || this.store.periodoSeleccionado()} como versión oficial del período.`,
+      detalle: 'La versión aprobada quedará congelada. Las liquidaciones ya deben estar emitidas.',
       puntosTitulo: 'Qué ocurre',
       puntos: [
         'Congela esta versión mientras no exista reapertura del período.',
@@ -3271,8 +3276,8 @@ export class ProcesoMensualPresentacionFacade {
         'No genera archivos Previred, LRE, banco ni PDF.',
       ],
       mostrarProximaAccion: true,
-      proximaAccion: 'Generar liquidaciones desde la nómina confirmada.',
-      primaryLabel: 'Confirmar nómina',
+      proximaAccion: 'El período quedará en estado cerrado para consulta.',
+      primaryLabel: 'Cerrar proceso mensual',
       secondaryLabel: 'Cancelar',
     });
   }

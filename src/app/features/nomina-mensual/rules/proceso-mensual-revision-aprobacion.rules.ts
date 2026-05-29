@@ -44,13 +44,13 @@ function etiquetaRevisionAprobacion(estado: RevisionAprobacionEstado): string {
     case 'pendiente_guardado':
       return 'Pendiente de guardado';
     case 'pendiente_revision':
-      return 'Lista para confirmar con advertencias';
+      return 'Lista para aprobar con advertencias';
     case 'actualizado_sin_guardar':
       return 'Resultado actualizado sin guardar';
     case 'no_apto':
       return 'Bloqueada para nómina';
     case 'listo':
-      return 'Lista para confirmar';
+      return 'Lista para aprobar';
     case 'sin_resultado_guardado':
     default:
       return 'Sin resultado guardado';
@@ -242,7 +242,7 @@ export function buildRevisionAprobacionView(input: BuildRevisionAprobacionInput)
     accionPrincipalLabel: actualizadoSinGuardar || estado === 'pendiente_guardado'
       ? 'Guardar revisión actualizada'
       : hayGuardado
-        ? 'Confirmar nómina'
+        ? 'Aprobar nómina'
         : 'Revisar trabajadores',
     puedeGuardarActualizado: resultado.acciones.puedeGuardarPreliminar,
     puedeRecalcular: resultado.acciones.puedeRecalcular,

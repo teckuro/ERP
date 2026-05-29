@@ -9,7 +9,7 @@ import {
   untracked,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { LucideAngularModule } from 'lucide-angular';
 
@@ -55,6 +55,7 @@ export class LiquidacionesOficialesContainer {
   readonly periodoActivo = inject(PeriodoActivoService);
   private readonly service = inject(LiquidacionesOficialesService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly queryParams = toSignal(this.route.queryParams, { initialValue: {} });
 
   readonly periodoSeleccionado = computed(() => this.periodoActivo.getPeriodo());
@@ -100,39 +101,56 @@ export class LiquidacionesOficialesContainer {
     if (this.generando()) {
       return {
         titulo: 'Generando liquidaciones oficiales',
-        descripcion: 'Se esta materializando la salida interna desde la nómina mensual confirmada.',
+        descripcion: 'Se está materializando la salida interna desde la nómina mensual aprobada.',
       };
     }
     if (estado?.liquidacion) {
       return {
-        titulo: 'Revisar liquidaciones',
-        descripcion: 'Las liquidaciones del periodo ya estan disponibles para revisar por trabajador.',
+        titulo: 'Liquidaciones emitidas',
+        descripcion:
+          'Las liquidaciones del período ya están emitidas. Vuelve a Nómina mensual para cerrar el proceso si aún no lo hizo.',
       };
     }
     if (estado?.estado === 'lista_para_generar') {
       return {
         titulo: 'Generar liquidaciones oficiales',
-        descripcion: 'La nómina mensual está confirmada. Puedes generar la salida interna del periodo.',
+        descripcion: 'La nómina mensual está aprobada. Puedes generar la salida interna del período.',
       };
     }
     return {
       titulo: 'Volver a Nómina mensual',
-      descripcion: estado?.motivoNoPuedeGenerar ?? 'Primero debe existir una nómina mensual confirmada.',
+      descripcion: estado?.motivoNoPuedeGenerar ?? 'Primero debe existir una nómina mensual aprobada.',
     };
   });
 
   constructor() {
     const destroyRef = inject(DestroyRef);
-    bindShellPageContext(destroyRef, () => ({
-      breadcrumbs: [
-        { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
-        { label: 'Liquidaciones' },
-      ],
-      statusChip: {
-        label: this.estadoLabel(),
-        tone: this.tonoEstadoLiquidaciones(),
+    bindShellPageContext(
+      destroyRef,
+      () => ({
+        breadcrumbs: [
+          { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+          { label: 'Liquidaciones' },
+        ],
+        statusChip: {
+          label: this.estadoLabel(),
+          tone: this.tonoEstadoLiquidaciones(),
+        },
+        primaryAction: this.estadoPeriodo()?.liquidacion
+          ? {
+              label: 'Volver a Nómina mensual para cerrar el período',
+              actionId: 'volver_nomina_cerrar',
+            }
+          : undefined,
+      }),
+      {
+        onPrimaryAction: () => {
+          void this.router.navigate(['/remuneraciones/proceso-mensual'], {
+            queryParams: this.volverNominaQuery(),
+          });
+        },
       },
-    }));
+    );
 
     effect(() => {
       const params = this.queryParams() as Record<string, unknown>;
@@ -190,7 +208,7 @@ export class LiquidacionesOficialesContainer {
     return [
       {
         title: 'Principal',
-        text: `Se usará la nómina mensual confirmada del período ${this.periodoSeleccionado()}.`,
+        text: `Se usará la nómina mensual aprobada del período ${this.periodoSeleccionado()}.`,
       },
       {
         title: 'Acción',

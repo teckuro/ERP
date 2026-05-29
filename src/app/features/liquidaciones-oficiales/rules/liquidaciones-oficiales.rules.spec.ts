@@ -16,9 +16,9 @@ describe('liquidaciones-oficiales.rules', () => {
     cerradoOperativamente: false,
   };
 
-  it('queda no disponible sin nómina mensual confirmada', () => {
+  it('queda no disponible sin nómina mensual aprobada', () => {
     expect(determinarEstadoLiquidaciones({ snapshot: null, liquidacion: null })).toBe('no_disponible');
-    expect(obtenerMotivoNoPuedeGenerar(null, null)).toBe('No se pudo consultar una nómina mensual confirmada para este período.');
+    expect(obtenerMotivoNoPuedeGenerar(null, null)).toBe('No se pudo consultar una nómina mensual aprobada para este período.');
   });
 
   it('bloquea si la nomina mensual aun no esta aprobada', () => {
@@ -62,7 +62,7 @@ describe('liquidaciones-oficiales.rules', () => {
       trabajadoresSinConceptos: 1,
       conceptosSinCodigoLre: 1,
     })).toEqual([
-      'La nómina mensual confirmada tenía advertencias visibles al aprobar.',
+      'La nómina mensual aprobada tenía advertencias visibles al aprobar.',
       'Hay trabajadores sin conceptos materializados en la liquidacion.',
       'Existen conceptos sin codigo LRE. LRE operativo queda para una fase posterior.',
     ]);

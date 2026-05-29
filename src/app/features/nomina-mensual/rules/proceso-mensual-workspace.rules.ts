@@ -213,14 +213,24 @@ export interface NominaDetallePanelCopy {
   estadoOficialLabel?: string;
 }
 
-export function buildNominaGuiaPanelCopy(frame: NominaVisualFrame, periodoEtiqueta: string): NominaGuiaPanelCopy {
+export function buildNominaGuiaPanelCopy(
+  frame: NominaVisualFrame,
+  periodoEtiqueta: string,
+  estadoClave?: string,
+): NominaGuiaPanelCopy {
   if (frame === 'lista_para_confirmar') {
+    const pendienteCierre =
+      estadoClave === 'aprobado_operativamente';
     return {
       variant: 'confirmar',
       titulo: 'Resumen',
       items: [],
-      asideTitulo: `Confirmar nómina mensual de ${periodoEtiqueta}`,
-      asideTexto: 'Esta acción dejará una versión oficial para generar liquidaciones.',
+      asideTitulo: pendienteCierre
+        ? `Cerrar proceso mensual de ${periodoEtiqueta}`
+        : `Aprobar nómina de ${periodoEtiqueta}`,
+      asideTexto: pendienteCierre
+        ? 'Cierra el período tras emitir las liquidaciones.'
+        : 'Registra la revisión de RRHH antes de emitir liquidaciones.',
     };
   }
   if (frame === 'generando') {
@@ -254,7 +264,7 @@ export function buildNominaDetallePanelCopy(frame: NominaVisualFrame): NominaDet
     return {
       titulo: 'Versión oficial del período',
       oficial: true,
-      campo1: 'Versión confirmada',
+      campo1: 'Versión cerrada',
       campo2: 'Trabajadores',
       campo3: 'Bloqueos críticos',
       campo4: 'Estado',
@@ -340,39 +350,39 @@ export function buildNominaFrameView(input: BuildNominaFrameViewInput): NominaVi
       const pendienteRegistrar = estadoClave === 'resultado_guardado';
       const pendienteGuardar = estadoClave === 'resultado_listo_para_guardar';
       return base({
-        chip: pendienteCierre ? 'Revisión registrada' : 'Lista para confirmar',
+        chip: pendienteCierre ? 'Revisión registrada' : pendienteRegistrar ? 'Revisión guardada' : 'Lista para guardar',
         titulo: pendienteCierre
-          ? 'Revisión de RRHH registrada. Falta la confirmación oficial del período.'
+          ? 'Nómina aprobada. Falta emitir liquidaciones o cerrar el período según el paso actual.'
           : pendienteRegistrar
-            ? 'Versión guardada. Falta registrar la revisión de remuneraciones.'
+            ? 'Versión guardada. Falta aprobar la nómina del período.'
             : pendienteGuardar
               ? 'La nómina está lista para guardar la revisión del período.'
-              : 'La nómina mensual está lista para confirmar.',
+              : 'La nómina mensual está lista para guardar la revisión.',
         texto: pendienteCierre
-          ? 'Use el botón superior para confirmar la nómina del período como base oficial.'
+          ? 'Use el botón superior para generar liquidaciones o cerrar el proceso mensual.'
           : pendienteRegistrar
-            ? 'Registre la revisión de remuneraciones antes de la confirmación oficial.'
+            ? 'Apruebe la nómina del período antes de emitir liquidaciones.'
             : pendienteGuardar
-              ? 'Guarde la versión revisada. Luego podrá registrar la revisión de RRHH.'
+              ? 'Guarde la versión revisada. Luego podrá aprobar la nómina.'
               : 'Todos los bloqueos críticos fueron resueltos. Siga el paso indicado en la barra superior.',
         info: pendienteCierre
-          ? 'La confirmación oficial congela la versión para liquidaciones. Aún no las genera.'
-          : 'La confirmación oficial del período es el último paso antes de liquidaciones.',
+          ? 'El cierre del período es el paso final, después de emitir liquidaciones.'
+          : 'Apruebe la nómina antes de emitir liquidaciones y cerrar el período.',
       });
     }
     case 'confirmada':
       return base({
-        chip: 'Confirmada',
-        titulo: 'Nómina mensual confirmada.',
-        texto: 'Esta versión quedó bloqueada como base oficial para generar liquidaciones del período.',
-        info: 'Si cambian datos posteriores, se requerirá una nueva versión o una revisión explícita.',
+        chip: 'Cerrada',
+        titulo: 'Proceso mensual cerrado.',
+        texto: 'El período quedó cerrado operativamente. La nómina no admite cambios en este estado.',
+        info: 'Si cambian datos posteriores, se requerirá reapertura del período en una fase posterior.',
       });
     case 'liquidaciones_generadas':
       return base({
-        chip: 'Liquidaciones disponibles',
-        titulo: 'Liquidaciones generadas desde la nómina confirmada.',
-        texto: 'Las liquidaciones del período ya fueron emitidas usando la versión oficial de la nómina mensual.',
-        info: `La trazabilidad queda asociada a la versión confirmada de ${periodoEtiqueta}.`,
+        chip: 'Liquidaciones emitidas',
+        titulo: 'Liquidaciones emitidas desde la nómina aprobada.',
+        texto: 'Las liquidaciones del período ya fueron emitidas. Puede cerrar el proceso mensual si aún no lo hizo.',
+        info: `La trazabilidad queda asociada a la versión aprobada de ${periodoEtiqueta}.`,
       });
     case 'sin_generar':
     default:
@@ -383,7 +393,7 @@ export function buildNominaFrameView(input: BuildNominaFrameViewInput): NominaVi
         info:
           advertenciasCount > 0
             ? `El período tiene ${advertenciasCount} advertencia${advertenciasCount === 1 ? '' : 's'} revisable${advertenciasCount === 1 ? '' : 's'} antes de generar.`
-            : 'La nómina confirmada será la base oficial para generar liquidaciones.',
+            : 'Tras aprobar, emita liquidaciones y luego cierre el proceso mensual.',
       });
   }
 }
@@ -422,7 +432,7 @@ export function buildAlertasPeriodoResumen(input: {
   if (!input.bloqueosCount && !input.advertenciasCount) {
     return {
       modo: 'ok',
-      mensaje: 'Sin bloqueos críticos para confirmar.',
+      mensaje: 'Sin bloqueos críticos para continuar.',
       criticas: 0,
       advertencias: 0,
       mostrarDetalle: false,
@@ -481,7 +491,7 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
 
   const resumenCalculo = (): string => {
     if (calculoBloqueada) return bloqueos === 1 ? '1 bloqueo por resolver' : `${bloqueos} bloqueos por resolver`;
-    if (guardado && !etapaCalculoActiva) return 'Lista para confirmar';
+    if (guardado && !etapaCalculoActiva) return 'Lista para aprobar';
     if (advertencias && (calculoListo || etapaCalculoActiva)) {
       return advertencias === 1 ? '1 advertencia revisable' : `${advertencias} advertencias revisables`;
     }
@@ -491,18 +501,24 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
   };
 
   const resumenAprobar = (): string => {
-    if (cerrada) return 'Nómina confirmada';
-    if (aprobado) return 'Lista para confirmar';
-    if (guardado) return 'Pendiente de confirmación';
-    if (etapaActiva === 'aprobar_cerrar') return 'Confirmación en curso';
+    if (cerrada || aprobado) return 'Nómina aprobada';
+    if (guardado) return 'Pendiente de aprobar';
+    if (etapaActiva === 'aprobar_cerrar' && !aprobado) return 'Aprobación en curso';
     return 'Pendiente de revisión completa';
   };
 
+  const resumenCierre = (): string => {
+    if (cerrada) return 'Proceso cerrado';
+    if (aprobado && estado.estadoClave === 'liquidaciones_disponibles') return 'Pendiente de cierre';
+    if (aprobado && etapaActiva === 'aprobar_cerrar') return 'Cierre en curso';
+    return 'Pendiente';
+  };
+
   const resumenLiquidaciones = (): string => {
-    if (estado.estadoClave === 'liquidaciones_disponibles') return 'Liquidaciones generadas';
-    if (cerrada) return 'Listas para generar';
-    if (etapaActiva === 'liquidaciones') return 'Generación disponible';
-    return 'Disponible al confirmar nómina';
+    if (estado.estadoClave === 'liquidaciones_disponibles') return 'Liquidaciones emitidas';
+    if (cerrada && estado.estadoClave === 'nomina_cerrada') return 'Sin emitir';
+    if (etapaActiva === 'liquidaciones') return 'Emisión disponible';
+    return 'Disponible tras aprobar';
   };
 
   const subpasosValidar = (): BitacoraSubpasoVm[] => {
@@ -527,22 +543,26 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
         marca: !advertencias ? 'hecho' : calculoListo ? 'actual' : 'pendiente',
         etiqueta: 'Resolver advertencias',
       },
-      { marca: marca(guardado, calculoListo && !guardado), etiqueta: 'Confirmar nómina' },
+      { marca: marca(guardado, calculoListo && !guardado), etiqueta: 'Guardar revisión' },
     ];
   };
 
   const subpasosAprobar = (): BitacoraSubpasoVm[] => {
-    if (etapaActiva !== 'aprobar_cerrar') return [];
-    return [
-      { marca: marca(cerrada, !cerrada), etiqueta: 'Confirmar nómina' },
-    ];
+    if (etapaActiva !== 'aprobar_cerrar' || aprobado) return [];
+    return [{ marca: marca(aprobado, !aprobado), etiqueta: 'Aprobar nómina' }];
+  };
+
+  const subpasosCierre = (): BitacoraSubpasoVm[] => {
+    if (etapaActiva !== 'aprobar_cerrar' || !aprobado) return [];
+    return [{ marca: marca(cerrada, !cerrada), etiqueta: 'Cerrar proceso mensual' }];
   };
 
   const subpasosLiquidaciones = (): BitacoraSubpasoVm[] => {
     if (etapaActiva !== 'liquidaciones') return [];
+    const emitidas = estado.estadoClave === 'liquidaciones_disponibles';
     return [
-      { marca: marca(cerrada, !cerrada), etiqueta: 'Generar liquidaciones' },
-      { marca: 'pendiente', etiqueta: 'Ver liquidaciones' },
+      { marca: marca(emitidas, !emitidas), etiqueta: 'Generar liquidaciones' },
+      { marca: emitidas ? 'hecho' : 'pendiente', etiqueta: 'Ver liquidaciones' },
     ];
   };
 
@@ -575,11 +595,11 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
       subpasos: subpasosCalculo(),
     },
     {
-      clave: 'aprobar_cerrar',
-      etiqueta: 'Confirmar nómina',
+      clave: 'aprobar',
+      etiqueta: 'Aprobar nómina',
       resumen: resumenAprobar(),
-      activa: etapaActiva === 'aprobar_cerrar',
-      completada: cerrada,
+      activa: etapaActiva === 'aprobar_cerrar' && !aprobado,
+      completada: aprobado,
       bloqueada: false,
       subpasos: subpasosAprobar(),
     },
@@ -589,8 +609,17 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
       resumen: resumenLiquidaciones(),
       activa: etapaActiva === 'liquidaciones',
       completada: estado.estadoClave === 'liquidaciones_disponibles',
-      bloqueada: false,
+      bloqueada: !aprobado,
       subpasos: subpasosLiquidaciones(),
+    },
+    {
+      clave: 'cierre',
+      etiqueta: 'Cerrar proceso mensual',
+      resumen: resumenCierre(),
+      activa: etapaActiva === 'aprobar_cerrar' && aprobado && !cerrada,
+      completada: cerrada,
+      bloqueada: !aprobado,
+      subpasos: subpasosCierre(),
     },
   ];
 }

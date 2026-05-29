@@ -171,6 +171,7 @@ export interface NominaConfiguracionPeriodoInput {
   nominaGenerada: boolean;
   tienePrevalidacion: boolean;
   nominaConfirmada: boolean;
+  nominaAprobada: boolean;
   liquidacionesGeneradas: number;
 }
 
@@ -250,8 +251,8 @@ function estadoNominaPeriodo(input: NominaConfiguracionPeriodoInput): Pick<Nomin
     return {
       estado: 'Cerrada',
       valor: input.liquidacionesGeneradas > 0
-        ? `${input.liquidacionesGeneradas} liquidación${input.liquidacionesGeneradas === 1 ? '' : 'es'}`
-        : 'Nómina confirmada',
+        ? `${input.liquidacionesGeneradas} liquidación${input.liquidacionesGeneradas === 1 ? '' : 'es'} emitida${input.liquidacionesGeneradas === 1 ? '' : 's'}`
+        : 'Proceso cerrado',
       tono: 'ok',
       accion: 'revisar_bloqueos_nomina',
       accionLabel: 'Revisar nómina',
@@ -260,10 +261,22 @@ function estadoNominaPeriodo(input: NominaConfiguracionPeriodoInput): Pick<Nomin
       prioridad: false,
     };
   }
+  if (input.nominaAprobada) {
+    return {
+      estado: 'Aprobada',
+      valor: input.liquidacionesGeneradas > 0 ? 'Revisión registrada' : 'Pendiente de emitir',
+      tono: 'ok',
+      accion: 'revisar_bloqueos_nomina',
+      accionLabel: 'Revisar nómina',
+      disabled: false,
+      disabledReason: null,
+      prioridad: input.liquidacionesGeneradas === 0,
+    };
+  }
   if (input.nominaFrame === 'lista_para_confirmar') {
     return {
-      estado: 'Por confirmar',
-      valor: 'Lista para confirmar',
+      estado: 'Por aprobar',
+      valor: 'Revisión guardada',
       tono: 'review',
       accion: 'revisar_bloqueos_nomina',
       accionLabel: 'Revisar nómina',
@@ -391,11 +404,11 @@ function estadoLiquidaciones(input: NominaConfiguracionPeriodoInput): Pick<Nomin
   }
   return {
     estado: 'Pendiente',
-    valor: 'Confirmar nómina',
+    valor: 'Aprobar nómina',
     tono: 'neutral',
     accionLabel: 'Generar liquidaciones',
     disabled: true,
-    disabledReason: 'Primero confirma la nómina',
+    disabledReason: 'Primero aprueba la nómina del período',
     prioridad: false,
   };
 }

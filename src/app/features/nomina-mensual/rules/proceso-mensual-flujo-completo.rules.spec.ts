@@ -84,7 +84,7 @@ describe('proceso-mensual-flujo-completo.rules', () => {
 
     const cierre = evaluarEtapaFlujoCompleto('aprobado_confirmar').resuelta.accionPrincipal;
     expect(cierre.accionLocal).toBe('cerrarNomina');
-    expect(cierre.label).toBe('Confirmar nómina');
+    expect(cierre.label).toBe('Cerrar proceso mensual');
   });
 
   it('borrador con revisión al día no pide Generar nómina en CTA principal', () => {
@@ -168,14 +168,14 @@ describe('flujo app-level aprobar -> emitir -> cerrar (estado operativo)', () =>
     expect(vm.accionPrincipal.label).toBe('Generar liquidaciones');
   });
 
-  it('paso 3 (cerrar): aprobada con liquidaciones ofrece "Confirmar nómina" habilitada', () => {
+  it('paso 3 (cerrar): aprobada con liquidaciones ofrece "Cerrar proceso mensual" habilitada', () => {
     const vm = resolverEstadoOperativoProcesoMensual(
       inputAprobarEmitirCerrar({ aprobadoOperativamente: true, liquidacionesDisponibles: true, puedeCerrar: true }),
     );
     expect(vm.estadoClave).toBe('aprobado_operativamente');
     expect(vm.accionPrincipal.tipo).toBe('local');
     expect(vm.accionPrincipal.accionLocal).toBe('cerrarNomina');
-    expect(vm.accionPrincipal.label).toBe('Confirmar nómina');
+    expect(vm.accionPrincipal.label).toBe('Cerrar proceso mensual');
     expect(vm.accionPrincipal.disabled ?? false).toBe(false);
   });
 
@@ -219,7 +219,7 @@ describe('flujo app-level aprobar -> emitir -> cerrar (estado operativo)', () =>
     expect([aprobar, emitir, cerrar]).toEqual([
       'Aprobar nómina',
       'Generar liquidaciones',
-      'Confirmar nómina',
+      'Cerrar proceso mensual',
     ]);
   });
 });

@@ -165,7 +165,7 @@ export const FLUJO_COMPLETO_ETAPAS: readonly FlujoCompletoEtapaEsperada[] = [
       puedeCerrar: true,
     }),
     estadoClave: 'aprobado_operativamente',
-    ctaLabel: 'Confirmar nómina',
+    ctaLabel: 'Cerrar proceso mensual',
     ctaAccionLocal: 'cerrarNomina',
     shellUsaValidacionLocal: true,
   },

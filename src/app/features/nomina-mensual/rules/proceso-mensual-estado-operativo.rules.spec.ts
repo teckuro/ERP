@@ -156,8 +156,9 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     expect(vm.timeline.map((paso) => paso.titulo)).toEqual([
       'Generar nómina',
       'Revisar trabajadores',
-      'Confirmar nómina',
+      'Aprobar nómina',
       'Generar liquidaciones',
+      'Cerrar proceso mensual',
     ]);
   });
 
@@ -251,7 +252,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     expect(vm.etapaActiva).toBe('liquidaciones');
   });
 
-  it('aprobado con liquidaciones emitidas pide confirmar nomina (cierre final)', () => {
+  it('aprobado con liquidaciones emitidas pide cerrar proceso mensual (cierre final)', () => {
     const vm = resolverEstadoOperativoProcesoMensual(inputBase({
       tienePrevalidacion: true,
       baseGenerada: true,
@@ -263,7 +264,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('aprobado_operativamente');
-    expect(vm.accionPrincipal.label).toBe('Confirmar nómina');
+    expect(vm.accionPrincipal.label).toBe('Cerrar proceso mensual');
     expect(vm.accionPrincipal.accionLocal).toBe('cerrarNomina');
   });
 
@@ -292,7 +293,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     expect(vm.accionPrincipal.label).toBe('Revisar trabajadores');
   });
 
-  it('nomina cerrada dirige a liquidaciones oficiales', () => {
+  it('nomina cerrada sin liquidaciones queda en solo lectura', () => {
     const vm = resolverEstadoOperativoProcesoMensual(inputBase({
       cerradoOperativamente: true,
       resultadoGuardado: true,
@@ -300,7 +301,8 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('nomina_cerrada');
-    expect(vm.accionPrincipal.label).toBe('Generar liquidaciones');
+    expect(vm.titulo).toBe('Proceso cerrado');
+    expect(vm.accionPrincipal.tipo).toBe('ninguna');
     expect(vm.etapaActiva).toBe('liquidaciones');
   });
 

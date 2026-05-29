@@ -40,7 +40,7 @@ export function obtenerMotivoNoPuedeGenerar(
   liquidacion: LiquidacionPeriodo | null,
 ): string | null {
   if (liquidacion) return 'Ya existen liquidaciones oficiales generadas para este periodo.';
-  if (!snapshot?.idCalculoPeriodo) return 'No se pudo consultar una nómina mensual confirmada para este período.';
+  if (!snapshot?.idCalculoPeriodo) return 'No se pudo consultar una nómina mensual aprobada para este período.';
   // Orden del flujo: aprobar -> emitir -> cerrar. Se emite con la nómina aprobada (antes del cierre).
   if (snapshot.cerradoOperativamente) {
     return 'La nómina del período ya está cerrada; no se pueden emitir nuevas liquidaciones.';
@@ -59,7 +59,7 @@ export function clasificarAdvertenciasLiquidacion(params: {
 }): string[] {
   const advertencias: string[] = [];
   if ((params.totalAdvertenciasSnapshot ?? 0) > 0) {
-    advertencias.push('La nómina mensual confirmada tenía advertencias visibles al aprobar.');
+    advertencias.push('La nómina mensual aprobada tenía advertencias visibles al aprobar.');
   }
   if ((params.trabajadoresSinConceptos ?? 0) > 0) {
     advertencias.push('Hay trabajadores sin conceptos materializados en la liquidacion.');

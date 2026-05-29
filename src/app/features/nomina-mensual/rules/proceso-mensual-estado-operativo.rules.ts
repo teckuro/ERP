@@ -187,7 +187,7 @@ export function resolverEstadoOperativoProcesoMensual(
       titulo: 'Liquidaciones disponibles',
       descripcion: 'Las liquidaciones oficiales internas ya están disponibles para consulta.',
       severidad: 'success',
-      accionPrincipal: ruta('Ver liquidaciones', 'Consulta las liquidaciones generadas desde la nómina mensual confirmada.', '/remuneraciones/liquidaciones'),
+      accionPrincipal: ruta('Ver liquidaciones', 'Consulta las liquidaciones emitidas del período cerrado.', '/remuneraciones/liquidaciones'),
       etapaActiva: 'liquidaciones',
       disclosureActivo: 'liquidaciones',
       queFaltaAhora: [info('LIQ_LISTAS', 'Liquidaciones disponibles', 'Consulta el detalle interno. PDF, firma, envío, Previred, LRE, banco y contabilidad siguen fuera de alcance.')],
@@ -197,13 +197,15 @@ export function resolverEstadoOperativoProcesoMensual(
   if (input.cerradoOperativamente) {
     return buildEstado(input, {
       estadoClave: 'nomina_cerrada',
-      titulo: 'Nómina confirmada',
-      descripcion: 'La nómina mensual quedó confirmada como base oficial del período.',
+      titulo: 'Proceso cerrado',
+      descripcion: 'El proceso mensual del período quedó cerrado. La nómina no admite cambios operativos.',
       severidad: 'success',
-      accionPrincipal: ruta('Generar liquidaciones', 'Continúa con liquidaciones desde la nómina mensual confirmada.', '/remuneraciones/liquidaciones'),
+      accionPrincipal: input.liquidacionesDisponibles
+        ? ruta('Ver liquidaciones', 'Consulta las liquidaciones emitidas del período.', '/remuneraciones/liquidaciones')
+        : { label: 'Proceso cerrado', descripcion: 'Período cerrado sin liquidaciones emitidas.', tipo: 'ninguna' },
       etapaActiva: 'liquidaciones',
       disclosureActivo: 'liquidaciones',
-      queFaltaAhora: [info('NOMINA_CERRADA', 'Nómina confirmada', 'La nómina mensual confirmada queda como base oficial para liquidaciones.')],
+      queFaltaAhora: [info('NOMINA_CERRADA', 'Proceso cerrado', 'El período quedó cerrado operativamente.')],
     });
   }
 
@@ -228,18 +230,18 @@ export function resolverEstadoOperativoProcesoMensual(
     return buildEstado(input, {
       estadoClave: 'aprobado_operativamente',
       titulo: 'Liquidaciones emitidas',
-      descripcion: 'Las liquidaciones del período ya están emitidas. Confirma la nómina para cerrar el período.',
+      descripcion: 'Las liquidaciones del período ya están emitidas. Cierra el proceso mensual para finalizar el período.',
       severidad: 'success',
       accionPrincipal: local(
-        'Confirmar nómina',
-        'Cierra el período como base oficial. El cierre es el bloqueo final del flujo.',
+        'Cerrar proceso mensual',
+        'Cierra el período como base oficial. Es el paso final del flujo.',
         'cerrarNomina',
         !input.puedeCerrar,
         input.razonNoPuedeCerrar,
       ),
       etapaActiva: 'aprobar_cerrar',
       disclosureActivo: 'cierre',
-      queFaltaAhora: [info('FALTA_CIERRE', 'Confirmar nómina', 'La confirmación oficial es el bloqueo final del período.')],
+      queFaltaAhora: [info('FALTA_CIERRE', 'Cerrar proceso mensual', 'El cierre operativo es el paso final del período.')],
     });
   }
 
@@ -267,9 +269,9 @@ export function resolverEstadoOperativoProcesoMensual(
       return buildEstado(input, {
         estadoClave: 'resultado_con_bloqueos',
         titulo: 'En revisión',
-        descripcion: 'Hay trabajadores o datos del período con bloqueos. Resuélvelos antes de confirmar la nómina.',
+        descripcion: 'Hay trabajadores o datos del período con bloqueos. Resuélvelos antes de aprobar la nómina.',
         severidad: 'danger',
-        accionPrincipal: local('Revisar trabajadores', 'Corrige bloqueos y advertencias antes de confirmar la nómina mensual.', 'revisarBloqueos', false),
+        accionPrincipal: local('Revisar trabajadores', 'Corrige bloqueos y advertencias antes de aprobar la nómina mensual.', 'revisarBloqueos', false),
         etapaActiva: 'calculo',
         disclosureActivo: 'calculo',
         queFaltaAhora: [...input.bloqueosCalculo, ...input.advertenciasCalculo],
@@ -279,10 +281,10 @@ export function resolverEstadoOperativoProcesoMensual(
     const conAdvertencias = input.calculoConAdvertencias || input.advertenciasCalculo.length > 0;
     return buildEstado(input, {
       estadoClave: conAdvertencias ? 'resultado_preliminar_revisable' : 'resultado_listo_para_guardar',
-      titulo: conAdvertencias ? 'En revisión' : 'Lista para confirmar',
+      titulo: conAdvertencias ? 'En revisión' : 'Lista para guardar revisión',
       descripcion: conAdvertencias
         ? 'La nómina tiene advertencias revisables, pero no bloqueos críticos.'
-        : 'La nómina mensual puede quedar guardada como versión revisada antes de confirmarse.',
+        : 'La nómina mensual puede quedar guardada como versión revisada antes de aprobarse.',
       severidad: conAdvertencias ? 'warning' : 'success',
       accionPrincipal: local(
         conAdvertencias ? 'Revisar trabajadores' : 'Guardar revisión',
@@ -393,7 +395,13 @@ function construirTimeline(
   const revisionCompleta = input.resultadoGuardado;
   const revisionActual = etapaActiva === 'calculo' || etapaActiva === 'guardar';
   const aprobacionCompleta = input.aprobadoOperativamente || input.cerradoOperativamente;
-  const aprobacionActual = etapaActiva === 'aprobar_cerrar';
+  const aprobacionActual =
+    etapaActiva === 'aprobar_cerrar' && !input.aprobadoOperativamente && input.resultadoGuardado;
+  const liquidacionesCompletas = input.liquidacionesDisponibles;
+  const liquidacionesActual = etapaActiva === 'liquidaciones' && input.aprobadoOperativamente && !liquidacionesCompletas;
+  const cierreCompleto = input.cerradoOperativamente;
+  const cierreActual =
+    input.aprobadoOperativamente && liquidacionesCompletas && !cierreCompleto && etapaActiva === 'aprobar_cerrar';
 
   return [
     {
@@ -426,21 +434,29 @@ function construirTimeline(
     },
     {
       numero: '3',
-      titulo: 'Confirmar nómina',
+      titulo: 'Aprobar nómina',
       estado: aprobacionCompleta ? 'Completo' : aprobacionActual ? 'Actual' : 'Pendiente',
-      descripcion: input.cerradoOperativamente
-        ? 'Nomina confirmada'
-        : input.aprobadoOperativamente
-          ? 'Lista para confirmar'
-          : aprobacionActual
-            ? 'Falta confirmar'
-            : 'Pendiente',
+      descripcion: input.cerradoOperativamente || input.aprobadoOperativamente
+        ? 'Nómina aprobada'
+        : aprobacionActual
+          ? 'Pendiente de aprobar'
+          : 'Pendiente',
     },
     {
       numero: '4',
       titulo: 'Generar liquidaciones',
-      estado: etapaActiva === 'liquidaciones' ? 'Actual' : 'Pendiente',
-      descripcion: input.liquidacionesDisponibles ? 'Generadas' : input.cerradoOperativamente ? 'Listas para generar' : 'Pendiente',
+      estado: liquidacionesCompletas ? 'Completo' : liquidacionesActual ? 'Actual' : 'Pendiente',
+      descripcion: liquidacionesCompletas
+        ? 'Liquidaciones emitidas'
+        : input.aprobadoOperativamente
+          ? 'Pendiente de emitir'
+          : 'Pendiente',
+    },
+    {
+      numero: '5',
+      titulo: 'Cerrar proceso mensual',
+      estado: cierreCompleto ? 'Completo' : cierreActual ? 'Actual' : 'Pendiente',
+      descripcion: cierreCompleto ? 'Proceso cerrado' : cierreActual ? 'Pendiente de cierre' : 'Pendiente',
     },
   ];
 }

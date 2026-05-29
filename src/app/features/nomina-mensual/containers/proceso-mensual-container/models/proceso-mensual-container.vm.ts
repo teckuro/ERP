@@ -355,7 +355,7 @@ export interface PasoPeriodoView {
   descripcion: string;
 }
 
-export type BitacoraEtapaClave = 'validar' | 'base' | 'calculo' | 'aprobar_cerrar' | 'liquidaciones';
+export type BitacoraEtapaClave = 'validar' | 'base' | 'calculo' | 'aprobar' | 'liquidaciones' | 'cierre';
 export type BitacoraSubpasoMarca = 'hecho' | 'actual' | 'pendiente';
 
 export interface BitacoraSubpasoVm {

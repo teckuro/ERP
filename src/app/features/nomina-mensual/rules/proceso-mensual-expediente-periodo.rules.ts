@@ -267,8 +267,10 @@ export function buildExpedienteNominaPeriodo(input: BuildExpedienteNominaPeriodo
     origen: obs.origen,
   }));
 
-  const confirmada = input.nominaCerrada || cierre?.estado === 'cerrado_operativamente';
-  const estado: ExpedienteNominaEstado = confirmada ? 'confirmada' : 'version_guardada';
+  const cerrada = input.nominaCerrada || cierre?.estado === 'cerrado_operativamente';
+  const aprobada =
+    cabecera.aprobacionOperativa?.estado === 'aprobado_operativamente' || cerrada;
+  const estado: ExpedienteNominaEstado = cerrada ? 'confirmada' : 'version_guardada';
 
   const secciones: Array<{ titulo: string; items: string[] }> = [
     {
@@ -282,13 +284,13 @@ export function buildExpedienteNominaPeriodo(input: BuildExpedienteNominaPeriodo
     },
   ];
 
-  if (confirmada && cierre) {
+  if (cerrada && cierre) {
     secciones.push({
-      titulo: 'Confirmación operativa',
+      titulo: 'Cierre operativo',
       items: [
-        `Confirmada ${formatoFechaHoraNomina(cierre.fecha)}`,
+        `Cerrado ${formatoFechaHoraNomina(cierre.fecha)}`,
         cierre.usuarioLabel,
-        'Esta versión es la base oficial para generar liquidaciones.',
+        'Esta versión quedó congelada como base oficial del período.',
       ],
     });
   }
@@ -297,24 +299,30 @@ export function buildExpedienteNominaPeriodo(input: BuildExpedienteNominaPeriodo
     label: 'Revisar trabajadores',
     accion: 'revisar_trabajadores',
   };
-  if (confirmada && input.liquidacionesDisponibles) {
-    accionPrincipal = { label: 'Revisar liquidaciones', accion: 'revisar_liquidaciones' };
-  } else if (confirmada) {
+  if (cerrada && input.liquidacionesDisponibles) {
+    accionPrincipal = { label: 'Ver liquidaciones', accion: 'revisar_liquidaciones' };
+  } else if (cerrada) {
+    accionPrincipal = { label: 'Ver liquidaciones', accion: 'generar_liquidaciones' };
+  } else if (aprobada && input.liquidacionesDisponibles) {
+    accionPrincipal = { label: 'Cerrar proceso mensual', accion: 'confirmar_nomina' };
+  } else if (aprobada) {
     accionPrincipal = { label: 'Generar liquidaciones', accion: 'generar_liquidaciones' };
-  } else if (!confirmada) {
-    accionPrincipal = { label: 'Confirmar nómina', accion: 'confirmar_nomina' };
+  } else {
+    accionPrincipal = { label: 'Aprobar nómina', accion: 'confirmar_nomina' };
   }
 
   return {
     visible: true,
     estado,
-    titulo: confirmada ? 'Nómina confirmada' : 'Versión guardada para revisión',
-    bajada: confirmada
-      ? 'Esta versión quedó confirmada como base oficial del período para liquidaciones.'
-      : 'Revise trabajadores, observaciones y totales antes de confirmar la nómina mensual.',
+    titulo: cerrada ? 'Proceso cerrado' : aprobada ? 'Nómina aprobada' : 'Versión guardada para revisión',
+    bajada: cerrada
+      ? 'El proceso mensual del período quedó cerrado operativamente.'
+      : aprobada
+        ? 'La nómina está aprobada. Emita liquidaciones y luego cierre el proceso mensual.'
+        : 'Revise trabajadores, observaciones y totales antes de aprobar la nómina mensual.',
     mensajeEstado: null,
     snapshot: {
-      versionEtiqueta: confirmada ? 'Versión oficial del período' : 'Versión guardada para revisión',
+      versionEtiqueta: cerrada ? 'Versión cerrada del período' : aprobada ? 'Versión aprobada' : 'Versión guardada para revisión',
       estado: cabecera.estado,
       periodo: cabecera.periodo,
       fechaGeneracion: formatoFechaHoraNomina(cabecera.fechaGeneracion),
