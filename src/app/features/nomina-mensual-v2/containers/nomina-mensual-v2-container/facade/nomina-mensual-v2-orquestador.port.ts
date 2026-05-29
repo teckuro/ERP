@@ -7,11 +7,18 @@ export type ModalAvanceParametrosPort =
   | { tipo: 'bloqueo' }
   | { tipo: 'revision'; destinoPaso: PayrollStepId };
 
-import type { ResultadoValidacionEmpleados } from '../../../presenters/nomina-empleados-validacion.presenter';
+import type {
+  ResultadoValidacionEmpleados,
+  SeccionResumenPendientesEmpleados,
+} from '../../../presenters/nomina-empleados-validacion.presenter';
 
-export type ModalAvanceEmpleadosPort =
-  | { tipo: 'bloqueo'; resultado: ResultadoValidacionEmpleados }
-  | { tipo: 'advertencia'; resultado: ResultadoValidacionEmpleados };
+export type ModalResumenPendientesEmpleadosPort = {
+  resultado: ResultadoValidacionEmpleados;
+  secciones: SeccionResumenPendientesEmpleados[];
+  origen: 'checklist' | 'validacion';
+};
+
+export type ModalAvanceEmpleadosPort = ModalResumenPendientesEmpleadosPort;
 
 @Injectable()
 export class NominaMensualV2OrquestadorPort {

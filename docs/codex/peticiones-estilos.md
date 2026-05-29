@@ -2416,6 +2416,15 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Archivos:** `nomina-mensual-v2-container` (HTML/CSS/TS), `nomina-empleados-grid.presenter.ts`, `nomina-empleados-validacion.presenter.ts`.
 - **No tocado:** estilos globales, SQL, servicios de negocio, otros pasos del flujo.
 
+## 2026-05-29 — Nómina mensual V2: Empleados V5 (resumen pendientes modal)
+
+- **Checklist:** severidad siempre visible en cada ítem (incl. documentación y observaciones); botón «Ver resumen de pendientes».
+- **Modal estructurado:** bloqueantes, advertencias y correctos con contadores, descripción, conteo y «Ver en grilla» por ítem.
+- **Orquestación:** «Validar empleados» abre el mismo modal de resumen si hay bloqueos/advertencias; avanza solo si está correcto.
+- **Copy superior:** menciona grilla, checklist y resumen de pendientes según estado.
+- **Archivos:** `nomina-empleados-validacion.presenter.ts`, `nomina-mensual-v2-empleados-resumen-pendientes`, overlays, paso-empleados, container, CSS.
+- **No tocado:** estilos globales, SQL, data-grid compartido, otros pasos.
+
 ## 2026-05-29 — Nómina mensual V2: Empleados V4 (checklist, filtros, orquestador)
 
 - **Checklist operativo:** severidad visible (`Correcto` / `Advertencia` / `Bloqueante`); clic filtra grilla; ítems de documentación/observaciones cuando aplican.

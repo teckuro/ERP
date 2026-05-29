@@ -32,10 +32,18 @@ export interface ResultadoValidacionEmpleados {
   totalEmpleados: number;
   totalBloqueos: number;
   totalAdvertencias: number;
+  totalCorrectos: number;
+  trabajadoresAfectados: number;
   mensajes: string[];
   mensajesBloqueo: string[];
   mensajesAdvertencia: string[];
   puedeContinuar: boolean;
+}
+
+export interface SeccionResumenPendientesEmpleados {
+  titulo: string;
+  severidad: SeveridadChecklistEmpleados;
+  items: ItemChecklistEmpleadoNomina[];
 }
 
 export type SeveridadChecklistEmpleados = 'correcto' | 'advertencia' | 'bloqueante';
@@ -133,10 +141,10 @@ export function obtenerPrimerTipoPendienteBloqueante(filas: FilaEmpleadoNomina[]
 export function obtenerTextoSuperiorEmpleados(filas: FilaEmpleadoNomina[]): string | null {
   const resultado = obtenerResultadoValidacionEmpleados(filas);
   if (resultado.estado === 'bloqueado') {
-    return 'Hay trabajadores con datos obligatorios pendientes. Corrígelos desde la grilla o usa el checklist para filtrarlos.';
+    return 'Hay trabajadores con datos obligatorios pendientes. Corrígelos desde la grilla, usa el checklist para filtrarlos o revisa el resumen de pendientes.';
   }
   if (resultado.estado === 'advertencia') {
-    return 'Hay observaciones en empleados. Revísalas desde la grilla o continúa bajo tu responsabilidad.';
+    return 'Hay observaciones en empleados. Revísalas desde la grilla o consulta el resumen de pendientes antes de continuar.';
   }
   if (resultado.totalEmpleados > 0) {
     return 'La base de empleados está lista para avanzar al registro de novedades.';
@@ -172,6 +180,48 @@ export function obtenerResumenEmpleadosNomina(filas: FilaEmpleadoNomina[]): Resu
     conJornadaDefinida,
     sinJornada: totalActivos - conJornadaDefinida,
   };
+}
+
+function calcularTrabajadoresAfectados(filas: FilaEmpleadoNomina[]): number {
+  const idsAfectados = new Set<string>();
+
+  for (const fila of filas) {
+    const tienePendiente =
+      fila.contrato !== 'vigente' ||
+      fila.datosBancarios === 'pendiente' ||
+      !fila.afpSaludAsignada ||
+      !fila.centroCosto.trim() ||
+      !fila.jornada.trim() ||
+      fila.estadoNomina === 'pendiente' ||
+      fila.estadoNomina === 'observado';
+
+    if (tienePendiente) {
+      idsAfectados.add(fila.id);
+    }
+  }
+
+  return idsAfectados.size;
+}
+
+export function obtenerSeccionesResumenPendientesEmpleados(
+  items: ItemChecklistEmpleadoNomina[],
+): SeccionResumenPendientesEmpleados[] {
+  const bloqueantes = items.filter((item) => item.severidad === 'bloqueante');
+  const advertencias = items.filter((item) => item.severidad === 'advertencia');
+  const correctos = items.filter((item) => item.severidad === 'correcto');
+  const secciones: SeccionResumenPendientesEmpleados[] = [];
+
+  if (bloqueantes.length > 0) {
+    secciones.push({ titulo: 'Bloqueantes', severidad: 'bloqueante', items: bloqueantes });
+  }
+  if (advertencias.length > 0) {
+    secciones.push({ titulo: 'Advertencias', severidad: 'advertencia', items: advertencias });
+  }
+  if (correctos.length > 0) {
+    secciones.push({ titulo: 'Correctos', severidad: 'correcto', items: correctos });
+  }
+
+  return secciones;
 }
 
 export function filtrarEmpleadosConPendientes(
@@ -236,6 +286,8 @@ export function obtenerResultadoValidacionEmpleados(filas: FilaEmpleadoNomina[])
 
   const totalBloqueos = mensajesBloqueo.length;
   const totalAdvertencias = mensajesAdvertencia.length;
+  const itemsChecklist = construirChecklistEmpleadosNomina(filas);
+  const totalCorrectos = itemsChecklist.filter((item) => item.severidad === 'correcto').length;
   let estado: EstadoValidacionEmpleados = 'correcto';
 
   if (totalBloqueos > 0) {
@@ -249,6 +301,8 @@ export function obtenerResultadoValidacionEmpleados(filas: FilaEmpleadoNomina[])
     totalEmpleados: resumen.totalActivos,
     totalBloqueos,
     totalAdvertencias,
+    totalCorrectos,
+    trabajadoresAfectados: calcularTrabajadoresAfectados(filas),
     mensajes: [...mensajesBloqueo, ...mensajesAdvertencia],
     mensajesBloqueo,
     mensajesAdvertencia,
@@ -311,35 +365,29 @@ export function construirChecklistEmpleadosNomina(filas: FilaEmpleadoNomina[]): 
       total,
       true,
     ),
+    crearItemChecklistEmpleado(
+      'documentation',
+      'Documentación incompleta',
+      resumen.conDocumentacionIncompleta === 0
+        ? `${total} de ${total} con documentación completa`
+        : `${resumen.conDocumentacionIncompleta} trabajador${resumen.conDocumentacionIncompleta === 1 ? '' : 'es'} con documentación incompleta`,
+      'documentacion',
+      resumen.conDocumentacionIncompleta,
+      total,
+      false,
+    ),
+    crearItemChecklistEmpleado(
+      'observations',
+      'Observaciones en nómina',
+      resumen.conObservaciones === 0
+        ? `${total} de ${total} sin observaciones`
+        : `${resumen.conObservaciones} trabajador${resumen.conObservaciones === 1 ? '' : 'es'} con observaciones`,
+      'observaciones',
+      resumen.conObservaciones,
+      total,
+      false,
+    ),
   ];
-
-  if (resumen.conDocumentacionIncompleta > 0) {
-    items.push(
-      crearItemChecklistEmpleado(
-        'documentation',
-        'Documentación incompleta',
-        `${resumen.conDocumentacionIncompleta} trabajador${resumen.conDocumentacionIncompleta === 1 ? '' : 'es'} con documentación incompleta`,
-        'documentacion',
-        resumen.conDocumentacionIncompleta,
-        total,
-        false,
-      ),
-    );
-  }
-
-  if (resumen.conObservaciones > 0) {
-    items.push(
-      crearItemChecklistEmpleado(
-        'observations',
-        'Observaciones en nómina',
-        `${resumen.conObservaciones} trabajador${resumen.conObservaciones === 1 ? '' : 'es'} con observaciones`,
-        'observaciones',
-        resumen.conObservaciones,
-        total,
-        false,
-      ),
-    );
-  }
 
   return items;
 }

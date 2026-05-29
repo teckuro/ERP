@@ -2,11 +2,8 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Output, ViewEncapsula
 
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
 import type { MessageBoxSection } from '../../../../../../shared/components/ui/feedback/message-box/message-box.types';
-import {
-  construirSeccionesMsgBoxAdvertenciaEmpleados,
-  construirSeccionesMsgBoxBloqueoEmpleados,
-  type ResultadoValidacionEmpleados,
-} from '../../../../presenters/nomina-empleados-validacion.presenter';
+import type { TipoPendienteEmpleado } from '../../../../presenters/nomina-empleados-validacion.presenter';
+import { NominaMensualV2EmpleadosResumenPendientesComponent } from '../nomina-mensual-v2-empleados-resumen-pendientes/nomina-mensual-v2-empleados-resumen-pendientes.component';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 
 const SECCIONES_MSG_BOX_BLOQUEO_PARAMETROS: MessageBoxSection[] = [
@@ -28,7 +25,7 @@ const SECCIONES_MSG_BOX_REVISION_PARAMETROS: MessageBoxSection[] = [
 @Component({
   selector: 'app-nomina-mensual-v2-overlays',
   standalone: true,
-  imports: [MessageBoxComponent],
+  imports: [MessageBoxComponent, NominaMensualV2EmpleadosResumenPendientesComponent],
   templateUrl: './nomina-mensual-v2-overlays.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -42,16 +39,10 @@ export class NominaMensualV2OverlaysComponent {
   @Output() cerrarModal = new EventEmitter<void>();
   @Output() confirmarAvanceConRevision = new EventEmitter<void>();
   @Output() irAPendientesParametros = new EventEmitter<void>();
+  @Output() verEnGrillaEmpleados = new EventEmitter<TipoPendienteEmpleado>();
   @Output() irAPendientesEmpleados = new EventEmitter<void>();
   @Output() confirmarAvanceConAdvertenciaEmpleados = new EventEmitter<void>();
-
-  seccionesMsgBoxBloqueoEmpleados(resultado: ResultadoValidacionEmpleados): MessageBoxSection[] {
-    return construirSeccionesMsgBoxBloqueoEmpleados(resultado);
-  }
-
-  seccionesMsgBoxAdvertenciaEmpleados(resultado: ResultadoValidacionEmpleados): MessageBoxSection[] {
-    return construirSeccionesMsgBoxAdvertenciaEmpleados(resultado);
-  }
+  @Output() reintentarValidacionEmpleados = new EventEmitter<void>();
 
   cerrarModalAvanceParametros(): void {
     this.orquestador.modalAvanceParametros.set(null);

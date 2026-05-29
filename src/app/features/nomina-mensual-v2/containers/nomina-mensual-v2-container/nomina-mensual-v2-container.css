@@ -4218,9 +4218,10 @@ textarea {
 
 .nmv2-page[data-step='employees'] .empleados-checklist-item__heading {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
 }
 
 .nmv2-page[data-step='employees'] .empleados-checklist-severidad {
@@ -4294,5 +4295,280 @@ textarea {
 @media (max-width: 1100px) {
   .nmv2-page[data-step='employees'] .nmv2-empleados-grid-shell ::ng-deep .data-grid-filter-grid {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr));
+  }
+}
+
+.empleados-checklist-resumen-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 36px;
+  margin-top: 4px;
+  padding: 0 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.empleados-checklist-resumen-btn:hover {
+  border-color: #bfdbfe;
+  background: #f8fbff;
+  color: #1d4ed8;
+}
+
+.empleados-checklist-resumen-btn lucide-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.nmv2-empleados-resumen-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.nmv2-empleados-resumen-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 61;
+  display: flex;
+  flex-direction: column;
+  width: min(640px, calc(100vw - 2rem));
+  max-height: min(88vh, 720px);
+  transform: translate(-50%, -50%);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+}
+
+.nmv2-empleados-resumen-modal__header {
+  position: relative;
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.nmv2-empleados-resumen-modal__cerrar {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.nmv2-empleados-resumen-modal__cerrar:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.nmv2-empleados-resumen-modal__titulo {
+  margin: 0;
+  padding-right: 2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.nmv2-empleados-resumen-modal__subtitulo {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.nmv2-empleados-resumen-modal__contadores {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+.nmv2-empleados-resumen-contador {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.nmv2-empleados-resumen-contador__label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.nmv2-empleados-resumen-contador__valor {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.nmv2-empleados-resumen-contador--bloqueante {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.nmv2-empleados-resumen-contador--advertencia {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.nmv2-empleados-resumen-contador--correcto {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.nmv2-empleados-resumen-modal__cuerpo {
+  flex: 1;
+  overflow: auto;
+  padding: 14px 20px;
+}
+
+.nmv2-empleados-resumen-seccion + .nmv2-empleados-resumen-seccion {
+  margin-top: 14px;
+}
+
+.nmv2-empleados-resumen-seccion__titulo {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #475569;
+}
+
+.nmv2-empleados-resumen-lista,
+.nmv2-empleados-resumen-lista-compacta {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nmv2-empleados-resumen-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.nmv2-empleados-resumen-item + .nmv2-empleados-resumen-item {
+  margin-top: 8px;
+}
+
+.nmv2-empleados-resumen-item__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.nmv2-empleados-resumen-item__titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.nmv2-empleados-resumen-item__descripcion {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+.nmv2-empleados-resumen-item__accion {
+  flex-shrink: 0;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nmv2-empleados-resumen-item__accion:hover {
+  background: #dbeafe;
+}
+
+.nmv2-empleados-resumen-lista-compacta li {
+  padding: 6px 0;
+  font-size: 12px;
+  color: #475569;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.nmv2-empleados-resumen-lista-compacta li:last-child {
+  border-bottom: 0;
+}
+
+.nmv2-empleados-resumen-modal__footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px 18px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.nmv2-empleados-resumen-btn {
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nmv2-empleados-resumen-btn--secundario {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #334155;
+}
+
+.nmv2-empleados-resumen-btn--primario {
+  border: 1px solid #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+
+.nmv2-empleados-resumen-btn--ghost {
+  border: 1px solid transparent;
+  background: transparent;
+  color: #64748b;
+}
+
+@media (max-width: 640px) {
+  .nmv2-empleados-resumen-modal__contadores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .nmv2-empleados-resumen-item {
+    flex-direction: column;
   }
 }

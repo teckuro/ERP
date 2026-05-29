@@ -1,34 +1,12 @@
 @if (orquestador.modalAvanceEmpleados(); as modalEmpleados) {
-  @switch (modalEmpleados.tipo) {
-    @case ('bloqueo') {
-      <app-message-box
-        variant="blocked"
-        mode="modal"
-        width="md"
-        title="No puedes continuar"
-        message="Hay trabajadores con información obligatoria pendiente. Corrige los datos antes de avanzar."
-        [sections]="seccionesMsgBoxBloqueoEmpleados(modalEmpleados.resultado)"
-        primaryLabel="Entendido"
-        secondaryLabel="Ver pendientes"
-        (action)="cerrarModalAvanceEmpleados()"
-        (secondary)="irAPendientesEmpleados.emit()"
-      ></app-message-box>
-    }
-    @case ('advertencia') {
-      <app-message-box
-        variant="decision"
-        mode="modal"
-        width="md"
-        title="Hay observaciones en empleados"
-        message="Puedes revisar las observaciones ahora o continuar bajo tu responsabilidad."
-        [sections]="seccionesMsgBoxAdvertenciaEmpleados(modalEmpleados.resultado)"
-        primaryLabel="Continuar de todas formas"
-        secondaryLabel="Volver y corregir"
-        (action)="confirmarAvanceConAdvertenciaEmpleados.emit()"
-        (secondary)="cerrarModalAvanceEmpleados()"
-      ></app-message-box>
-    }
-  }
+  <app-nomina-mensual-v2-empleados-resumen-pendientes
+    [modal]="modalEmpleados"
+    (cerrar)="cerrarModalAvanceEmpleados()"
+    (verEnGrilla)="verEnGrillaEmpleados.emit($event)"
+    (verPendientesEnGrilla)="irAPendientesEmpleados.emit()"
+    (continuar)="confirmarAvanceConAdvertenciaEmpleados.emit()"
+    (reintentarValidacion)="reintentarValidacionEmpleados.emit()"
+  />
 }
 
 @if (orquestador.modalAvanceParametros(); as modalAvance) {

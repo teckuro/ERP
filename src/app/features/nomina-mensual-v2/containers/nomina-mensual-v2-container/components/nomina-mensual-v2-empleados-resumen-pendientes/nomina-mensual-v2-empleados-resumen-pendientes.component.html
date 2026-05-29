@@ -1,0 +1,104 @@
+<div class="nmv2-empleados-resumen-backdrop" role="presentation" (click)="cerrarModal()"></div>
+
+<div
+  class="nmv2-empleados-resumen-modal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="nmv2-empleados-resumen-titulo"
+  aria-describedby="nmv2-empleados-resumen-subtitulo"
+>
+  <header class="nmv2-empleados-resumen-modal__header">
+    <button type="button" class="nmv2-empleados-resumen-modal__cerrar" aria-label="Cerrar" (click)="cerrarModal()">
+      <lucide-icon name="x" aria-hidden="true"></lucide-icon>
+    </button>
+    <h2 id="nmv2-empleados-resumen-titulo" class="nmv2-empleados-resumen-modal__titulo">Resumen de pendientes de empleados</h2>
+    <p id="nmv2-empleados-resumen-subtitulo" class="nmv2-empleados-resumen-modal__subtitulo">
+      Revisa qué bloquea el avance y qué elementos requieren atención.
+    </p>
+  </header>
+
+  <div class="nmv2-empleados-resumen-modal__contadores">
+    <div class="nmv2-empleados-resumen-contador nmv2-empleados-resumen-contador--bloqueante">
+      <span class="nmv2-empleados-resumen-contador__label">Bloqueantes</span>
+      <strong class="nmv2-empleados-resumen-contador__valor">{{ resultado.totalBloqueos }}</strong>
+    </div>
+    <div class="nmv2-empleados-resumen-contador nmv2-empleados-resumen-contador--advertencia">
+      <span class="nmv2-empleados-resumen-contador__label">Advertencias</span>
+      <strong class="nmv2-empleados-resumen-contador__valor">{{ resultado.totalAdvertencias }}</strong>
+    </div>
+    <div class="nmv2-empleados-resumen-contador nmv2-empleados-resumen-contador--correcto">
+      <span class="nmv2-empleados-resumen-contador__label">Correctos</span>
+      <strong class="nmv2-empleados-resumen-contador__valor">{{ resultado.totalCorrectos }}</strong>
+    </div>
+    <div class="nmv2-empleados-resumen-contador nmv2-empleados-resumen-contador--afectados">
+      <span class="nmv2-empleados-resumen-contador__label">Trabajadores afectados</span>
+      <strong class="nmv2-empleados-resumen-contador__valor">{{ resultado.trabajadoresAfectados }}</strong>
+    </div>
+  </div>
+
+  <div class="nmv2-empleados-resumen-modal__cuerpo">
+    @for (seccion of secciones; track seccion.titulo) {
+      <section class="nmv2-empleados-resumen-seccion" [class.nmv2-empleados-resumen-seccion--compacta]="esSeccionCompacta(seccion)">
+        <h3 class="nmv2-empleados-resumen-seccion__titulo">{{ seccion.titulo }}</h3>
+
+        @if (esSeccionCompacta(seccion)) {
+          <ul class="nmv2-empleados-resumen-lista-compacta">
+            @for (item of seccion.items; track item.id) {
+              <li>{{ item.title }}</li>
+            }
+          </ul>
+        } @else {
+          <ul class="nmv2-empleados-resumen-lista">
+            @for (item of seccion.items; track item.id) {
+              <li class="nmv2-empleados-resumen-item">
+                <div class="nmv2-empleados-resumen-item__copy">
+                  <div class="nmv2-empleados-resumen-item__heading">
+                    <strong class="nmv2-empleados-resumen-item__titulo">{{ item.title }}</strong>
+                    <span class="empleados-checklist-severidad" [class]="claseSeveridadChecklist(item.severidad)">
+                      {{ item.etiquetaSeveridad }}
+                    </span>
+                  </div>
+                  <p class="nmv2-empleados-resumen-item__descripcion">{{ item.description }}</p>
+                </div>
+                @if (item.esAccionable && item.tipoPendiente) {
+                  <button
+                    type="button"
+                    class="nmv2-empleados-resumen-item__accion"
+                    (click)="solicitarVerEnGrilla(item.tipoPendiente)"
+                  >
+                    Ver en grilla
+                  </button>
+                }
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    }
+  </div>
+
+  <footer class="nmv2-empleados-resumen-modal__footer">
+    @if (mostrarContinuar) {
+      <button type="button" class="nmv2-empleados-resumen-btn nmv2-empleados-resumen-btn--secundario" (click)="cerrarModal()">
+        Volver y corregir
+      </button>
+      <button type="button" class="nmv2-empleados-resumen-btn nmv2-empleados-resumen-btn--primario" (click)="solicitarContinuar()">
+        Continuar de todas formas
+      </button>
+    } @else {
+      <button type="button" class="nmv2-empleados-resumen-btn nmv2-empleados-resumen-btn--secundario" (click)="cerrarModal()">
+        Cerrar
+      </button>
+      @if (hayPendientesAccionables) {
+        <button type="button" class="nmv2-empleados-resumen-btn nmv2-empleados-resumen-btn--primario" (click)="solicitarVerPendientesEnGrilla()">
+          Ver pendientes en grilla
+        </button>
+      }
+      @if (mostrarReintentar) {
+        <button type="button" class="nmv2-empleados-resumen-btn nmv2-empleados-resumen-btn--ghost" (click)="solicitarReintentarValidacion()">
+          Reintentar validación
+        </button>
+      }
+    }
+  </footer>
+</div>

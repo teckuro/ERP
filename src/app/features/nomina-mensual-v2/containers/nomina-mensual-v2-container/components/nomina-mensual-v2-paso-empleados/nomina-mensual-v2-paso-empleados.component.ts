@@ -32,6 +32,7 @@ import {
   obtenerPrimerTipoPendienteBloqueante,
   obtenerResultadoValidacionEmpleados,
   obtenerResumenEmpleadosNomina,
+  obtenerSeccionesResumenPendientesEmpleados,
   obtenerTextoSuperiorEmpleados,
   type ItemChecklistEmpleadoNomina,
   type TipoPendienteEmpleado,
@@ -182,21 +183,37 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
     this.filtroPendienteEmpleados.set(null);
   }
 
+  abrirModalResumenPendientes(origen: 'checklist' | 'validacion' = 'checklist'): void {
+    const filas = this.filasEmpleadosNomina();
+    const items = construirChecklistEmpleadosNomina(filas);
+    const resultado = obtenerResultadoValidacionEmpleados(filas);
+
+    this.orquestador.modalAvanceEmpleados.set({
+      resultado,
+      secciones: obtenerSeccionesResumenPendientesEmpleados(items),
+      origen,
+    });
+  }
+
+  aplicarFiltroChecklistEmpleados(tipoPendiente: TipoPendienteEmpleado): void {
+    this.orquestador.modalAvanceEmpleados.set(null);
+    this.filtroPendienteEmpleados.set(tipoPendiente);
+    queueMicrotask(() => {
+      document.getElementById('nmv2-empleados-grid-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  }
+
   solicitarVolverParametros(): void {
     this.volverParametros.emit();
   }
 
   ejecutarAccionPrincipal(): void {
     const resultado = obtenerResultadoValidacionEmpleados(this.filasEmpleadosNomina());
-    if (resultado.estado === 'bloqueado') {
-      this.orquestador.modalAvanceEmpleados.set({ tipo: 'bloqueo', resultado });
+    if (resultado.estado === 'correcto') {
+      this.continuarDesdeEmpleados();
       return;
     }
-    if (resultado.estado === 'advertencia') {
-      this.orquestador.modalAvanceEmpleados.set({ tipo: 'advertencia', resultado });
-      return;
-    }
-    this.continuarDesdeEmpleados();
+    this.abrirModalResumenPendientes('validacion');
   }
 
   confirmarAvanceConAdvertencia(): void {

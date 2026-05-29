@@ -14,6 +14,7 @@ import { Router } from '@angular/router';
 import { ShellPageContextService } from '../../../../layout/shell-page-context.service';
 import { payrollSteps } from '../../data/nomina-mensual-v2.mock';
 import type { PayrollStepId } from '../../models/nomina-mensual-v2.models';
+import type { TipoPendienteEmpleado } from '../../presenters/nomina-empleados-validacion.presenter';
 import { NominaMensualV2OverlaysComponent } from './components/nomina-mensual-v2-overlays/nomina-mensual-v2-overlays.component';
 import { NominaMensualV2PasoEmpleadosComponent } from './components/nomina-mensual-v2-paso-empleados/nomina-mensual-v2-paso-empleados.component';
 import { NominaMensualV2PasoParametrosComponent } from './components/nomina-mensual-v2-paso-parametros/nomina-mensual-v2-paso-parametros.component';
@@ -98,6 +99,15 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
 
   confirmarAvanceConAdvertenciaEmpleados(): void {
     this.pasoEmpleados()?.confirmarAvanceConAdvertencia();
+  }
+
+  verEnGrillaEmpleados(tipo: TipoPendienteEmpleado): void {
+    this.pasoEmpleados()?.aplicarFiltroChecklistEmpleados(tipo);
+  }
+
+  reintentarValidacionEmpleados(): void {
+    this.orquestador.modalAvanceEmpleados.set(null);
+    this.pasoEmpleados()?.ejecutarAccionPrincipal();
   }
 
   irAPendientesEmpleados(): void {
