@@ -1,3 +1,9 @@
+## 2026-05-29 - Nómina mensual V2: extracción paso Parámetros
+
+- **Cambio:** Paso Parámetros extraído a `nomina-mensual-v2-paso-parametros` (wrapper `.nmv2-paso-parametros`, CSS local existente). Lógica de carga/validación/avance y ayuda shell vía `NominaMensualV2OrquestadorPort`; modales de avance leen `orquestador.modalAvanceParametros`.
+- **Archivos:** `nomina-mensual-v2-paso-parametros.{ts,html,css}`, `nomina-mensual-v2-container.{html,ts}`, `peticiones-estilos.md`.
+- **No tocado:** services, SQL, estilos globales, pasos mock 2–7 (salvo cableado contenedor).
+
 ## 2026-05-29 - Nómina mensual V2: Empleados V1 (grilla del sistema)
 
 - **Cambio:** Paso Empleados migra el listado central a `app-data-grid` (mismo componente que listado empleados/empresas): columnas Nombre/RUT/Cargo/Centro/Jornada/Estados/Acciones, filtros integrados (búsqueda, Estado, Centro, Jornada), badges estándar, menú fila tipo kebab, KPIs y checklist lateral preservados. Presenter local `nomina-empleados-grid.presenter.ts`.
@@ -2399,3 +2405,22 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Reconciliación:** chip y bloqueo nómina incluyen re-edición tras «Actualizar con oficiales».
 - **Archivos:** `parametros-completitud.rules.ts`, `parametros-dialog.rules.ts`, `parametros-workspace.orquestador.ts`.
 - **No tocado:** estilos globales, SQL, motor de nómina, `angular.json`.
+
+## 2026-05-29 — Nómina mensual V2: pulido paso Empleados
+
+- **Filtros:** barra principal con búsqueda global (nombre/RUT/cargo), Estado, Centro de costo y Jornada; Nombre/RUT/Cargo detrás de «Filtros avanzados».
+- **KPIs:** tarjetas más compactas (`empleados-kpi-card`) sin quitar métricas; conteos derivados de la grilla.
+- **Checklist:** filas más densas, conteos alineados a datos de grilla; clic filtra pendientes; sin botón duplicado de avance.
+- **Botón superior:** «Validar empleados» orquesta bloqueos/advertencias vía MsgBox y avanza solo si corresponde.
+- **Grilla:** jerarquía de columnas (Nombre/Estado/Datos bancarios protagonistas); secundarias más discretas.
+- **Archivos:** `nomina-mensual-v2-container` (HTML/CSS/TS), `nomina-empleados-grid.presenter.ts`, `nomina-empleados-validacion.presenter.ts`.
+- **No tocado:** estilos globales, SQL, servicios de negocio, otros pasos del flujo.
+
+## 2026-05-29 — Nómina mensual V2: modularización del contenedor
+
+- **Orquestador:** `nomina-mensual-v2-container` queda delgado (~150 líneas TS); navegación, shell y paso activo.
+- **Componentes por paso:** `nomina-mensual-v2-paso-parametros`, `nomina-mensual-v2-paso-empleados`, `nomina-mensual-v2-pasos-demostracion` (novedades→liquidaciones mock).
+- **Transversales:** `nomina-mensual-v2-stepper`, `nomina-mensual-v2-overlays` (MsgBox), `NominaMensualV2OrquestadorPort`, `nomina-mensual-v2-navegacion.ts`.
+- **CSS:** estilos de parámetros y empleados movidos a CSS local de cada componente hijo.
+- **Patrón:** alineado a `proceso-mensual-container` (contenedor + `components/` + facade/port).
+- **CSS (fix):** hijos con `ViewEncapsulation.None`; estilos centralizados en `nomina-mensual-v2-container.css` (el encapsulamiento emulated impedía que el CSS del padre llegara a los templates hijos).

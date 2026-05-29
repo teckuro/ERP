@@ -1,0 +1,65 @@
+@if (orquestador.modalAvanceEmpleados(); as modalEmpleados) {
+  @switch (modalEmpleados.tipo) {
+    @case ('bloqueo') {
+      <app-message-box
+        variant="blocked"
+        mode="modal"
+        width="md"
+        title="No puedes continuar"
+        message="Hay trabajadores con información obligatoria pendiente. Corrige los datos antes de avanzar."
+        [sections]="seccionesMsgBoxBloqueoEmpleados"
+        primaryLabel="Entendido"
+        secondaryLabel="Ver pendientes"
+        (action)="cerrarModalAvanceEmpleados()"
+        (secondary)="irAPendientesEmpleados.emit()"
+      ></app-message-box>
+    }
+    @case ('advertencia') {
+      <app-message-box
+        variant="decision"
+        mode="modal"
+        width="md"
+        title="Hay observaciones en empleados"
+        message="Puedes revisar las observaciones ahora o continuar bajo tu responsabilidad."
+        [sections]="seccionesMsgBoxAdvertenciaEmpleados"
+        primaryLabel="Continuar de todas formas"
+        secondaryLabel="Volver y corregir"
+        (action)="confirmarAvanceConAdvertenciaEmpleados.emit()"
+        (secondary)="cerrarModalAvanceEmpleados()"
+      ></app-message-box>
+    }
+  }
+}
+
+@if (orquestador.modalAvanceParametros(); as modalAvance) {
+  @switch (modalAvance.tipo) {
+    @case ('bloqueo') {
+      <app-message-box
+        variant="blocked"
+        mode="modal"
+        width="md"
+        title="No puedes continuar"
+        message="Aún tienes parámetros obligatorios pendientes en este paso. Corrígelos antes de avanzar."
+        [sections]="seccionesMsgBoxBloqueoParametros"
+        primaryLabel="Entendido"
+        secondaryLabel="Ver pendientes"
+        (action)="cerrarModalAvanceParametros()"
+        (secondary)="irAPendientesParametros.emit()"
+      ></app-message-box>
+    }
+    @case ('revision') {
+      <app-message-box
+        variant="decision"
+        mode="modal"
+        width="md"
+        title="Tienes elementos pendientes de revisión"
+        message="Puedes corregirlos ahora o continuar bajo tu responsabilidad."
+        [sections]="seccionesMsgBoxRevisionParametros"
+        primaryLabel="Continuar de todas formas"
+        secondaryLabel="Volver y corregir"
+        (action)="confirmarAvanceConRevision.emit()"
+        (secondary)="cerrarModalAvanceParametros()"
+      ></app-message-box>
+    }
+  }
+}

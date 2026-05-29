@@ -1,0 +1,190 @@
+<div class="nmv2-paso-parametros">
+  <div class="nmv2-step-body nmv2-step-body--parameters">
+    @if (parametrosCargaOverlay(); as overlay) {
+      <app-message-box
+        variant="loading"
+        mode="modal"
+        width="sm"
+        [title]="overlay.titulo"
+        [message]="overlay.mensaje"
+      ></app-message-box>
+    }
+    <div
+      class="content-grid content-grid--aside parameters-perfect-layout parameters-step-content"
+      [class.parameters-step-content--busy]="parametrosLoading() || parametrosValidando()"
+      [attr.aria-busy]="parametrosLoading() || parametrosValidando()"
+    >
+      <main class="content-main">
+        @if (parametrosAlertaTipo(); as alertaTipo) {
+          @switch (alertaTipo) {
+            @case ('error') {
+              <div class="alert-banner alert-banner--error alert-banner--parameter-inline">
+                <div class="alert-banner__icon"><lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon></div>
+                <div class="alert-banner__copy">
+                  <strong>No fue posible cargar los parámetros</strong>
+                  <p>{{ parametrosError() }}</p>
+                </div>
+              </div>
+            }
+            @case ('bloqueo') {
+              <div class="alert-banner alert-banner--warning alert-banner--parameter-inline">
+                <div class="alert-banner__icon"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon></div>
+                <div class="alert-banner__copy">
+                  <strong>{{ alertaBloqueoTitulo() }}</strong>
+                  <p>{{ alertaBloqueoDescripcion() }}</p>
+                </div>
+              </div>
+            }
+            @case ('revision') {
+              <div class="alert-banner alert-banner--revision alert-banner--parameter-inline">
+                <div class="alert-banner__icon"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon></div>
+                <div class="alert-banner__copy">
+                  <strong>{{ alertaRevisionTitulo() }}</strong>
+                  <p>{{ alertaRevisionDescripcion() }}</p>
+                </div>
+              </div>
+            }
+          }
+        }
+        <section class="surface-card parameter-prep-card parameters-prep-flow-card">
+          <div class="section-heading section-heading--compact">
+            <div>
+              <h2>Flujo de preparación de parámetros</h2>
+            </div>
+          </div>
+
+          <div class="parameter-prep-flow-shell">
+            <div
+              class="parameter-prep-flow"
+              [class.parameter-prep-flow--validacion-pendiente]="prepValidacionEstadoPaso() === 'pendiente'"
+              [class.parameter-prep-flow--validacion-lista]="prepValidacionEstadoPaso() === 'completo'"
+              [class.parameter-prep-flow--solo-validacion]="parametrosAreas().length === 0"
+            >
+              @for (area of parametrosAreas(); track area.id) {
+                <div class="prep-segment">
+                  <article class="prep-step" [class]="parametroPrepClase(area.estado)">
+                    <span class="prep-node">
+                      <lucide-icon [name]="parametroPrepIcono(area.estado)" aria-hidden="true"></lucide-icon>
+                    </span>
+                    <div class="prep-copy">
+                      <strong class="prep-item__titulo">{{ area.titulo }}</strong>
+                      <small class="prep-item__estado">{{ parametroPrepEtiqueta(area.estado) }}</small>
+                    </div>
+                  </article>
+                  <span class="prep-connector" [class]="parametroPrepConectorClase(area.estado)" aria-hidden="true"></span>
+                </div>
+              }
+              <div class="prep-segment prep-segment--terminal">
+                <article class="prep-step prep-step--validacion" [class]="prepValidacionClase()">
+                  <span class="prep-node">
+                    <lucide-icon [name]="prepValidacionIcono()" aria-hidden="true"></lucide-icon>
+                  </span>
+                  <div class="prep-copy">
+                    <strong class="prep-item__titulo">Validación</strong>
+                    <small class="prep-item__estado">{{ prepValidacionEtiqueta() }}</small>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="parameter-cards-grid">
+          @for (area of parametrosAreas(); track area.id) {
+            <article class="surface-card parameter-summary-card" (click)="goToParametros(area.mantenedor)">
+              <header class="parameter-summary-card__head">
+                <span class="parameter-summary-card__icon"><lucide-icon [name]="area.icono" aria-hidden="true"></lucide-icon></span>
+                <div class="parameter-summary-card__title-group">
+                  <h3>{{ area.titulo }}</h3>
+                  <p>{{ area.descripcion }}</p>
+                </div>
+              </header>
+              @if (area.items.length > 0) {
+                <div class="parameter-summary-card__chips" [attr.aria-label]="'Validaciones de ' + area.titulo">
+                  @for (item of chipsVisiblesParametro(area.items); track item.label) {
+                    <span>{{ item.label }}</span>
+                  }
+                  @if (cantidadChipsOcultosParametro(area.items) > 0) {
+                    <span class="parameter-summary-card__chips-more">+{{ cantidadChipsOcultosParametro(area.items) }} más</span>
+                  }
+                </div>
+              }
+              <footer class="parameter-summary-card__foot">
+                <span class="plain-status" [class]="parametroEstadoClase(area.estado)"><lucide-icon [name]="parametroEstadoIcono(area.estado)" aria-hidden="true"></lucide-icon>{{ parametroEstadoEtiqueta(area.estado) }}</span>
+                <lucide-icon class="parameter-summary-card__chevron" name="chevron-right" aria-hidden="true"></lucide-icon>
+              </footer>
+            </article>
+          }
+        </section>
+      </main>
+
+      <aside class="content-side parameters-sidebar-perfect parameters-sidebar-compact">
+        <section class="surface-card side-card parameters-perfect-summary">
+          <h2>Resumen de parámetros</h2>
+          <div class="parameters-perfect-summary__top">
+            <div class="donut-summary-block">
+              <div class="donut-ring donut-ring--summary donut-ring--dynamic"
+                [class.donut-ring--success]="donutTono() === 'exito'"
+                [class.donut-ring--warning]="donutTono() === 'revision'"
+                [class.donut-ring--danger]="donutTono() === 'bloqueo'"
+                [class.donut-ring--neutral]="donutTono() === 'neutral'"
+                [style.background]="estiloArcoDonut()">
+                <span>{{ completitudItemsPct() }}%</span>
+              </div>
+              <small class="donut-total-caption">{{ completitudItemsCaption() }}</small>
+            </div>
+            <div class="summary-state-list">
+              <div class="summary-state-row status-red"><lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon><strong>{{ parametrosResumen()?.bloqueos ?? 0 }}</strong><span>Bloqueos</span></div>
+              <div class="summary-state-row status-amber"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon><strong>{{ parametrosResumen()?.requiereRevision ?? 0 }}</strong><span>Requiere revisión</span></div>
+              <div class="summary-state-row status-green"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><strong>{{ parametrosResumen()?.completos ?? 0 }}</strong><span>Completos</span></div>
+            </div>
+          </div>
+          <div class="updated-row updated-row--summary">
+            <span><lucide-icon name="clock-3" aria-hidden="true"></lucide-icon>Última actualización:</span>
+            <strong>{{ formatoHoraActualizacion(parametrosResumen()?.ultimaActualizacion) }}</strong>
+          </div>
+        </section>
+
+        <section class="surface-card side-card parameter-access-card">
+          <h2>Accesos rápidos</h2>
+          <p class="side-caption">Ir al mantenedor de Parámetros.</p>
+          <div class="parameter-access-grid">
+            @for (acceso of parametrosAccesos(); track acceso.id) {
+              <button type="button" class="parameter-access-tile" (click)="goToParametros(acceso.mantenedor)">
+                <span class="parameter-access-tile__icon"><lucide-icon [name]="acceso.icono" aria-hidden="true"></lucide-icon></span>
+                <span>{{ acceso.label }}</span>
+                <lucide-icon name="external-link" aria-hidden="true"></lucide-icon>
+              </button>
+            }
+          </div>
+        </section>
+
+        <section
+          id="parametros-pendientes-sidebar"
+          class="surface-card side-card parameter-blockers-perfect"
+          [class.parameter-blockers-perfect--empty]="parametrosBloqueosActuales().length === 0"
+        >
+          <h2>{{ tituloEstadoParametros() }}</h2>
+          <div class="parameter-blocker-list">
+            @if (parametrosBloqueosActuales().length === 0) {
+              <div
+                class="parameter-blocker-empty"
+                [class.parametros-estado-correcto]="parametrosEstadoCompleto()"
+              >
+                <lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon>
+                <span>Sin pendientes activos.</span>
+              </div>
+            }
+            @for (bloqueo of parametrosBloqueosActuales(); track bloqueo.id) {
+              <div class="parameter-blocker-row" (click)="goToParametros(bloqueo.mantenedor)">
+                <div class="parameter-blocker-row__status" [class]="bloqueoSeveridadClase(bloqueo.severidad)"><lucide-icon [name]="bloqueoSeveridadIcono(bloqueo.severidad)" aria-hidden="true"></lucide-icon><strong>{{ bloqueoSeveridadEtiqueta(bloqueo.severidad) }}</strong></div>
+                <div class="parameter-blocker-row__copy"><span class="parameter-blocker-row__area">{{ parametroAreaTitulo(bloqueo.areaId) }}</span><h3>{{ bloqueo.titulo }}</h3><p>{{ bloqueo.detalle }}</p></div>
+                <lucide-icon class="parameter-blocker-row__chevron" name="chevron-right" aria-hidden="true"></lucide-icon>
+              </div>
+            }
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+</div>

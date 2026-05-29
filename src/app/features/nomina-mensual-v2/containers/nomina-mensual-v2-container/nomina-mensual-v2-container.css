@@ -9,6 +9,14 @@
   font-family: var(--erp-font-sans, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
 }
 
+app-nomina-mensual-v2-stepper,
+app-nomina-mensual-v2-paso-parametros,
+app-nomina-mensual-v2-paso-empleados,
+app-nomina-mensual-v2-pasos-demostracion,
+app-nomina-mensual-v2-overlays {
+  display: block;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -4049,4 +4057,178 @@ textarea {
 .nmv2-empleado-action-menu__item lucide-icon {
   width: 14px;
   height: 14px;
+}
+
+/* —— Empleados V2: KPIs compactos, checklist ligero, grilla protagonista —— */
+
+.nmv2-page[data-step='employees'] .empleados-kpi-strip {
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.nmv2-page[data-step='employees'] .empleados-kpi-card {
+  min-height: unset;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+}
+
+.nmv2-page[data-step='employees'] .empleados-kpi-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+}
+
+.nmv2-page[data-step='employees'] .empleados-kpi-card__icon lucide-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.nmv2-page[data-step='employees'] .empleados-kpi-card__value {
+  font-size: 30px;
+}
+
+.nmv2-page[data-step='employees'] .empleados-kpi-card .summary-metric__copy span {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.nmv2-page[data-step='employees'] .empleados-kpi-card .summary-metric__copy small {
+  font-size: 11px;
+}
+
+.nmv2-empleados-toolbar-extra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.nmv2-empleados-filtros-avanzados-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.nmv2-empleados-filtros-avanzados-btn:hover,
+.nmv2-empleados-filtros-avanzados-btn--activo {
+  border-color: #bfdbfe;
+  background: #f8fbff;
+  color: #1d4ed8;
+}
+
+.nmv2-empleados-filtros-avanzados-btn lucide-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.nmv2-empleados-filtro-pendiente-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid #fde68a;
+  border-radius: 999px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.nmv2-empleados-filtro-pendiente-chip lucide-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.nmv2-page[data-step='employees'] .empleados-checklist-card {
+  padding: 18px;
+}
+
+.nmv2-page[data-step='employees'] .empleados-checklist-stack {
+  gap: 8px;
+}
+
+.nmv2-page[data-step='employees'] .empleados-checklist-item {
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.nmv2-page[data-step='employees'] .empleados-checklist-item:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.nmv2-page[data-step='employees'] .empleados-checklist-item:not(:disabled):hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.nmv2-page[data-step='employees'] .empleados-checklist-item--activo {
+  border-color: #bfdbfe;
+  background: #f8fbff;
+}
+
+.nmv2-page[data-step='employees'] .empleados-checklist-item {
+  min-height: unset;
+  padding: 10px 12px;
+  gap: 10px;
+  border-radius: 12px;
+}
+
+.nmv2-page[data-step='employees'] .empleados-checklist-item__title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.nmv2-page[data-step='employees'] .empleados-checklist-item__description {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.nmv2-page[data-step='employees'] .empleados-checklist-info {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.nmv2-page[data-step='employees'] .nmv2-empleados-grid-shell ::ng-deep .data-grid-filter-grid {
+  grid-template-columns: minmax(12rem, 1.6fr) repeat(3, minmax(8.5rem, 1fr));
+}
+
+.nmv2-page[data-step='employees'] .nmv2-empleados-grid-shell ::ng-deep .data-grid-filter-field[data-grid-filter-id='busqueda'] {
+  grid-column: span 1;
+}
+
+.nmv2-page[data-step='employees'] .nmv2-empleados-grid-shell ::ng-deep .nmv2-grid-cell-secondary {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.nmv2-page[data-step='employees'] .nmv2-empleados-grid-shell ::ng-deep .data-grid-filter-label {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.nmv2-page[data-step='employees'] .content-side {
+  max-width: 320px;
+}
+
+@media (max-width: 1100px) {
+  .nmv2-page[data-step='employees'] .nmv2-empleados-grid-shell ::ng-deep .data-grid-filter-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr));
+  }
 }

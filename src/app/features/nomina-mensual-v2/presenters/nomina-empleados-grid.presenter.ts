@@ -26,79 +26,82 @@ export const COLUMNAS_GRILLA_EMPLEADOS_NOMINA: DataGridColumn<FilaEmpleadoNomina
     header: 'Nombre',
     field: 'nombreCompleto',
     type: 'text',
-    width: '16%',
-    minWidth: '9rem',
+    width: '20%',
+    minWidth: '10rem',
     hideable: false,
     priorityResponsive: 'primary',
-    filterable: true,
-    showFilterWhenHidden: true,
+    filterable: false,
   },
   {
     id: 'rut',
     header: 'RUT',
     field: 'rut',
     type: 'text',
-    width: '6.5rem',
-    minWidth: '6rem',
-    cellClass: 'whitespace-nowrap',
+    width: '6rem',
+    minWidth: '5.75rem',
+    cellClass: 'nmv2-grid-cell-secondary whitespace-nowrap',
     priorityResponsive: 'secondary',
-    filterable: true,
-    showFilterWhenHidden: true,
+    filterable: false,
   },
   {
     id: 'cargo',
     header: 'Cargo',
     field: 'cargo',
     type: 'text',
-    width: '11%',
-    minWidth: '6.5rem',
+    width: '10%',
+    minWidth: '6rem',
+    cellClass: 'nmv2-grid-cell-secondary',
     priorityResponsive: 'tertiary',
-    filterable: true,
-    showFilterWhenHidden: true,
+    filterable: false,
   },
   {
     id: 'centroCosto',
     header: 'Centro de costo',
     field: 'centroCosto',
     type: 'text',
-    width: '10%',
-    minWidth: '6.5rem',
+    width: '9%',
+    minWidth: '6rem',
+    cellClass: 'nmv2-grid-cell-secondary',
     priorityResponsive: 'tertiary',
-    filterable: true,
-    showFilterWhenHidden: true,
+    filterable: false,
   },
   {
     id: 'jornada',
     header: 'Jornada',
     field: 'jornada',
     type: 'text',
-    width: '6.5rem',
-    minWidth: '6rem',
+    width: '5.75rem',
+    minWidth: '5.5rem',
+    cellClass: 'nmv2-grid-cell-secondary whitespace-nowrap',
     priorityResponsive: 'tertiary',
-    filterable: true,
-    showFilterWhenHidden: true,
+    filterable: false,
   },
   {
     id: 'estadoNomina',
     header: 'Estado nómina',
     field: 'estadoNomina',
     type: 'text',
-    width: '7.5rem',
-    minWidth: '7rem',
+    width: '7rem',
+    minWidth: '6.75rem',
+    align: 'center',
     hideable: false,
-    priorityResponsive: 'secondary',
+    priorityResponsive: 'primary',
+    headerClass: 'text-center',
+    cellClass: 'text-center',
     format: (_value, row) => row.etiquetaEstadoNomina,
-    filterable: true,
-    showFilterWhenHidden: true,
+    filterable: false,
   },
   {
     id: 'datosBancarios',
     header: 'Datos bancarios',
     field: 'datosBancarios',
     type: 'text',
-    width: '7.5rem',
-    minWidth: '7rem',
-    priorityResponsive: 'secondary',
+    width: '7rem',
+    minWidth: '6.75rem',
+    align: 'center',
+    priorityResponsive: 'primary',
+    headerClass: 'text-center',
+    cellClass: 'text-center',
     format: (_value, row) => row.etiquetaDatosBancarios,
     filterable: false,
   },
@@ -107,8 +110,10 @@ export const COLUMNAS_GRILLA_EMPLEADOS_NOMINA: DataGridColumn<FilaEmpleadoNomina
     header: 'Contrato',
     field: 'contrato',
     type: 'text',
-    width: '6.5rem',
-    minWidth: '6rem',
+    width: '5.75rem',
+    minWidth: '5.5rem',
+    align: 'center',
+    cellClass: 'nmv2-grid-cell-secondary text-center',
     priorityResponsive: 'tertiary',
     format: (_value, row) => row.etiquetaContrato,
     filterable: false,
@@ -117,8 +122,8 @@ export const COLUMNAS_GRILLA_EMPLEADOS_NOMINA: DataGridColumn<FilaEmpleadoNomina
     id: 'acciones',
     header: 'Acciones',
     align: 'center',
-    width: '3.25rem',
-    minWidth: '3.25rem',
+    width: '3rem',
+    minWidth: '3rem',
     sortable: false,
     hideable: false,
     filterable: false,
@@ -127,11 +132,12 @@ export const COLUMNAS_GRILLA_EMPLEADOS_NOMINA: DataGridColumn<FilaEmpleadoNomina
 
 export function crearFiltrosGrillaEmpleadosNomina(
   filas: FilaEmpleadoNomina[],
+  incluirAvanzados = false,
 ): DataGridFilter<FilaEmpleadoNomina>[] {
   const centros = [...new Set(filas.map((fila) => fila.centroCosto))].sort();
   const jornadas = [...new Set(filas.map((fila) => fila.jornada))].sort();
 
-  return [
+  const filtrosPrincipales: DataGridFilter<FilaEmpleadoNomina>[] = [
     {
       id: 'busqueda',
       label: 'Buscar',
@@ -139,12 +145,12 @@ export function crearFiltrosGrillaEmpleadosNomina(
       type: 'text',
       operator: 'contains',
       matchMode: 'tokens',
-      placeholder: 'Nombre o RUT',
+      placeholder: 'Nombre, RUT o cargo',
       predicate: (row, value) => {
         const termino = String(value ?? '').trim().toLowerCase();
         if (!termino) return true;
         const tokens = termino.split(/\s+/).filter(Boolean);
-        const texto = `${row.nombreCompleto} ${row.rut}`.toLowerCase();
+        const texto = `${row.nombreCompleto} ${row.rut} ${row.cargo}`.toLowerCase();
         return tokens.every((token) => texto.includes(token));
       },
     },
@@ -178,6 +184,55 @@ export function crearFiltrosGrillaEmpleadosNomina(
       operator: 'equals',
       emptyLabel: 'Todas',
       options: jornadas.map((jornada) => ({ label: jornada, value: jornada })),
+    },
+  ];
+
+  if (!incluirAvanzados) {
+    return filtrosPrincipales;
+  }
+
+  return [
+    ...filtrosPrincipales,
+    {
+      id: 'filtroNombre',
+      label: 'Nombre',
+      field: 'nombreCompleto',
+      type: 'text',
+      operator: 'contains',
+      matchMode: 'tokens',
+      placeholder: 'Filtrar por nombre',
+      predicate: (row, value) => {
+        const termino = String(value ?? '').trim().toLowerCase();
+        if (!termino) return true;
+        return row.nombreCompleto.toLowerCase().includes(termino);
+      },
+    },
+    {
+      id: 'filtroRut',
+      label: 'RUT',
+      field: 'rut',
+      type: 'text',
+      operator: 'contains',
+      normalize: 'rut',
+      placeholder: 'Filtrar por RUT',
+      predicate: (row, value) => {
+        const termino = String(value ?? '').trim().toLowerCase();
+        if (!termino) return true;
+        return row.rut.toLowerCase().includes(termino);
+      },
+    },
+    {
+      id: 'filtroCargo',
+      label: 'Cargo',
+      field: 'cargo',
+      type: 'text',
+      operator: 'contains',
+      placeholder: 'Filtrar por cargo',
+      predicate: (row, value) => {
+        const termino = String(value ?? '').trim().toLowerCase();
+        if (!termino) return true;
+        return row.cargo.toLowerCase().includes(termino);
+      },
     },
   ];
 }
