@@ -295,7 +295,17 @@ describe('ProcesoMensualService', () => {
     TestBed.configureTestingModule({
       providers: [
         ProcesoMensualService,
-        { provide: SUPABASE_CLIENT, useValue: { from: supabaseFrom } },
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: {
+            from: supabaseFrom,
+            auth: {
+              getUser: vi.fn().mockResolvedValue({
+                data: { user: { id: 'test-user', email: 'rrhh@test.cl' } },
+              }),
+            },
+          },
+        },
         { provide: ParametrosGeneralesService, useValue: parametros },
         { provide: EmpleadosService, useValue: empleados },
         { provide: HaberesDescuentosService, useValue: haberes },
@@ -591,7 +601,8 @@ describe('ProcesoMensualService', () => {
     const r = await svc.generarCalculoPeriodo('2026-05');
 
     expect(entradasMensuales.listarEntradasPeriodo).toHaveBeenCalledWith('2026-05');
-    expect(r.liquidaciones[0].baseImponiblePrevisional).toBe(100);
+    // B6: la entrada mensual (haber variable aprobado de 50.000) se integra a la base imponible.
+    expect(r.liquidaciones[0].baseImponiblePrevisional).toBe(50100);
     expect(r.liquidaciones[0].impuestoUnico).toBe(0);
     expect(r.liquidaciones[0].liquidoAPago).toBe(r.liquidaciones[0].totalHaberes - r.liquidaciones[0].totalDescuentos);
   });

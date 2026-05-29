@@ -41,8 +41,12 @@ export function obtenerMotivoNoPuedeGenerar(
 ): string | null {
   if (liquidacion) return 'Ya existen liquidaciones oficiales generadas para este periodo.';
   if (!snapshot?.idCalculoPeriodo) return 'No se pudo consultar una nómina mensual confirmada para este período.';
-  if (!snapshot.aprobadoOperativamente || !snapshot.cerradoOperativamente) {
-    return 'Primero confirma la nómina mensual del período.';
+  // Orden del flujo: aprobar -> emitir -> cerrar. Se emite con la nómina aprobada (antes del cierre).
+  if (snapshot.cerradoOperativamente) {
+    return 'La nómina del período ya está cerrada; no se pueden emitir nuevas liquidaciones.';
+  }
+  if (!snapshot.aprobadoOperativamente) {
+    return 'Primero aprueba la nómina mensual del período.';
   }
   if (snapshot.totalTrabajadores <= 0) return 'No hay trabajadores calculados para generar liquidaciones.';
   return null;

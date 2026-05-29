@@ -2114,6 +2114,8 @@ export type Database = {
           created_at: string
           estado: string
           fecha_generacion: string
+          hash_entradas: string | null
+          hash_parametros: string | null
           hash_snapshot: string | null
           id_calculo_periodo: number
           id_empresa: number | null
@@ -2156,6 +2158,8 @@ export type Database = {
           created_at?: string
           estado?: string
           fecha_generacion?: string
+          hash_entradas?: string | null
+          hash_parametros?: string | null
           hash_snapshot?: string | null
           id_calculo_periodo?: number
           id_empresa?: number | null
@@ -2198,6 +2202,8 @@ export type Database = {
           created_at?: string
           estado?: string
           fecha_generacion?: string
+          hash_entradas?: string | null
+          hash_parametros?: string | null
           hash_snapshot?: string | null
           id_calculo_periodo?: number
           id_empresa?: number | null
@@ -2231,6 +2237,50 @@ export type Database = {
           {
             foreignKeyName: "nomina_calculo_periodo_reemplazado_por_fkey"
             columns: ["reemplazado_por"]
+            isOneToOne: false
+            referencedRelation: "nomina_calculo_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+        ]
+      }
+      nomina_calculo_parametro: {
+        Row: {
+          clave: string
+          created_at: string
+          grupo: string
+          id_calculo_parametro: number
+          id_calculo_periodo: number
+          origen: string
+          valor: string | null
+          valor_numerico: number | null
+          vigencia: string | null
+        }
+        Insert: {
+          clave: string
+          created_at?: string
+          grupo: string
+          id_calculo_parametro?: number
+          id_calculo_periodo: number
+          origen?: string
+          valor?: string | null
+          valor_numerico?: number | null
+          vigencia?: string | null
+        }
+        Update: {
+          clave?: string
+          created_at?: string
+          grupo?: string
+          id_calculo_parametro?: number
+          id_calculo_periodo?: number
+          origen?: string
+          valor?: string | null
+          valor_numerico?: number | null
+          vigencia?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_calculo_parametro_id_calculo_periodo_fkey"
+            columns: ["id_calculo_periodo"]
             isOneToOne: false
             referencedRelation: "nomina_calculo_periodo"
             referencedColumns: ["id_calculo_periodo"]
@@ -4904,6 +4954,67 @@ export type Database = {
         Args: { p_tabla: string }
         Returns: string
       }
+      fn_aprobar_prenomina_periodo: {
+        Args: {
+          p_advertencias?: Json
+          p_hash_entradas: string
+          p_hash_parametros: string
+          p_hash_snapshot: string
+          p_id_calculo_periodo: number
+          p_metadata?: Json
+          p_periodo: string
+        }
+        Returns: {
+          activo: boolean
+          anulacion_fecha: string | null
+          anulacion_usuario_id: string | null
+          anulacion_usuario_label: string | null
+          aprobacion_operativa_advertencias: Json
+          aprobacion_operativa_estado: string | null
+          aprobacion_operativa_fecha: string | null
+          aprobacion_operativa_metadata: Json
+          aprobacion_operativa_usuario_id: string | null
+          aprobacion_operativa_usuario_label: string | null
+          cierre_operativo_estado: string | null
+          cierre_operativo_fecha: string | null
+          cierre_operativo_metadata: Json
+          cierre_operativo_observacion: string | null
+          cierre_operativo_usuario_id: string | null
+          cierre_operativo_usuario_label: string | null
+          created_at: string
+          estado: string
+          fecha_generacion: string
+          hash_entradas: string | null
+          hash_parametros: string | null
+          hash_snapshot: string | null
+          id_calculo_periodo: number
+          id_empresa: number | null
+          observacion_anulacion: string | null
+          origen: string
+          periodo: string
+          reapertura_operativa_fecha: string | null
+          reapertura_operativa_metadata: Json
+          reapertura_operativa_observacion: string | null
+          reapertura_operativa_usuario_id: string | null
+          reapertura_operativa_usuario_label: string | null
+          reemplazado_por: number | null
+          total_advertencias: number
+          total_bloqueados: number
+          total_descuentos: number
+          total_haberes: number
+          total_liquido: number
+          total_trabajadores: number
+          updated_at: string
+          usuario_generador: string | null
+          version_motor: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_calculo_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       fn_calcular_dias_trabajados: {
         Args: {
           p_fecha_ingreso: string
@@ -4912,6 +5023,16 @@ export type Database = {
           p_periodo: string
         }
         Returns: number
+      }
+      fn_validar_prenomina_periodo: {
+        Args: {
+          p_hash_entradas?: string
+          p_hash_parametros?: string
+          p_hash_snapshot?: string
+          p_id_calculo_periodo: number
+          p_periodo: string
+        }
+        Returns: Json
       }
       fn_calcular_impuesto_unico: {
         Args: { p_base: number; p_fecha: string }
@@ -5052,6 +5173,7 @@ export type Database = {
           p_conceptos?: Json
           p_id_empresa: number
           p_observaciones?: Json
+          p_parametros?: Json
           p_periodo: string
           p_trabajadores: Json
           p_trazabilidad?: Json

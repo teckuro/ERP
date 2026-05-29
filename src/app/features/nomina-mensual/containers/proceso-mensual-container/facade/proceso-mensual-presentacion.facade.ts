@@ -2979,12 +2979,20 @@ export class ProcesoMensualPresentacionFacade {
       this.guardarSnapshotPreliminar();
       return;
     }
-    if (estado === 'resultado_guardado' || estado === 'aprobado_operativamente') {
-      if (estado === 'aprobado_operativamente') {
+    if (estado === 'resultado_guardado') {
+      // Split del flujo: tras guardar, el paso es aprobar (no cerrar).
+      this.aprobarResultadoPreliminar();
+      return;
+    }
+    if (estado === 'aprobado_operativamente') {
+      // Si ya hay liquidaciones emitidas, cierra; si no, dirige a emitir liquidaciones.
+      if (this.store.liquidacionesGeneradasCount() > 0) {
         this.cerrarNominaOperativa();
-        return;
+      } else {
+        void this.router.navigateByUrl(
+          appendNominaFlowQuery('/remuneraciones/liquidaciones', this.periodoSeleccionado()),
+        );
       }
-      this.abrirConfirmacionConfirmarNominaOperativa();
       return;
     }
     if (estado === 'nomina_cerrada' || estado === 'liquidaciones_disponibles') {
@@ -3240,6 +3248,8 @@ export class ProcesoMensualPresentacionFacade {
     if (!snapshot?.idCalculoPeriodo) return 'Primero debe existir una version revisable guardada vigente.';
     if (snapshot.cierreOperativo?.estado === 'cerrado_operativamente') return 'La nomina mensual ya esta confirmada.';
     if (snapshot.aprobacionOperativa?.estado !== 'aprobado_operativamente') return 'La revision debe estar confirmada antes de confirmar la nomina.';
+    // Orden del flujo: aprobar -> emitir -> cerrar. El cierre exige liquidaciones ya emitidas.
+    if (this.store.liquidacionesGeneradasCount() <= 0) return 'Primero emite las liquidaciones del período antes de cerrarlo.';
     if (this.resultadoPreliminar().estado === 'actualizado_sin_guardar') return 'Hay una version actualizada sin guardar.';
     if (snapshot.totalBloqueados > 0) return 'Existen trabajadores bloqueados pendientes en la version guardada.';
     if (this.store.guardandoSnapshot() || this.store.aprobandoResultado() || this.store.cerrandoNomina()) return 'Hay una operacion en curso.';

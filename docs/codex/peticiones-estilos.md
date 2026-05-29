@@ -1,3 +1,9 @@
+## 2026-05-28 - Nómina mensual: flujo explícito aprobar → emitir → cerrar
+
+- **Cambio:** El flujo operativo del período se separa en pasos visibles. Tras guardar la revisión, la acción principal pasa a ser **«Aprobar nómina»** (antes «Confirmar nómina», que aprobaba y cerraba en un paso). Con la nómina aprobada y sin liquidaciones emitidas, la acción principal es **«Generar liquidaciones»** (dirige a la pantalla de Liquidaciones); recién con liquidaciones emitidas aparece **«Confirmar nómina»** como cierre final. Copy y descripciones alineadas al nuevo orden. Orquestación: la aprobación valida primero (`fn_validar_prenomina_periodo`) y luego aprueba (`fn_aprobar_prenomina_periodo`).
+- **Archivos:** `proceso-mensual-estado-operativo.rules.ts`, `proceso-mensual-flujo-completo.rules.ts`, `proceso-mensual-presentacion.facade.ts`, `nomina-calculo-snapshot.repository.ts`, specs asociadas (`*-estado-operativo`, `*-flujo-completo`, `proceso-mensual-container`, `nomina-calculo-snapshot.repository`, `proceso-mensual.service`).
+- **No tocado:** estilos globales, `angular.json`, motor de cálculo. (SQL de RPC ajustado en fase de backend previa para imponer emitir antes de cerrar.)
+
 ## 2026-05-28 - Parámetros: aviso de diferencias al guardar y al reingresar
 
 - **Cambio:** Modal de diferencias (oficial vs configuración) al **guardar** si hay valores distintos, y al **cargar/reingresar** el período; ya no se bloquea por calendario en estado pendiente; reabre si hubo decisión sin fecha o config editada después. Recarga al volver desde otra ruta a `/parametros`.

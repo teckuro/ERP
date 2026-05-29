@@ -36,6 +36,7 @@ import type {
   BaseNominaParametrosEstado,
   BaseNominaTrabajadorEstado,
   BaseNominaTrazabilidad,
+  EntradaMensualMotor,
   GuardarSnapshotPreliminarResult,
   MotorCalculoPeriodoResultado,
   MotorCalculoInput,
@@ -95,6 +96,11 @@ export class ProcesoMensualService {
   private readonly diagnosticoPeriodo = inject(NominaPeriodoDiagnosticoRepository);
   private readonly liquidaciones = inject(LiquidacionesOficialesRepository);
   private readonly calculosPorPeriodo = new Map<string, MotorCalculoPeriodoResultado>();
+  /** Insumos congelables del ultimo calculo por periodo (parametros y entradas) para auditoria/hashes. */
+  private readonly insumosCalculoPorPeriodo = new Map<string, {
+    parametrosPeriodo: ParametroGeneral | null;
+    entradasMensuales: EntradaMensualMotor[];
+  }>();
 
   /**
    * Orquesta lecturas y devuelve prevalidacion. No calcula remuneraciones ni liquidaciones.
@@ -223,6 +229,10 @@ export class ProcesoMensualService {
     const input = await this.construirInputMotorPeriodo(p);
     const resultado = generarCalculoPreliminarPeriodo(input, new Date().toISOString());
     this.calculosPorPeriodo.set(p, resultado);
+    this.insumosCalculoPorPeriodo.set(p, {
+      parametrosPeriodo: input.parametrosPeriodo,
+      entradasMensuales: input.entradasMensuales,
+    });
     return resultado;
   }
 
@@ -243,11 +253,14 @@ export class ProcesoMensualService {
 
     const { data: userData } = await this.supabase.auth.getUser();
     const usuarioId = userData.user?.id ?? null;
+    const insumos = this.insumosCalculoPorPeriodo.get(p) ?? null;
     const snapshot = mapResultadoMotorToSnapshotPayload({
       resultado,
       fechaGeneracion: new Date().toISOString(),
       origen: 'preliminar',
       usuarioGenerador: usuarioId,
+      parametrosPeriodo: insumos?.parametrosPeriodo ?? null,
+      entradasMensuales: insumos?.entradasMensuales ?? [],
     });
     const activo = await this.snapshots.obtenerSnapshotActivo(p);
     const persistNuevo = opciones.prevalidacion
@@ -272,11 +285,14 @@ export class ProcesoMensualService {
     }
     const { data: userData } = await this.supabase.auth.getUser();
     const usuarioId = userData.user?.id ?? null;
+    const insumos = this.insumosCalculoPorPeriodo.get(periodo.trim()) ?? null;
     const snapshot = mapResultadoMotorToSnapshotPayload({
       resultado,
       fechaGeneracion: new Date().toISOString(),
       origen: 'recalculo',
       usuarioGenerador: usuarioId,
+      parametrosPeriodo: insumos?.parametrosPeriodo ?? null,
+      entradasMensuales: insumos?.entradasMensuales ?? [],
     });
     const guardado = await this.snapshots.guardarSnapshotPreliminar(snapshot);
     return {

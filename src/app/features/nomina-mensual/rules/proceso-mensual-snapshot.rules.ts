@@ -1,15 +1,18 @@
 import type {
+  EntradaMensualMotor,
   GuardarSnapshotPreliminarResult,
   LineaLiquidacionCalculada,
   MotorCalculoIssue,
   MotorCalculoPeriodoResultado,
   NominaCalculoConceptoSnapshot,
   NominaCalculoIssueSnapshot,
+  NominaCalculoParametroSnapshot,
   NominaCalculoPeriodoSnapshot,
   NominaCalculoSnapshotOrigen,
   NominaCalculoTrabajadorSnapshot,
   NominaCalculoTrazabilidadSnapshot,
 } from '../models/proceso-mensual.model';
+import type { ParametroGeneral } from '../../parametros-generales/models/parametro-general.model';
 
 const VERSION_MOTOR_SNAPSHOT = 'MOTOR-03B';
 
@@ -44,9 +47,14 @@ export function mapResultadoMotorToSnapshotPayload(args: {
   usuarioGenerador?: string | null;
   idEmpresa?: number | null;
   origen?: NominaCalculoSnapshotOrigen;
+  parametrosPeriodo?: ParametroGeneral | null;
+  entradasMensuales?: readonly EntradaMensualMotor[] | null;
 }): NominaCalculoPeriodoSnapshot {
   const { resultado, fechaGeneracion } = args;
   const trabajadores = resultado.liquidaciones.map(mapTrabajador);
+  const parametros = construirParametrosCongelados(args.parametrosPeriodo ?? null);
+  const hashParametros = calcularHashParametros(parametros);
+  const hashEntradas = calcularHashEntradas(args.entradasMensuales ?? []);
   const snapshotSinHash: NominaCalculoPeriodoSnapshot = {
     periodo: resultado.periodo,
     idEmpresa: args.idEmpresa ?? null,
@@ -61,6 +69,8 @@ export function mapResultadoMotorToSnapshotPayload(args: {
     totalAdvertencias: resultado.resumen.totalConAdvertencias,
     versionMotor: VERSION_MOTOR_SNAPSHOT,
     hashSnapshot: null,
+    hashParametros,
+    hashEntradas,
     origen: args.origen ?? 'preliminar',
     activo: true,
     reemplazadoPor: null,
@@ -69,12 +79,71 @@ export function mapResultadoMotorToSnapshotPayload(args: {
     trabajadores,
     issues: resultado.issues.map(mapIssue),
     trazabilidad: resultado.liquidaciones.flatMap((l) => l.trazabilidad.map(mapTrazabilidad)),
+    parametros,
   };
 
   return {
     ...snapshotSinHash,
     hashSnapshot: calcularSnapshotHash(buildSnapshotHashInput(snapshotSinHash)),
   };
+}
+
+/** Aplana los parametros generales del periodo en filas congeladas auditables. */
+export function construirParametrosCongelados(
+  parametros: ParametroGeneral | null,
+): NominaCalculoParametroSnapshot[] {
+  if (!parametros) return [];
+  const vigencia = normalizeSnapshotDate(parametros.fechaActualizacion ?? null);
+  const filas: NominaCalculoParametroSnapshot[] = [];
+  for (const clave of Object.keys(parametros).sort()) {
+    if (clave === 'periodo' || clave === 'fechaActualizacion') continue;
+    const valor = (parametros as unknown as Record<string, unknown>)[clave];
+    if (valor === undefined) continue;
+    filas.push({
+      grupo: 'parametros_generales',
+      clave,
+      valor: valor === null ? null : String(valor),
+      valorNumerico: typeof valor === 'number' && Number.isFinite(valor) ? valor : null,
+      vigencia,
+      origen: 'parametros_generales',
+    });
+  }
+  return filas;
+}
+
+export function calcularHashParametros(parametros: readonly NominaCalculoParametroSnapshot[]): string {
+  return calcularSnapshotHash(
+    parametros.map((p) => ({
+      grupo: p.grupo,
+      clave: p.clave,
+      valor: p.valor,
+      valorNumerico: p.valorNumerico,
+      vigencia: p.vigencia,
+      origen: p.origen,
+    })),
+  );
+}
+
+export function calcularHashEntradas(entradas: readonly EntradaMensualMotor[]): string {
+  const normalizadas = entradas
+    .map((e) => ({
+      idEntrada: String(e.idEntrada),
+      idPersona: e.idPersona,
+      idConcepto: e.idConcepto,
+      tipoEntrada: e.tipoEntrada,
+      categoria: e.categoria ?? null,
+      tipoMovimiento: e.tipoMovimiento ?? null,
+      cantidad: e.cantidad ?? null,
+      unidad: e.unidad ?? null,
+      monto: e.monto ?? null,
+      moneda: e.moneda ?? null,
+      estado: e.estado,
+      afectaBase: e.afectaBase ?? null,
+      imponible: e.imponible ?? null,
+      tributable: e.tributable ?? null,
+    }))
+    .sort((a, b) => a.idEntrada.localeCompare(b.idEntrada));
+  return calcularSnapshotHash(normalizadas);
 }
 
 export function buildSnapshotHashInput(snapshot: NominaCalculoPeriodoSnapshot): unknown {

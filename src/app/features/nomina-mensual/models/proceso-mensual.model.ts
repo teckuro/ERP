@@ -239,6 +239,10 @@ export interface TrabajadorMotorCalculoSnapshot {
   idTramoCarga: number | null;
   tipoGratificacion: string | null;
   gratificacionProporcional: boolean | null;
+  /** Fecha de ingreso del contrato ('YYYY-MM-DD'); acota dias trabajados del periodo. */
+  fechaIngreso?: string | null;
+  /** Fecha de retiro/termino del contrato ('YYYY-MM-DD'); acota dias trabajados del periodo. */
+  fechaRetiro?: string | null;
 }
 
 export interface EmpresaLey16744CalculoSnapshot {
@@ -266,6 +270,10 @@ export interface EntradaMensualMotor {
   moneda: string | null;
   estado: EntradaMensualEstado;
   afectaBase: boolean | null;
+  /** Imponibilidad del haber/descuento segun snapshot del concepto; null = sin dato, el motor aplica su fallback. */
+  imponible?: boolean | null;
+  /** Tributabilidad del haber/descuento segun snapshot del concepto; null = sin dato, el motor aplica su fallback. */
+  tributable?: boolean | null;
   metadata: Record<string, unknown>;
 }
 
@@ -379,6 +387,18 @@ export interface ReabrirNominaOperativamenteParams {
   metadata?: Record<string, unknown>;
 }
 
+/** Parametro congelado del periodo (snapshot auditable de lo usado por el motor). */
+export interface NominaCalculoParametroSnapshot {
+  idCalculoParametro?: number;
+  idCalculoPeriodo?: number;
+  grupo: string;
+  clave: string;
+  valor: string | null;
+  valorNumerico: number | null;
+  vigencia: string | null;
+  origen: string;
+}
+
 export interface NominaCalculoConceptoSnapshot {
   idCalculoConcepto?: number;
   idCalculoTrabajador?: number;
@@ -473,6 +493,10 @@ export interface NominaCalculoPeriodoSnapshot {
   totalAdvertencias: number;
   versionMotor: string;
   hashSnapshot: string | null;
+  /** Huella de los parametros congelados usados por el motor. */
+  hashParametros?: string | null;
+  /** Huella de las entradas mensuales usadas por el motor. */
+  hashEntradas?: string | null;
   origen: NominaCalculoSnapshotOrigen;
   activo: boolean;
   reemplazadoPor: number | null;
@@ -483,6 +507,8 @@ export interface NominaCalculoPeriodoSnapshot {
   trabajadores: NominaCalculoTrabajadorSnapshot[];
   issues: NominaCalculoIssueSnapshot[];
   trazabilidad: NominaCalculoTrazabilidadSnapshot[];
+  /** Parametros congelados del periodo (auditoria de lo usado por el motor). */
+  parametros?: NominaCalculoParametroSnapshot[];
   /** Contexto rehidratable guardado en metadata del período (borrador). */
   borradorPersist?: BorradorPersistContext | null;
 }
@@ -563,5 +589,7 @@ export function trabajadorSnapshotDesdeFicha(ficha: EmpleadoFichaDetalle): Traba
       typeof contrato['gratificacionProporcional'] === 'boolean'
         ? contrato['gratificacionProporcional']
         : null,
+    fechaIngreso: asString(contrato['fechaIngreso']) ?? asString(ficha.fechaIngreso),
+    fechaRetiro: asString(contrato['fechaTermino']) ?? asString(contrato['fechaRetiro']),
   };
 }

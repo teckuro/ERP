@@ -2,6 +2,11 @@
 -- La funcion escribe el snapshot completo en una sola llamada transaccional.
 -- No cierra periodo, no emite liquidaciones, no genera Previred, LRE, banco ni PDF.
 
+-- Drop de la firma previa (7 args) para evitar overload ambiguo con la nueva (8 args, p_parametros).
+DROP FUNCTION IF EXISTS guardar_nomina_calculo_snapshot(
+    TEXT, INT, JSONB, JSONB, JSONB, JSONB, JSONB
+);
+
 CREATE OR REPLACE FUNCTION guardar_nomina_calculo_snapshot(
     p_periodo TEXT,
     p_id_empresa INT,
@@ -9,7 +14,8 @@ CREATE OR REPLACE FUNCTION guardar_nomina_calculo_snapshot(
     p_trabajadores JSONB,
     p_conceptos JSONB DEFAULT '[]'::JSONB,
     p_observaciones JSONB DEFAULT '[]'::JSONB,
-    p_trazabilidad JSONB DEFAULT '[]'::JSONB
+    p_trazabilidad JSONB DEFAULT '[]'::JSONB,
+    p_parametros JSONB DEFAULT '[]'::JSONB
 )
 RETURNS INT
 LANGUAGE plpgsql
@@ -46,6 +52,10 @@ BEGIN
 
     IF p_trazabilidad IS NULL OR jsonb_typeof(p_trazabilidad) <> 'array' THEN
         RAISE EXCEPTION 'Trazabilidad de snapshot invalida';
+    END IF;
+
+    IF p_parametros IS NULL OR jsonb_typeof(p_parametros) <> 'array' THEN
+        RAISE EXCEPTION 'Parametros congelados de snapshot invalidos';
     END IF;
 
     IF NULLIF(p_cabecera->>'version_motor', '') IS NULL THEN
@@ -85,6 +95,8 @@ BEGIN
         total_advertencias,
         version_motor,
         hash_snapshot,
+        hash_parametros,
+        hash_entradas,
         origen,
         activo,
         aprobacion_operativa_estado,
@@ -108,6 +120,8 @@ BEGIN
         COALESCE((p_cabecera->>'total_advertencias')::INT, 0),
         p_cabecera->>'version_motor',
         NULLIF(p_cabecera->>'hash_snapshot', ''),
+        NULLIF(p_cabecera->>'hash_parametros', ''),
+        NULLIF(p_cabecera->>'hash_entradas', ''),
         CASE WHEN v_id_calculo_anterior IS NULL THEN COALESCE(NULLIF(p_cabecera->>'origen', ''), 'preliminar') ELSE 'recalculo' END,
         FALSE,
         NULL,
@@ -297,6 +311,28 @@ BEGIN
         );
     END LOOP;
 
+    FOR v_item IN SELECT value FROM jsonb_array_elements(p_parametros)
+    LOOP
+        INSERT INTO nomina_calculo_parametro (
+            id_calculo_periodo,
+            grupo,
+            clave,
+            valor,
+            valor_numerico,
+            vigencia,
+            origen
+        )
+        VALUES (
+            v_id_calculo_periodo,
+            COALESCE(NULLIF(v_item->>'grupo', ''), 'parametros_generales'),
+            v_item->>'clave',
+            NULLIF(v_item->>'valor', ''),
+            NULLIF(v_item->>'valor_numerico', '')::NUMERIC,
+            NULLIF(v_item->>'vigencia', '')::DATE,
+            COALESCE(NULLIF(v_item->>'origen', ''), 'parametros_generales')
+        );
+    END LOOP;
+
     IF v_id_calculo_anterior IS NOT NULL THEN
         IF EXISTS (
             SELECT 1
@@ -331,6 +367,7 @@ REVOKE ALL ON FUNCTION guardar_nomina_calculo_snapshot(
     JSONB,
     JSONB,
     JSONB,
+    JSONB,
     JSONB
 ) FROM PUBLIC;
 
@@ -341,12 +378,14 @@ REVOKE ALL ON FUNCTION guardar_nomina_calculo_snapshot(
     JSONB,
     JSONB,
     JSONB,
+    JSONB,
     JSONB
 ) FROM anon;
 
 GRANT EXECUTE ON FUNCTION guardar_nomina_calculo_snapshot(
     TEXT,
     INT,
+    JSONB,
     JSONB,
     JSONB,
     JSONB,

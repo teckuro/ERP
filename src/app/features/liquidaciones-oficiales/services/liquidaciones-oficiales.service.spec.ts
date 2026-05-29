@@ -25,7 +25,7 @@ describe('LiquidacionesOficialesService', () => {
     activo: true,
     reemplazadoPor: null,
     aprobacionOperativa: { estado: 'aprobado_operativamente', fecha: '', usuarioId: null, usuarioLabel: null, advertencias: [], metadata: {} },
-    cierreOperativo: { estado: 'cerrado_operativamente', fecha: '', usuarioId: null, usuarioLabel: 'rrhh', observacion: null, metadata: {} },
+    cierreOperativo: null,
     trabajadores: [],
     issues: [],
     trazabilidad: [],

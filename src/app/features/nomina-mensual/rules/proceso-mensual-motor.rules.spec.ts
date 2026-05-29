@@ -2,7 +2,7 @@ import type {
   HaberDescuentoAsignacionPrevalidacionMensualFila,
 } from '../../haberes-descuentos/models/haber-descuento-asignacion.model';
 import type { ParametroGeneral, ParametrosGeneralesCatalogos } from '../../parametros-generales/models/parametro-general.model';
-import type { MotorCalculoInput, ProcesoMensualPrevalidacion } from '../models/proceso-mensual.model';
+import type { EntradaMensualMotor, MotorCalculoInput, ProcesoMensualPrevalidacion } from '../models/proceso-mensual.model';
 
 import { generarCalculoPreliminarPeriodo } from './proceso-mensual-motor.rules';
 
@@ -181,6 +181,29 @@ function input(over: Partial<MotorCalculoInput> = {}): MotorCalculoInput {
       vigenciaInicio: '2026-05-01',
       vigenciaFin: null,
     },
+    ...over,
+  };
+}
+
+function entradaMotor(over: Partial<EntradaMensualMotor> = {}): EntradaMensualMotor {
+  return {
+    idEntrada: 'novedad:1',
+    origen: 'novedad_mensual',
+    origenId: 1,
+    periodo: '2026-05',
+    idPersona: 1,
+    idContrato: 10,
+    idConcepto: 99,
+    tipoEntrada: 'haber',
+    categoria: 'haber_variable',
+    tipoMovimiento: 'haber',
+    cantidad: null,
+    unidad: null,
+    monto: 50000,
+    moneda: 'CLP',
+    estado: 'aprobada',
+    afectaBase: null,
+    metadata: {},
     ...over,
   };
 }
@@ -436,40 +459,15 @@ describe('proceso-mensual-motor.rules', () => {
     expect(r.generadoEn).toBe('now');
   });
 
-  it('MOTOR-04 contrato preparatorio: entradasMensuales no alteran resultados legales', () => {
+  it('MOTOR-05: una entrada de haber imponible aumenta la base imponible (B6 corregido)', () => {
     const base = generarCalculoPreliminarPeriodo(input(), 'now').liquidaciones[0];
     const conEntradas = generarCalculoPreliminarPeriodo(input({
-      entradasMensuales: [{
-        idEntrada: 'novedad:1',
-        origen: 'novedad_mensual',
-        origenId: 1,
-        periodo: '2026-05',
-        idPersona: 1,
-        idContrato: 10,
-        idConcepto: 99,
-        tipoEntrada: 'haber',
-        categoria: 'haber_variable',
-        tipoMovimiento: 'haber',
-        cantidad: null,
-        unidad: null,
-        monto: 50000,
-        moneda: 'CLP',
-        estado: 'aprobada',
-        afectaBase: null,
-        metadata: { contratoMotor: 'MOTOR-04_PREPARATORIO' },
-      }],
+      entradasMensuales: [entradaMotor({ idConcepto: 99, monto: 50000, metadata: { contratoMotor: 'MOTOR-04_PREPARATORIO' } })],
     }), 'now').liquidaciones[0];
 
-    expect(conEntradas.baseImponiblePrevisional).toBe(base.baseImponiblePrevisional);
-    expect(conEntradas.baseTributable).toBe(base.baseTributable);
-    expect(conEntradas.cotizacionAfp).toBe(base.cotizacionAfp);
-    expect(conEntradas.cotizacionSalud).toBe(base.cotizacionSalud);
-    expect(conEntradas.cotizacionAfc).toBe(base.cotizacionAfc);
-    expect(conEntradas.cotizacionSis).toBe(base.cotizacionSis);
-    expect(conEntradas.cotizacionSanna).toBe(base.cotizacionSanna);
-    expect(conEntradas.cotizacionLey16744).toBe(base.cotizacionLey16744);
-    expect(conEntradas.impuestoUnico).toBe(base.impuestoUnico);
-    expect(conEntradas.liquidoAPago).toBe(base.liquidoAPago);
+    expect(conEntradas.baseImponiblePrevisional).toBe(base.baseImponiblePrevisional + 50000);
+    expect(conEntradas.haberesImponibles.some((h) => h.origen === 'entrada_mensual')).toBe(true);
+    expect(conEntradas.cotizacionAfp).toBeGreaterThan(base.cotizacionAfp);
   });
 
   describe('gratificacion legal art. 50 (factor 4,75 y politica empresa)', () => {
@@ -522,6 +520,166 @@ describe('proceso-mensual-motor.rules', () => {
 
       expect(liq.gratificacionLegal).toBe(0);
       expect(liq.issues.some((i) => i.codigo === 'GRATIFICACION_SIN_CONFIGURACION' && i.severidad === 'ADVERTENCIA')).toBe(true);
+    });
+  });
+
+  describe('MOTOR-05 entradas mensuales y prorrateo (B6/B7)', () => {
+    it('mes completo sin entradas mensuales no prorratea ni altera base', () => {
+      const liq = generarCalculoPreliminarPeriodo(input(), 'now').liquidaciones[0];
+
+      expect(liq.baseImponiblePrevisional).toBe(800000);
+      expect(liq.issues.some((i) => i.codigo === 'SUELDO_PRORRATEADO_AUSENCIA')).toBe(false);
+      expect(liq.haberesImponibles.some((h) => h.origen === 'entrada_mensual')).toBe(false);
+    });
+
+    it('bono imponible suma a la base imponible', () => {
+      const base = generarCalculoPreliminarPeriodo(input(), 'now').liquidaciones[0];
+      const liq = generarCalculoPreliminarPeriodo(input({
+        entradasMensuales: [entradaMotor({ categoria: 'haber_variable', tipoMovimiento: 'haber', monto: 50000 })],
+      }), 'now').liquidaciones[0];
+
+      expect(liq.baseImponiblePrevisional).toBe(base.baseImponiblePrevisional + 50000);
+      expect(liq.haberesImponibles.some((h) => h.codigo === 'BONO' && h.monto === 50000)).toBe(true);
+    });
+
+    it('bono no imponible no afecta la base imponible pero suma a haberes', () => {
+      const base = generarCalculoPreliminarPeriodo(input(), 'now').liquidaciones[0];
+      const liq = generarCalculoPreliminarPeriodo(input({
+        entradasMensuales: [entradaMotor({ categoria: 'haber_variable', tipoMovimiento: 'haber', monto: 40000, imponible: false })],
+      }), 'now').liquidaciones[0];
+
+      expect(liq.baseImponiblePrevisional).toBe(base.baseImponiblePrevisional);
+      expect(liq.totalHaberes).toBe(base.totalHaberes + 40000);
+      expect(liq.haberesNoImponibles.some((h) => h.origen === 'entrada_mensual' && h.monto === 40000)).toBe(true);
+    });
+
+    it('anticipo se descuenta del liquido sin afectar bases ni cotizaciones', () => {
+      const base = generarCalculoPreliminarPeriodo(input(), 'now').liquidaciones[0];
+      const liq = generarCalculoPreliminarPeriodo(input({
+        entradasMensuales: [entradaMotor({ tipoEntrada: 'anticipo', categoria: 'anticipo_descuento_unico', tipoMovimiento: 'descuento', monto: 70000 })],
+      }), 'now').liquidaciones[0];
+
+      expect(liq.baseImponiblePrevisional).toBe(base.baseImponiblePrevisional);
+      expect(liq.cotizacionAfp).toBe(base.cotizacionAfp);
+      expect(liq.liquidoAPago).toBe(base.liquidoAPago - 70000);
+      expect(liq.descuentosVoluntarios.some((d) => d.codigo === 'ANTICIPO' && d.monto === 70000)).toBe(true);
+      expect(liq.issues.some((i) => i.codigo === 'ANTICIPO_DESCONTADO')).toBe(true);
+    });
+
+    it('ausencia de dias prorratea el sueldo base', () => {
+      const liq = generarCalculoPreliminarPeriodo(input({
+        entradasMensuales: [entradaMotor({ tipoEntrada: 'ausencia', categoria: 'ausencia_descuento_tiempo', tipoMovimiento: 'descuento', cantidad: 3, unidad: 'dias', monto: null })],
+      }), 'now').liquidaciones[0];
+
+      // 800000 * (30 - 3) / 30 = 720000
+      expect(liq.baseImponiblePrevisional).toBe(720000);
+      expect(liq.issues.some((i) => i.codigo === 'SUELDO_PRORRATEADO_AUSENCIA')).toBe(true);
+      expect(liq.trazabilidad.some((t) => t.codigo === 'SUELDO_BASE_PRORRATEADO')).toBe(true);
+    });
+
+    it('sueldo prorrateado por media ausencia (15 dias)', () => {
+      const liq = generarCalculoPreliminarPeriodo(input({
+        entradasMensuales: [entradaMotor({ tipoEntrada: 'ausencia', categoria: 'ausencia_descuento_tiempo', tipoMovimiento: 'descuento', cantidad: 15, unidad: 'dias', monto: null })],
+      }), 'now').liquidaciones[0];
+
+      // 800000 * 15 / 30 = 400000
+      expect(liq.baseImponiblePrevisional).toBe(400000);
+    });
+
+    it('gratificacion proporcional considera dias trabajados', () => {
+      const liq = generarCalculoPreliminarPeriodo(input({
+        parametrosPeriodo: parametros({ gratificacion: true, immGratificacion: 4.75, sueldoMinimo: 539000, sueldoMinimo18a65: null }),
+        trabajadores: [{ ...input().trabajadores[0], gratificacionProporcional: true }],
+        entradasMensuales: [entradaMotor({ tipoEntrada: 'ausencia', categoria: 'ausencia_descuento_tiempo', tipoMovimiento: 'descuento', cantidad: 6, unidad: 'dias', monto: null })],
+      }), 'now').liquidaciones[0];
+
+      // sueldo prorrateado 800000*24/30 = 640000 ; base*0,25 = 160000 ; tope prorrateado 213354,17*24/30 = 170683,34
+      expect(liq.gratificacionLegal).toBe(160000);
+    });
+
+    it('horas extra imponibles suman a la base imponible', () => {
+      const base = generarCalculoPreliminarPeriodo(input(), 'now').liquidaciones[0];
+      const liq = generarCalculoPreliminarPeriodo(input({
+        entradasMensuales: [entradaMotor({ categoria: 'tiempo_trabajado_adicional', tipoMovimiento: 'haber', cantidad: 5, unidad: 'horas', monto: 30000 })],
+      }), 'now').liquidaciones[0];
+
+      expect(liq.baseImponiblePrevisional).toBe(base.baseImponiblePrevisional + 30000);
+      expect(liq.haberesImponibles.some((h) => h.codigo === 'HORA_EXTRA' && h.monto === 30000)).toBe(true);
+    });
+
+    it('combinacion bono imponible + ausencia + anticipo', () => {
+      const base = generarCalculoPreliminarPeriodo(input(), 'now').liquidaciones[0];
+      const liq = generarCalculoPreliminarPeriodo(input({
+        entradasMensuales: [
+          entradaMotor({ idEntrada: 'aus', tipoEntrada: 'ausencia', categoria: 'ausencia_descuento_tiempo', tipoMovimiento: 'descuento', cantidad: 3, unidad: 'dias', monto: null }),
+          entradaMotor({ idEntrada: 'bono', categoria: 'haber_variable', tipoMovimiento: 'haber', monto: 50000 }),
+          entradaMotor({ idEntrada: 'ant', tipoEntrada: 'anticipo', categoria: 'anticipo_descuento_unico', tipoMovimiento: 'descuento', monto: 70000 }),
+        ],
+      }), 'now').liquidaciones[0];
+
+      // sueldo prorrateado 720000 + bono 50000 = 770000 imponible
+      expect(liq.baseImponiblePrevisional).toBe(770000);
+      expect(liq.haberesImponibles.some((h) => h.codigo === 'BONO' && h.monto === 50000)).toBe(true);
+      expect(liq.descuentosVoluntarios.some((d) => d.codigo === 'ANTICIPO' && d.monto === 70000)).toBe(true);
+      expect(liq.issues.some((i) => i.codigo === 'SUELDO_PRORRATEADO_AUSENCIA')).toBe(true);
+      expect(liq.liquidoAPago).toBeLessThan(base.liquidoAPago);
+    });
+  });
+
+  describe('MOTOR-06 dias trabajados por ingreso/retiro/licencia (paridad fn_calcular_dias_trabajados)', () => {
+    it('mes completo (mayo 31 dias) paga base 30 sin prorratear', () => {
+      const liq = generarCalculoPreliminarPeriodo(input(), 'now').liquidaciones[0];
+      expect(liq.baseImponiblePrevisional).toBe(800000);
+      expect(liq.issues.some((i) => i.codigo === 'SUELDO_PRORRATEADO_AUSENCIA')).toBe(false);
+    });
+
+    it('ingreso a mitad de mes prorratea el sueldo base', () => {
+      const liq = generarCalculoPreliminarPeriodo(input({
+        trabajadores: [{ ...input().trabajadores[0], fechaIngreso: '2026-05-16' }],
+      }), 'now').liquidaciones[0];
+
+      // 16..31 mayo = 16 dias calendario -> base 30 acotada a 16 ; 800000 * 16 / 30 = 426666,67
+      expect(liq.baseImponiblePrevisional).toBe(426666.67);
+      expect(liq.issues.some((i) => i.codigo === 'SUELDO_PRORRATEADO_AUSENCIA')).toBe(true);
+      expect(liq.trazabilidad.some((t) => t.codigo === 'SUELDO_BASE_PRORRATEADO')).toBe(true);
+    });
+
+    it('retiro a mitad de mes prorratea el sueldo base', () => {
+      const liq = generarCalculoPreliminarPeriodo(input({
+        trabajadores: [{ ...input().trabajadores[0], fechaRetiro: '2026-05-15' }],
+      }), 'now').liquidaciones[0];
+
+      // 1..15 mayo = 15 dias -> 800000 * 15 / 30 = 400000
+      expect(liq.baseImponiblePrevisional).toBe(400000);
+      expect(liq.issues.some((i) => i.codigo === 'SUELDO_PRORRATEADO_AUSENCIA')).toBe(true);
+    });
+
+    it('ingreso despues del fin de mes deja dias trabajados en 0', () => {
+      const liq = generarCalculoPreliminarPeriodo(input({
+        trabajadores: [{ ...input().trabajadores[0], fechaIngreso: '2026-06-10' }],
+      }), 'now').liquidaciones[0];
+
+      expect(liq.baseImponiblePrevisional).toBe(0);
+    });
+
+    it('licencia medica parcial descuenta dias sobre base 30', () => {
+      const liq = generarCalculoPreliminarPeriodo(input({
+        entradasMensuales: [entradaMotor({ tipoEntrada: 'licencia', categoria: 'licencia_medica', tipoMovimiento: 'informativo', cantidad: 5, unidad: 'dias', monto: null })],
+      }), 'now').liquidaciones[0];
+
+      // 30 base - 5 licencia = 25 ; 800000 * 25 / 30 = 666666,67
+      expect(liq.baseImponiblePrevisional).toBe(666666.67);
+      expect(liq.issues.some((i) => i.codigo === 'SUELDO_PRORRATEADO_AUSENCIA')).toBe(true);
+    });
+
+    it('combinacion ingreso + licencia medica acota y descuenta dias', () => {
+      const liq = generarCalculoPreliminarPeriodo(input({
+        trabajadores: [{ ...input().trabajadores[0], fechaIngreso: '2026-05-11' }],
+        entradasMensuales: [entradaMotor({ tipoEntrada: 'licencia', categoria: 'licencia_medica', tipoMovimiento: 'informativo', cantidad: 4, unidad: 'dias', monto: null })],
+      }), 'now').liquidaciones[0];
+
+      // 11..31 mayo = 21 dias calendario -> base 30 acotada a 21 ; menos 4 licencia = 17 ; 800000 * 17 / 30 = 453333,33
+      expect(liq.baseImponiblePrevisional).toBe(453333.33);
     });
   });
 });

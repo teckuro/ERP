@@ -16,6 +16,13 @@ import type {
   MotorCalculoTrazabilidad,
   TrabajadorMotorCalculoSnapshot,
 } from '../models/proceso-mensual.model';
+import {
+  DIAS_BASE_MES,
+  calcularDiasAusenciaEntradas,
+  calcularDiasLicenciaMedicaEntradas,
+  calcularDiasPagablesBase30,
+  clasificarEntradaMensualMotor,
+} from './proceso-mensual-motor-entradas.rules';
 
 export function generarCalculoPreliminarPeriodo(
   input: MotorCalculoInput,
@@ -72,10 +79,30 @@ export function calcularTrabajador(args: {
     pushIssue(issues, 'FALTA_PARAMETROS_GENERALES', 'BLOQUEO', 'Falta fila de parametros_generales para el periodo.', 'parametros_generales', input.periodo, 'periodo');
   }
 
+  const entradasTrabajador = input.entradasMensuales.filter((e) => e.idPersona === trabajador.idPersona);
+  const diasAusencia = calcularDiasAusenciaEntradas(entradasTrabajador);
+  const diasLicenciaMedica = calcularDiasLicenciaMedicaEntradas(entradasTrabajador);
+  // Mirror de fn_calcular_dias_trabajados (ingreso/retiro/licencia) sobre base 30 chilena.
+  const diasTrabajados = calcularDiasPagablesBase30({
+    anioMes: input.periodo,
+    fechaIngreso: trabajador.fechaIngreso ?? null,
+    fechaRetiro: trabajador.fechaRetiro ?? null,
+    diasAusencia,
+    diasLicencia: diasLicenciaMedica,
+  });
+  const prorrateaSueldo = diasTrabajados < DIAS_BASE_MES;
+
   const sueldoBase = trabajador.sueldoBase ?? 0;
+  const sueldoBaseProrrateado = prorrateaSueldo
+    ? redondear((sueldoBase * diasTrabajados) / DIAS_BASE_MES)
+    : sueldoBase;
   if (sueldoBase > 0) {
-    haberesImponibles.push({ codigo: 'SUELDO_BASE', descripcion: 'Sueldo base', monto: sueldoBase, origen: 'contrato', imponible: true, tributable: true });
-    pushTraza(trazabilidad, 'SUELDO_BASE', 'empleados', 'contrato', 'sueldoBase', sueldoBase, 'sueldoBase', sueldoBase);
+    haberesImponibles.push({ codigo: 'SUELDO_BASE', descripcion: 'Sueldo base', monto: sueldoBaseProrrateado, origen: 'contrato', imponible: true, tributable: true });
+    pushTraza(trazabilidad, 'SUELDO_BASE', 'empleados', 'contrato', 'sueldoBase', sueldoBase, 'sueldoBase', sueldoBaseProrrateado);
+    if (prorrateaSueldo) {
+      pushIssue(issues, 'SUELDO_PRORRATEADO_AUSENCIA', 'INFO', `Sueldo base prorrateado a ${diasTrabajados}/${DIAS_BASE_MES} dia(s) trabajado(s) del periodo.`, 'empleados', trabajador.idPersona, 'sueldoBase');
+      pushTraza(trazabilidad, 'SUELDO_BASE_PRORRATEADO', 'motor', 'resultado', 'sueldoBase/diasTrabajados', `${sueldoBase} * ${diasTrabajados} / ${DIAS_BASE_MES}`, 'sueldoBase * diasTrabajados / diasBaseMes', sueldoBaseProrrateado, input.parametrosPeriodo?.periodo ?? null, null);
+    }
   }
 
   const recurrentesTrabajador = input.recurrentes.filter(
@@ -115,6 +142,49 @@ export function calcularTrabajador(args: {
 
   validarImmJornada(input.periodo, input.parametrosPeriodo, trabajador, issues, trazabilidad);
 
+  for (const entrada of entradasTrabajador) {
+    const clasificada = clasificarEntradaMensualMotor(entrada);
+    const periodoEntrada = entrada.periodo ?? input.periodo;
+    if (clasificada.clase === 'AUSENCIA') {
+      pushTraza(trazabilidad, 'ENTRADA_AUSENCIA_DIAS', 'entrada_mensual', 'novedad', 'cantidad', entrada.cantidad ?? 0, 'dias de ausencia', entrada.cantidad ?? 0, periodoEntrada, null);
+      continue;
+    }
+    if (clasificada.clase === 'NO_SOPORTADO') {
+      pushIssue(issues, 'ENTRADA_NO_SOPORTADA', 'INFO', `Entrada mensual ${clasificada.descripcion} aun no soportada por el motor. No altera montos.`, 'entrada_mensual', entrada.idEntrada, 'tipoEntrada');
+      continue;
+    }
+    const monto = entrada.monto;
+    if (monto == null || !Number.isFinite(monto) || monto <= 0) {
+      pushIssue(issues, 'ENTRADA_SIN_MONTO', 'ADVERTENCIA', `Entrada mensual ${clasificada.descripcion} sin monto valido. No se calcula.`, 'entrada_mensual', entrada.idEntrada, 'monto');
+      continue;
+    }
+    const montoRed = redondear(monto);
+    switch (clasificada.clase) {
+      case 'HABER_IMPONIBLE':
+        haberesImponibles.push({ codigo: clasificada.codigo, descripcion: clasificada.descripcion, monto: montoRed, origen: 'entrada_mensual', imponible: true, tributable: clasificada.tributable });
+        pushTraza(trazabilidad, 'ENTRADA_HABER_IMPONIBLE', 'entrada_mensual', 'novedad', clasificada.codigo, montoRed, 'suma haber imponible', montoRed, periodoEntrada, null);
+        break;
+      case 'HABER_NO_IMPONIBLE':
+        haberesNoImponibles.push({ codigo: clasificada.codigo, descripcion: clasificada.descripcion, monto: montoRed, origen: 'entrada_mensual', imponible: false, tributable: clasificada.tributable });
+        pushTraza(trazabilidad, 'ENTRADA_HABER_NO_IMPONIBLE', 'entrada_mensual', 'novedad', clasificada.codigo, montoRed, 'suma haber no imponible', montoRed, periodoEntrada, null);
+        break;
+      case 'DESCUENTO_LEGAL':
+        descuentosLegales.push({ codigo: clasificada.codigo, descripcion: clasificada.descripcion, monto: montoRed, origen: 'entrada_mensual' });
+        pushTraza(trazabilidad, 'ENTRADA_DESCUENTO_LEGAL', 'entrada_mensual', 'novedad', clasificada.codigo, montoRed, 'descuento legal informado', montoRed, periodoEntrada, null);
+        break;
+      case 'ANTICIPO':
+        descuentosVoluntarios.push({ codigo: 'ANTICIPO', descripcion: clasificada.descripcion, monto: montoRed, origen: 'entrada_mensual' });
+        pushIssue(issues, 'ANTICIPO_DESCONTADO', 'INFO', `Anticipo descontado del liquido del periodo.`, 'entrada_mensual', entrada.idEntrada, 'monto');
+        pushTraza(trazabilidad, 'ENTRADA_ANTICIPO', 'entrada_mensual', 'novedad', 'ANTICIPO', montoRed, 'descuento de anticipo del liquido', montoRed, periodoEntrada, null);
+        break;
+      case 'DESCUENTO_VOLUNTARIO':
+      default:
+        descuentosVoluntarios.push({ codigo: clasificada.codigo, descripcion: clasificada.descripcion, monto: montoRed, origen: 'entrada_mensual' });
+        pushTraza(trazabilidad, 'ENTRADA_DESCUENTO_VOLUNTARIO', 'entrada_mensual', 'novedad', clasificada.codigo, montoRed, 'descuento voluntario informado', montoRed, periodoEntrada, null);
+        break;
+    }
+  }
+
   const gratificacionRecurrente = sumar(
     [...haberesImponibles, ...haberesNoImponibles]
       .filter((h) => esConceptoGratificacion(h.codigo, h.descripcion))
@@ -122,7 +192,7 @@ export function calcularTrabajador(args: {
   );
   const gratificacionAutomatica = gratificacionRecurrente > 0
     ? 0
-    : calcularGratificacionArticulo50(input.parametrosPeriodo, trabajador, haberesImponibles, issues, trazabilidad);
+    : calcularGratificacionArticulo50(input.parametrosPeriodo, trabajador, haberesImponibles, diasTrabajados, issues, trazabilidad);
   if (gratificacionAutomatica > 0) {
     haberesImponibles.push({
       codigo: 'GRATIFICACION_ART_50',
@@ -370,6 +440,7 @@ function calcularGratificacionArticulo50(
   parametros: ParametroGeneral | null,
   trabajador: TrabajadorMotorCalculoSnapshot,
   haberesImponibles: LineaLiquidacionCalculada[],
+  diasTrabajados: number,
   issues: MotorCalculoIssue[],
   trazabilidad: MotorCalculoTrazabilidad[],
 ): number {
@@ -399,13 +470,21 @@ function calcularGratificacionArticulo50(
   const porcentajeGratificacion = PORCENTAJE_GRATIFICACION_LEGAL_DEFECTO;
   const base = sumar(haberesImponibles.filter((h) => !esConceptoGratificacion(h.codigo, h.descripcion)).map((h) => h.monto));
   const topeMensual = redondear((sueldoMinimo * factorGratificacion) / 12);
-  const resultado = redondear(Math.min(base * porcentajeGratificacion, topeMensual));
   const periodoParametro = parametros?.periodo ?? null;
   const campoFactor = parametros?.immGratificacion != null ? 'immGratificacion' : 'factorGratificacionDefecto';
+  // Gratificacion proporcional: el tope mensual se prorratea por dias trabajados (la base ya refleja el sueldo prorrateado).
+  let topeAplicable = topeMensual;
+  if (trabajador.gratificacionProporcional === true && diasTrabajados < DIAS_BASE_MES) {
+    topeAplicable = redondear((topeMensual * diasTrabajados) / DIAS_BASE_MES);
+  }
+  const resultado = redondear(Math.min(base * porcentajeGratificacion, topeAplicable));
   pushTraza(trazabilidad, 'GRATIFICACION_ART_50_BASE', 'motor', 'resultado', 'haberesImponiblesRemuneracionales', base, 'sum(haberes imponibles sin gratificacion)', base, periodoParametro, null);
   pushTraza(trazabilidad, 'GRATIFICACION_ART_50_TOPE', 'parametros', 'parametros_generales', campoFactor, factorGratificacion, 'sueldoMinimo * factorGratificacion / 12', topeMensual, periodoParametro, null);
-  pushTraza(trazabilidad, 'GRATIFICACION_ART_50_RESULTADO', 'motor', 'resultado', 'base/tope', `${base}/${topeMensual}`, 'min(base * porcentaje, topeMensual)', resultado, periodoParametro, null);
-  if (resultado === topeMensual && base * porcentajeGratificacion > topeMensual) {
+  if (topeAplicable !== topeMensual) {
+    pushTraza(trazabilidad, 'GRATIFICACION_ART_50_TOPE_PRORRATEADO', 'motor', 'resultado', 'topeMensual/diasTrabajados', `${topeMensual} * ${diasTrabajados} / ${DIAS_BASE_MES}`, 'topeMensual * diasTrabajados / diasBaseMes', topeAplicable, periodoParametro, null);
+  }
+  pushTraza(trazabilidad, 'GRATIFICACION_ART_50_RESULTADO', 'motor', 'resultado', 'base/tope', `${base}/${topeAplicable}`, 'min(base * porcentaje, topeAplicable)', resultado, periodoParametro, null);
+  if (resultado === topeAplicable && base * porcentajeGratificacion > topeAplicable) {
     pushIssue(issues, 'GRATIFICACION_TOPE_APLICADO', 'INFO', 'Gratificacion art. 50 limitada por tope mensual (sueldo minimo * factor / 12).', 'parametros_generales', periodoParametro, 'sueldoMinimo');
   }
   return resultado;

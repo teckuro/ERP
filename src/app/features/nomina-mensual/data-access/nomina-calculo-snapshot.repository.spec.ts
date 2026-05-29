@@ -19,6 +19,8 @@ const baseRow = {
   total_advertencias: 0,
   version_motor: 'MOTOR-03B',
   hash_snapshot: 'fnv1a32:12345678',
+  hash_parametros: 'fnv1a32:aaaaaaaa',
+  hash_entradas: 'fnv1a32:bbbbbbbb',
   origen: 'preliminar',
   activo: true,
   reemplazado_por: null,
@@ -569,8 +571,7 @@ describe('NominaCalculoSnapshotRepository', () => {
     );
   });
 
-  it('persiste aprobacion por id_calculo_periodo activo y retorna la aprobacion guardada', async () => {
-    const updatePayloads: unknown[] = [];
+  it('aprueba via fn_aprobar_prenomina_periodo enviando los tres hashes esperados', async () => {
     const updatedRow = {
       ...baseRow,
       aprobacion_operativa_estado: 'aprobado_operativamente',
@@ -581,16 +582,13 @@ describe('NominaCalculoSnapshotRepository', () => {
       aprobacion_operativa_metadata: { idCalculoPeriodo: 1 },
     };
     const selectQuery = query(baseRow);
-    const updateQuery = {
-      ...query(updatedRow),
-      update: vi.fn((payload: unknown) => {
-        updatePayloads.push(payload);
-        return updateQuery;
-      }),
-    };
-    const from = vi.fn()
-      .mockReturnValueOnce(selectQuery)
-      .mockReturnValueOnce(updateQuery);
+    const from = vi.fn().mockReturnValueOnce(selectQuery);
+    const rpc = vi.fn().mockImplementation((fn: string) => {
+      if (fn === 'fn_validar_prenomina_periodo') {
+        return Promise.resolve({ data: { ok: true, bloqueos: [], advertencias: [] }, error: null });
+      }
+      return Promise.resolve({ data: updatedRow, error: null });
+    });
 
     TestBed.configureTestingModule({
       providers: [
@@ -599,12 +597,8 @@ describe('NominaCalculoSnapshotRepository', () => {
           provide: SUPABASE_CLIENT,
           useValue: {
             from,
-            auth: {
-              getUser: vi.fn().mockResolvedValue({
-                data: { user: { id: '00000000-0000-0000-0000-000000000001', email: 'rrhh@empresa.cl' } },
-                error: null,
-              }),
-            },
+            rpc,
+            auth: { getUser: vi.fn() },
           },
         },
       ],
@@ -617,14 +611,55 @@ describe('NominaCalculoSnapshotRepository', () => {
       advertencias: ['Advertencia visible'],
     });
 
-    expect(from).toHaveBeenCalledWith('nomina_calculo_periodo');
-    expect(updatePayloads[0]).toMatchObject({
-      aprobacion_operativa_estado: 'aprobado_operativamente',
-      aprobacion_operativa_usuario_id: '00000000-0000-0000-0000-000000000001',
-      aprobacion_operativa_usuario_label: 'rrhh@empresa.cl',
-      aprobacion_operativa_advertencias: ['Advertencia visible'],
-    });
+    expect(rpc).toHaveBeenCalledWith('fn_validar_prenomina_periodo', expect.objectContaining({
+      p_id_calculo_periodo: 1,
+      p_periodo: '2026-05',
+    }));
+    expect(rpc).toHaveBeenCalledWith('fn_aprobar_prenomina_periodo', expect.objectContaining({
+      p_id_calculo_periodo: 1,
+      p_periodo: '2026-05',
+      p_hash_snapshot: 'fnv1a32:12345678',
+      p_hash_parametros: 'fnv1a32:aaaaaaaa',
+      p_hash_entradas: 'fnv1a32:bbbbbbbb',
+    }));
     expect(snapshot.aprobacionOperativa?.estado).toBe('aprobado_operativamente');
+  });
+
+  it('no aprueba si la validacion previa reporta bloqueos', async () => {
+    const selectQuery = query(baseRow);
+    const from = vi.fn().mockReturnValueOnce(selectQuery);
+    const rpc = vi.fn().mockImplementation((fn: string) => {
+      if (fn === 'fn_validar_prenomina_periodo') {
+        return Promise.resolve({
+          data: { ok: false, bloqueos: [{ codigo: 'HASH_MISMATCH', mensaje: 'El hash no coincide.' }], advertencias: [] },
+          error: null,
+        });
+      }
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: {
+            from,
+            rpc,
+            auth: { getUser: vi.fn() },
+          },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    await expect(repo.aprobarResultadoPreliminarOperativamente({
+      idCalculoPeriodo: 1,
+      periodo: '2026-05',
+      advertencias: [],
+    })).rejects.toThrow('El hash no coincide.');
+
+    expect(rpc).not.toHaveBeenCalledWith('fn_aprobar_prenomina_periodo', expect.anything());
   });
 
   it('consulta snapshot completo activo por periodo sin recalcular', async () => {

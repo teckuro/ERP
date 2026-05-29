@@ -40,10 +40,36 @@ interface GuardarSnapshotRpcPayload {
   conceptos: Array<Record<string, Json>>;
   observaciones: Array<Record<string, Json>>;
   trazabilidad: Array<Record<string, Json>>;
+  parametros: Array<Record<string, Json>>;
 }
 
 function asArray<T>(value: readonly T[] | null | undefined): T[] {
   return Array.isArray(value) ? [...value] : [];
+}
+
+export interface PrenominaValidacionItem {
+  codigo: string;
+  mensaje: string;
+}
+
+function parsePrenominaValidacion(
+  value: Json | null,
+): { ok: boolean; bloqueos: PrenominaValidacionItem[]; advertencias: PrenominaValidacionItem[] } {
+  const record = value != null && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+  const bloqueos = parseValidacionItems(record['bloqueos']);
+  const advertencias = parseValidacionItems(record['advertencias']);
+  return { ok: record['ok'] === true && bloqueos.length === 0, bloqueos, advertencias };
+}
+
+function parseValidacionItems(value: unknown): PrenominaValidacionItem[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== 'object') return [];
+    const rec = item as Record<string, unknown>;
+    return [{ codigo: String(rec['codigo'] ?? ''), mensaje: String(rec['mensaje'] ?? '') }];
+  });
 }
 
 @Injectable({ providedIn: 'root' })
@@ -121,6 +147,7 @@ export class NominaCalculoSnapshotRepository {
       p_conceptos: payload.conceptos,
       p_observaciones: payload.observaciones,
       p_trazabilidad: payload.trazabilidad,
+      p_parametros: payload.parametros,
     });
     if (error || typeof data !== 'number') {
       logGuardarSnapshotRpcError(snapshot, payload, error, data);
@@ -268,30 +295,61 @@ export class NominaCalculoSnapshotRepository {
       return activo;
     }
 
-    const { data: userData } = await this.supabase.auth.getUser();
-    const user = userData.user;
-    const fecha = new Date().toISOString();
-    const usuarioLabel = user?.email?.trim() || 'Usuario no disponible en esta sesion';
+    // Orden del flujo: validar -> aprobar. La RPC de aprobacion revalida server-side,
+    // pero la validacion previa de solo lectura entrega el bloqueo concreto al usuario.
+    const validacion = await this.validarPrenomina({
+      idCalculoPeriodo: params.idCalculoPeriodo,
+      periodo: params.periodo,
+      hashSnapshot: activo.hashSnapshot,
+      hashParametros: activo.hashParametros,
+      hashEntradas: activo.hashEntradas,
+    });
+    if (!validacion.ok) {
+      throw new Error(
+        validacion.bloqueos[0]?.mensaje
+          ?? 'La nomina del periodo no cumple las validaciones necesarias para aprobarse.',
+      );
+    }
+
     const metadata = buildAprobacionOperativaMetadata(activo);
-    const { data, error } = await this.supabase
-      .from('nomina_calculo_periodo')
-      .update({
-        aprobacion_operativa_estado: 'aprobado_operativamente',
-        aprobacion_operativa_fecha: fecha,
-        aprobacion_operativa_usuario_id: user?.id ?? null,
-        aprobacion_operativa_usuario_label: usuarioLabel,
-        aprobacion_operativa_advertencias: params.advertencias ?? [],
-        aprobacion_operativa_metadata: metadata as Json,
-        updated_at: fecha,
-      })
-      .eq('id_calculo_periodo', params.idCalculoPeriodo)
-      .eq('periodo', params.periodo)
-      .eq('activo', true)
-      .is('reemplazado_por', null)
-      .select('*')
-      .single();
-    if (error) throw new Error(`No se pudo registrar la aprobacion operativa: ${error.message}`);
-    return mapPeriodoRow(data);
+    const { data, error } = await this.supabase.rpc('fn_aprobar_prenomina_periodo', {
+      p_id_calculo_periodo: params.idCalculoPeriodo,
+      p_periodo: params.periodo,
+      p_hash_snapshot: activo.hashSnapshot ?? '',
+      p_hash_parametros: activo.hashParametros ?? '',
+      p_hash_entradas: activo.hashEntradas ?? '',
+      p_advertencias: (params.advertencias ?? []) as Json,
+      p_metadata: metadata as Json,
+    });
+    if (error || !data) {
+      throw new Error(
+        error?.message
+          ? `No se pudo registrar la aprobacion operativa: ${error.message}`
+          : 'No se pudo registrar la aprobacion operativa. No se realizaron cambios parciales.',
+      );
+    }
+    return mapPeriodoRow(data as NominaCalculoPeriodoRow);
+  }
+
+  /** Validacion server-side de solo lectura previa a la aprobacion. */
+  async validarPrenomina(params: {
+    idCalculoPeriodo: number;
+    periodo: string;
+    hashSnapshot?: string | null;
+    hashParametros?: string | null;
+    hashEntradas?: string | null;
+  }): Promise<{ ok: boolean; bloqueos: PrenominaValidacionItem[]; advertencias: PrenominaValidacionItem[] }> {
+    const { data, error } = await this.supabase.rpc('fn_validar_prenomina_periodo', {
+      p_id_calculo_periodo: params.idCalculoPeriodo,
+      p_periodo: params.periodo,
+      p_hash_snapshot: params.hashSnapshot ?? undefined,
+      p_hash_parametros: params.hashParametros ?? undefined,
+      p_hash_entradas: params.hashEntradas ?? undefined,
+    });
+    if (error) {
+      throw new Error(`No fue posible validar la prenomina: ${error.message}`);
+    }
+    return parsePrenominaValidacion(data);
   }
 
   async reabrirNominaOperativa(
@@ -666,6 +724,15 @@ function buildGuardarSnapshotRpcPayload(snapshot: NominaCalculoPeriodoSnapshot):
     ),
   ];
 
+  const parametros = asArray(snapshot.parametros).map((parametro) => ({
+    grupo: parametro.grupo,
+    clave: parametro.clave,
+    valor: parametro.valor,
+    valor_numerico: parametro.valorNumerico,
+    vigencia: normalizeRpcDate(parametro.vigencia),
+    origen: parametro.origen,
+  })) satisfies Array<Record<string, Json>>;
+
   return {
     cabecera: {
       periodo: snapshot.periodo,
@@ -681,12 +748,15 @@ function buildGuardarSnapshotRpcPayload(snapshot: NominaCalculoPeriodoSnapshot):
       total_advertencias: snapshot.totalAdvertencias,
       version_motor: snapshot.versionMotor,
       hash_snapshot: snapshot.hashSnapshot,
+      hash_parametros: snapshot.hashParametros ?? null,
+      hash_entradas: snapshot.hashEntradas ?? null,
       origen: snapshot.origen,
     },
     trabajadores,
     conceptos,
     observaciones,
     trazabilidad,
+    parametros,
   };
 }
 
@@ -740,6 +810,8 @@ function mapPeriodoRow(row: NominaCalculoPeriodoRow): NominaCalculoPeriodoSnapsh
     totalAdvertencias: Number(row.total_advertencias ?? 0),
     versionMotor: row.version_motor,
     hashSnapshot: row.hash_snapshot ?? null,
+    hashParametros: (row as { hash_parametros?: string | null }).hash_parametros ?? null,
+    hashEntradas: (row as { hash_entradas?: string | null }).hash_entradas ?? null,
     origen: parseSnapshotOrigen(row.origen),
     activo: row.activo === true,
     reemplazadoPor: row.reemplazado_por ?? null,

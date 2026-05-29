@@ -1,5 +1,6 @@
 -- LIQ-OFICIAL-01: generacion atomica de liquidaciones oficiales internas.
--- Copia/materializa un snapshot cerrado. No recalcula y no genera PDF/Previred/LRE/banco/contabilidad.
+-- Orden del flujo: aprobar -> emitir (esta funcion) -> cerrar.
+-- Copia/materializa un snapshot aprobado. No recalcula y no genera PDF/Previred/LRE/banco/contabilidad.
 
 CREATE OR REPLACE FUNCTION public.generar_liquidaciones_oficiales(
     p_id_calculo_periodo BIGINT,
@@ -41,8 +42,9 @@ BEGIN
         RAISE EXCEPTION 'El snapshot debe estar aprobado operativamente';
     END IF;
 
-    IF v_snapshot.cierre_operativo_estado IS DISTINCT FROM 'cerrado_operativamente' THEN
-        RAISE EXCEPTION 'La nomina debe estar cerrada operativamente';
+    -- El cierre es el bloqueo final del flujo: se emite antes de cerrar.
+    IF v_snapshot.cierre_operativo_estado IS NOT NULL THEN
+        RAISE EXCEPTION 'La nomina ya esta cerrada; no se pueden emitir nuevas liquidaciones';
     END IF;
 
     IF EXISTS (
@@ -95,7 +97,7 @@ BEGIN
                 'idCalculoPeriodo', v_snapshot.id_calculo_periodo,
                 'versionMotor', v_snapshot.version_motor,
                 'hashSnapshot', v_snapshot.hash_snapshot,
-                'notaAlcance', 'Liquidacion oficial interna generada desde snapshot cerrado; no recalcula montos.'
+                'notaAlcance', 'Liquidacion oficial interna generada desde snapshot aprobado; no recalcula montos.'
             )
     )
     RETURNING * INTO v_liquidacion;

@@ -1,6 +1,8 @@
 -- NOM-CIERRE-01: cierre operativo controlado de nomina.
+-- Orden del flujo: aprobar -> emitir -> cerrar (esta funcion). El cierre es el bloqueo final.
+-- Exige que ya existan liquidaciones oficiales emitidas para el periodo antes de cerrar.
 -- Congela el snapshot activo aprobado operativamente.
--- No toca periodo_remuneracion, no emite liquidaciones, no genera PDF, Previred, LRE, banco ni contabilidad.
+-- No toca periodo_remuneracion, no genera PDF, Previred, LRE, banco ni contabilidad.
 
 CREATE OR REPLACE FUNCTION public.cerrar_nomina_operativa(
     p_id_calculo_periodo BIGINT,
@@ -48,6 +50,15 @@ BEGIN
 
     IF v_snapshot.cierre_operativo_estado IS NOT NULL THEN
         RAISE EXCEPTION 'La nomina ya esta cerrada operativamente';
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM public.nomina_liquidacion_periodo
+        WHERE id_calculo_periodo = p_id_calculo_periodo
+          AND activo = TRUE
+    ) THEN
+        RAISE EXCEPTION 'Debe emitir las liquidaciones del periodo antes de cerrar';
     END IF;
 
     UPDATE public.nomina_calculo_periodo

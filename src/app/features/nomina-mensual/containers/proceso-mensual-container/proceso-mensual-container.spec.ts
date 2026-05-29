@@ -1540,11 +1540,11 @@ describe('ProcesoMensualContainer', () => {
       expect(resumen.bloqueados).toBe(0);
       expect(resumen.conObservaciones).toBe(0);
 
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Aprobar nómina');
       expectTextoNo(c.estadoOperativo().accionPrincipal.label, 'Generar nómina');
 
       const shell = TestBed.inject(ShellPageContextService);
-      expect(shell.primaryAction()?.label).toMatch(/Confirmar nómina/i);
+      expect(shell.primaryAction()?.label).toMatch(/Aprobar nómina/i);
     });
 
     it('shell revisar trabajadores abre vista trabajadores y preselecciona fila', async () => {
@@ -1647,7 +1647,7 @@ describe('ProcesoMensualContainer', () => {
       expect(c.nominaMasivaTrabajadorSeleccionadoId()).toBeNull();
     });
 
-    it('invocar CTA shell tras generar abre confirmar nómina del período', async () => {
+    it('invocar CTA shell tras generar abre aprobación de revisión del período', async () => {
       ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
       generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
       const localFixture = await montarContainer();
@@ -1658,14 +1658,14 @@ describe('ProcesoMensualContainer', () => {
         timeout: 5000,
         interval: 20,
       });
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Aprobar nómina');
 
       await invocarCtaShell(localFixture);
       expect(c.overlay().kind).toBe('decision');
-      expectTexto(c.confirmacionProceso()?.titulo ?? '', 'Confirmar nómina');
+      expectTexto(c.confirmacionProceso()?.titulo ?? '', 'Confirmar revisión de nómina');
     });
 
-    it('tras registrar revision RRHH shell pide confirmar nomina del periodo', async () => {
+    it('tras registrar revision RRHH shell dirige a emitir liquidaciones del periodo', async () => {
       ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
       generarPreNominaPeriodo.mockResolvedValue(baseNominaLista());
       const localFixture = await montarContainer();
@@ -1673,14 +1673,14 @@ describe('ProcesoMensualContainer', () => {
 
       const c = localFixture.componentInstance;
       expect(c.estadoOperativo().estadoClave).toBe('aprobado_operativamente');
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Generar liquidaciones');
       expectTextoNo(c.estadoOperativo().accionPrincipal.label, 'Registrar revisión');
 
       const shell = TestBed.inject(ShellPageContextService);
-      expect(shell.primaryAction()?.label).toMatch(/Confirmar nómina/i);
+      expect(shell.primaryAction()?.label).toMatch(/Generar liquidaciones/i);
     });
 
-    it('tras generar sin bloqueos CTA apunta a confirmar nómina del período', async () => {
+    it('tras generar sin bloqueos CTA apunta a aprobar nómina del período', async () => {
       ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
       generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
       generarCalculoPeriodo.mockResolvedValueOnce({
@@ -1729,8 +1729,8 @@ describe('ProcesoMensualContainer', () => {
 
       const c = localFixture.componentInstance;
       expect(c.estadoOperativo().estadoClave).toBe('resultado_guardado');
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina');
-      expect(c.estadoOperativo().accionPrincipal.accionLocal).toBe('confirmarNomina');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Aprobar nómina');
+      expect(c.estadoOperativo().accionPrincipal.accionLocal).toBe('aprobarResultado');
     });
   });
 

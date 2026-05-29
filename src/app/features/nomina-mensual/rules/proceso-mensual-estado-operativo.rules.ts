@@ -137,6 +137,7 @@ const CODIGOS_PENDIENTE_CRITICO_PRE_GENERACION = new Set([
   'EMPLEADOS_SIN_ACTIVOS_APTOS',
   'ENTRADAS_BLOQUEANTES',
   'BLOQ-001',
+  'BLOQ-002',
   'BLOQ-004',
   'BLOQ-006',
 ]);
@@ -207,21 +208,38 @@ export function resolverEstadoOperativoProcesoMensual(
   }
 
   if (input.aprobadoOperativamente) {
+    // Orden del flujo: aprobar -> emitir -> cerrar. Tras aprobar, primero se emiten liquidaciones.
+    if (!input.liquidacionesDisponibles) {
+      return buildEstado(input, {
+        estadoClave: 'aprobado_operativamente',
+        titulo: 'Revisión registrada',
+        descripcion: 'La nómina quedó aprobada. Genera las liquidaciones del período antes de cerrarlo.',
+        severidad: 'info',
+        accionPrincipal: ruta(
+          'Generar liquidaciones',
+          'Emite las liquidaciones desde la nómina aprobada. El cierre del período es el paso final.',
+          '/remuneraciones/liquidaciones',
+        ),
+        etapaActiva: 'liquidaciones',
+        disclosureActivo: 'liquidaciones',
+        queFaltaAhora: [info('FALTA_EMISION', 'Generar liquidaciones', 'Con la nómina aprobada, emite las liquidaciones del período. El cierre queda como bloqueo final.')],
+      });
+    }
     return buildEstado(input, {
       estadoClave: 'aprobado_operativamente',
-      titulo: 'Revisión registrada',
-      descripcion: 'RRHH ya registró la revisión. Falta confirmar la nómina oficial del período.',
+      titulo: 'Liquidaciones emitidas',
+      descripcion: 'Las liquidaciones del período ya están emitidas. Confirma la nómina para cerrar el período.',
       severidad: 'success',
       accionPrincipal: local(
         'Confirmar nómina',
-        'Deja esta versión como base oficial del período para liquidaciones.',
-        'confirmarNomina',
+        'Cierra el período como base oficial. El cierre es el bloqueo final del flujo.',
+        'cerrarNomina',
         !input.puedeCerrar,
         input.razonNoPuedeCerrar,
       ),
       etapaActiva: 'aprobar_cerrar',
       disclosureActivo: 'cierre',
-      queFaltaAhora: [info('FALTA_CIERRE', 'Confirmar nómina', 'La confirmación oficial congela la versión revisada para liquidaciones.')],
+      queFaltaAhora: [info('FALTA_CIERRE', 'Confirmar nómina', 'La confirmación oficial es el bloqueo final del período.')],
     });
   }
 
@@ -229,18 +247,18 @@ export function resolverEstadoOperativoProcesoMensual(
     return buildEstado(input, {
       estadoClave: 'resultado_guardado',
       titulo: 'Revisión guardada',
-      descripcion: 'La versión revisada quedó guardada. Falta confirmar la nómina del período.',
+      descripcion: 'La versión revisada quedó guardada. Falta aprobar la nómina del período.',
       severidad: 'info',
       accionPrincipal: local(
-        'Confirmar nómina',
-        'Registra la revisión y confirma esta versión como base oficial para liquidaciones.',
-        'confirmarNomina',
-        !input.puedeCerrar && !input.puedeAprobar,
-        input.razonNoPuedeCerrar || input.razonNoPuedeAprobar,
+        'Aprobar nómina',
+        'Registra la revisión de RRHH. Luego se emiten las liquidaciones y se cierra el período.',
+        'aprobarResultado',
+        !input.puedeAprobar,
+        input.razonNoPuedeAprobar,
       ),
       etapaActiva: 'aprobar_cerrar',
       disclosureActivo: 'aprobacion',
-      queFaltaAhora: [info('FALTA_APROBACION_CIERRE', 'Confirmar nómina', 'Registra la revisión y deja la versión como base oficial del período.')],
+      queFaltaAhora: [info('FALTA_APROBACION_CIERRE', 'Aprobar nómina', 'Registra la revisión para dejar la versión lista para emitir liquidaciones.')],
     });
   }
 

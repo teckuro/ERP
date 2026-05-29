@@ -31,7 +31,7 @@ describe('proceso-mensual-flujo-completo.rules', () => {
     },
   );
 
-  it('etapas de confirmacion usan accion local confirmarNomina con salida visible unica', () => {
+  it('etapas previas a la aprobacion usan accion local confirmarNomina con salida visible unica', () => {
     const confirmacion = FLUJO_COMPLETO_ETAPAS
       .map((etapa) => evaluarEtapaFlujoCompleto(etapa.id).resuelta.accionPrincipal)
       .filter((accion) => accion.accionLocal === 'confirmarNomina')
@@ -40,8 +40,17 @@ describe('proceso-mensual-flujo-completo.rules', () => {
     expect(new Set(confirmacion)).toEqual(new Set([
       'Calcular nómina preliminar',
       'Guardar revisión',
-      'Confirmar nómina',
     ]));
+  });
+
+  it('split del flujo: aprobar -> emitir -> cerrar usa acciones locales separadas', () => {
+    const guardado = evaluarEtapaFlujoCompleto('resultado_guardado').resuelta.accionPrincipal;
+    expect(guardado.accionLocal).toBe('aprobarResultado');
+    expect(guardado.label).toBe('Aprobar nómina');
+
+    const cierre = evaluarEtapaFlujoCompleto('aprobado_confirmar').resuelta.accionPrincipal;
+    expect(cierre.accionLocal).toBe('cerrarNomina');
+    expect(cierre.label).toBe('Confirmar nómina');
   });
 
   it('borrador con revisión al día no pide Generar nómina en CTA principal', () => {

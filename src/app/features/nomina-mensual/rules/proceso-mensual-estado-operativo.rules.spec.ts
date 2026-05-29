@@ -231,24 +231,40 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('resultado_guardado');
-    expect(vm.accionPrincipal.label).toBe('Confirmar nómina');
-    expect(vm.accionPrincipal.accionLocal).toBe('confirmarNomina');
+    expect(vm.accionPrincipal.label).toBe('Aprobar nómina');
+    expect(vm.accionPrincipal.accionLocal).toBe('aprobarResultado');
     expect(vm.etapaActiva).toBe('aprobar_cerrar');
   });
 
-  it('aprobado operativamente pide confirmar nomina del periodo', () => {
+  it('aprobado sin liquidaciones dirige a generar liquidaciones (emitir antes de cerrar)', () => {
     const vm = resolverEstadoOperativoProcesoMensual(inputBase({
       tienePrevalidacion: true,
       baseGenerada: true,
       calculoGenerado: true,
       resultadoGuardado: true,
       aprobadoOperativamente: true,
+    }));
+
+    expect(vm.estadoClave).toBe('aprobado_operativamente');
+    expect(vm.accionPrincipal.label).toBe('Generar liquidaciones');
+    expect(vm.accionPrincipal.ruta).toBe('/remuneraciones/liquidaciones');
+    expect(vm.etapaActiva).toBe('liquidaciones');
+  });
+
+  it('aprobado con liquidaciones emitidas pide confirmar nomina (cierre final)', () => {
+    const vm = resolverEstadoOperativoProcesoMensual(inputBase({
+      tienePrevalidacion: true,
+      baseGenerada: true,
+      calculoGenerado: true,
+      resultadoGuardado: true,
+      aprobadoOperativamente: true,
+      liquidacionesDisponibles: true,
       puedeCerrar: true,
     }));
 
     expect(vm.estadoClave).toBe('aprobado_operativamente');
     expect(vm.accionPrincipal.label).toBe('Confirmar nómina');
-    expect(vm.accionPrincipal.accionLocal).toBe('confirmarNomina');
+    expect(vm.accionPrincipal.accionLocal).toBe('cerrarNomina');
   });
 
   it('trata trabajadores bloqueados y entradas bloqueantes como criticos antes de generar', () => {
@@ -298,7 +314,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('resultado_guardado');
-    expect(vm.accionPrincipal.accionLocal).toBe('confirmarNomina');
+    expect(vm.accionPrincipal.accionLocal).toBe('aprobarResultado');
   });
 
   it('nomina confirmada con liquidaciones muestra estado liquidaciones_disponibles', () => {
