@@ -72,15 +72,15 @@ export function obtenerEtiquetaAccionPrincipal(paso: PayrollStepId): string {
     case 'employees':
       return 'Validar empleados';
     case 'movements':
-      return 'Continuar a cálculo';
+      return 'Registrar novedades';
     case 'calculation':
-      return 'Procesar nómina';
+      return 'Procesar cálculo';
     case 'validation':
-      return 'Validar prenómina';
+      return 'Validar nómina';
     case 'approval':
       return 'Aprobar nómina';
     case 'payslips':
-      return 'Enviar por correo';
+      return 'Generar liquidaciones';
   }
 }
 

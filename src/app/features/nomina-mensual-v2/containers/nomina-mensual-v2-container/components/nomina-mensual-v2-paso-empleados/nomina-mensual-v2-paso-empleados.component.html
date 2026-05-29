@@ -16,8 +16,8 @@
 
   <div class="content-grid content-grid--aside nmv2-employees-layout">
     <main class="content-main">
-      <div class="nmv2-empleados-grid-wrap">
-        <div class="nmv2-empleados-toolbar-extra">
+      <div id="nmv2-empleados-grid-anchor" class="nmv2-empleados-grid-wrap">
+        <div class="nmv2-empleados-grid-toolbar">
           <button
             type="button"
             class="nmv2-empleados-filtros-avanzados-btn"
@@ -27,11 +27,14 @@
             <lucide-icon name="filter" aria-hidden="true"></lucide-icon>
             Filtros avanzados
           </button>
-          @if (filtroPendienteEmpleados()) {
+          @if (etiquetaFiltroChecklistActivo(); as etiquetaFiltro) {
             <button type="button" class="nmv2-empleados-filtro-pendiente-chip" (click)="limpiarFiltroPendienteEmpleados()">
-              Filtro checklist activo
+              {{ etiquetaFiltro }}
               <lucide-icon name="x" aria-hidden="true"></lucide-icon>
             </button>
+          }
+          @if (leyendaFiltradoGrilla(); as leyenda) {
+            <span class="nmv2-empleados-grid-caption">{{ leyenda }}</span>
           }
         </div>
         <app-data-grid
@@ -120,7 +123,7 @@
     <aside class="content-side">
       <section id="empleados-checklist-sidebar" class="surface-card side-card empleados-checklist-card">
         <h2>Checklist para continuar</h2>
-        <p class="side-caption">Revisa que todos los aspectos estén listos para avanzar al siguiente paso.</p>
+        <p class="side-caption">Haz clic en un ítem con pendientes para filtrar la grilla.</p>
         <div class="checklist-stack empleados-checklist-stack">
           @for (item of checklistEmpleados(); track item.id) {
             <button
@@ -128,15 +131,23 @@
               class="checklist-item empleados-checklist-item"
               [class]="claseChecklist(item.status)"
               [class.empleados-checklist-item--activo]="filtroPendienteEmpleados() === item.tipoPendiente"
-              [disabled]="item.status === 'success'"
+              [class.empleados-checklist-item--inactivo]="!item.esAccionable"
+              [disabled]="!item.esAccionable"
               (click)="seleccionarChecklistEmpleado(item)"
             >
               <span class="checklist-item__icon"><lucide-icon [name]="iconoChecklist(item.status)" aria-hidden="true"></lucide-icon></span>
               <div class="checklist-item__copy empleados-checklist-item__copy">
-                <strong class="empleados-checklist-item__title">{{ item.title }}</strong>
+                <div class="empleados-checklist-item__heading">
+                  <strong class="empleados-checklist-item__title">{{ item.title }}</strong>
+                  <span class="empleados-checklist-severidad" [class]="claseSeveridadChecklist(item.severidad)">
+                    {{ item.etiquetaSeveridad }}
+                  </span>
+                </div>
                 <small class="empleados-checklist-item__description">{{ item.description }}</small>
               </div>
-              <lucide-icon name="chevron-right" aria-hidden="true"></lucide-icon>
+              @if (item.esAccionable) {
+                <lucide-icon name="chevron-right" aria-hidden="true"></lucide-icon>
+              }
             </button>
           }
         </div>

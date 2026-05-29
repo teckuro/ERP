@@ -3,7 +3,7 @@ import type { PayrollEmployeeRow } from '../models/nomina-mensual-v2.models';
 
 export type EstadoNominaEmpleado = 'listo' | 'observado' | 'pendiente';
 export type EstadoDatosBancariosEmpleado = 'completo' | 'pendiente';
-export type EstadoContratoEmpleado = 'vigente' | 'pendiente';
+export type EstadoContratoEmpleado = 'vigente' | 'pendiente' | 'vencido';
 
 export interface FilaEmpleadoNomina {
   id: string;
@@ -18,6 +18,8 @@ export interface FilaEmpleadoNomina {
   etiquetaDatosBancarios: string;
   contrato: EstadoContratoEmpleado;
   etiquetaContrato: string;
+  afpSaludAsignada: boolean;
+  etiquetaAfpSalud: string;
 }
 
 export const COLUMNAS_GRILLA_EMPLEADOS_NOMINA: DataGridColumn<FilaEmpleadoNomina>[] = [
@@ -134,29 +136,34 @@ export function crearFiltrosGrillaEmpleadosNomina(
   filas: FilaEmpleadoNomina[],
   incluirAvanzados = false,
 ): DataGridFilter<FilaEmpleadoNomina>[] {
-  const centros = [...new Set(filas.map((fila) => fila.centroCosto))].sort();
-  const jornadas = [...new Set(filas.map((fila) => fila.jornada))].sort();
+  const centros = [...new Set(filas.map((fila) => fila.centroCosto).filter(Boolean))].sort();
+  const jornadas = [...new Set(filas.map((fila) => fila.jornada).filter(Boolean))].sort();
 
-  const filtrosPrincipales: DataGridFilter<FilaEmpleadoNomina>[] = [
-    {
-      id: 'busqueda',
-      label: 'Buscar',
-      field: 'nombreCompleto',
-      type: 'text',
-      operator: 'contains',
-      matchMode: 'tokens',
-      placeholder: 'Nombre, RUT o cargo',
-      predicate: (row, value) => {
-        const termino = String(value ?? '').trim().toLowerCase();
-        if (!termino) return true;
-        const tokens = termino.split(/\s+/).filter(Boolean);
-        const texto = `${row.nombreCompleto} ${row.rut} ${row.cargo}`.toLowerCase();
-        return tokens.every((token) => texto.includes(token));
-      },
+  const filtroBusqueda: DataGridFilter<FilaEmpleadoNomina> = {
+    id: 'busqueda',
+    label: 'Buscar',
+    field: 'nombreCompleto',
+    type: 'text',
+    operator: 'contains',
+    matchMode: 'tokens',
+    placeholder: 'Nombre, RUT o cargo',
+    predicate: (row, value) => {
+      const termino = String(value ?? '').trim().toLowerCase();
+      if (!termino) return true;
+      const tokens = termino.split(/\s+/).filter(Boolean);
+      const texto = `${row.nombreCompleto} ${row.rut} ${row.cargo}`.toLowerCase();
+      return tokens.every((token) => texto.includes(token));
     },
+  };
+
+  if (!incluirAvanzados) {
+    return [filtroBusqueda];
+  }
+
+  const filtrosAvanzados: DataGridFilter<FilaEmpleadoNomina>[] = [
     {
       id: 'estadoNomina',
-      label: 'Estado',
+      label: 'Estado nómina',
       field: 'estadoNomina',
       type: 'select',
       operator: 'equals',
@@ -185,73 +192,98 @@ export function crearFiltrosGrillaEmpleadosNomina(
       emptyLabel: 'Todas',
       options: jornadas.map((jornada) => ({ label: jornada, value: jornada })),
     },
+    {
+      id: 'contrato',
+      label: 'Contrato',
+      field: 'contrato',
+      type: 'select',
+      operator: 'equals',
+      emptyLabel: 'Todos',
+      options: [
+        { label: 'Vigente', value: 'vigente' },
+        { label: 'Pendiente', value: 'pendiente' },
+        { label: 'Vencido', value: 'vencido' },
+      ],
+    },
+    {
+      id: 'datosBancarios',
+      label: 'Datos bancarios',
+      field: 'datosBancarios',
+      type: 'select',
+      operator: 'equals',
+      emptyLabel: 'Todos',
+      options: [
+        { label: 'Completo', value: 'completo' },
+        { label: 'Pendiente', value: 'pendiente' },
+      ],
+    },
+    {
+      id: 'documentacion',
+      label: 'Documentación',
+      field: 'estadoNomina',
+      type: 'select',
+      operator: 'equals',
+      emptyLabel: 'Todos',
+      options: [
+        { label: 'Completa', value: 'completa' },
+        { label: 'Incompleta', value: 'incompleta' },
+        { label: 'Observada', value: 'observada' },
+      ],
+      predicate: (row, value) => {
+        const filtro = String(value ?? '');
+        if (!filtro) return true;
+        if (filtro === 'completa') return row.estadoNomina === 'listo';
+        if (filtro === 'incompleta') return row.estadoNomina === 'pendiente';
+        if (filtro === 'observada') return row.estadoNomina === 'observado';
+        return true;
+      },
+    },
+    {
+      id: 'afpSalud',
+      label: 'AFP/Salud',
+      field: 'afpSaludAsignada',
+      type: 'select',
+      operator: 'equals',
+      emptyLabel: 'Todos',
+      options: [
+        { label: 'Asignada', value: 'asignada' },
+        { label: 'Pendiente', value: 'pendiente' },
+      ],
+      predicate: (row, value) => {
+        const filtro = String(value ?? '');
+        if (!filtro) return true;
+        if (filtro === 'asignada') return row.afpSaludAsignada;
+        if (filtro === 'pendiente') return !row.afpSaludAsignada;
+        return true;
+      },
+    },
   ];
 
-  if (!incluirAvanzados) {
-    return filtrosPrincipales;
-  }
-
-  return [
-    ...filtrosPrincipales,
-    {
-      id: 'filtroNombre',
-      label: 'Nombre',
-      field: 'nombreCompleto',
-      type: 'text',
-      operator: 'contains',
-      matchMode: 'tokens',
-      placeholder: 'Filtrar por nombre',
-      predicate: (row, value) => {
-        const termino = String(value ?? '').trim().toLowerCase();
-        if (!termino) return true;
-        return row.nombreCompleto.toLowerCase().includes(termino);
-      },
-    },
-    {
-      id: 'filtroRut',
-      label: 'RUT',
-      field: 'rut',
-      type: 'text',
-      operator: 'contains',
-      normalize: 'rut',
-      placeholder: 'Filtrar por RUT',
-      predicate: (row, value) => {
-        const termino = String(value ?? '').trim().toLowerCase();
-        if (!termino) return true;
-        return row.rut.toLowerCase().includes(termino);
-      },
-    },
-    {
-      id: 'filtroCargo',
-      label: 'Cargo',
-      field: 'cargo',
-      type: 'text',
-      operator: 'contains',
-      placeholder: 'Filtrar por cargo',
-      predicate: (row, value) => {
-        const termino = String(value ?? '').trim().toLowerCase();
-        if (!termino) return true;
-        return row.cargo.toLowerCase().includes(termino);
-      },
-    },
-  ];
+  return [filtroBusqueda, ...filtrosAvanzados];
 }
 
 export function mapearFilasEmpleadosNomina(filas: PayrollEmployeeRow[]): FilaEmpleadoNomina[] {
-  return filas.map((fila) => ({
-    id: fila.rut,
-    nombreCompleto: fila.name,
-    rut: fila.rut,
-    cargo: fila.role,
-    centroCosto: fila.costCenter,
-    jornada: fila.workSchedule,
-    estadoNomina: mapearEstadoNomina(fila.payrollStatus.label),
-    etiquetaEstadoNomina: fila.payrollStatus.label,
-    datosBancarios: mapearEstadoDatosBancarios(fila.bankStatus.label),
-    etiquetaDatosBancarios: fila.bankStatus.label,
-    contrato: mapearEstadoContrato(fila.contractStatus.label),
-    etiquetaContrato: fila.contractStatus.label,
-  }));
+  return filas.map((fila) => {
+    const etiquetaAfpSalud = fila.healthStatus?.label ?? 'Asignada';
+    const afpSaludAsignada = mapearAfpSaludAsignada(etiquetaAfpSalud);
+
+    return {
+      id: fila.rut,
+      nombreCompleto: fila.name,
+      rut: fila.rut,
+      cargo: fila.role,
+      centroCosto: fila.costCenter,
+      jornada: fila.workSchedule,
+      estadoNomina: mapearEstadoNomina(fila.payrollStatus.label),
+      etiquetaEstadoNomina: fila.payrollStatus.label,
+      datosBancarios: mapearEstadoDatosBancarios(fila.bankStatus.label),
+      etiquetaDatosBancarios: fila.bankStatus.label,
+      contrato: mapearEstadoContrato(fila.contractStatus.label),
+      etiquetaContrato: fila.contractStatus.label,
+      afpSaludAsignada,
+      etiquetaAfpSalud,
+    };
+  });
 }
 
 export function claseBadgeEstadoNomina(estado: EstadoNominaEmpleado): string {
@@ -280,6 +312,8 @@ export function claseBadgeContrato(estado: EstadoContratoEmpleado): string {
       return 'nmv2-grid-badge nmv2-grid-badge--success';
     case 'pendiente':
       return 'nmv2-grid-badge nmv2-grid-badge--warning';
+    case 'vencido':
+      return 'nmv2-grid-badge nmv2-grid-badge--muted';
   }
 }
 
@@ -295,5 +329,13 @@ function mapearEstadoDatosBancarios(etiqueta: string): EstadoDatosBancariosEmple
 }
 
 function mapearEstadoContrato(etiqueta: string): EstadoContratoEmpleado {
-  return etiqueta.trim().toLowerCase() === 'vigente' ? 'vigente' : 'pendiente';
+  const normalizada = etiqueta.trim().toLowerCase();
+  if (normalizada === 'vigente') return 'vigente';
+  if (normalizada === 'vencido') return 'vencido';
+  return 'pendiente';
+}
+
+function mapearAfpSaludAsignada(etiqueta: string): boolean {
+  const normalizada = etiqueta.trim().toLowerCase();
+  return normalizada === 'asignada' || normalizada === 'completa' || normalizada === 'válida' || normalizada === 'valida';
 }

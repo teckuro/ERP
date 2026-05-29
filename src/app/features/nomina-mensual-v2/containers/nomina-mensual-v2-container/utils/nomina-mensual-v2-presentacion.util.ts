@@ -8,6 +8,17 @@ export function claseChecklist(status: ChecklistStatus): string {
   return `status-${status}`;
 }
 
+export function claseSeveridadChecklist(severidad: 'correcto' | 'advertencia' | 'bloqueante'): string {
+  switch (severidad) {
+    case 'correcto':
+      return 'empleados-checklist-severidad--correcto';
+    case 'advertencia':
+      return 'empleados-checklist-severidad--advertencia';
+    case 'bloqueante':
+      return 'empleados-checklist-severidad--bloqueante';
+  }
+}
+
 export function inicialesNombre(name: string): string {
   return name
     .split(' ')

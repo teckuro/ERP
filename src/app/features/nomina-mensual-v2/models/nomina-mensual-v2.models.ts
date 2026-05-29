@@ -53,6 +53,8 @@ export type PayrollEmployeeRow = {
   payrollStatus: StatusChip;
   bankStatus: StatusChip;
   contractStatus: StatusChip;
+  /** Previsión y salud asignadas para el período (mock / mapeo local). */
+  healthStatus?: StatusChip;
 };
 
 export type PayrollMovementRow = {

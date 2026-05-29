@@ -28,7 +28,11 @@ import {
   construirChecklistEmpleadosNomina,
   construirMetricasEmpleadosNomina,
   filtrarEmpleadosConPendientes,
+  obtenerEtiquetaFiltroChecklistEmpleados,
+  obtenerPrimerTipoPendienteBloqueante,
   obtenerResultadoValidacionEmpleados,
+  obtenerResumenEmpleadosNomina,
+  obtenerTextoSuperiorEmpleados,
   type ItemChecklistEmpleadoNomina,
   type TipoPendienteEmpleado,
 } from '../../../../presenters/nomina-empleados-validacion.presenter';
@@ -39,6 +43,7 @@ import {
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 import {
   claseChecklist,
+  claseSeveridadChecklist,
   claseTono,
   iconoChecklist,
   iconoMetrica,
@@ -80,10 +85,23 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
     }
     return filtrarEmpleadosConPendientes(this.filasEmpleadosNomina(), tipoPendiente);
   });
+  readonly etiquetaFiltroChecklistActivo = computed(() => {
+    const tipo = this.filtroPendienteEmpleados();
+    return tipo ? obtenerEtiquetaFiltroChecklistEmpleados(tipo) : null;
+  });
+  readonly leyendaFiltradoGrilla = computed(() => {
+    const total = this.filasEmpleadosNomina().length;
+    const visibles = this.filasEmpleadosVista().length;
+    if (!this.filtroPendienteEmpleados() || visibles === total) {
+      return null;
+    }
+    return `Mostrando ${visibles} de ${total} trabajadores.`;
+  });
 
   readonly claseTono = claseTono;
   readonly iconoMetrica = iconoMetrica;
   readonly claseChecklist = claseChecklist;
+  readonly claseSeveridadChecklist = claseSeveridadChecklist;
   readonly iconoChecklist = iconoChecklist;
   readonly claseBadgeEstadoNomina = claseBadgeEstadoNomina;
   readonly claseBadgeDatosBancarios = claseBadgeDatosBancarios;
@@ -91,16 +109,21 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
 
   constructor() {
     effect(() => {
+      const texto = obtenerTextoSuperiorEmpleados(this.filasEmpleadosNomina());
       const resultado = obtenerResultadoValidacionEmpleados(this.filasEmpleadosNomina());
+      if (!texto) {
+        this.orquestador.establecerAyudaAvance(null);
+        return;
+      }
       if (resultado.estado === 'bloqueado') {
-        this.orquestador.establecerAyudaAvance('Debes corregir los pendientes obligatorios antes de continuar.', 'bloqueo');
+        this.orquestador.establecerAyudaAvance(texto, 'bloqueo');
         return;
       }
       if (resultado.estado === 'advertencia') {
-        this.orquestador.establecerAyudaAvance('Hay observaciones en empleados. Revísalas antes de validar.', 'revision');
+        this.orquestador.establecerAyudaAvance(texto, 'revision');
         return;
       }
-      this.orquestador.establecerAyudaAvance(null);
+      this.orquestador.establecerAyudaAvance(texto, null);
     });
   }
 
@@ -125,7 +148,7 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
       await new Promise((resolve) => setTimeout(resolve, 320));
       this.filasEmpleadosNomina.set(mapearFilasEmpleadosNomina(employeeRows));
     } catch {
-      this.empleadosError.set('No fue posible cargar el listado de empleados.');
+      this.empleadosError.set('No fue posible cargar la base de empleados.');
     } finally {
       this.empleadosCargando.set(false);
     }
@@ -145,12 +168,14 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
   }
 
   seleccionarChecklistEmpleado(item: ItemChecklistEmpleadoNomina): void {
-    if (!item.tipoPendiente || item.status === 'success') {
-      this.filtroPendienteEmpleados.set(null);
+    if (!item.tipoPendiente || !item.esAccionable) {
       return;
     }
     const actual = this.filtroPendienteEmpleados();
     this.filtroPendienteEmpleados.set(actual === item.tipoPendiente ? null : item.tipoPendiente);
+    queueMicrotask(() => {
+      document.getElementById('nmv2-empleados-grid-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
   }
 
   limpiarFiltroPendienteEmpleados(): void {
@@ -164,11 +189,11 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
   ejecutarAccionPrincipal(): void {
     const resultado = obtenerResultadoValidacionEmpleados(this.filasEmpleadosNomina());
     if (resultado.estado === 'bloqueado') {
-      this.orquestador.modalAvanceEmpleados.set({ tipo: 'bloqueo' });
+      this.orquestador.modalAvanceEmpleados.set({ tipo: 'bloqueo', resultado });
       return;
     }
     if (resultado.estado === 'advertencia') {
-      this.orquestador.modalAvanceEmpleados.set({ tipo: 'advertencia' });
+      this.orquestador.modalAvanceEmpleados.set({ tipo: 'advertencia', resultado });
       return;
     }
     this.continuarDesdeEmpleados();
@@ -180,8 +205,19 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
 
   irAPendientesEmpleados(): void {
     this.orquestador.modalAvanceEmpleados.set(null);
+    const filas = this.filasEmpleadosNomina();
+    const resumen = obtenerResumenEmpleadosNomina(filas);
+    const tipoPendiente =
+      obtenerPrimerTipoPendienteBloqueante(filas) ??
+      (resumen.conDocumentacionIncompleta > 0 ? ('documentacion' as const) : null) ??
+      (resumen.conObservaciones > 0 ? ('observaciones' as const) : null);
+
+    if (tipoPendiente) {
+      this.filtroPendienteEmpleados.set(tipoPendiente);
+    }
+
     queueMicrotask(() => {
-      document.getElementById('empleados-checklist-sidebar')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      document.getElementById('nmv2-empleados-grid-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
   }
 

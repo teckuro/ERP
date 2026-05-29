@@ -48,16 +48,162 @@ export const employeeMetrics: SummaryMetric[] = [
   { id: 'docs', label: 'Documentación incompleta', value: 4, helperText: '3,2% del total', tone: 'red' },
 ];
 
-export const employeeRows: PayrollEmployeeRow[] = [
-  { name: 'Felipe Muñoz Araya', rut: '12.345.678-9', role: 'Analista Contable', costCenter: 'Administración', workSchedule: 'Completa', payrollStatus: { label: 'Listo', tone: 'green' }, bankStatus: { label: 'Completo', tone: 'green' }, contractStatus: { label: 'Vigente', tone: 'green' } },
-  { name: 'María José Contreras', rut: '16.789.234-1', role: 'Asistente RR.HH.', costCenter: 'Recursos Humanos', workSchedule: 'Completa', payrollStatus: { label: 'Listo', tone: 'green' }, bankStatus: { label: 'Completo', tone: 'green' }, contractStatus: { label: 'Vigente', tone: 'green' } },
-  { name: 'Luis González Rojas', rut: '10.987.654-3', role: 'Operario de Bodega', costCenter: 'Operaciones', workSchedule: 'Parcial', payrollStatus: { label: 'Listo', tone: 'green' }, bankStatus: { label: 'Completo', tone: 'green' }, contractStatus: { label: 'Vigente', tone: 'green' } },
-  { name: 'Carla Álvarez Soto', rut: '18.456.789-0', role: 'Vendedora', costCenter: 'Comercial', workSchedule: 'Completa', payrollStatus: { label: 'Listo', tone: 'green' }, bankStatus: { label: 'Pendiente', tone: 'amber' }, contractStatus: { label: 'Vigente', tone: 'green' } },
-  { name: 'Benjamín Astudillo', rut: '19.876.543-2', role: 'Técnico Mantención', costCenter: 'Mantenimiento', workSchedule: 'Completa', payrollStatus: { label: 'Observado', tone: 'amber' }, bankStatus: { label: 'Completo', tone: 'green' }, contractStatus: { label: 'Vigente', tone: 'green' } },
-  { name: 'Valentina Pérez Díaz', rut: '20.123.456-7', role: 'Diseñadora UX', costCenter: 'Marketing', workSchedule: 'Completa', payrollStatus: { label: 'Listo', tone: 'green' }, bankStatus: { label: 'Completo', tone: 'green' }, contractStatus: { label: 'Vigente', tone: 'green' } },
-  { name: 'Jorge Riquelme Silva', rut: '14.112.223-8', role: 'Analista de Datos', costCenter: 'Administración', workSchedule: 'Completa', payrollStatus: { label: 'Listo', tone: 'green' }, bankStatus: { label: 'Pendiente', tone: 'amber' }, contractStatus: { label: 'Vigente', tone: 'green' } },
-  { name: 'Natalia Sepúlveda', rut: '17.223.334-5', role: 'Asesora Comercial', costCenter: 'Comercial', workSchedule: 'Parcial', payrollStatus: { label: 'Listo', tone: 'green' }, bankStatus: { label: 'Completo', tone: 'green' }, contractStatus: { label: 'Vigente', tone: 'green' } },
+const FILAS_EMPLEADOS_DETALLE: PayrollEmployeeRow[] = [
+  {
+    name: 'Felipe Muñoz Araya',
+    rut: '12.345.678-9',
+    role: 'Analista Contable',
+    costCenter: 'Administración',
+    workSchedule: 'Completa',
+    payrollStatus: { label: 'Listo', tone: 'green' },
+    bankStatus: { label: 'Completo', tone: 'green' },
+    contractStatus: { label: 'Vigente', tone: 'green' },
+    healthStatus: { label: 'Asignada', tone: 'green' },
+  },
+  {
+    name: 'María José Contreras',
+    rut: '16.789.234-1',
+    role: 'Asistente RR.HH.',
+    costCenter: 'Recursos Humanos',
+    workSchedule: 'Completa',
+    payrollStatus: { label: 'Listo', tone: 'green' },
+    bankStatus: { label: 'Completo', tone: 'green' },
+    contractStatus: { label: 'Vigente', tone: 'green' },
+    healthStatus: { label: 'Asignada', tone: 'green' },
+  },
+  {
+    name: 'Luis González Rojas',
+    rut: '10.987.654-3',
+    role: 'Operario de Bodega',
+    costCenter: 'Operaciones',
+    workSchedule: 'Parcial',
+    payrollStatus: { label: 'Listo', tone: 'green' },
+    bankStatus: { label: 'Completo', tone: 'green' },
+    contractStatus: { label: 'Vigente', tone: 'green' },
+    healthStatus: { label: 'Asignada', tone: 'green' },
+  },
+  {
+    name: 'Carla Álvarez Soto',
+    rut: '18.456.789-0',
+    role: 'Vendedora',
+    costCenter: 'Comercial',
+    workSchedule: 'Completa',
+    payrollStatus: { label: 'Listo', tone: 'green' },
+    bankStatus: { label: 'Pendiente', tone: 'amber' },
+    contractStatus: { label: 'Vigente', tone: 'green' },
+    healthStatus: { label: 'Asignada', tone: 'green' },
+  },
+  {
+    name: 'Benjamín Astudillo',
+    rut: '19.876.543-2',
+    role: 'Técnico Mantención',
+    costCenter: 'Mantenimiento',
+    workSchedule: 'Completa',
+    payrollStatus: { label: 'Observado', tone: 'amber' },
+    bankStatus: { label: 'Completo', tone: 'green' },
+    contractStatus: { label: 'Vigente', tone: 'green' },
+    healthStatus: { label: 'Asignada', tone: 'green' },
+  },
+  {
+    name: 'Valentina Pérez Díaz',
+    rut: '20.123.456-7',
+    role: 'Diseñadora UX',
+    costCenter: 'Marketing',
+    workSchedule: 'Completa',
+    payrollStatus: { label: 'Listo', tone: 'green' },
+    bankStatus: { label: 'Completo', tone: 'green' },
+    contractStatus: { label: 'Vigente', tone: 'green' },
+    healthStatus: { label: 'Asignada', tone: 'green' },
+  },
+  {
+    name: 'Jorge Riquelme Silva',
+    rut: '14.112.223-8',
+    role: 'Analista de Datos',
+    costCenter: 'Administración',
+    workSchedule: 'Completa',
+    payrollStatus: { label: 'Listo', tone: 'green' },
+    bankStatus: { label: 'Pendiente', tone: 'amber' },
+    contractStatus: { label: 'Vigente', tone: 'green' },
+    healthStatus: { label: 'Asignada', tone: 'green' },
+  },
+  {
+    name: 'Natalia Sepúlveda',
+    rut: '17.223.334-5',
+    role: 'Asesora Comercial',
+    costCenter: 'Comercial',
+    workSchedule: 'Parcial',
+    payrollStatus: { label: 'Listo', tone: 'green' },
+    bankStatus: { label: 'Completo', tone: 'green' },
+    contractStatus: { label: 'Vigente', tone: 'green' },
+    healthStatus: { label: 'Asignada', tone: 'green' },
+  },
 ];
+
+type PerfilEmpleadoGeneradoMock = {
+  bancoPendiente?: boolean;
+  contrato?: 'Pendiente' | 'Vencido';
+  nomina?: 'Pendiente' | 'Observado';
+  afpIncompleta?: boolean;
+};
+
+function crearFilaEmpleadoGenerada(indice: number, perfil: PerfilEmpleadoGeneradoMock): PayrollEmployeeRow {
+  const numero = String(indice + 100).padStart(3, '0');
+  const rutBase = 15_000_000 + indice;
+  const dv = indice % 10;
+  const centros = ['Administración', 'Operaciones', 'Comercial', 'Recursos Humanos', 'Mantenimiento'];
+  const jornadas = ['Completa', 'Parcial'];
+  const cargos = ['Analista', 'Asistente', 'Operario', 'Supervisor', 'Técnico'];
+
+  return {
+    name: `Trabajador ${numero} Demo`,
+    rut: `${rutBase.toLocaleString('es-CL')}-${dv}`,
+    role: cargos[indice % cargos.length] ?? 'Analista',
+    costCenter: centros[indice % centros.length] ?? 'Administración',
+    workSchedule: jornadas[indice % jornadas.length] ?? 'Completa',
+    payrollStatus: {
+      label: perfil.nomina ?? 'Listo',
+      tone: perfil.nomina === 'Observado' ? 'amber' : perfil.nomina === 'Pendiente' ? 'amber' : 'green',
+    },
+    bankStatus: {
+      label: perfil.bancoPendiente ? 'Pendiente' : 'Completo',
+      tone: perfil.bancoPendiente ? 'amber' : 'green',
+    },
+    contractStatus: {
+      label: perfil.contrato ?? 'Vigente',
+      tone: perfil.contrato ? 'amber' : 'green',
+    },
+    healthStatus: {
+      label: perfil.afpIncompleta ? 'Pendiente' : 'Asignada',
+      tone: perfil.afpIncompleta ? 'amber' : 'green',
+    },
+  };
+}
+
+/** 124 trabajadores activos con conteos alineados a KPIs/checklist del período demo. */
+export function generarFilasEmpleadosPeriodoMock(): PayrollEmployeeRow[] {
+  const totalPeriodo = 124;
+  const perfilesGenerados: PerfilEmpleadoGeneradoMock[] = [];
+
+  // En las 8 filas de detalle ya hay 2 bancos pendientes y 1 observado.
+  for (let indice = 0; indice < 6; indice += 1) {
+    perfilesGenerados.push({ contrato: indice % 2 === 0 ? 'Pendiente' : 'Vencido' });
+  }
+  for (let indice = 0; indice < 4; indice += 1) {
+    perfilesGenerados.push({ bancoPendiente: true });
+  }
+  for (let indice = 0; indice < 4; indice += 1) {
+    perfilesGenerados.push({ nomina: 'Pendiente' });
+  }
+
+  while (FILAS_EMPLEADOS_DETALLE.length + perfilesGenerados.length < totalPeriodo) {
+    perfilesGenerados.push({});
+  }
+
+  const filasGeneradas = perfilesGenerados.map((perfil, indice) => crearFilaEmpleadoGenerada(indice, perfil));
+  return [...FILAS_EMPLEADOS_DETALLE, ...filasGeneradas];
+}
+
+export const employeeRows: PayrollEmployeeRow[] = generarFilasEmpleadosPeriodoMock();
 
 export const employeeChecklist: ChecklistItem[] = [
   { id: 'contracts', title: 'Contratos activos', description: '118 de 124 con contrato vigente', status: 'success' },

@@ -2416,7 +2416,29 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Archivos:** `nomina-mensual-v2-container` (HTML/CSS/TS), `nomina-empleados-grid.presenter.ts`, `nomina-empleados-validacion.presenter.ts`.
 - **No tocado:** estilos globales, SQL, servicios de negocio, otros pasos del flujo.
 
-## 2026-05-29 — Nómina mensual V2: modularización del contenedor
+## 2026-05-29 — Nómina mensual V2: Empleados V4 (checklist, filtros, orquestador)
+
+- **Checklist operativo:** severidad visible (`Correcto` / `Advertencia` / `Bloqueante`); clic filtra grilla; ítems de documentación/observaciones cuando aplican.
+- **Chip de filtro:** etiqueta específica (ej. «Forma de pago pendiente») en toolbar de grilla.
+- **Filtros:** búsqueda global por defecto; avanzados (estado, centro, jornada, contrato, bancarios, documentación, AFP/Salud) detrás de toggle en toolbar adjunto a la grilla.
+- **Copy superior:** mensajes accionables según estado (bloqueo, advertencia, listo).
+- **Ver pendientes:** MsgBox aplica primer filtro bloqueante/advertencia y enfoca la grilla.
+- **Botón superior:** etiquetas dinámicas alineadas al paso (`Registrar novedades`, `Procesar cálculo`, etc.).
+- **Archivos:** presenters empleados, paso-empleados, navegación, CSS checklist/toolbar.
+- **No tocado:** estilos globales, SQL, servicios de negocio, data-grid compartido.
+
+## 2026-05-29 — Nómina mensual V2: contrato datos paso Empleados (V3)
+
+- **Resumen unificado:** `ResumenEmpleadosNomina` y `obtenerResumenEmpleadosNomina()` alimentan KPIs, checklist y validación con la misma fuente.
+- **KPI documentación:** cuenta solo `pendiente`; observado queda como advertencia de validación, no en el KPI.
+- **AFP/Salud:** campo propio en fila/mock; checklist y bloqueo separados de documentación.
+- **Contrato:** mapeo `vencido` listo en badges de grilla.
+- **MsgBox:** bloqueo/advertencia muestran lista de causas (`items`) derivada del resultado de validación.
+- **Grilla vs período:** leyenda «Mostrando X de Y trabajadores» cuando hay filtro de checklist activo; KPIs/checklist siguen en total del período (124 demo).
+- **Mock:** `generarFilasEmpleadosPeriodoMock()` con conteos alineados (118 contratos, 6 bancos, 4 docs).
+- **Archivos:** presenters empleados, mock, paso-empleados, overlays, orquestador port, CSS caption.
+- **No tocado:** estilos globales, SQL, servicios de negocio, otros pasos.
+
 
 - **Orquestador:** `nomina-mensual-v2-container` queda delgado (~150 líneas TS); navegación, shell y paso activo.
 - **Componentes por paso:** `nomina-mensual-v2-paso-parametros`, `nomina-mensual-v2-paso-empleados`, `nomina-mensual-v2-pasos-demostracion` (novedades→liquidaciones mock).

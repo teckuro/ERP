@@ -4098,6 +4098,23 @@ textarea {
   font-size: 11px;
 }
 
+.nmv2-empleados-grid-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  border-bottom: 0;
+  border-radius: 15px 15px 0 0;
+  background: #fff;
+}
+
+.nmv2-page[data-step='employees'] .nmv2-empleados-grid-wrap .nmv2-empleados-grid-shell ::ng-deep .nmv2-empleados-grid-card {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
 .nmv2-empleados-toolbar-extra {
   display: flex;
   flex-wrap: wrap;
@@ -4151,6 +4168,12 @@ textarea {
   height: 12px;
 }
 
+.nmv2-empleados-grid-caption {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--nmv2-text-muted, #64748b);
+}
+
 .nmv2-page[data-step='employees'] .empleados-checklist-card {
   padding: 18px;
 }
@@ -4193,6 +4216,47 @@ textarea {
   font-weight: 600;
 }
 
+.nmv2-page[data-step='employees'] .empleados-checklist-item__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.nmv2-page[data-step='employees'] .empleados-checklist-severidad {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.nmv2-page[data-step='employees'] .empleados-checklist-severidad--correcto {
+  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.nmv2-page[data-step='employees'] .empleados-checklist-severidad--advertencia {
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
+.nmv2-page[data-step='employees'] .empleados-checklist-severidad--bloqueante {
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.nmv2-page[data-step='employees'] .empleados-checklist-item--inactivo {
+  opacity: 0.92;
+}
+
 .nmv2-page[data-step='employees'] .empleados-checklist-item__description {
   font-size: 12px;
   line-height: 1.35;
@@ -4205,11 +4269,11 @@ textarea {
 }
 
 .nmv2-page[data-step='employees'] .nmv2-empleados-grid-shell ::ng-deep .data-grid-filter-grid {
-  grid-template-columns: minmax(12rem, 1.6fr) repeat(3, minmax(8.5rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
 }
 
 .nmv2-page[data-step='employees'] .nmv2-empleados-grid-shell ::ng-deep .data-grid-filter-field[data-grid-filter-id='busqueda'] {
-  grid-column: span 1;
+  grid-column: 1 / -1;
 }
 
 .nmv2-page[data-step='employees'] .nmv2-empleados-grid-shell ::ng-deep .nmv2-grid-cell-secondary {
