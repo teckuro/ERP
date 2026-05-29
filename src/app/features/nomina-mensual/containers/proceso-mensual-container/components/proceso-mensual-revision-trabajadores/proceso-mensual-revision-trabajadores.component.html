@@ -405,11 +405,25 @@
         <div class="payroll-revision-trabajadores__empty-mark" aria-hidden="true">
           <lucide-icon [img]="buscarTrabajadorIcon" />
         </div>
-        <p class="payroll-revision-trabajadores__empty-kicker">Sin datos del período</p>
-        <h3>No hay trabajadores considerados para esta nómina mensual</h3>
+        <p class="payroll-revision-trabajadores__empty-kicker">Nómina aún no generada</p>
+        <h3>No existe base de trabajadores para {{ f.periodoActivo.etiqueta() || 'el período seleccionado' }}</h3>
         <p class="payroll-revision-trabajadores__empty-lead">
-          Use la acción principal de la barra superior para generar o actualizar la base del período.
+          Usa la acción principal de la barra superior para verificar el período y generar la nómina mensual.
         </p>
+        <dl class="payroll-revision-trabajadores__empty-metrics">
+          <div>
+            <dt>Período</dt>
+            <dd>{{ f.periodoActivo.etiqueta() || 'Sin período' }}</dd>
+          </div>
+          <div>
+            <dt>Estado</dt>
+            <dd>Sin generar</dd>
+          </div>
+          <div>
+            <dt>Siguiente paso</dt>
+            <dd>Verificar y generar</dd>
+          </div>
+        </dl>
       </div>
     </section>
   }

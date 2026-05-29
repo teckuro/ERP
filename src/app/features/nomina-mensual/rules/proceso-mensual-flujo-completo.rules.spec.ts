@@ -200,7 +200,7 @@ describe('flujo app-level aprobar -> emitir -> cerrar (estado operativo)', () =>
         liquidacionesDisponibles: true,
       }),
     );
-    expect(vm.estadoClave).toBe('liquidaciones_disponibles');
+    expect(vm.estadoClave).toBe('nomina_cerrada');
     expect(vm.accionPrincipal.accionLocal).not.toBe('aprobarResultado');
     expect(vm.accionPrincipal.accionLocal).not.toBe('cerrarNomina');
   });

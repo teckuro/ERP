@@ -2,7 +2,16 @@ import { importProvidersFrom } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
-import { ArrowLeft, FileCheck2, RefreshCw } from 'lucide-angular/src/icons';
+import {
+  ArrowLeft,
+  CheckCircle,
+  DollarSign,
+  FileCheck2,
+  FileText,
+  RefreshCw,
+  Repeat,
+  Send,
+} from 'lucide-angular/src/icons';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
@@ -48,7 +57,18 @@ describe('LiquidacionesOficialesContainer', () => {
       imports: [LiquidacionesOficialesContainer],
       providers: [
         provideRouter([]),
-        importProvidersFrom(LucideAngularModule.pick({ ArrowLeft, FileCheck2, RefreshCw })),
+        importProvidersFrom(
+          LucideAngularModule.pick({
+            ArrowLeft,
+            CheckCircle,
+            DollarSign,
+            FileCheck2,
+            FileText,
+            RefreshCw,
+            Repeat,
+            Send,
+          }),
+        ),
         PeriodoActivoService,
         { provide: LiquidacionesOficialesService, useValue: service },
       ],
@@ -71,13 +91,13 @@ describe('LiquidacionesOficialesContainer', () => {
     const input = fixture.nativeElement.querySelector('input[type="month"]') as HTMLInputElement | null;
     const text = fixture.nativeElement.textContent as string;
     expect(input).toBeNull();
-    expect(text).toContain('Período activo:');
+    expect(text).toContain('Liquidaciones oficiales');
     expect(text).toContain('Información interna y alcance');
   });
 
   it('no duplica el CTA principal de generar en la botonera superior', () => {
-    const actionBar = fixture.nativeElement.querySelector('.liq-actions') as HTMLElement | null;
-    expect(actionBar?.textContent ?? '').not.toContain('Generar liquidaciones oficiales');
+    const actionBar = fixture.nativeElement.querySelector('.liq-secondary-actions') as HTMLElement | null;
+    expect(actionBar?.textContent ?? '').not.toContain('Generar liquidaciones');
   });
 
   it('abre confirmacion visible antes de generar', () => {
@@ -127,6 +147,30 @@ describe('LiquidacionesOficialesContainer', () => {
     expect(service.generarLiquidaciones).toHaveBeenCalledWith('2026-04');
   });
 
+  it('actualiza el flujo visual de trabajador sin persistir', () => {
+    fixture.componentInstance.estadosAccionTrabajador.set({ 99: 'pendiente_autorizar' });
+
+    fixture.componentInstance.ejecutarAccionTrabajador({ idLiquidacionTrabajador: 99, tipo: 'autorizar' });
+    fixture.componentInstance.ejecutarAccionTrabajador({ idLiquidacionTrabajador: 99, tipo: 'registrar_pago' });
+    fixture.componentInstance.ejecutarAccionTrabajador({ idLiquidacionTrabajador: 99, tipo: 'enviar_documento' });
+
+    expect(fixture.componentInstance.estadosAccionTrabajador()[99]).toBe('documento_enviado');
+    expect(fixture.componentInstance.feedbackAccionTrabajador()).toContain('Documento marcado como enviado');
+    expect(service.generarLiquidaciones).not.toHaveBeenCalled();
+  });
+
+  it('solicitar rectificacion solo cambia estado visual y muestra instruccion', () => {
+    fixture.componentInstance.estadosAccionTrabajador.set({ 99: 'autorizada' });
+
+    fixture.componentInstance.ejecutarAccionTrabajador({
+      idLiquidacionTrabajador: 99,
+      tipo: 'solicitar_rectificacion',
+    });
+
+    expect(fixture.componentInstance.estadosAccionTrabajador()[99]).toBe('rectificacion_solicitada');
+    expect(fixture.componentInstance.feedbackAccionTrabajador()).toContain('corrige desde Nómina mensual');
+  });
+
   it('al cambiar periodo global consulta nuevo periodo y limpia detalle', async () => {
     fixture.componentInstance.trabajadorSeleccionado.set({
       idLiquidacionTrabajador: 99,
@@ -173,5 +217,6 @@ describe('LiquidacionesOficialesContainer', () => {
     expect(service.consultarEstadoPeriodo).toHaveBeenCalledWith('2026-06');
     expect(fixture.componentInstance.trabajadorSeleccionado()).toBeNull();
     expect(fixture.componentInstance.conceptosDetalle()).toEqual([]);
+    expect(fixture.componentInstance.estadosAccionTrabajador()).toEqual({});
   });
 });

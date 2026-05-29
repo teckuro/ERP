@@ -319,7 +319,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     expect(vm.accionPrincipal.accionLocal).toBe('aprobarResultado');
   });
 
-  it('nomina confirmada con liquidaciones muestra estado liquidaciones_disponibles', () => {
+  it('nomina cerrada con liquidaciones muestra cierre final diferenciado', () => {
     const vm = resolverEstadoOperativoProcesoMensual(inputBase({
       liquidacionesDisponibles: true,
       cerradoOperativamente: true,
@@ -327,7 +327,8 @@ describe('proceso-mensual-estado-operativo.rules', () => {
       aprobadoOperativamente: true,
     }));
 
-    expect(vm.estadoClave).toBe('liquidaciones_disponibles');
+    expect(vm.estadoClave).toBe('nomina_cerrada');
+    expect(vm.titulo).toBe('Proceso mensual cerrado');
     expect(vm.accionPrincipal.label).toBe('Ver liquidaciones');
   });
 });

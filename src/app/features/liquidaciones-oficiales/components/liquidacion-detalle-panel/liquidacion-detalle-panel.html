@@ -1,0 +1,57 @@
+<section class="liq-detail-panel">
+  @if (trabajador) {
+    <header class="liq-detail-panel__header">
+      <div>
+        <h3>{{ trabajador.nombreTrabajador }}</h3>
+        <p>{{ trabajador.rut || 'RUT no disponible' }}</p>
+      </div>
+      <strong>{{ money(trabajador.liquidoPagar) }}</strong>
+    </header>
+
+    <dl class="liq-detail-panel__metrics">
+      <div><dt>Base imponible</dt><dd>{{ money(trabajador.baseImponible) }}</dd></div>
+      <div><dt>Base tributable</dt><dd>{{ money(trabajador.baseTributable) }}</dd></div>
+      <div><dt>Haberes</dt><dd>{{ money(trabajador.totalHaberes) }}</dd></div>
+      <div><dt>Descuentos</dt><dd>{{ money(trabajador.totalDescuentos) }}</dd></div>
+    </dl>
+
+    <div class="liq-detail-panel__concepts">
+      <section aria-label="Haberes del trabajador">
+        <h4>Haberes</h4>
+        <ul>
+          @for (concepto of haberes(); track concepto.idLiquidacionConcepto) {
+            <li>
+              <span>{{ concepto.nombre }}</span>
+              <strong>{{ money(concepto.monto) }}</strong>
+            </li>
+          } @empty {
+            <li class="liq-detail-panel__empty">Sin haberes materializados.</li>
+          }
+        </ul>
+      </section>
+
+      <section aria-label="Descuentos del trabajador">
+        <h4>Descuentos y referencias</h4>
+        <ul>
+          @for (concepto of descuentos(); track concepto.idLiquidacionConcepto) {
+            <li>
+              <span>{{ concepto.nombre }}</span>
+              <strong>{{ money(concepto.monto) }}</strong>
+            </li>
+          } @empty {
+            <li class="liq-detail-panel__empty">Sin descuentos materializados.</li>
+          }
+        </ul>
+      </section>
+    </div>
+
+    <p class="liq-detail-panel__note">
+      Origen: nómina mensual aprobada. No hay recálculo ni edición manual de montos.
+    </p>
+  } @else {
+    <div class="liq-detail-panel__placeholder">
+      <strong>Selecciona un trabajador</strong>
+      <span>El detalle se carga desde la liquidación oficial interna del período.</span>
+    </div>
+  }
+</section>

@@ -19,13 +19,19 @@ import { ButtonComponent } from '../../../../shared/components/ui/primitives/but
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import type { MessageBoxSection } from '../../../../shared/components/ui/feedback/message-box/message-box.types';
 import { LiquidacionDetallePanelComponent } from '../../components/liquidacion-detalle-panel/liquidacion-detalle-panel';
-import { LiquidacionResumenCardComponent } from '../../components/liquidacion-resumen-card/liquidacion-resumen-card';
 import { LiquidacionesTrabajadoresGridComponent } from '../../components/liquidaciones-trabajadores-grid/liquidaciones-trabajadores-grid';
 import type {
   LiquidacionConcepto,
   LiquidacionesEstadoPeriodo,
   LiquidacionTrabajador,
 } from '../../models/liquidacion-oficial.model';
+import {
+  inicializarEstadosLiquidacionUi,
+  resumirEstadosLiquidacionUi,
+  siguienteEstadoLiquidacionUi,
+  type LiquidacionAccionUiEstado,
+  type LiquidacionAccionUiEvent,
+} from '../../rules/liquidaciones-acciones-ui.rules';
 import { LiquidacionesOficialesService } from '../../services/liquidaciones-oficiales.service';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import type { ShellStatusChipTone } from '../../../../layout/shell-page-context.service';
@@ -41,7 +47,6 @@ import type { ShellStatusChipTone } from '../../../../layout/shell-page-context.
     BadgeComponent,
     ButtonComponent,
     MessageBoxComponent,
-    LiquidacionResumenCardComponent,
     LiquidacionesTrabajadoresGridComponent,
     LiquidacionDetallePanelComponent,
   ],
@@ -65,6 +70,8 @@ export class LiquidacionesOficialesContainer {
   readonly conceptosDetalle = signal<LiquidacionConcepto[]>([]);
   readonly cargandoDetalle = signal(false);
   readonly confirmacionGeneracionVisible = signal(false);
+  readonly estadosAccionTrabajador = signal<Record<number, LiquidacionAccionUiEstado>>({});
+  readonly feedbackAccionTrabajador = signal<string | null>(null);
 
   readonly estadoUi = computed(() => {
     if (this.generando()) return 'generando';
@@ -92,6 +99,21 @@ export class LiquidacionesOficialesContainer {
   readonly puedeGenerar = computed(() =>
     this.estadoPeriodo()?.estado === 'lista_para_generar' && !this.cargando() && !this.generando(),
   );
+
+  readonly resumenFinanciero = computed(() => {
+    const estado = this.estadoPeriodo();
+    const fuente = estado?.liquidacion ?? estado?.snapshot ?? null;
+    if (!fuente) return null;
+    return {
+      origen: estado?.liquidacion ? 'Liquidaciones emitidas' : 'Nómina aprobada',
+      trabajadores: fuente.totalTrabajadores,
+      haberes: fuente.totalHaberes,
+      descuentos: fuente.totalDescuentos,
+      liquido: fuente.totalLiquido,
+    };
+  });
+
+  readonly resumenFlujoTrabajadores = computed(() => resumirEstadosLiquidacionUi(this.estadosAccionTrabajador()));
 
   readonly siguienteAccion = computed(() => {
     const estado = this.estadoPeriodo();
@@ -171,12 +193,14 @@ export class LiquidacionesOficialesContainer {
     this.error.set(null);
     this.trabajadorSeleccionado.set(null);
     this.conceptosDetalle.set([]);
+    this.estadosAccionTrabajador.set({});
+    this.feedbackAccionTrabajador.set(null);
     return this.service.consultarEstadoPeriodo(periodo)
       .then((estado) => {
         if (this.periodoSeleccionado().trim() !== periodo) {
           return;
         }
-        this.estadoPeriodo.set(estado);
+        this.aplicarEstadoPeriodo(estado);
       })
       .catch((error: unknown) => {
         if (this.periodoSeleccionado().trim() !== periodo) {
@@ -194,6 +218,8 @@ export class LiquidacionesOficialesContainer {
     this.trabajadorSeleccionado.set(null);
     this.conceptosDetalle.set([]);
     this.confirmacionGeneracionVisible.set(false);
+    this.estadosAccionTrabajador.set({});
+    this.feedbackAccionTrabajador.set(null);
   }
 
   generarLiquidaciones(): void {
@@ -228,7 +254,7 @@ export class LiquidacionesOficialesContainer {
     this.error.set(null);
     void this.service.generarLiquidaciones(estado.periodo)
       .then((nuevoEstado) => {
-        this.estadoPeriodo.set(nuevoEstado);
+        this.aplicarEstadoPeriodo(nuevoEstado);
         const primero = nuevoEstado.trabajadores[0] ?? null;
         if (primero) void this.verDetalleTrabajador(primero);
       })
@@ -236,6 +262,38 @@ export class LiquidacionesOficialesContainer {
         this.error.set(error instanceof Error ? error.message : 'No se pudieron generar las liquidaciones oficiales.');
       })
       .finally(() => this.generando.set(false));
+  }
+
+  ejecutarAccionTrabajador(event: LiquidacionAccionUiEvent): void {
+    const estadoActual = this.estadosAccionTrabajador()[event.idLiquidacionTrabajador] ?? 'pendiente_autorizar';
+    const estadoSiguiente = siguienteEstadoLiquidacionUi(estadoActual, event.tipo);
+    if (estadoSiguiente === estadoActual) return;
+    this.estadosAccionTrabajador.update((actual) => ({
+      ...actual,
+      [event.idLiquidacionTrabajador]: estadoSiguiente,
+    }));
+    this.feedbackAccionTrabajador.set(this.mensajeAccionTrabajador(estadoSiguiente));
+  }
+
+  private aplicarEstadoPeriodo(estado: LiquidacionesEstadoPeriodo): void {
+    this.estadoPeriodo.set(estado);
+    this.estadosAccionTrabajador.set(inicializarEstadosLiquidacionUi(estado.trabajadores));
+    this.feedbackAccionTrabajador.set(null);
+  }
+
+  private mensajeAccionTrabajador(estado: LiquidacionAccionUiEstado): string {
+    switch (estado) {
+      case 'autorizada':
+        return 'Liquidación autorizada en esta revisión visual.';
+      case 'pago_registrado':
+        return 'Pago registrado en el flujo visual de la grilla.';
+      case 'documento_enviado':
+        return 'Documento marcado como enviado en esta revisión visual.';
+      case 'rectificacion_solicitada':
+        return 'Rectificación solicitada: corrige desde Nómina mensual o una futura reliquidación antes de emitir una nueva versión.';
+      default:
+        return 'Flujo visual actualizado.';
+    }
   }
 
   verDetalleTrabajador(trabajador: LiquidacionTrabajador): Promise<void> {

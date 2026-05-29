@@ -183,14 +183,14 @@ export function resolverEstadoOperativoProcesoMensual(
 
   if (input.cerradoOperativamente && input.liquidacionesDisponibles) {
     return buildEstado(input, {
-      estadoClave: 'liquidaciones_disponibles',
-      titulo: 'Liquidaciones disponibles',
-      descripcion: 'Las liquidaciones oficiales internas ya están disponibles para consulta.',
+      estadoClave: 'nomina_cerrada',
+      titulo: 'Proceso mensual cerrado',
+      descripcion: 'El período quedó cerrado operativamente y las liquidaciones emitidas quedan disponibles para consulta.',
       severidad: 'success',
       accionPrincipal: ruta('Ver liquidaciones', 'Consulta las liquidaciones emitidas del período cerrado.', '/remuneraciones/liquidaciones'),
       etapaActiva: 'liquidaciones',
       disclosureActivo: 'liquidaciones',
-      queFaltaAhora: [info('LIQ_LISTAS', 'Liquidaciones disponibles', 'Consulta el detalle interno. PDF, firma, envío, Previred, LRE, banco y contabilidad siguen fuera de alcance.')],
+      queFaltaAhora: [info('PROCESO_CERRADO', 'Proceso mensual cerrado', 'Consulta las liquidaciones emitidas. PDF, firma, envío, Previred, LRE, banco y contabilidad siguen fuera de alcance.')],
     });
   }
 

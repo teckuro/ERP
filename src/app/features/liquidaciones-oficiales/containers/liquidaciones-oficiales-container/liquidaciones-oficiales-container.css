@@ -7,9 +7,14 @@
   min-height: 100%;
   --erp-bg: #f6f7f4;
   --erp-surface: #ffffff;
+  --erp-surface-soft: #fafaf7;
   --erp-border: #dadfd7;
+  --erp-border-strong: #c5cdc3;
   --erp-ink: #243b53;
   --erp-muted: #647084;
+  --erp-primary: #1e3a8a;
+  --erp-primary-hover: #1d4ed8;
+  --erp-primary-ring: rgba(30, 58, 138, 0.18);
   --erp-review-soft: #fff8e7;
   --erp-review-border: #dfc383;
   --erp-danger-soft: #fff1ee;
@@ -23,116 +28,283 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 0;
+  gap: 10px;
   min-height: 100%;
-  overflow: hidden;
+  overflow: auto;
   background: var(--erp-surface);
   color: var(--erp-ink);
+  padding: 10px 14px 14px;
 }
 
-.liq-lead {
-  margin: 0;
-  padding: 8px 14px;
-  border-bottom: 1px solid var(--erp-border);
-  font-size: 0.8125rem;
-  line-height: 1.4;
-  color: var(--erp-muted);
-}
-
-.liq-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-  border-bottom: 1px solid var(--erp-border);
-  background: var(--erp-surface);
-  padding: 10px 14px;
-}
-
-.liq-status-strip {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
+.liq-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
-  margin: 10px 14px 0;
-  border: 1px solid var(--erp-review-border);
-  border-radius: 0;
-  background: var(--erp-review-soft);
-  padding: 10px 12px;
+  align-items: start;
+  border: 1px solid var(--erp-border);
+  background: var(--erp-surface-soft);
+  padding: 12px 14px;
 }
 
-.liq-status-strip strong,
-.liq-status-strip span {
-  display: block;
-  font-size: 0.875rem;
-  color: var(--erp-ink);
-}
-
-.liq-status-strip span {
-  margin-top: 2px;
-  color: var(--erp-muted);
-  font-size: 0.8125rem;
-}
-
-.liq-status-strip a,
-.liq-link {
-  color: var(--erp-ink);
-  font-size: 0.875rem;
-  font-weight: 650;
-  text-decoration: underline;
-}
-
-.liq-status-strip--ok {
+.liq-hero--ok {
   border-color: var(--erp-ok-border);
   background: var(--erp-ok-soft);
 }
 
-.liq-operativa {
+.liq-hero--review {
+  border-color: var(--erp-review-border);
+  background: var(--erp-review-soft);
+}
+
+.liq-hero--blocked {
+  border-color: var(--erp-border-strong);
+  background: var(--erp-bg);
+}
+
+.liq-hero__main {
   display: grid;
-  gap: 10px;
-  padding: 10px 14px 0;
+  gap: 4px;
+  min-width: 0;
 }
 
-@media (min-width: 1024px) {
-  .liq-operativa {
-    grid-template-columns: minmax(0, 1fr) 280px;
-  }
+.liq-hero__eyebrow {
+  margin: 0;
+  color: var(--erp-muted);
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-.liq-panel {
+.liq-hero h2 {
+  margin: 0;
+  color: var(--erp-ink);
+  font-size: 1rem;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.liq-hero p {
+  margin: 0;
+  max-width: 68rem;
+  color: var(--erp-muted);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.liq-hero__source {
+  color: var(--erp-ink) !important;
+  font-weight: 600;
+}
+
+.liq-hero__aside {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.liq-secondary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.liq-secondary-link,
+.liq-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 30px;
   border: 1px solid var(--erp-border);
   background: var(--erp-surface);
+  color: var(--erp-ink);
+  padding: 0 10px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.liq-link-button--primary {
+  border-color: var(--erp-primary);
+  background: var(--erp-primary);
+  color: #ffffff;
+}
+
+.liq-secondary-link:hover:not(:disabled),
+.liq-link-button:hover {
+  border-color: var(--erp-ink);
+}
+
+.liq-link-button--primary:hover {
+  border-color: var(--erp-primary-hover);
+  background: var(--erp-primary-hover);
+}
+
+.liq-secondary-link:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.liq-secondary-link lucide-icon,
+.liq-link-button lucide-icon,
+.liq-button-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.liq-summary,
+.liq-section,
+.liq-details {
+  border: 1px solid var(--erp-border);
+  background: var(--erp-surface);
+}
+
+.liq-summary,
+.liq-section {
   padding: 12px 14px;
 }
 
-.liq-panel__header {
+.liq-section-head {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
-.liq-panel h2 {
+.liq-section-head h2 {
   margin: 0;
-  font-size: 0.875rem;
-  font-weight: 700;
   color: var(--erp-ink);
+  font-size: 0.9rem;
+  font-weight: 750;
+  line-height: 1.25;
 }
 
-.liq-panel__meta {
+.liq-section-head p,
+.liq-section-head__meta {
   margin: 2px 0 0;
-  font-size: 0.75rem;
   color: var(--erp-muted);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.liq-metrics,
+.liq-flow-summary {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.liq-metrics {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.liq-flow-summary {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-bottom: 10px;
+}
+
+.liq-metrics div,
+.liq-flow-summary div {
+  border: 1px solid var(--erp-border);
+  background: var(--erp-bg);
+  padding: 8px 10px;
+}
+
+.liq-flow-summary__danger {
+  border-color: var(--erp-danger-border) !important;
+  background: var(--erp-danger-soft) !important;
+}
+
+.liq-metrics dt,
+.liq-flow-summary dt {
+  margin: 0;
+  color: var(--erp-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.liq-metrics dd,
+.liq-flow-summary dd {
+  margin: 4px 0 0;
+  color: var(--erp-ink);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.liq-empty-inline {
+  margin: 0;
+  border: 1px solid var(--erp-border);
+  background: var(--erp-bg);
+  padding: 8px 10px;
+  color: var(--erp-muted);
+  font-size: 0.8125rem;
+}
+
+.liq-status-note {
+  margin: 8px 0 0;
+  border: 1px solid var(--erp-border);
+  background: var(--erp-bg);
+  padding: 8px 10px;
+  color: var(--erp-ink);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.liq-status-note--block {
+  margin: 0;
+}
+
+.liq-status-note--review {
+  border-color: var(--erp-review-border);
+  background: var(--erp-review-soft);
+}
+
+.liq-status-note--error {
+  border-color: var(--erp-danger-border);
+  background: var(--erp-danger-soft);
+  color: var(--erp-danger);
+}
+
+.liq-status-note strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.liq-status-note ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.liq-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+  gap: 10px;
+  align-items: start;
+}
+
+.liq-section--workers {
+  min-width: 0;
+}
+
+.liq-section--detail {
+  position: sticky;
+  top: 0;
+  min-width: 0;
 }
 
 .liq-panel__lead {
-  margin-top: 8px;
-  font-size: 0.8125rem;
-  font-weight: 650;
+  margin: 0;
   color: var(--erp-ink);
+  font-size: 0.875rem;
+  font-weight: 750;
 }
 
 .liq-panel__lead--flush {
@@ -141,31 +313,39 @@
 
 .liq-text-muted {
   margin: 4px 0 0;
-  font-size: 0.8125rem;
   color: var(--erp-muted);
+  font-size: 0.8125rem;
+  line-height: 1.4;
 }
 
 .liq-text-muted--spaced {
   margin: 8px 0 0;
-  font-size: 0.8125rem;
   color: var(--erp-muted);
+  font-size: 0.8125rem;
+  line-height: 1.4;
 }
 
-.liq-actions--inline {
-  border: 0;
-  padding: 10px 0 0;
-  justify-content: flex-start;
+.liq-empty-compact {
+  min-height: 110px;
+  border: 1px dashed var(--erp-border);
+  background: var(--erp-bg);
+  padding: 14px;
 }
 
 .liq-detalle-wrap {
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
-.liq-metrics {
-  display: grid;
-  gap: 8px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin: 0;
+.liq-details {
+  padding: 10px 12px;
+  color: var(--erp-muted);
+  font-size: 0.8125rem;
+}
+
+.liq-details summary {
+  cursor: pointer;
+  color: var(--erp-ink);
+  font-weight: 750;
 }
 
 @media (min-width: 1280px) {
@@ -174,86 +354,38 @@
   }
 }
 
-.liq-metrics div {
-  border: 1px solid var(--erp-border);
-  background: var(--erp-bg);
-  padding: 8px 10px;
-}
+@media (max-width: 1100px) {
+  .liq-workspace,
+  .liq-hero {
+    grid-template-columns: 1fr;
+  }
 
-.liq-metrics dt {
-  margin: 0;
-  font-size: 0.6875rem;
-  font-weight: 650;
-  color: var(--erp-muted);
-}
+  .liq-hero__aside,
+  .liq-secondary-actions {
+    justify-content: flex-start;
+  }
 
-.liq-metrics dd {
-  margin: 4px 0 0;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--erp-ink);
-}
+  .liq-section--detail {
+    position: static;
+  }
 
-.liq-empty-inline {
-  margin: 0;
-  border: 1px solid var(--erp-border);
-  background: var(--erp-bg);
-  padding: 8px 10px;
-  font-size: 0.8125rem;
-  color: var(--erp-muted);
-}
-
-.liq-section {
-  margin: 10px 14px 0;
-  border: 1px solid var(--erp-border);
-  background: var(--erp-surface);
-  padding: 12px 14px;
-}
-
-.liq-alert--review {
-  margin-top: 8px;
-  border: 1px solid var(--erp-review-border);
-  background: var(--erp-review-soft);
-  padding: 8px 10px;
-  font-size: 0.8125rem;
-  color: var(--erp-ink);
-  list-style: none;
-}
-
-.liq-alert--error {
-  margin-top: 8px;
-  border: 1px solid var(--erp-danger-border);
-  background: var(--erp-danger-soft);
-  padding: 8px 10px;
-  font-size: 0.8125rem;
-  color: var(--erp-danger);
-}
-
-.liq-empty-compact {
-  min-height: 120px;
-  border: 1px dashed var(--erp-border);
-  background: var(--erp-bg);
-  padding: 16px;
-}
-
-.liq-details {
-  margin: 10px 14px 14px;
-  border: 1px solid var(--erp-border);
-  background: var(--erp-bg);
-  padding: 10px 12px;
-  font-size: 0.8125rem;
-  color: var(--erp-muted);
-}
-
-.liq-details summary {
-  cursor: pointer;
-  font-weight: 650;
-  color: var(--erp-ink);
+  .liq-flow-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 720px) {
-  .liq-header,
-  .liq-actions {
-    justify-content: flex-start;
+  .liq-page {
+    padding: 8px;
+  }
+
+  .liq-metrics,
+  .liq-flow-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .liq-hero__aside {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

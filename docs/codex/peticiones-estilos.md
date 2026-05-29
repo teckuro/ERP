@@ -1,3 +1,9 @@
+## 2026-05-29 - Liquidaciones oficiales: flujo visual por trabajador y compactación NOIA
+
+- **Cambio:** Liquidaciones se reordena como acta operativa compacta: franja superior con estado/origen/acción, resumen financiero único, grilla protagonista y detalle lateral. La grilla incorpora flujo visual local por trabajador (**Autorizar** → **Registrar pago** → **Enviar documento**) con PDF deshabilitado y **Solicitar rectificación** solo como marca UI no persistente. Nómina mensual mejora el empty inicial y diferencia el cierre final como `Proceso mensual cerrado`.
+- **Archivos:** `liquidaciones-oficiales-container.*`, `liquidaciones-trabajadores-grid.*`, `liquidacion-detalle-panel.*`, `liquidaciones-acciones-ui.rules.*`, `proceso-mensual-revision-trabajadores.component.*`, `proceso-mensual-estado-operativo.rules.*`, specs.
+- **No tocado:** SQL/RPC/RLS, motor de cálculo, repositorios de negocio, rutas productivas, estilos globales, `angular.json`.
+
 ## 2026-05-29 - Nómina mensual: cierre UI flujo aprobar → emitir → cerrar (fases P4–P10)
 
 - **Cambio:** Cierre del plan UI-Flow: eliminado camino atómico `confirmar_nomina_operativa` (store/facade). Errores de aprobación/cierre humanizados (`prenomina-validacion-ui.rules`, banners en workspace). Copy residual (flow-nav, acciones período, bitácora cierre, modales). Liquidaciones: layout `liq-*` con tokens `--erp-*` locales, sin `app-card` en contenedor. Capturador Playwright y docs `01-flujo-operativo.md` / `paso-a-paso/README` en orden aprobar → liquidaciones → cerrar.
