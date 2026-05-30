@@ -1,28 +1,28 @@
-<div class="nmv2-stepper-card nomina-shell">
-  <nav class="nmv2-stepper nomina-stepper" aria-label="Flujo de nómina mensual">
-    @for (step of steps; track step.id) {
+<div class="nomina-workflow-header nmv2-stepper-card nomina-shell">
+  <nav class="nmv2-stepper nomina-stepper nomina-stepper-compact" aria-label="Flujo de nómina mensual">
+    @for (vista of vistasStepper(); track vista.clave) {
       <button
         type="button"
         class="step nomina-step"
-        [class.nomina-step--active]="estadoPaso(step.id) === 'active'"
-        [class.nomina-step--complete]="estadoPaso(step.id) === 'completed'"
-        [class.nomina-step--pending]="estadoPaso(step.id) === 'pending'"
-        [class.active]="estadoPaso(step.id) === 'active'"
-        [class.completed]="estadoPaso(step.id) === 'completed'"
-        (click)="seleccionarPaso(step.id)"
+        [class]="claseEstadoPaso(estadoPaso(vista.clave))"
+        [class.active]="estadoPaso(vista.clave) === 'active'"
+        [class.completed]="estadoPaso(vista.clave) === 'completed'"
+        (click)="seleccionarPaso(vista.clave)"
       >
         <span class="step-number">
-          @if (estadoPaso(step.id) === 'completed') {
+          @if (estadoPaso(vista.clave) === 'completed') {
             <lucide-icon name="check" aria-hidden="true"></lucide-icon>
           } @else {
-            <span>{{ step.number }}</span>
+            <span>{{ vista.numero }}</span>
           }
         </span>
         <span class="step-copy">
-          <strong>{{ step.title }}</strong>
-          <small>{{ estadoPaso(step.id) === 'completed' ? 'Completo' : step.subtitle }}</small>
+          <strong>{{ vista.titulo }}</strong>
+          <small>{{ vista.accion }}</small>
         </span>
       </button>
     }
   </nav>
+
+  <app-nomina-mensual-v2-stepper-traceability />
 </div>

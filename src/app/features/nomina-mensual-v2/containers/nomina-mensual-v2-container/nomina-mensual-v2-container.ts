@@ -10,7 +10,6 @@ import {
   viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { LucideAngularModule } from 'lucide-angular';
 
 import { ShellPageContextService } from '../../../../layout/shell-page-context.service';
 import { payrollSteps } from '../../data/nomina-mensual-v2.mock';
@@ -39,7 +38,6 @@ import { NominaMensualV2TrazabilidadModalComponent } from './components/nomina-m
   selector: 'app-nomina-mensual-v2-container',
   standalone: true,
   imports: [
-    LucideAngularModule,
     NominaMensualV2StepperComponent,
     NominaMensualV2PasoParametrosComponent,
     NominaMensualV2PasoAlcanceComponent,
@@ -78,10 +76,6 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     this.orquestador.vincularTrazabilidadService(this.trazabilidadService);
     void this.orquestador.recomputarTrazabilidad();
     this.syncShellContext();
-  }
-
-  abrirTrazabilidadCompleta(): void {
-    this.orquestador.abrirTrazabilidadCompleta();
   }
 
   ngOnDestroy(): void {

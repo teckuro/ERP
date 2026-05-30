@@ -5,13 +5,6 @@
     (pasoSeleccionado)="intentarIrAPaso($event)"
   />
 
-  <div class="nmv2-trazabilidad-global-bar">
-    <button type="button" class="text-link nmv2-trazabilidad-global-trigger" (click)="abrirTrazabilidadCompleta()">
-      <lucide-icon name="history" aria-hidden="true"></lucide-icon>
-      Ver trazabilidad completa
-    </button>
-  </div>
-
   @if (orquestador.ayudaAvance(); as ayudaAvance) {
     <p
       class="nmv2-step-nav-hint"

@@ -1,5 +1,4 @@
 <div class="nmv2-paso-empleados">
-  <app-nomina-mensual-v2-trazabilidad-paso paso="employees" [compacto]="true" />
   @if (sinAlcanceValido()) {
     <div class="alert-banner alert-banner--warning alert-banner--parameter-inline empleados-sin-alcance-banner">
       <div class="alert-banner__icon"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon></div>
@@ -148,6 +147,7 @@
       <section id="empleados-checklist-sidebar" class="surface-card side-card empleados-checklist-card">
         <h2>Checklist para continuar</h2>
         <p class="side-caption">Haz clic en un ítem con pendientes para filtrar la grilla.</p>
+        <app-nomina-mensual-v2-trazabilidad-paso paso="employees" variant="panel" />
         <div class="checklist-stack empleados-checklist-stack">
           @for (item of checklistEmpleados(); track item.id) {
             <button

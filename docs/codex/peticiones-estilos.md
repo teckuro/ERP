@@ -1,3 +1,12 @@
+## 2026-05-29 - Nómina V10.1: stepper compacto + cluster trazabilidad
+
+- Header unificado `.nomina-workflow-header`: stepper compacto (subtítulo acción en todos los pasos) + cluster `.nomina-stepper-traceability` a la derecha (responsable, historial, integridad, fecha, drawer completo, alerta si bloqueo/revisión).
+- Eliminada barra suelta «Ver trazabilidad completa»; acceso integrado en cluster (`panel-right-open`).
+- Panel lateral «Registro del paso» (`variant="panel"`) en sidebars pasos 1–3, cerca del checklist; retiradas franjas superiores en Alcance/Empleados.
+- Copy UX: «Sin responsable registrado», «Sin eventos todavía», «Integridad no disponible»; «Verificado por servidor» solo con `verificadoServidor`.
+- CSS local: `.nomina-workflow-header`, `.nomina-stepper-traceability`, `.nmv2-trazabilidad-panel` en `nomina-mensual-v2-container.css`.
+- Iconos Lucide registrados: `CalendarClock`, `PanelRightOpen`, `ShieldAlert`, `UserRound`, `LockKeyhole`, `CircleCheck`.
+
 ## 2026-05-29 - Nómina V10: trazabilidad contextual transversal
 
 - Tres niveles UI: `trazabilidad-paso` (franja compacta por paso), modal contextual (`MessageBox` lg), drawer global fijo derecho.

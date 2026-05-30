@@ -2,7 +2,10 @@ import type {
   EstadoAuditoriaPasoNomina,
   EstadoIntegridadNomina,
   OrigenEventoTrazabilidadNomina,
+  ResumenAuditoriaPasoNomina,
+  EventoTrazabilidadNomina,
 } from '../models/nomina-trazabilidad.models';
+import type { PayrollStepId } from '../models/nomina-mensual-v2.models';
 
 /** Copy visible de integridad; nunca implica validación en frontend. */
 export function etiquetaIntegridadVisible(
@@ -11,7 +14,7 @@ export function etiquetaIntegridadVisible(
 ): string {
   switch (estado) {
     case 'verificadoServidor':
-      return 'Integridad verificada';
+      return 'Verificado por servidor';
     case 'registrado':
       return origen === 'mock' ? 'Referencia demo' : 'Snapshot registrado';
     case 'pendiente':
@@ -20,7 +23,104 @@ export function etiquetaIntegridadVisible(
       return 'Snapshot invalidado';
     case 'noDisponible':
     default:
-      return 'No disponible';
+      return 'Integridad no disponible';
+  }
+}
+
+const NOMBRES_GENERICOS = new Set(['sistema', 'rrhh', '—', '-']);
+
+export function obtenerInicialesResponsable(usuarioNombre: string | null | undefined): string | undefined {
+  if (!usuarioNombre?.trim()) return undefined;
+  const limpio = usuarioNombre.trim();
+  const lower = limpio.toLowerCase();
+  if (lower === 'usuario actual') return 'UA';
+  if (limpio.includes('@')) {
+    const local = limpio.split('@')[0]?.replace(/[^a-zA-Z0-9]/g, '') ?? '';
+    return local ? local.slice(0, 2).toUpperCase() : 'UA';
+  }
+  if (NOMBRES_GENERICOS.has(lower)) return undefined;
+  const partes = limpio.split(/\s+/).filter(Boolean);
+  if (partes.length >= 2) {
+    return `${partes[0]![0] ?? ''}${partes[1]![0] ?? ''}`.toUpperCase();
+  }
+  return limpio.slice(0, 2).toUpperCase();
+}
+
+export function tieneResponsableRegistrado(
+  resumen: ResumenAuditoriaPasoNomina | undefined,
+  eventos: readonly EventoTrazabilidadNomina[],
+  paso: PayrollStepId,
+): boolean {
+  if (eventos.some((e) => e.paso === paso && (e.origen === 'local' || e.origen === 'servidor'))) {
+    return true;
+  }
+  return !!(
+    resumen
+    && resumen.estado !== 'pendiente'
+    && resumen.fechaAccion
+    && resumen.usuarioNombre
+    && resumen.usuarioNombre !== '—'
+  );
+}
+
+export function obtenerTituloAccionPaso(resumen: ResumenAuditoriaPasoNomina | undefined): string {
+  if (!resumen || resumen.estado === 'pendiente') return 'Registro pendiente';
+  switch (resumen.paso) {
+    case 'parameters':
+      return resumen.estado === 'congelado' ? 'Parámetros cerrados' : 'Parámetros revisados';
+    case 'scope':
+      return 'Alcance definido';
+    case 'employees':
+      return 'Empleados validados';
+    case 'validation':
+      return 'Prenómina validada';
+    case 'approval':
+      return resumen.estado === 'aprobado' ? 'Nómina aprobada' : 'Pendiente de aprobación';
+    case 'calculation':
+      return 'Cálculo ejecutado';
+    case 'payslips':
+      return 'Liquidaciones generadas';
+    default:
+      return etiquetaEstadoAuditoriaPaso(resumen.estado);
+  }
+}
+
+export function obtenerCopyAuditoriaPaso(resumen: ResumenAuditoriaPasoNomina | undefined): string {
+  if (!resumen || resumen.estado === 'pendiente') return 'Sin evento registrado';
+  const hora = formatoHoraCorta(resumen.fechaAccion);
+  const nombre =
+    resumen.usuarioNombre && resumen.usuarioNombre !== '—' ? resumen.usuarioNombre : 'Usuario actual';
+  return `${nombre} · ${hora}`;
+}
+
+export function obtenerTooltipAuditoriaPaso(
+  resumen: ResumenAuditoriaPasoNomina | undefined,
+  integridadLabel: string,
+): string {
+  if (!resumen || resumen.estado === 'pendiente') {
+    return 'Registro pendiente · Sin evento registrado';
+  }
+  const titulo = obtenerTituloAccionPaso(resumen);
+  const fecha = formatoFechaTrazabilidad(resumen.fechaAccion);
+  const nombre =
+    resumen.usuarioNombre && resumen.usuarioNombre !== '—' ? resumen.usuarioNombre : 'Usuario actual';
+  return `${titulo}\n${nombre} · ${fecha}\n${integridadLabel}`;
+}
+
+export function verboResponsablePaso(paso: PayrollStepId, estado: EstadoAuditoriaPasoNomina): string {
+  switch (paso) {
+    case 'parameters':
+      return estado === 'congelado' ? 'Cerrado por' : 'Revisado por';
+    case 'scope':
+      return 'Definido por';
+    case 'employees':
+      return 'Validado por';
+    case 'validation':
+      return 'Validado por';
+    case 'approval':
+      return estado === 'aprobado' ? 'Aprobado por' : 'Revisado por';
+    default:
+      return 'Registrado por';
   }
 }
 

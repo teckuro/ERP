@@ -1,0 +1,68 @@
+<div class="nomina-stepper-traceability" aria-label="Trazabilidad del paso actual">
+  <button
+    type="button"
+    class="nomina-stepper-traceability__action"
+    [title]="resumen().responsableTooltip"
+    (click)="abrirDetallePasoActual()"
+  >
+    @if (inicialesResponsable(); as iniciales) {
+      <span class="nomina-stepper-traceability__avatar" aria-hidden="true">{{ iniciales }}</span>
+    } @else {
+      <lucide-icon name="user-round" aria-hidden="true"></lucide-icon>
+    }
+    <span class="nomina-stepper-traceability__label">Responsable</span>
+  </button>
+
+  <button
+    type="button"
+    class="nomina-stepper-traceability__action"
+    title="Ver historial del paso"
+    (click)="abrirDetallePasoActual()"
+  >
+    <lucide-icon name="history" aria-hidden="true"></lucide-icon>
+    <span class="nomina-stepper-traceability__label">Historial</span>
+  </button>
+
+  <button
+    type="button"
+    class="nomina-stepper-traceability__action"
+    [class.nomina-stepper-traceability__action--ok]="resumen().integridadEstado === 'verificadoServidor'"
+    [class.nomina-stepper-traceability__action--warn]="resumen().integridadEstado === 'pendiente' || resumen().integridadEstado === 'invalidado'"
+    [title]="tooltipIntegridad()"
+    (click)="abrirDetallePasoActual()"
+  >
+    <lucide-icon [name]="resumen().iconoIntegridad" aria-hidden="true"></lucide-icon>
+    <span class="nomina-stepper-traceability__label">{{ resumen().integridadLabel }}</span>
+  </button>
+
+  <button
+    type="button"
+    class="nomina-stepper-traceability__action nomina-stepper-traceability__action--meta"
+    [title]="tooltipFecha()"
+  >
+    <lucide-icon name="calendar-clock" aria-hidden="true"></lucide-icon>
+    <span class="nomina-stepper-traceability__label">{{ resumen().fechaUltimoEvento }}</span>
+  </button>
+
+  <button
+    type="button"
+    class="nomina-stepper-traceability__action"
+    title="Ver trazabilidad completa del flujo"
+    (click)="abrirDrawerCompleto()"
+  >
+    <lucide-icon name="panel-right-open" aria-hidden="true"></lucide-icon>
+    <span class="nomina-stepper-traceability__label">Completa</span>
+  </button>
+
+  @if (muestraAlerta()) {
+    <button
+      type="button"
+      class="nomina-stepper-traceability__action nomina-stepper-traceability__action--alert"
+      [title]="tooltipAlerta()"
+      (click)="abrirDetallePasoActual()"
+    >
+      <lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon>
+      <span class="nomina-stepper-traceability__label">Revisar</span>
+    </button>
+  }
+</div>
