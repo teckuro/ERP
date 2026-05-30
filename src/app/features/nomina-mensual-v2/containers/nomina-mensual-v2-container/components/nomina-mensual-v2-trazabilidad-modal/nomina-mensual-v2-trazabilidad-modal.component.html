@@ -1,0 +1,17 @@
+@if (orquestador.trazabilidadPasoActivo()) {
+  @if (orquestador.detalleTrazabilidadActivo(); as detalle) {
+    <app-message-box
+      variant="info"
+      mode="modal"
+      width="lg"
+      [title]="detalle.titulo"
+      [sections]="secciones()"
+      [actions]="[
+        { label: 'Ver trazabilidad completa', role: 'secondary', value: 'completa' },
+        { label: 'Cerrar', role: 'primary', value: 'cerrar' },
+      ]"
+      (actionSelect)="accionModal($event)"
+      (dismiss)="cerrar()"
+    />
+  }
+}

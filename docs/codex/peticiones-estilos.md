@@ -1,3 +1,11 @@
+## 2026-05-29 - Nómina V10: trazabilidad contextual transversal
+
+- Tres niveles UI: `trazabilidad-paso` (franja compacta por paso), modal contextual (`MessageBox` lg), drawer global fijo derecho.
+- Puente real a `NominaCalculoSnapshotRepository` / historial v1; eventos locales pasos 1–3 con `origen: local` (no visible en UI).
+- DTO seguro: solo `estadoIntegridad` + `fingerprintPublico` corto; copy **Snapshot registrado** / **Pendiente de verificación servidor** (no “Integridad verificada” salvo `verificadoServidor`).
+- Eliminados hashes hex mock en pasos demo; acceso global “Ver trazabilidad completa” bajo stepper.
+- CSS local: `.nmv2-trazabilidad-*` en `nomina-mensual-v2-container.css`.
+
 ## 2026-05-29 - Nómina V8.2.5c: page fill — cadena shell/outlet + min-height viewport
 
 - **Cambio:** Bloqueo en cadena de alto: `remuneraciones-outlet` tenía `min-height: 0` (impide resolver `%`); shell scroll no estiraba outlet. Fix: `min-height: 100%` en outlet; reglas globales locales `erp-shell-scroll > app-remuneraciones-outlet`; `.nmv2-page.nomina-shell { min-height: calc(100dvh - 52px) }`; hosts de paso con `align-self: stretch` y `.parameters-step-content { min-height: 100% }`.

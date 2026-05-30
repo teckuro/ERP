@@ -10,6 +10,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
 
 import { ShellPageContextService } from '../../../../layout/shell-page-context.service';
 import { payrollSteps } from '../../data/nomina-mensual-v2.mock';
@@ -29,18 +30,24 @@ import {
   obtenerSubtituloPaso,
   obtenerTituloPaso,
 } from './facade/nomina-mensual-v2-navegacion';
+import { NominaMensualV2TrazabilidadService } from '../../services/nomina-mensual-v2-trazabilidad.service';
 import { NominaMensualV2OrquestadorPort } from './facade/nomina-mensual-v2-orquestador.port';
+import { NominaMensualV2TrazabilidadDrawerComponent } from './components/nomina-mensual-v2-trazabilidad-drawer/nomina-mensual-v2-trazabilidad-drawer.component';
+import { NominaMensualV2TrazabilidadModalComponent } from './components/nomina-mensual-v2-trazabilidad-modal/nomina-mensual-v2-trazabilidad-modal.component';
 
 @Component({
   selector: 'app-nomina-mensual-v2-container',
   standalone: true,
   imports: [
+    LucideAngularModule,
     NominaMensualV2StepperComponent,
     NominaMensualV2PasoParametrosComponent,
     NominaMensualV2PasoAlcanceComponent,
     NominaMensualV2PasoEmpleadosComponent,
     NominaMensualV2PasosDemostracionComponent,
     NominaMensualV2OverlaysComponent,
+    NominaMensualV2TrazabilidadModalComponent,
+    NominaMensualV2TrazabilidadDrawerComponent,
   ],
   providers: [NominaMensualV2OrquestadorPort],
   templateUrl: './nomina-mensual-v2-container.html',
@@ -51,6 +58,7 @@ import { NominaMensualV2OrquestadorPort } from './facade/nomina-mensual-v2-orque
 export class NominaMensualV2Container implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly shellContext = inject(ShellPageContextService);
+  private readonly trazabilidadService = inject(NominaMensualV2TrazabilidadService);
   readonly orquestador = inject(NominaMensualV2OrquestadorPort);
 
   private readonly pasoParametros = viewChild(NominaMensualV2PasoParametrosComponent);
@@ -67,7 +75,13 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.shellContext.setBindingActive(true);
     this.orquestador.pasoActual.set(this.currentStep());
+    this.orquestador.vincularTrazabilidadService(this.trazabilidadService);
+    void this.orquestador.recomputarTrazabilidad();
     this.syncShellContext();
+  }
+
+  abrirTrazabilidadCompleta(): void {
+    this.orquestador.abrirTrazabilidadCompleta();
   }
 
   ngOnDestroy(): void {

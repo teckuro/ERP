@@ -1,4 +1,5 @@
 <div class="nmv2-paso-alcance">
+  <app-nomina-mensual-v2-trazabilidad-paso paso="scope" [compacto]="true" />
   <div class="metric-strip empleados-kpi-strip empleados-kpis-compactos alcance-kpi-strip" aria-label="Vista previa del alcance">
     @for (metric of metricasAlcance(); track metric.id) {
       <article class="summary-metric empleados-kpi-card" [class]="claseTono(metric.tone)" [title]="metric.label">

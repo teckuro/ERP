@@ -253,7 +253,7 @@ export const validationMetrics: SummaryMetric[] = [
   { id: 'rules', label: 'Validaciones ejecutadas', value: 28, helperText: 'Reglas revisadas', tone: 'blue' },
   { id: 'blockers', label: 'Bloqueos', value: 2, helperText: 'Impiden aprobar', tone: 'red' },
   { id: 'warnings', label: 'Advertencias', value: 5, helperText: 'Requieren revisión', tone: 'amber' },
-  { id: 'hash', label: 'Hash snapshot', value: 'OK', helperText: 'Consistente', tone: 'green' },
+  { id: 'integrity', label: 'Integridad', value: 'Pendiente', helperText: 'Verificación servidor', tone: 'gray' },
 ];
 
 export const validationRows: ValidationRow[] = [
@@ -261,7 +261,7 @@ export const validationRows: ValidationRow[] = [
   { rule: 'Descuento sin fórmula', detail: "El descuento 'Seguro complementario' no tiene fórmula asociada.", severity: { label: 'Bloqueo', tone: 'red' } },
   { rule: 'Centro de costo faltante', detail: '3 movimientos no tienen centro de costo asignado.', severity: { label: 'Advertencia', tone: 'amber' } },
   { rule: 'Topes imponibles revisados', detail: '1 trabajador supera el tope imponible de AFC.', severity: { label: 'Advertencia', tone: 'amber' } },
-  { rule: 'Hash del resultado consistente', detail: 'El hash del resultado coincide con el snapshot guardado.', severity: { label: 'Informativo', tone: 'green' } },
+  { rule: 'Snapshot del período', detail: 'La integridad se verificará en servidor al guardar la prenómina.', severity: { label: 'Informativo', tone: 'green' } },
   { rule: 'Licencias superpuestas', detail: 'No se detectaron licencias médicas superpuestas.', severity: { label: 'Informativo', tone: 'green' } },
 ];
 
@@ -272,11 +272,7 @@ export const approvalMetrics: SummaryMetric[] = [
   { id: 'state', label: 'Estado', value: 'Lista para aprobar', helperText: 'Sin bloqueos', tone: 'green' },
 ];
 
-export const approvalTimeline: ApprovalTimelineItem[] = [
-  { time: '16/05/2026 10:24', title: 'Snapshot guardado', description: 'Se generó snapshot de la nómina de Mayo 2026.', status: 'success' },
-  { time: '16/05/2026 10:25', title: 'Validación aprobada', description: 'La nómina fue validada correctamente.', status: 'success' },
-  { time: '16/05/2026 10:25', title: 'Aprobación pendiente', description: 'Lista para ser aprobada y bloqueada.', status: 'pending' },
-];
+export const approvalTimeline: ApprovalTimelineItem[] = [];
 
 export const payslipMetrics: SummaryMetric[] = [
   { id: 'issued', label: 'Liquidaciones emitidas', value: 124, helperText: '100% del total', tone: 'blue' },

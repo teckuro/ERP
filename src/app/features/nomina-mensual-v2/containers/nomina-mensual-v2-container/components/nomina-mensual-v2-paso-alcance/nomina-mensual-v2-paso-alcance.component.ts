@@ -24,7 +24,10 @@ import {
 } from '../../../../presenters/nomina-alcance.presenter';
 import type { FilaEmpleadoNomina } from '../../../../presenters/nomina-empleados-grid.presenter';
 import { NominaEmpleadosCargaService } from '../../../../services/nomina-empleados-carga.service';
+import { NominaMensualV2TrazabilidadService } from '../../../../services/nomina-mensual-v2-trazabilidad.service';
+import { PeriodoActivoService } from '../../../../../../core/services/periodo-activo.service';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
+import { NominaMensualV2TrazabilidadPasoComponent } from '../nomina-mensual-v2-trazabilidad-paso/nomina-mensual-v2-trazabilidad-paso.component';
 import {
   claseChecklist,
   claseTono,
@@ -37,7 +40,7 @@ import {
 @Component({
   selector: 'app-nomina-mensual-v2-paso-alcance',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule, NominaMensualV2TrazabilidadPasoComponent],
   templateUrl: './nomina-mensual-v2-paso-alcance.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -46,6 +49,8 @@ export class NominaMensualV2PasoAlcanceComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly orquestador = inject(NominaMensualV2OrquestadorPort);
   private readonly empleadosCargaService = inject(NominaEmpleadosCargaService);
+  private readonly trazabilidadService = inject(NominaMensualV2TrazabilidadService);
+  private readonly periodoActivo = inject(PeriodoActivoService);
 
   @Output() avanceSolicitado = new EventEmitter<void>();
   @Output() volverParametros = new EventEmitter<void>();
@@ -218,9 +223,34 @@ export class NominaMensualV2PasoAlcanceComponent implements OnInit {
   }
 
   private guardarResultadoYAvanzar(): void {
-    this.orquestador.resultadoAlcance.set(this.resultadoAlcanceVista());
+    const resultado = this.resultadoAlcanceVista();
+    this.orquestador.resultadoAlcance.set(resultado);
+    this.registrarTrazabilidadAlcance(resultado);
     this.orquestador.modalAvanceAlcance.set(null);
     this.avanceSolicitado.emit();
+  }
+
+  private registrarTrazabilidadAlcance(resultado: ReturnType<typeof calcularResultadoAlcance>): void {
+    const ctx = this.orquestador.contextoTrazabilidad();
+    this.orquestador.actualizarContextoTrazabilidad({
+      periodo: ctx?.periodo ?? this.periodoActivo.periodoYm(),
+      parametrosResumen: ctx?.parametrosResumen,
+      alcance: {
+        trabajadoresIncluidos: resultado.resumen.trabajadoresIncluidos,
+        bloqueados: resultado.resumen.trabajadoresBloqueados,
+        advertencias: resultado.resumen.trabajadoresConAdvertencias,
+        tipoAlcance: resultado.descripcion,
+      },
+    });
+
+    this.orquestador.registrarEventoTrazabilidad(
+      this.trazabilidadService.crearEventoLocal({
+        paso: 'scope',
+        tipoEvento: 'ALCANCE_DEFINIDO',
+        descripcion: `Alcance definido · ${resultado.resumen.trabajadoresIncluidos} trabajadores incluidos`,
+        integridad: { estadoIntegridad: 'pendiente' },
+      }),
+    );
   }
 
   private restaurarEstadoDesdeOrquestador(): void {

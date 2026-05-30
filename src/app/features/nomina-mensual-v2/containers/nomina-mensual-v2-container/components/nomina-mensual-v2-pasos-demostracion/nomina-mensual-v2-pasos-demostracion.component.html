@@ -169,11 +169,12 @@
     }
 
     @case ('validation') {
+      <app-nomina-mensual-v2-trazabilidad-paso paso="validation" [compacto]="true" />
       <section class="surface-card validation-summary-card">
         <div class="validation-summary-item tone-blue"><span class="summary-metric__icon"><lucide-icon [name]="metricIcon('rules')" aria-hidden="true"></lucide-icon></span><div><strong>28</strong><small>Validaciones ejecutadas</small></div></div>
         <div class="validation-summary-item tone-red"><span class="summary-metric__icon"><lucide-icon [name]="metricIcon('blockers')" aria-hidden="true"></lucide-icon></span><div><strong>2</strong><small>Bloqueos</small></div></div>
         <div class="validation-summary-item tone-amber"><span class="summary-metric__icon"><lucide-icon [name]="metricIcon('warnings')" aria-hidden="true"></lucide-icon></span><div><strong>5</strong><small>Advertencias</small></div></div>
-        <div class="validation-summary-item tone-green"><span class="summary-metric__icon"><lucide-icon [name]="metricIcon('hash')" aria-hidden="true"></lucide-icon></span><div><strong>OK</strong><small>Hash snapshot</small></div></div>
+        <div class="validation-summary-item tone-gray"><span class="summary-metric__icon"><lucide-icon [name]="metricIcon('integrity')" aria-hidden="true"></lucide-icon></span><div><strong>Pendiente</strong><small>Integridad servidor</small></div></div>
       </section>
 
       <div class="content-grid content-grid--aside">
@@ -220,13 +221,19 @@
 
       <section class="surface-card trace-card">
         <div class="section-heading"><h2>Trazabilidad</h2></div>
-        <div class="trace-grid">
-          <div><span>Guardado por</span><strong>prueba (Administrador)</strong></div>
-          <div><span>Fecha</span><strong>Hoy, 12:45 por prueba</strong></div>
-          <div><span>Versión</span><strong>v3</strong></div>
-          <div><span>Hash snapshot</span><strong>3f9a6d2c7e8b4f5a9c1d2e3f4b5c6d7e</strong></div>
-          <div><span>Hash resultado</span><strong>3f9a6d2c7e8b4f5a9c1d2e3f4b5c6d7e</strong></div>
-        </div>
+        @if (orquestador.auditoriaPorPaso()['validation']; as resumen) {
+          <div class="trace-grid">
+            <div><span>Responsable</span><strong>{{ resumen.usuarioNombre }}</strong></div>
+            <div><span>Fecha</span><strong>{{ formatoFecha(resumen.fechaAccion) }}</strong></div>
+            <div><span>Estado</span><strong>{{ resumen.accionPrincipal }}</strong></div>
+            <div><span>Integridad</span><strong>{{ etiquetaIntegridad(resumen.integridad.estadoIntegridad) }}</strong></div>
+            @if (resumen.integridad.fingerprintPublico) {
+              <div><span>Huella pública</span><strong>{{ resumen.integridad.fingerprintPublico }}</strong></div>
+            }
+          </div>
+        } @else {
+          <p class="side-caption">Sin snapshot registrado en servidor para este período.</p>
+        }
       </section>
 
       <div class="bottom-callout">
@@ -236,6 +243,7 @@
     }
 
     @case ('approval') {
+      <app-nomina-mensual-v2-trazabilidad-paso paso="approval" [compacto]="true" />
       <div class="metric-strip">
         @for (metric of approvalMetrics; track metric.id) {
           <article class="summary-metric" [class]="toneClass(metric.tone)">
@@ -269,7 +277,7 @@
             <div class="checkline success"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><div><strong>Parámetros validados</strong><small>Configuración verificada.</small></div></div>
             <div class="checkline success"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><div><strong>Dotación revisada</strong><small>124 trabajadores activos y validados.</small></div></div>
             <div class="checkline success"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><div><strong>Novedades registradas</strong><small>Todas las novedades calculadas.</small></div></div>
-            <div class="checkline success"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><div><strong>Hash consistente</strong><small>Integridad verificada.</small></div></div>
+            <div class="checkline success"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><div><strong>Snapshot registrado</strong><small>Pendiente de verificación servidor.</small></div></div>
             <div class="ready-box"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><span>Todo listo para aprobar</span></div>
           </div>
         </section>
@@ -294,13 +302,13 @@
         <h2>Bitácora de autorización</h2>
         <p class="side-caption">Registro de eventos del proceso de aprobación.</p>
         <div class="timeline-list">
-          @for (item of approvalTimeline; track item.time + item.title) {
+          @for (item of approvalTimeline(); track item.time + item.title) {
             <div class="timeline-row" [class]="checklistClass(item.status)">
               <span class="timeline-row__icon"><lucide-icon [name]="checklistIcon(item.status)" aria-hidden="true"></lucide-icon></span>
               <strong>{{ item.time }}</strong>
               <span>{{ item.title }}</span>
               <small>{{ item.description }}</small>
-              <em>{{ item.status === 'pending' ? 'Pendiente' : 'Sistema' }}</em>
+              <em>{{ item.status === 'warning' ? 'Atención' : 'Registrado' }}</em>
             </div>
           }
         </div>

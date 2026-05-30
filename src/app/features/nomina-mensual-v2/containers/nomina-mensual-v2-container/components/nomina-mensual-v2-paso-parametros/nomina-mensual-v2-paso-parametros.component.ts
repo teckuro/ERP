@@ -27,8 +27,11 @@ import type {
   ParametrosMantenedorDestino,
 } from '../../../../models/nomina-parametros-resumen.models';
 import { NominaParametrosResumenService } from '../../../../services/nomina-parametros-resumen.service';
+import { NominaMensualV2TrazabilidadService } from '../../../../services/nomina-mensual-v2-trazabilidad.service';
+import { debeInvalidarPorRevalidacionParametros } from '../../../../rules/nomina-trazabilidad-invalidacion.rules';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 import { ORDEN_PASOS_NOMINA } from '../../facade/nomina-mensual-v2-navegacion';
+import { NominaMensualV2TrazabilidadPasoComponent } from '../nomina-mensual-v2-trazabilidad-paso/nomina-mensual-v2-trazabilidad-paso.component';
 
 type DonutTonoPresentacion = 'exito' | 'revision' | 'bloqueo' | 'neutral';
 
@@ -56,7 +59,7 @@ const coloresDonutPorTono: Record<DonutTonoPresentacion, string> = {
 @Component({
   selector: 'app-nomina-mensual-v2-paso-parametros',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, MessageBoxComponent],
+  imports: [CommonModule, LucideAngularModule, MessageBoxComponent, NominaMensualV2TrazabilidadPasoComponent],
   templateUrl: './nomina-mensual-v2-paso-parametros.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -66,6 +69,7 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly orquestador = inject(NominaMensualV2OrquestadorPort);
   private readonly parametrosResumenService = inject(NominaParametrosResumenService);
+  private readonly trazabilidadService = inject(NominaMensualV2TrazabilidadService);
 
   @Output() avanceSolicitado = new EventEmitter<PayrollStepId>();
   @Output() resumenActualizado = new EventEmitter<void>();
@@ -246,6 +250,7 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     try {
       const resumen = await this.parametrosResumenService.obtenerResumen();
       this.parametrosResumen.set(resumen);
+      this.actualizarContextoTrazabilidad(resumen);
       this.resumenActualizado.emit();
     } catch (error) {
       console.error('[Nómina V2] Error cargando parámetros', error);
@@ -263,6 +268,8 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     try {
       const resumen = await this.parametrosResumenService.obtenerResumen();
       this.parametrosResumen.set(resumen);
+      this.actualizarContextoTrazabilidad(resumen);
+      this.registrarTrazabilidadParametros(resumen);
       this.resumenActualizado.emit();
       const indiceActual = ORDEN_PASOS_NOMINA.indexOf('parameters');
       const destino = indiceActual < ORDEN_PASOS_NOMINA.length - 1 ? ORDEN_PASOS_NOMINA[indiceActual + 1] : null;
@@ -345,6 +352,51 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
 
   cantidadChipsOcultosParametro(items: ParametroResumenItem[]): number {
     return Math.max(items.length - 5, 0);
+  }
+
+  private actualizarContextoTrazabilidad(resumen: NominaParametrosResumen): void {
+    this.orquestador.actualizarContextoTrazabilidad({
+      periodo: resumen.periodo,
+      parametrosResumen: {
+        seccionesListas: resumen.seccionesListas,
+        seccionesTotal: resumen.seccionesTotales,
+        controlesVerificados: resumen.controlesVerificados,
+        bloqueos: resumen.bloqueos,
+        advertencias: resumen.requiereRevision,
+      },
+    });
+  }
+
+  private registrarTrazabilidadParametros(resumen: NominaParametrosResumen): void {
+    const hayAlcance = this.orquestador.alcanceValidado();
+    const hayEmpleados = this.orquestador.eventosTrazabilidad().some(
+      (e) => e.paso === 'employees' && e.tipoEvento === 'EMPLEADOS_VALIDADOS' && e.origen === 'local',
+    );
+    if (debeInvalidarPorRevalidacionParametros(hayAlcance, hayEmpleados)) {
+      this.orquestador.registrarEventoTrazabilidad(
+        this.trazabilidadService.crearEventoInvalidacion(
+          'parameters',
+          'La revalidación de parámetros invalidó etapas posteriores.',
+          resumen.periodo,
+        ),
+      );
+    }
+
+    const tipo = resumen.puedeContinuar && resumen.bloqueos === 0 ? 'PARAMETROS_CONGELADOS' : 'PARAMETROS_VALIDADOS';
+    const descripcion =
+      tipo === 'PARAMETROS_CONGELADOS'
+        ? `Parámetros congelados · ${resumen.seccionesListas} de ${resumen.seccionesTotales} secciones listas`
+        : `Parámetros validados · ${resumen.controlesVerificados} controles verificados`;
+
+    this.orquestador.registrarEventoTrazabilidad(
+      this.trazabilidadService.crearEventoLocal({
+        periodo: resumen.periodo,
+        paso: 'parameters',
+        tipoEvento: tipo,
+        descripcion,
+        integridad: { estadoIntegridad: 'pendiente' },
+      }),
+    );
   }
 
   private obtenerEstadoPendientesPasoParametros(): EstadoPendientesPasoParametros {

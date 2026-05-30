@@ -66,7 +66,7 @@ export function iconoMetrica(metricId: string): string {
   if (metricId.includes('deduction')) return 'minus-circle';
   if (metricId.includes('license')) return 'calendar';
   if (metricId.includes('recurring')) return 'repeat-2';
-  if (metricId.includes('hash')) return 'fingerprint';
+  if (metricId.includes('hash') || metricId.includes('integrity')) return 'fingerprint';
   if (metricId.includes('blocker')) return 'octagon-x';
   if (metricId.includes('warning')) return 'triangle-alert';
   if (metricId.includes('net')) return 'wallet';
