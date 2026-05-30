@@ -16,6 +16,7 @@ import { payrollSteps } from '../../data/nomina-mensual-v2.mock';
 import type { PayrollStepId } from '../../models/nomina-mensual-v2.models';
 import type { TipoPendienteEmpleado } from '../../presenters/nomina-empleados-validacion.presenter';
 import { NominaMensualV2OverlaysComponent } from './components/nomina-mensual-v2-overlays/nomina-mensual-v2-overlays.component';
+import { NominaMensualV2PasoAlcanceComponent } from './components/nomina-mensual-v2-paso-alcance/nomina-mensual-v2-paso-alcance.component';
 import { NominaMensualV2PasoEmpleadosComponent } from './components/nomina-mensual-v2-paso-empleados/nomina-mensual-v2-paso-empleados.component';
 import { NominaMensualV2PasoParametrosComponent } from './components/nomina-mensual-v2-paso-parametros/nomina-mensual-v2-paso-parametros.component';
 import { NominaMensualV2PasosDemostracionComponent } from './components/nomina-mensual-v2-pasos-demostracion/nomina-mensual-v2-pasos-demostracion.component';
@@ -35,6 +36,7 @@ import { NominaMensualV2OrquestadorPort } from './facade/nomina-mensual-v2-orque
   imports: [
     NominaMensualV2StepperComponent,
     NominaMensualV2PasoParametrosComponent,
+    NominaMensualV2PasoAlcanceComponent,
     NominaMensualV2PasoEmpleadosComponent,
     NominaMensualV2PasosDemostracionComponent,
     NominaMensualV2OverlaysComponent,
@@ -51,6 +53,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   readonly orquestador = inject(NominaMensualV2OrquestadorPort);
 
   private readonly pasoParametros = viewChild(NominaMensualV2PasoParametrosComponent);
+  private readonly pasoAlcance = viewChild(NominaMensualV2PasoAlcanceComponent);
   private readonly pasoEmpleados = viewChild(NominaMensualV2PasoEmpleadosComponent);
 
   readonly steps = payrollSteps;
@@ -78,11 +81,27 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       this.pasoParametros()?.evaluarAvance(destinoPaso);
       return;
     }
+    if (this.currentStep() === 'scope' && esAvanceHaciaAdelante(this.currentStep(), destinoPaso)) {
+      if (destinoPaso === 'employees') {
+        this.pasoAlcance()?.ejecutarAccionPrincipal();
+      } else {
+        this.irAPaso(destinoPaso);
+      }
+      return;
+    }
     this.irAPaso(destinoPaso);
   }
 
   manejarAvanceDesdeParametros(destinoPaso: PayrollStepId): void {
     this.irAPaso(destinoPaso);
+  }
+
+  manejarAvanceDesdeAlcance(): void {
+    this.irAPaso('employees');
+  }
+
+  irAPasoAlcance(): void {
+    this.irAPaso('scope');
   }
 
   manejarAvanceDesdeEmpleados(): void {
@@ -95,6 +114,10 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
 
   irAPendientesParametros(): void {
     this.pasoParametros()?.irAPendientesParametros();
+  }
+
+  confirmarAvanceConAdvertenciaAlcance(): void {
+    this.pasoAlcance()?.confirmarAvanceConAdvertencia();
   }
 
   confirmarAvanceConAdvertenciaEmpleados(): void {
@@ -146,7 +169,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     });
 
     this.shellContext.registerPrimaryActionHandler(() => {
-      if (paso === 'parameters' || paso === 'employees') {
+      if (paso === 'parameters' || paso === 'scope' || paso === 'employees') {
         this.orquestador.ejecutarAccionPrincipal();
         return;
       }
@@ -161,7 +184,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
 
   private irAPaso(destinoPaso: PayrollStepId): void {
     this.orquestador.limpiarModalesAvance();
-    if (destinoPaso !== 'parameters' && destinoPaso !== 'employees') {
+    if (destinoPaso !== 'parameters' && destinoPaso !== 'scope' && destinoPaso !== 'employees') {
       this.orquestador.establecerAyudaAvance(null);
     }
     this.currentStep.set(destinoPaso);

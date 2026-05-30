@@ -1,6 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 
-import type { PayrollStepId } from '../../../models/nomina-mensual-v2.models';
+import type { PayrollStepId, ResultadoAlcanceNomina } from '../../../models/nomina-mensual-v2.models';
 import type { AyudaAvanceTono } from './nomina-mensual-v2-navegacion';
 
 export type ModalAvanceParametrosPort =
@@ -18,6 +18,10 @@ export type ModalResumenPendientesEmpleadosPort = {
   origen: 'checklist' | 'validacion';
 };
 
+export type ModalAvanceAlcancePort =
+  | { tipo: 'bloqueo'; titulo: string; mensaje: string }
+  | { tipo: 'revision'; titulo: string; mensaje: string };
+
 export type ModalAvanceEmpleadosPort = ModalResumenPendientesEmpleadosPort;
 
 @Injectable()
@@ -26,7 +30,14 @@ export class NominaMensualV2OrquestadorPort {
   readonly ayudaAvance = signal<string | null>(null);
   readonly tonoAyudaAvance = signal<AyudaAvanceTono>(null);
   readonly modalAvanceParametros = signal<ModalAvanceParametrosPort | null>(null);
+  readonly modalAvanceAlcance = signal<ModalAvanceAlcancePort | null>(null);
   readonly modalAvanceEmpleados = signal<ModalAvanceEmpleadosPort | null>(null);
+  readonly resultadoAlcance = signal<ResultadoAlcanceNomina | null>(null);
+
+  readonly alcanceValidado = computed(() => {
+    const resultado = this.resultadoAlcance();
+    return !!resultado && resultado.estado !== 'sinConfigurar' && resultado.resumen.trabajadoresIncluidos > 0;
+  });
 
   private manejadorAccionPrincipal: (() => void) | null = null;
 
@@ -49,6 +60,7 @@ export class NominaMensualV2OrquestadorPort {
 
   limpiarModalesAvance(): void {
     this.modalAvanceParametros.set(null);
+    this.modalAvanceAlcance.set(null);
     this.modalAvanceEmpleados.set(null);
   }
 }

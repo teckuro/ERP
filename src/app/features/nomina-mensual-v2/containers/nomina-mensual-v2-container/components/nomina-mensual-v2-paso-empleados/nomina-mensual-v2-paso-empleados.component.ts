@@ -74,6 +74,7 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
 
   readonly columnasGrillaEmpleados = COLUMNAS_GRILLA_EMPLEADOS_NOMINA;
   readonly filasEmpleadosNomina = signal<FilaEmpleadoNomina[]>([]);
+  readonly sinAlcanceValido = computed(() => !this.orquestador.alcanceValidado());
   readonly filtrosAvanzadosEmpleadosVisibles = signal(false);
   readonly filtroPendienteEmpleados = signal<TipoPendienteEmpleado | null>(null);
   readonly empleadosCargando = signal(true);
@@ -131,6 +132,13 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
 
   constructor() {
     effect(() => {
+      if (this.sinAlcanceValido()) {
+        this.orquestador.establecerAyudaAvance(
+          'Define el alcance en el paso anterior antes de revisar empleados.',
+          'bloqueo',
+        );
+        return;
+      }
       const texto = obtenerTextoSuperiorEmpleados(this.filasEmpleadosNomina());
       const resultado = obtenerResultadoValidacionEmpleados(this.filasEmpleadosNomina());
       if (!texto) {
@@ -179,7 +187,7 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
     this.empleadosError.set('');
     try {
       const filas = await this.empleadosCargaService.cargarFilasEmpleadosNomina();
-      this.filasEmpleadosNomina.set(filas);
+      this.filasEmpleadosNomina.set(this.filtrarFilasPorAlcance(filas));
     } catch {
       this.empleadosError.set('No fue posible cargar la base de empleados.');
     } finally {
@@ -240,6 +248,10 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
   }
 
   ejecutarAccionPrincipal(): void {
+    if (this.sinAlcanceValido()) {
+      this.volverParametros.emit();
+      return;
+    }
     const resultado = obtenerResultadoValidacionEmpleados(this.filasEmpleadosNomina());
     if (resultado.estado === 'correcto') {
       this.continuarDesdeEmpleados();
@@ -274,5 +286,14 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
     this.orquestador.modalAvanceEmpleados.set(null);
     this.filtroPendienteEmpleados.set(null);
     this.avanceSolicitado.emit();
+  }
+
+  private filtrarFilasPorAlcance(filas: FilaEmpleadoNomina[]): FilaEmpleadoNomina[] {
+    const alcance = this.orquestador.resultadoAlcance();
+    if (!alcance?.idsTrabajadoresIncluidos.length) {
+      return [];
+    }
+    const ids = new Set(alcance.idsTrabajadoresIncluidos);
+    return filas.filter((fila) => ids.has(fila.id));
   }
 }

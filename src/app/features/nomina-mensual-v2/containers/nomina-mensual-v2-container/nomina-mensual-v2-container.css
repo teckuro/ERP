@@ -4954,3 +4954,222 @@ textarea {
     align-self: flex-end;
   }
 }
+
+/* —— Nómina V7: paso Alcance —— */
+
+.nmv2-page[data-step='scope'] > app-nomina-mensual-v2-paso-alcance {
+  grid-column: 1 / -1;
+}
+
+.nmv2-paso-alcance .alcance-intro-card h2 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.nmv2-alcance-layout.content-grid--aside {
+  align-items: stretch;
+}
+
+.nmv2-alcance-layout .content-main,
+.nmv2-alcance-layout .content-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.alcance-opciones-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.alcance-opcion-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.alcance-opcion-card:hover:not(:disabled) {
+  border-color: #bfdbfe;
+  background: #f8fbff;
+}
+
+.alcance-opcion-card--activa {
+  border-color: #93c5fd;
+  background: #f8fbff;
+}
+
+.alcance-opcion-card--deshabilitada {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.alcance-opcion-card__icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  color: #334155;
+  flex-shrink: 0;
+}
+
+.alcance-opcion-card__icon lucide-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.alcance-opcion-card__copy strong {
+  display: block;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.alcance-opcion-card__copy small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+.alcance-opcion-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.alcance-opcion-card__etiqueta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  padding: 0 7px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.alcance-panel-secundario h3,
+.alcance-preview-card h3 {
+  margin: 0 0 6px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.alcance-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.alcance-chip {
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.alcance-chip--activo {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.alcance-busqueda-manual {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.alcance-busqueda-manual__label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.alcance-busqueda-manual input {
+  width: 100%;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.alcance-lista-manual {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.alcance-fila-manual {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid #eef2f7;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.alcance-fila-manual__copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.alcance-fila-manual__copy strong {
+  font-size: 12.5px;
+  color: #0f172a;
+}
+
+.alcance-fila-manual__copy small {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.alcance-preview-card__advertencia {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #92400e;
+}
+
+.alcance-checklist-card {
+  height: 100%;
+}
+
+.empleados-sin-alcance-banner {
+  margin-bottom: 12px;
+}
+
+@media (max-width: 900px) {
+  .alcance-opciones-grid {
+    grid-template-columns: 1fr;
+  }
+}

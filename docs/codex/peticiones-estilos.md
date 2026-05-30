@@ -2488,6 +2488,16 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Servicio:** `NominaEmpleadosCargaService` centraliza carga y recarga de grilla.
 - **V9.1 datos enriquecidos:** `NominaEmpleadosPersonalRepository` lee `vw_persona_factores` (jornada, AFP/Salud, retiro), `contrato_centro_costo` y `cuenta_bancaria` activa/principal.
 - **Layout empleados:** grilla y checklist comparten la misma altura de fila (`align-items: stretch`); sin `gridHeight` fijo; scroll interno en ambas columnas.
+
+## 2026-05-30 — Nómina mensual V2: paso Alcance (V7)
+
+- **Flujo:** `Parámetros → Alcance → Empleados` (8 pasos en stepper).
+- **Paso Alcance:** selección empresa completa, centro de costo, manual; contrato preparado como «Próximamente».
+- **Estado compartido:** `resultadoAlcance` en orquestador; Empleados filtra por `idsTrabajadoresIncluidos`.
+- **Validación:** botón «Validar alcance» + MsgBox bloqueo/advertencia antes de Empleados.
+- **Copy Empleados:** título «Empleados incluidos en el alcance»; volver a Alcance.
+- **Archivos:** modelos, mock steps, navegación, presenter alcance, paso-alcance, orquestador, container, overlays, CSS local.
+- **No tocado:** backend/SQL, motor de cálculo, estilos globales.
 - **Archivos:** mapper, repositorio personal, servicio carga, grid/validación presenters, paso-empleados.
 - **No tocado:** estilos globales, SQL, motor de cálculo, UI del módulo Personal.
 

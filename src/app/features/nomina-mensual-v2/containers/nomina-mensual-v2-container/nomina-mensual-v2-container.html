@@ -26,10 +26,16 @@
         (resumenActualizado)="syncShellContext()"
       />
     }
+    @case ('scope') {
+      <app-nomina-mensual-v2-paso-alcance
+        (avanceSolicitado)="manejarAvanceDesdeAlcance()"
+        (volverParametros)="intentarIrAPaso('parameters')"
+      />
+    }
     @case ('employees') {
       <app-nomina-mensual-v2-paso-empleados
         (avanceSolicitado)="manejarAvanceDesdeEmpleados()"
-        (volverParametros)="intentarIrAPaso('parameters')"
+        (volverParametros)="intentarIrAPaso('scope')"
       />
     }
     @default {
@@ -40,6 +46,7 @@
   <app-nomina-mensual-v2-overlays
     (confirmarAvanceConRevision)="confirmarAvanceConRevision()"
     (irAPendientesParametros)="irAPendientesParametros()"
+    (confirmarAvanceConAdvertenciaAlcance)="confirmarAvanceConAdvertenciaAlcance()"
     (irAPendientesEmpleados)="irAPendientesEmpleados()"
     (verEnGrillaEmpleados)="verEnGrillaEmpleados($event)"
     (confirmarAvanceConAdvertenciaEmpleados)="confirmarAvanceConAdvertenciaEmpleados()"

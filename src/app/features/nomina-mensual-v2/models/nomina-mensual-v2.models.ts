@@ -1,11 +1,51 @@
 export type PayrollStepId =
   | 'parameters'
+  | 'scope'
   | 'employees'
   | 'movements'
   | 'calculation'
   | 'validation'
   | 'approval'
   | 'payslips';
+
+export type TipoAlcanceNomina =
+  | 'empresaCompleta'
+  | 'grupo'
+  | 'contrato'
+  | 'seleccionManual';
+
+export type EstadoAlcanceNomina =
+  | 'sinConfigurar'
+  | 'listo'
+  | 'conAdvertencias'
+  | 'bloqueado';
+
+export interface OpcionAlcanceNomina {
+  id: TipoAlcanceNomina;
+  titulo: string;
+  descripcion: string;
+  icono: string;
+  estado: 'disponible' | 'preparado' | 'deshabilitado';
+  etiqueta?: string;
+}
+
+export interface ResumenAlcanceNomina {
+  totalTrabajadores: number;
+  trabajadoresIncluidos: number;
+  trabajadoresExcluidos: number;
+  trabajadoresBloqueados: number;
+  trabajadoresConAdvertencias: number;
+}
+
+export interface ResultadoAlcanceNomina {
+  tipo: TipoAlcanceNomina;
+  estado: EstadoAlcanceNomina;
+  descripcion: string;
+  idsTrabajadoresIncluidos: string[];
+  centrosCostoSeleccionados?: string[];
+  idsTrabajadoresManuales?: string[];
+  resumen: ResumenAlcanceNomina;
+}
 
 export type PayrollStepStatus = 'completed' | 'active' | 'pending' | 'blocked' | 'warning';
 export type StatusTone = 'blue' | 'green' | 'amber' | 'red' | 'gray' | 'purple';

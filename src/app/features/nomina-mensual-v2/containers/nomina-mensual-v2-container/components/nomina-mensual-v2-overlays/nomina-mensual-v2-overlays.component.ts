@@ -40,12 +40,18 @@ export class NominaMensualV2OverlaysComponent {
   @Output() confirmarAvanceConRevision = new EventEmitter<void>();
   @Output() irAPendientesParametros = new EventEmitter<void>();
   @Output() verEnGrillaEmpleados = new EventEmitter<TipoPendienteEmpleado>();
+  @Output() confirmarAvanceConAdvertenciaAlcance = new EventEmitter<void>();
   @Output() irAPendientesEmpleados = new EventEmitter<void>();
   @Output() confirmarAvanceConAdvertenciaEmpleados = new EventEmitter<void>();
   @Output() reintentarValidacionEmpleados = new EventEmitter<void>();
 
   cerrarModalAvanceParametros(): void {
     this.orquestador.modalAvanceParametros.set(null);
+    this.cerrarModal.emit();
+  }
+
+  cerrarModalAvanceAlcance(): void {
+    this.orquestador.modalAvanceAlcance.set(null);
     this.cerrarModal.emit();
   }
 

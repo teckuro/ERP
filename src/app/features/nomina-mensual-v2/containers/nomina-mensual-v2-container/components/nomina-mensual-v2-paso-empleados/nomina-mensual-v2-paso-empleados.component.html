@@ -1,4 +1,14 @@
 <div class="nmv2-paso-empleados">
+  @if (sinAlcanceValido()) {
+    <div class="alert-banner alert-banner--warning alert-banner--parameter-inline empleados-sin-alcance-banner">
+      <div class="alert-banner__icon"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon></div>
+      <div class="alert-banner__copy">
+        <strong>Falta definir el alcance</strong>
+        <p>Regresa al paso Alcance para elegir qué trabajadores incluir en esta nómina.</p>
+        <button type="button" class="text-link" (click)="solicitarVolverParametros()">Ir a Alcance</button>
+      </div>
+    </div>
+  }
   <div class="metric-strip empleados-kpi-strip empleados-kpis-compactos" aria-label="Resumen de empleados">
     @for (metric of metricasEmpleados(); track metric.id) {
       <article
@@ -181,7 +191,7 @@
           <lucide-icon name="info" aria-hidden="true"></lucide-icon>
           <span>El checklist ayuda a corregir. Para avanzar, usa «Validar empleados».</span>
         </div>
-        <button type="button" class="text-link" (click)="solicitarVolverParametros()">Volver a parámetros</button>
+        <button type="button" class="text-link" (click)="solicitarVolverParametros()">Volver a alcance</button>
       </section>
     </aside>
   </div>

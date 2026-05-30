@@ -3,6 +3,7 @@ import type { PayrollStepId, PayrollStepStatus } from '../../../models/nomina-me
 
 export const ORDEN_PASOS_NOMINA: PayrollStepId[] = [
   'parameters',
+  'scope',
   'employees',
   'movements',
   'calculation',
@@ -31,8 +32,10 @@ export function obtenerTituloPaso(paso: PayrollStepId): string {
   switch (paso) {
     case 'parameters':
       return 'Parámetros de nómina';
+    case 'scope':
+      return 'Alcance de generación';
     case 'employees':
-      return 'Empleados para nómina';
+      return 'Empleados incluidos en el alcance';
     case 'movements':
       return 'Novedades del período';
     case 'calculation':
@@ -50,8 +53,10 @@ export function obtenerSubtituloPaso(paso: PayrollStepId): string {
   switch (paso) {
     case 'parameters':
       return 'Verifica la configuración normativa y operativa requerida para calcular Mayo 2026.';
+    case 'scope':
+      return 'Define qué trabajadores serán preparados para esta nómina antes de revisar empleados.';
     case 'employees':
-      return 'Trabajadores activos del período seleccionado.';
+      return 'Revisa bloqueos, advertencias y datos críticos solo para los trabajadores seleccionados.';
     case 'movements':
       return 'Registra los eventos del mes que afectan la remuneración de los trabajadores.';
     case 'calculation':
@@ -69,6 +74,8 @@ export function obtenerEtiquetaAccionPrincipal(paso: PayrollStepId): string {
   switch (paso) {
     case 'parameters':
       return 'Validar parámetros';
+    case 'scope':
+      return 'Validar alcance';
     case 'employees':
       return 'Validar empleados';
     case 'movements':
@@ -88,6 +95,8 @@ export function obtenerIconoPaso(stepId: PayrollStepId): string {
   switch (stepId) {
     case 'parameters':
       return 'settings-2';
+    case 'scope':
+      return 'git-branch';
     case 'employees':
       return 'users';
     case 'movements':
