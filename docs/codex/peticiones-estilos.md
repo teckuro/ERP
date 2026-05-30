@@ -2508,3 +2508,46 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **CSS:** estilos de parámetros y empleados movidos a CSS local de cada componente hijo.
 - **Patrón:** alineado a `proceso-mensual-container` (contenedor + `components/` + facade/port).
 - **CSS (fix):** hijos con `ViewEncapsulation.None`; estilos centralizados en `nomina-mensual-v2-container.css` (el encapsulamiento emulated impedía que el CSS del padre llegara a los templates hijos).
+
+## 2026-05-29 — Nómina mensual V2: V8 Visual Polish System
+
+- **Sistema visual local:** `nomina-mensual-v2-visual-system.css` con tokens, icon badges (`.nomina-iconBadge`), chips (`.nomina-chip`), estados (`.nomina-state`), cards (`.nomina-card`) y panel lateral (`.nomina-sidePanel`).
+- **Stepper:** 8 pasos en una fila (flex + scroll horizontal en pantallas estrechas); paso activo con fondo azul suave y barra inferior; clases `nomina-step--*`.
+- **Encabezado:** chips de período/estado en Parámetros, Alcance y Empleados; subtítulos con formato `Mayo 2026 · …`.
+- **Parámetros:** cards con icon badge; estados footer como chip; accesos rápidos con badge; prep-flow con estados en chip.
+- **Alcance / Empleados:** cards de tipo de alcance, KPIs y chips de filtro alineados al mismo sistema.
+- **Archivos:** `nomina-mensual-v2-visual-system.css`, `nomina-mensual-v2-container.{html,ts,css}`, stepper, paso-parametros, paso-alcance, paso-empleados, `nomina-mensual-v2-navegacion.ts`, `nomina-mensual-v2-presentacion.util.ts`, `peticiones-estilos.md`.
+- **No tocado:** backend, SQL, estilos globales, `app.config.ts` (sin iconos nuevos).
+
+## 2026-05-29 — Nómina mensual V2: cards parámetros (icono esquina superior derecha)
+
+- **Mantenido de V8.1 (solo cards):** patrón `nomina-card--corner-icon` en cards de parámetros — título/subtítulo a la izquierda, icono arriba-derecha, chips debajo, estado y chevron abajo-derecha.
+- **Revertido:** stepper en barra, prep-flow pill, panel derecho compacto, paleta V8.1, cards alcance corner-icon, overrides de densidad global.
+- **Archivos:** `nomina-mensual-v2-visual-system.css`, `nomina-mensual-v2-container.css`, `nomina-mensual-v2-paso-parametros.component.html`, `nomina-mensual-v2-paso-alcance.component.html`, `peticiones-estilos.md`.
+
+## 2026-05-29 — Nómina mensual V2: quitar flujo de preparación duplicado
+
+- **Eliminado:** bloque «Flujo de preparación de parámetros» (stepper horizontal con iconos/flechas); la misma información ya está en las cards y el panel derecho.
+- **Archivos:** `nomina-mensual-v2-paso-parametros.{html,ts}`, `peticiones-estilos.md`.
+
+## 2026-05-30 — Nómina V2 parámetros: altura cards = resumen lateral
+
+- **Fix (v2):** solo fila 1 de cards alineada al resumen; fila 2 compacta; `content-main` con `align-content: start` para evitar que la grilla herede la altura del sidebar.
+- **Fix (v3 revertido):** ancho completo en «Estado actual» y «Resumen de parámetros» (card, bloques internos y fila de actualización al 100%).
+- **Archivos:** `nomina-mensual-v2-container.css`, `peticiones-estilos.md`.
+
+## 2026-05-30 — Shell header: CTA compacto con título centrado
+
+- **Fix:** columna derecha del grid `auto` (no `1fr`); acciones `width: max-content`; `erp-shell-header__cta` a 28px / 12px / padding `0 10px` alineado a chips del header.
+- **Archivos:** `header.component.ts`, `peticiones-estilos.md`.
+
+## 2026-05-30 — Nómina mensual V2: V8.2 título centrado en shell
+
+- **Cambio:** título y subtítulo del paso viven en el header ERP (`erp-shell-header__title`), centrados entre breadcrumb y acciones; sin chips junto al título (solo texto). Eliminada cabecera duplicada del cuerpo.
+- **Archivos:** `shell-page-context.service.ts`, `header.component.ts`, `nomina-mensual-v2-container.{html,ts,css}`, `peticiones-estilos.md`.
+
+## 2026-05-30 — Nómina mensual V2: page fill (contenido hasta el final)
+
+- **Causa:** cadena flex rota — pasos con `display: block`, filas grid `auto` (solo altura del contenido) y `align-items: start` en la grilla impedían ocupar el alto del shell.
+- **Fix (v2):** patrón `docs/codex/estilos/README.md`: `height/min-height: 0` + `flex: 1` en page/container; `.nmv2-page` como grid `auto auto minmax(0, 1fr)`; grillas de paso con `grid-template-rows: minmax(0, 1fr)` y columnas `align-self: stretch`; pasos activos `height: 100%`.
+- **Archivos:** `nomina-mensual-v2-container.css`, `nomina-mensual-v2.page.ts`, `peticiones-estilos.md`.

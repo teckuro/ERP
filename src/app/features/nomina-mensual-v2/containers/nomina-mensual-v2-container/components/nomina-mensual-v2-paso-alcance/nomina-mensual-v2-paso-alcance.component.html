@@ -2,7 +2,7 @@
   <div class="metric-strip empleados-kpi-strip empleados-kpis-compactos alcance-kpi-strip" aria-label="Vista previa del alcance">
     @for (metric of metricasAlcance(); track metric.id) {
       <article class="summary-metric empleados-kpi-card" [class]="claseTono(metric.tone)" [title]="metric.label">
-        <div class="summary-metric__icon empleados-kpi-card__icon">
+        <div class="summary-metric__icon empleados-kpi-card__icon nomina-iconBadge" [class]="'nomina-iconBadge--' + tonoBadgeMetrica(metric.tone)">
           <lucide-icon [name]="iconoMetrica(metric.id)" aria-hidden="true"></lucide-icon>
         </div>
         <div class="summary-metric__copy empleados-kpi-card__copy">
@@ -34,20 +34,20 @@
         @for (opcion of opcionesAlcance; track opcion.id) {
           <button
             type="button"
-            class="alcance-opcion-card"
+            class="alcance-opcion-card nomina-card nomina-card--interactive"
             [class.alcance-opcion-card--activa]="tipoAlcanceSeleccionado() === opcion.id"
             [class.alcance-opcion-card--deshabilitada]="opcion.estado !== 'disponible'"
             [disabled]="opcion.estado !== 'disponible'"
             (click)="seleccionarTipoAlcance(opcion.id, opcion.estado)"
           >
-            <span class="alcance-opcion-card__icon">
+            <span class="alcance-opcion-card__icon nomina-iconBadge nomina-iconBadge--blue">
               <lucide-icon [name]="opcion.icono" aria-hidden="true"></lucide-icon>
             </span>
             <div class="alcance-opcion-card__copy">
               <div class="alcance-opcion-card__header">
                 <strong>{{ opcion.titulo }}</strong>
                 @if (opcion.etiqueta) {
-                  <span class="alcance-opcion-card__etiqueta">{{ opcion.etiqueta }}</span>
+                  <span class="alcance-opcion-card__etiqueta nomina-chip nomina-chip--neutral">{{ opcion.etiqueta }}</span>
                 }
               </div>
               <small>{{ opcion.descripcion }}</small>
@@ -64,8 +64,9 @@
             @for (centro of centrosDisponibles(); track centro) {
               <button
                 type="button"
-                class="alcance-chip"
+                class="alcance-chip nomina-chip"
                 [class.alcance-chip--activo]="centroCostoActivo(centro)"
+                [class.nomina-chip--info]="centroCostoActivo(centro)"
                 (click)="alternarCentroCosto(centro)"
               >
                 {{ centro }}
@@ -122,7 +123,7 @@
       </section>
     </main>
 
-    <aside class="content-side">
+    <aside class="content-side nomina-sidePanel">
       <section class="surface-card side-card empleados-checklist-card alcance-checklist-card">
         <h2>Checklist para continuar</h2>
         <p class="side-caption">Confirma el alcance antes de revisar empleados.</p>

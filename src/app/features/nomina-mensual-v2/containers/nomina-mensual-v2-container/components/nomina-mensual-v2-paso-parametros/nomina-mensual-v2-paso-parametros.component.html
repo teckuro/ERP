@@ -46,71 +46,37 @@
             }
           }
         }
-        <section class="surface-card parameter-prep-card parameters-prep-flow-card">
-          <div class="section-heading section-heading--compact">
-            <div>
-              <h2>Flujo de preparación de parámetros</h2>
-            </div>
-          </div>
-
-          <div class="parameter-prep-flow-shell">
-            <div
-              class="parameter-prep-flow"
-              [class.parameter-prep-flow--validacion-pendiente]="prepValidacionEstadoPaso() === 'pendiente'"
-              [class.parameter-prep-flow--validacion-lista]="prepValidacionEstadoPaso() === 'completo'"
-              [class.parameter-prep-flow--solo-validacion]="parametrosAreas().length === 0"
-            >
-              @for (area of parametrosAreas(); track area.id) {
-                <div class="prep-segment">
-                  <article class="prep-step" [class]="parametroPrepClase(area.estado)">
-                    <span class="prep-node">
-                      <lucide-icon [name]="parametroPrepIcono(area.estado)" aria-hidden="true"></lucide-icon>
-                    </span>
-                    <div class="prep-copy">
-                      <strong class="prep-item__titulo">{{ area.titulo }}</strong>
-                      <small class="prep-item__estado">{{ parametroPrepEtiqueta(area.estado) }}</small>
-                    </div>
-                  </article>
-                  <span class="prep-connector" [class]="parametroPrepConectorClase(area.estado)" aria-hidden="true"></span>
-                </div>
-              }
-              <div class="prep-segment prep-segment--terminal">
-                <article class="prep-step prep-step--validacion" [class]="prepValidacionClase()">
-                  <span class="prep-node">
-                    <lucide-icon [name]="prepValidacionIcono()" aria-hidden="true"></lucide-icon>
-                  </span>
-                  <div class="prep-copy">
-                    <strong class="prep-item__titulo">Validación</strong>
-                    <small class="prep-item__estado">{{ prepValidacionEtiqueta() }}</small>
-                  </div>
-                </article>
-              </div>
-            </div>
-          </div>
-        </section>
 
         <section class="parameter-cards-grid">
           @for (area of parametrosAreas(); track area.id) {
-            <article class="surface-card parameter-summary-card" (click)="goToParametros(area.mantenedor)">
-              <header class="parameter-summary-card__head">
-                <span class="parameter-summary-card__icon"><lucide-icon [name]="area.icono" aria-hidden="true"></lucide-icon></span>
-                <div class="parameter-summary-card__title-group">
+            <article
+              class="surface-card parameter-summary-card nomina-card nomina-card--interactive nomina-card--corner-icon"
+              (click)="goToParametros(area.mantenedor)"
+            >
+              <span class="nomina-card__icon parameter-summary-card__icon nomina-iconBadge nomina-iconBadge--slate">
+                <lucide-icon [name]="area.icono" aria-hidden="true"></lucide-icon>
+              </span>
+              <div class="nomina-card__content">
+                <header class="parameter-summary-card__head">
                   <h3>{{ area.titulo }}</h3>
                   <p>{{ area.descripcion }}</p>
-                </div>
-              </header>
-              @if (area.items.length > 0) {
-                <div class="parameter-summary-card__chips" [attr.aria-label]="'Validaciones de ' + area.titulo">
-                  @for (item of chipsVisiblesParametro(area.items); track item.label) {
-                    <span>{{ item.label }}</span>
-                  }
-                  @if (cantidadChipsOcultosParametro(area.items) > 0) {
-                    <span class="parameter-summary-card__chips-more">+{{ cantidadChipsOcultosParametro(area.items) }} más</span>
-                  }
-                </div>
-              }
-              <footer class="parameter-summary-card__foot">
-                <span class="plain-status" [class]="parametroEstadoClase(area.estado)"><lucide-icon [name]="parametroEstadoIcono(area.estado)" aria-hidden="true"></lucide-icon>{{ parametroEstadoEtiqueta(area.estado) }}</span>
+                </header>
+                @if (area.items.length > 0) {
+                  <div class="parameter-summary-card__chips" [attr.aria-label]="'Validaciones de ' + area.titulo">
+                    @for (item of chipsVisiblesParametro(area.items); track item.label) {
+                      <span class="nomina-chip nomina-chip--neutral">{{ item.label }}</span>
+                    }
+                    @if (cantidadChipsOcultosParametro(area.items) > 0) {
+                      <span class="parameter-summary-card__chips-more nomina-chip nomina-chip--neutral">+{{ cantidadChipsOcultosParametro(area.items) }} más</span>
+                    }
+                  </div>
+                }
+              </div>
+              <footer class="parameter-summary-card__foot nomina-card__footer">
+                <span class="plain-status nomina-state" [class]="parametroEstadoClase(area.estado)">
+                  <lucide-icon [name]="parametroEstadoIcono(area.estado)" aria-hidden="true"></lucide-icon>
+                  {{ parametroEstadoEtiqueta(area.estado) }}
+                </span>
                 <lucide-icon class="parameter-summary-card__chevron" name="chevron-right" aria-hidden="true"></lucide-icon>
               </footer>
             </article>
@@ -118,7 +84,7 @@
         </section>
       </main>
 
-      <aside class="content-side parameters-sidebar-perfect parameters-sidebar-compact">
+      <aside class="content-side parameters-sidebar-perfect parameters-sidebar-compact nomina-sidePanel">
         <section class="surface-card side-card parameters-perfect-summary">
           <h2>Resumen de parámetros</h2>
           <div class="parameters-perfect-summary__top">
@@ -151,7 +117,7 @@
           <div class="parameter-access-grid">
             @for (acceso of parametrosAccesos(); track acceso.id) {
               <button type="button" class="parameter-access-tile" (click)="goToParametros(acceso.mantenedor)">
-                <span class="parameter-access-tile__icon"><lucide-icon [name]="acceso.icono" aria-hidden="true"></lucide-icon></span>
+                <span class="parameter-access-tile__icon nomina-iconBadge nomina-iconBadge--slate"><lucide-icon [name]="acceso.icono" aria-hidden="true"></lucide-icon></span>
                 <span>{{ acceso.label }}</span>
                 <lucide-icon name="external-link" aria-hidden="true"></lucide-icon>
               </button>

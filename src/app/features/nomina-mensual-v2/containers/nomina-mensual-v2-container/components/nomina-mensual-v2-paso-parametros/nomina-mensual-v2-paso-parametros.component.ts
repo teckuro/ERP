@@ -32,8 +32,6 @@ import { ORDEN_PASOS_NOMINA } from '../../facade/nomina-mensual-v2-navegacion';
 
 type DonutTonoPresentacion = 'exito' | 'revision' | 'bloqueo' | 'neutral';
 
-type EstadoPasoParametro = 'completo' | 'revision' | 'faltante' | 'bloqueado' | 'pendiente';
-
 type ParametrosCargaOverlayPresentacion = {
   titulo: string;
   mensaje: string;
@@ -178,18 +176,6 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     return `conic-gradient(${color} 0 ${porcentaje}%, #e2e8f0 ${porcentaje}% 100%)`;
   });
 
-  readonly prepValidacionClase = computed(() => this.prepClaseEstadoPaso(this.prepValidacionEstadoPaso()));
-
-  readonly prepValidacionIcono = computed(() => {
-    if (this.parametrosValidando()) return 'clock-3';
-    return this.prepIconoEstadoPaso(this.prepValidacionEstadoPaso());
-  });
-
-  readonly prepValidacionEtiqueta = computed(() => {
-    if (this.parametrosValidando()) return 'Validando…';
-    return this.prepEtiquetaEstadoPaso(this.prepValidacionEstadoPaso());
-  });
-
   constructor() {
     effect(() => {
       if (this.parametrosLoading() || this.parametrosValidando()) {
@@ -330,31 +316,6 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     }
   }
 
-  parametroPrepClase(estado: ParametroResumenEstado): string {
-    return this.prepClaseEstadoPaso(this.parametroEstadoPaso(estado));
-  }
-
-  parametroPrepIcono(estado: ParametroResumenEstado): string {
-    return this.prepIconoEstadoPaso(this.parametroEstadoPaso(estado));
-  }
-
-  parametroPrepEtiqueta(estado: ParametroResumenEstado): string {
-    return this.prepEtiquetaEstadoPaso(this.parametroEstadoPaso(estado));
-  }
-
-  parametroPrepConectorClase(estado: ParametroResumenEstado): string {
-    return this.prepConectorClaseEstadoPaso(this.parametroEstadoPaso(estado));
-  }
-
-  prepValidacionEstadoPaso(): EstadoPasoParametro {
-    if (this.parametrosValidando() || this.parametrosLoading()) return 'pendiente';
-    const resumen = this.parametrosResumen();
-    if (!resumen) return 'pendiente';
-    if (resumen.bloqueos > 0) return 'bloqueado';
-    if (resumen.requiereRevision > 0) return 'revision';
-    return 'completo';
-  }
-
   bloqueoSeveridadClase(severidad: ParametroBloqueoSeveridad): string {
     return severidad === 'bloqueo' ? 'status-red' : 'status-amber';
   }
@@ -384,57 +345,6 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
 
   cantidadChipsOcultosParametro(items: ParametroResumenItem[]): number {
     return Math.max(items.length - 5, 0);
-  }
-
-  private parametroEstadoPaso(estado: ParametroResumenEstado): EstadoPasoParametro {
-    switch (estado) {
-      case 'completo':
-        return 'completo';
-      case 'requiereRevision':
-        return 'revision';
-      case 'bloqueo':
-        return 'bloqueado';
-      case 'pendiente':
-        return 'faltante';
-    }
-  }
-
-  private prepClaseEstadoPaso(estado: EstadoPasoParametro): string {
-    return `prep-item--${estado}`;
-  }
-
-  private prepEtiquetaEstadoPaso(estado: EstadoPasoParametro): string {
-    switch (estado) {
-      case 'completo':
-        return 'Completo';
-      case 'revision':
-        return 'Requiere revisión';
-      case 'faltante':
-        return 'Faltan datos';
-      case 'bloqueado':
-        return 'Bloqueado';
-      case 'pendiente':
-        return 'Pendiente';
-    }
-  }
-
-  private prepIconoEstadoPaso(estado: EstadoPasoParametro): string {
-    switch (estado) {
-      case 'completo':
-        return 'check-circle-2';
-      case 'revision':
-        return 'triangle-alert';
-      case 'faltante':
-        return 'circle-alert';
-      case 'bloqueado':
-        return 'octagon-x';
-      case 'pendiente':
-        return 'clock-3';
-    }
-  }
-
-  private prepConectorClaseEstadoPaso(estado: EstadoPasoParametro): string {
-    return `prep-connector--${estado}`;
   }
 
   private obtenerEstadoPendientesPasoParametros(): EstadoPendientesPasoParametros {

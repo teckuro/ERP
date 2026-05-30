@@ -16,7 +16,7 @@
         [class]="claseTono(metric.tone)"
         [title]="metric.helperText"
       >
-        <div class="summary-metric__icon empleados-kpi-card__icon">
+        <div class="summary-metric__icon empleados-kpi-card__icon nomina-iconBadge" [class]="'nomina-iconBadge--' + tonoBadgeMetrica(metric.tone)">
           <lucide-icon [name]="iconoMetrica(metric.id)" aria-hidden="true"></lucide-icon>
         </div>
         <div class="summary-metric__copy empleados-kpi-card__copy">

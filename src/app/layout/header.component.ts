@@ -34,8 +34,13 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
   imports: [CommonModule, FormsModule, RouterLink, LucideAngularModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <header class="erp-shell-header" [style.left.px]="navWidth" [style.height.px]="headerHeight">
-      <div class="erp-shell-header__inner">
+    <header
+      class="erp-shell-header"
+      [class.erp-shell-header--with-title]="!!pageTitle()"
+      [style.left.px]="navWidth"
+      [style.height.px]="headerHeight"
+    >
+      <div class="erp-shell-header__inner" [class.erp-shell-header__inner--with-title]="!!pageTitle()">
         <nav class="erp-shell-header__breadcrumb" aria-label="Ruta actual">
           <a routerLink="/" class="erp-shell-header__crumb-home" aria-label="Inicio">
             <lucide-icon [img]="homeIcon"></lucide-icon>
@@ -49,6 +54,15 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
             }
           }
         </nav>
+
+        @if (pageTitle(); as title) {
+          <div class="erp-shell-header__title">
+            <h1>{{ title }}</h1>
+            @if (pageSubtitle()) {
+              <p>{{ pageSubtitle() }}</p>
+            }
+          </div>
+        }
 
         <div class="erp-shell-header__actions">
           @if (statusChip(); as chip) {
@@ -154,6 +168,13 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
         padding: 0 ${SHELL_STRIP_PADDING_X_PX}px;
       }
 
+      .erp-shell-header__inner--with-title {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto;
+        align-items: center;
+        gap: 10px 14px;
+      }
+
       .erp-shell-header__breadcrumb {
         display: flex;
         min-width: 0;
@@ -161,6 +182,47 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
         align-items: center;
         gap: 6px;
         overflow: hidden;
+      }
+
+      .erp-shell-header__inner--with-title .erp-shell-header__breadcrumb {
+        flex: none;
+        justify-self: start;
+      }
+
+      .erp-shell-header__title {
+        min-width: 0;
+        justify-self: center;
+        text-align: center;
+      }
+
+      .erp-shell-header__title h1 {
+        margin: 0;
+        overflow: hidden;
+        color: #0f172a;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .erp-shell-header__title p {
+        margin: 1px 0 0;
+        overflow: hidden;
+        color: #64748b;
+        font-size: 10.5px;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .erp-shell-header__inner--with-title .erp-shell-header__actions {
+        flex: none;
+        justify-self: end;
+        width: max-content;
+        max-width: 100%;
+        min-width: 0;
+        flex-wrap: nowrap;
       }
 
       .erp-shell-header__crumb-home {
@@ -334,16 +396,19 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
 
       .erp-shell-header__cta {
         display: inline-flex;
-        min-height: 34px;
+        flex: 0 0 auto;
+        height: 28px;
         align-items: center;
-        gap: 6px;
+        gap: 5px;
         border: 0.5px solid var(--erp-primary);
-        border-radius: 8px;
+        border-radius: 6px;
         background: var(--erp-primary);
-        padding: 8px 16px;
+        padding: 0 10px;
         color: #ffffff;
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 500;
+        line-height: 1;
+        white-space: nowrap;
         cursor: pointer;
         transition:
           background-color 150ms ease,
@@ -366,8 +431,9 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
       }
 
       .erp-shell-header__cta lucide-icon {
-        width: 13px;
-        height: 13px;
+        width: 12px;
+        height: 12px;
+        flex: 0 0 12px;
       }
 
       .erp-shell-header__user {
@@ -420,6 +486,18 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
           right: auto;
           left: 0;
         }
+
+        .erp-shell-header__title p {
+          display: none;
+        }
+
+        .erp-shell-header__inner--with-title {
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+        }
+
+        .erp-shell-header__inner--with-title .erp-shell-header__title {
+          text-align: left;
+        }
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -452,6 +530,8 @@ export class HeaderComponent {
   readonly cerrandoSesion = signal(false);
 
   readonly breadcrumbs = this.shellContext.breadcrumbs;
+  readonly pageTitle = this.shellContext.pageTitle;
+  readonly pageSubtitle = this.shellContext.pageSubtitle;
   readonly statusChip = this.shellContext.statusChip;
   readonly primaryAction = this.shellContext.primaryAction;
 

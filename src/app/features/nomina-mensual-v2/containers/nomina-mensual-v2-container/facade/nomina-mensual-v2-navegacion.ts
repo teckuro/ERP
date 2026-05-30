@@ -52,11 +52,11 @@ export function obtenerTituloPaso(paso: PayrollStepId): string {
 export function obtenerSubtituloPaso(paso: PayrollStepId): string {
   switch (paso) {
     case 'parameters':
-      return 'Verifica la configuración normativa y operativa requerida para calcular Mayo 2026.';
+      return 'Mayo 2026 · Configuración normativa y operativa requerida para calcular remuneraciones.';
     case 'scope':
-      return 'Define qué trabajadores serán preparados para esta nómina antes de revisar empleados.';
+      return 'Mayo 2026 · Define qué trabajadores serán preparados antes de revisar empleados.';
     case 'employees':
-      return 'Revisa bloqueos, advertencias y datos críticos solo para los trabajadores seleccionados.';
+      return 'Mayo 2026 · Revisa bloqueos, advertencias y datos críticos del alcance seleccionado.';
     case 'movements':
       return 'Registra los eventos del mes que afectan la remuneración de los trabajadores.';
     case 'calculation':

@@ -52,6 +52,7 @@ import {
   iconoChecklist,
   iconoMetrica,
   inicialesNombre,
+  tonoBadgeMetrica,
 } from '../../utils/nomina-mensual-v2-presentacion.util';
 
 @Component({
@@ -121,6 +122,7 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
   });
 
   readonly claseTono = claseTono;
+  readonly tonoBadgeMetrica = tonoBadgeMetrica;
   readonly iconoMetrica = iconoMetrica;
   readonly claseChecklist = claseChecklist;
   readonly claseChipFiltroChecklist = claseChipFiltroChecklist;

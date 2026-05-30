@@ -1,7 +1,16 @@
-<div class="nmv2-stepper-card">
-  <nav class="nmv2-stepper" aria-label="Flujo de nómina mensual">
+<div class="nmv2-stepper-card nomina-shell">
+  <nav class="nmv2-stepper nomina-stepper" aria-label="Flujo de nómina mensual">
     @for (step of steps; track step.id) {
-      <button type="button" class="step" [class]="estadoPaso(step.id)" (click)="seleccionarPaso(step.id)">
+      <button
+        type="button"
+        class="step nomina-step"
+        [class.nomina-step--active]="estadoPaso(step.id) === 'active'"
+        [class.nomina-step--complete]="estadoPaso(step.id) === 'completed'"
+        [class.nomina-step--pending]="estadoPaso(step.id) === 'pending'"
+        [class.active]="estadoPaso(step.id) === 'active'"
+        [class.completed]="estadoPaso(step.id) === 'completed'"
+        (click)="seleccionarPaso(step.id)"
+      >
         <span class="step-number">
           @if (estadoPaso(step.id) === 'completed') {
             <lucide-icon name="check" aria-hidden="true"></lucide-icon>

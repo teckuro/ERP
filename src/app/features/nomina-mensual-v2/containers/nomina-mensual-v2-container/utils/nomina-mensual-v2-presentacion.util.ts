@@ -5,6 +5,21 @@ export function claseTono(tone: StatusTone): string {
   return `tone-${tone}`;
 }
 
+export function tonoBadgeMetrica(tone: StatusTone): 'blue' | 'green' | 'amber' | 'red' | 'slate' {
+  switch (tone) {
+    case 'blue':
+      return 'blue';
+    case 'green':
+      return 'green';
+    case 'amber':
+      return 'amber';
+    case 'red':
+      return 'red';
+    default:
+      return 'slate';
+  }
+}
+
 export function claseChecklist(status: ChecklistStatus): string {
   return `status-${status}`;
 }
@@ -23,11 +38,11 @@ export function claseSeveridadChecklist(severidad: SeveridadChecklistEmpleados):
 export function claseChipFiltroChecklist(severidad: SeveridadChecklistEmpleados | null): string {
   switch (severidad) {
     case 'bloqueante':
-      return 'empleados-filtro-chip empleados-filtro-chip--bloqueante';
+      return 'empleados-filtro-chip nomina-chip empleados-filtro-chip--bloqueante nomina-chip--danger';
     case 'advertencia':
-      return 'empleados-filtro-chip empleados-filtro-chip--advertencia';
+      return 'empleados-filtro-chip nomina-chip empleados-filtro-chip--advertencia nomina-chip--warning';
     default:
-      return 'empleados-filtro-chip empleados-filtro-chip--neutro';
+      return 'empleados-filtro-chip nomina-chip empleados-filtro-chip--neutro nomina-chip--neutral';
   }
 }
 

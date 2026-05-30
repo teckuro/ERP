@@ -15,6 +15,7 @@ import { ShellPageContextService } from '../../../../layout/shell-page-context.s
 import { payrollSteps } from '../../data/nomina-mensual-v2.mock';
 import type { PayrollStepId } from '../../models/nomina-mensual-v2.models';
 import type { TipoPendienteEmpleado } from '../../presenters/nomina-empleados-validacion.presenter';
+
 import { NominaMensualV2OverlaysComponent } from './components/nomina-mensual-v2-overlays/nomina-mensual-v2-overlays.component';
 import { NominaMensualV2PasoAlcanceComponent } from './components/nomina-mensual-v2-paso-alcance/nomina-mensual-v2-paso-alcance.component';
 import { NominaMensualV2PasoEmpleadosComponent } from './components/nomina-mensual-v2-paso-empleados/nomina-mensual-v2-paso-empleados.component';
@@ -156,6 +157,8 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
         { label: 'Nómina', path: '/remuneraciones/proceso-mensual' },
         { label: paso === 'parameters' ? 'Parámetros' : this.pageTitle() },
       ],
+      pageTitle: this.pageTitle(),
+      pageSubtitle: this.pageSubtitle(),
       statusChip: {
         label: `Paso ${currentIndex + 1} de ${ORDEN_PASOS_NOMINA.length}`,
         tone: isValidationBlocked ? 'warning' : 'neutral',

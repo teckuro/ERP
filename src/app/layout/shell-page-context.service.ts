@@ -11,6 +11,8 @@ export type ShellBreadcrumbItem = {
 
 export type ShellPageContext = {
   breadcrumbs: ShellBreadcrumbItem[];
+  pageTitle?: string;
+  pageSubtitle?: string;
   statusChip?: { label: string; tone: ShellStatusChipTone };
   primaryAction?: {
     label: string;
@@ -33,6 +35,8 @@ export class ShellPageContextService {
   readonly context = this.contextState.asReadonly();
 
   readonly breadcrumbs = computed(() => this.contextState().breadcrumbs);
+  readonly pageTitle = computed(() => this.contextState().pageTitle);
+  readonly pageSubtitle = computed(() => this.contextState().pageSubtitle);
   readonly statusChip = computed(() => this.contextState().statusChip);
   readonly primaryAction = computed(() => this.contextState().primaryAction);
 

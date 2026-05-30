@@ -1,23 +1,17 @@
-<section class="nmv2-page" [attr.data-step]="currentStep()">
+<section class="nmv2-page nomina-shell" [attr.data-step]="currentStep()">
   <app-nomina-mensual-v2-stepper
     [pasoActual]="currentStep()"
     [steps]="steps"
     (pasoSeleccionado)="intentarIrAPaso($event)"
   />
 
-  <header class="nmv2-screen-header">
-    <div class="nmv2-screen-copy">
-      <h1>{{ pageTitle() }}</h1>
-      <p>{{ pageSubtitle() }}</p>
-      @if (orquestador.ayudaAvance(); as ayudaAvance) {
-        <p
-          class="nmv2-step-nav-hint"
-          [class.nmv2-step-nav-hint--bloqueo]="orquestador.tonoAyudaAvance() === 'bloqueo'"
-          [class.nmv2-step-nav-hint--revision]="orquestador.tonoAyudaAvance() === 'revision'"
-        >{{ ayudaAvance }}</p>
-      }
-    </div>
-  </header>
+  @if (orquestador.ayudaAvance(); as ayudaAvance) {
+    <p
+      class="nmv2-step-nav-hint"
+      [class.nmv2-step-nav-hint--bloqueo]="orquestador.tonoAyudaAvance() === 'bloqueo'"
+      [class.nmv2-step-nav-hint--revision]="orquestador.tonoAyudaAvance() === 'revision'"
+    >{{ ayudaAvance }}</p>
+  }
 
   @switch (currentStep()) {
     @case ('parameters') {

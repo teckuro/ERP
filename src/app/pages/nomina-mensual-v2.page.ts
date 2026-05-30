@@ -14,7 +14,8 @@ import { NominaMensualV2Container } from '../features/nomina-mensual-v2/containe
         flex: 1 1 auto;
         flex-direction: column;
         width: 100%;
-        min-height: 100%;
+        height: 100%;
+        min-height: 0;
         min-width: 0;
       }
     `,
