@@ -1,4 +1,5 @@
 import type { ChecklistStatus, StatusTone } from '../../../models/nomina-mensual-v2.models';
+import type { SeveridadChecklistEmpleados } from '../../../presenters/nomina-empleados-validacion.presenter';
 
 export function claseTono(tone: StatusTone): string {
   return `tone-${tone}`;
@@ -8,7 +9,7 @@ export function claseChecklist(status: ChecklistStatus): string {
   return `status-${status}`;
 }
 
-export function claseSeveridadChecklist(severidad: 'correcto' | 'advertencia' | 'bloqueante'): string {
+export function claseSeveridadChecklist(severidad: SeveridadChecklistEmpleados): string {
   switch (severidad) {
     case 'correcto':
       return 'empleados-checklist-severidad--correcto';
@@ -16,6 +17,17 @@ export function claseSeveridadChecklist(severidad: 'correcto' | 'advertencia' | 
       return 'empleados-checklist-severidad--advertencia';
     case 'bloqueante':
       return 'empleados-checklist-severidad--bloqueante';
+  }
+}
+
+export function claseChipFiltroChecklist(severidad: SeveridadChecklistEmpleados | null): string {
+  switch (severidad) {
+    case 'bloqueante':
+      return 'empleados-filtro-chip empleados-filtro-chip--bloqueante';
+    case 'advertencia':
+      return 'empleados-filtro-chip empleados-filtro-chip--advertencia';
+    default:
+      return 'empleados-filtro-chip empleados-filtro-chip--neutro';
   }
 }
 

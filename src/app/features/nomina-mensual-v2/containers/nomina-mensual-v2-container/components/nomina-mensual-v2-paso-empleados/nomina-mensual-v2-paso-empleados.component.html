@@ -1,14 +1,17 @@
 <div class="nmv2-paso-empleados">
-  <div class="metric-strip empleados-kpi-strip">
+  <div class="metric-strip empleados-kpi-strip empleados-kpis-compactos" aria-label="Resumen de empleados">
     @for (metric of metricasEmpleados(); track metric.id) {
-      <article class="summary-metric empleados-kpi-card" [class]="claseTono(metric.tone)">
+      <article
+        class="summary-metric empleados-kpi-card"
+        [class]="claseTono(metric.tone)"
+        [title]="metric.helperText"
+      >
         <div class="summary-metric__icon empleados-kpi-card__icon">
           <lucide-icon [name]="iconoMetrica(metric.id)" aria-hidden="true"></lucide-icon>
         </div>
-        <div class="summary-metric__copy">
-          <span>{{ metric.label }}</span>
+        <div class="summary-metric__copy empleados-kpi-card__copy">
+          <span class="empleados-kpi-card__label">{{ metric.label }}</span>
           <strong class="empleados-kpi-card__value">{{ metric.value }}</strong>
-          <small>{{ metric.helperText }}</small>
         </div>
       </article>
     }
@@ -16,29 +19,40 @@
 
   <div class="content-grid content-grid--aside nmv2-employees-layout">
     <main class="content-main">
-      <div id="nmv2-empleados-grid-anchor" class="nmv2-empleados-grid-wrap">
-        <div class="nmv2-empleados-grid-toolbar">
-          <button
-            type="button"
-            class="nmv2-empleados-filtros-avanzados-btn"
-            [class.nmv2-empleados-filtros-avanzados-btn--activo]="filtrosAvanzadosEmpleadosVisibles()"
-            (click)="alternarFiltrosAvanzadosEmpleados()"
-          >
-            <lucide-icon name="filter" aria-hidden="true"></lucide-icon>
-            Filtros avanzados
-          </button>
-          @if (etiquetaFiltroChecklistActivo(); as etiquetaFiltro) {
-            <button type="button" class="nmv2-empleados-filtro-pendiente-chip" (click)="limpiarFiltroPendienteEmpleados()">
-              {{ etiquetaFiltro }}
-              <lucide-icon name="x" aria-hidden="true"></lucide-icon>
-            </button>
-          }
-          @if (leyendaFiltradoGrilla(); as leyenda) {
-            <span class="nmv2-empleados-grid-caption">{{ leyenda }}</span>
-          }
+      <div
+        id="nmv2-empleados-grid-anchor"
+        class="empleados-grid-module"
+        [class.empleados-grid-module--avanzados]="filtrosAvanzadosEmpleadosVisibles()"
+      >
+        <div class="empleados-grid-toolbar">
+          <div class="empleados-grid-toolbar__row empleados-grid-toolbar__row--filters">
+            <div class="empleados-grid-toolbar__filters">
+              <button
+                type="button"
+                class="nmv2-empleados-filtros-avanzados-btn"
+                [class.nmv2-empleados-filtros-avanzados-btn--activo]="filtrosAvanzadosEmpleadosVisibles()"
+                (click)="alternarFiltrosAvanzadosEmpleados()"
+              >
+                <lucide-icon name="filter" aria-hidden="true"></lucide-icon>
+                Filtros avanzados
+              </button>
+              @if (etiquetaFiltroChecklistActivo(); as etiquetaFiltro) {
+                <button
+                  type="button"
+                  [class]="claseChipFiltroChecklist(severidadFiltroChecklistActivo())"
+                  (click)="limpiarFiltroPendienteEmpleados()"
+                >
+                  <span>{{ etiquetaFiltro }}</span>
+                  <lucide-icon class="empleados-filtro-chip__close" name="x" aria-hidden="true"></lucide-icon>
+                </button>
+              }
+            </div>
+            <span class="empleados-grid-toolbar__conteo">{{ leyendaFiltradoGrilla() }}</span>
+          </div>
         </div>
+
         <app-data-grid
-          title="Empleados para nómina"
+          title=""
           [columns]="columnasGrillaEmpleados"
           [rows]="filasEmpleadosVista()"
           [filters]="filtrosGrillaEmpleados()"
@@ -47,22 +61,22 @@
           filterChipsDisplay="whenFiltersHidden"
           headerCountDisplay="text"
           headerCountNoun="resultados"
-          [headerShowActiveFiltersCount]="true"
+          [headerShowActiveFiltersCount]="false"
           [loading]="empleadosCargando()"
           loadingLabel="Cargando empleados del período..."
           [mensajeError]="empleadosError()"
           [showHeader]="true"
           [selectable]="false"
           [trackBy]="trackFilaEmpleadoNomina"
-          persistenceKey="nomina-mensual-v2.empleados.grid"
-          gridHeight="min(520px, 100%)"
+          [persistenceKey]="clavePersistenciaGrillaEmpleados()"
+          gridHeight="560px"
           toolbarLayout="operativa"
           emptyTitleWhenFiltered="No se encontraron empleados con los filtros aplicados."
           emptyDescriptionWhenFiltered="Ajusta la búsqueda o limpia los filtros para ver más resultados."
           emptyTitle="Sin empleados en el período"
           emptyDescription="No hay trabajadores activos para este período de nómina."
-          className="nmv2-empleados-grid-shell"
-          cardClassName="nmv2-empleados-grid-card"
+          className="nmv2-empleados-grid-shell empleados-grid-module__grid"
+          cardClassName="nmv2-empleados-grid-card empleados-grid-module__card"
           (refresh)="recargarGrillaEmpleados()"
           (retry)="recargarGrillaEmpleados()"
         >
@@ -129,17 +143,22 @@
             <button
               type="button"
               class="checklist-item empleados-checklist-item"
-              [class]="claseChecklist(item.status)"
+              [class]="claseItemChecklistEmpleado(item)"
               [class.empleados-checklist-item--activo]="filtroPendienteEmpleados() === item.tipoPendiente"
               [class.empleados-checklist-item--inactivo]="!item.esAccionable"
               [disabled]="!item.esAccionable"
               (click)="seleccionarChecklistEmpleado(item)"
             >
-              <span class="checklist-item__icon"><lucide-icon [name]="iconoChecklist(item.status)" aria-hidden="true"></lucide-icon></span>
+              <span class="checklist-item__icon empleados-checklist-item__icon">
+                <lucide-icon [name]="iconoChecklist(item.status)" aria-hidden="true"></lucide-icon>
+              </span>
               <div class="checklist-item__copy empleados-checklist-item__copy">
-                <div class="empleados-checklist-item__heading">
+                <div class="empleados-checklist-item__header">
                   <strong class="empleados-checklist-item__title">{{ item.title }}</strong>
-                  <span class="empleados-checklist-severidad" [class]="claseSeveridadChecklist(item.severidad)">
+                  <span
+                    class="empleados-checklist-severidad empleados-checklist-item__severity"
+                    [class]="claseSeveridadChecklist(item.severidad)"
+                  >
                     {{ item.etiquetaSeveridad }}
                   </span>
                 </div>
@@ -151,13 +170,17 @@
             </button>
           }
         </div>
-        <button type="button" class="empleados-checklist-resumen-btn" (click)="abrirModalResumenPendientes('checklist')">
+        <button
+          type="button"
+          class="empleados-checklist-resumen-btn empleados-resumen-pendientes-button"
+          (click)="abrirModalResumenPendientes('checklist')"
+        >
           <lucide-icon name="list-checks" aria-hidden="true"></lucide-icon>
           Ver resumen de pendientes
         </button>
         <div class="info-banner empleados-checklist-info">
           <lucide-icon name="info" aria-hidden="true"></lucide-icon>
-          <span>Usa el botón superior «Validar empleados» para revisar y avanzar.</span>
+          <span>El checklist ayuda a corregir. Para avanzar, usa «Validar empleados».</span>
         </div>
         <button type="button" class="text-link" (click)="solicitarVolverParametros()">Volver a parámetros</button>
       </section>

@@ -109,6 +109,24 @@ function crearItemChecklistEmpleado(
   };
 }
 
+export function obtenerFraseEstadoResumenPendientes(resultado: ResultadoValidacionEmpleados): string {
+  if (resultado.estado === 'bloqueado') {
+    return 'Hay pendientes bloqueantes antes de continuar.';
+  }
+  if (resultado.estado === 'advertencia') {
+    return 'Hay advertencias que conviene revisar.';
+  }
+  return 'La base de empleados está lista.';
+}
+
+export function obtenerSeveridadFiltroChecklist(
+  tipoPendiente: TipoPendienteEmpleado,
+  items: ItemChecklistEmpleadoNomina[],
+): SeveridadChecklistEmpleados {
+  const item = items.find((checklistItem) => checklistItem.tipoPendiente === tipoPendiente);
+  return item?.severidad ?? 'advertencia';
+}
+
 export function obtenerEtiquetaFiltroChecklistEmpleados(tipoPendiente: TipoPendienteEmpleado): string {
   switch (tipoPendiente) {
     case 'contrato':
@@ -141,10 +159,10 @@ export function obtenerPrimerTipoPendienteBloqueante(filas: FilaEmpleadoNomina[]
 export function obtenerTextoSuperiorEmpleados(filas: FilaEmpleadoNomina[]): string | null {
   const resultado = obtenerResultadoValidacionEmpleados(filas);
   if (resultado.estado === 'bloqueado') {
-    return 'Hay trabajadores con datos obligatorios pendientes. Corrígelos desde la grilla, usa el checklist para filtrarlos o revisa el resumen de pendientes.';
+    return 'Hay pendientes obligatorios. Usa el checklist o el resumen para filtrarlos en la grilla.';
   }
   if (resultado.estado === 'advertencia') {
-    return 'Hay observaciones en empleados. Revísalas desde la grilla o consulta el resumen de pendientes antes de continuar.';
+    return 'Hay observaciones en empleados. Revísalas desde el checklist o el resumen antes de avanzar.';
   }
   if (resultado.totalEmpleados > 0) {
     return 'La base de empleados está lista para avanzar al registro de novedades.';
@@ -400,21 +418,21 @@ export function construirMetricasEmpleadosNomina(filas: FilaEmpleadoNomina[]): S
     { id: 'active', label: 'Activos', value: total, helperText: 'Trabajadores activos', tone: 'green' },
     {
       id: 'contracts',
-      label: 'Con contrato vigente',
+      label: 'Contrato vigente',
       value: resumen.conContratoVigente,
       helperText: formatearPorcentaje(resumen.conContratoVigente, total),
       tone: 'blue',
     },
     {
       id: 'bank',
-      label: 'Datos bancarios pendientes',
+      label: 'Bancarios pendientes',
       value: resumen.conDatosBancariosPendientes,
       helperText: formatearPorcentaje(resumen.conDatosBancariosPendientes, total),
       tone: 'amber',
     },
     {
       id: 'docs',
-      label: 'Documentación incompleta',
+      label: 'Docs. incompletas',
       value: resumen.conDocumentacionIncompleta,
       helperText: formatearPorcentaje(resumen.conDocumentacionIncompleta, total),
       tone: 'red',

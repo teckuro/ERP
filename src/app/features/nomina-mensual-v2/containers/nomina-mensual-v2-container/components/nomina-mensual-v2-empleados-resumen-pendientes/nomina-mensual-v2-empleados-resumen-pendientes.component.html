@@ -15,30 +15,34 @@
     <p id="nmv2-empleados-resumen-subtitulo" class="nmv2-empleados-resumen-modal__subtitulo">
       Revisa qué bloquea el avance y qué elementos requieren atención.
     </p>
+    <p class="nmv2-empleados-resumen-modal__estado">{{ fraseEstado }}</p>
   </header>
 
-  <div class="nmv2-empleados-resumen-modal__contadores">
-    <div class="nmv2-empleados-resumen-contador nmv2-empleados-resumen-contador--bloqueante">
-      <span class="nmv2-empleados-resumen-contador__label">Bloqueantes</span>
-      <strong class="nmv2-empleados-resumen-contador__valor">{{ resultado.totalBloqueos }}</strong>
+  <div class="resumen-pendientes-metricas">
+    <div class="resumen-pendientes-metrica resumen-pendientes-metrica--bloqueante">
+      <span class="resumen-pendientes-metrica__label">Bloqueantes</span>
+      <strong class="resumen-pendientes-metrica__value">{{ resultado.totalBloqueos }}</strong>
     </div>
-    <div class="nmv2-empleados-resumen-contador nmv2-empleados-resumen-contador--advertencia">
-      <span class="nmv2-empleados-resumen-contador__label">Advertencias</span>
-      <strong class="nmv2-empleados-resumen-contador__valor">{{ resultado.totalAdvertencias }}</strong>
+    <div class="resumen-pendientes-metrica resumen-pendientes-metrica--advertencia">
+      <span class="resumen-pendientes-metrica__label">Advertencias</span>
+      <strong class="resumen-pendientes-metrica__value">{{ resultado.totalAdvertencias }}</strong>
     </div>
-    <div class="nmv2-empleados-resumen-contador nmv2-empleados-resumen-contador--correcto">
-      <span class="nmv2-empleados-resumen-contador__label">Correctos</span>
-      <strong class="nmv2-empleados-resumen-contador__valor">{{ resultado.totalCorrectos }}</strong>
+    <div class="resumen-pendientes-metrica resumen-pendientes-metrica--correcto">
+      <span class="resumen-pendientes-metrica__label">Correctos</span>
+      <strong class="resumen-pendientes-metrica__value">{{ resultado.totalCorrectos }}</strong>
     </div>
-    <div class="nmv2-empleados-resumen-contador nmv2-empleados-resumen-contador--afectados">
-      <span class="nmv2-empleados-resumen-contador__label">Trabajadores afectados</span>
-      <strong class="nmv2-empleados-resumen-contador__valor">{{ resultado.trabajadoresAfectados }}</strong>
+    <div class="resumen-pendientes-metrica resumen-pendientes-metrica--afectados">
+      <span class="resumen-pendientes-metrica__label">Trabajadores afectados</span>
+      <strong class="resumen-pendientes-metrica__value">{{ resultado.trabajadoresAfectados }}</strong>
     </div>
   </div>
 
   <div class="nmv2-empleados-resumen-modal__cuerpo">
     @for (seccion of secciones; track seccion.titulo) {
-      <section class="nmv2-empleados-resumen-seccion" [class.nmv2-empleados-resumen-seccion--compacta]="esSeccionCompacta(seccion)">
+      <section
+        [class]="claseSeccionResumen(seccion)"
+        [class.nmv2-empleados-resumen-seccion--compacta]="esSeccionCompacta(seccion)"
+      >
         <h3 class="nmv2-empleados-resumen-seccion__titulo">{{ seccion.titulo }}</h3>
 
         @if (esSeccionCompacta(seccion)) {
@@ -79,26 +83,34 @@
 
   <footer class="nmv2-empleados-resumen-modal__footer">
     @if (mostrarContinuar) {
-      <button type="button" class="nmv2-empleados-resumen-btn nmv2-empleados-resumen-btn--secundario" (click)="cerrarModal()">
-        Volver y corregir
-      </button>
-      <button type="button" class="nmv2-empleados-resumen-btn nmv2-empleados-resumen-btn--primario" (click)="solicitarContinuar()">
-        Continuar de todas formas
-      </button>
+      <div class="nmv2-empleados-resumen-modal__footer-grupo">
+        <button type="button" class="nmv2-empleados-resumen-btn nmv2-empleados-resumen-btn--ghost" (click)="cerrarModal()">
+          Volver y corregir
+        </button>
+      </div>
+      <div class="nmv2-empleados-resumen-modal__footer-grupo">
+        <button type="button" class="nmv2-empleados-resumen-btn nmv2-empleados-resumen-btn--primario" (click)="solicitarContinuar()">
+          Continuar de todas formas
+        </button>
+      </div>
     } @else {
-      <button type="button" class="nmv2-empleados-resumen-btn nmv2-empleados-resumen-btn--secundario" (click)="cerrarModal()">
-        Cerrar
-      </button>
-      @if (hayPendientesAccionables) {
-        <button type="button" class="nmv2-empleados-resumen-btn nmv2-empleados-resumen-btn--primario" (click)="solicitarVerPendientesEnGrilla()">
-          Ver pendientes en grilla
+      <div class="nmv2-empleados-resumen-modal__footer-grupo">
+        <button type="button" class="nmv2-empleados-resumen-btn nmv2-empleados-resumen-btn--ghost" (click)="cerrarModal()">
+          Cerrar
         </button>
-      }
-      @if (mostrarReintentar) {
-        <button type="button" class="nmv2-empleados-resumen-btn nmv2-empleados-resumen-btn--ghost" (click)="solicitarReintentarValidacion()">
-          Reintentar validación
-        </button>
-      }
+      </div>
+      <div class="nmv2-empleados-resumen-modal__footer-grupo">
+        @if (mostrarReintentar) {
+          <button type="button" class="nmv2-empleados-resumen-btn nmv2-empleados-resumen-btn--secundario" (click)="solicitarReintentarValidacion()">
+            Reintentar validación
+          </button>
+        }
+        @if (hayPendientesAccionables) {
+          <button type="button" class="nmv2-empleados-resumen-btn nmv2-empleados-resumen-btn--primario" (click)="solicitarVerPendientesEnGrilla()">
+            Ver pendientes en grilla
+          </button>
+        }
+      </div>
     }
   </footer>
 </div>

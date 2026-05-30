@@ -106,7 +106,6 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   }
 
   reintentarValidacionEmpleados(): void {
-    this.orquestador.modalAvanceEmpleados.set(null);
     this.pasoEmpleados()?.ejecutarAccionPrincipal();
   }
 

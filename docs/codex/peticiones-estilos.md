@@ -2416,6 +2416,37 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Archivos:** `nomina-mensual-v2-container` (HTML/CSS/TS), `nomina-empleados-grid.presenter.ts`, `nomina-empleados-validacion.presenter.ts`.
 - **No tocado:** estilos globales, SQL, servicios de negocio, otros pasos del flujo.
 
+## 2026-05-29 — Nómina mensual V2: Empleados V8 (coherencia datos, copy, checklist)
+
+- **Paginación:** `clavePersistenciaGrillaEmpleados` + reset a página 1 al cambiar filtro checklist; numeración coherente con total (124 demo).
+- **Copy superior:** textos más cortos (bloqueo/advertencia/listo) según spec V8.
+- **Checklist:** énfasis bloqueantes sin barra lateral (NOIA): borde/fondo suave + icono tintado; severidad con más aire; helper «El checklist ayuda a corregir…».
+- **Resumen pendientes:** botón `empleados-resumen-pendientes-button` con más presencia (borde 700, hover neutro).
+- **Archivos:** paso-empleados, presenter validación, container CSS.
+- **No tocado:** lógica de negocio, SQL, estilos globales, orquestación del botón superior.
+
+## 2026-05-29 — Nómina mensual V2: Empleados V7 (micro pulido cabecera/toolbar/checklist/grilla)
+
+- **Cabecera/KPIs:** franja secundaria alineada abajo-derecha con más aire (`gap: 18px`, `align-self: end`); subtítulo acortado.
+- **Copy superior:** textos bloqueo/advertencia/listo más cortos y accionables (grilla, checklist, resumen).
+- **Toolbar grilla:** fila `__filters` + conteo a la derecha; chips 30px con cierre más claro; equilibrio sin filtros activos.
+- **Checklist:** severidad con `__header`/`__severity` y más espacio respecto al título.
+- **Grilla:** altura útil `560px` / scroll min `380px`, módulo `max-height` ampliado sin doble scroll.
+- **Archivos:** container CSS, paso-empleados HTML, presenter validación, navegación.
+- **No tocado:** lógica de negocio, SQL, estilos globales, data-grid compartido.
+
+## 2026-05-29 — Nómina mensual V2: Empleados V6 (módulo grilla + modal pendientes)
+
+- **Módulo grilla unificado:** wrapper `empleados-grid-module` integra toolbar (filtros avanzados, chip por severidad, conteo), búsqueda, paginación y tabla en una sola superficie; card interna sin borde duplicado.
+- **Chips activos:** tonos por severidad (`bloqueante` / `advertencia` / `neutro`); conteo siempre visible («Mostrando X trabajadores» o «X de Y» con cualquier filtro).
+- **Modal pendientes:** frase de estado en header; métricas con jerarquía (`resumen-pendientes-metricas`); secciones bloqueantes/advertencias con énfasis; footer `Cerrar` | `Reintentar validación` | `Ver pendientes en grilla` (primario).
+- **Reintentar validación:** no cierra el modal antes; `ejecutarAccionPrincipal()` actualiza o cierra según resultado.
+- **KPIs empleados:** fila lineal en header derecho; etiqueta + valor en línea; labels cortos legibles; detalle en `title` al pasar el mouse.
+- **Checklist sidebar:** columna lateral alineada con la KPI «Documentación incompleta» (rejilla 4 cols compartida; sin `max-width: 320px`).
+- **Grilla empleados:** altura fija `520px`, módulo con `max-height`; panel de filtros con scroll interno; área de tabla mín. `340px` estable al togglear filtros avanzados.
+- **Archivos:** paso-empleados, modal resumen, container, `nomina-empleados-validacion.presenter.ts`, `nomina-mensual-v2-presentacion.util.ts`, CSS container.
+- **No tocado:** estilos globales, SQL, data-grid compartido, otros pasos.
+
 ## 2026-05-29 — Nómina mensual V2: Empleados V5 (resumen pendientes modal)
 
 - **Checklist:** severidad siempre visible en cada ítem (incl. documentación y observaciones); botón «Ver resumen de pendientes».

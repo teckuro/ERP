@@ -51,7 +51,7 @@ export function obtenerSubtituloPaso(paso: PayrollStepId): string {
     case 'parameters':
       return 'Verifica la configuración normativa y operativa requerida para calcular Mayo 2026.';
     case 'employees':
-      return 'La base de la nómina se construye desde los trabajadores activos en el período seleccionado.';
+      return 'Trabajadores activos del período seleccionado.';
     case 'movements':
       return 'Registra los eventos del mes que afectan la remuneración de los trabajadores.';
     case 'calculation':

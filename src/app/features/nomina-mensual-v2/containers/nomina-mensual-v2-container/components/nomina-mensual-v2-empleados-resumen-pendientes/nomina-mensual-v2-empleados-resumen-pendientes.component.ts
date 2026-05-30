@@ -7,6 +7,7 @@ import type {
   SeccionResumenPendientesEmpleados,
   TipoPendienteEmpleado,
 } from '../../../../presenters/nomina-empleados-validacion.presenter';
+import { obtenerFraseEstadoResumenPendientes } from '../../../../presenters/nomina-empleados-validacion.presenter';
 import type { ModalResumenPendientesEmpleadosPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 import { claseSeveridadChecklist } from '../../utils/nomina-mensual-v2-presentacion.util';
 
@@ -55,6 +56,14 @@ export class NominaMensualV2EmpleadosResumenPendientesComponent {
 
   esSeccionCompacta(seccion: SeccionResumenPendientesEmpleados): boolean {
     return seccion.severidad === 'correcto';
+  }
+
+  get fraseEstado(): string {
+    return obtenerFraseEstadoResumenPendientes(this.resultado);
+  }
+
+  claseSeccionResumen(seccion: SeccionResumenPendientesEmpleados): string {
+    return `nmv2-empleados-resumen-seccion nmv2-empleados-resumen-seccion--${seccion.severidad}`;
   }
 
   cerrarModal(): void {

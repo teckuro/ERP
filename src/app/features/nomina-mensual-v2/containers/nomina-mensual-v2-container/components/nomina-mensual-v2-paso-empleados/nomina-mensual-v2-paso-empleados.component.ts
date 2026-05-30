@@ -9,6 +9,7 @@ import {
   ViewEncapsulation,
   computed,
   effect,
+  ViewChild,
   inject,
   signal,
 } from '@angular/core';
@@ -32,9 +33,11 @@ import {
   obtenerPrimerTipoPendienteBloqueante,
   obtenerResultadoValidacionEmpleados,
   obtenerResumenEmpleadosNomina,
+  obtenerSeveridadFiltroChecklist,
   obtenerSeccionesResumenPendientesEmpleados,
   obtenerTextoSuperiorEmpleados,
   type ItemChecklistEmpleadoNomina,
+  type SeveridadChecklistEmpleados,
   type TipoPendienteEmpleado,
 } from '../../../../presenters/nomina-empleados-validacion.presenter';
 import {
@@ -44,6 +47,7 @@ import {
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 import {
   claseChecklist,
+  claseChipFiltroChecklist,
   claseSeveridadChecklist,
   claseTono,
   iconoChecklist,
@@ -62,6 +66,8 @@ import {
 export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly orquestador = inject(NominaMensualV2OrquestadorPort);
+
+  @ViewChild(DataGridComponent) private grillaEmpleados?: DataGridComponent<FilaEmpleadoNomina>;
 
   @Output() avanceSolicitado = new EventEmitter<void>();
   @Output() volverParametros = new EventEmitter<void>();
@@ -90,18 +96,33 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
     const tipo = this.filtroPendienteEmpleados();
     return tipo ? obtenerEtiquetaFiltroChecklistEmpleados(tipo) : null;
   });
+  readonly severidadFiltroChecklistActivo = computed((): SeveridadChecklistEmpleados | null => {
+    const tipo = this.filtroPendienteEmpleados();
+    if (!tipo) return null;
+    return obtenerSeveridadFiltroChecklist(tipo, this.checklistEmpleados());
+  });
   readonly leyendaFiltradoGrilla = computed(() => {
     const total = this.filasEmpleadosNomina().length;
     const visibles = this.filasEmpleadosVista().length;
-    if (!this.filtroPendienteEmpleados() || visibles === total) {
-      return null;
+    if (visibles !== total) {
+      return `Mostrando ${visibles} de ${total} trabajadores.`;
     }
-    return `Mostrando ${visibles} de ${total} trabajadores.`;
+    return `Mostrando ${total} trabajadores.`;
+  });
+  readonly clavePersistenciaGrillaEmpleados = computed(() => {
+    const filtro = this.filtroPendienteEmpleados();
+    const cantidad = this.filasEmpleadosVista().length;
+    const base = 'nomina-mensual-v2.empleados.grid';
+    if (!filtro) {
+      return `${base}.${cantidad}`;
+    }
+    return `${base}.filtro-${filtro}.${cantidad}`;
   });
 
   readonly claseTono = claseTono;
   readonly iconoMetrica = iconoMetrica;
   readonly claseChecklist = claseChecklist;
+  readonly claseChipFiltroChecklist = claseChipFiltroChecklist;
   readonly claseSeveridadChecklist = claseSeveridadChecklist;
   readonly iconoChecklist = iconoChecklist;
   readonly claseBadgeEstadoNomina = claseBadgeEstadoNomina;
@@ -126,6 +147,12 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
       }
       this.orquestador.establecerAyudaAvance(texto, null);
     });
+
+    effect(() => {
+      this.filtroPendienteEmpleados();
+      this.filasEmpleadosVista().length;
+      queueMicrotask(() => this.grillaEmpleados?.goToPage(1));
+    });
   }
 
   ngOnInit(): void {
@@ -134,6 +161,10 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
       this.orquestador.limpiarAccionPrincipal();
       this.orquestador.establecerAyudaAvance(null);
     });
+  }
+
+  claseItemChecklistEmpleado(item: ItemChecklistEmpleadoNomina): string {
+    return `${claseChecklist(item.status)} empleados-checklist-item--${item.severidad}`;
   }
 
   trackFilaEmpleadoNomina = (_index: number, fila: FilaEmpleadoNomina): string => fila.id;
