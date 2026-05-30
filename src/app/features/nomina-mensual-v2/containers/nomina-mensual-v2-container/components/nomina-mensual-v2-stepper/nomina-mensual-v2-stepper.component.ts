@@ -12,7 +12,7 @@ import { LucideAngularModule } from 'lucide-angular';
 
 import type { PayrollStep, PayrollStepId, PayrollStepStatus } from '../../../../models/nomina-mensual-v2.models';
 import { construirVistasStepper } from '../../../../presenters/nomina-stepper-trazabilidad.presenter';
-import { obtenerEstadoPaso } from '../../facade/nomina-mensual-v2-navegacion';
+import { esAvanceHaciaAdelante, obtenerEstadoPaso } from '../../facade/nomina-mensual-v2-navegacion';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 import { NominaMensualV2StepperTraceabilityComponent } from '../nomina-mensual-v2-stepper-traceability/nomina-mensual-v2-stepper-traceability.component';
 
@@ -27,6 +27,7 @@ import { NominaMensualV2StepperTraceabilityComponent } from '../nomina-mensual-v
 export class NominaMensualV2StepperComponent {
   readonly pasoActual = input.required<PayrollStepId>();
   readonly steps = input.required<PayrollStep[]>();
+  readonly avanceDesdePasoActualBloqueado = input(false);
 
   @Output() pasoSeleccionado = new EventEmitter<PayrollStepId>();
 
@@ -63,6 +64,13 @@ export class NominaMensualV2StepperComponent {
   }
 
   seleccionarPaso(stepId: PayrollStepId): void {
+    if (this.avanceDesdePasoActualBloqueado() && esAvanceHaciaAdelante(this.pasoActual(), stepId)) {
+      return;
+    }
     this.pasoSeleccionado.emit(stepId);
+  }
+
+  pasoAvanceBloqueado(stepId: PayrollStepId): boolean {
+    return this.avanceDesdePasoActualBloqueado() && esAvanceHaciaAdelante(this.pasoActual(), stepId);
   }
 }

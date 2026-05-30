@@ -5,13 +5,13 @@
 import { config } from 'dotenv';
 import { resolve } from 'node:path';
 
-import { createParametrosE2eSupabaseAdmin, resolveParametrosDbUrl, runPsql } from './lib/parametros-e2e-db.mjs';
+import { createParametrosE2eSupabaseAdmin, E2E_PARAMETROS_PERIODO_DEFAULT, resolveParametrosDbUrl, runPsql } from './lib/parametros-e2e-db.mjs';
 
 config({ path: resolve(process.cwd(), '.env'), quiet: true });
 
 const periodo = process.argv.includes('--periodo')
   ? process.argv[process.argv.indexOf('--periodo') + 1]
-  : '2026-06';
+  : E2E_PARAMETROS_PERIODO_DEFAULT;
 
 const dbUrl = resolveParametrosDbUrl();
 const sql = `SELECT 'cliente' AS src, periodo, uf::text FROM parametros_generales_cliente WHERE periodo = '${periodo.replace(/'/g, "''")}'

@@ -27,7 +27,6 @@ import { NominaEmpleadosCargaService } from '../../../../services/nomina-emplead
 import { NominaMensualV2TrazabilidadService } from '../../../../services/nomina-mensual-v2-trazabilidad.service';
 import { PeriodoActivoService } from '../../../../../../core/services/periodo-activo.service';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
-import { NominaMensualV2TrazabilidadPasoComponent } from '../nomina-mensual-v2-trazabilidad-paso/nomina-mensual-v2-trazabilidad-paso.component';
 import {
   claseChecklist,
   claseTono,
@@ -40,7 +39,7 @@ import {
 @Component({
   selector: 'app-nomina-mensual-v2-paso-alcance',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, NominaMensualV2TrazabilidadPasoComponent],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: './nomina-mensual-v2-paso-alcance.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,

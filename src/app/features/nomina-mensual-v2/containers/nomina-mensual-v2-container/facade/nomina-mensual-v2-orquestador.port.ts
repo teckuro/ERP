@@ -2,6 +2,13 @@ import { Injectable, computed, signal } from '@angular/core';
 
 import type { PayrollStepId, ResultadoAlcanceNomina } from '../../../models/nomina-mensual-v2.models';
 import type {
+  DiferenciaParametroBase,
+  EstadoBaseParametrosPeriodoView,
+  OrigenBaseParametrosAlAvanzar,
+  VistaPreviaParametrosBase,
+} from '../../../models/nomina-parametros-base.models';
+import type { NominaParametrosResumen } from '../../../models/nomina-parametros-resumen.models';
+import type {
   ContextoTrazabilidadPasoNomina,
   EventoTrazabilidadNomina,
   ResumenAuditoriaPasoNomina,
@@ -14,7 +21,7 @@ import {
 import type { AyudaAvanceTono } from './nomina-mensual-v2-navegacion';
 
 export type ModalAvanceParametrosPort =
-  | { tipo: 'bloqueo' }
+  | { tipo: 'bloqueo'; pendientes?: readonly string[] }
   | { tipo: 'revision'; destinoPaso: PayrollStepId };
 
 import type {
@@ -34,6 +41,30 @@ export type ModalAvanceAlcancePort =
 
 export type ModalAvanceEmpleadosPort = ModalResumenPendientesEmpleadosPort;
 
+export type ModalPrepararNominaPort = {
+  preview: VistaPreviaParametrosBase;
+  resumen: NominaParametrosResumen;
+};
+
+export type ModalDiferenciasParametrosBasePort = {
+  resumen: NominaParametrosResumen;
+  idCalculoPeriodoBase: number;
+  diferencias: DiferenciaParametroBase[];
+};
+
+export type ModalActualizarParametrosBasePort = {
+  resumen: NominaParametrosResumen;
+};
+
+export type ModalTablaDiferenciasParametrosBasePort = {
+  diferencias: DiferenciaParametroBase[];
+};
+
+export type ModalRevisarParametrosPort = {
+  periodo: string;
+  periodoEtiqueta: string;
+};
+
 @Injectable()
 export class NominaMensualV2OrquestadorPort {
   readonly pasoActual = signal<PayrollStepId>('parameters');
@@ -42,7 +73,16 @@ export class NominaMensualV2OrquestadorPort {
   readonly modalAvanceParametros = signal<ModalAvanceParametrosPort | null>(null);
   readonly modalAvanceAlcance = signal<ModalAvanceAlcancePort | null>(null);
   readonly modalAvanceEmpleados = signal<ModalAvanceEmpleadosPort | null>(null);
+  readonly modalPrepararNomina = signal<ModalPrepararNominaPort | null>(null);
+  readonly modalDiferenciasParametrosBase = signal<ModalDiferenciasParametrosBasePort | null>(null);
+  readonly modalActualizarParametrosBase = signal<ModalActualizarParametrosBasePort | null>(null);
+  readonly modalTablaDiferenciasParametrosBase = signal<ModalTablaDiferenciasParametrosBasePort | null>(null);
+  readonly modalRevisarParametros = signal<ModalRevisarParametrosPort | null>(null);
   readonly resultadoAlcance = signal<ResultadoAlcanceNomina | null>(null);
+
+  readonly estadoParametrosBase = signal<EstadoBaseParametrosPeriodoView | null>(null);
+  readonly origenBaseParametrosAlAvanzar = signal<OrigenBaseParametrosAlAvanzar | null>(null);
+  readonly idCalculoPeriodoBase = signal<number | null>(null);
 
   readonly auditoriaPorPaso = signal<Partial<Record<PayrollStepId, ResumenAuditoriaPasoNomina>>>({});
   readonly eventosTrazabilidad = signal<EventoTrazabilidadNomina[]>([]);
@@ -57,6 +97,10 @@ export class NominaMensualV2OrquestadorPort {
     const resultado = this.resultadoAlcance();
     return !!resultado && resultado.estado !== 'sinConfigurar' && resultado.resumen.trabajadoresIncluidos > 0;
   });
+
+  readonly parametrosPreparados = computed(
+    () => !!this.estadoParametrosBase()?.idCalculoPeriodoBase,
+  );
 
   readonly detalleTrazabilidadActivo = computed(() => {
     const paso = this.trazabilidadPasoActivo();
@@ -96,6 +140,28 @@ export class NominaMensualV2OrquestadorPort {
     this.modalAvanceParametros.set(null);
     this.modalAvanceAlcance.set(null);
     this.modalAvanceEmpleados.set(null);
+    this.modalPrepararNomina.set(null);
+    this.modalDiferenciasParametrosBase.set(null);
+    this.modalActualizarParametrosBase.set(null);
+    this.modalTablaDiferenciasParametrosBase.set(null);
+    this.modalRevisarParametros.set(null);
+  }
+
+  registrarOrigenBaseAlAvanzar(
+    origen: OrigenBaseParametrosAlAvanzar,
+    idCalculoPeriodoBase: number,
+  ): void {
+    this.origenBaseParametrosAlAvanzar.set(origen);
+    this.idCalculoPeriodoBase.set(idCalculoPeriodoBase);
+    const estado = this.estadoParametrosBase();
+    this.actualizarContextoTrazabilidad({
+      ...(this.contextoTrazabilidad() ?? { periodo: '' }),
+      parametrosBase: {
+        origen,
+        idCalculoPeriodoBase,
+        fechaBaseGuardada: estado?.fechaBaseGuardada ?? null,
+      },
+    });
   }
 
   abrirTrazabilidadPaso(paso: PayrollStepId): void {
@@ -123,11 +189,12 @@ export class NominaMensualV2OrquestadorPort {
     this.contextoTrazabilidad.set(contexto);
   }
 
-  async recomputarTrazabilidad(): Promise<RecomputarTrazabilidadResult | null> {
+  async recomputarTrazabilidad(incluirMockSiVacio = true): Promise<RecomputarTrazabilidadResult | null> {
     if (!this.trazabilidadService) return null;
     const result = await this.trazabilidadService.recomputar({
       eventosLocales: this.eventosLocales(),
       contexto: this.contextoTrazabilidad() ?? undefined,
+      incluirMockSiVacio,
     });
     this.eventosTrazabilidad.set(result.eventos);
     this.auditoriaPorPaso.set(result.auditoriaPorPaso);

@@ -44,6 +44,15 @@
                 </div>
               </div>
             }
+            @case ('diferencias') {
+              <div class="alert-banner alert-banner--revision alert-banner--parameter-inline">
+                <div class="alert-banner__icon"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon></div>
+                <div class="alert-banner__copy">
+                  <strong>Hay diferencias con la base guardada</strong>
+                  <p>Los parámetros actuales no coinciden con la base usada para preparar esta nómina.</p>
+                </div>
+              </div>
+            }
           }
         }
 
@@ -87,7 +96,6 @@
       <aside class="content-side parameters-sidebar-perfect parameters-sidebar-compact nomina-sidePanel">
         <section class="surface-card side-card parameters-perfect-summary">
           <h2>Resumen de parámetros</h2>
-          <app-nomina-mensual-v2-trazabilidad-paso paso="parameters" [compacto]="true" />
           <div class="parameters-perfect-summary__top">
             <div class="donut-summary-block">
               <div class="donut-ring donut-ring--summary donut-ring--dynamic"
@@ -110,6 +118,20 @@
             <span><lucide-icon name="clock-3" aria-hidden="true"></lucide-icon>Última actualización:</span>
             <strong>{{ formatoHoraActualizacion(parametrosResumen()?.ultimaActualizacion) }}</strong>
           </div>
+          @if (muestraLineaBaseGuardada()) {
+            <div class="updated-row updated-row--summary parameters-base-status">
+              <span>Base guardada:</span>
+              <strong>{{ fechaBaseGuardadaTexto() }}</strong>
+            </div>
+          }
+          @if (hayDiferenciasBase()) {
+            <div class="parameters-base-status parameters-base-status--diff">
+              <span>Hay diferencias con parámetros actuales.</span>
+              <button type="button" class="parameters-base-status__link" (click)="abrirTablaDiferencias()">
+                Ver diferencias
+              </button>
+            </div>
+          }
         </section>
 
         <section class="surface-card side-card parameter-access-card">
@@ -129,11 +151,11 @@
         <section
           id="parametros-pendientes-sidebar"
           class="surface-card side-card parameter-blockers-perfect"
-          [class.parameter-blockers-perfect--empty]="parametrosBloqueosActuales().length === 0"
+          [class.parameter-blockers-perfect--empty]="parametrosPendientesSidebar().length === 0"
         >
           <h2>{{ tituloEstadoParametros() }}</h2>
           <div class="parameter-blocker-list">
-            @if (parametrosBloqueosActuales().length === 0) {
+            @if (parametrosPendientesSidebar().length === 0) {
               <div
                 class="parameter-blocker-empty"
                 [class.parametros-estado-correcto]="parametrosEstadoCompleto()"
@@ -142,7 +164,7 @@
                 <span>Sin pendientes activos.</span>
               </div>
             }
-            @for (bloqueo of parametrosBloqueosActuales(); track bloqueo.id) {
+            @for (bloqueo of parametrosPendientesSidebar(); track bloqueo.id) {
               <div class="parameter-blocker-row" (click)="goToParametros(bloqueo.mantenedor)">
                 <div class="parameter-blocker-row__status" [class]="bloqueoSeveridadClase(bloqueo.severidad)"><lucide-icon [name]="bloqueoSeveridadIcono(bloqueo.severidad)" aria-hidden="true"></lucide-icon><strong>{{ bloqueoSeveridadEtiqueta(bloqueo.severidad) }}</strong></div>
                 <div class="parameter-blocker-row__copy"><span class="parameter-blocker-row__area">{{ parametroAreaTitulo(bloqueo.areaId) }}</span><h3>{{ bloqueo.titulo }}</h3><p>{{ bloqueo.detalle }}</p></div>

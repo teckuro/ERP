@@ -60,6 +60,34 @@ describe('nomina-trazabilidad.mapper', () => {
     expect(merged.some((e) => e.origen === 'mock')).toBe(false);
   });
 
+  it('mapea snapshot base de parámetros a evento PARAMETROS_CONGELADOS', () => {
+    const eventos = mapSnapshotsToEventosTrazabilidad(
+      [
+        snapshotBase({
+          versionMotor: 'PARAMETROS-BASE-01',
+          estado: 'borrador',
+          metadataOperativa: {
+            tipoSnapshot: 'parametrosBase',
+            origenAlGuardar: 'recienGuardada',
+            resumenParametrosBase: {
+              seccionesListas: 4,
+              seccionesTotales: 5,
+              controlesVerificados: 12,
+              bloqueos: 0,
+              requiereRevision: 1,
+            },
+          },
+        }),
+      ],
+      null,
+    );
+    const paramEvent = eventos.find((e) => e.paso === 'parameters');
+    expect(paramEvent?.tipoEvento).toBe('PARAMETROS_CONGELADOS');
+    expect(paramEvent?.origen).toBe('servidor');
+    expect(paramEvent?.descripcion).toContain('recién guardada');
+    expect(eventos.some((e) => e.paso === 'calculation')).toBe(false);
+  });
+
   it('construye auditoría por paso con pendientes', () => {
     const auditoria = buildAuditoriaPorPaso([]);
     expect(auditoria.parameters?.estado).toBe('pendiente');

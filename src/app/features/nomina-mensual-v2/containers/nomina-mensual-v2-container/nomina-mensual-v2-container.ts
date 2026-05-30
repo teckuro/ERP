@@ -12,6 +12,7 @@ import {
 import { Router } from '@angular/router';
 
 import { ShellPageContextService } from '../../../../layout/shell-page-context.service';
+import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { payrollSteps } from '../../data/nomina-mensual-v2.mock';
 import type { PayrollStepId } from '../../models/nomina-mensual-v2.models';
 import type { TipoPendienteEmpleado } from '../../presenters/nomina-empleados-validacion.presenter';
@@ -30,6 +31,7 @@ import {
   obtenerTituloPaso,
 } from './facade/nomina-mensual-v2-navegacion';
 import { NominaMensualV2TrazabilidadService } from '../../services/nomina-mensual-v2-trazabilidad.service';
+import { NominaMensualV2SesionService } from '../../services/nomina-mensual-v2-sesion.service';
 import { NominaMensualV2OrquestadorPort } from './facade/nomina-mensual-v2-orquestador.port';
 import { NominaMensualV2TrazabilidadDrawerComponent } from './components/nomina-mensual-v2-trazabilidad-drawer/nomina-mensual-v2-trazabilidad-drawer.component';
 import { NominaMensualV2TrazabilidadModalComponent } from './components/nomina-mensual-v2-trazabilidad-modal/nomina-mensual-v2-trazabilidad-modal.component';
@@ -56,7 +58,9 @@ import { NominaMensualV2TrazabilidadModalComponent } from './components/nomina-m
 export class NominaMensualV2Container implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly shellContext = inject(ShellPageContextService);
+  private readonly periodoActivo = inject(PeriodoActivoService);
   private readonly trazabilidadService = inject(NominaMensualV2TrazabilidadService);
+  private readonly sesionService = inject(NominaMensualV2SesionService);
   readonly orquestador = inject(NominaMensualV2OrquestadorPort);
 
   private readonly pasoParametros = viewChild(NominaMensualV2PasoParametrosComponent);
@@ -69,13 +73,38 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   readonly pageTitle = computed(() => obtenerTituloPaso(this.currentStep()));
   readonly pageSubtitle = computed(() => obtenerSubtituloPaso(this.currentStep()));
   readonly primaryActionLabel = computed(() => obtenerEtiquetaAccionPrincipal(this.currentStep()));
+  readonly parametrosPasoOcupado = computed(() => {
+    if (this.currentStep() !== 'parameters') return false;
+    const paso = this.pasoParametros();
+    return (paso?.parametrosLoading() ?? false) || (paso?.parametrosValidando() ?? false);
+  });
 
   ngOnInit(): void {
     this.shellContext.setBindingActive(true);
-    this.orquestador.pasoActual.set(this.currentStep());
     this.orquestador.vincularTrazabilidadService(this.trazabilidadService);
-    void this.orquestador.recomputarTrazabilidad();
-    this.syncShellContext();
+    void this.inicializarSesionPeriodo();
+  }
+
+  private async inicializarSesionPeriodo(): Promise<void> {
+    try {
+      const sesion = await this.sesionService.resolverEstadoSesion();
+      this.orquestador.estadoParametrosBase.set(sesion.estadoBase);
+      if (sesion.contextoTrazabilidad) {
+        this.orquestador.actualizarContextoTrazabilidad(sesion.contextoTrazabilidad);
+      }
+      if (sesion.origenBase && sesion.idCalculoPeriodoBase) {
+        this.orquestador.registrarOrigenBaseAlAvanzar(sesion.origenBase, sesion.idCalculoPeriodoBase);
+      }
+      this.currentStep.set(sesion.pasoInicial);
+      this.orquestador.pasoActual.set(sesion.pasoInicial);
+    } catch (error) {
+      console.error('[Nómina V2] No fue posible restaurar la sesión del período', error);
+      this.currentStep.set('parameters');
+      this.orquestador.pasoActual.set('parameters');
+    } finally {
+      await this.orquestador.recomputarTrazabilidad(false);
+      this.syncShellContext();
+    }
   }
 
   ngOnDestroy(): void {
@@ -86,13 +115,21 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
 
   intentarIrAPaso(destinoPaso: PayrollStepId): void {
     if (destinoPaso === this.currentStep()) return;
+    if (destinoPaso === 'parameters' && this.debeConfirmarReingresoParametros()) {
+      const periodo = this.orquestador.contextoTrazabilidad()?.periodo ?? this.periodoActivo.periodoYm();
+      this.orquestador.modalRevisarParametros.set({
+        periodo,
+        periodoEtiqueta: this.sesionService.etiquetaPeriodo(periodo),
+      });
+      return;
+    }
     if (this.currentStep() === 'parameters' && esAvanceHaciaAdelante(this.currentStep(), destinoPaso)) {
-      this.pasoParametros()?.evaluarAvance(destinoPaso);
+      this.ejecutarAccionPrincipalPasoActual();
       return;
     }
     if (this.currentStep() === 'scope' && esAvanceHaciaAdelante(this.currentStep(), destinoPaso)) {
       if (destinoPaso === 'employees') {
-        this.pasoAlcance()?.ejecutarAccionPrincipal();
+        this.ejecutarAccionPrincipalPasoActual();
       } else {
         this.irAPaso(destinoPaso);
       }
@@ -121,8 +158,33 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     this.pasoParametros()?.confirmarAvanceConRevision();
   }
 
+  confirmarGuardarBaseYContinuar(): void {
+    void this.pasoParametros()?.confirmarGuardarBaseYContinuar();
+  }
+
+  confirmarMantenerBaseYContinuar(): void {
+    void this.pasoParametros()?.confirmarMantenerBaseYContinuar();
+  }
+
+  solicitarActualizarBase(): void {
+    this.pasoParametros()?.solicitarActualizarBase();
+  }
+
+  confirmarActualizarBaseYContinuar(): void {
+    void this.pasoParametros()?.confirmarActualizarBaseYContinuar();
+  }
+
   irAPendientesParametros(): void {
     this.pasoParametros()?.irAPendientesParametros();
+  }
+
+  confirmarReingresoParametros(): void {
+    this.orquestador.modalRevisarParametros.set(null);
+    this.irAPaso('parameters');
+  }
+
+  cerrarModalRevisarParametros(): void {
+    this.orquestador.modalRevisarParametros.set(null);
   }
 
   confirmarAvanceConAdvertenciaAlcance(): void {
@@ -154,9 +216,8 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
 
   syncShellContext(): void {
     const paso = this.currentStep();
-    const pasoParametros = this.pasoParametros();
-    const parametrosValidando = paso === 'parameters' && (pasoParametros?.parametrosValidando() ?? false);
-    const parametrosLoading = paso === 'parameters' && (pasoParametros?.parametrosLoading() ?? false);
+    const parametrosValidando = paso === 'parameters' && (this.pasoParametros()?.parametrosValidando() ?? false);
+    const parametrosLoading = paso === 'parameters' && (this.pasoParametros()?.parametrosLoading() ?? false);
     const currentIndex = ORDEN_PASOS_NOMINA.indexOf(paso);
     const isValidationBlocked = paso === 'validation';
 
@@ -172,7 +233,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
         tone: isValidationBlocked ? 'warning' : 'neutral',
       },
       primaryAction: {
-        label: paso === 'parameters' && parametrosValidando ? 'Validando...' : this.primaryActionLabel(),
+        label: paso === 'parameters' && parametrosValidando ? 'Preparando...' : this.primaryActionLabel(),
         disabled: isValidationBlocked || parametrosValidando || parametrosLoading,
         loading: paso === 'parameters' ? parametrosValidando : false,
         actionId: `nomina-mensual-v2-${paso}`,
@@ -180,17 +241,34 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     });
 
     this.shellContext.registerPrimaryActionHandler(() => {
-      if (paso === 'parameters' || paso === 'scope' || paso === 'employees') {
-        this.orquestador.ejecutarAccionPrincipal();
-        return;
-      }
-      if (paso === 'validation' || paso === 'payslips') return;
-      this.nextStep();
+      this.ejecutarAccionPrincipalPasoActual();
     });
+  }
+
+  ejecutarAccionPrincipalPasoActual(): void {
+    const pasoActivo = this.currentStep();
+    if (pasoActivo === 'parameters') {
+      if (this.parametrosPasoOcupado()) return;
+      this.orquestador.ejecutarAccionPrincipal();
+      return;
+    }
+    if (pasoActivo === 'scope' || pasoActivo === 'employees') {
+      this.orquestador.ejecutarAccionPrincipal();
+      return;
+    }
+    if (pasoActivo === 'validation' || pasoActivo === 'payslips') return;
+    this.nextStep();
   }
 
   goLegacy(): void {
     void this.router.navigate(['/remuneraciones/proceso-mensual']);
+  }
+
+  private debeConfirmarReingresoParametros(): boolean {
+    const idxActual = ORDEN_PASOS_NOMINA.indexOf(this.currentStep());
+    const idxParametros = ORDEN_PASOS_NOMINA.indexOf('parameters');
+    if (idxActual <= idxParametros) return false;
+    return this.orquestador.parametrosPreparados();
   }
 
   private irAPaso(destinoPaso: PayrollStepId): void {

@@ -1,3 +1,21 @@
+## 2026-05-30 - Nómina V10.1: panel trazabilidad solo en sidebar Empleados
+
+- Retirado `app-nomina-mensual-v2-trazabilidad-paso` (variant panel) del sidebar de **Alcance**; la trazabilidad del paso sigue en el cluster del stepper superior.
+
+## 2026-05-30 - Nómina V10.1: reanudación sesión + reingreso Parámetros
+
+- Al recargar con base guardada: entrada directa en paso **Alcance**; trazabilidad de Parámetros rehidratada desde snapshot `PARAMETROS-BASE-01` (evento `PARAMETROS_CONGELADOS` servidor).
+- MsgBox decisión al volver a Parámetros desde paso posterior: «¿Desea revisar o modificar la configuración?» (Revisar / Cancelar).
+- Sin cambios a estilos globales; modal reutiliza `MessageBox` variant `decision`.
+
+## 2026-05-29 - Nómina V10.1: snapshot base parámetros (Preparar nómina)
+
+- Flujo «Preparar nómina»: guardar base si no existe; continuar sin re-guardar si no hay diff; modal decisión si hay diff (Mantener / Actualizar / Ver diferencias).
+- Botón shell «Preparar nómina»; modal copy explícito: cálculo en paso Cálculo.
+- Panel sidebar Parámetros: líneas «Base guardada», «Hay diferencias», link «Ver diferencias»; retirado `trazabilidad-paso` compacto del resumen.
+- CSS local: `.parameters-base-status`, `.parameters-base-status__link` en `nomina-mensual-v2-container.css`.
+- Sin cambios a estilos globales, SQL ni motor.
+
 ## 2026-05-29 - Nómina V10.1: stepper compacto + cluster trazabilidad
 
 - Header unificado `.nomina-workflow-header`: stepper compacto (subtítulo acción en todos los pasos) + cluster `.nomina-stepper-traceability` a la derecha (responsable, historial, integridad, fecha, drawer completo, alerta si bloqueo/revisión).

@@ -18,4 +18,8 @@ describe('nomina-mensual-v2-navegacion', () => {
     expect(obtenerTituloPaso('scope')).toBe('Alcance de generación');
     expect(obtenerEtiquetaAccionPrincipal('scope')).toBe('Validar alcance');
   });
+
+  it('expone Preparar nómina en parámetros', () => {
+    expect(obtenerEtiquetaAccionPrincipal('parameters')).toBe('Preparar nómina');
+  });
 });

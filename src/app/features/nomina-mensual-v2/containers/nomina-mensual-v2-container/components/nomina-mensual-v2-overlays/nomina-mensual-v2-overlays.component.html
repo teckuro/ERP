@@ -1,3 +1,75 @@
+@if (orquestador.modalRevisarParametros(); as modalRevisar) {
+  <app-message-box
+    variant="decision"
+    mode="modal"
+    width="md"
+    [title]="'Revisar parámetros de ' + modalRevisar.periodoEtiqueta"
+    message="La base de parámetros ya fue preparada para este período. ¿Desea revisar o modificar la configuración?"
+    primaryLabel="Revisar parámetros"
+    secondaryLabel="Cancelar"
+    (action)="confirmarReingresoParametros.emit()"
+    (secondary)="cerrarModalRevisarParametros()"
+  ></app-message-box>
+}
+
+@if (orquestador.modalTablaDiferenciasParametrosBase(); as modalTabla) {
+  <app-message-box
+    variant="info"
+    mode="modal"
+    width="md"
+    title="Diferencias de parámetros"
+    message="Revisa los cambios entre la base guardada y la configuración actual."
+    [sections]="seccionesTablaDiferencias(modalTabla.diferencias)"
+    primaryLabel="Entendido"
+    (action)="cerrarModalTablaDiferencias()"
+  ></app-message-box>
+}
+
+@if (orquestador.modalActualizarParametrosBase(); as modalActualizar) {
+  <app-message-box
+    variant="decision"
+    mode="modal"
+    width="md"
+    title="Actualizar base de parámetros"
+    message="Se reemplazará la base guardada con los parámetros actuales del período. Esta acción es explícita y no ocurre automáticamente."
+    primaryLabel="Actualizar base y continuar"
+    secondaryLabel="Cancelar"
+    (action)="confirmarActualizarBaseYContinuar.emit()"
+    (secondary)="cerrarModalActualizarBase()"
+  ></app-message-box>
+}
+
+@if (orquestador.modalDiferenciasParametrosBase(); as modalDiff) {
+  <app-message-box
+    variant="decision"
+    mode="modal"
+    width="md"
+    title="Hay diferencias con la base guardada"
+    message="Los parámetros actuales no coinciden con la base usada para preparar esta nómina."
+    primaryLabel="Mantener base original"
+    secondaryLabel="Actualizar base de cálculo"
+    tertiaryLabel="Ver diferencias"
+    (action)="confirmarMantenerBaseYContinuar.emit()"
+    (secondary)="solicitarActualizarBase.emit()"
+    (tertiary)="orquestador.modalTablaDiferenciasParametrosBase.set({ diferencias: modalDiff.diferencias })"
+  ></app-message-box>
+}
+
+@if (orquestador.modalPrepararNomina(); as modalPreparar) {
+  <app-message-box
+    variant="decision"
+    mode="modal"
+    width="md"
+    [title]="'Preparar nómina de ' + modalPreparar.preview.periodoEtiqueta"
+    message="Se guardará la base de parámetros con la que se preparará esta nómina. El cálculo de remuneraciones ocurrirá más adelante, en el paso Cálculo."
+    [sections]="seccionesPrepararNomina(modalPreparar.preview)"
+    primaryLabel="Guardar base y continuar"
+    secondaryLabel="Cancelar"
+    (action)="confirmarGuardarBaseYContinuar.emit()"
+    (secondary)="cerrarModalPrepararNomina()"
+  ></app-message-box>
+}
+
 @if (orquestador.modalAvanceAlcance(); as modalAlcance) {
   @switch (modalAlcance.tipo) {
     @case ('bloqueo') {
@@ -49,7 +121,7 @@
         width="md"
         title="No puedes continuar"
         message="Aún tienes parámetros obligatorios pendientes en este paso. Corrígelos antes de avanzar."
-        [sections]="seccionesMsgBoxBloqueoParametros"
+        [sections]="seccionesMsgBoxBloqueoParametros(modalAvance.pendientes)"
         primaryLabel="Entendido"
         secondaryLabel="Ver pendientes"
         (action)="cerrarModalAvanceParametros()"

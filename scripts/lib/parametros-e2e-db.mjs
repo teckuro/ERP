@@ -3,8 +3,14 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-/** Periodo aislado pero con año presente en cabecera ERP (evita 2099 fuera de yearOptions). */
-export const E2E_PARAMETROS_PERIODO_DEFAULT = '2026-06';
+/** YYYY-MM del mes calendario actual (misma regla que PeriodoActivoService en Angular). */
+export function mesActualYm() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+/** Periodo por defecto en fixtures E2E: mes actual, no un mes fijo desalineado. */
+export const E2E_PARAMETROS_PERIODO_DEFAULT = mesActualYm();
 
 function normalizeSupabaseUrl(raw) {
   return (raw ?? '').replace(/\/$/, '').replace('.supabase.com', '.supabase.co');

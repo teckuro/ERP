@@ -2,6 +2,7 @@
   <app-nomina-mensual-v2-stepper
     [pasoActual]="currentStep()"
     [steps]="steps"
+    [avanceDesdePasoActualBloqueado]="parametrosPasoOcupado()"
     (pasoSeleccionado)="intentarIrAPaso($event)"
   />
 
@@ -45,6 +46,11 @@
     (verEnGrillaEmpleados)="verEnGrillaEmpleados($event)"
     (confirmarAvanceConAdvertenciaEmpleados)="confirmarAvanceConAdvertenciaEmpleados()"
     (reintentarValidacionEmpleados)="reintentarValidacionEmpleados()"
+    (confirmarGuardarBaseYContinuar)="confirmarGuardarBaseYContinuar()"
+    (confirmarMantenerBaseYContinuar)="confirmarMantenerBaseYContinuar()"
+    (solicitarActualizarBase)="solicitarActualizarBase()"
+    (confirmarActualizarBaseYContinuar)="confirmarActualizarBaseYContinuar()"
+    (confirmarReingresoParametros)="confirmarReingresoParametros()"
   />
 
   <app-nomina-mensual-v2-trazabilidad-modal />

@@ -1,5 +1,11 @@
 import type { NominaCalculoPeriodoSnapshot } from '../../nomina-mensual/models/proceso-mensual.model';
 import { mergeSnapshotsHistorialPeriodo } from '../../nomina-mensual/rules/proceso-mensual-historial-periodo.rules';
+import {
+  copyOrigenBaseAlAvanzar,
+  esSnapshotParametrosBase,
+  leerMetadataParametrosBase,
+  resolverOrigenBaseDesdeSnapshot,
+} from '../mappers/nomina-parametros-base.mapper';
 import type { PayrollStepId } from '../models/nomina-mensual-v2.models';
 import type {
   ContextoTrazabilidadPasoNomina,
@@ -59,6 +65,11 @@ export function mapSnapshotsToEventosTrazabilidad(
   for (const snapshot of snapshots) {
     const idSnapshot = snapshot.idCalculoPeriodo != null ? String(snapshot.idCalculoPeriodo) : undefined;
     const integridad = resolverIntegridadDesdeSnapshot(snapshot);
+
+    if (esSnapshotParametrosBase(snapshot)) {
+      eventos.push(mapEventoTrazabilidadParametrosBase(snapshot));
+      continue;
+    }
 
     eventos.push({
       idEvento: `srv-gen-${idSnapshot ?? snapshot.fechaGeneracion}`,
@@ -238,6 +249,13 @@ export function buildDetalleModal(
     resumenFuncional.push(`${p.controlesVerificados} controles verificados`);
     resumenFuncional.push(`${p.bloqueos} bloqueos`);
     resumenFuncional.push(`${p.advertencias} advertencias`);
+  } else if (paso === 'parameters' && ctx?.parametrosBase) {
+    const base = ctx.parametrosBase;
+    if (base.fechaBaseGuardada) {
+      resumenFuncional.push(`Base guardada el ${base.fechaBaseGuardada}`);
+    } else {
+      resumenFuncional.push('Base de parámetros preparada para el período');
+    }
   } else if (paso === 'scope' && ctx?.alcance) {
     const a = ctx.alcance;
     resumenFuncional.push(`${a.trabajadoresIncluidos} trabajadores incluidos`);
@@ -272,4 +290,29 @@ export function buildDetalleModal(
 
 export function tituloPasoTrazabilidad(paso: PayrollStepId): string {
   return TITULOS_PASO[paso];
+}
+
+function mapEventoTrazabilidadParametrosBase(
+  snapshot: NominaCalculoPeriodoSnapshot,
+): EventoTrazabilidadNomina {
+  const origen = resolverOrigenBaseDesdeSnapshot(snapshot);
+  const meta = leerMetadataParametrosBase(snapshot.metadataOperativa);
+  return {
+    idEvento: `srv-param-base-${snapshot.idCalculoPeriodo ?? snapshot.fechaGeneracion}`,
+    periodo: snapshot.periodo,
+    paso: 'parameters',
+    tipoEvento: 'PARAMETROS_CONGELADOS',
+    usuarioId: null,
+    usuarioNombre: snapshot.usuarioGenerador || 'Sistema',
+    fechaEvento: snapshot.fechaGeneracion,
+    descripcion: copyOrigenBaseAlAvanzar(origen),
+    idSnapshotRelacionado:
+      snapshot.idCalculoPeriodo != null ? String(snapshot.idCalculoPeriodo) : undefined,
+    integridad: resolverIntegridadDesdeSnapshot(snapshot),
+    metadataPublica: {
+      origenBase: origen,
+      resumenParametrosBase: meta?.resumen,
+    },
+    origen: 'servidor',
+  };
 }

@@ -72,6 +72,7 @@ export class NominaMensualV2TrazabilidadService {
     descripcion: string;
     integridad?: IntegridadPublicaNomina;
     metadataPublica?: Record<string, unknown>;
+    idSnapshotRelacionado?: string;
   }): EventoTrazabilidadNomina {
     const periodo = params.periodo ?? this.periodoActivo.periodoYm();
     const usuario = this.resolverUsuarioActual();
@@ -84,6 +85,7 @@ export class NominaMensualV2TrazabilidadService {
       usuarioNombre: usuario.nombre,
       fechaEvento: new Date().toISOString(),
       descripcion: params.descripcion,
+      idSnapshotRelacionado: params.idSnapshotRelacionado,
       integridad: params.integridad ?? { estadoIntegridad: 'pendiente' },
       metadataPublica: params.metadataPublica,
       origen: 'local',

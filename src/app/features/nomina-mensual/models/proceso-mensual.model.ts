@@ -511,6 +511,8 @@ export interface NominaCalculoPeriodoSnapshot {
   parametros?: NominaCalculoParametroSnapshot[];
   /** Contexto rehidratable guardado en metadata del período (borrador). */
   borradorPersist?: BorradorPersistContext | null;
+  /** Metadata cruda de cierre_operativo_metadata (p. ej. base de parámetros V2). */
+  metadataOperativa?: Record<string, unknown> | null;
 }
 
 export interface NominaReaperturaOperativa {

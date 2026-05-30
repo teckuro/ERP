@@ -17,6 +17,7 @@ import { LucideAngularModule } from 'lucide-angular';
 
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
 import type { PayrollStepId } from '../../../../models/nomina-mensual-v2.models';
+import type { OrigenBaseParametrosAlAvanzar } from '../../../../models/nomina-parametros-base.models';
 import type {
   NominaParametrosResumen,
   ParametroBloqueoSeveridad,
@@ -26,13 +27,11 @@ import type {
   ParametroResumenItemEstado,
   ParametrosMantenedorDestino,
 } from '../../../../models/nomina-parametros-resumen.models';
+import { NominaParametrosBaseService } from '../../../../services/nomina-parametros-base.service';
 import { NominaParametrosResumenService } from '../../../../services/nomina-parametros-resumen.service';
 import { NominaMensualV2TrazabilidadService } from '../../../../services/nomina-mensual-v2-trazabilidad.service';
 import { debeInvalidarPorRevalidacionParametros } from '../../../../rules/nomina-trazabilidad-invalidacion.rules';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
-import { ORDEN_PASOS_NOMINA } from '../../facade/nomina-mensual-v2-navegacion';
-import { NominaMensualV2TrazabilidadPasoComponent } from '../nomina-mensual-v2-trazabilidad-paso/nomina-mensual-v2-trazabilidad-paso.component';
-
 type DonutTonoPresentacion = 'exito' | 'revision' | 'bloqueo' | 'neutral';
 
 type ParametrosCargaOverlayPresentacion = {
@@ -59,7 +58,7 @@ const coloresDonutPorTono: Record<DonutTonoPresentacion, string> = {
 @Component({
   selector: 'app-nomina-mensual-v2-paso-parametros',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, MessageBoxComponent, NominaMensualV2TrazabilidadPasoComponent],
+  imports: [CommonModule, LucideAngularModule, MessageBoxComponent],
   templateUrl: './nomina-mensual-v2-paso-parametros.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -69,6 +68,7 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly orquestador = inject(NominaMensualV2OrquestadorPort);
   private readonly parametrosResumenService = inject(NominaParametrosResumenService);
+  private readonly parametrosBaseService = inject(NominaParametrosBaseService);
   private readonly trazabilidadService = inject(NominaMensualV2TrazabilidadService);
 
   @Output() avanceSolicitado = new EventEmitter<PayrollStepId>();
@@ -80,7 +80,22 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   readonly parametrosError = signal<string | null>(null);
   readonly parametrosAreas = computed(() => this.parametrosResumen()?.areas ?? []);
   readonly parametrosBloqueosActuales = computed(() => this.parametrosResumen()?.bloqueosActuales ?? []);
+  readonly parametrosPendientesSidebar = computed(() => {
+    const resumen = this.parametrosResumen();
+    const pendientes = resumen?.bloqueosActuales ?? [];
+    if ((resumen?.bloqueos ?? 0) > 0) {
+      return pendientes.filter((item) => item.severidad === 'bloqueo');
+    }
+    return pendientes.filter((item) => item.severidad === 'revision');
+  });
   readonly parametrosAccesos = computed(() => this.parametrosResumen()?.accesos ?? []);
+
+  readonly estadoBase = computed(() => this.orquestador.estadoParametrosBase());
+  readonly hayDiferenciasBase = computed(() => this.estadoBase()?.comparacion?.hayDiferencias ?? false);
+  readonly fechaBaseGuardadaTexto = computed(() =>
+    this.formatoHoraActualizacion(this.estadoBase()?.fechaBaseGuardada),
+  );
+  readonly muestraLineaBaseGuardada = computed(() => !!this.estadoBase()?.idCalculoPeriodoBase);
 
   readonly parametrosCargaOverlay = computed((): ParametrosCargaOverlayPresentacion | null => {
     if (this.parametrosLoading()) {
@@ -91,34 +106,45 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     }
     if (this.parametrosValidando()) {
       return {
-        titulo: 'Validando parámetros',
-        mensaje: 'Revisando bloqueos y consistencia antes de continuar.',
+        titulo: 'Preparando nómina',
+        mensaje: 'Revisando parámetros y base guardada antes de continuar.',
       };
     }
     return null;
   });
 
-  readonly parametrosAlertaTipo = computed((): 'error' | 'bloqueo' | 'revision' | null => {
+  readonly parametrosAlertaTipo = computed((): 'error' | 'bloqueo' | 'revision' | 'diferencias' | null => {
     if (this.parametrosLoading()) return null;
     if (this.parametrosError()) return 'error';
+    if (this.hayDiferenciasBase()) return 'diferencias';
     const resumen = this.parametrosResumen();
     if (!resumen) return null;
-    if (resumen.bloqueos > 0) return 'bloqueo';
+    if (resumen.bloqueos > 0) return 'revision';
     if (resumen.requiereRevision > 0) return 'revision';
     return null;
   });
 
   readonly alertaRevisionTitulo = computed(() => {
-    const cantidad = this.parametrosResumen()?.requiereRevision ?? 0;
+    const resumen = this.parametrosResumen();
+    const bloqueos = resumen?.bloqueos ?? 0;
+    if (bloqueos > 0) {
+      const etiquetaItem = bloqueos === 1 ? 'parámetro obligatorio pendiente' : 'parámetros obligatorios pendientes';
+      return `Hay ${bloqueos} ${etiquetaItem}`;
+    }
+    const cantidad = resumen?.requiereRevision ?? 0;
     const etiquetaItem = cantidad === 1 ? 'ítem' : 'ítems';
     const etiquetaVerbo = cantidad === 1 ? 'requiere' : 'requieren';
     return `Hay ${cantidad} ${etiquetaItem} que ${etiquetaVerbo} revisión`;
   });
 
   readonly alertaRevisionDescripcion = computed(() => {
-    const cantidad = this.parametrosResumen()?.requiereRevision ?? 0;
-    const etiquetaAccion = cantidad === 1 ? 'Corrígelo' : 'Corrígelos';
-    return `${etiquetaAccion} en Parámetros antes de validar.`;
+    const resumen = this.parametrosResumen();
+    if ((resumen?.bloqueos ?? 0) > 0) {
+      return 'Puedes usar «Preparar nómina» para congelar la base actual o corregirlos en Parámetros.';
+    }
+    const cantidad = resumen?.requiereRevision ?? 0;
+    if (cantidad === 0) return '';
+    return 'Puedes usar «Preparar nómina» igual; el cálculo validará más adelante.';
   });
 
   readonly alertaBloqueoTitulo = computed(() => {
@@ -132,7 +158,7 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   readonly alertaBloqueoDescripcion = computed(() => {
     const cantidad = this.parametrosResumen()?.bloqueos ?? 0;
     const etiquetaAccion = cantidad === 1 ? 'Corrígelo' : 'Corrígelos';
-    return `${etiquetaAccion} antes de continuar.`;
+    return `${etiquetaAccion} en Parámetros o usa «Preparar nómina» para congelar la base actual.`;
   });
 
   readonly tituloEstadoParametros = computed(() => {
@@ -192,7 +218,10 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
         return;
       }
       if (resumen.bloqueos > 0) {
-        this.orquestador.establecerAyudaAvance('Debes completar este paso antes de continuar al siguiente.', 'bloqueo');
+        this.orquestador.establecerAyudaAvance(
+          'Hay parámetros obligatorios pendientes. Usa «Preparar nómina» para congelar la base o corrígelos en Parámetros.',
+          'revision',
+        );
         return;
       }
       if (resumen.requiereRevision > 0) {
@@ -204,7 +233,7 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.orquestador.registrarAccionPrincipal(() => void this.validarParametros());
+    this.orquestador.registrarAccionPrincipal(() => void this.prepararNomina());
     this.destroyRef.onDestroy(() => {
       this.orquestador.limpiarAccionPrincipal();
       this.orquestador.establecerAyudaAvance(null);
@@ -215,7 +244,13 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   evaluarAvance(destinoPaso: PayrollStepId): void {
     const estado = this.obtenerEstadoPendientesPasoParametros();
     if (estado.resultado === 'bloqueado') {
-      this.orquestador.modalAvanceParametros.set({ tipo: 'bloqueo' });
+      const resumen = this.parametrosResumen();
+      this.orquestador.modalAvanceParametros.set({
+        tipo: 'bloqueo',
+        pendientes: (resumen?.bloqueosActuales ?? [])
+          .filter((item) => item.severidad === 'bloqueo')
+          .map((item) => `${item.titulo}: ${item.detalle ?? 'Pendiente'}`),
+      });
       return;
     }
     if (estado.resultado === 'advertencia') {
@@ -244,6 +279,55 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     });
   }
 
+  abrirTablaDiferencias(): void {
+    const diferencias = this.estadoBase()?.comparacion?.diferencias ?? [];
+    if (diferencias.length === 0) return;
+    this.orquestador.modalTablaDiferenciasParametrosBase.set({ diferencias });
+  }
+
+  async confirmarGuardarBaseYContinuar(): Promise<void> {
+    const modal = this.orquestador.modalPrepararNomina();
+    if (!modal) return;
+    try {
+      await this.ejecutarGuardadoBase(modal.resumen, 'recienGuardada');
+      this.orquestador.modalPrepararNomina.set(null);
+    } catch (error) {
+      console.error('[Nómina V2] Error guardando base de parámetros', error);
+      this.parametrosError.set(this.mensajeErrorPersistenciaBase(error));
+      this.resumenActualizado.emit();
+    }
+  }
+
+  async confirmarMantenerBaseYContinuar(): Promise<void> {
+    const modal = this.orquestador.modalDiferenciasParametrosBase();
+    if (!modal) return;
+    this.orquestador.modalDiferenciasParametrosBase.set(null);
+    const origen = this.parametrosBaseService.origenTrasAccionDiferencias('mantener');
+    this.orquestador.registrarOrigenBaseAlAvanzar(origen, modal.idCalculoPeriodoBase);
+    this.registrarTrazabilidadBase(origen, modal.resumen, modal.idCalculoPeriodoBase);
+    this.continuarHaciaAlcance(modal.resumen);
+  }
+
+  solicitarActualizarBase(): void {
+    const modal = this.orquestador.modalDiferenciasParametrosBase();
+    if (!modal) return;
+    this.orquestador.modalDiferenciasParametrosBase.set(null);
+    this.orquestador.modalActualizarParametrosBase.set({ resumen: modal.resumen });
+  }
+
+  async confirmarActualizarBaseYContinuar(): Promise<void> {
+    const modal = this.orquestador.modalActualizarParametrosBase();
+    if (!modal) return;
+    try {
+      await this.ejecutarGuardadoBase(modal.resumen, 'actualizadaExplicitamente');
+      this.orquestador.modalActualizarParametrosBase.set(null);
+    } catch (error) {
+      console.error('[Nómina V2] Error actualizando base de parámetros', error);
+      this.parametrosError.set(this.mensajeErrorPersistenciaBase(error));
+      this.resumenActualizado.emit();
+    }
+  }
+
   async cargarParametrosResumen(): Promise<void> {
     this.parametrosLoading.set(true);
     this.parametrosError.set(null);
@@ -251,6 +335,7 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
       const resumen = await this.parametrosResumenService.obtenerResumen();
       this.parametrosResumen.set(resumen);
       this.actualizarContextoTrazabilidad(resumen);
+      await this.actualizarEstadoBase(resumen.periodo);
       this.resumenActualizado.emit();
     } catch (error) {
       console.error('[Nómina V2] Error cargando parámetros', error);
@@ -261,7 +346,7 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     }
   }
 
-  async validarParametros(): Promise<void> {
+  async prepararNomina(): Promise<void> {
     this.parametrosValidando.set(true);
     this.parametrosError.set(null);
     this.resumenActualizado.emit();
@@ -269,16 +354,32 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
       const resumen = await this.parametrosResumenService.obtenerResumen();
       this.parametrosResumen.set(resumen);
       this.actualizarContextoTrazabilidad(resumen);
-      this.registrarTrazabilidadParametros(resumen);
+      const estadoBase = await this.actualizarEstadoBase(resumen.periodo);
       this.resumenActualizado.emit();
-      const indiceActual = ORDEN_PASOS_NOMINA.indexOf('parameters');
-      const destino = indiceActual < ORDEN_PASOS_NOMINA.length - 1 ? ORDEN_PASOS_NOMINA[indiceActual + 1] : null;
-      if (destino) {
-        this.evaluarAvance(destino);
+
+      const rama = this.parametrosBaseService.resolverRamaAccionPreparacion(resumen, estadoBase);
+      switch (rama.tipo) {
+        case 'guardar': {
+          const preview = await this.parametrosBaseService.construirVistaPreviaParametrosBase(resumen);
+          this.orquestador.modalPrepararNomina.set({ preview, resumen });
+          break;
+        }
+        case 'continuar':
+          this.orquestador.registrarOrigenBaseAlAvanzar(rama.origen, rama.idCalculoPeriodoBase);
+          this.registrarTrazabilidadBase(rama.origen, resumen, rama.idCalculoPeriodoBase);
+          this.continuarHaciaAlcance(resumen);
+          break;
+        case 'diferencias':
+          this.orquestador.modalDiferenciasParametrosBase.set({
+            resumen: rama.resumen,
+            idCalculoPeriodoBase: rama.idCalculoPeriodoBase,
+            diferencias: rama.diferencias,
+          });
+          break;
       }
     } catch (error) {
-      console.error('[Nómina V2] Error validando parámetros', error);
-      this.parametrosError.set('No fue posible validar los parámetros.');
+      console.error('[Nómina V2] Error preparando nómina', error);
+      this.parametrosError.set(this.mensajeErrorPreparacion(error));
       this.resumenActualizado.emit();
     } finally {
       this.parametrosValidando.set(false);
@@ -354,6 +455,31 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     return Math.max(items.length - 5, 0);
   }
 
+  private async ejecutarGuardadoBase(
+    resumen: NominaParametrosResumen,
+    origen: OrigenBaseParametrosAlAvanzar,
+  ): Promise<void> {
+    const guardado = origen === 'actualizadaExplicitamente'
+      ? await this.parametrosBaseService.actualizarSnapshotParametrosBase(resumen)
+      : await this.parametrosBaseService.guardarSnapshotParametrosBase(resumen, origen);
+    await this.actualizarEstadoBase(resumen.periodo);
+    this.orquestador.registrarOrigenBaseAlAvanzar(origen, guardado.idCalculoPeriodoBase);
+    this.registrarTrazabilidadBase(origen, resumen, guardado.idCalculoPeriodoBase);
+    this.continuarHaciaAlcance(resumen);
+  }
+
+  private continuarHaciaAlcance(resumen: NominaParametrosResumen): void {
+    this.registrarTrazabilidadParametros(resumen);
+    this.orquestador.modalAvanceParametros.set(null);
+    this.avanceSolicitado.emit('scope');
+  }
+
+  private async actualizarEstadoBase(periodo: string) {
+    const estado = await this.parametrosBaseService.obtenerEstadoBasePeriodo(periodo);
+    this.orquestador.estadoParametrosBase.set(estado);
+    return estado;
+  }
+
   private actualizarContextoTrazabilidad(resumen: NominaParametrosResumen): void {
     this.orquestador.actualizarContextoTrazabilidad({
       periodo: resumen.periodo,
@@ -364,7 +490,32 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
         bloqueos: resumen.bloqueos,
         advertencias: resumen.requiereRevision,
       },
+      parametrosBase: this.orquestador.origenBaseParametrosAlAvanzar()
+        ? {
+            origen: this.orquestador.origenBaseParametrosAlAvanzar()!,
+            idCalculoPeriodoBase: this.orquestador.idCalculoPeriodoBase() ?? 0,
+            fechaBaseGuardada: this.orquestador.estadoParametrosBase()?.fechaBaseGuardada ?? null,
+          }
+        : undefined,
     });
+  }
+
+  private registrarTrazabilidadBase(
+    origen: OrigenBaseParametrosAlAvanzar,
+    resumen: NominaParametrosResumen,
+    idCalculoPeriodoBase: number,
+  ): void {
+    this.orquestador.registrarEventoTrazabilidad(
+      this.trazabilidadService.crearEventoLocal({
+        periodo: resumen.periodo,
+        paso: 'parameters',
+        tipoEvento: 'PARAMETROS_CONGELADOS',
+        descripcion: this.parametrosBaseService.descripcionOrigenBase(origen),
+        idSnapshotRelacionado: String(idCalculoPeriodoBase),
+        metadataPublica: { origenBase: origen },
+        integridad: { estadoIntegridad: 'registrado' },
+      }),
+    );
   }
 
   private registrarTrazabilidadParametros(resumen: NominaParametrosResumen): void {
@@ -397,6 +548,22 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
         integridad: { estadoIntegridad: 'pendiente' },
       }),
     );
+  }
+
+  private mensajeErrorPersistenciaBase(error: unknown): string {
+    const detalle = error instanceof Error ? error.message : '';
+    if (/row-level security|RLS|permission denied/i.test(detalle)) {
+      return 'No fue posible guardar la base de parámetros: la sesión no tiene permiso de escritura. Inicia sesión nuevamente o contacta a administración.';
+    }
+    return detalle || 'No fue posible guardar la base de parámetros.';
+  }
+
+  private mensajeErrorPreparacion(error: unknown): string {
+    const detalle = error instanceof Error ? error.message : '';
+    if (/row-level security|RLS|permission denied/i.test(detalle)) {
+      return 'No fue posible consultar o guardar la base de parámetros por permisos de sesión.';
+    }
+    return detalle || 'No fue posible preparar la nómina con la base de parámetros.';
   }
 
   private obtenerEstadoPendientesPasoParametros(): EstadoPendientesPasoParametros {

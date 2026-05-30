@@ -23,6 +23,8 @@ import {
   buildBorradorPersistMetadataPayload,
   extractBorradorPersistContext,
 } from '../rules/proceso-mensual-borrador-snapshot.rules';
+import { esSnapshotParametrosBase } from '../../nomina-mensual-v2/mappers/nomina-parametros-base.mapper';
+import type { NominaCalculoParametroSnapshot } from '../models/proceso-mensual.model';
 
 type Tables = Database['public']['Tables'];
 type NominaCalculoPeriodoRow = Tables['nomina_calculo_periodo']['Row'];
@@ -33,6 +35,8 @@ type NominaCalculoTrazabilidadRow = Tables['nomina_calculo_trazabilidad']['Row']
 type NominaCalculoConceptoInsert = Tables['nomina_calculo_concepto']['Insert'];
 type NominaCalculoIssueInsert = Tables['nomina_calculo_issue']['Insert'];
 type NominaCalculoTrazabilidadInsert = Tables['nomina_calculo_trazabilidad']['Insert'];
+type NominaCalculoParametroRow = Tables['nomina_calculo_parametro']['Row'];
+type NominaCalculoParametroInsert = Tables['nomina_calculo_parametro']['Insert'];
 
 interface GuardarSnapshotRpcPayload {
   cabecera: Record<string, Json>;
@@ -193,6 +197,88 @@ export class NominaCalculoSnapshotRepository {
       .order('fecha_generacion', { ascending: false });
     if (error) throw new Error(`No fue posible listar snapshots del periodo: ${error.message}`);
     return (data ?? []).map(mapPeriodoRow);
+  }
+
+  async listarParametrosSnapshot(idCalculoPeriodo: number): Promise<NominaCalculoParametroSnapshot[]> {
+    const { data, error } = await this.supabase
+      .from('nomina_calculo_parametro')
+      .select('*')
+      .eq('id_calculo_periodo', idCalculoPeriodo)
+      .order('grupo', { ascending: true })
+      .order('clave', { ascending: true });
+    if (error) {
+      throw new Error(`No fue posible consultar parámetros del snapshot: ${error.message}`);
+    }
+    return (data ?? []).map(mapParametroRow);
+  }
+
+  async obtenerSnapshotParametrosBase(
+    periodo: string,
+    idEmpresa: number | null = null,
+  ): Promise<NominaCalculoPeriodoSnapshot | null> {
+    const snapshots = await this.listarSnapshotsPeriodo(periodo);
+    const bases = snapshots.filter(
+      (snapshot) =>
+        esSnapshotParametrosBase(snapshot)
+        && (idEmpresa == null || snapshot.idEmpresa === idEmpresa),
+    );
+    if (bases.length === 0) return null;
+
+    const activa = bases.find((snapshot) => snapshot.activo === true && snapshot.reemplazadoPor == null);
+    if (activa) return activa;
+
+    const vigente = bases.find((snapshot) => snapshot.reemplazadoPor == null);
+    return vigente ?? bases[0] ?? null;
+  }
+
+  /**
+   * Persiste snapshot base de parámetros sin reemplazar snapshot preliminar de cálculo activo.
+   */
+  async guardarSnapshotParametrosBase(
+    snapshot: NominaCalculoPeriodoSnapshot,
+    metadataOverlay: Record<string, unknown>,
+  ): Promise<{ snapshot: NominaCalculoPeriodoSnapshot; reemplazoAnterior: boolean }> {
+    const activo = await this.obtenerSnapshotActivo(snapshot.periodo, snapshot.idEmpresa);
+    const anteriorBase = await this.obtenerSnapshotParametrosBase(snapshot.periodo, snapshot.idEmpresa);
+    const preliminarActivo = !!activo && !esSnapshotParametrosBase(activo);
+
+    if (anteriorBase?.idCalculoPeriodo) {
+      await this.marcarInactivo(
+        anteriorBase.idCalculoPeriodo,
+        'anulado',
+        'Reemplazo de base de parámetros.',
+      );
+    } else if (activo?.idCalculoPeriodo && esSnapshotParametrosBase(activo)) {
+      await this.marcarInactivo(
+        activo.idCalculoPeriodo,
+        'anulado',
+        'Reemplazo de base de parámetros.',
+      );
+    }
+
+    const guardado = await this.insertarCabecera(
+      { ...snapshot, activo: !preliminarActivo },
+    );
+    if (!guardado.idCalculoPeriodo) {
+      throw new Error('No fue posible obtener el identificador de la base de parámetros guardada.');
+    }
+
+    await this.insertarParametrosSnapshot(guardado.idCalculoPeriodo, asArray(snapshot.parametros));
+    await this.insertarTrazabilidadPeriodo(guardado.idCalculoPeriodo, asArray(snapshot.trazabilidad));
+    await this.guardarMetadataParametrosBase(guardado.idCalculoPeriodo, metadataOverlay);
+
+    if (anteriorBase?.idCalculoPeriodo && guardado.idCalculoPeriodo) {
+      await this.actualizarReemplazo(anteriorBase.idCalculoPeriodo, guardado.idCalculoPeriodo);
+    }
+
+    return {
+      snapshot: {
+        ...guardado,
+        parametros: snapshot.parametros,
+        trazabilidad: snapshot.trazabilidad,
+      },
+      reemplazoAnterior: !!anteriorBase,
+    };
   }
 
   async anularSnapshotActivo(periodo: string, motivo?: string): Promise<void> {
@@ -401,6 +487,53 @@ export class NominaCalculoSnapshotRepository {
     }
   }
 
+  private async guardarMetadataParametrosBase(
+    idCalculoPeriodo: number,
+    metadataOverlay: Record<string, unknown>,
+  ): Promise<void> {
+    const { error } = await this.supabase
+      .from('nomina_calculo_periodo')
+      .update({
+        cierre_operativo_metadata: metadataOverlay as Json,
+      })
+      .eq('id_calculo_periodo', idCalculoPeriodo);
+    if (error) {
+      throw new Error(`No fue posible guardar metadata de base de parámetros: ${error.message}`);
+    }
+  }
+
+  private async insertarParametrosSnapshot(
+    idCalculoPeriodo: number,
+    parametros: NominaCalculoParametroSnapshot[],
+  ): Promise<void> {
+    const rows: NominaCalculoParametroInsert[] = parametros.map((parametro) => ({
+      id_calculo_periodo: idCalculoPeriodo,
+      grupo: parametro.grupo,
+      clave: parametro.clave,
+      valor: parametro.valor,
+      valor_numerico: parametro.valorNumerico,
+      vigencia: normalizeRpcDate(parametro.vigencia),
+      origen: parametro.origen,
+    }));
+    if (rows.length === 0) return;
+    const { error } = await this.supabase.from('nomina_calculo_parametro').insert(rows);
+    if (error) {
+      throw new Error(`No fue posible guardar parámetros congelados: ${error.message}`);
+    }
+  }
+
+  private async insertarTrazabilidadPeriodo(
+    idCalculoPeriodo: number,
+    trazas: NominaCalculoTrazabilidadSnapshot[],
+  ): Promise<void> {
+    const rows = trazas.map((traza) => mapTrazabilidadRow(traza, idCalculoPeriodo, null));
+    if (rows.length === 0) return;
+    const { error } = await this.supabase.from('nomina_calculo_trazabilidad').insert(rows);
+    if (error) {
+      throw new Error(`No fue posible guardar trazabilidad de base de parámetros: ${error.message}`);
+    }
+  }
+
   private async insertarCabecera(snapshot: NominaCalculoPeriodoSnapshot): Promise<NominaCalculoPeriodoSnapshot> {
     const { data, error } = await this.supabase
       .from('nomina_calculo_periodo')
@@ -418,8 +551,9 @@ export class NominaCalculoSnapshotRepository {
         total_advertencias: snapshot.totalAdvertencias,
         version_motor: snapshot.versionMotor,
         hash_snapshot: snapshot.hashSnapshot,
+        hash_parametros: snapshot.hashParametros ?? null,
         origen: snapshot.origen,
-        activo: true,
+        activo: snapshot.activo ?? true,
       })
       .select('*')
       .single();
@@ -794,6 +928,17 @@ function buildTrazabilidadRpcPayload(
   };
 }
 
+function mapParametroRow(row: NominaCalculoParametroRow): NominaCalculoParametroSnapshot {
+  return {
+    grupo: row.grupo,
+    clave: row.clave,
+    valor: row.valor,
+    valorNumerico: row.valor_numerico == null ? null : Number(row.valor_numerico),
+    vigencia: row.vigencia,
+    origen: row.origen,
+  };
+}
+
 function mapPeriodoRow(row: NominaCalculoPeriodoRow): NominaCalculoPeriodoSnapshot {
   return {
     idCalculoPeriodo: row.id_calculo_periodo,
@@ -820,6 +965,7 @@ function mapPeriodoRow(row: NominaCalculoPeriodoRow): NominaCalculoPeriodoSnapsh
     reaperturaOperativa: mapReaperturaOperativa(row),
     anulacion: mapAnulacionOperativa(row),
     borradorPersist: extractBorradorPersistContext(parseRecord(row.cierre_operativo_metadata)),
+    metadataOperativa: parseRecord(row.cierre_operativo_metadata),
     trabajadores: [],
     issues: [],
     trazabilidad: [],

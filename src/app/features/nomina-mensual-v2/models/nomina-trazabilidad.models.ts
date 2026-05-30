@@ -95,6 +95,11 @@ export interface ContextoTrazabilidadPasoNomina {
     bloqueos: number;
     advertencias: number;
   };
+  parametrosBase?: {
+    origen: import('./nomina-parametros-base.models').OrigenBaseParametrosAlAvanzar;
+    idCalculoPeriodoBase: number;
+    fechaBaseGuardada: string | null;
+  };
   alcance?: {
     trabajadoresIncluidos: number;
     bloqueados: number;

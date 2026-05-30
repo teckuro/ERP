@@ -73,7 +73,7 @@ export function obtenerSubtituloPaso(paso: PayrollStepId): string {
 export function obtenerEtiquetaAccionPrincipal(paso: PayrollStepId): string {
   switch (paso) {
     case 'parameters':
-      return 'Validar parámetros';
+      return 'Preparar nómina';
     case 'scope':
       return 'Validar alcance';
     case 'employees':

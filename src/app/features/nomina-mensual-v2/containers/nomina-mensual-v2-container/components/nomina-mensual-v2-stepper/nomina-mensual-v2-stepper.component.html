@@ -7,6 +7,9 @@
         [class]="claseEstadoPaso(estadoPaso(vista.clave))"
         [class.active]="estadoPaso(vista.clave) === 'active'"
         [class.completed]="estadoPaso(vista.clave) === 'completed'"
+        [class.nomina-step--advance-blocked]="pasoAvanceBloqueado(vista.clave)"
+        [disabled]="pasoAvanceBloqueado(vista.clave)"
+        [attr.aria-disabled]="pasoAvanceBloqueado(vista.clave) ? 'true' : null"
         (click)="seleccionarPaso(vista.clave)"
       >
         <span class="step-number">
