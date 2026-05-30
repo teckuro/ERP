@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS nomina_calculo_periodo (
     id_calculo_periodo SERIAL PRIMARY KEY,
     periodo VARCHAR(7) NOT NULL,
     id_empresa INT NULL REFERENCES empresa(id_empresa),
+    id_preparacion_nomina BIGINT NULL CONSTRAINT nomina_calculo_periodo_preparacion_fk REFERENCES public.nomina_preparacion(id_preparacion_nomina),
+    tipo_preparacion TEXT NULL,
     estado VARCHAR(40) NOT NULL DEFAULT 'preliminar',
     fecha_generacion TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     usuario_generador UUID NULL,
@@ -33,6 +35,10 @@ CREATE TABLE IF NOT EXISTS nomina_calculo_periodo (
     cierre_operativo_usuario_label TEXT NULL,
     cierre_operativo_observacion TEXT NULL,
     cierre_operativo_metadata JSONB NOT NULL DEFAULT '{}'::JSONB,
+    reapertura_operativa_fecha TIMESTAMPTZ NULL,
+    reapertura_operativa_usuario_id UUID NULL,
+    reapertura_operativa_usuario_label TEXT NULL,
+    reapertura_operativa_metadata JSONB NOT NULL DEFAULT '{}'::JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT chk_nomina_calc_periodo_fmt CHECK (periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
@@ -66,6 +72,8 @@ CREATE TABLE IF NOT EXISTS nomina_calculo_periodo (
 );
 
 ALTER TABLE nomina_calculo_periodo
+    ADD COLUMN IF NOT EXISTS id_preparacion_nomina BIGINT NULL,
+    ADD COLUMN IF NOT EXISTS tipo_preparacion TEXT NULL,
     ADD COLUMN IF NOT EXISTS aprobacion_operativa_estado TEXT NULL,
     ADD COLUMN IF NOT EXISTS aprobacion_operativa_fecha TIMESTAMPTZ NULL,
     ADD COLUMN IF NOT EXISTS aprobacion_operativa_usuario_id UUID NULL,
@@ -77,7 +85,49 @@ ALTER TABLE nomina_calculo_periodo
     ADD COLUMN IF NOT EXISTS cierre_operativo_usuario_id UUID NULL,
     ADD COLUMN IF NOT EXISTS cierre_operativo_usuario_label TEXT NULL,
     ADD COLUMN IF NOT EXISTS cierre_operativo_observacion TEXT NULL,
-    ADD COLUMN IF NOT EXISTS cierre_operativo_metadata JSONB NOT NULL DEFAULT '{}'::JSONB;
+    ADD COLUMN IF NOT EXISTS cierre_operativo_metadata JSONB NOT NULL DEFAULT '{}'::JSONB,
+    ADD COLUMN IF NOT EXISTS reapertura_operativa_fecha TIMESTAMPTZ NULL,
+    ADD COLUMN IF NOT EXISTS reapertura_operativa_usuario_id UUID NULL,
+    ADD COLUMN IF NOT EXISTS reapertura_operativa_usuario_label TEXT NULL,
+    ADD COLUMN IF NOT EXISTS reapertura_operativa_metadata JSONB NOT NULL DEFAULT '{}'::JSONB;
+
+DO $$
+BEGIN
+    IF to_regclass('public.nomina_preparacion') IS NOT NULL
+       AND NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'nomina_calculo_periodo_preparacion_fk'
+              AND conrelid = 'public.nomina_calculo_periodo'::REGCLASS
+       ) THEN
+        ALTER TABLE public.nomina_calculo_periodo
+            ADD CONSTRAINT nomina_calculo_periodo_preparacion_fk
+            FOREIGN KEY (id_preparacion_nomina)
+            REFERENCES public.nomina_preparacion(id_preparacion_nomina);
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'nomina_calculo_periodo_tipo_preparacion_chk'
+          AND conrelid = 'public.nomina_calculo_periodo'::REGCLASS
+    ) THEN
+        ALTER TABLE public.nomina_calculo_periodo
+            ADD CONSTRAINT nomina_calculo_periodo_tipo_preparacion_chk CHECK (
+                tipo_preparacion IS NULL
+                OR tipo_preparacion IN (
+                    'mensualCompleta',
+                    'porCentroCosto',
+                    'seleccionManual',
+                    'complementaria',
+                    'reproceso',
+                    'retroactiva',
+                    'finiquito',
+                    'especial'
+                )
+            );
+    END IF;
+END $$;
 
 DO $$
 BEGIN
@@ -192,13 +242,28 @@ CREATE INDEX IF NOT EXISTS idx_nomina_calc_periodo_periodo
 CREATE INDEX IF NOT EXISTS idx_nomina_calc_periodo_estado
     ON nomina_calculo_periodo (estado, periodo);
 
+CREATE INDEX IF NOT EXISTS idx_nomina_calc_periodo_preparacion
+    ON nomina_calculo_periodo (id_preparacion_nomina);
+
+DROP INDEX IF EXISTS uq_nomina_calc_periodo_activo_sin_empresa;
+DROP INDEX IF EXISTS uq_nomina_calc_periodo_activo_empresa;
+
 CREATE UNIQUE INDEX IF NOT EXISTS uq_nomina_calc_periodo_activo_sin_empresa
     ON nomina_calculo_periodo (periodo)
-    WHERE activo = TRUE AND id_empresa IS NULL;
+    WHERE activo = TRUE
+      AND id_empresa IS NULL
+      AND id_preparacion_nomina IS NULL;
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_nomina_calc_periodo_activo_empresa
     ON nomina_calculo_periodo (periodo, id_empresa)
-    WHERE activo = TRUE AND id_empresa IS NOT NULL;
+    WHERE activo = TRUE
+      AND id_empresa IS NOT NULL
+      AND id_preparacion_nomina IS NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_nomina_calc_periodo_activo_preparacion
+    ON nomina_calculo_periodo (id_preparacion_nomina)
+    WHERE activo = TRUE
+      AND id_preparacion_nomina IS NOT NULL;
 
 CREATE INDEX IF NOT EXISTS idx_nomina_calc_trab_periodo
     ON nomina_calculo_trabajador (id_calculo_periodo);

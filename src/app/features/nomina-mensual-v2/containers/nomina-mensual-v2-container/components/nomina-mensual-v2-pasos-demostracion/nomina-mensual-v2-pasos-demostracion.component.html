@@ -1,4 +1,16 @@
 <div class="nmv2-pasos-demo">
+  @if (errorAccion(); as error) {
+    <div class="info-banner info-banner--warning">
+      <lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon>
+      <span>{{ error }}</span>
+    </div>
+  } @else if (flujoReal()?.mensaje; as mensaje) {
+    <div class="info-banner info-banner--subtle">
+      <lucide-icon name="info" aria-hidden="true"></lucide-icon>
+      <span>{{ mensaje }}</span>
+    </div>
+  }
+
   @switch (paso) {
     @case ('movements') {
       <div class="tabs-bar">
@@ -8,7 +20,7 @@
       </div>
 
       <div class="metric-strip">
-        @for (metric of movementMetrics; track metric.id) {
+        @for (metric of movementMetrics(); track metric.id) {
           <article class="summary-metric" [class]="toneClass(metric.tone)">
             <div class="summary-metric__icon"><lucide-icon [name]="metricIcon(metric.id)" aria-hidden="true"></lucide-icon></div>
             <div class="summary-metric__copy">
@@ -38,7 +50,7 @@
             <table class="data-table">
               <thead><tr><th>Trabajador</th><th>Tipo</th><th>Concepto</th><th>Fecha</th><th>Monto</th><th>Origen</th><th>Estado</th><th>Acciones</th></tr></thead>
               <tbody>
-                @for (row of movementRows; track row.worker + row.concept) {
+                @for (row of movementRows(); track row.worker + row.concept) {
                   <tr>
                     <td class="name-cell multi-line"><span class="avatar-box">{{ initials(row.worker) }}</span><span>{{ row.worker }}<small>{{ row.rut }}</small></span></td>
                     <td><span class="status-pill" [class]="toneClass(row.type.tone)"><lucide-icon [name]="statusIcon(row.type.tone)" aria-hidden="true"></lucide-icon>{{ row.type.label }}</span></td>
@@ -79,7 +91,7 @@
 
     @case ('calculation') {
       <div class="metric-strip">
-        @for (metric of calculationMetrics; track metric.id) {
+        @for (metric of calculationMetrics(); track metric.id) {
           <article class="summary-metric" [class]="toneClass(metric.tone)">
             <div class="summary-metric__icon"><lucide-icon [name]="metricIcon(metric.id)" aria-hidden="true"></lucide-icon></div>
             <div class="summary-metric__copy">
@@ -119,7 +131,7 @@
             <table class="data-table">
               <thead><tr><th>Trabajador</th><th>Haberes</th><th>Descuentos</th><th>Imponible</th><th>Líquido</th><th>Estado</th><th></th></tr></thead>
               <tbody>
-                @for (row of calculationRows; track row.worker) {
+                @for (row of calculationRows(); track row.worker) {
                   <tr>
                     <td class="name-cell multi-line"><span class="avatar-box">{{ initials(row.worker) }}</span><span>{{ row.worker }}<small>{{ row.area }}</small></span></td>
                     <td>{{ row.earnings }}</td><td>{{ row.deductions }}</td><td>{{ row.taxable }}</td><td>{{ row.net }}</td>
@@ -184,7 +196,7 @@
             <table class="data-table">
               <thead><tr><th>Estado</th><th>Regla de validación</th><th>Detalle</th><th>Severidad</th></tr></thead>
               <tbody>
-                @for (row of validationRows; track row.rule) {
+                @for (row of validationRows(); track row.rule) {
                   <tr>
                     <td class="status-only"><span class="status-dot" [class]="toneClass(row.severity.tone)"><lucide-icon [name]="statusIcon(row.severity.tone)" aria-hidden="true"></lucide-icon></span></td>
                     <td>{{ row.rule }}</td>
@@ -245,7 +257,7 @@
     @case ('approval') {
       <app-nomina-mensual-v2-trazabilidad-paso paso="approval" [compacto]="true" />
       <div class="metric-strip">
-        @for (metric of approvalMetrics; track metric.id) {
+        @for (metric of approvalMetrics(); track metric.id) {
           <article class="summary-metric" [class]="toneClass(metric.tone)">
             <div class="summary-metric__icon"><lucide-icon [name]="metricIcon(metric.id)" aria-hidden="true"></lucide-icon></div>
             <div class="summary-metric__copy">
@@ -317,7 +329,7 @@
 
     @case ('payslips') {
       <div class="metric-strip">
-        @for (metric of payslipMetrics; track metric.id) {
+        @for (metric of payslipMetrics(); track metric.id) {
           <article class="summary-metric" [class]="toneClass(metric.tone)">
             <div class="summary-metric__icon"><lucide-icon [name]="metricIcon(metric.id)" aria-hidden="true"></lucide-icon></div>
             <div class="summary-metric__copy">
@@ -335,7 +347,7 @@
             <table class="data-table">
               <thead><tr><th>Trabajador</th><th>RUT</th><th>Cargo</th><th>Líquido a pagar</th><th>Estado documento</th><th>Firma</th><th>Envío</th><th>Acciones</th></tr></thead>
               <tbody>
-                @for (row of payslipRows; track row.rut) {
+                @for (row of payslipRows(); track row.rut) {
                   <tr>
                     <td class="name-cell"><span class="avatar-box">{{ initials(row.worker) }}</span><span>{{ row.worker }}</span></td>
                     <td>{{ row.rut }}</td>

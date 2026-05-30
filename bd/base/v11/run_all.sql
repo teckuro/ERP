@@ -13,6 +13,7 @@
 \ir partes/10_periodo_catalogos.sql
 \ir partes/11_parametros_generales_ampliacion.sql
 \ir partes/13_persona_paso_alta_avanzada.sql
+\ir partes/30_nomina_preparacion.sql
 \ir partes/15_nomina_calculo_snapshot.sql
 \ir partes/15b_nomina_calculo_parametro.sql
 \ir partes/16_nomina_calculo_snapshot_rls.sql
@@ -27,6 +28,9 @@
 \ir partes/21b_nomina_reapertura_operativa_rpc.sql
 \ir partes/22_liquidaciones_oficiales.sql
 \ir partes/23_liquidaciones_oficiales_rpc.sql
+\ir partes/33_nomina_preparacion_fks.sql
+\ir partes/31_nomina_preparacion_rls.sql
+\ir partes/32_nomina_preparacion_rpc.sql
 \ir partes/23b_v_nomina_estado_periodo.sql
 \ir partes/24_lre_catalogo_oficial.sql
 \ir partes/25_lre_concept_rules.sql

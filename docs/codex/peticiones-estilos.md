@@ -2604,3 +2604,8 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Causa:** cadena flex rota — pasos con `display: block`, filas grid `auto` (solo altura del contenido) y `align-items: start` en la grilla impedían ocupar el alto del shell.
 - **Fix (v2):** patrón `docs/codex/estilos/README.md`: `height/min-height: 0` + `flex: 1` en page/container; `.nmv2-page` como grid `auto auto minmax(0, 1fr)`; grillas de paso con `grid-template-rows: minmax(0, 1fr)` y columnas `align-self: stretch`; pasos activos `height: 100%`.
 - **Archivos:** `nomina-mensual-v2-container.css`, `nomina-mensual-v2.page.ts`, `peticiones-estilos.md`.
+## 2026-05-30 - Nomina mensual V2: integracion real pasos 4-8
+
+- **Cambio:** `PasosDemostracion` deja de ser solo mock en Novedades, Calculo, Validacion, Aprobacion y Liquidaciones: lee entradas mensuales, snapshots, observaciones y liquidaciones desde servicios reales existentes. Las acciones principales de Calculo, Validacion, Aprobacion y Liquidaciones llaman al puente V1 seguro (`ProcesoMensualService`, `NominaCalculoSnapshotRepository`, `LiquidacionesOficialesService`) y registran trazabilidad local V2.
+- **Limite:** no integra aun `nomina_preparacion` V11 en Angular; queda pendiente de fase backend completa para no mezclar escritura nueva con compatibilidad legacy.
+- **Archivos:** `nomina-mensual-v2-flujo.service.ts`, `nomina-mensual-v2-pasos-demostracion.component.{ts,html}`, `peticiones-estilos.md`.

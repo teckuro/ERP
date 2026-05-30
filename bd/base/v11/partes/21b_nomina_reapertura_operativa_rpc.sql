@@ -68,9 +68,52 @@ BEGIN
                     'notaAlcance', 'Reapertura operativa. No revierte liquidaciones generadas.'
                 )
             ),
+        reapertura_operativa_fecha = NOW(),
+        reapertura_operativa_usuario_id = v_usuario_id,
+        reapertura_operativa_usuario_label = v_usuario_label,
+        reapertura_operativa_metadata = COALESCE(p_metadata, '{}'::JSONB),
         updated_at = NOW()
     WHERE id_calculo_periodo = p_id_calculo_periodo
     RETURNING * INTO v_snapshot;
+
+    IF v_snapshot.id_preparacion_nomina IS NOT NULL THEN
+        UPDATE public.nomina_preparacion
+        SET estado = 'confirmada',
+            cerrada_at = NULL,
+            cerrada_by = NULL,
+            metadata = COALESCE(metadata, '{}'::JSONB)
+                || jsonb_build_object(
+                    'ultimaReapertura', jsonb_build_object(
+                        'fecha', NOW(),
+                        'usuarioId', v_usuario_id,
+                        'usuarioLabel', v_usuario_label,
+                        'observacion', NULLIF(BTRIM(COALESCE(p_observacion, '')), ''),
+                        'forzado', COALESCE(p_forzar, FALSE),
+                        'origen', 'reabrir_nomina_operativa'
+                    )
+                ),
+            updated_at = NOW()
+        WHERE id_preparacion_nomina = v_snapshot.id_preparacion_nomina
+          AND estado = 'cerrada';
+
+        INSERT INTO public.nomina_preparacion_evento (
+            id_preparacion_nomina,
+            tipo_evento,
+            usuario_id,
+            usuario_label,
+            metadata
+        )
+        VALUES (
+            v_snapshot.id_preparacion_nomina,
+            'PREPARACION_REABIERTA',
+            v_usuario_id,
+            v_usuario_label,
+            jsonb_build_object(
+                'idCalculoPeriodo', p_id_calculo_periodo,
+                'forzado', COALESCE(p_forzar, FALSE)
+            )
+        );
+    END IF;
 
     RETURN v_snapshot;
 END;

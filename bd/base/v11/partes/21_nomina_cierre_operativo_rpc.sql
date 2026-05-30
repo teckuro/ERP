@@ -19,6 +19,7 @@ DECLARE
     v_snapshot public.nomina_calculo_periodo%ROWTYPE;
     v_usuario_id UUID;
     v_usuario_label TEXT;
+    v_id_liquidacion_periodo BIGINT;
 BEGIN
     v_usuario_id := auth.uid();
 
@@ -61,6 +62,14 @@ BEGIN
         RAISE EXCEPTION 'Debe emitir las liquidaciones del periodo antes de cerrar';
     END IF;
 
+    SELECT id_liquidacion_periodo
+    INTO v_id_liquidacion_periodo
+    FROM public.nomina_liquidacion_periodo
+    WHERE id_calculo_periodo = p_id_calculo_periodo
+      AND activo = TRUE
+    ORDER BY id_liquidacion_periodo DESC
+    LIMIT 1;
+
     UPDATE public.nomina_calculo_periodo
     SET
         cierre_operativo_estado = 'cerrado_operativamente',
@@ -77,6 +86,39 @@ BEGIN
         updated_at = NOW()
     WHERE id_calculo_periodo = p_id_calculo_periodo
     RETURNING * INTO v_snapshot;
+
+    IF v_snapshot.id_preparacion_nomina IS NOT NULL THEN
+        UPDATE public.nomina_preparacion
+        SET estado = 'cerrada',
+            cerrada_at = NOW(),
+            cerrada_by = v_usuario_id,
+            metadata = COALESCE(metadata, '{}'::JSONB)
+                || jsonb_build_object(
+                    'idCalculoPeriodo', p_id_calculo_periodo,
+                    'idLiquidacionPeriodo', v_id_liquidacion_periodo,
+                    'origen', 'cerrar_nomina_operativa'
+                ),
+            updated_at = NOW()
+        WHERE id_preparacion_nomina = v_snapshot.id_preparacion_nomina;
+
+        INSERT INTO public.nomina_preparacion_evento (
+            id_preparacion_nomina,
+            tipo_evento,
+            usuario_id,
+            usuario_label,
+            metadata
+        )
+        VALUES (
+            v_snapshot.id_preparacion_nomina,
+            'PREPARACION_CERRADA',
+            v_usuario_id,
+            v_usuario_label,
+            jsonb_build_object(
+                'idCalculoPeriodo', p_id_calculo_periodo,
+                'idLiquidacionPeriodo', v_id_liquidacion_periodo
+            )
+        );
+    END IF;
 
     RETURN v_snapshot;
 END;

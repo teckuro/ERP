@@ -22,6 +22,7 @@ DECLARE
     v_usuario_id UUID;
     v_usuario_label TEXT;
     v_total_parametros INT;
+    v_preparacion_estado TEXT;
 BEGIN
     v_usuario_id := auth.uid();
     IF v_usuario_id IS NULL THEN
@@ -53,6 +54,23 @@ BEGIN
 
     IF COALESCE(v_snapshot.total_bloqueados, 0) > 0 THEN
         RAISE EXCEPTION 'El snapshot tiene trabajadores bloqueados; no puede aprobarse';
+    END IF;
+
+    IF v_snapshot.id_preparacion_nomina IS NOT NULL THEN
+        SELECT estado
+        INTO v_preparacion_estado
+        FROM public.nomina_preparacion
+        WHERE id_preparacion_nomina = v_snapshot.id_preparacion_nomina
+          AND activo = TRUE
+        FOR UPDATE;
+
+        IF v_preparacion_estado IS NULL THEN
+            RAISE EXCEPTION 'El snapshot referencia una preparacion inexistente o inactiva';
+        END IF;
+
+        IF v_preparacion_estado IN ('cerrada', 'anulada', 'liquidaciones_generadas') THEN
+            RAISE EXCEPTION 'La preparacion no permite aprobacion en su estado actual';
+        END IF;
     END IF;
 
     -- Existencia de los tres hashes en la fila congelada.
@@ -113,6 +131,40 @@ BEGIN
         updated_at = NOW()
     WHERE id_calculo_periodo = p_id_calculo_periodo
     RETURNING * INTO v_snapshot;
+
+    IF v_snapshot.id_preparacion_nomina IS NOT NULL THEN
+        UPDATE public.nomina_preparacion
+        SET estado = 'confirmada',
+            confirmada_at = COALESCE(confirmada_at, NOW()),
+            confirmada_by = COALESCE(confirmada_by, v_usuario_id),
+            metadata = COALESCE(metadata, '{}'::JSONB)
+                || jsonb_build_object(
+                    'idCalculoPeriodo', p_id_calculo_periodo,
+                    'hashSnapshot', v_snapshot.hash_snapshot,
+                    'hashParametros', v_snapshot.hash_parametros,
+                    'hashEntradas', v_snapshot.hash_entradas
+                ),
+            updated_at = NOW()
+        WHERE id_preparacion_nomina = v_snapshot.id_preparacion_nomina;
+
+        INSERT INTO public.nomina_preparacion_evento (
+            id_preparacion_nomina,
+            tipo_evento,
+            usuario_id,
+            usuario_label,
+            metadata
+        )
+        VALUES (
+            v_snapshot.id_preparacion_nomina,
+            'PREPARACION_CONFIRMADA',
+            v_usuario_id,
+            v_usuario_label,
+            jsonb_build_object(
+                'idCalculoPeriodo', p_id_calculo_periodo,
+                'origen', 'fn_aprobar_prenomina_periodo'
+            )
+        );
+    END IF;
 
     RETURN v_snapshot;
 END;

@@ -44,6 +44,18 @@ Diagnostico:
 
 Cambios aplicados: Liquidaciones oficiales ya no debe describirse como fase futura en la prevalidacion. Es una salida interna disponible desde nómina mensual confirmada. Los CTA operativos de salida se normalizan hacia `Confirmar nomina`. `Registrar revision RRHH` queda absorbido como parte de la confirmacion visible.
 
+## NOMINA V10.2 — Alcance y trabajadores como preparación conceptual
+
+Documento de planificación funcional para ordenar Alcance y Trabajadores como un mismo universo conceptual de nómina mensual, sin persistencia nueva ni cambio de lenguaje visible NOIA. Mantiene `Nómina mensual` como concepto principal para RRHH y deja preparaciones/lotes persistidos para V11/backend. Documento: [`nomina-v10-2-alcance-trabajadores-preparacion-conceptual.md`](./nomina-v10-2-alcance-trabajadores-preparacion-conceptual.md).
+
+## NOMINA V11 — Contrato funcional preparaciones/lotes por tipo
+
+Contrato funcional futuro para backend completo: define objetivo, creación, datos requeridos, alcance, cálculo, relación con nómina previa, bloqueos, disponibilidad inicial y liquidación esperada para `mensualCompleta`, `porCentroCosto`, `seleccionManual`, `complementaria`, `reproceso`, `retroactiva`, `finiquito` y `especial`. Mantiene V10.2 acotado a UI/concepto y deja preparaciones/lotes persistidos para V11. Documento: [`nomina-v11-contrato-funcional-preparaciones-lotes-por-tipo.md`](./nomina-v11-contrato-funcional-preparaciones-lotes-por-tipo.md).
+
+## NOMINA V11 — Backend preparaciones/lotes
+
+Plan técnico V11 para derivar el contrato funcional a schema/RPC/repositorios/UI: `nomina_preparacion -> nomina_calculo_periodo -> nomina_liquidacion_periodo`, fases 30-33, FK tardías, compatibilidad legacy solo de lectura, enlace con cálculo/liquidaciones, contratos frontend, UI V2 y validaciones. Documento: [`nomina-v11-backend-preparaciones-lotes.md`](./nomina-v11-backend-preparaciones-lotes.md).
+
 ## NOM-MENSUAL-FLOW-NAV-02 aplicado
 
 Cierre del flujo RRHH: acciones en grillas Detalle mensual, preselección de trabajador, rehidratación al volver con `returnTo`, matriz única de destino workspace y modal reducido (resumen/resultado). Documento: [`nom-mensual-flow-nav-02.md`](./nom-mensual-flow-nav-02.md). Precede: [`nom-mensual-flow-nav-01.md`](./nom-mensual-flow-nav-01.md).

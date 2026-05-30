@@ -219,7 +219,6 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     const parametrosValidando = paso === 'parameters' && (this.pasoParametros()?.parametrosValidando() ?? false);
     const parametrosLoading = paso === 'parameters' && (this.pasoParametros()?.parametrosLoading() ?? false);
     const currentIndex = ORDEN_PASOS_NOMINA.indexOf(paso);
-    const isValidationBlocked = paso === 'validation';
 
     this.shellContext.setContext({
       breadcrumbs: [
@@ -230,11 +229,11 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       pageSubtitle: this.pageSubtitle(),
       statusChip: {
         label: `Paso ${currentIndex + 1} de ${ORDEN_PASOS_NOMINA.length}`,
-        tone: isValidationBlocked ? 'warning' : 'neutral',
+        tone: 'neutral',
       },
       primaryAction: {
         label: paso === 'parameters' && parametrosValidando ? 'Preparando...' : this.primaryActionLabel(),
-        disabled: isValidationBlocked || parametrosValidando || parametrosLoading,
+        disabled: parametrosValidando || parametrosLoading,
         loading: paso === 'parameters' ? parametrosValidando : false,
         actionId: `nomina-mensual-v2-${paso}`,
       },
@@ -256,7 +255,10 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       this.orquestador.ejecutarAccionPrincipal();
       return;
     }
-    if (pasoActivo === 'validation' || pasoActivo === 'payslips') return;
+    if (pasoActivo === 'calculation' || pasoActivo === 'validation' || pasoActivo === 'approval' || pasoActivo === 'payslips') {
+      this.orquestador.ejecutarAccionPrincipal();
+      return;
+    }
     this.nextStep();
   }
 

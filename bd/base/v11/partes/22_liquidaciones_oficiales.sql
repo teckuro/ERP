@@ -6,6 +6,11 @@ CREATE TABLE IF NOT EXISTS public.nomina_liquidacion_periodo (
     id_empresa INT NULL REFERENCES public.empresa(id_empresa),
     periodo TEXT NOT NULL,
     id_calculo_periodo INT NOT NULL REFERENCES public.nomina_calculo_periodo(id_calculo_periodo),
+    id_preparacion_nomina BIGINT NULL CONSTRAINT nomina_liquidacion_periodo_preparacion_fk REFERENCES public.nomina_preparacion(id_preparacion_nomina),
+    tipo_liquidacion TEXT NOT NULL DEFAULT 'mensual',
+    version INTEGER NOT NULL DEFAULT 1,
+    id_liquidacion_origen BIGINT NULL CONSTRAINT nomina_liquidacion_periodo_origen_fk REFERENCES public.nomina_liquidacion_periodo(id_liquidacion_periodo),
+    id_liquidacion_reemplazada BIGINT NULL CONSTRAINT nomina_liquidacion_periodo_reemplazada_fk REFERENCES public.nomina_liquidacion_periodo(id_liquidacion_periodo),
     estado TEXT NOT NULL DEFAULT 'generada',
     fecha_generacion TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     usuario_generacion_id UUID NULL,
@@ -19,8 +24,95 @@ CREATE TABLE IF NOT EXISTS public.nomina_liquidacion_periodo (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT nomina_liquidacion_periodo_estado_chk CHECK (estado IN ('generada')),
-    CONSTRAINT nomina_liquidacion_periodo_periodo_chk CHECK (periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$')
+    CONSTRAINT nomina_liquidacion_periodo_periodo_chk CHECK (periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
+    CONSTRAINT nomina_liquidacion_periodo_tipo_chk CHECK (
+        tipo_liquidacion IN (
+            'mensual',
+            'complementaria',
+            'reproceso',
+            'retroactiva',
+            'finiquito',
+            'especial'
+        )
+    ),
+    CONSTRAINT nomina_liquidacion_periodo_version_chk CHECK (version >= 1)
 );
+
+ALTER TABLE public.nomina_liquidacion_periodo
+    ADD COLUMN IF NOT EXISTS id_preparacion_nomina BIGINT NULL,
+    ADD COLUMN IF NOT EXISTS tipo_liquidacion TEXT NOT NULL DEFAULT 'mensual',
+    ADD COLUMN IF NOT EXISTS version INTEGER NOT NULL DEFAULT 1,
+    ADD COLUMN IF NOT EXISTS id_liquidacion_origen BIGINT NULL,
+    ADD COLUMN IF NOT EXISTS id_liquidacion_reemplazada BIGINT NULL;
+
+DO $$
+BEGIN
+    IF to_regclass('public.nomina_preparacion') IS NOT NULL
+       AND NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'nomina_liquidacion_periodo_preparacion_fk'
+              AND conrelid = 'public.nomina_liquidacion_periodo'::REGCLASS
+       ) THEN
+        ALTER TABLE public.nomina_liquidacion_periodo
+            ADD CONSTRAINT nomina_liquidacion_periodo_preparacion_fk
+            FOREIGN KEY (id_preparacion_nomina)
+            REFERENCES public.nomina_preparacion(id_preparacion_nomina);
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'nomina_liquidacion_periodo_origen_fk'
+          AND conrelid = 'public.nomina_liquidacion_periodo'::REGCLASS
+    ) THEN
+        ALTER TABLE public.nomina_liquidacion_periodo
+            ADD CONSTRAINT nomina_liquidacion_periodo_origen_fk
+            FOREIGN KEY (id_liquidacion_origen)
+            REFERENCES public.nomina_liquidacion_periodo(id_liquidacion_periodo);
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'nomina_liquidacion_periodo_reemplazada_fk'
+          AND conrelid = 'public.nomina_liquidacion_periodo'::REGCLASS
+    ) THEN
+        ALTER TABLE public.nomina_liquidacion_periodo
+            ADD CONSTRAINT nomina_liquidacion_periodo_reemplazada_fk
+            FOREIGN KEY (id_liquidacion_reemplazada)
+            REFERENCES public.nomina_liquidacion_periodo(id_liquidacion_periodo);
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'nomina_liquidacion_periodo_tipo_chk'
+          AND conrelid = 'public.nomina_liquidacion_periodo'::REGCLASS
+    ) THEN
+        ALTER TABLE public.nomina_liquidacion_periodo
+            ADD CONSTRAINT nomina_liquidacion_periodo_tipo_chk CHECK (
+                tipo_liquidacion IN (
+                    'mensual',
+                    'complementaria',
+                    'reproceso',
+                    'retroactiva',
+                    'finiquito',
+                    'especial'
+                )
+            );
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'nomina_liquidacion_periodo_version_chk'
+          AND conrelid = 'public.nomina_liquidacion_periodo'::REGCLASS
+    ) THEN
+        ALTER TABLE public.nomina_liquidacion_periodo
+            ADD CONSTRAINT nomina_liquidacion_periodo_version_chk CHECK (version >= 1);
+    END IF;
+END $$;
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_nomina_liquidacion_periodo_activa
     ON public.nomina_liquidacion_periodo(id_calculo_periodo)
@@ -28,6 +120,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_nomina_liquidacion_periodo_activa
 
 CREATE INDEX IF NOT EXISTS idx_nomina_liquidacion_periodo_periodo
     ON public.nomina_liquidacion_periodo(periodo, activo);
+
+CREATE INDEX IF NOT EXISTS idx_nomina_liquidacion_periodo_preparacion
+    ON public.nomina_liquidacion_periodo(id_preparacion_nomina);
 
 CREATE TABLE IF NOT EXISTS public.nomina_liquidacion_trabajador (
     id_liquidacion_trabajador BIGSERIAL PRIMARY KEY,
