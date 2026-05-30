@@ -2479,6 +2479,18 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Archivos:** presenters empleados, mock, paso-empleados, overlays, orquestador port, CSS caption.
 - **No tocado:** estilos globales, SQL, servicios de negocio, otros pasos.
 
+## 2026-05-29 — Nómina mensual V2: paso Empleados V9 (coherencia Personal)
+
+- **Fuente única:** grilla, KPIs, checklist, modal y validación cargan desde `EmpleadosService.listar()` filtrado por `PeriodoActivoService.periodoYm()`.
+- **Mapper:** `nomina-empleados-personal.mapper.ts` convierte `EmpleadoListado` → `FilaEmpleadoNomina` con fallbacks explícitos (`Sin asignar`, `Sin jornada`, `Pendiente`).
+- **Campo documentación:** `documentacion` propio en fila; KPI/checklist/filtros usan `documentacion !== 'completa'`.
+- **Demo aislado:** `USAR_DATOS_DEMO_EMPLEADOS_NOMINA = false` en mock; datos demo solo si flag explícito.
+- **Servicio:** `NominaEmpleadosCargaService` centraliza carga y recarga de grilla.
+- **V9.1 datos enriquecidos:** `NominaEmpleadosPersonalRepository` lee `vw_persona_factores` (jornada, AFP/Salud, retiro), `contrato_centro_costo` y `cuenta_bancaria` activa/principal.
+- **Layout empleados:** grilla y checklist comparten la misma altura de fila (`align-items: stretch`); sin `gridHeight` fijo; scroll interno en ambas columnas.
+- **Archivos:** mapper, repositorio personal, servicio carga, grid/validación presenters, paso-empleados.
+- **No tocado:** estilos globales, SQL, motor de cálculo, UI del módulo Personal.
+
 
 - **Orquestador:** `nomina-mensual-v2-container` queda delgado (~150 líneas TS); navegación, shell y paso activo.
 - **Componentes por paso:** `nomina-mensual-v2-paso-parametros`, `nomina-mensual-v2-paso-empleados`, `nomina-mensual-v2-pasos-demostracion` (novedades→liquidaciones mock).

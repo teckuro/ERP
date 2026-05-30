@@ -15,14 +15,12 @@ import {
 } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 
-import { employeeRows } from '../../../../data/nomina-mensual-v2.mock';
 import {
   COLUMNAS_GRILLA_EMPLEADOS_NOMINA,
   claseBadgeContrato,
   claseBadgeDatosBancarios,
   claseBadgeEstadoNomina,
   crearFiltrosGrillaEmpleadosNomina,
-  mapearFilasEmpleadosNomina,
   type FilaEmpleadoNomina,
 } from '../../../../presenters/nomina-empleados-grid.presenter';
 import {
@@ -40,6 +38,7 @@ import {
   type SeveridadChecklistEmpleados,
   type TipoPendienteEmpleado,
 } from '../../../../presenters/nomina-empleados-validacion.presenter';
+import { NominaEmpleadosCargaService } from '../../../../services/nomina-empleados-carga.service';
 import {
   DataGridCellDirective,
   DataGridComponent,
@@ -66,6 +65,7 @@ import {
 export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly orquestador = inject(NominaMensualV2OrquestadorPort);
+  private readonly empleadosCargaService = inject(NominaEmpleadosCargaService);
 
   @ViewChild(DataGridComponent) private grillaEmpleados?: DataGridComponent<FilaEmpleadoNomina>;
 
@@ -73,10 +73,10 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
   @Output() volverParametros = new EventEmitter<void>();
 
   readonly columnasGrillaEmpleados = COLUMNAS_GRILLA_EMPLEADOS_NOMINA;
-  readonly filasEmpleadosNomina = signal<FilaEmpleadoNomina[]>(mapearFilasEmpleadosNomina(employeeRows));
+  readonly filasEmpleadosNomina = signal<FilaEmpleadoNomina[]>([]);
   readonly filtrosAvanzadosEmpleadosVisibles = signal(false);
   readonly filtroPendienteEmpleados = signal<TipoPendienteEmpleado | null>(null);
-  readonly empleadosCargando = signal(false);
+  readonly empleadosCargando = signal(true);
   readonly empleadosError = signal('');
   readonly empleadoAccionMenuAbierto = signal<string | null>(null);
 
@@ -161,6 +161,7 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
       this.orquestador.limpiarAccionPrincipal();
       this.orquestador.establecerAyudaAvance(null);
     });
+    void this.recargarGrillaEmpleados();
   }
 
   claseItemChecklistEmpleado(item: ItemChecklistEmpleadoNomina): string {
@@ -177,8 +178,8 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
     this.empleadosCargando.set(true);
     this.empleadosError.set('');
     try {
-      await new Promise((resolve) => setTimeout(resolve, 320));
-      this.filasEmpleadosNomina.set(mapearFilasEmpleadosNomina(employeeRows));
+      const filas = await this.empleadosCargaService.cargarFilasEmpleadosNomina();
+      this.filasEmpleadosNomina.set(filas);
     } catch {
       this.empleadosError.set('No fue posible cargar la base de empleados.');
     } finally {

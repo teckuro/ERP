@@ -1,6 +1,11 @@
 import type { MessageBoxSection } from '../../../shared/components/ui/feedback/message-box/message-box.types';
 import type { ChecklistItem, ChecklistStatus, SummaryMetric } from '../models/nomina-mensual-v2.models';
 import type { FilaEmpleadoNomina } from './nomina-empleados-grid.presenter';
+import {
+  centroCostoAsignado,
+  documentacionIncompleta,
+  jornadaDefinida,
+} from './nomina-empleados-grid.presenter';
 
 export type EstadoValidacionEmpleados = 'correcto' | 'advertencia' | 'bloqueado';
 
@@ -179,11 +184,11 @@ export function obtenerResumenEmpleadosNomina(filas: FilaEmpleadoNomina[]): Resu
   const totalActivos = filas.length;
   const conContratoVigente = contarPorPredicado(filas, (fila) => fila.contrato === 'vigente');
   const conDatosBancariosPendientes = contarPorPredicado(filas, (fila) => fila.datosBancarios === 'pendiente');
-  const conDocumentacionIncompleta = contarPorPredicado(filas, (fila) => fila.estadoNomina === 'pendiente');
+  const conDocumentacionIncompleta = contarPorPredicado(filas, (fila) => documentacionIncompleta(fila.documentacion));
   const conObservaciones = contarPorPredicado(filas, (fila) => fila.estadoNomina === 'observado');
   const conAfpSaludIncompleta = contarPorPredicado(filas, (fila) => !fila.afpSaludAsignada);
-  const conCentroCostoAsignado = contarPorPredicado(filas, (fila) => Boolean(fila.centroCosto.trim()));
-  const conJornadaDefinida = contarPorPredicado(filas, (fila) => Boolean(fila.jornada.trim()));
+  const conCentroCostoAsignado = contarPorPredicado(filas, (fila) => centroCostoAsignado(fila.centroCosto));
+  const conJornadaDefinida = contarPorPredicado(filas, (fila) => jornadaDefinida(fila.jornada));
 
   return {
     totalActivos,
@@ -208,9 +213,9 @@ function calcularTrabajadoresAfectados(filas: FilaEmpleadoNomina[]): number {
       fila.contrato !== 'vigente' ||
       fila.datosBancarios === 'pendiente' ||
       !fila.afpSaludAsignada ||
-      !fila.centroCosto.trim() ||
-      !fila.jornada.trim() ||
-      fila.estadoNomina === 'pendiente' ||
+      !centroCostoAsignado(fila.centroCosto) ||
+      !jornadaDefinida(fila.jornada) ||
+      documentacionIncompleta(fila.documentacion) ||
       fila.estadoNomina === 'observado';
 
     if (tienePendiente) {
@@ -252,15 +257,15 @@ export function filtrarEmpleadosConPendientes(
     case 'pago':
       return filas.filter((fila) => fila.datosBancarios === 'pendiente');
     case 'documentacion':
-      return filas.filter((fila) => fila.estadoNomina === 'pendiente');
+      return filas.filter((fila) => documentacionIncompleta(fila.documentacion));
     case 'afpSalud':
       return filas.filter((fila) => !fila.afpSaludAsignada);
     case 'observaciones':
       return filas.filter((fila) => fila.estadoNomina === 'observado');
     case 'centroCosto':
-      return filas.filter((fila) => !fila.centroCosto.trim());
+      return filas.filter((fila) => !centroCostoAsignado(fila.centroCosto));
     case 'jornada':
-      return filas.filter((fila) => !fila.jornada.trim());
+      return filas.filter((fila) => !jornadaDefinida(fila.jornada));
   }
 }
 

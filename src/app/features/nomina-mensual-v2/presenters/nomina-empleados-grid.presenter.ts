@@ -4,9 +4,28 @@ import type { PayrollEmployeeRow } from '../models/nomina-mensual-v2.models';
 export type EstadoNominaEmpleado = 'listo' | 'observado' | 'pendiente';
 export type EstadoDatosBancariosEmpleado = 'completo' | 'pendiente';
 export type EstadoContratoEmpleado = 'vigente' | 'pendiente' | 'vencido';
+export type EstadoDocumentacionEmpleado = 'completa' | 'incompleta' | 'pendiente';
+
+const CENTRO_COSTO_PENDIENTE = new Set(['sin asignar', 'sin centro de costo']);
+const JORNADA_PENDIENTE = new Set(['sin jornada', 'sin asignar']);
+
+export function centroCostoAsignado(centroCosto: string): boolean {
+  const normalizado = centroCosto.trim().toLowerCase();
+  return normalizado.length > 0 && !CENTRO_COSTO_PENDIENTE.has(normalizado);
+}
+
+export function jornadaDefinida(jornada: string): boolean {
+  const normalizado = jornada.trim().toLowerCase();
+  return normalizado.length > 0 && !JORNADA_PENDIENTE.has(normalizado);
+}
+
+export function documentacionIncompleta(documentacion: EstadoDocumentacionEmpleado): boolean {
+  return documentacion !== 'completa';
+}
 
 export interface FilaEmpleadoNomina {
   id: string;
+  numeroFila?: number;
   nombreCompleto: string;
   rut: string;
   cargo: string;
@@ -18,6 +37,8 @@ export interface FilaEmpleadoNomina {
   etiquetaDatosBancarios: string;
   contrato: EstadoContratoEmpleado;
   etiquetaContrato: string;
+  documentacion: EstadoDocumentacionEmpleado;
+  etiquetaDocumentacion: string;
   afpSaludAsignada: boolean;
   etiquetaAfpSalud: string;
 }
@@ -220,23 +241,15 @@ export function crearFiltrosGrillaEmpleadosNomina(
     {
       id: 'documentacion',
       label: 'Documentación',
-      field: 'estadoNomina',
+      field: 'documentacion',
       type: 'select',
       operator: 'equals',
       emptyLabel: 'Todos',
       options: [
         { label: 'Completa', value: 'completa' },
         { label: 'Incompleta', value: 'incompleta' },
-        { label: 'Observada', value: 'observada' },
+        { label: 'Pendiente', value: 'pendiente' },
       ],
-      predicate: (row, value) => {
-        const filtro = String(value ?? '');
-        if (!filtro) return true;
-        if (filtro === 'completa') return row.estadoNomina === 'listo';
-        if (filtro === 'incompleta') return row.estadoNomina === 'pendiente';
-        if (filtro === 'observada') return row.estadoNomina === 'observado';
-        return true;
-      },
     },
     {
       id: 'afpSalud',
@@ -263,23 +276,28 @@ export function crearFiltrosGrillaEmpleadosNomina(
 }
 
 export function mapearFilasEmpleadosNomina(filas: PayrollEmployeeRow[]): FilaEmpleadoNomina[] {
-  return filas.map((fila) => {
+  return filas.map((fila, indice) => {
     const etiquetaAfpSalud = fila.healthStatus?.label ?? 'Asignada';
     const afpSaludAsignada = mapearAfpSaludAsignada(etiquetaAfpSalud);
+    const estadoNomina = mapearEstadoNomina(fila.payrollStatus.label);
+    const documentacion = mapearEstadoDocumentacionDesdeNomina(estadoNomina);
 
     return {
       id: fila.rut,
+      numeroFila: indice + 1,
       nombreCompleto: fila.name,
       rut: fila.rut,
       cargo: fila.role,
       centroCosto: fila.costCenter,
       jornada: fila.workSchedule,
-      estadoNomina: mapearEstadoNomina(fila.payrollStatus.label),
+      estadoNomina,
       etiquetaEstadoNomina: fila.payrollStatus.label,
       datosBancarios: mapearEstadoDatosBancarios(fila.bankStatus.label),
       etiquetaDatosBancarios: fila.bankStatus.label,
       contrato: mapearEstadoContrato(fila.contractStatus.label),
       etiquetaContrato: fila.contractStatus.label,
+      documentacion,
+      etiquetaDocumentacion: etiquetaDocumentacion(documentacion),
       afpSaludAsignada,
       etiquetaAfpSalud,
     };
@@ -337,5 +355,22 @@ function mapearEstadoContrato(etiqueta: string): EstadoContratoEmpleado {
 
 function mapearAfpSaludAsignada(etiqueta: string): boolean {
   const normalizada = etiqueta.trim().toLowerCase();
-  return normalizada === 'asignada' || normalizada === 'completa' || normalizada === 'válida' || normalizada === 'valida';
+  return normalizada === 'asignada' || normalizada === 'completa' || normalizada === 'parcial' || normalizada === 'válida' || normalizada === 'valida';
+}
+
+function mapearEstadoDocumentacionDesdeNomina(estadoNomina: EstadoNominaEmpleado): EstadoDocumentacionEmpleado {
+  if (estadoNomina === 'listo') return 'completa';
+  if (estadoNomina === 'observado') return 'incompleta';
+  return 'pendiente';
+}
+
+function etiquetaDocumentacion(estado: EstadoDocumentacionEmpleado): string {
+  switch (estado) {
+    case 'completa':
+      return 'Completa';
+    case 'incompleta':
+      return 'Incompleta';
+    case 'pendiente':
+      return 'Pendiente';
+  }
 }

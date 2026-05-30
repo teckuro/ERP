@@ -11,6 +11,9 @@ import type {
   ValidationRow,
 } from '../models/nomina-mensual-v2.models';
 
+/** Solo true para demostración local; producción usa EmpleadosService.listar(). */
+export const USAR_DATOS_DEMO_EMPLEADOS_NOMINA = false;
+
 export const payrollSteps: PayrollStep[] = [
   { id: 'parameters', number: 1, title: 'Parámetros', subtitle: 'Configurar' },
   { id: 'employees', number: 2, title: 'Empleados', subtitle: 'Revisar' },

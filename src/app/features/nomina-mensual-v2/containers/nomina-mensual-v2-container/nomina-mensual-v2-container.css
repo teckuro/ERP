@@ -3896,7 +3896,7 @@ textarea {
 
 /* Empleados V1: grilla del sistema (app-data-grid) */
 .nmv2-employees-layout {
-  align-items: start;
+  align-items: stretch;
 }
 
 .nmv2-empleados-grid-wrap {
@@ -4225,8 +4225,9 @@ textarea {
 .empleados-grid-module {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
   min-height: 0;
-  max-height: min(720px, calc(100vh - 11rem));
+  height: 100%;
   background: #fff;
   border: 1px solid #dbe3ef;
   border-radius: 16px;
@@ -4319,17 +4320,21 @@ textarea {
 }
 
 .nmv2-page[data-step='employees'] .empleados-grid-module__grid {
+  display: flex;
   flex: 1 1 auto;
+  flex-direction: column;
   min-width: 0;
   min-height: 0;
-  max-height: 560px;
-}
-
-.nmv2-page[data-step='employees'] .empleados-grid-module__grid.data-grid-host--sized {
-  min-height: 0;
+  height: 100%;
 }
 
 .nmv2-page[data-step='employees'] .empleados-grid-module__card {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  height: 100% !important;
+  max-height: none !important;
   border: 0;
   border-radius: 0;
   box-shadow: none;
@@ -4361,8 +4366,7 @@ textarea {
 
 .nmv2-page[data-step='employees'] .empleados-grid-module__grid .data-grid-scroll {
   flex: 1 1 auto;
-  min-height: 380px;
-  max-height: calc(100vh - 420px);
+  min-height: 0;
 }
 
 .nmv2-empleados-toolbar-extra {
@@ -4399,12 +4403,11 @@ textarea {
   height: 14px;
 }
 
-.nmv2-page[data-step='employees'] .empleados-checklist-card {
-  padding: 18px;
-}
-
 .nmv2-page[data-step='employees'] .empleados-checklist-stack {
   gap: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .nmv2-page[data-step='employees'] .empleados-checklist-item {
@@ -4522,15 +4525,31 @@ textarea {
 .nmv2-page[data-step='employees'] .nmv2-employees-layout.content-grid--aside {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   column-gap: 10px;
+  align-items: stretch;
 }
 
 .nmv2-page[data-step='employees'] .nmv2-employees-layout .content-main {
   grid-column: 1 / 4;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .nmv2-page[data-step='employees'] .nmv2-employees-layout .content-side {
   grid-column: 4;
   max-width: none;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.nmv2-page[data-step='employees'] .empleados-checklist-card {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+  padding: 18px;
 }
 
 @media (max-width: 1240px) {
