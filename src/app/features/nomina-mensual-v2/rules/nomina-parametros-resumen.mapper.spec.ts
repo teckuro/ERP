@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { ProcesoMensualGrupoParametro } from '../../nomina-mensual/models/proceso-mensual.model';
-import type { ParametrosCompletitudResultado } from '../../parametros-generales/rules/parametros-completitud.rules';
+import type { ParametrosCompletitudResultado, ParametrosCompletitudGrupo } from '../../parametros-generales/rules/parametros-completitud.rules';
 import { buildNominaParametrosResumen } from './nomina-parametros-resumen.mapper';
 
 describe('nomina-parametros-resumen.mapper', () => {
@@ -104,13 +104,42 @@ describe('nomina-parametros-resumen.mapper', () => {
     expect(resumen.bloqueosActuales.some((bloqueo) => bloqueo.areaId === 'configuracionCliente')).toBe(true);
     expect(resumen.bloqueosActuales.every((bloqueo) => bloqueo.areaId !== 'reglasCalculo')).toBe(true);
   });
+
+  it('expone resumen por 5 secciones visibles y controles internos verificados', () => {
+    const resumen = buildNominaParametrosResumen({
+      periodo: '2026-05',
+      gruposMinimos: gruposOk,
+      completitud: completitudMock(),
+    });
+
+    expect(resumen.seccionesTotales).toBe(5);
+    expect(resumen.seccionesListas).toBe(5);
+    expect(resumen.completitudSecciones).toBe(100);
+    expect(resumen.controlesTotales).toBe(resumen.totalParametros);
+    expect(resumen.controlesVerificados).toBe(resumen.completos);
+    expect(resumen.controlesVerificados).toBeGreaterThan(resumen.seccionesTotales);
+  });
+
+  it('cuenta secciones listas segun estado del visor, no solo controles ok', () => {
+    const resumen = buildNominaParametrosResumen({
+      periodo: '2026-05',
+      gruposMinimos: [
+        ...gruposOk.filter((grupo) => grupo.id !== 'mensuales_uf_utm_sueldo'),
+        { id: 'mensuales_uf_utm_sueldo', clasificacion: 'FALTANTE', detalle: 'sin_fila' },
+      ],
+      completitud: completitudMock(),
+    });
+
+    expect(resumen.seccionesListas).toBeLessThan(5);
+    expect(resumen.completitudSecciones).toBeLessThan(100);
+  });
 });
 
 function grupo(
   id: 'oficialesMensuales' | 'configuracionCliente' | 'vigencias' | 'consistencia' | 'tecnico',
   completos: number,
   total: number,
-) {
+): ParametrosCompletitudGrupo {
   return {
     id,
     completo: completos === total && total > 0,
@@ -121,24 +150,28 @@ function grupo(
 }
 
 function completitudMock(
-  partial: Partial<ParametrosCompletitudResultado> = {},
+  partial: Partial<Omit<ParametrosCompletitudResultado, 'grupos'>> & {
+    grupos?: Partial<ParametrosCompletitudResultado['grupos']>;
+  } = {},
 ): ParametrosCompletitudResultado {
+  const { grupos: gruposPartial, ...restPartial } = partial;
+  const defaultGrupos: ParametrosCompletitudResultado['grupos'] = {
+    oficialesMensuales: grupo('oficialesMensuales', 1, 1),
+    configuracionCliente: grupo('configuracionCliente', 1, 1),
+    vigencias: grupo('vigencias', 1, 1),
+    consistencia: grupo('consistencia', 1, 1),
+    tecnico: grupo('tecnico', 1, 1),
+  };
+
   return {
     estadoCalculado: 'parcial',
     porcentaje: 80,
-    grupos: {
-      oficialesMensuales: grupo('oficialesMensuales', 1, 1),
-      configuracionCliente: grupo('configuracionCliente', 1, 1),
-      vigencias: grupo('vigencias', 1, 1),
-      consistencia: grupo('consistencia', 1, 1),
-      tecnico: grupo('tecnico', 1, 1),
-      ...(partial.grupos ?? {}),
-    },
+    grupos: { ...defaultGrupos, ...(gruposPartial ?? {}) },
     pendientes: partial.pendientes ?? [],
     advertencias: partial.advertencias ?? [],
     errores: partial.errores ?? [],
     diferencias: partial.diferencias ?? [],
     reconciliacionPendiente: partial.reconciliacionPendiente ?? false,
-    ...partial,
+    ...restPartial,
   };
 }

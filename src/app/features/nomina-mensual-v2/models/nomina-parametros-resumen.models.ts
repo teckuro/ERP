@@ -49,6 +49,13 @@ export type ParametroResumenAcceso = {
 export type NominaParametrosResumen = {
   periodo: string;
   completitud: number;
+  /** Porcentaje según visores/secciones visibles (5 cards). */
+  completitudSecciones: number;
+  seccionesTotales: number;
+  seccionesListas: number;
+  /** Controles internos agregados de todas las secciones. */
+  controlesTotales: number;
+  controlesVerificados: number;
   totalParametros: number;
   parametrosConfigurados: number;
   bloqueos: number;

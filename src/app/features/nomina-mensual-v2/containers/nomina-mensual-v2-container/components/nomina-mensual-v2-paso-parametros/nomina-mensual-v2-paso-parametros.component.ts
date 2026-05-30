@@ -158,20 +158,20 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     return 'exito';
   });
 
-  readonly completitudItemsPct = computed(() => {
+  readonly completitudSeccionesPct = computed(() => {
     const resumen = this.parametrosResumen();
-    if (!resumen || resumen.totalParametros === 0) return 0;
-    return Math.round((resumen.parametrosConfigurados / resumen.totalParametros) * 100);
+    if (!resumen) return 0;
+    return resumen.completitudSecciones;
   });
 
-  readonly completitudItemsCaption = computed(() => {
+  readonly completitudSeccionesCaption = computed(() => {
     const resumen = this.parametrosResumen();
-    if (!resumen) return '0 de 0 listos';
-    return `${resumen.parametrosConfigurados} de ${resumen.totalParametros} listos`;
+    if (!resumen) return '0 de 0 secciones listas';
+    return `${resumen.seccionesListas} de ${resumen.seccionesTotales} secciones listas`;
   });
 
   readonly estiloArcoDonut = computed(() => {
-    const porcentaje = this.completitudItemsPct();
+    const porcentaje = this.completitudSeccionesPct();
     const color = coloresDonutPorTono[this.donutTono()];
     return `conic-gradient(${color} 0 ${porcentaje}%, #e2e8f0 ${porcentaje}% 100%)`;
   });

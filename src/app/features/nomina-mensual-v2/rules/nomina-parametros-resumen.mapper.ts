@@ -66,13 +66,20 @@ export function buildNominaParametrosResumen(input: BuildResumenInput): NominaPa
   const bloqueos = items.filter((item) => item.estado === 'bloqueo').length;
   const requiereRevision = items.filter((item) => item.estado === 'revisar').length;
   const totalParametros = items.length;
-  const completitudCalculada = totalParametros === 0 ? 0 : Math.round((completos / totalParametros) * 100);
-  const completitud = input.completitud?.porcentaje ?? completitudCalculada;
+  const seccionesTotales = areas.length;
+  const seccionesListas = areas.filter((area) => area.estado === 'completo').length;
+  const completitudSecciones =
+    seccionesTotales === 0 ? 0 : Math.round((seccionesListas / seccionesTotales) * 100);
   const bloqueosActuales = buildBloqueos(areas);
 
   return {
     periodo: input.periodo,
-    completitud,
+    completitud: input.completitud?.porcentaje ?? completitudSecciones,
+    completitudSecciones,
+    seccionesTotales,
+    seccionesListas,
+    controlesTotales: totalParametros,
+    controlesVerificados: completos,
     totalParametros,
     parametrosConfigurados: completos,
     bloqueos,

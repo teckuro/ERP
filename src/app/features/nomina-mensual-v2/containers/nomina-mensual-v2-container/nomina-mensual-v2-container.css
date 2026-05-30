@@ -6,7 +6,8 @@
   flex-direction: column;
   width: 100%;
   height: 100%;
-  min-height: 0;
+  min-height: 100%;
+  min-width: 0;
   background: #f6f8fb;
   color: #172033;
   font-family: var(--erp-font-sans, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
@@ -15,6 +16,7 @@
 app-nomina-mensual-v2-stepper,
 app-nomina-mensual-v2-overlays {
   display: block;
+  flex: 0 0 auto;
 }
 
 app-nomina-mensual-v2-paso-parametros,
@@ -22,10 +24,18 @@ app-nomina-mensual-v2-paso-alcance,
 app-nomina-mensual-v2-paso-empleados,
 app-nomina-mensual-v2-pasos-demostracion {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   width: 100%;
-  height: 100%;
   min-height: 0;
+  align-self: stretch;
+}
+
+app-nomina-mensual-v2-paso-parametros .nmv2-paso-parametros,
+app-nomina-mensual-v2-paso-alcance .nmv2-paso-alcance {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
 }
 
 * {
@@ -64,9 +74,15 @@ button:disabled,
   width: 100%;
   height: 100%;
   min-width: 0;
-  min-height: 0;
+  min-height: 100%;
   padding: 16px 18px 18px;
   background: linear-gradient(180deg, #f8fafc 0%, #f5f7fb 100%);
+}
+
+/* Alto mínimo = viewport operativo bajo header shell (52px) */
+.nmv2-page.nomina-shell {
+  --nmv2-shell-header-offset: 52px;
+  min-height: calc(100dvh - var(--nmv2-shell-header-offset));
 }
 
 .nmv2-stepper-card,
@@ -2654,7 +2670,7 @@ textarea {
 
 /* Parameters v8 - final density and composition tuning */
 .nmv2-page[data-step='parameters'] {
-  padding: 13px 15px 15px;
+  padding: 13px 15px 24px;
   gap: 12px;
   background: #f7f9fc;
 }
@@ -2971,34 +2987,33 @@ textarea {
 .nmv2-paso-parametros,
 .nmv2-paso-alcance {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   width: 100%;
-  height: 100%;
   min-height: 0;
 }
 
 .nmv2-page[data-step='parameters'] .parameters-step-content,
 .nmv2-page[data-step='parameters'] .parameters-perfect-layout {
-  flex: 1 1 auto;
-  align-content: stretch;
-  align-items: stretch;
+  align-self: stretch;
+  align-content: start;
+  align-items: start;
   gap: 14px;
-  height: 100%;
-  min-height: 0;
-  grid-template-rows: minmax(0, 1fr);
+  width: 100%;
 }
 
 .nmv2-page[data-step='parameters'] .content-grid--aside {
-  align-items: stretch;
+  align-items: start;
 }
 
 .nmv2-page[data-step='parameters'] .content-main,
 .nmv2-page[data-step='parameters'] .content-side {
-  align-self: stretch;
+  align-self: start;
   align-content: start;
   align-items: start;
   gap: 12px;
   min-height: 0;
+  height: auto;
 }
 
 .nmv2-page[data-step='parameters'] .parameter-cards-grid {
@@ -3006,13 +3021,9 @@ textarea {
   width: 100%;
   height: auto;
   align-items: stretch;
-  grid-template-rows: minmax(var(--parameters-aligned-block-height), auto) auto;
+  grid-template-rows: auto;
   grid-auto-rows: auto;
   gap: 12px;
-}
-
-.nmv2-page[data-step='parameters'] {
-  --parameters-aligned-block-height: calc(36px + 1.35rem + 96px + 18px + 36px);
 }
 
 .nmv2-page[data-step='parameters'] .parameters-perfect-summary {
@@ -3020,7 +3031,6 @@ textarea {
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: var(--parameters-aligned-block-height);
 }
 
 .nmv2-page[data-step='parameters'] .parameters-perfect-summary__top,
@@ -3031,16 +3041,15 @@ textarea {
 
 .nmv2-page[data-step='parameters'] .content-side.parameters-sidebar-perfect {
   display: flex;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   flex-direction: column;
   gap: 12px;
-  min-height: 0;
   width: 100%;
 }
 
 .nmv2-page[data-step='parameters'] .parameter-blockers-perfect {
   display: flex;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   flex-direction: column;
   width: 100%;
 }
@@ -3180,16 +3189,11 @@ textarea {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 0;
   height: auto;
   min-height: 0;
   padding: 18px;
-}
-
-.nmv2-page[data-step='parameters'] .parameter-summary-card:nth-child(-n+3) {
-  min-height: var(--parameters-aligned-block-height);
-  height: 100%;
 }
 
 .parameter-summary-card__chips {
@@ -5247,23 +5251,13 @@ textarea {
   }
 }
 
-/* Cards parámetros: icono esquina superior derecha + altura alineada al resumen lateral */
+/* Cards parámetros: icono esquina superior derecha (altura natural por contenido) */
 
 .nmv2-page[data-step='parameters'] .parameter-summary-card.nomina-card--corner-icon {
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 14px 16px 12px;
-}
-
-.nmv2-page[data-step='parameters'] .parameter-summary-card.nomina-card--corner-icon:nth-child(-n+3) {
-  min-height: var(--parameters-aligned-block-height);
-  height: 100%;
-}
-
-.nmv2-page[data-step='parameters'] .parameter-summary-card.nomina-card--corner-icon:nth-child(n+4) {
-  min-height: 0;
-  height: auto;
 }
 
 .nmv2-page[data-step='parameters'] .parameter-summary-card.nomina-card--corner-icon .parameter-summary-card__head {
@@ -5279,15 +5273,52 @@ textarea {
 
 .nmv2-page[data-step='parameters'] .parameter-summary-card.nomina-card--corner-icon .parameter-summary-card__foot {
   justify-content: flex-end;
-  margin-top: auto;
 }
 
-/* Page fill: cadena shell → página → paso → grilla (docs/codex/estilos/README.md) */
+/* Page fill: cadena shell → outlet → page → contenedor → paso (docs/codex/estilos/README.md) */
+
+.erp-shell-scroll > app-remuneraciones-outlet {
+  flex: 1 1 auto;
+  min-height: 100%;
+}
+
+app-nomina-mensual-v2-page,
+app-nomina-mensual-v2-container {
+  flex: 1 1 auto;
+  min-height: 100%;
+}
+
+app-nomina-mensual-v2-container > .nmv2-page {
+  flex: 1 1 auto;
+  min-height: 100%;
+}
+
+.nmv2-page[data-step='parameters'] > app-nomina-mensual-v2-stepper,
+.nmv2-page[data-step='parameters'] > .nmv2-step-nav-hint,
+.nmv2-page[data-step='scope'] > app-nomina-mensual-v2-stepper,
+.nmv2-page[data-step='employees'] > app-nomina-mensual-v2-stepper {
+  flex: 0 0 auto;
+}
 
 .nmv2-page[data-step='parameters'] > app-nomina-mensual-v2-paso-parametros,
 .nmv2-page[data-step='scope'] > app-nomina-mensual-v2-paso-alcance,
 .nmv2-page[data-step='employees'] > app-nomina-mensual-v2-paso-empleados {
+  flex: 1 1 auto;
   min-height: 0;
+}
+
+.nmv2-page[data-step='parameters'] .nmv2-paso-parametros,
+.nmv2-page[data-step='parameters'] .nmv2-step-body--parameters {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.nmv2-page[data-step='parameters'] .parameters-step-content {
+  flex: 1 1 auto;
+  min-height: 100%;
+  align-self: stretch;
 }
 
 .nmv2-page[data-step='scope'] .nmv2-alcance-layout.content-grid--aside,

@@ -1,3 +1,21 @@
+## 2026-05-29 - Nómina V8.2.5c: page fill — cadena shell/outlet + min-height viewport
+
+- **Cambio:** Bloqueo en cadena de alto: `remuneraciones-outlet` tenía `min-height: 0` (impide resolver `%`); shell scroll no estiraba outlet. Fix: `min-height: 100%` en outlet; reglas globales locales `erp-shell-scroll > app-remuneraciones-outlet`; `.nmv2-page.nomina-shell { min-height: calc(100dvh - 52px) }`; hosts de paso con `align-self: stretch` y `.parameters-step-content { min-height: 100% }`.
+- **Archivos:** `remuneraciones-outlet.component.ts`, `nomina-mensual-v2-container.css`, `peticiones-estilos.md`.
+- **No tocado:** estilos globales, SQL, lógica paso Parámetros.
+
+## 2026-05-29 - Nómina V8.2.5b: page fill paso Parámetros (cadena flex)
+
+- **Cambio:** Corregida cadena shell → página → paso → grilla: `min-height: 100%` en `:host`/`.nmv2-page`; stepper/overlays `flex: 0 0 auto`; hosts de paso `flex: 1 1 auto`; `.nmv2-paso-parametros` → `.nmv2-step-body` → `.parameters-step-content` propagan el alto restante sin inflar cards (`align-items: start`).
+- **Archivos:** `nomina-mensual-v2-container.css`, `nomina-mensual-v2.page.ts`, `peticiones-estilos.md`.
+- **No tocado:** SQL, estilos globales, lógica de validación.
+
+## 2026-05-29 - Nómina V8.2.5: resumen por 5 visores + layout natural
+
+- **Cambio:** Panel «Resumen de parámetros» distingue métrica visible (`5 de 5 secciones listas`, donut por `completitudSecciones`) de métrica interna (`17 controles verificados`). Mapper/modelo exponen `seccionesTotales`, `seccionesListas`, `controlesTotales`, `controlesVerificados`. Layout paso Parámetros: eliminado `--parameters-aligned-block-height` y `flex: 1` en sidebar/bloqueos; grilla/columnas con `align-items: start` y altura por contenido; `padding-bottom: 24px` en página.
+- **Archivos:** `nomina-parametros-resumen.models.ts`, `nomina-parametros-resumen.mapper.{ts,spec.ts}`, `nomina-mensual-v2-paso-parametros.{ts,html}`, `nomina-mensual-v2-container.css`, `peticiones-estilos.md`.
+- **No tocado:** SQL, motor, estilos globales, services de negocio.
+
 ## 2026-05-29 - Nómina mensual V2: extracción paso Parámetros
 
 - **Cambio:** Paso Parámetros extraído a `nomina-mensual-v2-paso-parametros` (wrapper `.nmv2-paso-parametros`, CSS local existente). Lógica de carga/validación/avance y ayuda shell vía `NominaMensualV2OrquestadorPort`; modales de avance leen `orquestador.modalAvanceParametros`.

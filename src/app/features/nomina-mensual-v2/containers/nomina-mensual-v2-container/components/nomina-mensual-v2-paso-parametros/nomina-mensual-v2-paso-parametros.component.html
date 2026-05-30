@@ -95,14 +95,14 @@
                 [class.donut-ring--danger]="donutTono() === 'bloqueo'"
                 [class.donut-ring--neutral]="donutTono() === 'neutral'"
                 [style.background]="estiloArcoDonut()">
-                <span>{{ completitudItemsPct() }}%</span>
+                <span>{{ completitudSeccionesPct() }}%</span>
               </div>
-              <small class="donut-total-caption">{{ completitudItemsCaption() }}</small>
+              <small class="donut-total-caption">{{ completitudSeccionesCaption() }}</small>
             </div>
             <div class="summary-state-list">
               <div class="summary-state-row status-red"><lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon><strong>{{ parametrosResumen()?.bloqueos ?? 0 }}</strong><span>Bloqueos</span></div>
               <div class="summary-state-row status-amber"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon><strong>{{ parametrosResumen()?.requiereRevision ?? 0 }}</strong><span>Requiere revisión</span></div>
-              <div class="summary-state-row status-green"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><strong>{{ parametrosResumen()?.completos ?? 0 }}</strong><span>Completos</span></div>
+              <div class="summary-state-row status-green"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><strong>{{ parametrosResumen()?.controlesVerificados ?? 0 }}</strong><span>Controles verificados</span></div>
             </div>
           </div>
           <div class="updated-row updated-row--summary">
