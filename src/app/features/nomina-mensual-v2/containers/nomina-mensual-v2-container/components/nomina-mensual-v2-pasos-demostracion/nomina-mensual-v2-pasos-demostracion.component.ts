@@ -3,6 +3,7 @@ import {
   Component,
   Input,
   OnChanges,
+  OnDestroy,
   ViewEncapsulation,
   computed,
   inject,
@@ -51,12 +52,13 @@ import { NominaMensualV2TrazabilidadPasoComponent } from '../nomina-mensual-v2-t
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })
-export class NominaMensualV2PasosDemostracionComponent {
+export class NominaMensualV2PasosDemostracionComponent implements OnChanges, OnDestroy {
   @Input({ required: true }) paso!: PayrollStepId;
 
   readonly orquestador = inject(NominaMensualV2OrquestadorPort);
   private readonly periodoActivo = inject(PeriodoActivoService);
   private readonly flujoService = inject(NominaMensualV2FlujoService);
+  private limpiarAccionPrincipal: (() => void) | null = null;
 
   readonly cargando = signal(false);
   readonly ejecutando = signal(false);
@@ -109,8 +111,13 @@ export class NominaMensualV2PasosDemostracionComponent {
   ngOnChanges(): void {
     if (this.paso === 'movements' || this.paso === 'calculation' || this.paso === 'validation' || this.paso === 'approval' || this.paso === 'payslips') {
       void this.cargarFlujoReal();
-      this.orquestador.registrarAccionPrincipal(() => void this.ejecutarAccionPrincipal());
+      this.limpiarAccionPrincipal?.();
+      this.limpiarAccionPrincipal = this.orquestador.registrarAccionPrincipal(() => void this.ejecutarAccionPrincipal());
     }
+  }
+
+  ngOnDestroy(): void {
+    this.limpiarAccionPrincipal?.();
   }
 
   async ejecutarAccionPrincipal(): Promise<void> {

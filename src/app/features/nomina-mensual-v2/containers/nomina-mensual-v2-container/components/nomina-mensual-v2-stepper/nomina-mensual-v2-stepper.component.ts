@@ -21,6 +21,7 @@ import { NominaMensualV2StepperTraceabilityComponent } from '../nomina-mensual-v
   standalone: true,
   imports: [LucideAngularModule, NominaMensualV2StepperTraceabilityComponent],
   templateUrl: './nomina-mensual-v2-stepper.component.html',
+  styleUrl: './nomina-mensual-v2-stepper.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })

@@ -1,0 +1,180 @@
+.nomina-stepper-traceability {
+  display: grid;
+  grid-template-columns: 0.85fr 1.1fr 1.05fr;
+  grid-template-rows: 20px minmax(46px, auto);
+  min-width: 0;
+  align-items: stretch;
+  align-self: stretch;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+}
+
+.nomina-stepper-traceability__heading,
+.nomina-stepper-traceability__label {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.nomina-stepper-traceability__heading {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 10px;
+  border-bottom: 1px solid #eef2f7;
+  background: #f8fafc;
+}
+
+.nomina-stepper-traceability__action {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 7px;
+  align-items: center;
+  justify-content: stretch;
+  min-width: 0;
+  max-width: none;
+  min-height: 46px;
+  padding: 6px 9px;
+  border: 0;
+  border-right: 1px solid #eef2f7;
+  border-bottom: 0;
+  border-radius: 0;
+  background: #fff;
+  color: #475569;
+  font-size: 11px;
+  line-height: 1.15;
+  text-align: left;
+}
+
+.nomina-stepper-traceability__action--compact {
+  grid-template-columns: 18px minmax(68px, 1fr);
+}
+
+.nomina-stepper-traceability__action:last-child {
+  border-right: 0;
+}
+
+.nomina-stepper-traceability__action:nth-of-type(3) {
+  border-right: 0;
+}
+
+.nomina-stepper-traceability__action:hover:not(.nomina-stepper-traceability__action--meta) {
+  background: #f8fafc;
+  color: #1e293b;
+}
+
+.nomina-stepper-traceability__action--owner {
+  background: #fbfdff;
+}
+
+.nomina-stepper-traceability__action--history {
+  background: #ffffff;
+}
+
+.nomina-stepper-traceability__action--integrity {
+  background: #fffdf7;
+}
+
+.nomina-stepper-traceability__action:focus-visible {
+  z-index: 1;
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+}
+
+.nomina-stepper-traceability__action--meta {
+  cursor: default;
+}
+
+.nomina-stepper-traceability__action--ok {
+  color: #166534;
+}
+
+.nomina-stepper-traceability__action--warn,
+.nomina-stepper-traceability__action--alert {
+  color: #92400e;
+}
+
+.nomina-stepper-traceability__action--alert {
+  background: #fffbeb;
+}
+
+.nomina-stepper-traceability__icon,
+.nomina-stepper-traceability__avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+}
+
+.nomina-stepper-traceability__icon lucide-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.nomina-stepper-traceability__copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.nomina-stepper-traceability__copy strong {
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nomina-stepper-traceability__action--ok .nomina-stepper-traceability__copy strong {
+  color: #166534;
+}
+
+.nomina-stepper-traceability__action--warn .nomina-stepper-traceability__copy strong,
+.nomina-stepper-traceability__action--alert .nomina-stepper-traceability__copy strong {
+  color: #92400e;
+}
+
+.nomina-stepper-traceability__avatar {
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+@media (max-width: 1280px) {
+  .nomina-stepper-traceability {
+    grid-template-columns: 0.9fr 1.1fr 1fr;
+    grid-template-rows: 20px minmax(46px, auto);
+  }
+
+  .nomina-stepper-traceability__action {
+    min-height: 46px;
+  }
+}
+
+@media (max-width: 760px) {
+  .nomina-stepper-traceability {
+    grid-template-columns: 1fr;
+    grid-template-rows: 20px repeat(3, minmax(40px, auto));
+  }
+
+  .nomina-stepper-traceability__action {
+    border-right: 0;
+    border-bottom: 1px solid #eef2f7;
+  }
+
+  .nomina-stepper-traceability__action:last-child {
+    border-bottom: 0;
+  }
+}

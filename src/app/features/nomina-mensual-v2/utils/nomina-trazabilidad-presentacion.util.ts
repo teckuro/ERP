@@ -1,13 +1,13 @@
 import type {
   EstadoAuditoriaPasoNomina,
   EstadoIntegridadNomina,
+  EventoTrazabilidadNomina,
   OrigenEventoTrazabilidadNomina,
   ResumenAuditoriaPasoNomina,
-  EventoTrazabilidadNomina,
 } from '../models/nomina-trazabilidad.models';
 import type { PayrollStepId } from '../models/nomina-mensual-v2.models';
 
-/** Copy visible de integridad; nunca implica validación en frontend. */
+/** Copy visible de integridad; nunca implica validacion en frontend. */
 export function etiquetaIntegridadVisible(
   estado: EstadoIntegridadNomina,
   origen?: OrigenEventoTrazabilidadNomina,
@@ -18,7 +18,7 @@ export function etiquetaIntegridadVisible(
     case 'registrado':
       return origen === 'mock' ? 'Referencia demo' : 'Snapshot registrado';
     case 'pendiente':
-      return 'Pendiente de verificación servidor';
+      return 'Pendiente de verificacion servidor';
     case 'invalidado':
       return 'Snapshot invalidado';
     case 'noDisponible':
@@ -27,7 +27,7 @@ export function etiquetaIntegridadVisible(
   }
 }
 
-const NOMBRES_GENERICOS = new Set(['sistema', 'rrhh', '—', '-']);
+const NOMBRES_GENERICOS = new Set(['sistema', 'rrhh', '—', 'â€”', '-']);
 
 export function obtenerInicialesResponsable(usuarioNombre: string | null | undefined): string | undefined {
   if (!usuarioNombre?.trim()) return undefined;
@@ -59,7 +59,7 @@ export function tieneResponsableRegistrado(
     && resumen.estado !== 'pendiente'
     && resumen.fechaAccion
     && resumen.usuarioNombre
-    && resumen.usuarioNombre !== '—'
+    && !NOMBRES_GENERICOS.has(resumen.usuarioNombre.toLowerCase())
   );
 }
 
@@ -67,17 +67,17 @@ export function obtenerTituloAccionPaso(resumen: ResumenAuditoriaPasoNomina | un
   if (!resumen || resumen.estado === 'pendiente') return 'Registro pendiente';
   switch (resumen.paso) {
     case 'parameters':
-      return resumen.estado === 'congelado' ? 'Parámetros cerrados' : 'Parámetros revisados';
+      return resumen.estado === 'congelado' ? 'Parametros cerrados' : 'Parametros revisados';
     case 'scope':
       return 'Alcance definido';
     case 'employees':
       return 'Empleados validados';
     case 'validation':
-      return 'Prenómina validada';
+      return 'Prenomina validada';
     case 'approval':
-      return resumen.estado === 'aprobado' ? 'Nómina aprobada' : 'Pendiente de aprobación';
+      return resumen.estado === 'aprobado' ? 'Nomina aprobada' : 'Pendiente de aprobacion';
     case 'calculation':
-      return 'Cálculo ejecutado';
+      return 'Calculo ejecutado';
     case 'payslips':
       return 'Liquidaciones generadas';
     default:
@@ -89,7 +89,9 @@ export function obtenerCopyAuditoriaPaso(resumen: ResumenAuditoriaPasoNomina | u
   if (!resumen || resumen.estado === 'pendiente') return 'Sin evento registrado';
   const hora = formatoHoraCorta(resumen.fechaAccion);
   const nombre =
-    resumen.usuarioNombre && resumen.usuarioNombre !== '—' ? resumen.usuarioNombre : 'Usuario actual';
+    resumen.usuarioNombre && !NOMBRES_GENERICOS.has(resumen.usuarioNombre.toLowerCase())
+      ? resumen.usuarioNombre
+      : 'Usuario actual';
   return `${nombre} · ${hora}`;
 }
 
@@ -103,7 +105,9 @@ export function obtenerTooltipAuditoriaPaso(
   const titulo = obtenerTituloAccionPaso(resumen);
   const fecha = formatoFechaTrazabilidad(resumen.fechaAccion);
   const nombre =
-    resumen.usuarioNombre && resumen.usuarioNombre !== '—' ? resumen.usuarioNombre : 'Usuario actual';
+    resumen.usuarioNombre && !NOMBRES_GENERICOS.has(resumen.usuarioNombre.toLowerCase())
+      ? resumen.usuarioNombre
+      : 'Usuario actual';
   return `${titulo}\n${nombre} · ${fecha}\n${integridadLabel}`;
 }
 
@@ -127,7 +131,7 @@ export function verboResponsablePaso(paso: PayrollStepId, estado: EstadoAuditori
 export function etiquetaEstadoAuditoriaPaso(estado: EstadoAuditoriaPasoNomina): string {
   switch (estado) {
     case 'congelado':
-      return 'Parámetros congelados';
+      return 'Parametros congelados';
     case 'registrado':
       return 'Registrado';
     case 'validado':
@@ -137,7 +141,7 @@ export function etiquetaEstadoAuditoriaPaso(estado: EstadoAuditoriaPasoNomina): 
     case 'invalidado':
       return 'Invalidado';
     case 'requiereRevision':
-      return 'Requiere revisión';
+      return 'Requiere revision';
     case 'pendiente':
     default:
       return 'Pendiente';

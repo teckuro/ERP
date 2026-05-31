@@ -1,6 +1,7 @@
 import type { NominaCalculoPeriodoSnapshot } from '../../nomina-mensual/models/proceso-mensual.model';
 import { mergeSnapshotsHistorialPeriodo } from '../../nomina-mensual/rules/proceso-mensual-historial-periodo.rules';
 import {
+  buildDetalleParametrosBaseCongelados,
   copyOrigenBaseAlAvanzar,
   esSnapshotParametrosBase,
   leerMetadataParametrosBase,
@@ -169,7 +170,7 @@ export function mergeEventosTrazabilidad(
   };
 
   for (const evento of [...mock, ...locales, ...servidor]) {
-    const clave = `${evento.paso}:${evento.tipoEvento}:${evento.fechaEvento.slice(0, 16)}`;
+    const clave = claveEventoTrazabilidad(evento);
     const existente = map.get(clave);
     if (!existente || prioridad[evento.origen] >= prioridad[existente.origen]) {
       map.set(clave, evento);
@@ -177,6 +178,17 @@ export function mergeEventosTrazabilidad(
   }
 
   return [...map.values()].sort((a, b) => b.fechaEvento.localeCompare(a.fechaEvento));
+}
+
+function claveEventoTrazabilidad(evento: EventoTrazabilidadNomina): string {
+  const base = `${evento.paso}:${evento.tipoEvento}:${evento.fechaEvento.slice(0, 16)}`;
+  if (evento.idSnapshotRelacionado) {
+    return `${base}:snapshot:${evento.idSnapshotRelacionado}`;
+  }
+  if (evento.origen === 'local') {
+    return `${base}:evento:${evento.idEvento}`;
+  }
+  return base;
 }
 
 const MAP_TIPO_A_ESTADO: Partial<Record<TipoEventoTrazabilidadNomina, ResumenAuditoriaPasoNomina['estado']>> = {
@@ -297,6 +309,7 @@ function mapEventoTrazabilidadParametrosBase(
 ): EventoTrazabilidadNomina {
   const origen = resolverOrigenBaseDesdeSnapshot(snapshot);
   const meta = leerMetadataParametrosBase(snapshot.metadataOperativa);
+  const parametrosCongelados = buildDetalleParametrosBaseCongelados(snapshot.parametros ?? []);
   return {
     idEvento: `srv-param-base-${snapshot.idCalculoPeriodo ?? snapshot.fechaGeneracion}`,
     periodo: snapshot.periodo,
@@ -312,6 +325,8 @@ function mapEventoTrazabilidadParametrosBase(
     metadataPublica: {
       origenBase: origen,
       resumenParametrosBase: meta?.resumen,
+      totalParametrosBase: parametrosCongelados.length,
+      valoresParametrosBase: parametrosCongelados,
     },
     origen: 'servidor',
   };

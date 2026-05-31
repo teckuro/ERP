@@ -65,6 +65,8 @@ export type ModalRevisarParametrosPort = {
   periodoEtiqueta: string;
 };
 
+export type TipoModalDetallePasoNomina = 'owner' | 'history' | 'integrity';
+
 @Injectable()
 export class NominaMensualV2OrquestadorPort {
   readonly pasoActual = signal<PayrollStepId>('parameters');
@@ -88,6 +90,7 @@ export class NominaMensualV2OrquestadorPort {
   readonly eventosTrazabilidad = signal<EventoTrazabilidadNomina[]>([]);
   readonly trazabilidadDrawerAbierto = signal(false);
   readonly trazabilidadPasoActivo = signal<PayrollStepId | null>(null);
+  readonly tipoModalDetalleActivo = signal<TipoModalDetallePasoNomina | null>(null);
   readonly contextoTrazabilidad = signal<ContextoTrazabilidadPasoNomina | null>(null);
 
   private readonly eventosLocales = signal<EventoTrazabilidadNomina[]>([]);
@@ -114,16 +117,23 @@ export class NominaMensualV2OrquestadorPort {
   });
 
   private manejadorAccionPrincipal: (() => void) | null = null;
+  private tokenAccionPrincipal = 0;
 
   vincularTrazabilidadService(service: NominaMensualV2TrazabilidadService): void {
     this.trazabilidadService = service;
   }
 
-  registrarAccionPrincipal(manejador: () => void): void {
+  registrarAccionPrincipal(manejador: () => void): () => void {
+    const token = ++this.tokenAccionPrincipal;
     this.manejadorAccionPrincipal = manejador;
+    return () => {
+      if (this.tokenAccionPrincipal !== token) return;
+      this.manejadorAccionPrincipal = null;
+    };
   }
 
   limpiarAccionPrincipal(): void {
+    this.tokenAccionPrincipal += 1;
     this.manejadorAccionPrincipal = null;
   }
 
@@ -164,12 +174,14 @@ export class NominaMensualV2OrquestadorPort {
     });
   }
 
-  abrirTrazabilidadPaso(paso: PayrollStepId): void {
+  abrirTrazabilidadPaso(paso: PayrollStepId, tipo: TipoModalDetallePasoNomina = 'history'): void {
     this.trazabilidadPasoActivo.set(paso);
+    this.tipoModalDetalleActivo.set(tipo);
   }
 
   cerrarTrazabilidadPaso(): void {
     this.trazabilidadPasoActivo.set(null);
+    this.tipoModalDetalleActivo.set(null);
   }
 
   abrirTrazabilidadCompleta(): void {

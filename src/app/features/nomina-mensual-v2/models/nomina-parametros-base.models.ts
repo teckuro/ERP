@@ -70,3 +70,11 @@ export interface ResumenParametrosBaseMetadata {
   requiereRevision: number;
   origenAlGuardar?: OrigenBaseParametrosAlAvanzar;
 }
+
+export interface ParametroBaseCongeladoDetalle {
+  grupo: string;
+  clave: string;
+  valor: string;
+  vigencia: string | null;
+  origen: string;
+}

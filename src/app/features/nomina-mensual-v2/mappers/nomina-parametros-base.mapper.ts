@@ -16,6 +16,7 @@ import {
   TIPO_SNAPSHOT_PARAMETROS_BASE,
   VERSION_MOTOR_PARAMETROS_BASE,
   type OrigenBaseParametrosAlAvanzar,
+  type ParametroBaseCongeladoDetalle,
   type ResumenParametrosBaseMetadata,
   type VistaPreviaParametrosBase,
 } from '../models/nomina-parametros-base.models';
@@ -131,6 +132,20 @@ export function mapParametroRowToSnapshot(row: {
     vigencia: row.vigencia,
     origen: row.origen,
   };
+}
+
+export function buildDetalleParametrosBaseCongelados(
+  parametros: readonly NominaCalculoParametroSnapshot[],
+): ParametroBaseCongeladoDetalle[] {
+  return parametros.map((parametro) => ({
+    grupo: parametro.grupo,
+    clave: parametro.clave,
+    valor: parametro.valorNumerico != null
+      ? String(parametro.valorNumerico)
+      : parametro.valor ?? 'Sin valor',
+    vigencia: parametro.vigencia ?? null,
+    origen: parametro.origen || 'No informado',
+  }));
 }
 
 export function copyOrigenBaseAlAvanzar(

@@ -8,6 +8,7 @@ import {
   buildMetadataPersistenciaParametrosBase,
   buildSnapshotParametrosBasePayload,
   buildVistaPreviaParametrosBase,
+  buildDetalleParametrosBaseCongelados,
   copyOrigenBaseAlAvanzar,
 } from '../mappers/nomina-parametros-base.mapper';
 import type { NominaParametrosResumen } from '../models/nomina-parametros-resumen.models';
@@ -69,6 +70,11 @@ export class NominaParametrosBaseService {
   ): Promise<VistaPreviaParametrosBase> {
     const parametros = await this.cargarParametrosCongeladosActuales(periodo);
     return buildVistaPreviaParametrosBase(resumen, parametros.length);
+  }
+
+  async construirDetalleValoresParametrosBase(idCalculoPeriodoBase: number) {
+    const parametros = await this.snapshotRepository.listarParametrosSnapshot(idCalculoPeriodoBase);
+    return buildDetalleParametrosBaseCongelados(parametros);
   }
 
   async guardarSnapshotParametrosBase(

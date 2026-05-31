@@ -2609,3 +2609,15 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Cambio:** `PasosDemostracion` deja de ser solo mock en Novedades, Calculo, Validacion, Aprobacion y Liquidaciones: lee entradas mensuales, snapshots, observaciones y liquidaciones desde servicios reales existentes. Las acciones principales de Calculo, Validacion, Aprobacion y Liquidaciones llaman al puente V1 seguro (`ProcesoMensualService`, `NominaCalculoSnapshotRepository`, `LiquidacionesOficialesService`) y registran trazabilidad local V2.
 - **Limite:** no integra aun `nomina_preparacion` V11 en Angular; queda pendiente de fase backend completa para no mezclar escritura nueva con compatibilidad legacy.
 - **Archivos:** `nomina-mensual-v2-flujo.service.ts`, `nomina-mensual-v2-pasos-demostracion.component.{ts,html}`, `peticiones-estilos.md`.
+
+## 2026-05-30 - Nomina mensual V2: cabecera operativa tipo tabla
+
+- **Cambio:** Cabecera MV2 redisenada como franja unica tipo tabla operativa: stepper en celdas compactas con label, estado y borde inferior activo; detalle del paso integrado a la derecha como celdas Responsable/Historial/Integridad/Fecha/Flujo.
+- **Ajuste:** El detalle de snapshot registrado en Parametros muestra los valores congelados del snapshot al abrir la trazabilidad del paso, agrupados por grupo con clave, valor, vigencia y origen. La trazabilidad servidor recarga los parametros del snapshot para conservar el detalle tras refrescar la pagina.
+- **Archivos:** `nomina-mensual-v2-stepper.component.{html,ts,css}`, `nomina-mensual-v2-stepper-traceability.component.{html,ts,css}`, `nomina-trazabilidad.mapper.{ts,spec.ts}`, `nomina-parametros-base.{models,mapper}.ts`, `nomina-parametros-base.service.ts`, `nomina-mensual-v2-paso-parametros.component.ts`, `nomina-mensual-v2-trazabilidad-modal.component.ts`.
+- **No tocado:** servicios, rutas, SQL/BD, motor de calculo, persistencia ni contratos de inputs/outputs.
+
+## 2026-05-30 - Nomina mensual V2: stepper y detalle unificados
+
+- **Cambio:** `nmv2-page nomina-shell` queda sin separacion visual entre la cabecera de pasos y el detalle del paso; la cabecera conserva radios solo arriba y el contenido colapsa el borde superior para leerse como una superficie unica.
+- **Archivos:** `nomina-mensual-v2-container.css`, `nomina-mensual-v2-stepper.component.css`, `peticiones-estilos.md`.

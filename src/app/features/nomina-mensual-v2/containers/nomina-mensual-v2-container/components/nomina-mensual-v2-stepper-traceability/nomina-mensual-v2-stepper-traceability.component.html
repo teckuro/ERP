@@ -1,68 +1,104 @@
 <div class="nomina-stepper-traceability" aria-label="Trazabilidad del paso actual">
+  <span class="nomina-stepper-traceability__heading">Detalle del paso</span>
+
   <button
     type="button"
-    class="nomina-stepper-traceability__action"
+    class="nomina-stepper-traceability__action nomina-stepper-traceability__action--owner"
     [title]="resumen().responsableTooltip"
-    (click)="abrirDetallePasoActual()"
+    (click)="abrirResponsable()"
   >
-    @if (inicialesResponsable(); as iniciales) {
-      <span class="nomina-stepper-traceability__avatar" aria-hidden="true">{{ iniciales }}</span>
-    } @else {
-      <lucide-icon name="user-round" aria-hidden="true"></lucide-icon>
-    }
-    <span class="nomina-stepper-traceability__label">Responsable</span>
+    <span class="nomina-stepper-traceability__icon" aria-hidden="true">
+      @if (inicialesResponsable(); as iniciales) {
+        <span class="nomina-stepper-traceability__avatar">{{ iniciales }}</span>
+      } @else {
+        <lucide-icon name="user-round" aria-hidden="true"></lucide-icon>
+      }
+    </span>
+    <span class="nomina-stepper-traceability__copy">
+      <span class="nomina-stepper-traceability__label">Responsable</span>
+      <strong>{{ resumen().responsableNombre }}</strong>
+    </span>
   </button>
 
   <button
     type="button"
-    class="nomina-stepper-traceability__action"
+    class="nomina-stepper-traceability__action nomina-stepper-traceability__action--history"
     title="Ver historial del paso"
-    (click)="abrirDetallePasoActual()"
+    (click)="abrirHistorial()"
   >
-    <lucide-icon name="history" aria-hidden="true"></lucide-icon>
-    <span class="nomina-stepper-traceability__label">Historial</span>
+    <span class="nomina-stepper-traceability__icon" aria-hidden="true">
+      <lucide-icon name="history" aria-hidden="true"></lucide-icon>
+    </span>
+    <span class="nomina-stepper-traceability__copy">
+      <span class="nomina-stepper-traceability__label">Historial</span>
+      <strong>{{ resumen().ultimoEvento }}</strong>
+    </span>
   </button>
 
   <button
     type="button"
-    class="nomina-stepper-traceability__action"
+    class="nomina-stepper-traceability__action nomina-stepper-traceability__action--integrity"
     [class.nomina-stepper-traceability__action--ok]="resumen().integridadEstado === 'verificadoServidor'"
     [class.nomina-stepper-traceability__action--warn]="resumen().integridadEstado === 'pendiente' || resumen().integridadEstado === 'invalidado'"
-    [title]="tooltipIntegridad()"
-    (click)="abrirDetallePasoActual()"
+    [title]="tooltipModalIntegridad()"
+    aria-haspopup="dialog"
+    (click)="abrirModalIntegridad()"
   >
-    <lucide-icon [name]="resumen().iconoIntegridad" aria-hidden="true"></lucide-icon>
-    <span class="nomina-stepper-traceability__label">{{ resumen().integridadLabel }}</span>
+    <span class="nomina-stepper-traceability__icon" aria-hidden="true">
+      <lucide-icon [name]="resumen().iconoIntegridad" aria-hidden="true"></lucide-icon>
+    </span>
+    <span class="nomina-stepper-traceability__copy">
+      <span class="nomina-stepper-traceability__label">Integridad</span>
+      <strong>{{ resumen().integridadLabel }}</strong>
+    </span>
   </button>
 
   <button
     type="button"
     class="nomina-stepper-traceability__action nomina-stepper-traceability__action--meta"
     [title]="tooltipFecha()"
+    hidden
   >
-    <lucide-icon name="calendar-clock" aria-hidden="true"></lucide-icon>
-    <span class="nomina-stepper-traceability__label">{{ resumen().fechaUltimoEvento }}</span>
+    <span class="nomina-stepper-traceability__icon" aria-hidden="true">
+      <lucide-icon name="calendar-clock" aria-hidden="true"></lucide-icon>
+    </span>
+    <span class="nomina-stepper-traceability__copy">
+      <span class="nomina-stepper-traceability__label">Fecha</span>
+      <strong>{{ resumen().fechaUltimoEvento }}</strong>
+    </span>
   </button>
 
   <button
     type="button"
-    class="nomina-stepper-traceability__action"
+    class="nomina-stepper-traceability__action nomina-stepper-traceability__action--compact"
     title="Ver trazabilidad completa del flujo"
     (click)="abrirDrawerCompleto()"
+    hidden
   >
-    <lucide-icon name="panel-right-open" aria-hidden="true"></lucide-icon>
-    <span class="nomina-stepper-traceability__label">Completa</span>
+    <span class="nomina-stepper-traceability__icon" aria-hidden="true">
+      <lucide-icon name="panel-right-open" aria-hidden="true"></lucide-icon>
+    </span>
+    <span class="nomina-stepper-traceability__copy">
+      <span class="nomina-stepper-traceability__label">Flujo</span>
+      <strong>Completa</strong>
+    </span>
   </button>
 
   @if (muestraAlerta()) {
     <button
       type="button"
-      class="nomina-stepper-traceability__action nomina-stepper-traceability__action--alert"
+      class="nomina-stepper-traceability__action nomina-stepper-traceability__action--alert nomina-stepper-traceability__action--compact"
       [title]="tooltipAlerta()"
-      (click)="abrirDetallePasoActual()"
+      (click)="abrirHistorial()"
+      hidden
     >
-      <lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon>
-      <span class="nomina-stepper-traceability__label">Revisar</span>
+      <span class="nomina-stepper-traceability__icon" aria-hidden="true">
+        <lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon>
+      </span>
+      <span class="nomina-stepper-traceability__copy">
+        <span class="nomina-stepper-traceability__label">Estado</span>
+        <strong>Revisar</strong>
+      </span>
     </button>
   }
 </div>

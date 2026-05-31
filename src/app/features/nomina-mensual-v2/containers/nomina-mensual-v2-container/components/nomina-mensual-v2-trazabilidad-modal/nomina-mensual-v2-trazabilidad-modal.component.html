@@ -1,17 +1,166 @@
 @if (orquestador.trazabilidadPasoActivo()) {
   @if (orquestador.detalleTrazabilidadActivo(); as detalle) {
-    <app-message-box
-      variant="info"
-      mode="modal"
-      width="lg"
-      [title]="detalle.titulo"
-      [sections]="secciones()"
-      [actions]="[
-        { label: 'Ver trazabilidad completa', role: 'secondary', value: 'completa' },
-        { label: 'Cerrar', role: 'primary', value: 'cerrar' },
-      ]"
-      (actionSelect)="accionModal($event)"
-      (dismiss)="cerrar()"
-    />
+    @switch (orquestador.tipoModalDetalleActivo()) {
+      @case ('owner') {
+        <app-message-box
+          variant="info"
+          mode="modal"
+          width="lg"
+          eyebrow="Responsable"
+          [title]="'Responsable de ' + tituloPaso(detalle.paso)"
+          [message]="'Registro administrativo del paso seleccionado.'"
+          (dismiss)="cerrar()"
+        >
+          <div class="nmv2-trace-modal">
+            @if (!tieneRegistroResponsable(detalle)) {
+              <div class="nmv2-trace-modal__empty">
+                <lucide-icon name="user-round" aria-hidden="true"></lucide-icon>
+                <strong>Aun no hay registro para este paso</strong>
+                <span>El responsable aparecera cuando se registre una accion local o del servidor.</span>
+              </div>
+            } @else {
+              <dl class="nmv2-trace-modal__detail-grid">
+                @for (fila of filasResponsable(detalle); track trackFila($index, fila)) {
+                  <div>
+                    <dt>{{ fila.label }}</dt>
+                    <dd>{{ fila.value }}</dd>
+                  </div>
+                }
+              </dl>
+            }
+
+            <div class="nmv2-trace-modal__footer">
+              <button type="button" class="nmv2-trace-modal__button nmv2-trace-modal__button--primary" (click)="cerrar()">
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </app-message-box>
+      }
+
+      @case ('history') {
+        <app-message-box
+          variant="info"
+          mode="modal"
+          width="lg"
+          eyebrow="Historial"
+          [title]="'Historial de ' + tituloPaso(detalle.paso)"
+          [message]="'Eventos registrados para el paso actual.'"
+          (dismiss)="cerrar()"
+        >
+          <div class="nmv2-trace-modal">
+            @if (eventosPasoActivo().length === 0) {
+              <div class="nmv2-trace-modal__empty">
+                <lucide-icon name="history" aria-hidden="true"></lucide-icon>
+                <strong>Sin eventos registrados</strong>
+                <span>Este paso aun no tiene acciones trazadas.</span>
+              </div>
+            } @else {
+              <ol class="nmv2-trace-modal__timeline">
+                @for (evento of eventosPasoActivo(); track trackEvento($index, evento)) {
+                  <li class="nmv2-trace-modal__timeline-item">
+                    <span class="nmv2-trace-modal__timeline-marker" aria-hidden="true"></span>
+                    <div class="nmv2-trace-modal__timeline-body">
+                      <strong>{{ evento.descripcion }}</strong>
+                      <span>{{ evento.usuarioNombre || 'Usuario no informado' }} · {{ fechaEvento(evento) }}</span>
+                      <em>{{ etiquetaOrigen(evento.origen) }} · {{ integridadEvento(evento) }}</em>
+                    </div>
+                  </li>
+                }
+              </ol>
+            }
+
+            <div class="nmv2-trace-modal__footer">
+              <button type="button" class="nmv2-trace-modal__button" (click)="verTrazabilidadCompleta()">
+                Ver trazabilidad completa
+              </button>
+              <button type="button" class="nmv2-trace-modal__button nmv2-trace-modal__button--primary" (click)="cerrar()">
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </app-message-box>
+      }
+
+      @case ('integrity') {
+        <app-message-box
+          variant="info"
+          mode="modal"
+          width="lg"
+          eyebrow="Integridad"
+          [title]="muestraDatosParametrosGuardados(detalle) ? 'Datos guardados de parametros' : 'Integridad de ' + tituloPaso(detalle.paso)"
+          [message]="muestraDatosParametrosGuardados(detalle) ? 'Valores congelados para preparar la base del periodo.' : 'Estado tecnico del registro trazado.'"
+          (dismiss)="cerrar()"
+        >
+          <div class="nmv2-trace-modal">
+            @if (muestraDatosParametrosGuardados(detalle)) {
+              @if (valoresParametrosBaseLoading()) {
+                <div class="nmv2-trace-modal__empty">
+                  <lucide-icon name="loader-circle" aria-hidden="true"></lucide-icon>
+                  <strong>Cargando datos guardados</strong>
+                  <span>Consultando los valores congelados de la base de parametros.</span>
+                </div>
+              } @else if (valoresParametrosBaseError()) {
+                <div class="nmv2-trace-modal__empty nmv2-trace-modal__empty--attention">
+                  <lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon>
+                  <strong>No fue posible cargar los datos guardados</strong>
+                  <span>{{ valoresParametrosBaseError() }}</span>
+                </div>
+              } @else if (totalParametrosGuardados() === 0) {
+                <div class="nmv2-trace-modal__empty nmv2-trace-modal__empty--attention">
+                  <lucide-icon name="info" aria-hidden="true"></lucide-icon>
+                  <strong>Sin valores guardados</strong>
+                  <span>No se encontraron parametros congelados para esta base.</span>
+                </div>
+              } @else {
+                <div class="nmv2-trace-modal__table-head">
+                  <span>{{ totalParametrosGuardados() }} valores guardados</span>
+                  <span>Base de parametros del periodo</span>
+                </div>
+                <div class="nmv2-trace-modal__table-wrap">
+                  <table class="nmv2-trace-modal__table">
+                    <thead>
+                      <tr>
+                        <th>Grupo</th>
+                        <th>Parametro</th>
+                        <th>Valor</th>
+                        <th>Vigencia</th>
+                        <th>Origen</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (item of valoresParametrosBaseCongelados(); track trackParametro($index, item)) {
+                        <tr>
+                          <td>{{ formatearGrupoParametro(item.grupo) }}</td>
+                          <td>{{ item.clave }}</td>
+                          <td>{{ item.valor }}</td>
+                          <td>{{ item.vigencia || 'Sin vigencia' }}</td>
+                          <td>{{ item.origen }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            } @else {
+              <dl class="nmv2-trace-modal__detail-grid">
+                @for (fila of filasIntegridadTecnica(detalle); track trackFila($index, fila)) {
+                  <div>
+                    <dt>{{ fila.label }}</dt>
+                    <dd>{{ fila.value }}</dd>
+                  </div>
+                }
+              </dl>
+            }
+
+            <div class="nmv2-trace-modal__footer">
+              <button type="button" class="nmv2-trace-modal__button nmv2-trace-modal__button--primary" (click)="cerrar()">
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </app-message-box>
+      }
+    }
   }
 }

@@ -5499,6 +5499,21 @@ app-nomina-mensual-v2-container > .nmv2-page {
   align-self: stretch;
 }
 
+.nmv2-page[data-step='parameters'] .parameters-perfect-layout.parameters-step-content {
+  height: 100%;
+  min-height: 100%;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.nmv2-page[data-step='parameters'] .parameters-perfect-layout .content-main,
+.nmv2-page[data-step='parameters'] .parameters-perfect-layout .content-side {
+  align-self: stretch;
+}
+
 .nmv2-page[data-step='scope'] .nmv2-alcance-layout.content-grid--aside,
 .nmv2-page[data-step='employees'] .nmv2-employees-layout.content-grid--aside {
   flex: 1 1 auto;
@@ -5514,6 +5529,54 @@ app-nomina-mensual-v2-container > .nmv2-page {
 .nmv2-page[data-step='employees'] .nmv2-employees-layout .content-side {
   align-self: stretch;
   min-height: 100%;
+}
+
+/* V2 shell unificado: cabecera de pasos + detalle sin franja intermedia */
+.nmv2-page.nomina-shell,
+.nmv2-page[data-step='parameters'] {
+  gap: 0;
+}
+
+.nmv2-page[data-step='employees'] {
+  row-gap: 0;
+}
+
+.nmv2-page > app-nomina-mensual-v2-stepper {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+}
+
+.nmv2-page .nomina-workflow-header.nmv2-stepper-card {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.nmv2-page > .nmv2-step-nav-hint {
+  margin: -1px 0 0;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-top: 0;
+  background: #ffffff;
+}
+
+.nmv2-page > app-nomina-mensual-v2-paso-parametros,
+.nmv2-page > app-nomina-mensual-v2-paso-alcance,
+.nmv2-page > app-nomina-mensual-v2-paso-empleados,
+.nmv2-page > app-nomina-mensual-v2-pasos-demostracion {
+  margin-top: -1px;
+}
+
+.nmv2-page > .nmv2-step-nav-hint + app-nomina-mensual-v2-paso-parametros,
+.nmv2-page > .nmv2-step-nav-hint + app-nomina-mensual-v2-paso-alcance,
+.nmv2-page > .nmv2-step-nav-hint + app-nomina-mensual-v2-paso-empleados,
+.nmv2-page > .nmv2-step-nav-hint + app-nomina-mensual-v2-pasos-demostracion {
+  margin-top: -1px;
+}
+
+.nmv2-page[data-step='parameters'] .parameters-perfect-layout.parameters-step-content {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 /* V10 — Trazabilidad contextual */

@@ -9,6 +9,8 @@ import {
   mapSnapshotsToEventosTrazabilidad,
   mergeEventosTrazabilidad,
 } from '../mappers/nomina-trazabilidad.mapper';
+import { esSnapshotParametrosBase } from '../mappers/nomina-parametros-base.mapper';
+import type { NominaCalculoPeriodoSnapshot } from '../../nomina-mensual/models/proceso-mensual.model';
 import type { PayrollStepId } from '../models/nomina-mensual-v2.models';
 import type {
   ContextoTrazabilidadPasoNomina,
@@ -42,11 +44,24 @@ export class NominaMensualV2TrazabilidadService {
         this.snapshotRepo.listarSnapshotsPeriodo(periodo),
         this.snapshotRepo.obtenerSnapshotActivo(periodo),
       ]);
-      return mapSnapshotsToEventosTrazabilidad(historial, activo);
+      const historialConParametros = await Promise.all(
+        historial.map((snapshot) => this.enriquecerSnapshotParametrosBase(snapshot)),
+      );
+      const activoConParametros = activo ? await this.enriquecerSnapshotParametrosBase(activo) : null;
+      return mapSnapshotsToEventosTrazabilidad(historialConParametros, activoConParametros);
     } catch (error) {
       console.error('[Nómina V2] No fue posible cargar trazabilidad del servidor', error);
       return [];
     }
+  }
+
+  private async enriquecerSnapshotParametrosBase(
+    snapshot: NominaCalculoPeriodoSnapshot,
+  ): Promise<NominaCalculoPeriodoSnapshot> {
+    if (!esSnapshotParametrosBase(snapshot) || !snapshot.idCalculoPeriodo) return snapshot;
+    if ((snapshot.parametros?.length ?? 0) > 0) return snapshot;
+    const parametros = await this.snapshotRepo.listarParametrosSnapshot(snapshot.idCalculoPeriodo);
+    return { ...snapshot, parametros };
   }
 
   async recomputar(

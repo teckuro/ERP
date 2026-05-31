@@ -17,7 +17,10 @@ import { LucideAngularModule } from 'lucide-angular';
 
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
 import type { PayrollStepId } from '../../../../models/nomina-mensual-v2.models';
-import type { OrigenBaseParametrosAlAvanzar } from '../../../../models/nomina-parametros-base.models';
+import type {
+  OrigenBaseParametrosAlAvanzar,
+  ParametroBaseCongeladoDetalle,
+} from '../../../../models/nomina-parametros-base.models';
 import type {
   NominaParametrosResumen,
   ParametroBloqueoSeveridad,
@@ -233,9 +236,9 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.orquestador.registrarAccionPrincipal(() => void this.prepararNomina());
+    const limpiarAccionPrincipal = this.orquestador.registrarAccionPrincipal(() => void this.prepararNomina());
     this.destroyRef.onDestroy(() => {
-      this.orquestador.limpiarAccionPrincipal();
+      limpiarAccionPrincipal();
       this.orquestador.establecerAyudaAvance(null);
     });
     void this.cargarParametrosResumen();
@@ -304,7 +307,8 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     this.orquestador.modalDiferenciasParametrosBase.set(null);
     const origen = this.parametrosBaseService.origenTrasAccionDiferencias('mantener');
     this.orquestador.registrarOrigenBaseAlAvanzar(origen, modal.idCalculoPeriodoBase);
-    this.registrarTrazabilidadBase(origen, modal.resumen, modal.idCalculoPeriodoBase);
+    const detalleParametros = await this.detalleValoresBaseCongelada(modal.idCalculoPeriodoBase);
+    this.registrarTrazabilidadBase(origen, modal.resumen, modal.idCalculoPeriodoBase, detalleParametros);
     this.continuarHaciaAlcance(modal.resumen);
   }
 
@@ -366,7 +370,12 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
         }
         case 'continuar':
           this.orquestador.registrarOrigenBaseAlAvanzar(rama.origen, rama.idCalculoPeriodoBase);
-          this.registrarTrazabilidadBase(rama.origen, resumen, rama.idCalculoPeriodoBase);
+          this.registrarTrazabilidadBase(
+            rama.origen,
+            resumen,
+            rama.idCalculoPeriodoBase,
+            await this.detalleValoresBaseCongelada(rama.idCalculoPeriodoBase),
+          );
           this.continuarHaciaAlcance(resumen);
           break;
         case 'diferencias':
@@ -464,7 +473,12 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
       : await this.parametrosBaseService.guardarSnapshotParametrosBase(resumen, origen);
     await this.actualizarEstadoBase(resumen.periodo);
     this.orquestador.registrarOrigenBaseAlAvanzar(origen, guardado.idCalculoPeriodoBase);
-    this.registrarTrazabilidadBase(origen, resumen, guardado.idCalculoPeriodoBase);
+    this.registrarTrazabilidadBase(
+      origen,
+      resumen,
+      guardado.idCalculoPeriodoBase,
+      await this.detalleValoresBaseCongelada(guardado.idCalculoPeriodoBase),
+    );
     this.continuarHaciaAlcance(resumen);
   }
 
@@ -504,6 +518,7 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     origen: OrigenBaseParametrosAlAvanzar,
     resumen: NominaParametrosResumen,
     idCalculoPeriodoBase: number,
+    detalleParametros: readonly ParametroBaseCongeladoDetalle[] = [],
   ): void {
     this.orquestador.registrarEventoTrazabilidad(
       this.trazabilidadService.crearEventoLocal({
@@ -512,10 +527,25 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
         tipoEvento: 'PARAMETROS_CONGELADOS',
         descripcion: this.parametrosBaseService.descripcionOrigenBase(origen),
         idSnapshotRelacionado: String(idCalculoPeriodoBase),
-        metadataPublica: { origenBase: origen },
+        metadataPublica: {
+          origenBase: origen,
+          totalParametrosBase: detalleParametros.length,
+          valoresParametrosBase: [...detalleParametros],
+        },
         integridad: { estadoIntegridad: 'registrado' },
       }),
     );
+  }
+
+  private async detalleValoresBaseCongelada(
+    idCalculoPeriodoBase: number,
+  ): Promise<ParametroBaseCongeladoDetalle[]> {
+    try {
+      return await this.parametrosBaseService.construirDetalleValoresParametrosBase(idCalculoPeriodoBase);
+    } catch (error) {
+      console.warn('[Nomina V2] No fue posible cargar detalle de parametros congelados', error);
+      return [];
+    }
   }
 
   private registrarTrazabilidadParametros(resumen: NominaParametrosResumen): void {

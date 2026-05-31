@@ -119,9 +119,9 @@ export class NominaMensualV2PasoAlcanceComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.orquestador.registrarAccionPrincipal(() => this.ejecutarAccionPrincipal());
+    const limpiarAccionPrincipal = this.orquestador.registrarAccionPrincipal(() => this.ejecutarAccionPrincipal());
     this.destroyRef.onDestroy(() => {
-      this.orquestador.limpiarAccionPrincipal();
+      limpiarAccionPrincipal();
       this.orquestador.establecerAyudaAvance(null);
     });
     this.restaurarEstadoDesdeOrquestador();

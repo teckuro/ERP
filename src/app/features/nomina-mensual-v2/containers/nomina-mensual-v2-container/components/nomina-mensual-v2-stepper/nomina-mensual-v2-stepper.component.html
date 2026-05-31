@@ -1,31 +1,46 @@
 <div class="nomina-workflow-header nmv2-stepper-card nomina-shell">
-  <nav class="nmv2-stepper nomina-stepper nomina-stepper-compact" aria-label="Flujo de nómina mensual">
-    @for (vista of vistasStepper(); track vista.clave) {
-      <button
-        type="button"
-        class="step nomina-step"
-        [class]="claseEstadoPaso(estadoPaso(vista.clave))"
-        [class.active]="estadoPaso(vista.clave) === 'active'"
-        [class.completed]="estadoPaso(vista.clave) === 'completed'"
-        [class.nomina-step--advance-blocked]="pasoAvanceBloqueado(vista.clave)"
-        [disabled]="pasoAvanceBloqueado(vista.clave)"
-        [attr.aria-disabled]="pasoAvanceBloqueado(vista.clave) ? 'true' : null"
-        (click)="seleccionarPaso(vista.clave)"
-      >
-        <span class="step-number">
-          @if (estadoPaso(vista.clave) === 'completed') {
-            <lucide-icon name="check" aria-hidden="true"></lucide-icon>
-          } @else {
-            <span>{{ vista.numero }}</span>
-          }
-        </span>
-        <span class="step-copy">
-          <strong>{{ vista.titulo }}</strong>
-          <small>{{ vista.accion }}</small>
-        </span>
-      </button>
-    }
-  </nav>
+  <div class="nomina-workflow-header__flow" aria-label="Avance del flujo">
+    <span class="nomina-workflow-header__label">Flujo</span>
+    <nav class="nmv2-stepper nomina-stepper nomina-stepper-compact" aria-label="Flujo de nomina mensual">
+      @for (vista of vistasStepper(); track vista.clave) {
+        <button
+          type="button"
+          class="step nomina-step"
+          [class]="claseEstadoPaso(estadoPaso(vista.clave))"
+          [class.active]="estadoPaso(vista.clave) === 'active'"
+          [class.completed]="estadoPaso(vista.clave) === 'completed'"
+          [class.nomina-step--advance-blocked]="pasoAvanceBloqueado(vista.clave)"
+          [disabled]="pasoAvanceBloqueado(vista.clave)"
+          [attr.aria-disabled]="pasoAvanceBloqueado(vista.clave) ? 'true' : null"
+          (click)="seleccionarPaso(vista.clave)"
+        >
+          <span class="step-index">
+            <span class="step-number">
+              @if (estadoPaso(vista.clave) === 'completed') {
+                <lucide-icon name="check" aria-hidden="true"></lucide-icon>
+              } @else {
+                <span>{{ vista.numero }}</span>
+              }
+            </span>
+          </span>
+          <span class="step-copy">
+            <span class="step-label">Paso {{ vista.numero }}</span>
+            <strong>{{ vista.titulo }}</strong>
+            <small>{{ vista.accion }}</small>
+          </span>
+          <span class="step-status" [class.step-status--icon-only]="vista.estado === 'pendiente' || vista.estado === 'activo'">
+            @if (vista.estado === 'activo') {
+              <lucide-icon name="circle-dot" aria-label="Activo"></lucide-icon>
+            } @else if (vista.estado === 'pendiente') {
+              <lucide-icon name="clock-3" aria-label="Pendiente"></lucide-icon>
+            } @else {
+              {{ vista.estado }}
+            }
+          </span>
+        </button>
+      }
+    </nav>
+  </div>
 
   <app-nomina-mensual-v2-stepper-traceability />
 </div>
