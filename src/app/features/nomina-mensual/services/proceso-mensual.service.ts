@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 
+import { resolverUsuarioResponsableActual } from '../../../core/auth/auth-user-label';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import type { HaberDescuentoAsignacionPrevalidacionMensualFila } from '../../haberes-descuentos/models/haber-descuento-asignacion.model';
 import { EmpleadosService } from '../../empleados/services/empleados.service';
@@ -165,8 +166,7 @@ export class ProcesoMensualService {
     prevalidacion?: ProcesoMensualPrevalidacion,
     opciones: { permitirAdvertencias?: boolean } = {},
   ): Promise<GuardarSnapshotPreliminarResult> {
-    const { data: userData } = await this.supabase.auth.getUser();
-    const usuarioId = userData.user?.id ?? null;
+    const usuario = await this.resolverUsuarioActual();
     const bloqueos = [
       ...(prevalidacion?.bloqueos ?? []).map((mensaje) => ({
         codigo: mensaje.codigo,
@@ -213,7 +213,7 @@ export class ProcesoMensualService {
       fechaGeneracion: new Date().toISOString(),
       totalAdvertencias: opciones.permitirAdvertencias ? advertencias.length : 0,
     });
-    snapshot.usuarioGenerador = usuarioId;
+    snapshot.usuarioGenerador = usuario.id;
     const guardado = await this.snapshots.guardarBaseNominaBorrador(snapshot, borradorPersist);
     return {
       ok: true,
@@ -251,14 +251,13 @@ export class ProcesoMensualService {
       return buildGuardarSnapshotRechazado(issues);
     }
 
-    const { data: userData } = await this.supabase.auth.getUser();
-    const usuarioId = userData.user?.id ?? null;
+    const usuario = await this.resolverUsuarioActual();
     const insumos = this.insumosCalculoPorPeriodo.get(p) ?? null;
     const snapshot = mapResultadoMotorToSnapshotPayload({
       resultado,
       fechaGeneracion: new Date().toISOString(),
       origen: 'preliminar',
-      usuarioGenerador: usuarioId,
+      usuarioGenerador: usuario.id,
       parametrosPeriodo: insumos?.parametrosPeriodo ?? null,
       entradasMensuales: insumos?.entradasMensuales ?? [],
     });
@@ -283,14 +282,13 @@ export class ProcesoMensualService {
     if (issues.length > 0) {
       return buildGuardarSnapshotRechazado(issues);
     }
-    const { data: userData } = await this.supabase.auth.getUser();
-    const usuarioId = userData.user?.id ?? null;
+    const usuario = await this.resolverUsuarioActual();
     const insumos = this.insumosCalculoPorPeriodo.get(periodo.trim()) ?? null;
     const snapshot = mapResultadoMotorToSnapshotPayload({
       resultado,
       fechaGeneracion: new Date().toISOString(),
       origen: 'recalculo',
-      usuarioGenerador: usuarioId,
+      usuarioGenerador: usuario.id,
       parametrosPeriodo: insumos?.parametrosPeriodo ?? null,
       entradasMensuales: insumos?.entradasMensuales ?? [],
     });
@@ -1035,6 +1033,15 @@ export class ProcesoMensualService {
       entradasMensuales: construirEntradasMensualesMotor(asArray(prevalidacion.entradasMensuales)),
       empresaLey16744: resolveEmpresaMutualSnapshot(empresaRow, periodo),
     };
+  }
+
+  private async resolverUsuarioActual() {
+    try {
+      const result = await this.supabase.auth.getUser();
+      return resolverUsuarioResponsableActual(result?.data?.user);
+    } catch {
+      return resolverUsuarioResponsableActual(null);
+    }
   }
 }
 

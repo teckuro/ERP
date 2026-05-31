@@ -1,10 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 
+import { AuthService } from '../../../core/auth/auth.service';
+import { resolverUsuarioResponsableActual } from '../../../core/auth/auth-user-label';
 import { PeriodoActivoService } from '../../../core/services/periodo-activo.service';
 import { NominaCalculoSnapshotRepository } from '../../nomina-mensual/data-access/nomina-calculo-snapshot.repository';
 import { construirParametrosCongelados } from '../../nomina-mensual/rules/proceso-mensual-snapshot.rules';
 import { ParametrosGeneralesService } from '../../parametros-generales/services/parametros-generales.service';
 import {
+  buildMetadataMantenerBaseConDiferencias,
   buildMetadataPersistenciaParametrosBase,
   buildSnapshotParametrosBasePayload,
   buildVistaPreviaParametrosBase,
@@ -29,6 +32,7 @@ export class NominaParametrosBaseService {
   private readonly snapshotRepository = inject(NominaCalculoSnapshotRepository);
   private readonly parametrosService = inject(ParametrosGeneralesService);
   private readonly periodoActivo = inject(PeriodoActivoService);
+  private readonly auth = inject(AuthService);
 
   async obtenerEstadoBasePeriodo(
     periodo = this.periodoActivo.periodoYm(),
@@ -84,16 +88,21 @@ export class NominaParametrosBaseService {
     const periodo = resumen.periodo;
     const parametrosGeneral = await this.parametrosService.obtenerUltimoHastaPeriodo(periodo, { enriquecer: true });
     const fechaGeneracion = new Date().toISOString();
+    const usuario = await this.resolverUsuarioActual();
     const snapshot = buildSnapshotParametrosBasePayload({
       periodo,
       parametros: parametrosGeneral,
       resumen,
       fechaGeneracion,
+      usuarioGenerador: usuario.id,
     });
     const metadata = {
       ...buildMetadataPersistenciaParametrosBase(resumen),
       hashParametros: snapshot.hashParametros,
       origenAlGuardar,
+      usuarioResponsableId: usuario.id,
+      usuarioResponsableNombre: usuario.nombre,
+      periodoBaseParametros: periodo,
     };
     const resultado = await this.snapshotRepository.guardarSnapshotParametrosBase(snapshot, metadata);
     const id = resultado.snapshot.idCalculoPeriodo;
@@ -109,6 +118,30 @@ export class NominaParametrosBaseService {
     return this.guardarSnapshotParametrosBase(resumen, 'actualizadaExplicitamente');
   }
 
+  /**
+   * Persiste la decisión «Mantener base con diferencias» sin reemplazar parámetros congelados.
+   */
+  async registrarMantenerBaseConDiferencias(
+    idCalculoPeriodoBase: number,
+    resumen: NominaParametrosResumen,
+  ): Promise<void> {
+    const estado = await this.obtenerEstadoBasePeriodo(resumen.periodo);
+    if (estado.idCalculoPeriodoBase !== idCalculoPeriodoBase) {
+      throw new Error('La base de parámetros ya no es la vigente para este período.');
+    }
+    const base = await this.snapshotRepository.obtenerSnapshotParametrosBase(resumen.periodo);
+    const usuario = await this.resolverUsuarioActual();
+    const metadata = buildMetadataMantenerBaseConDiferencias(
+      resumen,
+      base?.metadataOperativa ?? null,
+      usuario,
+      estado.comparacion
+        ? { hashBase: estado.comparacion.hashBase, hashActual: estado.comparacion.hashActual }
+        : null,
+    );
+    await this.snapshotRepository.actualizarMetadataParametrosBase(idCalculoPeriodoBase, metadata);
+  }
+
   descripcionOrigenBase(origen: OrigenBaseParametrosAlAvanzar): string {
     return copyOrigenBaseAlAvanzar(origen);
   }
@@ -120,5 +153,10 @@ export class NominaParametrosBaseService {
   private async cargarParametrosCongeladosActuales(periodo: string) {
     const parametrosGeneral = await this.parametrosService.obtenerUltimoHastaPeriodo(periodo, { enriquecer: true });
     return construirParametrosCongelados(parametrosGeneral);
+  }
+
+  private async resolverUsuarioActual() {
+    const user = this.auth.currentUser() ?? (await this.auth.getSession())?.user ?? null;
+    return resolverUsuarioResponsableActual(user);
   }
 }

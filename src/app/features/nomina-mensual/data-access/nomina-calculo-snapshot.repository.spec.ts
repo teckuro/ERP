@@ -505,6 +505,38 @@ describe('NominaCalculoSnapshotRepository', () => {
     expect(snapshot?.aprobacionOperativa?.advertencias).toEqual(['Advertencia visible']);
   });
 
+  it('reconstruye responsable de aprobacion desde metadata persistida al recargar', async () => {
+    const approvedRow = {
+      ...baseRow,
+      aprobacion_operativa_estado: 'aprobado_operativamente',
+      aprobacion_operativa_fecha: '2026-05-05T11:00:00.000Z',
+      aprobacion_operativa_usuario_id: null,
+      aprobacion_operativa_usuario_label: null,
+      aprobacion_operativa_metadata: {
+        usuarioResponsableId: '00000000-0000-0000-0000-000000000002',
+        usuarioResponsableNombre: 'rrhh.persistido@empresa.cl',
+      },
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: {
+            from: vi.fn(() => query(approvedRow)),
+            auth: { getUser: vi.fn() },
+          },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    const snapshot = await repo.obtenerSnapshotActivo('2026-05');
+
+    expect(snapshot?.aprobacionOperativa?.usuarioId).toBe('00000000-0000-0000-0000-000000000002');
+    expect(snapshot?.aprobacionOperativa?.usuarioLabel).toBe('rrhh.persistido@empresa.cl');
+  });
+
   it('llama RPC cerrar_nomina_operativa con parametros correctos y mapea cierre', async () => {
     const cerradoRow = {
       ...baseRow,
@@ -547,6 +579,40 @@ describe('NominaCalculoSnapshotRepository', () => {
     });
     expect(snapshot.cierreOperativo?.estado).toBe('cerrado_operativamente');
     expect(snapshot.cierreOperativo?.usuarioLabel).toBe('rrhh@empresa.cl');
+  });
+
+  it('reconstruye responsable de cierre desde metadata persistida al recargar', async () => {
+    const cerradoRow = {
+      ...baseRow,
+      cierre_operativo_estado: 'cerrado_operativamente',
+      cierre_operativo_fecha: '2026-05-05T12:00:00.000Z',
+      cierre_operativo_usuario_id: null,
+      cierre_operativo_usuario_label: null,
+      cierre_operativo_metadata: {
+        usuarioResponsable: {
+          id: '00000000-0000-0000-0000-000000000003',
+          nombre: 'jefe.rrhh@empresa.cl',
+        },
+      },
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: {
+            from: vi.fn(() => query(cerradoRow)),
+            auth: { getUser: vi.fn() },
+          },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    const snapshot = await repo.obtenerSnapshotActivo('2026-05');
+
+    expect(snapshot?.cierreOperativo?.usuarioId).toBe('00000000-0000-0000-0000-000000000003');
+    expect(snapshot?.cierreOperativo?.usuarioLabel).toBe('jefe.rrhh@empresa.cl');
   });
 
   it('sanitiza error operativo si falla RPC de cierre', async () => {

@@ -69,6 +69,10 @@ export interface ResumenParametrosBaseMetadata {
   bloqueos: number;
   requiereRevision: number;
   origenAlGuardar?: OrigenBaseParametrosAlAvanzar;
+  usuarioResponsable?: {
+    id: string | null;
+    nombre: string;
+  };
 }
 
 export interface ParametroBaseCongeladoDetalle {

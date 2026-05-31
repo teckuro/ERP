@@ -10,7 +10,7 @@ export function buildEventosTrazabilidadMock(periodo: string): EventoTrazabilida
       paso: 'calculation',
       tipoEvento: 'CALCULO_EJECUTADO',
       usuarioId: null,
-      usuarioNombre: 'Sistema',
+      usuarioNombre: 'RRHH Demo',
       fechaEvento: new Date(Date.now() - 3600000).toISOString(),
       descripcion: 'Resultado de cálculo generado (demo).',
       integridad: { estadoIntegridad: 'pendiente', fingerprintPublico: 'DEMO-CALC' },

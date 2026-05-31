@@ -2621,3 +2621,34 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 
 - **Cambio:** `nmv2-page nomina-shell` queda sin separacion visual entre la cabecera de pasos y el detalle del paso; la cabecera conserva radios solo arriba y el contenido colapsa el borde superior para leerse como una superficie unica.
 - **Archivos:** `nomina-mensual-v2-container.css`, `nomina-mensual-v2-stepper.component.css`, `peticiones-estilos.md`.
+
+## 2026-05-30 - Nomina mensual V2: stepper compacto sin doble numeracion
+
+- **Cambio:** celdas del stepper eliminan el texto `Paso N`; el badge circular queda como unico ordinal visible y el estado se mueve a la esquina superior derecha como indicador secundario.
+- **Ajuste:** layout de cada paso pasa a dos columnas numero/texto, con padding reservado para evitar solapes entre titulo, accion e icono de estado.
+- **Estado:** icono superior binario: reloj con fondo plomo para no listo y check verde para listo; el circulo izquierdo conserva siempre el numero del paso.
+- **Archivos:** `nomina-mensual-v2-stepper.component.{html,css}`, `peticiones-estilos.md`.
+
+## 2026-05-30 - Nomina mensual V2: modales de trazabilidad mas ERP
+
+- **Cambio:** los modales de Responsable, Bitacora y Control dejan de mostrar informacion tecnica y pasan a copy operativo: responsable, registro, estado, movimientos y datos guardados.
+- **Ajuste:** se retiran de la UI textos de huella, integridad tecnica y origen interno; parametros mantiene tabla de valores guardados con columna Fuente.
+- **Archivos:** `nomina-mensual-v2-trazabilidad-modal.component.{ts,html,css}`, `peticiones-estilos.md`.
+
+## 2026-05-30 - Nomina mensual V2: decisiones simples
+
+- **Cambio:** decision modals de parametros y alcance usan mensajes breves: una decision, una frase de contexto y botones cortos.
+- **Ajuste:** Preparar nomina muestra solo la base a guardar; diferencias usa Mantener base / Actualizar / Ver cambios.
+- **Archivos:** `nomina-mensual-v2-overlays.component.{ts,html}`, `peticiones-estilos.md`.
+
+## 2026-05-30 - Nomina mensual V2: datos guardados de parametros ERP
+
+- **Cambio:** tabla de datos guardados mantiene los valores persistidos, pero renderiza grupo, parametro, vigencia y fuente con etiquetas operativas mediante switch de presentacion.
+- **Ajuste:** claves como `uf`, `utm`, `tope_imponible_afp` y `parametros_base` se muestran como UF, UTM, Tope AFP y Base guardada.
+- **Archivos:** `nomina-mensual-v2-trazabilidad-modal.component.{ts,html}`, `peticiones-estilos.md`.
+
+## 2026-05-31 - Nomina mensual V2: modales trazabilidad sin resumen
+
+- **Cambio:** modales de Responsable, Bitacora y Control eliminan la franja `nmv2-trace-modal__summary`; el contenido parte directo con el detalle, timeline o tabla operativa.
+- **Ajuste:** Datos guardados de parametros traduce las claves camelCase del modelo de parametros generales y cubre todos los campos actuales de la columna Parametro.
+- **Archivos:** `nomina-mensual-v2-trazabilidad-modal.component.{ts,html,css}`, `peticiones-estilos.md`.

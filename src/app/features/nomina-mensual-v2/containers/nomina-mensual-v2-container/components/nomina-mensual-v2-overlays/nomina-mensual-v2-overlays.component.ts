@@ -9,30 +9,17 @@ import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-o
 
 const SECCIONES_MSG_BOX_BLOQUEO_PARAMETROS: MessageBoxSection[] = [
   {
-    title: 'Qué revisar',
-    text: 'Revisa los bloqueos o pendientes marcados en Parámetros.',
+    title: 'Pendiente',
+    text: 'Completa los datos obligatorios para avanzar.',
     tone: 'attention',
   },
 ];
 
 const SECCIONES_MSG_BOX_REVISION_PARAMETROS: MessageBoxSection[] = [
   {
-    title: 'Por qué importa',
-    text: 'Se detectaron observaciones que conviene revisar antes de avanzar.',
+    title: 'Observaciones',
+    text: 'Puedes continuar, pero quedaran pendientes para revisar.',
     tone: 'attention',
-  },
-];
-
-const SECCIONES_MSG_BOX_PREPARAR_NOMINA: MessageBoxSection[] = [
-  {
-    title: 'Qué se guardará',
-    text: 'Se guardará la base de parámetros con la que se preparará esta nómina.',
-    tone: 'neutral',
-  },
-  {
-    title: 'Qué ocurre después',
-    text: 'El cálculo de remuneraciones ocurrirá más adelante, en el paso Cálculo.',
-    tone: 'neutral',
   },
 ];
 
@@ -56,14 +43,12 @@ export class NominaMensualV2OverlaysComponent {
     return [
       {
         title: 'Pendientes obligatorios',
-        text: 'Completa estos datos antes de avanzar por el stepper o corregir en Parámetros.',
+        text: 'Completa estos datos para avanzar.',
         tone: 'attention',
         items: pendientes.slice(0, 8),
       },
     ];
   }
-
-  readonly seccionesMsgBoxPrepararNomina = SECCIONES_MSG_BOX_PREPARAR_NOMINA;
 
   @Output() cerrarModal = new EventEmitter<void>();
   @Output() confirmarAvanceConRevision = new EventEmitter<void>();
@@ -86,10 +71,9 @@ export class NominaMensualV2OverlaysComponent {
     totalParametrosCongelados: number;
   }): MessageBoxSection[] {
     return [
-      ...SECCIONES_MSG_BOX_PREPARAR_NOMINA,
       {
-        title: 'Resumen de base',
-        text: `${preview.seccionesListas} de ${preview.seccionesTotales} secciones listas · ${preview.controlesVerificados} controles verificados · ${preview.totalParametrosCongelados} parámetros congelados.`,
+        title: 'Base a guardar',
+        text: `${preview.seccionesListas}/${preview.seccionesTotales} secciones listas. ${preview.totalParametrosCongelados} parametros guardados.`,
         tone: 'neutral',
       },
     ];
@@ -98,11 +82,11 @@ export class NominaMensualV2OverlaysComponent {
   seccionesTablaDiferencias(diferencias: DiferenciaParametroBase[]): MessageBoxSection[] {
     return [
       {
-        title: 'Diferencias detectadas',
-        text: 'Comparación entre la base guardada y los parámetros actuales del período.',
+        title: 'Cambios detectados',
+        text: 'Base guardada versus parametros actuales.',
         tone: 'attention',
         items: diferencias.slice(0, 12).map(
-          (diff) => `${diff.etiqueta}: ${diff.valorBase ?? '—'} → ${diff.valorActual ?? '—'}`,
+          (diff) => `${diff.etiqueta}: ${diff.valorBase ?? '-'} -> ${diff.valorActual ?? '-'}`,
         ),
       },
     ];

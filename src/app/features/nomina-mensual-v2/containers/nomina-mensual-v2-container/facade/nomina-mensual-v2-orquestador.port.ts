@@ -201,7 +201,7 @@ export class NominaMensualV2OrquestadorPort {
     this.contextoTrazabilidad.set(contexto);
   }
 
-  async recomputarTrazabilidad(incluirMockSiVacio = true): Promise<RecomputarTrazabilidadResult | null> {
+  async recomputarTrazabilidad(incluirMockSiVacio = false): Promise<RecomputarTrazabilidadResult | null> {
     if (!this.trazabilidadService) return null;
     const result = await this.trazabilidadService.recomputar({
       eventosLocales: this.eventosLocales(),

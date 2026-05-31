@@ -14,6 +14,7 @@ export interface LiquidacionPeriodo {
   periodo: string;
   estado: LiquidacionOficialEstado;
   fechaGeneracion: string;
+  usuarioGeneracionId: string | null;
   usuarioGeneracionLabel: string | null;
   totalTrabajadores: number;
   totalHaberes: number;

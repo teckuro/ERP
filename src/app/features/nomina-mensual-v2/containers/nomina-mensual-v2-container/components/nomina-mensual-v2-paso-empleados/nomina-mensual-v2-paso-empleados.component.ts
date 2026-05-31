@@ -39,7 +39,6 @@ import {
   type TipoPendienteEmpleado,
 } from '../../../../presenters/nomina-empleados-validacion.presenter';
 import { NominaEmpleadosCargaService } from '../../../../services/nomina-empleados-carga.service';
-import { NominaMensualV2TrazabilidadService } from '../../../../services/nomina-mensual-v2-trazabilidad.service';
 import { PeriodoActivoService } from '../../../../../../core/services/periodo-activo.service';
 import {
   DataGridCellDirective,
@@ -70,7 +69,6 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly orquestador = inject(NominaMensualV2OrquestadorPort);
   private readonly empleadosCargaService = inject(NominaEmpleadosCargaService);
-  private readonly trazabilidadService = inject(NominaMensualV2TrazabilidadService);
   private readonly periodoActivo = inject(PeriodoActivoService);
 
   @ViewChild(DataGridComponent) private grillaEmpleados?: DataGridComponent<FilaEmpleadoNomina>;
@@ -162,7 +160,6 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
       }
       this.orquestador.establecerAyudaAvance(texto, null);
     });
-
     effect(() => {
       this.filtroPendienteEmpleados();
       this.filasEmpleadosVista().length;
@@ -311,17 +308,7 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
         advertencias: validacion.mensajesAdvertencia.length,
       },
     });
-
-    this.orquestador.registrarEventoTrazabilidad(
-      this.trazabilidadService.crearEventoLocal({
-        paso: 'employees',
-        tipoEvento: 'EMPLEADOS_VALIDADOS',
-        descripcion: `Empleados validados · ${resumen.totalActivos} trabajadores revisados`,
-        integridad: { estadoIntegridad: 'pendiente' },
-      }),
-    );
   }
-
   private filtrarFilasPorAlcance(filas: FilaEmpleadoNomina[]): FilaEmpleadoNomina[] {
     const alcance = this.orquestador.resultadoAlcance();
     if (!alcance?.idsTrabajadoresIncluidos.length) {

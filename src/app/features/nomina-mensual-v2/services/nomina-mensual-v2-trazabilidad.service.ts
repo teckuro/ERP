@@ -1,8 +1,11 @@
 import { inject, Injectable } from '@angular/core';
 
 import { AuthService } from '../../../core/auth/auth.service';
+import { resolverUsuarioResponsableActual } from '../../../core/auth/auth-user-label';
 import { PeriodoActivoService } from '../../../core/services/periodo-activo.service';
 import { NominaCalculoSnapshotRepository } from '../../nomina-mensual/data-access/nomina-calculo-snapshot.repository';
+import { LiquidacionesOficialesRepository } from '../../liquidaciones-oficiales/data-access/liquidaciones-oficiales.repository';
+import type { LiquidacionPeriodo } from '../../liquidaciones-oficiales/models/liquidacion-oficial.model';
 import { buildEventosTrazabilidadMock } from '../data/nomina-trazabilidad.mock';
 import {
   buildAuditoriaPorPaso,
@@ -32,9 +35,18 @@ export interface RecomputarTrazabilidadResult {
   auditoriaPorPaso: Partial<Record<PayrollStepId, ResumenAuditoriaPasoNomina>>;
 }
 
+const EVENTOS_PERSISTIDOS_POR_PASO: Partial<Record<PayrollStepId, readonly TipoEventoTrazabilidadNomina[]>> = {
+  parameters: ['PARAMETROS_CONGELADOS', 'PARAMETROS_VALIDADOS', 'SNAPSHOT_INVALIDADO'],
+  calculation: ['CALCULO_EJECUTADO', 'SNAPSHOT_INVALIDADO'],
+  validation: ['PRENOMINA_VALIDADA', 'SNAPSHOT_INVALIDADO'],
+  approval: ['PRENOMINA_APROBADA', 'RECALCULO_SOLICITADO'],
+  payslips: ['LIQUIDACIONES_GENERADAS'],
+};
+
 @Injectable({ providedIn: 'root' })
 export class NominaMensualV2TrazabilidadService {
   private readonly snapshotRepo = inject(NominaCalculoSnapshotRepository);
+  private readonly liquidacionesRepo = inject(LiquidacionesOficialesRepository);
   private readonly periodoActivo = inject(PeriodoActivoService);
   private readonly auth = inject(AuthService);
 
@@ -48,7 +60,14 @@ export class NominaMensualV2TrazabilidadService {
         historial.map((snapshot) => this.enriquecerSnapshotParametrosBase(snapshot)),
       );
       const activoConParametros = activo ? await this.enriquecerSnapshotParametrosBase(activo) : null;
-      return mapSnapshotsToEventosTrazabilidad(historialConParametros, activoConParametros);
+      const eventosSnapshots = mapSnapshotsToEventosTrazabilidad(historialConParametros, activoConParametros);
+      const liquidacion = await this.liquidacionesRepo.obtenerLiquidacionPeriodo(
+        periodo,
+        activoConParametros?.idCalculoPeriodo ?? null,
+      );
+      return liquidacion
+        ? mergeEventosTrazabilidad(eventosSnapshots, [this.mapEventoLiquidacion(liquidacion)])
+        : eventosSnapshots;
     } catch (error) {
       console.error('[Nómina V2] No fue posible cargar trazabilidad del servidor', error);
       return [];
@@ -74,9 +93,10 @@ export class NominaMensualV2TrazabilidadService {
       && servidor.length === 0
       && input.eventosLocales.length === 0;
     const mock = usarMock ? buildEventosTrazabilidadMock(periodo) : [];
-    const eventos = mergeEventosTrazabilidad(servidor, input.eventosLocales, mock);
+    const eventosLocales = this.filtrarEventosLocalesCubiertosPorServidor(servidor, input.eventosLocales);
+    const eventos = mergeEventosTrazabilidad(servidor, eventosLocales, mock);
     const auditoriaPorPaso = buildAuditoriaPorPaso(eventos);
-    this.enriquecerAuditoriaConContexto(auditoriaPorPaso, input.contexto, input.eventosLocales);
+    this.enriquecerAuditoriaConContexto(auditoriaPorPaso, input.contexto, eventosLocales);
     return { eventos, auditoriaPorPaso };
   }
 
@@ -124,15 +144,61 @@ export class NominaMensualV2TrazabilidadService {
   }
 
   resolverUsuarioActual(): { id: string | null; nombre: string } {
-    const user = this.auth.currentUser();
-    if (!user) return { id: null, nombre: 'Usuario actual' };
-    const meta = user.user_metadata as Record<string, unknown> | undefined;
-    const nombre =
-      (typeof meta?.['nombre'] === 'string' && meta['nombre'])
-      || (typeof meta?.['full_name'] === 'string' && meta['full_name'])
-      || user.email?.split('@')[0]
-      || 'Usuario actual';
-    return { id: user.id ?? null, nombre };
+    return resolverUsuarioResponsableActual(this.auth.currentUser());
+  }
+
+  private mapEventoLiquidacion(liquidacion: LiquidacionPeriodo): EventoTrazabilidadNomina {
+    const usuarioMetadata = this.parseUsuarioResponsableMetadata(liquidacion.metadata);
+    return {
+      idEvento: `srv-liq-${liquidacion.idLiquidacionPeriodo}`,
+      periodo: liquidacion.periodo,
+      paso: 'payslips',
+      tipoEvento: 'LIQUIDACIONES_GENERADAS',
+      usuarioId: liquidacion.usuarioGeneracionId ?? usuarioMetadata.id,
+      usuarioNombre:
+        liquidacion.usuarioGeneracionLabel
+        || usuarioMetadata.nombre
+        || 'Usuario no disponible en esta sesion',
+      fechaEvento: liquidacion.fechaGeneracion,
+      descripcion: 'Liquidaciones generadas desde nomina confirmada',
+      idSnapshotRelacionado: String(liquidacion.idCalculoPeriodo),
+      integridad: { estadoIntegridad: 'registrado' },
+      metadataPublica: {
+        idLiquidacionPeriodo: liquidacion.idLiquidacionPeriodo,
+        totalTrabajadores: liquidacion.totalTrabajadores,
+        totalLiquido: liquidacion.totalLiquido,
+      },
+      origen: 'servidor',
+    };
+  }
+
+  private parseUsuarioResponsableMetadata(metadata: Record<string, unknown>): { id: string | null; nombre: string | null } {
+    const nested = metadata['usuarioResponsable'];
+    if (!nested || typeof nested !== 'object' || Array.isArray(nested)) {
+      return { id: null, nombre: null };
+    }
+    const record = nested as Record<string, unknown>;
+    return {
+      id: typeof record['id'] === 'string' ? record['id'] : null,
+      nombre: typeof record['nombre'] === 'string' && record['nombre'].trim() ? record['nombre'] : null,
+    };
+  }
+
+  private filtrarEventosLocalesCubiertosPorServidor(
+    servidor: readonly EventoTrazabilidadNomina[],
+    locales: readonly EventoTrazabilidadNomina[],
+  ): EventoTrazabilidadNomina[] {
+    const eventosPersistidosServidor = new Set(
+      servidor
+        .filter((evento) => evento.origen === 'servidor')
+        .map((evento) => `${evento.paso}:${evento.tipoEvento}`),
+    );
+
+    return locales.filter((evento) => {
+      const tiposPersistidos = EVENTOS_PERSISTIDOS_POR_PASO[evento.paso];
+      if (!tiposPersistidos?.includes(evento.tipoEvento)) return true;
+      return !tiposPersistidos.some((tipo) => eventosPersistidosServidor.has(`${evento.paso}:${tipo}`));
+    });
   }
 
   private enriquecerAuditoriaConContexto(
@@ -141,19 +207,6 @@ export class NominaMensualV2TrazabilidadService {
     locales: readonly EventoTrazabilidadNomina[],
   ): void {
     if (!contexto) return;
-
-    const ultimoParametros = locales.find(
-      (e) => e.paso === 'parameters' && e.origen === 'local',
-    );
-    if (ultimoParametros && auditoria.parameters) {
-      auditoria.parameters = {
-        ...auditoria.parameters,
-        accionPrincipal: ultimoParametros.descripcion,
-        usuarioNombre: ultimoParametros.usuarioNombre,
-        fechaAccion: ultimoParametros.fechaEvento,
-        integridad: ultimoParametros.integridad,
-      };
-    }
 
     const ultimoAlcance = locales.find((e) => e.paso === 'scope' && e.origen === 'local');
     if (ultimoAlcance && auditoria.scope) {

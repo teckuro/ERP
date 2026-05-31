@@ -43,6 +43,28 @@ function Get-Count($DatabaseUrl, $Table, $PeriodColumn, $Period) {
   return [int](Invoke-PsqlScalar $DatabaseUrl $sql)
 }
 
+function Get-ParametrosCongeladosCount($DatabaseUrl, $Period) {
+  if (-not (Test-TableExists $DatabaseUrl "nomina_calculo_parametro")) {
+    return $null
+  }
+  if (-not (Test-TableExists $DatabaseUrl "nomina_calculo_periodo")) {
+    $sql = "select count(*)::text from public.nomina_calculo_parametro;"
+    return [int](Invoke-PsqlScalar $DatabaseUrl $sql)
+  }
+  if (-not [string]::IsNullOrWhiteSpace($Period)) {
+    $safePeriod = $Period.Replace("'", "''")
+    $sql = @"
+select count(*)::text
+from public.nomina_calculo_parametro p
+join public.nomina_calculo_periodo c on c.id_calculo_periodo = p.id_calculo_periodo
+where c.periodo = '$safePeriod';
+"@
+  } else {
+    $sql = "select count(*)::text from public.nomina_calculo_parametro;"
+  }
+  return [int](Invoke-PsqlScalar $DatabaseUrl $sql)
+}
+
 if ($TodosLosPeriodos) {
   $Periodo = ""
 }
@@ -93,24 +115,29 @@ $scopeLabel = if ([string]::IsNullOrWhiteSpace($Periodo)) { "TODOS los periodos"
 Write-Host ""
 Write-Host "Limpieza nómina mensual en BD" -ForegroundColor Cyan
 Write-Host "Alcance    : $scopeLabel"
-Write-Host "Tablas     : nomina_liquidacion_*, nomina_calculo_* (+ diagnostico si existe)"
+Write-Host "Tablas     : nomina_liquidacion_*, nomina_calculo_*, nomina_calculo_parametro (+ diagnostico si existe)"
 Write-Host ""
 
 $before = @{
   Snapshots = Get-Count $resolvedDbUrl "nomina_calculo_periodo" "periodo" $Periodo
+  ParametrosCongelados = Get-ParametrosCongeladosCount $resolvedDbUrl $Periodo
   Liquidaciones = Get-Count $resolvedDbUrl "nomina_liquidacion_periodo" "periodo" $Periodo
 }
 $before.Diagnostico = Get-Count $resolvedDbUrl "nomina_periodo_diagnostico" "periodo" $Periodo
 
 Write-Host "Antes:"
 Write-Host "  nomina_calculo_periodo      : $($before.Snapshots)"
+if ($null -ne $before.ParametrosCongelados) {
+  Write-Host "  nomina_calculo_parametro    : $($before.ParametrosCongelados) (parametros congelados)"
+}
 Write-Host "  nomina_liquidacion_periodo  : $($before.Liquidaciones)"
 if ($null -ne $before.Diagnostico) {
   Write-Host "  nomina_periodo_diagnostico  : $($before.Diagnostico)"
 }
 
 $diagBefore = if ($null -ne $before.Diagnostico) { $before.Diagnostico } else { 0 }
-if ($before.Snapshots -eq 0 -and $before.Liquidaciones -eq 0 -and $diagBefore -eq 0) {
+$paramBefore = if ($null -ne $before.ParametrosCongelados) { $before.ParametrosCongelados } else { 0 }
+if ($before.Snapshots -eq 0 -and $before.Liquidaciones -eq 0 -and $diagBefore -eq 0 -and $paramBefore -eq 0) {
   Write-Host ""
   Write-Host "No hay registros de nomina mensual en ese alcance. Nada que limpiar." -ForegroundColor Yellow
   exit 0
@@ -135,9 +162,13 @@ if ($LASTEXITCODE -ne 0) {
 if (-not (Test-TableExists $resolvedDbUrl "nomina_periodo_diagnostico")) {
   Write-Host "  (nomina_periodo_diagnostico no existe en esquema; omitido)" -ForegroundColor Yellow
 }
+if (-not (Test-TableExists $resolvedDbUrl "nomina_calculo_parametro")) {
+  Write-Host "  (nomina_calculo_parametro no existe en esquema; omitido)" -ForegroundColor Yellow
+}
 
 $after = @{
   Snapshots = Get-Count $resolvedDbUrl "nomina_calculo_periodo" "periodo" $Periodo
+  ParametrosCongelados = Get-ParametrosCongeladosCount $resolvedDbUrl $Periodo
   Liquidaciones = Get-Count $resolvedDbUrl "nomina_liquidacion_periodo" "periodo" $Periodo
 }
 $after.Diagnostico = Get-Count $resolvedDbUrl "nomina_periodo_diagnostico" "periodo" $Periodo
@@ -145,6 +176,9 @@ $after.Diagnostico = Get-Count $resolvedDbUrl "nomina_periodo_diagnostico" "peri
 Write-Host ""
 Write-Host "Despues:" -ForegroundColor Green
 Write-Host "  nomina_calculo_periodo      : $($after.Snapshots)"
+if ($null -ne $after.ParametrosCongelados) {
+  Write-Host "  nomina_calculo_parametro    : $($after.ParametrosCongelados) (parametros congelados)"
+}
 Write-Host "  nomina_liquidacion_periodo  : $($after.Liquidaciones)"
 if ($null -ne $after.Diagnostico) {
   Write-Host "  nomina_periodo_diagnostico  : $($after.Diagnostico)"

@@ -116,6 +116,36 @@ export function buildMetadataPersistenciaParametrosBase(
   };
 }
 
+/** Overlay al elegir «Mantener» con diferencias: no re-congela filas, solo registra la decisión en BD. */
+export function buildMetadataMantenerBaseConDiferencias(
+  resumen: NominaParametrosResumen,
+  metadataExistente: Record<string, unknown> | null | undefined,
+  usuario: { id: string | null; nombre: string | null },
+  comparacion: { hashBase: string | null; hashActual: string | null } | null,
+): Record<string, Json> {
+  const previo = metadataExistente && metadataExistente['tipoSnapshot'] === TIPO_SNAPSHOT_PARAMETROS_BASE
+    ? metadataExistente
+    : buildMetadataPersistenciaParametrosBase(resumen);
+  const resumenMeta = {
+    ...buildResumenParametrosBaseMetadata(resumen),
+    origenAlGuardar: 'existenteMantenidaConDiferencias' as const,
+    ...(usuario.nombre || usuario.id
+      ? { usuarioResponsable: { id: usuario.id, nombre: usuario.nombre ?? 'Usuario no disponible' } }
+      : {}),
+  };
+  return {
+    ...previo,
+    tipoSnapshot: TIPO_SNAPSHOT_PARAMETROS_BASE,
+    origenAlGuardar: 'existenteMantenidaConDiferencias',
+    fechaDecisionMantener: new Date().toISOString(),
+    resumenParametrosBase: resumenMeta as unknown as Json,
+    ...(comparacion?.hashBase != null ? { hashParametrosBaseAlMantener: comparacion.hashBase } : {}),
+    ...(comparacion?.hashActual != null ? { hashParametrosActualAlMantener: comparacion.hashActual } : {}),
+    notaAlcance:
+      'Base de parámetros mantenida pese a diferencias con parámetros vigentes. El cálculo ocurre en el paso Cálculo.',
+  };
+}
+
 export function mapParametroRowToSnapshot(row: {
   grupo: string;
   clave: string;
@@ -174,9 +204,12 @@ export function leerMetadataParametrosBase(
   }
   const origenRaw = metadata['origenAlGuardar'];
   const resumenRaw = metadata['resumenParametrosBase'];
+  const usuarioResponsable = leerUsuarioResponsableMetadata(metadata);
   return {
     origenAlGuardar: esOrigenBaseValido(origenRaw) ? origenRaw : undefined,
-    resumen: esResumenParametrosBaseValido(resumenRaw) ? resumenRaw : undefined,
+    resumen: esResumenParametrosBaseValido(resumenRaw)
+      ? { ...resumenRaw, ...(usuarioResponsable ? { usuarioResponsable } : {}) }
+      : undefined,
   };
 }
 
@@ -222,6 +255,27 @@ function esResumenParametrosBaseValido(value: unknown): value is ResumenParametr
   const record = value as Record<string, unknown>;
   return typeof record['seccionesListas'] === 'number'
     && typeof record['seccionesTotales'] === 'number';
+}
+
+function leerUsuarioResponsableMetadata(metadata: Record<string, unknown>): ResumenParametrosBaseMetadata['usuarioResponsable'] | null {
+  const nested = metadata['usuarioResponsable'];
+  if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+    const record = nested as Record<string, unknown>;
+    const nombre = typeof record['nombre'] === 'string' && record['nombre'].trim() ? record['nombre'].trim() : null;
+    if (!nombre) return null;
+    return {
+      id: typeof record['id'] === 'string' ? record['id'] : null,
+      nombre,
+    };
+  }
+  const nombre = typeof metadata['usuarioResponsableNombre'] === 'string' && metadata['usuarioResponsableNombre'].trim()
+    ? metadata['usuarioResponsableNombre'].trim()
+    : null;
+  if (!nombre) return null;
+  return {
+    id: typeof metadata['usuarioResponsableId'] === 'string' ? metadata['usuarioResponsableId'] : null,
+    nombre,
+  };
 }
 
 function formatearPeriodoEtiqueta(periodo: string): string {

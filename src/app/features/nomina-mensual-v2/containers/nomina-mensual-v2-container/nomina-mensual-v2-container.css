@@ -5770,3 +5770,11 @@ app-nomina-mensual-v2-container > .nmv2-page {
   color: #475569;
 }
 
+.nmv2-tabla-vacia {
+  padding: 16px 12px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: left;
+}
+

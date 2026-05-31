@@ -16,25 +16,22 @@
         >
           <span class="step-index">
             <span class="step-number">
-              @if (estadoPaso(vista.clave) === 'completed') {
-                <lucide-icon name="check" aria-hidden="true"></lucide-icon>
-              } @else {
-                <span>{{ vista.numero }}</span>
-              }
+              <span>{{ vista.numero }}</span>
             </span>
           </span>
           <span class="step-copy">
-            <span class="step-label">Paso {{ vista.numero }}</span>
             <strong>{{ vista.titulo }}</strong>
             <small>{{ vista.accion }}</small>
           </span>
-          <span class="step-status" [class.step-status--icon-only]="vista.estado === 'pendiente' || vista.estado === 'activo'">
-            @if (vista.estado === 'activo') {
-              <lucide-icon name="circle-dot" aria-label="Activo"></lucide-icon>
-            } @else if (vista.estado === 'pendiente') {
-              <lucide-icon name="clock-3" aria-label="Pendiente"></lucide-icon>
+          <span
+            class="step-status step-status--icon-only"
+            [class.step-status--ready]="vista.estado === 'completo'"
+            [class.step-status--waiting]="vista.estado !== 'completo'"
+          >
+            @if (vista.estado === 'completo') {
+              <lucide-icon name="check" aria-label="Listo"></lucide-icon>
             } @else {
-              {{ vista.estado }}
+              <lucide-icon name="clock-3" aria-label="No listo"></lucide-icon>
             }
           </span>
         </button>

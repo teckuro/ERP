@@ -61,6 +61,10 @@
                     <td><span class="status-pill" [class]="toneClass(row.status.tone)"><lucide-icon [name]="statusIcon(row.status.tone)" aria-hidden="true"></lucide-icon>{{ row.status.label }}</span></td>
                     <td class="action-cell"><button class="icon-btn"><lucide-icon name="ellipsis" aria-hidden="true"></lucide-icon></button></td>
                   </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="8" class="nmv2-tabla-vacia">No hay novedades registradas para este período. Cárgalas en Movimientos o continúa al cálculo cuando el período esté listo.</td>
+                  </tr>
                 }
               </tbody>
             </table>
@@ -138,6 +142,10 @@
                     <td><span class="status-pill" [class]="toneClass(row.status.tone)"><lucide-icon [name]="statusIcon(row.status.tone)" aria-hidden="true"></lucide-icon>{{ row.status.label }}</span></td>
                     <td class="action-cell"><button class="icon-btn"><lucide-icon name="ellipsis" aria-hidden="true"></lucide-icon></button></td>
                   </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="7" class="nmv2-tabla-vacia">Aún no hay cálculo guardado para este período. Usa la acción principal para procesar y guardar el resultado en el sistema.</td>
+                  </tr>
                 }
               </tbody>
             </table>
@@ -202,6 +210,10 @@
                     <td>{{ row.rule }}</td>
                     <td>{{ row.detail }}</td>
                     <td><span class="status-pill" [class]="toneClass(row.severity.tone)">{{ row.severity.label }}</span></td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="nmv2-tabla-vacia">No hay observaciones de validación hasta guardar un cálculo preliminar. Ejecuta el cálculo en el paso anterior.</td>
                   </tr>
                 }
               </tbody>
@@ -357,6 +369,10 @@
                     <td><span class="status-pill" [class]="toneClass(row.signature.tone)"><lucide-icon [name]="statusIcon(row.signature.tone)" aria-hidden="true"></lucide-icon>{{ row.signature.label }}</span></td>
                     <td><span class="status-pill" [class]="toneClass(row.delivery.tone)"><lucide-icon [name]="statusIcon(row.delivery.tone)" aria-hidden="true"></lucide-icon>{{ row.delivery.label }}</span></td>
                     <td class="action-cell action-cell--double"><button class="icon-btn"><lucide-icon name="download" aria-hidden="true"></lucide-icon></button><button class="icon-btn"><lucide-icon name="ellipsis" aria-hidden="true"></lucide-icon></button></td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="8" class="nmv2-tabla-vacia">No hay liquidaciones generadas para este período. Primero aprueba la nómina y luego usa la acción principal para generarlas.</td>
                   </tr>
                 }
               </tbody>

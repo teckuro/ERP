@@ -8,10 +8,7 @@ import type {
   EventoTrazabilidadNomina,
 } from '../../../../models/nomina-trazabilidad.models';
 import { NominaParametrosBaseService } from '../../../../services/nomina-parametros-base.service';
-import {
-  etiquetaIntegridadVisible,
-  formatoFechaTrazabilidad,
-} from '../../../../utils/nomina-trazabilidad-presentacion.util';
+import { formatoFechaTrazabilidad } from '../../../../utils/nomina-trazabilidad-presentacion.util';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 
 interface ParametroBaseModalDetalle {
@@ -122,28 +119,20 @@ export class NominaMensualV2TrazabilidadModalComponent {
     const evento = this.ultimoEventoPaso();
     return [
       { label: 'Responsable', value: this.valorUsuario(detalle.usuarioNombre) },
-      { label: 'Accion registrada', value: detalle.accionPrincipal || 'Sin registro' },
-      { label: 'Fecha', value: formatoFechaTrazabilidad(detalle.fechaAccion) },
-      { label: 'Estado del paso', value: detalle.estadoActual },
-      { label: 'Origen', value: this.etiquetaOrigen(evento?.origen) },
+      { label: 'Registro', value: detalle.accionPrincipal || evento?.descripcion || 'Sin registro' },
+      { label: 'Fecha y hora', value: formatoFechaTrazabilidad(detalle.fechaAccion ?? evento?.fechaEvento) },
+      { label: 'Estado operativo', value: this.estadoOperativo(detalle.estadoActual) },
     ];
   }
 
-  filasIntegridadTecnica(detalle: DetalleTrazabilidadPasoNomina): FilaDetalleModal[] {
+  filasControlOperativo(detalle: DetalleTrazabilidadPasoNomina): FilaDetalleModal[] {
     const evento = this.ultimoEventoPaso();
-    const filas: FilaDetalleModal[] = [
-      {
-        label: 'Estado',
-        value: etiquetaIntegridadVisible(detalle.integridad.estadoIntegridad, evento?.origen),
-      },
-      { label: 'Evento relacionado', value: evento?.descripcion ?? 'Sin evento relacionado' },
-      { label: 'Fecha', value: formatoFechaTrazabilidad(detalle.integridad.fechaVerificacion ?? detalle.fechaAccion) },
-      { label: 'Origen', value: this.etiquetaOrigen(evento?.origen) },
+    return [
+      { label: 'Estado operativo', value: this.estadoOperativo(detalle.estadoActual) },
+      { label: 'Ultimo registro', value: evento?.descripcion ?? detalle.accionPrincipal ?? 'Sin registro' },
+      { label: 'Responsable', value: this.valorUsuario(detalle.usuarioNombre || evento?.usuarioNombre) },
+      { label: 'Fecha y hora', value: formatoFechaTrazabilidad(detalle.fechaAccion ?? evento?.fechaEvento) },
     ];
-    if (detalle.integridad.fingerprintPublico) {
-      filas.splice(1, 0, { label: 'Huella publica', value: detalle.integridad.fingerprintPublico });
-    }
-    return filas;
   }
 
   muestraDatosParametrosGuardados(detalle: DetalleTrazabilidadPasoNomina): boolean {
@@ -175,31 +164,202 @@ export class NominaMensualV2TrazabilidadModalComponent {
   }
 
   formatearGrupoParametro(grupo: string): string {
-    return grupo
-      .split(/[_\s-]+/)
-      .filter(Boolean)
-      .map((parte) => parte.charAt(0).toUpperCase() + parte.slice(1))
-      .join(' ');
+    switch (this.normalizarParametro(grupo)) {
+      case 'uf_utm':
+      case 'uf_utm_sueldo':
+      case 'mensuales_uf_utm_sueldo':
+        return 'Datos oficiales';
+      case 'topes_base':
+        return 'Topes imponibles';
+      case 'catalogos_afp_impuesto':
+        return 'AFP e impuesto';
+      case 'salud_catalogo':
+        return 'Salud';
+      case 'mutualidad_ley16744_ccaf':
+      case 'ccaf_mutual':
+        return 'CCAF / Mutual';
+      case 'afc_catalogo':
+        return 'Seguro de cesantia';
+      case 'sis_fila_mensual':
+        return 'SIS mensual';
+      case 'reforma_previsional':
+        return 'Reforma previsional';
+      case 'parametros_base':
+        return 'Base del periodo';
+      case 'parametros_generales':
+        return 'Parametros generales';
+      default:
+        return this.humanizarParametro(grupo);
+    }
+  }
+
+  formatearNombreParametro(clave: string): string {
+    switch (this.normalizarParametro(clave)) {
+      case 'uf':
+        return 'UF';
+      case 'utm':
+        return 'UTM';
+      case 'uta':
+        return 'UTA';
+      case 'sueldo_minimo':
+      case 'ingreso_minimo':
+        return 'Sueldo minimo';
+      case 'sueldo_minimo_18a65':
+        return 'Sueldo minimo 18 a 65 anos';
+      case 'sueldo_minimo_menor18_mayor65':
+        return 'Sueldo minimo menor de 18 y mayor de 65 anos';
+      case 'sueldo_minimo_casa_particular':
+        return 'Sueldo minimo casa particular';
+      case 'ingreso_minimo_no_remuneracional':
+        return 'Ingreso minimo no remuneracional';
+      case 'gratificacion':
+        return 'Gratificacion legal';
+      case 'imm_gratificacion':
+        return 'Factor tope gratificacion';
+      case 'tope_imponible':
+        return 'Tope imponible';
+      case 'tope_imponible_afp':
+      case 'tope_afp':
+        return 'Tope AFP';
+      case 'tope_afp_uf':
+        return 'Tope AFP en UF';
+      case 'tope_imponible_salud':
+        return 'Tope salud';
+      case 'tope_ips':
+        return 'Tope IPS';
+      case 'tope_ips_uf':
+        return 'Tope IPS en UF';
+      case 'tope_afc':
+      case 'tope_cesantia':
+        return 'Tope seguro de cesantia';
+      case 'tope_cesantia_uf':
+        return 'Tope seguro de cesantia en UF';
+      case 'tope_apv_mensual':
+        return 'Tope APV mensual';
+      case 'tope_apv_mensual_uf':
+        return 'Tope APV mensual en UF';
+      case 'tope_apv_anual':
+        return 'Tope APV anual';
+      case 'tope_apv_anual_uf':
+        return 'Tope APV anual en UF';
+      case 'tope_deposito_convenido_anual':
+        return 'Tope deposito convenido anual';
+      case 'tope_deposito_convenido_anual_uf':
+        return 'Tope deposito convenido anual en UF';
+      case 'tope_afp_voluntario':
+        return 'Tope ahorro previsional voluntario';
+      case 'impuesto_unico':
+        return 'Impuesto unico';
+      case 'afp':
+        return 'AFP';
+      case 'salud':
+        return 'Salud';
+      case 'salud_obligatoria':
+        return 'Cotizacion obligatoria de salud';
+      case 'salud_ccaf':
+        return 'Salud CCAF';
+      case 'salud_fonasa_con_ccaf':
+        return 'FONASA con CCAF';
+      case 'mutual':
+        return 'Mutualidad';
+      case 'ccaf':
+        return 'Caja de compensacion';
+      case 'sis':
+        return 'Seguro SIS';
+      case 'sanna':
+        return 'Seguro SANNA';
+      case 'seguro_social_expectativa_vida':
+        return 'Seguro social expectativa de vida';
+      case 'aporte_empleador_afp':
+        return 'Aporte empleador AFP';
+      case 'descuentos_base_por_dia':
+        return 'Descuentos base por dia';
+      case 'afc_empleador':
+        return 'Aporte AFC empleador';
+      case 'afc_trabajador':
+        return 'Aporte AFC trabajador';
+      case 'afc_trabajador_indefinido':
+        return 'AFC trabajador contrato indefinido';
+      case 'afc_empleador_indefinido':
+        return 'AFC empleador contrato indefinido';
+      case 'afc_empleador_plazo':
+        return 'AFC empleador contrato a plazo';
+      case 'afc_empleador_indefinido_once_anos_mas':
+        return 'AFC empleador indefinido 11 anos o mas';
+      case 'afc_empleador_casa_particular':
+        return 'AFC empleador casa particular';
+      case 'trabajo_pesado_empleador':
+        return 'Trabajo pesado empleador';
+      case 'trabajo_pesado_trabajador':
+        return 'Trabajo pesado trabajador';
+      case 'trabajo_menos_pesado_empleador':
+        return 'Trabajo menos pesado empleador';
+      case 'trabajo_menos_pesado_trabajador':
+        return 'Trabajo menos pesado trabajador';
+      default:
+        return this.humanizarParametro(clave);
+    }
+  }
+
+  formatearValorParametro(valor: string): string {
+    const limpio = valor.trim();
+    if (!limpio) return 'Sin valor';
+    switch (limpio.toLowerCase()) {
+      case 'true':
+        return 'Si';
+      case 'false':
+        return 'No';
+      default:
+        return limpio;
+    }
+  }
+
+  formatearVigenciaParametro(vigencia: string | null): string {
+    if (!vigencia) return 'Periodo vigente';
+    return vigencia;
+  }
+
+  formatearFuenteParametro(origen: string): string {
+    switch (this.normalizarParametro(origen)) {
+      case 'oficial':
+        return 'Dato oficial';
+      case 'manual':
+        return 'Ingreso manual';
+      case 'parametros_base':
+        return 'Base guardada';
+      case 'parametros_generales':
+        return 'Mantenedor de parametros';
+      case 'evento_anterior':
+        return 'Registro anterior';
+      case 'sistema':
+        return 'Sistema';
+      case 'no_informado':
+        return 'Sin fuente';
+      default:
+        return this.humanizarParametro(origen);
+    }
   }
 
   fechaEvento(evento: EventoTrazabilidadNomina): string {
     return formatoFechaTrazabilidad(evento.fechaEvento);
   }
 
-  integridadEvento(evento: EventoTrazabilidadNomina): string {
-    return etiquetaIntegridadVisible(evento.integridad.estadoIntegridad, evento.origen);
-  }
-
-  etiquetaOrigen(origen: EventoTrazabilidadNomina['origen'] | undefined): string {
-    switch (origen) {
-      case 'servidor':
-        return 'Servidor';
-      case 'local':
-        return 'Sesion actual';
-      case 'mock':
-        return 'Referencia demo';
+  estadoOperativo(estado: string | null | undefined): string {
+    switch ((estado ?? '').toLowerCase()) {
+      case 'pendiente':
+        return 'Pendiente';
+      case 'registrado':
+      case 'validado':
+      case 'aprobado':
+      case 'congelado':
+        return 'Listo';
+      case 'requiere revision':
+      case 'requiererevision':
+        return 'Requiere revision';
+      case 'invalidado':
+        return 'Debe actualizarse';
       default:
-        return 'Sin origen registrado';
+        return estado || 'Sin estado';
     }
   }
 
@@ -273,6 +433,23 @@ export class NominaMensualV2TrazabilidadModalComponent {
   private valorUsuario(value: string | null | undefined): string {
     if (!value || value === '—' || value === 'â€”') return 'Sin responsable registrado';
     return value;
+  }
+
+  private normalizarParametro(value: string): string {
+    return value
+      .trim()
+      .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+  }
+
+  private humanizarParametro(value: string): string {
+    const limpio = value.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!limpio) return 'Sin informacion';
+    return limpio.charAt(0).toUpperCase() + limpio.slice(1);
   }
 
   private asTexto(value: unknown, fallback: string): string {

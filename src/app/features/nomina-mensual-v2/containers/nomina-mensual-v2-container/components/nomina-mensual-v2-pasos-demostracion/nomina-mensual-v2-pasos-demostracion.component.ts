@@ -11,19 +11,14 @@ import {
 } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 
-import {
-  approvalMetrics,
-  calculationMetrics,
-  calculationRows,
-  movementMetrics,
-  movementRows,
-  payslipMetrics,
-  payslipRows,
-  validationMetrics,
-  validationRows,
-} from '../../../../data/nomina-mensual-v2.mock';
-import type { PayrollStepId } from '../../../../models/nomina-mensual-v2.models';
-import type { TipoEventoTrazabilidadNomina } from '../../../../models/nomina-trazabilidad.models';
+import type { PayrollStepId, SummaryMetric } from '../../../../models/nomina-mensual-v2.models';
+
+const METRICAS_MOVIMIENTOS_VACIAS: SummaryMetric[] = [
+  { id: 'earnings', label: 'Haberes variables', value: 0, helperText: 'Sin entradas en el período', tone: 'gray' },
+  { id: 'deductions', label: 'Descuentos', value: 0, helperText: 'Sin entradas en el período', tone: 'gray' },
+  { id: 'licenses', label: 'Licencias', value: 0, helperText: 'Sin entradas en el período', tone: 'gray' },
+  { id: 'recurring', label: 'Entradas cargadas', value: 0, helperText: 'Consulta en Movimientos', tone: 'gray' },
+];
 import { PeriodoActivoService } from '../../../../../../core/services/periodo-activo.service';
 import {
   NominaMensualV2FlujoService,
@@ -66,25 +61,25 @@ export class NominaMensualV2PasosDemostracionComponent implements OnChanges, OnD
   readonly flujoReal = signal<NominaMensualV2FlujoRealView | null>(null);
 
   readonly movementMetrics = computed(() => {
-    const filas = this.flujoReal()?.movimientos;
-    if (!filas?.length) return movementMetrics;
+    const filas = this.flujoReal()?.movimientos ?? [];
+    if (!filas.length) return METRICAS_MOVIMIENTOS_VACIAS;
     const descuentos = filas.filter((row) => row.type.tone === 'red').length;
     const licencias = filas.filter((row) => row.type.tone === 'purple').length;
     return [
-      { id: 'earnings', label: 'Haberes variables', value: filas.length - descuentos - licencias, helperText: 'Periodo real', tone: 'green' as const },
-      { id: 'deductions', label: 'Descuentos', value: descuentos, helperText: 'Periodo real', tone: 'red' as const },
-      { id: 'licenses', label: 'Licencias', value: licencias, helperText: 'Periodo real', tone: 'purple' as const },
-      { id: 'recurring', label: 'Entradas cargadas', value: filas.length, helperText: 'Total leido', tone: 'blue' as const },
+      { id: 'earnings', label: 'Haberes variables', value: filas.length - descuentos - licencias, helperText: 'Período en BD', tone: 'green' as const },
+      { id: 'deductions', label: 'Descuentos', value: descuentos, helperText: 'Período en BD', tone: 'red' as const },
+      { id: 'licenses', label: 'Licencias', value: licencias, helperText: 'Período en BD', tone: 'purple' as const },
+      { id: 'recurring', label: 'Entradas cargadas', value: filas.length, helperText: 'Total leído', tone: 'blue' as const },
     ];
   });
-  readonly movementRows = computed(() => this.flujoReal()?.movimientos.length ? this.flujoReal()!.movimientos : movementRows);
-  readonly calculationMetrics = computed(() => this.flujoReal()?.snapshot ? this.flujoReal()!.calculoMetricas : calculationMetrics);
-  readonly calculationRows = computed(() => this.flujoReal()?.calculoFilas.length ? this.flujoReal()!.calculoFilas : calculationRows);
-  readonly validationMetrics = computed(() => this.flujoReal()?.snapshot ? this.flujoReal()!.validacionMetricas : validationMetrics);
-  readonly validationRows = computed(() => this.flujoReal()?.validacionFilas.length ? this.flujoReal()!.validacionFilas : validationRows);
-  readonly approvalMetrics = computed(() => this.flujoReal()?.snapshot ? this.flujoReal()!.aprobacionMetricas : approvalMetrics);
-  readonly payslipMetrics = computed(() => this.flujoReal()?.liquidacionFilas.length ? this.flujoReal()!.liquidacionMetricas : payslipMetrics);
-  readonly payslipRows = computed(() => this.flujoReal()?.liquidacionFilas.length ? this.flujoReal()!.liquidacionFilas : payslipRows);
+  readonly movementRows = computed(() => this.flujoReal()?.movimientos ?? []);
+  readonly calculationMetrics = computed(() => this.flujoReal()?.calculoMetricas ?? []);
+  readonly calculationRows = computed(() => this.flujoReal()?.calculoFilas ?? []);
+  readonly validationMetrics = computed(() => this.flujoReal()?.validacionMetricas ?? []);
+  readonly validationRows = computed(() => this.flujoReal()?.validacionFilas ?? []);
+  readonly approvalMetrics = computed(() => this.flujoReal()?.aprobacionMetricas ?? []);
+  readonly payslipMetrics = computed(() => this.flujoReal()?.liquidacionMetricas ?? []);
+  readonly payslipRows = computed(() => this.flujoReal()?.liquidacionFilas ?? []);
 
   readonly approvalTimeline = computed(() =>
     this.orquestador
@@ -128,27 +123,23 @@ export class NominaMensualV2PasosDemostracionComponent implements OnChanges, OnD
     try {
       if (this.paso === 'calculation') {
         this.flujoReal.set(await this.flujoService.procesarCalculo(periodo));
-        this.orquestador.registrarEventoTrazabilidad(buildEventoLocal('calculation', 'Calculo procesado y snapshot guardado', periodo));
+        await this.orquestador.recomputarTrazabilidad(false);
         return;
       }
       if (this.paso === 'validation') {
-        const resultado = await this.flujoService.validarPrenomina(periodo);
-        this.orquestador.registrarEventoTrazabilidad(buildEventoLocal(
-          'validation',
-          resultado.ok ? 'Prenomina validada sin bloqueos' : 'Validacion de prenomina con bloqueos',
-          periodo,
-        ));
+        await this.flujoService.validarPrenomina(periodo);
         await this.cargarFlujoReal();
+        await this.orquestador.recomputarTrazabilidad(false);
         return;
       }
       if (this.paso === 'approval') {
         this.flujoReal.set(await this.flujoService.aprobarNomina(periodo));
-        this.orquestador.registrarEventoTrazabilidad(buildEventoLocal('approval', 'Nomina aprobada operativamente', periodo));
+        await this.orquestador.recomputarTrazabilidad(false);
         return;
       }
       if (this.paso === 'payslips') {
         this.flujoReal.set(await this.flujoService.generarLiquidaciones(periodo));
-        this.orquestador.registrarEventoTrazabilidad(buildEventoLocal('payslips', 'Liquidaciones generadas desde nomina confirmada', periodo));
+        await this.orquestador.recomputarTrazabilidad(false);
         return;
       }
     } catch (error) {
@@ -166,43 +157,5 @@ export class NominaMensualV2PasosDemostracionComponent implements OnChanges, OnD
       this.cargando.set(false);
     }
   }
-}
 
-function buildEventoLocal(paso: PayrollStepId, descripcion: string, periodo: string) {
-  return {
-    idEvento: `local-${paso}-${Date.now()}`,
-    periodo,
-    paso,
-    tipoEvento: tipoEventoDesdePaso(paso),
-    descripcion,
-    fechaEvento: new Date().toISOString(),
-    usuarioId: null,
-    usuarioNombre: 'Sesion actual',
-    origen: 'local' as const,
-    integridad: {
-      estadoIntegridad: 'pendiente' as const,
-    },
-    metadataPublica: { periodo },
-  };
-}
-
-function tipoEventoDesdePaso(paso: PayrollStepId): TipoEventoTrazabilidadNomina {
-  switch (paso) {
-    case 'movements':
-      return 'NOVEDADES_REGISTRADAS';
-    case 'calculation':
-      return 'CALCULO_EJECUTADO';
-    case 'validation':
-      return 'PRENOMINA_VALIDADA';
-    case 'approval':
-      return 'PRENOMINA_APROBADA';
-    case 'payslips':
-      return 'LIQUIDACIONES_GENERADAS';
-    case 'scope':
-      return 'ALCANCE_DEFINIDO';
-    case 'employees':
-      return 'EMPLEADOS_VALIDADOS';
-    default:
-      return 'PARAMETROS_VALIDADOS';
-  }
 }

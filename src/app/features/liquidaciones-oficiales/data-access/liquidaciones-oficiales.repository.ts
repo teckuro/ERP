@@ -81,6 +81,7 @@ function mapPeriodoRow(row: LiquidacionPeriodoRow): LiquidacionPeriodo {
     periodo: row.periodo,
     estado: 'generada',
     fechaGeneracion: row.fecha_generacion,
+    usuarioGeneracionId: row.usuario_generacion_id ?? null,
     usuarioGeneracionLabel: row.usuario_generacion_label ?? null,
     totalTrabajadores: Number(row.total_trabajadores ?? 0),
     totalHaberes: Number(row.total_haberes ?? 0),

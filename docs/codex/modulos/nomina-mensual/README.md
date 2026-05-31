@@ -229,6 +229,7 @@ Matriz NOIA de overlays y modales para la pantalla modular (`proceso-mensual-wor
 | [`modales-periodo-01.md`](./modales-periodo-01.md) | Matriz overlays/modales NOIA, inventario, contrato propuesto, entradas y prioridades (NOM-MODALES-PERIODO-01) |
 | [`nom-mensual-container-modular-01.md`](./nom-mensual-container-modular-01.md) | Refactor contenedor modular fases 1-5 (store, facade, hijos) |
 | [`contrato-general.md`](./contrato-general.md) | Objetivo, alcance, relaciones con Parametros, empleados, conceptos, MV, motor futuro |
+| [`nomina-mensual-persistencia-bd-mapa.md`](./nomina-mensual-persistencia-bd-mapa.md) | Mapa acción→BD vs sesión/mock; principio «todo en BD» y brechas V11 |
 | [`nomina-mensual-confirmacion-flow.md`](./nomina-mensual-confirmacion-flow.md) | Define nómina mensual confirmada como fuente oficial para generar liquidaciones |
 | [`nomina-mensual-diseno-visual-pruebas-unitarias-2026-05-18.md`](./nomina-mensual-diseno-visual-pruebas-unitarias-2026-05-18.md) | Diseno visual actual respaldado por pruebas unitarias y de componente |
 | [`nomina-mensual-fases-casos-uso-2026-05-18.md`](./nomina-mensual-fases-casos-uso-2026-05-18.md) | Estado actual por fases y casos de uso de Nomina mensual |

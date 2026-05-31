@@ -19,7 +19,6 @@ import { MessageBoxComponent } from '../../../../../../shared/components/ui/feed
 import type { PayrollStepId } from '../../../../models/nomina-mensual-v2.models';
 import type {
   OrigenBaseParametrosAlAvanzar,
-  ParametroBaseCongeladoDetalle,
 } from '../../../../models/nomina-parametros-base.models';
 import type {
   NominaParametrosResumen,
@@ -32,8 +31,6 @@ import type {
 } from '../../../../models/nomina-parametros-resumen.models';
 import { NominaParametrosBaseService } from '../../../../services/nomina-parametros-base.service';
 import { NominaParametrosResumenService } from '../../../../services/nomina-parametros-resumen.service';
-import { NominaMensualV2TrazabilidadService } from '../../../../services/nomina-mensual-v2-trazabilidad.service';
-import { debeInvalidarPorRevalidacionParametros } from '../../../../rules/nomina-trazabilidad-invalidacion.rules';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 type DonutTonoPresentacion = 'exito' | 'revision' | 'bloqueo' | 'neutral';
 
@@ -72,7 +69,6 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   private readonly orquestador = inject(NominaMensualV2OrquestadorPort);
   private readonly parametrosResumenService = inject(NominaParametrosResumenService);
   private readonly parametrosBaseService = inject(NominaParametrosBaseService);
-  private readonly trazabilidadService = inject(NominaMensualV2TrazabilidadService);
 
   @Output() avanceSolicitado = new EventEmitter<PayrollStepId>();
   @Output() resumenActualizado = new EventEmitter<void>();
@@ -306,10 +302,20 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     if (!modal) return;
     this.orquestador.modalDiferenciasParametrosBase.set(null);
     const origen = this.parametrosBaseService.origenTrasAccionDiferencias('mantener');
-    this.orquestador.registrarOrigenBaseAlAvanzar(origen, modal.idCalculoPeriodoBase);
-    const detalleParametros = await this.detalleValoresBaseCongelada(modal.idCalculoPeriodoBase);
-    this.registrarTrazabilidadBase(origen, modal.resumen, modal.idCalculoPeriodoBase, detalleParametros);
-    this.continuarHaciaAlcance(modal.resumen);
+    try {
+      await this.parametrosBaseService.registrarMantenerBaseConDiferencias(
+        modal.idCalculoPeriodoBase,
+        modal.resumen,
+      );
+      await this.actualizarEstadoBase(modal.resumen.periodo);
+      this.orquestador.registrarOrigenBaseAlAvanzar(origen, modal.idCalculoPeriodoBase);
+      await this.orquestador.recomputarTrazabilidad(false);
+      this.continuarHaciaAlcance(modal.resumen);
+    } catch (error) {
+      console.error('[Nómina V2] Error registrando mantener base con diferencias', error);
+      this.parametrosError.set(this.mensajeErrorPersistenciaBase(error));
+      this.resumenActualizado.emit();
+    }
   }
 
   solicitarActualizarBase(): void {
@@ -347,6 +353,7 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
       this.resumenActualizado.emit();
     } finally {
       this.parametrosLoading.set(false);
+      this.resumenActualizado.emit();
     }
   }
 
@@ -364,18 +371,13 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
       const rama = this.parametrosBaseService.resolverRamaAccionPreparacion(resumen, estadoBase);
       switch (rama.tipo) {
         case 'guardar': {
-          const preview = await this.parametrosBaseService.construirVistaPreviaParametrosBase(resumen);
+          const preview = await this.parametrosBaseService.construirVistaPreviaParametrosBase(resumen, resumen.periodo);
           this.orquestador.modalPrepararNomina.set({ preview, resumen });
           break;
         }
         case 'continuar':
           this.orquestador.registrarOrigenBaseAlAvanzar(rama.origen, rama.idCalculoPeriodoBase);
-          this.registrarTrazabilidadBase(
-            rama.origen,
-            resumen,
-            rama.idCalculoPeriodoBase,
-            await this.detalleValoresBaseCongelada(rama.idCalculoPeriodoBase),
-          );
+          await this.orquestador.recomputarTrazabilidad(false);
           this.continuarHaciaAlcance(resumen);
           break;
         case 'diferencias':
@@ -473,17 +475,12 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
       : await this.parametrosBaseService.guardarSnapshotParametrosBase(resumen, origen);
     await this.actualizarEstadoBase(resumen.periodo);
     this.orquestador.registrarOrigenBaseAlAvanzar(origen, guardado.idCalculoPeriodoBase);
-    this.registrarTrazabilidadBase(
-      origen,
-      resumen,
-      guardado.idCalculoPeriodoBase,
-      await this.detalleValoresBaseCongelada(guardado.idCalculoPeriodoBase),
-    );
+    await this.orquestador.recomputarTrazabilidad(false);
     this.continuarHaciaAlcance(resumen);
   }
 
   private continuarHaciaAlcance(resumen: NominaParametrosResumen): void {
-    this.registrarTrazabilidadParametros(resumen);
+    this.actualizarContextoTrazabilidad(resumen);
     this.orquestador.modalAvanceParametros.set(null);
     this.avanceSolicitado.emit('scope');
   }
@@ -512,72 +509,6 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
           }
         : undefined,
     });
-  }
-
-  private registrarTrazabilidadBase(
-    origen: OrigenBaseParametrosAlAvanzar,
-    resumen: NominaParametrosResumen,
-    idCalculoPeriodoBase: number,
-    detalleParametros: readonly ParametroBaseCongeladoDetalle[] = [],
-  ): void {
-    this.orquestador.registrarEventoTrazabilidad(
-      this.trazabilidadService.crearEventoLocal({
-        periodo: resumen.periodo,
-        paso: 'parameters',
-        tipoEvento: 'PARAMETROS_CONGELADOS',
-        descripcion: this.parametrosBaseService.descripcionOrigenBase(origen),
-        idSnapshotRelacionado: String(idCalculoPeriodoBase),
-        metadataPublica: {
-          origenBase: origen,
-          totalParametrosBase: detalleParametros.length,
-          valoresParametrosBase: [...detalleParametros],
-        },
-        integridad: { estadoIntegridad: 'registrado' },
-      }),
-    );
-  }
-
-  private async detalleValoresBaseCongelada(
-    idCalculoPeriodoBase: number,
-  ): Promise<ParametroBaseCongeladoDetalle[]> {
-    try {
-      return await this.parametrosBaseService.construirDetalleValoresParametrosBase(idCalculoPeriodoBase);
-    } catch (error) {
-      console.warn('[Nomina V2] No fue posible cargar detalle de parametros congelados', error);
-      return [];
-    }
-  }
-
-  private registrarTrazabilidadParametros(resumen: NominaParametrosResumen): void {
-    const hayAlcance = this.orquestador.alcanceValidado();
-    const hayEmpleados = this.orquestador.eventosTrazabilidad().some(
-      (e) => e.paso === 'employees' && e.tipoEvento === 'EMPLEADOS_VALIDADOS' && e.origen === 'local',
-    );
-    if (debeInvalidarPorRevalidacionParametros(hayAlcance, hayEmpleados)) {
-      this.orquestador.registrarEventoTrazabilidad(
-        this.trazabilidadService.crearEventoInvalidacion(
-          'parameters',
-          'La revalidación de parámetros invalidó etapas posteriores.',
-          resumen.periodo,
-        ),
-      );
-    }
-
-    const tipo = resumen.puedeContinuar && resumen.bloqueos === 0 ? 'PARAMETROS_CONGELADOS' : 'PARAMETROS_VALIDADOS';
-    const descripcion =
-      tipo === 'PARAMETROS_CONGELADOS'
-        ? `Parámetros congelados · ${resumen.seccionesListas} de ${resumen.seccionesTotales} secciones listas`
-        : `Parámetros validados · ${resumen.controlesVerificados} controles verificados`;
-
-    this.orquestador.registrarEventoTrazabilidad(
-      this.trazabilidadService.crearEventoLocal({
-        periodo: resumen.periodo,
-        paso: 'parameters',
-        tipoEvento: tipo,
-        descripcion,
-        integridad: { estadoIntegridad: 'pendiente' },
-      }),
-    );
   }
 
   private mensajeErrorPersistenciaBase(error: unknown): string {

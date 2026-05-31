@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildMetadataMantenerBaseConDiferencias,
   buildSnapshotParametrosBasePayload,
   esSnapshotParametrosBase,
   copyOrigenBaseAlAvanzar,
@@ -88,5 +89,27 @@ describe('nomina-parametros-base.mapper', () => {
       metadataOperativa: { tipoSnapshot: 'parametrosBase' },
     } as never);
     expect(origen).toBe('existenteSinDiferencias');
+  });
+
+  it('arma metadata al mantener base con diferencias sin perder tipoSnapshot', () => {
+    const resumen = resumenMinimo();
+    const merged = buildMetadataMantenerBaseConDiferencias(
+      resumen,
+      {
+        tipoSnapshot: 'parametrosBase',
+        origenAlGuardar: 'recienGuardada',
+        hashParametros: 'hash-previo',
+      },
+      { id: 'u-1', nombre: 'RRHH Test' },
+      { hashBase: 'base-hash', hashActual: 'live-hash' },
+    );
+    expect(merged['tipoSnapshot']).toBe('parametrosBase');
+    expect(merged['origenAlGuardar']).toBe('existenteMantenidaConDiferencias');
+    expect(merged['fechaDecisionMantener']).toBeTruthy();
+    expect(merged['hashParametrosBaseAlMantener']).toBe('base-hash');
+    expect(merged['hashParametrosActualAlMantener']).toBe('live-hash');
+    const leido = leerMetadataParametrosBase(merged as Record<string, unknown>);
+    expect(leido?.origenAlGuardar).toBe('existenteMantenidaConDiferencias');
+    expect(leido?.resumen?.origenAlGuardar).toBe('existenteMantenidaConDiferencias');
   });
 });

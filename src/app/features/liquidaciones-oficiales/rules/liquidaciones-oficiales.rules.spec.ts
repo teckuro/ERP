@@ -43,6 +43,7 @@ describe('liquidaciones-oficiales.rules', () => {
       periodo: '2026-04',
       estado: 'generada' as const,
       fechaGeneracion: '2026-05-10T10:00:00.000Z',
+      usuarioGeneracionId: '00000000-0000-0000-0000-000000000001',
       usuarioGeneracionLabel: 'rrhh@empresa.cl',
       totalTrabajadores: 2,
       totalHaberes: 100,

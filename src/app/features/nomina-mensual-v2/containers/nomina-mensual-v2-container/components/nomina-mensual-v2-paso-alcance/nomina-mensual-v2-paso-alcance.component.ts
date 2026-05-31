@@ -24,7 +24,6 @@ import {
 } from '../../../../presenters/nomina-alcance.presenter';
 import type { FilaEmpleadoNomina } from '../../../../presenters/nomina-empleados-grid.presenter';
 import { NominaEmpleadosCargaService } from '../../../../services/nomina-empleados-carga.service';
-import { NominaMensualV2TrazabilidadService } from '../../../../services/nomina-mensual-v2-trazabilidad.service';
 import { PeriodoActivoService } from '../../../../../../core/services/periodo-activo.service';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 import {
@@ -48,7 +47,6 @@ export class NominaMensualV2PasoAlcanceComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly orquestador = inject(NominaMensualV2OrquestadorPort);
   private readonly empleadosCargaService = inject(NominaEmpleadosCargaService);
-  private readonly trazabilidadService = inject(NominaMensualV2TrazabilidadService);
   private readonly periodoActivo = inject(PeriodoActivoService);
 
   @Output() avanceSolicitado = new EventEmitter<void>();
@@ -241,17 +239,7 @@ export class NominaMensualV2PasoAlcanceComponent implements OnInit {
         tipoAlcance: resultado.descripcion,
       },
     });
-
-    this.orquestador.registrarEventoTrazabilidad(
-      this.trazabilidadService.crearEventoLocal({
-        paso: 'scope',
-        tipoEvento: 'ALCANCE_DEFINIDO',
-        descripcion: `Alcance definido · ${resultado.resumen.trabajadoresIncluidos} trabajadores incluidos`,
-        integridad: { estadoIntegridad: 'pendiente' },
-      }),
-    );
   }
-
   private restaurarEstadoDesdeOrquestador(): void {
     const guardado = this.orquestador.resultadoAlcance();
     if (!guardado) {

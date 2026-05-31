@@ -1,3 +1,5 @@
+/** Referencia de maquetación / tests. No usar como fallback en runtime: la UI lee solo BD vía servicios. */
+
 import type {
   ApprovalTimelineItem,
   ChecklistItem,

@@ -20,7 +20,6 @@
 }
 
 .nomina-workflow-header__label,
-.step-label,
 .step-status {
   color: #64748b;
   font-size: 10px;
@@ -54,14 +53,15 @@
 }
 
 .nmv2-page .nomina-workflow-header .step.nomina-step {
+  position: relative;
   display: grid;
-  grid-template-columns: 20px minmax(64px, 1fr) auto;
-  gap: 5px;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 6px;
   align-items: center;
   flex: 1 0 108px;
   min-width: 108px;
   min-height: 46px;
-  padding: 5px 7px 6px;
+  padding: 7px 28px 7px 7px;
   border-right: 1px solid #eef2f7;
   border-bottom: 0;
   border-radius: 0;
@@ -105,6 +105,10 @@
   place-items: center;
 }
 
+.nmv2-page .nomina-workflow-header .step-index {
+  align-self: center;
+}
+
 .nmv2-page .nomina-workflow-header .step-number {
   width: 19px;
   height: 19px;
@@ -133,14 +137,15 @@
 .nmv2-page .nomina-workflow-header .step.completed .step-number,
 .nmv2-page .nomina-workflow-header .step.nomina-step--complete .step-number {
   border-color: #cbd5e1;
-  background: #f8fafc;
-  color: #334155;
+  background: #fff;
+  color: #475569;
 }
 
 .nmv2-page .nomina-workflow-header .step-copy {
   display: grid;
-  gap: 2px;
+  gap: 3px;
   min-width: 0;
+  align-content: center;
 }
 
 .nmv2-page .nomina-workflow-header .step-copy strong,
@@ -166,13 +171,16 @@
 }
 
 .step-status {
+  position: absolute;
+  top: 6px;
+  right: 7px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  justify-self: end;
   max-width: 72px;
-  min-width: 20px;
+  min-width: 18px;
   min-height: 18px;
+  height: 18px;
   padding: 2px 6px;
   border: 1px solid #e2e8f0;
   border-radius: 999px;
@@ -180,32 +188,26 @@
 }
 
 .step-status lucide-icon {
-  width: 12px;
-  height: 12px;
+  width: 11px;
+  height: 11px;
 }
 
 .step-status--icon-only {
-  width: 20px;
+  width: 18px;
   padding: 0;
   color: #64748b;
 }
 
-.nmv2-page .nomina-workflow-header .step.active .step-status {
-  border-color: #bfdbfe;
-  background: #eff6ff;
-  color: #1d4ed8;
+.step-status--waiting {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  color: #475569;
 }
 
-.nmv2-page .nomina-workflow-header .step.nomina-step--warning .step-status {
-  border-color: #fde68a;
-  background: #fffbeb;
-  color: #92400e;
-}
-
-.nmv2-page .nomina-workflow-header .step.nomina-step--blocked .step-status {
-  border-color: #fecaca;
-  background: #fef2f2;
-  color: #991b1b;
+.step-status--ready {
+  border-color: #86efac;
+  background: #ecfdf5;
+  color: #047857;
 }
 
 @media (max-width: 1280px) {
@@ -230,6 +232,7 @@
     grid-template-columns: 24px minmax(96px, 1fr);
     flex-basis: 140px;
     min-width: 140px;
+    padding-right: 28px;
   }
 
   .step-status {

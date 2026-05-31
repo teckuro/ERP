@@ -1,5 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 
+import { AuthService } from '../../../core/auth/auth.service';
+import {
+  resolverUsuarioResponsableActual,
+  usuarioResponsableDisponible,
+} from '../../../core/auth/auth-user-label';
 import { NominaCalculoSnapshotRepository } from '../../nomina-mensual/data-access/nomina-calculo-snapshot.repository';
 import type { NominaCalculoPeriodoSnapshot } from '../../nomina-mensual/models/proceso-mensual.model';
 import { LiquidacionesOficialesRepository } from '../data-access/liquidaciones-oficiales.repository';
@@ -17,6 +22,7 @@ import {
 export class LiquidacionesOficialesService {
   private readonly liquidaciones = inject(LiquidacionesOficialesRepository);
   private readonly snapshots = inject(NominaCalculoSnapshotRepository);
+  private readonly auth = inject(AuthService);
 
   async consultarEstadoPeriodo(periodo: string): Promise<LiquidacionesEstadoPeriodo> {
     const p = periodo.trim();
@@ -57,13 +63,22 @@ export class LiquidacionesOficialesService {
     await this.liquidaciones.generarLiquidacionesOficiales({
       idCalculoPeriodo: estado.snapshot.idCalculoPeriodo,
       periodo: estado.periodo,
-      metadata: buildMetadataGeneracion(estado),
+      metadata: {
+        ...buildMetadataGeneracion(estado),
+        ...(await this.metadataUsuarioResponsable()),
+      },
     });
     return this.consultarEstadoPeriodo(estado.periodo);
   }
 
   obtenerDetalleTrabajador(idLiquidacionTrabajador: number) {
     return this.liquidaciones.obtenerDetalleTrabajador(idLiquidacionTrabajador);
+  }
+
+  private async metadataUsuarioResponsable(): Promise<Record<string, unknown>> {
+    const user = this.auth.currentUser() ?? (await this.auth.getSession())?.user ?? null;
+    const usuario = resolverUsuarioResponsableActual(user);
+    return usuarioResponsableDisponible(usuario) ? { usuarioResponsable: usuario } : {};
   }
 }
 

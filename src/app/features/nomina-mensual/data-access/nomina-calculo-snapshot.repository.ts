@@ -1,5 +1,9 @@
 import { Injectable, isDevMode } from '@angular/core';
 
+import {
+  resolverUsuarioResponsableActual,
+  usuarioResponsableDisponible,
+} from '../../../core/auth/auth-user-label';
 import type { Database, Json } from '../../../core/models/database.types';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import type {
@@ -288,7 +292,9 @@ export class NominaCalculoSnapshotRepository {
       p_id_calculo_periodo: activo.idCalculoPeriodo,
       p_periodo: periodo,
       p_observacion: motivo ?? undefined,
-      p_metadata: {} as Json,
+      p_metadata: {
+        ...(await this.metadataUsuarioResponsable()),
+      } as unknown as Json,
     });
     if (error) {
       throw new Error('No se pudo descartar la nómina del período. No se realizaron cambios parciales.');
@@ -397,7 +403,16 @@ export class NominaCalculoSnapshotRepository {
       );
     }
 
-    const metadata = buildAprobacionOperativaMetadata(activo);
+    const usuario = await this.resolverUsuarioActual();
+    const metadata = {
+      ...buildAprobacionOperativaMetadata(activo),
+      ...(usuarioResponsableDisponible(usuario)
+        ? {
+            usuarioResponsableId: usuario.id,
+            usuarioResponsableNombre: usuario.nombre,
+          }
+        : {}),
+    };
     const { data, error } = await this.supabase.rpc('fn_aprobar_prenomina_periodo', {
       p_id_calculo_periodo: params.idCalculoPeriodo,
       p_periodo: params.periodo,
@@ -447,7 +462,10 @@ export class NominaCalculoSnapshotRepository {
       p_id_calculo_periodo: params.idCalculoPeriodo,
       p_periodo: params.periodo,
       p_observacion: params.observacion ?? undefined,
-      p_metadata: (params.metadata ?? {}) as Json,
+      p_metadata: {
+        ...(params.metadata ?? {}),
+        ...(await this.metadataUsuarioResponsable()),
+      } as unknown as Json,
       p_forzar: params.forzar ?? false,
     });
     if (error || !data) {
@@ -463,7 +481,10 @@ export class NominaCalculoSnapshotRepository {
       p_id_calculo_periodo: params.idCalculoPeriodo,
       p_periodo: params.periodo,
       p_observacion: params.observacion ?? undefined,
-      p_metadata: (params.metadata ?? {}) as Json,
+      p_metadata: {
+        ...(params.metadata ?? {}),
+        ...(await this.metadataUsuarioResponsable()),
+      } as unknown as Json,
     });
     if (error || !data) {
       logCerrarNominaOperativaRpcError(params, error);
@@ -485,6 +506,28 @@ export class NominaCalculoSnapshotRepository {
     if (error) {
       throw new Error(`No fue posible guardar metadata del borrador: ${error.message}`);
     }
+  }
+
+  private async resolverUsuarioActual() {
+    try {
+      const result = await this.supabase.auth.getUser();
+      return resolverUsuarioResponsableActual(result?.data?.user);
+    } catch {
+      return resolverUsuarioResponsableActual(null);
+    }
+  }
+
+  private async metadataUsuarioResponsable(): Promise<Record<string, unknown>> {
+    const usuario = await this.resolverUsuarioActual();
+    return usuarioResponsableDisponible(usuario) ? { usuarioResponsable: usuario } : {};
+  }
+
+  /** Actualiza solo `cierre_operativo_metadata` de un snapshot base de parámetros (sin tocar filas congeladas). */
+  async actualizarMetadataParametrosBase(
+    idCalculoPeriodo: number,
+    metadataOverlay: Record<string, unknown>,
+  ): Promise<void> {
+    await this.guardarMetadataParametrosBase(idCalculoPeriodo, metadataOverlay);
   }
 
   private async guardarMetadataParametrosBase(
@@ -981,12 +1024,14 @@ function mapReaperturaOperativa(row: NominaCalculoPeriodoRow): {
 } | null {
   const fecha = (row as any).reapertura_operativa_fecha ?? null;
   if (!fecha) return null;
+  const metadata = parseRecord((row as any).reapertura_operativa_metadata);
+  const usuarioMetadata = parseUsuarioResponsableMetadata(metadata);
   return {
     fecha,
-    usuarioId: (row as any).reapertura_operativa_usuario_id ?? null,
-    usuarioLabel: (row as any).reapertura_operativa_usuario_label ?? null,
+    usuarioId: (row as any).reapertura_operativa_usuario_id ?? usuarioMetadata.id,
+    usuarioLabel: (row as any).reapertura_operativa_usuario_label ?? usuarioMetadata.nombre,
     observacion: (row as any).reapertura_operativa_observacion ?? null,
-    metadata: parseRecord((row as any).reapertura_operativa_metadata),
+    metadata,
   };
 }
 
@@ -1010,14 +1055,16 @@ function mapCierreOperativo(row: NominaCalculoPeriodoRow): NominaCierreOperativo
   if (row.cierre_operativo_estado !== 'cerrado_operativamente' || !row.cierre_operativo_fecha) {
     return null;
   }
+  const metadata = parseRecord(row.cierre_operativo_metadata);
+  const usuarioMetadata = parseUsuarioResponsableMetadata(metadata);
 
   return {
     estado: 'cerrado_operativamente',
     fecha: row.cierre_operativo_fecha,
-    usuarioId: row.cierre_operativo_usuario_id ?? null,
-    usuarioLabel: row.cierre_operativo_usuario_label || 'Usuario no disponible en esta sesion',
+    usuarioId: row.cierre_operativo_usuario_id ?? usuarioMetadata.id,
+    usuarioLabel: row.cierre_operativo_usuario_label || usuarioMetadata.nombre || 'Usuario no disponible en esta sesion',
     observacion: row.cierre_operativo_observacion ?? null,
-    metadata: parseRecord(row.cierre_operativo_metadata),
+    metadata,
   };
 }
 
@@ -1025,14 +1072,16 @@ function mapAprobacionOperativa(row: NominaCalculoPeriodoRow): AprobacionOperati
   if (row.aprobacion_operativa_estado !== 'aprobado_operativamente' || !row.aprobacion_operativa_fecha) {
     return null;
   }
+  const metadata = parseRecord(row.aprobacion_operativa_metadata);
+  const usuarioMetadata = parseUsuarioResponsableMetadata(metadata);
 
   return {
     estado: 'aprobado_operativamente',
     fecha: row.aprobacion_operativa_fecha,
-    usuarioId: row.aprobacion_operativa_usuario_id ?? null,
-    usuarioLabel: row.aprobacion_operativa_usuario_label ?? null,
+    usuarioId: row.aprobacion_operativa_usuario_id ?? usuarioMetadata.id,
+    usuarioLabel: row.aprobacion_operativa_usuario_label ?? usuarioMetadata.nombre,
     advertencias: parseStringArray(row.aprobacion_operativa_advertencias),
-    metadata: parseRecord(row.aprobacion_operativa_metadata),
+    metadata,
   };
 }
 
@@ -1061,6 +1110,23 @@ function parseRecord(value: Json | null): Record<string, unknown> {
   return value != null && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
     : {};
+}
+
+function parseUsuarioResponsableMetadata(metadata: Record<string, unknown>): { id: string | null; nombre: string | null } {
+  const nested = metadata['usuarioResponsable'];
+  if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+    const record = nested as Record<string, unknown>;
+    return {
+      id: typeof record['id'] === 'string' ? record['id'] : null,
+      nombre: typeof record['nombre'] === 'string' && record['nombre'].trim() ? record['nombre'] : null,
+    };
+  }
+  return {
+    id: typeof metadata['usuarioResponsableId'] === 'string' ? metadata['usuarioResponsableId'] : null,
+    nombre: typeof metadata['usuarioResponsableNombre'] === 'string' && metadata['usuarioResponsableNombre'].trim()
+      ? metadata['usuarioResponsableNombre']
+      : null,
+  };
 }
 
 function mapTrabajadorRow(

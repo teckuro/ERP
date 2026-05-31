@@ -72,13 +72,14 @@ export function mapSnapshotsToEventosTrazabilidad(
       continue;
     }
 
+    const usuarioSnapshot = resolverUsuarioSnapshot(snapshot);
     eventos.push({
       idEvento: `srv-gen-${idSnapshot ?? snapshot.fechaGeneracion}`,
       periodo: snapshot.periodo,
       paso: snapshot.estado === 'borrador' ? 'calculation' : 'validation',
       tipoEvento: snapshot.estado === 'borrador' ? 'CALCULO_EJECUTADO' : 'PRENOMINA_VALIDADA',
-      usuarioId: null,
-      usuarioNombre: snapshot.usuarioGenerador || 'Sistema',
+      usuarioId: usuarioSnapshot.id,
+      usuarioNombre: usuarioSnapshot.nombre,
       fechaEvento: snapshot.fechaGeneracion,
       descripcion:
         snapshot.estado === 'borrador'
@@ -96,7 +97,7 @@ export function mapSnapshotsToEventosTrazabilidad(
         paso: 'approval',
         tipoEvento: 'PRENOMINA_APROBADA',
         usuarioId: snapshot.aprobacionOperativa.usuarioId,
-        usuarioNombre: snapshot.aprobacionOperativa.usuarioLabel || 'RRHH',
+        usuarioNombre: snapshot.aprobacionOperativa.usuarioLabel || 'Usuario no disponible en esta sesion',
         fechaEvento: snapshot.aprobacionOperativa.fecha,
         descripcion: 'Se registró la revisión de RRHH del período.',
         idSnapshotRelacionado: idSnapshot,
@@ -112,7 +113,7 @@ export function mapSnapshotsToEventosTrazabilidad(
         paso: 'payslips',
         tipoEvento: 'LIQUIDACIONES_GENERADAS',
         usuarioId: snapshot.cierreOperativo.usuarioId,
-        usuarioNombre: snapshot.cierreOperativo.usuarioLabel || 'Sistema',
+        usuarioNombre: snapshot.cierreOperativo.usuarioLabel || 'Usuario no disponible en esta sesion',
         fechaEvento: snapshot.cierreOperativo.fecha,
         descripcion: 'Se cerró el proceso mensual del período.',
         idSnapshotRelacionado: idSnapshot,
@@ -128,7 +129,7 @@ export function mapSnapshotsToEventosTrazabilidad(
         paso: 'approval',
         tipoEvento: 'RECALCULO_SOLICITADO',
         usuarioId: snapshot.reaperturaOperativa.usuarioId,
-        usuarioNombre: snapshot.reaperturaOperativa.usuarioLabel || 'Sistema',
+        usuarioNombre: snapshot.reaperturaOperativa.usuarioLabel || 'Usuario no disponible en esta sesion',
         fechaEvento: snapshot.reaperturaOperativa.fecha,
         descripcion: 'Se reabrió la nómina para revisión.',
         idSnapshotRelacionado: idSnapshot,
@@ -144,7 +145,7 @@ export function mapSnapshotsToEventosTrazabilidad(
         paso: 'validation',
         tipoEvento: 'SNAPSHOT_INVALIDADO',
         usuarioId: snapshot.anulacion.usuarioId,
-        usuarioNombre: snapshot.anulacion.usuarioLabel || 'Sistema',
+        usuarioNombre: snapshot.anulacion.usuarioLabel || 'Usuario no disponible en esta sesion',
         fechaEvento: snapshot.anulacion.fecha,
         descripcion: 'Se descartó la versión generada del período.',
         idSnapshotRelacionado: idSnapshot,
@@ -310,13 +311,14 @@ function mapEventoTrazabilidadParametrosBase(
   const origen = resolverOrigenBaseDesdeSnapshot(snapshot);
   const meta = leerMetadataParametrosBase(snapshot.metadataOperativa);
   const parametrosCongelados = buildDetalleParametrosBaseCongelados(snapshot.parametros ?? []);
+  const usuario = resolverUsuarioSnapshot(snapshot, meta?.resumen?.usuarioResponsable ?? null);
   return {
     idEvento: `srv-param-base-${snapshot.idCalculoPeriodo ?? snapshot.fechaGeneracion}`,
     periodo: snapshot.periodo,
     paso: 'parameters',
     tipoEvento: 'PARAMETROS_CONGELADOS',
-    usuarioId: null,
-    usuarioNombre: snapshot.usuarioGenerador || 'Sistema',
+    usuarioId: usuario.id,
+    usuarioNombre: usuario.nombre,
     fechaEvento: snapshot.fechaGeneracion,
     descripcion: copyOrigenBaseAlAvanzar(origen),
     idSnapshotRelacionado:
@@ -329,5 +331,41 @@ function mapEventoTrazabilidadParametrosBase(
       valoresParametrosBase: parametrosCongelados,
     },
     origen: 'servidor',
+  };
+}
+
+function resolverUsuarioSnapshot(
+  snapshot: NominaCalculoPeriodoSnapshot,
+  usuarioMetadata: { id: string | null; nombre: string } | null = leerUsuarioResponsableSnapshot(snapshot),
+): { id: string | null; nombre: string } {
+  if (usuarioMetadata?.nombre) return usuarioMetadata;
+  return {
+    id: snapshot.usuarioGenerador ?? null,
+    nombre: snapshot.usuarioGenerador || 'Usuario no disponible en esta sesion',
+  };
+}
+
+function leerUsuarioResponsableSnapshot(
+  snapshot: NominaCalculoPeriodoSnapshot,
+): { id: string | null; nombre: string } | null {
+  const metadata = snapshot.metadataOperativa;
+  if (!metadata) return null;
+  const nested = metadata['usuarioResponsable'];
+  if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+    const record = nested as Record<string, unknown>;
+    const nombre = typeof record['nombre'] === 'string' && record['nombre'].trim() ? record['nombre'].trim() : null;
+    if (!nombre) return null;
+    return {
+      id: typeof record['id'] === 'string' ? record['id'] : snapshot.usuarioGenerador ?? null,
+      nombre,
+    };
+  }
+  const nombre = typeof metadata['usuarioResponsableNombre'] === 'string' && metadata['usuarioResponsableNombre'].trim()
+    ? metadata['usuarioResponsableNombre'].trim()
+    : null;
+  if (!nombre) return null;
+  return {
+    id: typeof metadata['usuarioResponsableId'] === 'string' ? metadata['usuarioResponsableId'] : snapshot.usuarioGenerador ?? null,
+    nombre,
   };
 }
