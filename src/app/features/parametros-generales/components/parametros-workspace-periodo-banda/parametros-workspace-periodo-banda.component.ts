@@ -5,12 +5,20 @@ import { LucideAngularModule } from 'lucide-angular';
 
 import { ButtonComponent } from '../../../../shared/components/ui/primitives/button.component';
 import { PageActionsComponent } from '../../../../shared/components/ui/layout/page-actions.component';
+import { TooltipComponent } from '../../../../shared/components/ui/tooltip/tooltip.component';
 import { ParametrosWorkspaceOrquestador } from '../../facade/parametros-workspace.orquestador';
 
 @Component({
   selector: 'app-parametros-workspace-periodo-banda',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, PageActionsComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    LucideAngularModule,
+    ButtonComponent,
+    PageActionsComponent,
+    TooltipComponent,
+  ],
   templateUrl: './parametros-workspace-periodo-banda.component.html',
   styleUrls: ['./parametros-workspace-periodo-banda.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

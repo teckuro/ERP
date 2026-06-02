@@ -386,14 +386,18 @@ export function detalleDiferenciasOficialesCliente(
 export function buildParametrosReconciliacionDiferenciasDialog(
   periodo: string,
   diferencias: readonly ParametrosDiferenciaCompletitud[] = [],
-  opciones?: DetalleDiferenciasOficialesOpciones,
+  opciones?: DetalleDiferenciasOficialesOpciones & { contexto?: 'post-guardado' | 'apertura' },
 ): ParametrosDialogState {
+  const esPostGuardado = opciones?.contexto === 'post-guardado';
   return {
     kind: 'reconciliacion-diferencias',
-    variant: 'warning',
-    title: 'Diferencias con los datos oficiales',
-    message:
-      'Tu configuración del cliente difiere de los datos oficiales del mes. No se actualizará nada automáticamente.',
+    variant: esPostGuardado ? 'success' : 'warning',
+    title: esPostGuardado
+      ? 'Guardado. Revisa las diferencias'
+      : 'Diferencias con los datos oficiales',
+    message: esPostGuardado
+      ? 'La configuración del cliente quedó guardada, pero difiere de los datos oficiales del mes. No se actualizará nada automáticamente.'
+      : 'Tu configuración del cliente difiere de los datos oficiales del mes. No se actualizará nada automáticamente.',
     detail: detalleDiferenciasOficialesCliente(periodo, diferencias, opciones),
     primaryLabel: 'Mantener mi configuración',
     secondaryLabel: 'Actualizar con oficiales',

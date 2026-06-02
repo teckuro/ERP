@@ -8,6 +8,7 @@ import {
   UploadIcon,
   PencilIcon,
   SaveIcon,
+  Loader2Icon,
 } from 'lucide-angular';
 
 import { ButtonComponent } from '../primitives/button.component';
@@ -74,7 +75,11 @@ export type PageActionType = 'back' | 'save' | 'edit' | 'export' | 'import';
                 [disabled]="editDisabled"
                 (click)="editClick.emit()"
               >
-                <lucide-icon class="h-4 w-4" [img]="PencilIcon"></lucide-icon>
+                @if (editLoading) {
+                  <lucide-icon class="h-4 w-4 page-actions-spinner" [img]="Loader2Icon"></lucide-icon>
+                } @else {
+                  <lucide-icon class="h-4 w-4" [img]="PencilIcon"></lucide-icon>
+                }
                 {{ editLabel }}
               </app-button>
             </app-tooltip>
@@ -86,7 +91,11 @@ export type PageActionType = 'back' | 'save' | 'edit' | 'export' | 'import';
               [disabled]="editDisabled"
               (click)="editClick.emit()"
             >
-              <lucide-icon class="h-4 w-4" [img]="PencilIcon"></lucide-icon>
+              @if (editLoading) {
+                <lucide-icon class="h-4 w-4 page-actions-spinner" [img]="Loader2Icon"></lucide-icon>
+              } @else {
+                <lucide-icon class="h-4 w-4" [img]="PencilIcon"></lucide-icon>
+              }
               {{ editLabel }}
             </app-button>
           }
@@ -101,7 +110,11 @@ export type PageActionType = 'back' | 'save' | 'edit' | 'export' | 'import';
           [disabled]="saveDisabled"
           (click)="saveClick.emit()"
         >
-          <lucide-icon class="h-4 w-4" [img]="SaveIcon"></lucide-icon>
+          @if (saveLoading) {
+            <lucide-icon class="h-4 w-4 page-actions-spinner" [img]="Loader2Icon"></lucide-icon>
+          } @else {
+            <lucide-icon class="h-4 w-4" [img]="SaveIcon"></lucide-icon>
+          }
           {{ saveLabel }}
         </app-button>
       }
@@ -146,6 +159,19 @@ export type PageActionType = 'back' | 'save' | 'edit' | 'export' | 'import';
         gap: 6px;
         max-width: 100%;
       }
+
+      .page-actions-spinner {
+        animation: page-actions-spin 0.9s linear infinite;
+      }
+
+      @keyframes page-actions-spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
     `,
   ],
 })
@@ -163,6 +189,11 @@ export class PageActionsComponent {
   @Input() editDisabled = false;
   @Input() exportDisabled = false;
   @Input() importDisabled = false;
+
+  /** Sustituye el icono Save por un spinner cuando hay guardado en curso. */
+  @Input() saveLoading = false;
+  /** Sustituye el icono Pencil por un spinner cuando hay edición preparándose. */
+  @Input() editLoading = false;
 
   @Input() backLabel = 'Volver';
   @Input() saveLabel = 'Guardar';
@@ -183,6 +214,7 @@ export class PageActionsComponent {
   readonly UploadIcon = UploadIcon;
   readonly PencilIcon = PencilIcon;
   readonly SaveIcon = SaveIcon;
+  readonly Loader2Icon = Loader2Icon;
 
   actionClass(action: PageActionType): string {
     const base =

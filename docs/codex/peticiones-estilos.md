@@ -1,3 +1,45 @@
+## 2026-06-02 - Parámetros: revisión transversal iterativa (flujos banda, edición, guardado, reconciliación)
+
+Iteración por lotes pequeños sobre flujos que cruzan todas las tabs. Sin doc previo. Alcance acotado al módulo `parametros-generales` y al shared `app-page-actions` (extensión backward-compatible).
+
+### Lote 1 — Banda + edición
+
+- **Spinner inline en Modificar / Capturar valores**: nuevos inputs opcionales `editLoading` y `saveLoading` en `app-page-actions`. Cuando true, el icono `pencil` (o `save`) se sustituye por `loader-2` con animación `page-actions-spin` (0.9s linear infinite, definida en el shared). La banda pasa `[editLoading]="ws.modificarCargando()"` y `[saveLoading]="ws.guardando()"`. Computed `modificarCargando = isPreparingEdit() || isPreparandoDialogoCrear()` añadido al orquestador. Cambio backward-compatible (default false en ambos inputs).
+- **Área Cierre — una sola acción principal**: `modificarDeshabilitado` ahora incluye `activeArea() === 'cierrePeriodo'`. Nueva rama en `modificarTooltipConsulta()` para esa condición: `Usa las acciones del resumen de cierre para completar la configuración.` Así el card de cierre queda como único punto de entrada a edición desde esa área.
+- **Sincronizar con tooltip explicativo** (sin cambio de visibilidad): el botón sigue oculto cuando ya hay datos (`!ws.hasAnySyncedData()`), porque la normativa oficial chilena no cambia retroactivamente para un período sincronizado. Se añadió `ws.sincronizarTooltip()` que explica al usuario qué hace: `Carga los datos normativos oficiales para este período.` (o `Espera a que termine la operación actual.` si hay UI bloqueada). Decisión revisada con el usuario: descartado convertirlo en botón permanente; refrescar manualmente sin necesidad real introduce ruido.
+
+### Lote 2 — Carga + errores
+
+- **`cargaBloqueadaPorError` solo se resetea en éxito (H-C3)**: `cargar()` ya no hace `set(false)` al inicio. Una bandera local `cargaExitosa` se enciende solo si los `try` paths terminan sin excepción; el `finally` limpia el flag solo cuando `cargaExitosa === true`. Reintentos fallidos no reabren la edición ni el botón Modificar hasta una carga exitosa real.
+- **Loading modal — revisado, dejado intencional**: `isLoading` y `isLoadingPlantilla` son mutuamente excluyentes (`@if/@else if` en el container) y ocurren por tiempos cortos durante la carga inicial o preparación de edición. Cambiarlos a inline implicaba mover infraestructura del MessageBox a un overlay propio del frame, fuera del alcance de revisión iterativa. Decisión: mantener modal con copy actual y revisitar si surge fricción real.
+- **Detalle técnico homogéneo en errores (auditoría rápida)**: confirmados los 4 builders de error (`buildParametrosErrorGuardadoDialog`, `buildParametrosErrorActualizacionDialog`, `buildParametrosErrorClienteConfigDialog`, `buildParametrosErrorCargaDialog`) pasan por `envolverDetalleTecnico`. No requiere cambio.
+
+### Lote 3 — Guardado + reconciliación
+
+- **Éxito + diferencias en un solo flujo (H-G3)**: `buildParametrosReconciliacionDiferenciasDialog` ahora acepta `opciones.contexto: 'post-guardado' | 'apertura'`. Cuando viene de `intentarMostrarAvisoReconciliacionTrasGuardar` (después de guardar con diferencias), el dialog se construye con `variant: 'success'` y título `Guardado. Revisa las diferencias`, mensaje aclara que la configuración quedó guardada pero difiere. El usuario ya no ve dos modales encadenados con expectativas contradictorias.
+- **`compararOficialCliente` con `null` oficial (H-G5)**: lógica revisada y documentada. Si un campo oficial es null (p.ej. `gratificacion` aún no normada para el mes), no se reporta diferencia — semánticamente "sin base de comparación". Añadido comentario inline explicando el comportamiento esperado.
+- **Focus inicial del MessageBox (H-A1)**: ya resuelto en el shared. `MessageBoxComponent` tiene `@Input() initialFocus: 'primary' | 'secondary' | 'close' = 'primary'` que aplica focus en `ngAfterViewInit` para `mode="modal"`. El container de Parámetros usa modal y default primary. No requiere cambio.
+
+### Lote 4 — Polish navegación + cierre
+
+- **Card cierre — una sola acción principal**: el template ya expone un único botón `parametros-cierre-action` que ejecuta `ejecutarAccionCierre()`. El doble acceso histórico se cerró en L1.3 al deshabilitar la banda en área Cierre.
+- **Cambio de período dirty (guard)**: confirmado. El `effect()` del orquestador detecta cambios de `periodoGlobal.periodoYm()` y llama a `seleccionarPeriodo(...)` que invoca `confirmarAbandonarEdicionConDialog()`. Si el usuario cancela y el cambio venía del global (`fromGlobal: true`), se restaura `periodoGlobal.setPeriodoYm(this.selectedPeriodo())`. Cubre los caminos del banner global de la app.
+- **Banda en cierre — refuerzo**: aplicado en L1.3.
+
+### Validación
+
+- `npx ng build --configuration=development` verde tras cada lote.
+- `npx vitest run src/app/features/parametros-generales/rules src/app/features/parametros-generales/utils`: 54/54 verdes. Los 8 del `parametros-workspace.orquestador.spec.ts` siguen rojos por la deuda externa de `TestBed` sin `initTestEnvironment`, ya documentada como cross-módulo.
+- Lints sin nuevos errores en los archivos tocados.
+
+### Sin tocar
+
+- BD, servicios, mappers, contratos.
+- Estilos globales, archivos protegidos, fuentes.
+- Comportamiento de Sincronizar (sigue oculto cuando hay datos).
+- `MessageBoxComponent` (focus ya funcionaba).
+- Mode modal de los loaders de carga.
+
 ## 2026-06-02 - Parámetros: desacople CSS banda + tabs (move a componentes hijos)
 
 Refactor estructural sin cambio visual. Objetivo: cortar el acoplamiento entre el container y sus hijos para que cada componente cargue su propio CSS.

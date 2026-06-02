@@ -179,8 +179,22 @@ export class ParametrosWorkspaceOrquestador {
       this.isPreparingEdit() ||
       !this.datosFormularioListos() ||
       this.cargaBloqueadaPorError() ||
-      this.generalesEditando(),
+      this.generalesEditando() ||
+      this.activeArea() === 'cierrePeriodo',
   );
+
+  /** Indica si el botón Modificar debe mostrar spinner inline (preparando edición). */
+  readonly modificarCargando = computed(
+    () => this.isPreparingEdit() || this.isPreparandoDialogoCrear(),
+  );
+
+  /** Tooltip del botón Sincronizar (solo visible cuando aún no hay datos cargados). */
+  readonly sincronizarTooltip = computed(() => {
+    if (this.parametrosUiBloqueada()) {
+      return 'Espera a que termine la operación actual.';
+    }
+    return 'Carga los datos normativos oficiales para este período.';
+  });
 
   mostrarCargaInicial(): void {
     this.isLoading.set(true);
@@ -799,8 +813,8 @@ export class ParametrosWorkspaceOrquestador {
     if (showOverlay) {
       this.enterCargar();
     }
-    this.cargaBloqueadaPorError.set(false);
     this.datosFormularioListos.set(false);
+    let cargaExitosa = false;
 
     try {
       const selectedPeriodo = periodo ?? this.selectedPeriodo();
@@ -843,6 +857,7 @@ export class ParametrosWorkspaceOrquestador {
           this.generalesEditando.set(false);
         }
         this.mostrarAvisoReconciliacionSiCorresponde();
+        cargaExitosa = true;
         return;
       }
 
@@ -854,11 +869,16 @@ export class ParametrosWorkspaceOrquestador {
         this.generalesEditando.set(false);
       }
       this.mostrarAvisoReconciliacionSiCorresponde();
+      cargaExitosa = true;
     } catch (err) {
       this.cargaBloqueadaPorError.set(true);
       const detalle = this.extractErrorDetail(err);
       this.mostrarErrorCargaParametros(detalle);
     } finally {
+      if (cargaExitosa) {
+        // El flag solo se limpia tras una carga sin errores; reintentos mantienen el bloqueo previo.
+        this.cargaBloqueadaPorError.set(false);
+      }
       if (showOverlay) {
         this.leaveCargar();
       }
@@ -1235,7 +1255,7 @@ export class ParametrosWorkspaceOrquestador {
     if (!debeMostrar) {
       return false;
     }
-    this.mostrarReconciliacionDiferencias(diferencias);
+    this.mostrarReconciliacionDiferencias(diferencias, 'post-guardado');
     const huella = huellaDiferenciasOficialesCliente(diferencias);
     this.reconciliacionAvisadaHuellas.set(periodo, huella);
     return true;
@@ -1266,6 +1286,7 @@ export class ParametrosWorkspaceOrquestador {
 
   private mostrarReconciliacionDiferencias(
     diferencias = this.completitudParametros().diferencias,
+    contexto: 'post-guardado' | 'apertura' = 'apertura',
   ): void {
     const ctx = this.contextoOficialComparacion();
     const periodoRef =
@@ -1273,6 +1294,7 @@ export class ParametrosWorkspaceOrquestador {
     this.dialogState.set(
       buildParametrosReconciliacionDiferenciasDialog(this.selectedPeriodo(), diferencias, {
         periodoReferenciaOficial: periodoRef,
+        contexto,
       }),
     );
     this.cdr.markForCheck();
@@ -1795,6 +1817,9 @@ export class ParametrosWorkspaceOrquestador {
     }
     if (this.periodoCargaEstado() === 'cerrado') {
       return 'Período cerrado: solo lectura. Requiere reapertura auditada.';
+    }
+    if (this.activeArea() === 'cierrePeriodo') {
+      return 'Usa las acciones del resumen de cierre para completar la configuración.';
     }
     if (!this.hasAnySyncedData()) {
       return 'Captura los valores tentativos del cliente para este período. NOIA actualizará los oficiales a fin de mes y revisaremos diferencias.';

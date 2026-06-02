@@ -19,16 +19,18 @@
     <div class="parametros-period-right" aria-label="Estado mensual">
       <div class="parametros-period-actions" aria-label="Acciones del período">
         @if (!ws.hasAnySyncedData()) {
-          <app-button
-            variant="outline"
-            size="md"
-            className="erp-toolbar-button erp-action-button"
-            [disabled]="ws.parametrosUiBloqueada()"
-            (click)="ws.sincronizar()"
-          >
-            <lucide-icon icon class="h-4 w-4" name="refresh-cw"></lucide-icon>
-            Sincronizar
-          </app-button>
+          <app-tooltip preferredPlacement="top" [text]="ws.sincronizarTooltip()">
+            <app-button
+              variant="outline"
+              size="md"
+              className="erp-toolbar-button erp-action-button"
+              [disabled]="ws.parametrosUiBloqueada()"
+              (click)="ws.sincronizar()"
+            >
+              <lucide-icon icon class="h-4 w-4" name="refresh-cw"></lucide-icon>
+              Sincronizar
+            </app-button>
+          </app-tooltip>
         }
 
         @if (ws.generalesEditando()) {
@@ -36,6 +38,7 @@
             [visibleActions]="['back', 'save']"
             backLabel="Cancelar"
             [saveLabel]="ws.saveLabel()"
+            [saveLoading]="ws.guardando()"
             [saveDisabled]="
               ws.guardando() ||
               ws.isLoading() ||
@@ -52,6 +55,7 @@
             [editLabel]="ws.accionConfigClienteLabel()"
             [editTooltip]="ws.modificarTooltipConsulta()"
             [editDisabled]="ws.modificarDeshabilitado()"
+            [editLoading]="ws.modificarCargando()"
             (editClick)="ws.editarParametros()"
           ></app-page-actions>
         }

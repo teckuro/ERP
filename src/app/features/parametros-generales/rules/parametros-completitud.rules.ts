@@ -372,6 +372,10 @@ export function compararOficialCliente(
     return [];
   }
 
+  // Un campo solo produce diferencia cuando AMBOS lados tienen valor concreto (number, boolean
+  // distinto de null/undefined/'') y no son equivalentes. Si el oficial es null/undefined para un
+  // campo concreto (p.ej. `gratificacion` aún no normada para el mes) se considera "sin base de
+  // comparación" y no se reporta como diferencia: no se puede afirmar contradicción sin oficial.
   return CAMPOS_COMPARABLES.flatMap((campo) => {
     const oficialValue = normalizable(oficial[campo]) ? oficial[campo] : null;
     const clienteValue = normalizable(cliente[campo]) ? cliente[campo] : null;
