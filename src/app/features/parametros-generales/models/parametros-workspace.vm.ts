@@ -29,11 +29,11 @@ export interface MonthOption {
 export type ParametrosDialogKind =
   | 'alerta'
   | 'confirmar-guardado'
-  | 'confirmar-crear-parametros'
   | 'confirmar-config-cliente'
   | 'confirmar-config-cliente-extendido'
   | 'config-cliente-sin-base'
-  | 'reconciliacion-diferencias';
+  | 'reconciliacion-diferencias'
+  | 'confirmar-abandonar-edicion';
 
 export type PeriodoCargaEstado = ParametrosEstadoVisual;
 

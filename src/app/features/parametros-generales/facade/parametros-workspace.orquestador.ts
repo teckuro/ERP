@@ -1,5 +1,6 @@
 import {
   ChangeDetectorRef,
+  DestroyRef,
   Injectable,
   computed,
   effect,
@@ -7,6 +8,7 @@ import {
   isDevMode,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, Validators } from '@angular/forms';
 import {
   ParametroGeneral,
@@ -37,7 +39,9 @@ import {
   resolverOpcionesBaseConfigCliente,
 } from '../rules/parametros-completitud.rules';
 import {
+  ETIQUETAS_CAMPO_DIFERENCIA,
   buildParametrosConfirmacionModificacionDialog,
+  buildParametrosConfirmarAbandonarEdicionDialog,
   buildParametrosDecisionConfigClienteDialog,
   buildParametrosErrorActualizacionDialog,
   buildParametrosErrorCargaDialog,
@@ -88,6 +92,7 @@ export class ParametrosWorkspaceOrquestador {
   private readonly service = inject(ParametrosGeneralesService);
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly presentacion = inject(ParametrosPresentacionFacade);
   readonly periodoGlobal = inject(PeriodoActivoService);
 
@@ -169,28 +174,6 @@ export class ParametrosWorkspaceOrquestador {
       this.cargaBloqueadaPorError() ||
       this.generalesEditando(),
   );
-
-  readonly crearParametrosDeshabilitado = computed(
-    () =>
-      this.isLoading() ||
-      this.isLoadingPlantilla() ||
-      this.guardando() ||
-      this.isPreparingEdit() ||
-      this.isPreparandoDialogoCrear() ||
-      !this.isConfigurableTab() ||
-      this.isClienteConfigTab() ||
-      this.hasSelectedInRows() ||
-      this.generalesEditando() ||
-      this.cargaBloqueadaPorError(),
-  );
-
-  readonly pageActions = computed(() => {
-    if (this.generalesEditando()) {
-      return ['back', 'save'] as const;
-    }
-
-    return ['edit'] as const;
-  });
 
   mostrarCargaInicial(): void {
     this.isLoading.set(true);
@@ -290,30 +273,30 @@ export class ParametrosWorkspaceOrquestador {
   readonly periodoEstadoTitulo = computed(() => {
     switch (this.periodoCargaEstado()) {
       case 'error':
-        return 'Estado mensual: Error';
+        return 'Error en la carga';
       case 'editando':
-        return 'Estado mensual: En edición';
+        return 'En edición';
       case 'cargado':
-        return 'Estado mensual: Parámetros cargados';
+        return 'Parámetros cargados';
       case 'pendiente_reconciliacion':
-        return 'Estado mensual: Pendiente de reconciliación';
+        return 'Pendiente de reconciliación';
       case 'oficial_sin_config':
-        return 'Estado mensual: Parámetros cargados';
+        return 'Parámetros cargados';
       case 'configuracion_parcial':
-        return 'Estado mensual: Pendiente oficial';
+        return 'Pendiente carga oficial';
       case 'referencia_anterior':
-        return 'Estado mensual: Pendiente oficial';
+        return 'Pendiente carga oficial';
       case 'sin_base':
-        return 'Estado mensual: Sin base disponible';
+        return 'Período sin datos';
       case 'corregido':
-        return 'Estado mensual: Corregido';
+        return 'Corregido';
       case 'cerrado':
-        return 'Estado mensual: Cerrado';
+        return 'Cerrado';
       case 'parcial':
-        return 'Estado mensual: Parcial';
+        return 'Parcial';
       case 'pendiente':
       default:
-        return 'Estado mensual: Pendiente';
+        return 'Pendiente';
     }
   });
 
@@ -352,19 +335,21 @@ export class ParametrosWorkspaceOrquestador {
       case 'error':
         return 'Error';
       case 'editando':
-        return 'Edición';
+        return 'En edición';
       case 'cargado':
         return 'Listo para revisar';
       case 'pendiente_reconciliacion':
-        return 'Reconciliacion pendiente';
+        return 'Revisar diferencias';
       case 'oficial_sin_config':
-        return 'Sin config.';
+        return 'Falta configuración';
       case 'configuracion_parcial':
         return 'Configuración parcial';
-      case 'referencia_anterior':
-        return this.referenciaVisualPrincipalCodigo() ? `Referencia ${this.referenciaVisualPrincipalCodigo()}` : 'Referencia anterior';
+      case 'referencia_anterior': {
+        const refLabel = this.referenciaVisualPrincipalLabelCapitalizado();
+        return refLabel ? `Referencia ${refLabel}` : 'Referencia anterior';
+      }
       case 'sin_base':
-        return 'Sin base';
+        return 'Período sin datos';
       case 'corregido':
         return 'Corregido';
       case 'cerrado':
@@ -376,6 +361,22 @@ export class ParametrosWorkspaceOrquestador {
         return 'Pendiente';
     }
   });
+
+  readonly referenciaVisualPrincipalLabelCapitalizado = computed(() =>
+    this.capitalizarPeriodoLabel(this.referenciaVisualPrincipalLabel()),
+  );
+
+  private capitalizarPeriodoLabel(label: string | null): string | null {
+    if (!label) {
+      return null;
+    }
+    const [mes, ...resto] = label.split(' ');
+    if (!mes) {
+      return label;
+    }
+    const mesCapitalizado = mes.charAt(0) + mes.slice(1).toLowerCase();
+    return [mesCapitalizado, ...resto].join(' ');
+  }
 
   readonly periodoEstadoChipClass = computed(() => {
     switch (this.periodoCargaEstado()) {
@@ -715,7 +716,9 @@ export class ParametrosWorkspaceOrquestador {
 
   constructor() {
     this.actualizarValidadorImm(this.form.controls.gratificacion.value);
-    this.form.controls.gratificacion.valueChanges.subscribe((value) => this.actualizarValidadorImm(value));
+    this.form.controls.gratificacion.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((value) => this.actualizarValidadorImm(value));
 
     effect(() => {
       if (!this.inicializado()) {
@@ -757,7 +760,7 @@ export class ParametrosWorkspaceOrquestador {
     this.form.controls.periodo.setValue(periodoInicial);
     // Periodo fijo en formulario: edición solo vía selector de período / cabecera.
     this.form.controls.periodo.disable({ emitEvent: false });
-    await Promise.all([this.cargar(periodoInicial), this.refrescarPeriodosDesdeBd()]);
+    await this.cargar(periodoInicial);
     this.inicializado.set(true);
   }
 
@@ -897,6 +900,9 @@ export class ParametrosWorkspaceOrquestador {
 
   cerrarDialogo(): void {
     this.dialogState.set(null);
+    if (this.abandonoEdicionPendiente) {
+      this.resolverAbandonoEdicion(false);
+    }
   }
 
   onDialogoAccionPrimaria(): void {
@@ -904,14 +910,14 @@ export class ParametrosWorkspaceOrquestador {
     if (!dlg) {
       return;
     }
+    if (dlg.kind === 'confirmar-abandonar-edicion') {
+      this.dialogState.set(null);
+      this.resolverAbandonoEdicion(true);
+      return;
+    }
     if (dlg.kind === 'confirmar-guardado') {
       this.dialogState.set(null);
       this.mostrarSoloConfigClienteEditable();
-      return;
-    }
-    if (dlg.kind === 'confirmar-crear-parametros') {
-      this.dialogState.set(null);
-      void this.finalizarCrearParametrosConBase(true);
       return;
     }
     if (dlg.kind === 'confirmar-config-cliente' || dlg.kind === 'confirmar-config-cliente-extendido') {
@@ -934,9 +940,9 @@ export class ParametrosWorkspaceOrquestador {
 
   onDialogoAccionSecundaria(): void {
     const dlg = this.dialogState();
-    if (dlg?.kind === 'confirmar-crear-parametros') {
+    if (dlg?.kind === 'confirmar-abandonar-edicion') {
       this.dialogState.set(null);
-      void this.finalizarCrearParametrosConBase(false);
+      this.resolverAbandonoEdicion(false);
       return;
     }
     if (dlg?.kind === 'confirmar-config-cliente' || dlg?.kind === 'confirmar-config-cliente-extendido') {
@@ -1009,7 +1015,36 @@ export class ParametrosWorkspaceOrquestador {
   }
 
   private mostrarFormularioInvalido(): void {
-    this.dialogState.set(buildParametrosFormularioInvalidoDialog());
+    const campos = this.nombresCamposInvalidos();
+    this.dialogState.set(buildParametrosFormularioInvalidoDialog(campos));
+  }
+
+  private nombresCamposInvalidos(): string[] {
+    const controles = this.form.controls;
+    const etiquetas: string[] = [];
+    for (const key of Object.keys(controles) as Array<keyof typeof controles>) {
+      const control = controles[key];
+      if (!control.invalid) {
+        continue;
+      }
+      const etiqueta =
+        ETIQUETAS_CAMPO_DIFERENCIA[key as keyof ParametroGeneral] ?? this.etiquetaCampoExtra(key as string) ?? null;
+      etiquetas.push(etiqueta ?? String(key));
+    }
+    return etiquetas;
+  }
+
+  private etiquetaCampoExtra(campo: string): string | null {
+    switch (campo) {
+      case 'gratificacion':
+        return 'Gratificación';
+      case 'immGratificacion':
+        return 'IMM gratificación';
+      case 'periodo':
+        return 'Período';
+      default:
+        return null;
+    }
   }
 
   private mostrarPeriodoDuplicado(periodo: string): void {
@@ -1072,10 +1107,6 @@ export class ParametrosWorkspaceOrquestador {
     this.dialogState.set(buildParametrosConfirmacionModificacionDialog(this.selectedPeriodo()));
   }
 
-  private mostrarConfirmacionCrearParametros(): void {
-    this.mostrarSoloConfigClienteEditable();
-  }
-
   private async mostrarDecisionConfigCliente(): Promise<void> {
     const periodo = this.selectedPeriodo();
     const hasOficiales = this.parametroOficialSeleccionado()?.periodo === periodo;
@@ -1101,7 +1132,7 @@ export class ParametrosWorkspaceOrquestador {
           opcion !== 'cero' && opcion !== 'cancelar',
       )
       .sort((left, right) => this.configClienteBasePrioridad(left) - this.configClienteBasePrioridad(right))
-      .slice(0, 2)
+      .slice(0, 3)
       .map((opcion) => ({
         label: this.configClienteBaseLabel(opcion),
         action: this.configClienteBaseAction(opcion),
@@ -1382,14 +1413,6 @@ export class ParametrosWorkspaceOrquestador {
     await this.seleccionarPeriodo(periodo);
   }
 
-  nuevoPeriodo(): void {
-    const periodo = this.selectedPeriodo() || this.currentPeriodo();
-    this.patchForm(this.emptyParametroForPeriodo(periodo), periodo);
-    this.generalesEditando.set(true);
-    this.datosFormularioListos.set(true);
-    this.cerrarDialogo();
-  }
-
   async editarParametros(): Promise<void> {
     this.cerrarDialogo();
 
@@ -1421,23 +1444,6 @@ export class ParametrosWorkspaceOrquestador {
     this.configDraftSource.set('existente');
     this.configDraftSourcePeriodo.set(this.selectedPeriodo());
     this.cdr.detectChanges();
-  }
-
-  /**
-   * Crea borrador para un periodo sin registro (copia del último periodo ≤ seleccionado o valores por defecto).
-   * Acción explícita; no reutiliza datos de otro periodo en modo solo lectura.
-   */
-  async crearParametrosParaPeriodo(): Promise<void> {
-    this.mostrarSoloConfigClienteEditable();
-  }
-
-  /**
-   * Tras elegir en el modal: formulario vacío (solo UI) o plantilla desde último período (consulta puntual).
-   * No guarda en base de datos.
-   */
-  private async finalizarCrearParametrosConBase(cargarUltimoRegistrado: boolean): Promise<void> {
-    void cargarUltimoRegistrado;
-    this.mostrarSoloConfigClienteEditable();
   }
 
   private iniciarEdicionConfigClienteDesdeCero(): void {
@@ -1697,10 +1703,6 @@ export class ParametrosWorkspaceOrquestador {
     });
   }
 
-  private async ejecutarGuardarInterno(): Promise<void> {
-    this.mostrarSoloConfigClienteEditable();
-  }
-
   bloquearSiLectura(event: Event): void {
     if (!this.generalesEditando()) {
       event.preventDefault();
@@ -1783,13 +1785,31 @@ export class ParametrosWorkspaceOrquestador {
     return periodo ? formatearPeriodoMesAnio(periodo, this.monthOptions) : null;
   }
 
-  private puedeAbandonarEdicionAlCambiarPeriodo(): boolean {
+  private abandonoEdicionPendiente: ((continuar: boolean) => void) | null = null;
+
+  private confirmarAbandonarEdicionConDialog(): Promise<boolean> {
     if (!this.generalesEditando() || !this.form.dirty) {
-      return true;
+      return Promise.resolve(true);
     }
-    return globalThis.confirm(
-      'Hay cambios sin guardar. Si continúa, se descartarán. ¿Cambiar de período?',
-    );
+    if (this.abandonoEdicionPendiente) {
+      this.abandonoEdicionPendiente(false);
+      this.abandonoEdicionPendiente = null;
+    }
+    return new Promise<boolean>((resolve) => {
+      this.abandonoEdicionPendiente = resolve;
+      this.dialogState.set(buildParametrosConfirmarAbandonarEdicionDialog());
+      this.cdr.markForCheck();
+    });
+  }
+
+  private resolverAbandonoEdicion(continuar: boolean): boolean {
+    const resolver = this.abandonoEdicionPendiente;
+    if (!resolver) {
+      return false;
+    }
+    this.abandonoEdicionPendiente = null;
+    resolver(continuar);
+    return true;
   }
 
   async seleccionarPeriodo(
@@ -1799,7 +1819,8 @@ export class ParametrosWorkspaceOrquestador {
     if (periodo === this.selectedPeriodo()) {
       return;
     }
-    if (!this.puedeAbandonarEdicionAlCambiarPeriodo()) {
+    const puedeAbandonar = await this.confirmarAbandonarEdicionConDialog();
+    if (!puedeAbandonar) {
       if (options?.fromGlobal) {
         this.periodoGlobal.setPeriodoYm(this.selectedPeriodo());
       }
@@ -1817,20 +1838,6 @@ export class ParametrosWorkspaceOrquestador {
     if (!options?.fromGlobal) {
       this.periodoGlobal.setPeriodoYm(periodo);
     }
-  }
-
-  private async prepararNuevoPeriodoDesdeBase(periodo: string): Promise<void> {
-    try {
-      const base = await this.service.obtenerUltimoHastaPeriodo(periodo);
-      if (base) {
-        this.patchForm(this.parametroConClienteConfig({ ...base, periodo }, this.clienteConfig()));
-        return;
-      }
-    } catch {
-      // Si falla la carga de base, usamos defaults.
-    }
-
-    this.patchForm(this.emptyParametroForPeriodo(periodo));
   }
 
   private parametroConClienteConfig(
@@ -2029,10 +2036,6 @@ export class ParametrosWorkspaceOrquestador {
       trabajoMenosPesadoTrabajador: null,
       fechaActualizacion: null,
     };
-  }
-
-  private emptyParametro(): ParametroGeneral {
-    return this.emptyParametroForPeriodo(this.currentPeriodo());
   }
 
   private emptyCatalogos(): ParametrosGeneralesCatalogos {

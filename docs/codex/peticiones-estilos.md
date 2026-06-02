@@ -1,3 +1,16 @@
+## 2026-06-02 - Parámetros Fase 1: copy NOIA, chips de banda y empty state tab Valores
+
+Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-tab-valores-2026-06.md`:
+
+- **Mensajes (`parametros-dialog.rules.ts`)**: reescritos los 17 builders con copy NOIA, tildes correctas, formato `Mes Año` para período en lugar de `yyyy-mm`, código técnico de errores envuelto en "Código técnico (uso interno): …" para no filtrar mensajes crudos de Supabase. Nuevo builder `buildParametrosConfirmarAbandonarEdicionDialog` reemplaza el `globalThis.confirm` nativo. `buildParametrosFormularioInvalidoDialog` ahora recibe lista de campos pendientes.
+- **Banda de período**: chips refinados — `Reconciliación pendiente`→`Revisar diferencias`, `Sin config.`→`Falta configuración`, `Sin base`→`Período sin datos`, `Edición`→`En edición`, `Referencia 2026-04`→`Referencia Abril 2026`. `periodoEstadoTitulo` sin prefijo redundante `Estado mensual:`.
+- **Card de cierre**: el `<p>` ahora muestra `cierreImpacto()` (info distinta) en lugar de duplicar el detalle de la banda.
+- **Tab Valores**: empty state explícito cuando no hay datos oficiales (con referencia disponible si la hay), banner contextual en edición ("Al guardar se persisten también los cambios de Remuneraciones y Cliente"), valores formateados con `DecimalPipe` `es-CL` en modo lectura (UF con 2 decimales, UTM/UTA enteros). Footer oculto si no hay fecha de actualización. Tildes correctas en "Última actualización" y "del período".
+- **Orquestador**: `globalThis.confirm` reemplazado por MessageBox con resolver pendiente; doble fetch de períodos en `inicializar()` consolidado a una sola consulta; `subscribe` de `gratificacion` con `takeUntilDestroyed(DestroyRef)`; el dialog de decisión de base ahora muestra hasta 3 acciones (antes `slice(0,2)`).
+- **Limpieza**: eliminado código muerto — `nuevoPeriodo`, `crearParametrosParaPeriodo`, `finalizarCrearParametrosConBase`, `ejecutarGuardarInterno`, `pageActions`, `crearParametrosDeshabilitado`, `prepararNuevoPeriodoDesdeBase`, `mostrarConfirmacionCrearParametros`, `emptyParametro`, kind `confirmar-crear-parametros`.
+- **Tests**: spec de `parametros-dialog.rules` actualizado al nuevo copy + 4 casos nuevos (form inválido con campos, error de carga con código técnico, abandono de edición, decisión con 3 acciones). Suite de reglas: 48/48 en verde.
+- **Sin tocar**: estilos globales, SQL, motor, contratos de servicio, columnas grid, tabs distintas a Valores. Los fallos de `parametros-workspace.orquestador.spec.ts` son preexistentes a este cambio (TestBed `injector` null) y no se introducen por esta fase.
+
 ## 2026-06-02 - Nómina V10.1: marco unificado todos los pasos
 
 - Contenedor: `nmv2-step-body` + `nmv2-step-frame` envuelven Parámetros, Alcance, Empleados y pasos demo (movimientos, cálculo, etc.).

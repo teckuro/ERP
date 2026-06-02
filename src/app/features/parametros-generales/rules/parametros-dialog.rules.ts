@@ -4,6 +4,7 @@ import type {
   ParametrosDialogAction,
   ParametrosDialogState,
 } from '../models/parametros-workspace.vm';
+import { formatearPeriodoMesAnio } from '../utils/parametros-workspace-tabs.presenter';
 import {
   diferenciasConDesviacionExtrema,
   type ParametrosDiferenciaCompletitud,
@@ -14,13 +15,37 @@ export interface ParametrosConfigClienteActionVm {
   action: ParametrosDialogAction;
 }
 
-export function buildParametrosFormularioInvalidoDialog(): ParametrosDialogState {
+function etiquetaPeriodo(periodo: string): string {
+  const raw = formatearPeriodoMesAnio(periodo);
+  const [mesUpper, ...resto] = raw.split(' ');
+  if (!mesUpper) {
+    return raw;
+  }
+  const mes = mesUpper.charAt(0) + mesUpper.slice(1).toLowerCase();
+  return [mes, ...resto].join(' ');
+}
+
+function envolverDetalleTecnico(detalle: string | null | undefined): string {
+  const limpio = (detalle ?? '').trim();
+  if (!limpio) {
+    return '';
+  }
+  return `Código técnico (uso interno): ${limpio}`;
+}
+
+export function buildParametrosFormularioInvalidoDialog(
+  camposPendientes: readonly string[] = [],
+): ParametrosDialogState {
+  const detalle = camposPendientes.length > 0
+    ? `Campos pendientes: ${camposPendientes.join(', ')}.`
+    : 'Hay campos obligatorios o con formato inválido.';
+
   return {
     kind: 'alerta',
     variant: 'warning',
     title: 'Faltan datos por completar',
-    message: 'Revisa los campos marcados antes de guardar los parámetros.',
-    detail: 'Hay campos obligatorios o con formato inválido.',
+    message: 'Revisa los campos marcados antes de guardar.',
+    detail: detalle,
     primaryLabel: 'Aceptar',
   };
 }
@@ -30,8 +55,8 @@ export function buildParametrosPeriodoDuplicadoDialog(periodo: string): Parametr
     kind: 'alerta',
     variant: 'warning',
     title: 'Período ya registrado',
-    message: `Ya existen parámetros registrados para el período ${periodo}.`,
-    detail: 'Puedes modificar el registro existente en lugar de crear uno nuevo.',
+    message: `Ya hay parámetros guardados para ${etiquetaPeriodo(periodo)}.`,
+    detail: 'Puedes modificar el registro existente desde el botón "Modificar".',
     primaryLabel: 'Aceptar',
   };
 }
@@ -41,8 +66,8 @@ export function buildParametrosExitoGuardadoDialog(periodo: string): ParametrosD
     kind: 'alerta',
     variant: 'success',
     title: 'Parámetros guardados',
-    message: 'Los parámetros del período fueron guardados correctamente.',
-    detail: `Período: ${periodo}`,
+    message: `Parámetros guardados para ${etiquetaPeriodo(periodo)}.`,
+    detail: 'Continúa con la configuración del cliente para cerrar el período.',
     primaryLabel: 'Aceptar',
   };
 }
@@ -52,8 +77,8 @@ export function buildParametrosExitoActualizacionDialog(periodo: string): Parame
     kind: 'alerta',
     variant: 'success',
     title: 'Parámetros actualizados',
-    message: 'Los parámetros del período fueron actualizados correctamente.',
-    detail: `Período: ${periodo}`,
+    message: `Cambios guardados para ${etiquetaPeriodo(periodo)}.`,
+    detail: 'Revisa los pendientes desde el resumen de cierre del período.',
     primaryLabel: 'Aceptar',
   };
 }
@@ -63,20 +88,28 @@ export function buildParametrosExitoClienteConfigDialog(
   source: ConfigClienteDraftSource = 'existente',
   sourcePeriodo: string | null = null,
 ): ParametrosDialogState {
-  const detail =
-    source === 'referencia' && sourcePeriodo
-      ? `Configuración creada desde referencia ${sourcePeriodo}.`
-      : source === 'oficiales'
-        ? 'Configuración actualizada con valores oficiales.'
-        : source === 'ultima' && sourcePeriodo
-          ? `Configuración creada desde última configuración disponible (${sourcePeriodo}).`
-          : `Período: ${periodo}`;
+  const periodoLabel = etiquetaPeriodo(periodo);
+  const detail = (() => {
+    if (source === 'referencia' && sourcePeriodo) {
+      return `Base utilizada: referencia de ${etiquetaPeriodo(sourcePeriodo)}.`;
+    }
+    if (source === 'oficiales') {
+      return 'Base utilizada: valores oficiales del período.';
+    }
+    if (source === 'ultima' && sourcePeriodo) {
+      return `Base utilizada: última configuración disponible (${etiquetaPeriodo(sourcePeriodo)}).`;
+    }
+    if (source === 'cero') {
+      return 'Base utilizada: configuración creada desde cero.';
+    }
+    return `Período: ${periodoLabel}.`;
+  })();
 
   return {
     kind: 'alerta',
     variant: 'success',
     title: 'Configuración guardada',
-    message: `Configuración de ${periodo} guardada.`,
+    message: `Configuración del cliente guardada para ${periodoLabel}.`,
     detail,
     primaryLabel: 'Aceptar',
   };
@@ -86,9 +119,9 @@ export function buildParametrosErrorGuardadoDialog(mensajeError: string): Parame
   return {
     kind: 'alerta',
     variant: 'error',
-    title: 'No se pudieron guardar los parámetros',
-    message: 'Ocurrió un problema al intentar guardar los parámetros del período.',
-    detail: mensajeError || 'Error desconocido.',
+    title: 'No se pudo guardar',
+    message: 'No se pudo guardar el período. Reintenta en unos segundos.',
+    detail: envolverDetalleTecnico(mensajeError) || 'Si el problema continúa, contacta a soporte.',
     primaryLabel: 'Aceptar',
   };
 }
@@ -97,9 +130,9 @@ export function buildParametrosErrorActualizacionDialog(mensajeError: string): P
   return {
     kind: 'alerta',
     variant: 'error',
-    title: 'No se pudieron actualizar los parámetros',
-    message: 'Ocurrió un problema al intentar actualizar los parámetros del período.',
-    detail: mensajeError || 'Error desconocido.',
+    title: 'No se pudo actualizar',
+    message: 'No se pudo actualizar el período. Reintenta en unos segundos.',
+    detail: envolverDetalleTecnico(mensajeError) || 'Si el problema continúa, contacta a soporte.',
     primaryLabel: 'Aceptar',
   };
 }
@@ -109,8 +142,8 @@ export function buildParametrosErrorClienteConfigDialog(mensajeError: string): P
     kind: 'alerta',
     variant: 'error',
     title: 'No se pudo guardar la configuración',
-    message: 'Ocurrió un problema al guardar la configuración del cliente.',
-    detail: mensajeError || 'Error desconocido.',
+    message: 'No se pudo guardar la configuración del cliente. Reintenta en unos segundos.',
+    detail: envolverDetalleTecnico(mensajeError) || 'Si el problema continúa, contacta a soporte.',
     primaryLabel: 'Aceptar',
   };
 }
@@ -119,9 +152,9 @@ export function buildParametrosSoloConfigClienteEditableDialog(): ParametrosDial
   return {
     kind: 'alerta',
     variant: 'info',
-    title: 'Solo lectura',
-    message: 'Los datos oficiales mensuales se cargan por el flujo oficial.',
-    detail: 'Desde Parámetros solo se puede modificar la configuración cliente del período.',
+    title: 'Datos oficiales en solo lectura',
+    message: 'Los datos oficiales se cargan desde el proceso normativo del mes.',
+    detail: 'Desde Parámetros sólo se edita la configuración del cliente para el período.',
     primaryLabel: 'Aceptar',
   };
 }
@@ -131,8 +164,8 @@ export function buildParametrosPeriodoInexistenteConfigDialog(periodo: string): 
     kind: 'alerta',
     variant: 'warning',
     title: 'Período no habilitado',
-    message: 'No se puede guardar configuración cliente para un período inexistente.',
-    detail: `Primero debe existir el período ${periodo} en remuneraciones.`,
+    message: 'Falta crear el período en Remuneraciones antes de configurarlo.',
+    detail: `Crea el período ${etiquetaPeriodo(periodo)} en Remuneraciones para continuar.`,
     primaryLabel: 'Aceptar',
   };
 }
@@ -142,19 +175,25 @@ export function buildParametrosPeriodoCerradoSoloLecturaDialog(): ParametrosDial
     kind: 'alerta',
     variant: 'warning',
     title: 'Período cerrado',
-    message: 'El período está cerrado y queda en modo solo lectura.',
-    detail: 'Cualquier cambio debe pasar por reapertura o un flujo de corrección auditado.',
+    message: 'El período está cerrado y queda en sólo lectura.',
+    detail: 'Cualquier cambio requiere reapertura desde el flujo de corrección auditado.',
     primaryLabel: 'Aceptar',
   };
 }
 
 export function buildParametrosErrorCargaDialog(detalleTecnico: string, periodo: string): ParametrosDialogState {
+  const periodoLabel = etiquetaPeriodo(periodo);
+  const detalleEnvuelto = envolverDetalleTecnico(detalleTecnico);
+  const detail = detalleEnvuelto
+    ? `${detalleEnvuelto}\nPeríodo seleccionado: ${periodoLabel}.`
+    : `Período seleccionado: ${periodoLabel}.`;
+
   return {
     kind: 'alerta',
     variant: 'error',
-    title: 'No fue posible completar la operación',
-    message: 'No fue posible cargar los parámetros del sistema.',
-    detail: detalleTecnico ? `${detalleTecnico}\n\nPeríodo seleccionado: ${periodo}` : `Período seleccionado: ${periodo}`,
+    title: 'No se pudieron cargar los parámetros',
+    message: `No se pudieron cargar los parámetros para ${periodoLabel}. Reintenta en unos segundos.`,
+    detail,
     primaryLabel: 'Aceptar',
   };
 }
@@ -163,9 +202,9 @@ export function buildParametrosPeriodoNoCoincideDialog(periodoDatos: string, per
   return {
     kind: 'alerta',
     variant: 'error',
-    title: 'No se pudieron actualizar los parámetros',
-    message: 'Los datos recibidos no coinciden con el período seleccionado.',
-    detail: `Período en datos: ${periodoDatos}. Período seleccionado: ${periodoSeleccionado}.`,
+    title: 'Datos del período no coinciden',
+    message: `Los datos cargados no corresponden a ${etiquetaPeriodo(periodoSeleccionado)}.`,
+    detail: `Período en datos: ${etiquetaPeriodo(periodoDatos)}. Vuelve a seleccionar el período para forzar la recarga.`,
     primaryLabel: 'Aceptar',
   };
 }
@@ -176,8 +215,9 @@ export function buildParametrosExitoSincronizacionDialog(refresco: boolean): Par
     variant: 'success',
     title: refresco ? 'Datos refrescados' : 'Datos sincronizados',
     message: refresco
-      ? 'Los parámetros se actualizaron desde la base de datos.'
-      : 'Los parámetros se sincronizaron correctamente desde la base de datos.',
+      ? 'Los parámetros del período se actualizaron desde la base de datos.'
+      : 'Los parámetros del período se sincronizaron correctamente.',
+    detail: 'Continúa con la revisión del cierre del período.',
     primaryLabel: 'Aceptar',
   };
 }
@@ -187,26 +227,28 @@ export function buildParametrosErrorSincronizacionSinDatosDialog(): ParametrosDi
     kind: 'alerta',
     variant: 'warning',
     title: 'Sin datos para sincronizar',
-    message: 'No hay parámetros disponibles en la base de datos para sincronizar.',
+    message: 'No hay parámetros normativos disponibles para este período.',
+    detail: 'Verifica que el proceso normativo del mes se haya ejecutado.',
     primaryLabel: 'Aceptar',
   };
 }
 
 export function buildParametrosConfirmacionModificacionDialog(periodo: string): ParametrosDialogState {
+  const periodoLabel = etiquetaPeriodo(periodo);
   return {
     kind: 'confirmar-guardado',
     variant: 'warning',
     title: 'Confirmar modificación',
-    message: 'Revisa el impacto antes de actualizar la configuración cliente.',
+    message: 'Confirma que los valores corresponden al cierre del período.',
     sections: [
       {
-        title: 'Principal',
-        text: `Se actualizarán los parámetros del período ${periodo}.`,
+        title: 'Cambio principal',
+        text: `Se actualizará la configuración del cliente para ${periodoLabel}.`,
         tone: 'attention',
       },
       {
         title: 'Acción',
-        text: 'Confirmar solo si los valores corresponden al cierre del período.',
+        text: 'Esta acción sobrescribe los valores guardados. Confirma sólo si los datos están revisados.',
         tone: 'info',
       },
     ],
@@ -219,17 +261,20 @@ export function buildParametrosDecisionConfigClienteDialog(
   periodo: string,
   actions: readonly ParametrosConfigClienteActionVm[],
 ): ParametrosDialogState {
+  const periodoLabel = etiquetaPeriodo(periodo);
   return {
     kind: 'confirmar-config-cliente-extendido',
     variant: 'confirm',
-    title: 'Configurar período',
-    message: 'No existe configuración cliente para este período.',
-    detail: `Período: ${periodo}\nSelecciona una base para continuar. Se creará solo al guardar.`,
+    title: 'Configurar el período',
+    message: `No hay configuración del cliente para ${periodoLabel}.`,
+    detail: 'Elige una base para continuar. La configuración se crea sólo al guardar.',
     primaryLabel: 'Crear desde cero',
     secondaryLabel: actions[0]?.label,
     secondaryAction: actions[0]?.action,
     tertiaryLabel: actions[1]?.label,
     tertiaryAction: actions[1]?.action,
+    fourthLabel: actions[2]?.label,
+    fourthAction: actions[2]?.action,
   };
 }
 
@@ -237,15 +282,27 @@ export function buildParametrosSinConfigClienteAnteriorDialog(periodo: string): 
   return {
     kind: 'config-cliente-sin-base',
     variant: 'info',
-    title: 'Sin configuración anterior',
-    message: 'No hay una configuración cliente anterior disponible para usar como base.',
-    detail: `Período: ${periodo}`,
+    title: 'Sin configuración previa',
+    message: 'No hay configuración del cliente anterior para reutilizar como base.',
+    detail: `Período: ${etiquetaPeriodo(periodo)}. Puedes crear la configuración desde cero.`,
     primaryLabel: 'Crear desde cero',
     secondaryLabel: 'Cancelar',
   };
 }
 
-const ETIQUETAS_CAMPO_DIFERENCIA: Partial<Record<keyof ParametroGeneral, string>> = {
+export function buildParametrosConfirmarAbandonarEdicionDialog(): ParametrosDialogState {
+  return {
+    kind: 'confirmar-abandonar-edicion',
+    variant: 'confirm',
+    title: 'Cambios sin guardar',
+    message: '¿Quieres descartar los cambios y cambiar de período?',
+    detail: 'Los datos editados se perderán si continúas.',
+    primaryLabel: 'Descartar y cambiar',
+    secondaryLabel: 'Seguir editando',
+  };
+}
+
+export const ETIQUETAS_CAMPO_DIFERENCIA: Partial<Record<keyof ParametroGeneral, string>> = {
   uf: 'UF',
   utm: 'UTM',
   uta: 'UTA',
@@ -298,14 +355,16 @@ export function detalleDiferenciasOficialesCliente(
   diferencias: readonly ParametrosDiferenciaCompletitud[],
   opciones?: DetalleDiferenciasOficialesOpciones,
 ): string {
+  const periodoLabel = etiquetaPeriodo(periodo);
+
   if (diferencias.length === 0) {
-    return `Período ${periodo}. Puede mantener su configuración, alinearla con los oficiales o revisar las diferencias más tarde.`;
+    return `Período ${periodoLabel}. Puedes mantener tu configuración, alinearla con los oficiales o revisar las diferencias más tarde.`;
   }
 
-  const encabezado: string[] = [`Período ${periodo}`];
+  const encabezado: string[] = [`Período ${periodoLabel}`];
   const periodoRef = opciones?.periodoReferenciaOficial?.trim();
   if (periodoRef && periodoRef !== periodo) {
-    encabezado.push(`Comparación con referencia del período ${periodoRef}.`);
+    encabezado.push(`Comparación con referencia del período ${etiquetaPeriodo(periodoRef)}.`);
   }
 
   const extremas = diferenciasConDesviacionExtrema(diferencias);
@@ -318,7 +377,7 @@ export function detalleDiferenciasOficialesCliente(
 
   const lineas = diferencias.map((d) => {
     const etiqueta = ETIQUETAS_CAMPO_DIFERENCIA[d.campo] ?? String(d.campo);
-    return `· ${etiqueta}: oficial ${formatearValorDiferencia(d.oficial)} · su configuración ${formatearValorDiferencia(d.cliente)}`;
+    return `· ${etiqueta}: oficial ${formatearValorDiferencia(d.oficial)} · tu configuración ${formatearValorDiferencia(d.cliente)}`;
   });
 
   return [...encabezado, '', 'Campos distintos:', ...lineas].join('\n');
@@ -332,9 +391,9 @@ export function buildParametrosReconciliacionDiferenciasDialog(
   return {
     kind: 'reconciliacion-diferencias',
     variant: 'warning',
-    title: 'Configuración distinta a los parámetros oficiales del mes',
+    title: 'Diferencias con los datos oficiales',
     message:
-      'Los datos guardados para este período no coinciden con la carga oficial del mes. No se actualizará nada automáticamente.',
+      'Tu configuración del cliente difiere de los datos oficiales del mes. No se actualizará nada automáticamente.',
     detail: detalleDiferenciasOficialesCliente(periodo, diferencias, opciones),
     primaryLabel: 'Mantener mi configuración',
     secondaryLabel: 'Actualizar con oficiales',
