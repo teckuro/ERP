@@ -8,6 +8,7 @@ import {
 } from '../mappers/nomina-trazabilidad.mapper';
 import { construirResumenTrazabilidadPasoActual } from '../presenters/nomina-stepper-trazabilidad.presenter';
 import type { NominaCalculoPeriodoSnapshot } from '../../nomina-mensual/models/proceso-mensual.model';
+import type { EventoTrazabilidadNomina } from '../models/nomina-trazabilidad.models';
 
 function snapshotBase(partial: Partial<NominaCalculoPeriodoSnapshot> = {}): NominaCalculoPeriodoSnapshot {
   return {
@@ -150,5 +151,36 @@ describe('nomina-trazabilidad.mapper', () => {
     expect(resumen.responsableNombre).toBe('Sin responsable registrado');
     expect(resumen.ultimoEvento).toBe('Registro pendiente');
     expect(resumen.integridadEstado).toBe('noDisponible');
+  });
+
+  it('usa el ultimo evento del paso cuando la auditoria aun esta pendiente', () => {
+    const evento: EventoTrazabilidadNomina = {
+      idEvento: 'srv-param-1',
+      periodo: '2026-05',
+      paso: 'parameters',
+      tipoEvento: 'PARAMETROS_CONGELADOS',
+      usuarioId: 'u1',
+      usuarioNombre: 'responsable@empresa.cl',
+      fechaEvento: '2026-05-02T10:00:00.000Z',
+      descripcion: 'Base de parámetros recién guardada',
+      idSnapshotRelacionado: '42',
+      integridad: { estadoIntegridad: 'registrado' },
+      origen: 'servidor',
+    };
+    const auditoria = buildAuditoriaPorPaso([evento]);
+    auditoria.parameters = {
+      paso: 'parameters',
+      estado: 'pendiente',
+      accionPrincipal: 'Pendiente de registro',
+      usuarioId: null,
+      usuarioNombre: '—',
+      fechaAccion: null,
+      integridad: { estadoIntegridad: 'noDisponible' },
+      requiereAprobacion: false,
+    };
+    const resumen = construirResumenTrazabilidadPasoActual('parameters', auditoria, [evento]);
+    expect(resumen.responsableNombre).toBe('responsable@empresa.cl');
+    expect(resumen.ultimoEvento).toBe('Base de parámetros recién guardada');
+    expect(resumen.integridadEstado).toBe('registrado');
   });
 });

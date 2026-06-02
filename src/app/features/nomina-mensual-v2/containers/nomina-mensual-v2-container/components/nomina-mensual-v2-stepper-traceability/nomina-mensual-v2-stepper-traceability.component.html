@@ -23,7 +23,7 @@
   <button
     type="button"
     class="nomina-stepper-traceability__action nomina-stepper-traceability__action--history"
-    title="Ver historial del paso"
+    [title]="'Ver historial del paso\n' + resumen().ultimoEvento"
     (click)="abrirHistorial()"
   >
     <span class="nomina-stepper-traceability__icon" aria-hidden="true">

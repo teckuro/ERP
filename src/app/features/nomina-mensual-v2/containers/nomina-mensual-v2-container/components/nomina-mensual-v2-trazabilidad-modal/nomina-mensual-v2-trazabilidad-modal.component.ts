@@ -45,13 +45,25 @@ export class NominaMensualV2TrazabilidadModalComponent {
     effect(() => {
       const tipo = this.orquestador.tipoModalDetalleActivo();
       const paso = this.orquestador.trazabilidadPasoActivo();
+      if (!paso || !tipo) {
+        return;
+      }
+
+      if (tipo !== 'integrity' || paso !== 'parameters') {
+        this.valoresParametrosBaseLoading.set(false);
+        this.valoresParametrosBaseError.set(null);
+        this.valoresParametrosBaseRemotos.set([]);
+        this.idDetalleParametrosBaseCargado.set(null);
+        return;
+      }
+
       const idCalculoPeriodoBase = this.idCalculoPeriodoBaseActivo();
       const valoresEvento = this.valoresParametrosBaseDesdeEventos();
 
-      if (tipo !== 'integrity' || paso !== 'parameters' || !idCalculoPeriodoBase || valoresEvento.length > 0) {
+      if (!idCalculoPeriodoBase || valoresEvento.length > 0) {
         this.valoresParametrosBaseLoading.set(false);
         this.valoresParametrosBaseError.set(null);
-        if (tipo !== 'integrity' || paso !== 'parameters' || valoresEvento.length > 0) {
+        if (valoresEvento.length > 0) {
           this.valoresParametrosBaseRemotos.set([]);
           this.idDetalleParametrosBaseCargado.set(null);
         }

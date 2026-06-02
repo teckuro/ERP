@@ -1,10 +1,16 @@
+<app-nomina-mensual-v2-modal-acceso-base-parametros
+  [modal]="orquestador.modalAccesoBaseParametros()"
+  (confirmar)="confirmarRecargaBaseParametros.emit()"
+  (cerrar)="cerrarModalAccesoBaseParametros()"
+/>
+
 @if (orquestador.modalRevisarParametros(); as modalRevisar) {
   <app-message-box
     variant="decision"
     mode="modal"
     width="md"
     [title]="'Revisar parametros de ' + modalRevisar.periodoEtiqueta"
-    message="La base ya esta preparada. Solo entra si necesitas cambiarla."
+    message="La base del periodo ya esta preparada. Puedes revisar los parametros; cambiar la base solo si hace falta."
     primaryLabel="Revisar"
     secondaryLabel="Cancelar"
     (action)="confirmarReingresoParametros.emit()"
@@ -31,7 +37,7 @@
     mode="modal"
     width="md"
     title="Actualizar base"
-    message="Se usaran los parametros actuales para continuar."
+    message="Se reemplazara la base guardada por los parametros actuales del mantenedor."
     primaryLabel="Actualizar y continuar"
     secondaryLabel="Cancelar"
     (action)="confirmarActualizarBaseYContinuar.emit()"
@@ -47,7 +53,7 @@
     title="Parametros cambiaron"
     message="Elige si mantienes la base guardada o actualizas con los valores actuales."
     primaryLabel="Mantener base"
-    secondaryLabel="Actualizar"
+    [secondaryLabel]="permisosRecargaBase().puedeActualizarBaseEnDiferencias ? 'Actualizar' : ''"
     tertiaryLabel="Ver cambios"
     (action)="confirmarMantenerBaseYContinuar.emit()"
     (secondary)="solicitarActualizarBase.emit()"

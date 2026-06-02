@@ -118,4 +118,26 @@ describe('NominaParametrosBaseService', () => {
     expect(metadata['origenAlGuardar']).toBe('actualizadaExplicitamente');
     expect(result.idCalculoPeriodoBase).toBe(8);
   });
+
+  it('guardarSnapshotParametrosBase rechaza resumen de período distinto al activo', async () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        NominaParametrosBaseService,
+        { provide: NominaCalculoSnapshotRepository, useValue: {
+          obtenerSnapshotParametrosBase,
+          listarParametrosSnapshot,
+          actualizarMetadataParametrosBase,
+          guardarSnapshotParametrosBase,
+        } },
+        { provide: ParametrosGeneralesService, useValue: { obtenerUltimoHastaPeriodo } },
+        { provide: PeriodoActivoService, useValue: { periodoYm: () => '2026-06' } },
+        { provide: AuthService, useValue: { currentUser: () => null, getSession: vi.fn().mockResolvedValue(null) } },
+      ],
+    });
+
+    const service = TestBed.inject(NominaParametrosBaseService);
+    await expect(service.guardarSnapshotParametrosBase(resumenMinimo())).rejects.toThrow(/período activo/);
+    expect(guardarSnapshotParametrosBase).not.toHaveBeenCalled();
+  });
 });

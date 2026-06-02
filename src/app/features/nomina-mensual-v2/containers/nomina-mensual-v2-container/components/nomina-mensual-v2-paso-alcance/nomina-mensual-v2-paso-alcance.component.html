@@ -1,151 +1,151 @@
 <div class="nmv2-paso-alcance">
   <div class="metric-strip empleados-kpi-strip empleados-kpis-compactos alcance-kpi-strip" aria-label="Vista previa del alcance">
-    @for (metric of metricasAlcance(); track metric.id) {
-      <article class="summary-metric empleados-kpi-card" [class]="claseTono(metric.tone)" [title]="metric.label">
-        <div class="summary-metric__icon empleados-kpi-card__icon nomina-iconBadge" [class]="'nomina-iconBadge--' + tonoBadgeMetrica(metric.tone)">
-          <lucide-icon [name]="iconoMetrica(metric.id)" aria-hidden="true"></lucide-icon>
-        </div>
-        <div class="summary-metric__copy empleados-kpi-card__copy">
-          <span class="empleados-kpi-card__label">{{ metric.label }}</span>
-          <strong class="empleados-kpi-card__value">{{ metric.value }}</strong>
-        </div>
-      </article>
-    }
-  </div>
-
-  <div class="content-grid content-grid--aside nmv2-alcance-layout">
-    <main class="content-main">
-      <section class="surface-card alcance-intro-card">
-        <h2>¿Qué trabajadores quieres preparar para esta nómina?</h2>
-        <p class="side-caption">Vista previa del alcance: revisa cuántos trabajadores entrarán antes de continuar.</p>
-      </section>
-
-      @if (alcanceError()) {
-        <div class="alert-banner alert-banner--error alert-banner--parameter-inline">
-          <div class="alert-banner__icon"><lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon></div>
-          <div class="alert-banner__copy">
-            <strong>No fue posible cargar trabajadores</strong>
-            <p>{{ alcanceError() }}</p>
-          </div>
-        </div>
-      }
-
-      <div class="alcance-opciones-grid">
-        @for (opcion of opcionesAlcance; track opcion.id) {
-          <button
-            type="button"
-            class="alcance-opcion-card nomina-card nomina-card--interactive"
-            [class.alcance-opcion-card--activa]="tipoAlcanceSeleccionado() === opcion.id"
-            [class.alcance-opcion-card--deshabilitada]="opcion.estado !== 'disponible'"
-            [disabled]="opcion.estado !== 'disponible'"
-            (click)="seleccionarTipoAlcance(opcion.id, opcion.estado)"
-          >
-            <span class="alcance-opcion-card__icon nomina-iconBadge nomina-iconBadge--blue">
-              <lucide-icon [name]="opcion.icono" aria-hidden="true"></lucide-icon>
-            </span>
-            <div class="alcance-opcion-card__copy">
-              <div class="alcance-opcion-card__header">
-                <strong>{{ opcion.titulo }}</strong>
-                @if (opcion.etiqueta) {
-                  <span class="alcance-opcion-card__etiqueta nomina-chip nomina-chip--neutral">{{ opcion.etiqueta }}</span>
-                }
-              </div>
-              <small>{{ opcion.descripcion }}</small>
+        @for (metric of metricasAlcance(); track metric.id) {
+          <article class="summary-metric empleados-kpi-card" [class]="claseTono(metric.tone)" [title]="metric.label">
+            <div class="summary-metric__icon empleados-kpi-card__icon nomina-iconBadge" [class]="'nomina-iconBadge--' + tonoBadgeMetrica(metric.tone)">
+              <lucide-icon [name]="iconoMetrica(metric.id)" aria-hidden="true"></lucide-icon>
             </div>
-          </button>
+            <div class="summary-metric__copy empleados-kpi-card__copy">
+              <span class="empleados-kpi-card__label">{{ metric.label }}</span>
+              <strong class="empleados-kpi-card__value">{{ metric.value }}</strong>
+            </div>
+          </article>
         }
       </div>
 
-      @if (tipoAlcanceSeleccionado() === 'grupo') {
-        <section class="surface-card alcance-panel-secundario">
-          <h3>Centros de costo</h3>
-          <p class="side-caption">Selecciona uno o más centros para incluir en el alcance.</p>
-          <div class="alcance-chips">
-            @for (centro of centrosDisponibles(); track centro) {
-              <button
-                type="button"
-                class="alcance-chip nomina-chip"
-                [class.alcance-chip--activo]="centroCostoActivo(centro)"
-                [class.nomina-chip--info]="centroCostoActivo(centro)"
-                (click)="alternarCentroCosto(centro)"
-              >
-                {{ centro }}
-              </button>
-            }
-          </div>
+      <div class="content-grid content-grid--aside nmv2-alcance-layout">
+      <main class="content-main">
+        <section class="surface-card alcance-intro-card">
+          <h2>¿Qué trabajadores quieres preparar para esta nómina?</h2>
+          <p class="side-caption">Vista previa del alcance: revisa cuántos trabajadores entrarán antes de continuar.</p>
         </section>
-      }
 
-      @if (tipoAlcanceSeleccionado() === 'seleccionManual') {
-        <section class="surface-card alcance-panel-secundario">
-          <h3>Selección manual</h3>
-          <p class="side-caption">Marca los trabajadores que entrarán a esta preparación.</p>
-          <label class="alcance-busqueda-manual">
-            <span class="alcance-busqueda-manual__label">Buscar trabajador</span>
-            <input
-              type="search"
-              placeholder="Nombre, RUT o cargo"
-              [value]="busquedaManual()"
-              (input)="busquedaManual.set($any($event.target).value)"
-            />
-          </label>
-          <div class="alcance-lista-manual">
-            @if (alcanceCargando()) {
-              <p class="alcance-lista-manual__estado">Cargando trabajadores...</p>
-            } @else {
-              @for (fila of filasSeleccionManual(); track fila.id) {
-                <label class="alcance-fila-manual">
-                  <input
-                    type="checkbox"
-                    [checked]="trabajadorManualSeleccionado(fila.id)"
-                    (change)="alternarTrabajadorManual(fila.id)"
-                  />
-                  <span class="nmv2-empleado-avatar" aria-hidden="true">{{ inicialesEmpleado(fila.nombreCompleto) }}</span>
-                  <span class="alcance-fila-manual__copy">
-                    <strong>{{ fila.nombreCompleto }}</strong>
-                    <small>{{ fila.rut }} · {{ fila.cargo }}</small>
-                  </span>
-                </label>
-              }
-            }
-          </div>
-        </section>
-      }
-
-      <section class="surface-card alcance-preview-card">
-        <h3>Resumen del alcance</h3>
-        <p>{{ resultadoAlcanceVista().descripcion }}</p>
-        @if (resultadoAlcanceVista().resumen.trabajadoresConAdvertencias > 0) {
-          <p class="alcance-preview-card__advertencia">
-            {{ resultadoAlcanceVista().resumen.trabajadoresConAdvertencias }} trabajador(es) con advertencias en el alcance.
-          </p>
-        }
-      </section>
-    </main>
-
-    <aside class="content-side nomina-sidePanel">
-      <section class="surface-card side-card empleados-checklist-card alcance-checklist-card">
-        <h2>Checklist para continuar</h2>
-        <p class="side-caption">Confirma el alcance antes de revisar empleados.</p>
-        <div class="checklist-stack empleados-checklist-stack">
-          @for (item of checklistAlcance(); track item.id) {
-            <div class="checklist-item empleados-checklist-item empleados-checklist-item--inactivo" [class]="claseChecklist(item.status)">
-              <span class="checklist-item__icon empleados-checklist-item__icon">
-                <lucide-icon [name]="iconoChecklist(item.status)" aria-hidden="true"></lucide-icon>
-              </span>
-              <div class="checklist-item__copy empleados-checklist-item__copy">
-                <strong class="empleados-checklist-item__title">{{ item.title }}</strong>
-                <small class="empleados-checklist-item__description">{{ item.description }}</small>
-              </div>
+        @if (alcanceError()) {
+          <div class="alert-banner alert-banner--error alert-banner--parameter-inline">
+            <div class="alert-banner__icon"><lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon></div>
+            <div class="alert-banner__copy">
+              <strong>No fue posible cargar trabajadores</strong>
+              <p>{{ alcanceError() }}</p>
             </div>
+          </div>
+        }
+
+        <div class="alcance-opciones-grid">
+          @for (opcion of opcionesAlcance; track opcion.id) {
+            <button
+              type="button"
+              class="alcance-opcion-card nomina-card nomina-card--interactive"
+              [class.alcance-opcion-card--activa]="tipoAlcanceSeleccionado() === opcion.id"
+              [class.alcance-opcion-card--deshabilitada]="opcion.estado !== 'disponible'"
+              [disabled]="opcion.estado !== 'disponible'"
+              (click)="seleccionarTipoAlcance(opcion.id, opcion.estado)"
+            >
+              <span class="alcance-opcion-card__icon nomina-iconBadge nomina-iconBadge--blue">
+                <lucide-icon [name]="opcion.icono" aria-hidden="true"></lucide-icon>
+              </span>
+              <div class="alcance-opcion-card__copy">
+                <div class="alcance-opcion-card__header">
+                  <strong>{{ opcion.titulo }}</strong>
+                  @if (opcion.etiqueta) {
+                    <span class="alcance-opcion-card__etiqueta nomina-chip nomina-chip--neutral">{{ opcion.etiqueta }}</span>
+                  }
+                </div>
+                <small>{{ opcion.descripcion }}</small>
+              </div>
+            </button>
           }
         </div>
-        <div class="info-banner empleados-checklist-info">
-          <lucide-icon name="info" aria-hidden="true"></lucide-icon>
-          <span>Continúa con «Validar alcance» cuando la vista previa esté lista.</span>
-        </div>
-        <button type="button" class="text-link" (click)="solicitarVolverParametros()">Volver a parámetros</button>
-      </section>
-    </aside>
-  </div>
+
+        @if (tipoAlcanceSeleccionado() === 'grupo') {
+          <section class="surface-card alcance-panel-secundario">
+            <h3>Centros de costo</h3>
+            <p class="side-caption">Selecciona uno o más centros para incluir en el alcance.</p>
+            <div class="alcance-chips">
+              @for (centro of centrosDisponibles(); track centro) {
+                <button
+                  type="button"
+                  class="alcance-chip nomina-chip"
+                  [class.alcance-chip--activo]="centroCostoActivo(centro)"
+                  [class.nomina-chip--info]="centroCostoActivo(centro)"
+                  (click)="alternarCentroCosto(centro)"
+                >
+                  {{ centro }}
+                </button>
+              }
+            </div>
+          </section>
+        }
+
+        @if (tipoAlcanceSeleccionado() === 'seleccionManual') {
+          <section class="surface-card alcance-panel-secundario">
+            <h3>Selección manual</h3>
+            <p class="side-caption">Marca los trabajadores que entrarán a esta preparación.</p>
+            <label class="alcance-busqueda-manual">
+              <span class="alcance-busqueda-manual__label">Buscar trabajador</span>
+              <input
+                type="search"
+                placeholder="Nombre, RUT o cargo"
+                [value]="busquedaManual()"
+                (input)="busquedaManual.set($any($event.target).value)"
+              />
+            </label>
+            <div class="alcance-lista-manual">
+              @if (alcanceCargando()) {
+                <p class="alcance-lista-manual__estado">Cargando trabajadores...</p>
+              } @else {
+                @for (fila of filasSeleccionManual(); track fila.id) {
+                  <label class="alcance-fila-manual">
+                    <input
+                      type="checkbox"
+                      [checked]="trabajadorManualSeleccionado(fila.id)"
+                      (change)="alternarTrabajadorManual(fila.id)"
+                    />
+                    <span class="nmv2-empleado-avatar" aria-hidden="true">{{ inicialesEmpleado(fila.nombreCompleto) }}</span>
+                    <span class="alcance-fila-manual__copy">
+                      <strong>{{ fila.nombreCompleto }}</strong>
+                      <small>{{ fila.rut }} · {{ fila.cargo }}</small>
+                    </span>
+                  </label>
+                }
+              }
+            </div>
+          </section>
+        }
+
+        <section class="surface-card alcance-preview-card">
+          <h3>Resumen del alcance</h3>
+          <p>{{ resultadoAlcanceVista().descripcion }}</p>
+          @if (resultadoAlcanceVista().resumen.trabajadoresConAdvertencias > 0) {
+            <p class="alcance-preview-card__advertencia">
+              {{ resultadoAlcanceVista().resumen.trabajadoresConAdvertencias }} trabajador(es) con advertencias en el alcance.
+            </p>
+          }
+        </section>
+      </main>
+
+      <aside class="content-side nomina-sidePanel">
+        <section class="surface-card side-card empleados-checklist-card alcance-checklist-card">
+          <h2>Checklist para continuar</h2>
+          <p class="side-caption">Confirma el alcance antes de revisar empleados.</p>
+          <div class="checklist-stack empleados-checklist-stack">
+            @for (item of checklistAlcance(); track item.id) {
+              <div class="checklist-item empleados-checklist-item empleados-checklist-item--inactivo" [class]="claseChecklist(item.status)">
+                <span class="checklist-item__icon empleados-checklist-item__icon">
+                  <lucide-icon [name]="iconoChecklist(item.status)" aria-hidden="true"></lucide-icon>
+                </span>
+                <div class="checklist-item__copy empleados-checklist-item__copy">
+                  <strong class="empleados-checklist-item__title">{{ item.title }}</strong>
+                  <small class="empleados-checklist-item__description">{{ item.description }}</small>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="info-banner empleados-checklist-info">
+            <lucide-icon name="info" aria-hidden="true"></lucide-icon>
+            <span>Continúa con «Validar alcance» cuando la vista previa esté lista.</span>
+          </div>
+          <button type="button" class="text-link" (click)="solicitarVolverParametros()">Volver a parámetros</button>
+        </section>
+      </aside>
+      </div>
 </div>

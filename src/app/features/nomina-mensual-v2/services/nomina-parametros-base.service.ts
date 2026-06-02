@@ -85,6 +85,7 @@ export class NominaParametrosBaseService {
     resumen: NominaParametrosResumen,
     origenAlGuardar: OrigenBaseParametrosAlAvanzar = 'recienGuardada',
   ): Promise<{ idCalculoPeriodoBase: number; fechaBaseGuardada: string }> {
+    this.validarPeriodoResumenActivo(resumen.periodo);
     const periodo = resumen.periodo;
     const parametrosGeneral = await this.parametrosService.obtenerUltimoHastaPeriodo(periodo, { enriquecer: true });
     const fechaGeneracion = new Date().toISOString();
@@ -153,6 +154,15 @@ export class NominaParametrosBaseService {
   private async cargarParametrosCongeladosActuales(periodo: string) {
     const parametrosGeneral = await this.parametrosService.obtenerUltimoHastaPeriodo(periodo, { enriquecer: true });
     return construirParametrosCongelados(parametrosGeneral);
+  }
+
+  private validarPeriodoResumenActivo(periodoResumen: string): void {
+    const periodoActivo = this.periodoActivo.periodoYm();
+    if (periodoResumen !== periodoActivo) {
+      throw new Error(
+        `El resumen corresponde al período ${periodoResumen}, distinto del período activo ${periodoActivo}.`,
+      );
+    }
   }
 
   private async resolverUsuarioActual() {

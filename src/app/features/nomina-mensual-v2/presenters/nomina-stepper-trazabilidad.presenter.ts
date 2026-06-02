@@ -34,6 +34,14 @@ function mapEstadoStepper(estado: PayrollStepStatus): PasoNominaStepperEstadoVis
   }
 }
 
+/** Eventos ya vienen ordenados del más reciente al más antiguo. */
+export function obtenerUltimoEventoPaso(
+  eventos: readonly EventoTrazabilidadNomina[],
+  paso: PayrollStepId,
+): EventoTrazabilidadNomina | undefined {
+  return eventos.find((evento) => evento.paso === paso);
+}
+
 export function construirVistasStepper(
   steps: readonly PayrollStep[],
   _pasoActual: PayrollStepId,
@@ -43,7 +51,7 @@ export function construirVistasStepper(
 ): PasoNominaStepperView[] {
   return steps.map((step) => {
     const resumen = auditoriaPorPaso[step.id];
-    const evento = eventos.find((e) => e.paso === step.id);
+    const evento = obtenerUltimoEventoPaso(eventos, step.id);
     const tiene = tieneResponsableRegistrado(resumen, eventos, step.id);
     return {
       numero: step.number,
@@ -82,14 +90,20 @@ export function construirResumenTrazabilidadPasoActual(
   eventos: readonly EventoTrazabilidadNomina[],
 ): ResumenTrazabilidadPasoActualView {
   const resumen = auditoriaPorPaso[pasoActual];
-  const evento = eventos.find((e) => e.paso === pasoActual);
+  const evento = obtenerUltimoEventoPaso(eventos, pasoActual);
   const tiene = tieneResponsableRegistrado(resumen, eventos, pasoActual);
-  const integridadEstado = resumen?.integridad.estadoIntegridad ?? 'noDisponible';
+  const integridadAuditoria = resumen?.integridad.estadoIntegridad;
+  const integridadEvento = evento?.integridad.estadoIntegridad;
+  const integridadEstado =
+    integridadAuditoria && integridadAuditoria !== 'noDisponible'
+      ? integridadAuditoria
+      : integridadEvento ?? integridadAuditoria ?? 'noDisponible';
   const integridadLabel = etiquetaIntegridadVisible(integridadEstado, evento?.origen);
-  const nombre =
-    resumen?.usuarioNombre && resumen.usuarioNombre !== '—'
-      ? resumen.usuarioNombre
-      : 'Sin responsable registrado';
+  const nombreAuditoria =
+    resumen?.usuarioNombre && resumen.usuarioNombre !== '—' ? resumen.usuarioNombre : null;
+  const nombreEvento =
+    evento?.usuarioNombre && evento.usuarioNombre !== '—' ? evento.usuarioNombre : null;
+  const nombre = nombreAuditoria ?? nombreEvento ?? 'Sin responsable registrado';
 
   return {
     paso: pasoActual,

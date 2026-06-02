@@ -51,36 +51,35 @@ export class NominaMensualV2StepperTraceabilityComponent {
     () => this.orquestador.ayudaAvance() ?? 'Revisar advertencias del paso',
   );
 
-  readonly pasoDetalleIntegridad = computed<PayrollStepId>(() =>
-    this.tieneBaseParametrosGuardada() ? 'parameters' : this.orquestador.pasoActual(),
-  );
-
-  readonly tieneDetalleParametrosGuardados = computed(() =>
-    this.orquestador
+  /** Una sola fuente derivada evita parpadeo entre señales que llegan en distinto orden. */
+  readonly soporteIntegridadParametros = computed(() => {
+    const eventoCongelado = this.orquestador
       .eventosTrazabilidad()
-      .some(
+      .find(
         (evento) =>
-          evento.paso === 'parameters' &&
-          evento.tipoEvento === 'PARAMETROS_CONGELADOS' &&
-          Array.isArray(evento.metadataPublica?.['valoresParametrosBase']) &&
-          evento.metadataPublica['valoresParametrosBase'].length > 0,
-      ),
-  );
+          evento.paso === 'parameters' && evento.tipoEvento === 'PARAMETROS_CONGELADOS',
+      );
+    const valoresBase = eventoCongelado?.metadataPublica?.['valoresParametrosBase'];
+    const tieneValoresDetalle = Array.isArray(valoresBase) && valoresBase.length > 0;
+    const idBase =
+      this.orquestador.idCalculoPeriodoBase()
+      ?? this.orquestador.estadoParametrosBase()?.idCalculoPeriodoBase
+      ?? null;
+    const tieneBaseGuardada =
+      tieneValoresDetalle || idBase != null || !!eventoCongelado?.idSnapshotRelacionado;
 
-  readonly tieneBaseParametrosGuardada = computed(
-    () =>
-      this.tieneDetalleParametrosGuardados() ||
-      !!this.orquestador.idCalculoPeriodoBase() ||
-      !!this.orquestador.estadoParametrosBase()?.idCalculoPeriodoBase ||
-      this.orquestador
-        .eventosTrazabilidad()
-        .some(
-          (evento) =>
-            evento.paso === 'parameters' &&
-            evento.tipoEvento === 'PARAMETROS_CONGELADOS' &&
-            !!evento.idSnapshotRelacionado,
-        ),
-  );
+    return {
+      tieneBaseGuardada,
+      pasoDetalleIntegridad: (tieneBaseGuardada ? 'parameters' : this.orquestador.pasoActual()) as PayrollStepId,
+    };
+  });
+
+  readonly tooltipModalIntegridad = computed(() => {
+    if (this.soporteIntegridadParametros().tieneBaseGuardada) {
+      return 'Abrir datos guardados de parámetros';
+    }
+    return `${tooltipIntegridadPaso(this.resumen())}\nAbrir detalle del snapshot`;
+  });
 
   tooltipFecha(): string {
     return tooltipFechaPaso(this.resumen());
@@ -88,13 +87,6 @@ export class NominaMensualV2StepperTraceabilityComponent {
 
   tooltipIntegridad(): string {
     return tooltipIntegridadPaso(this.resumen());
-  }
-
-  tooltipModalIntegridad(): string {
-    if (this.tieneBaseParametrosGuardada()) {
-      return 'Abrir datos guardados de parámetros';
-    }
-    return `${tooltipIntegridadPaso(this.resumen())}\nAbrir detalle del snapshot`;
   }
 
   abrirResponsable(): void {
@@ -106,7 +98,10 @@ export class NominaMensualV2StepperTraceabilityComponent {
   }
 
   abrirModalIntegridad(): void {
-    this.orquestador.abrirTrazabilidadPaso(this.pasoDetalleIntegridad(), 'integrity');
+    this.orquestador.abrirTrazabilidadPaso(
+      this.soporteIntegridadParametros().pasoDetalleIntegridad,
+      'integrity',
+    );
   }
 
   abrirDrawerCompleto(): void {

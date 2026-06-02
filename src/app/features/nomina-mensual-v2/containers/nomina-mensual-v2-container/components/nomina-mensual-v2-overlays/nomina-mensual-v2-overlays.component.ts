@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Output, ViewEncapsulation, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Output, ViewEncapsulation, computed, inject } from '@angular/core';
 
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
 import type { MessageBoxSection } from '../../../../../../shared/components/ui/feedback/message-box/message-box.types';
 import type { DiferenciaParametroBase } from '../../../../models/nomina-parametros-base.models';
 import type { TipoPendienteEmpleado } from '../../../../presenters/nomina-empleados-validacion.presenter';
 import { NominaMensualV2EmpleadosResumenPendientesComponent } from '../nomina-mensual-v2-empleados-resumen-pendientes/nomina-mensual-v2-empleados-resumen-pendientes.component';
+import { NominaMensualV2ModalAccesoBaseParametrosComponent } from '../nomina-mensual-v2-modal-acceso-base-parametros/nomina-mensual-v2-modal-acceso-base-parametros.component';
+import { NominaParametrosBaseAccesoService } from '../../../../services/nomina-parametros-base-acceso.service';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 
 const SECCIONES_MSG_BOX_BLOQUEO_PARAMETROS: MessageBoxSection[] = [
@@ -26,15 +28,21 @@ const SECCIONES_MSG_BOX_REVISION_PARAMETROS: MessageBoxSection[] = [
 @Component({
   selector: 'app-nomina-mensual-v2-overlays',
   standalone: true,
-  imports: [MessageBoxComponent, NominaMensualV2EmpleadosResumenPendientesComponent],
+  imports: [
+    MessageBoxComponent,
+    NominaMensualV2EmpleadosResumenPendientesComponent,
+    NominaMensualV2ModalAccesoBaseParametrosComponent,
+  ],
   templateUrl: './nomina-mensual-v2-overlays.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })
 export class NominaMensualV2OverlaysComponent {
   readonly orquestador = inject(NominaMensualV2OrquestadorPort);
+  private readonly accesoBaseService = inject(NominaParametrosBaseAccesoService);
 
   readonly seccionesMsgBoxRevisionParametros = SECCIONES_MSG_BOX_REVISION_PARAMETROS;
+  readonly permisosRecargaBase = computed(() => this.accesoBaseService.resolverPermisos());
 
   seccionesMsgBoxBloqueoParametros(pendientes?: readonly string[]): MessageBoxSection[] {
     if (!pendientes?.length) {
@@ -63,6 +71,7 @@ export class NominaMensualV2OverlaysComponent {
   @Output() solicitarActualizarBase = new EventEmitter<void>();
   @Output() confirmarActualizarBaseYContinuar = new EventEmitter<void>();
   @Output() confirmarReingresoParametros = new EventEmitter<void>();
+  @Output() confirmarRecargaBaseParametros = new EventEmitter<void>();
 
   seccionesPrepararNomina(preview: {
     seccionesListas: number;
@@ -129,6 +138,11 @@ export class NominaMensualV2OverlaysComponent {
 
   cerrarModalRevisarParametros(): void {
     this.orquestador.modalRevisarParametros.set(null);
+    this.cerrarModal.emit();
+  }
+
+  cerrarModalAccesoBaseParametros(): void {
+    this.orquestador.modalAccesoBaseParametros.set(null);
     this.cerrarModal.emit();
   }
 }

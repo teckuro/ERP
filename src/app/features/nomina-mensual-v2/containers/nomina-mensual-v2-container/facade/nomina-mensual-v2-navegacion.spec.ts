@@ -1,5 +1,6 @@
 import {
   ORDEN_PASOS_NOMINA,
+  esRetrocesoAPaso,
   obtenerEtiquetaAccionPrincipal,
   obtenerTituloPaso,
 } from './nomina-mensual-v2-navegacion';
@@ -21,5 +22,10 @@ describe('nomina-mensual-v2-navegacion', () => {
 
   it('expone Preparar nómina en parámetros', () => {
     expect(obtenerEtiquetaAccionPrincipal('parameters')).toBe('Preparar nómina');
+  });
+
+  it('detecta retroceso al paso Parametros desde Alcance', () => {
+    expect(esRetrocesoAPaso('scope', 'parameters')).toBe(true);
+    expect(esRetrocesoAPaso('parameters', 'scope')).toBe(false);
   });
 });

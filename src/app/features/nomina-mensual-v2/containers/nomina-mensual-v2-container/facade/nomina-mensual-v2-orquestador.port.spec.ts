@@ -75,4 +75,37 @@ describe('NominaMensualV2OrquestadorPort', () => {
     expect(orquestador.eventosTrazabilidad()).toEqual([]);
     expect(orquestador.contextoTrazabilidad()).toEqual({ periodo: '2026-06' });
   });
+
+  it('no vacia trazabilidad al reiniciar el mismo periodo', () => {
+    const orquestador = new NominaMensualV2OrquestadorPort();
+    orquestador.actualizarContextoTrazabilidad({
+      periodo: '2026-06',
+      parametrosResumen: {
+        seccionesListas: 1,
+        seccionesTotal: 2,
+        controlesVerificados: 1,
+        bloqueos: 0,
+        advertencias: 0,
+      },
+    });
+    orquestador.eventosTrazabilidad.set([
+      {
+        idEvento: 'evt-1',
+        periodo: '2026-06',
+        paso: 'parameters',
+        tipoEvento: 'PARAMETROS_CONGELADOS',
+        usuarioId: null,
+        usuarioNombre: 'RRHH',
+        fechaEvento: '2026-06-01T10:00:00.000Z',
+        descripcion: 'Base guardada',
+        integridad: { estadoIntegridad: 'registrado' },
+        origen: 'servidor',
+      },
+    ]);
+
+    orquestador.reiniciarPorCambioPeriodo('2026-06');
+
+    expect(orquestador.eventosTrazabilidad()).toHaveLength(1);
+    expect(orquestador.contextoTrazabilidad()?.parametrosResumen?.seccionesListas).toBe(1);
+  });
 });

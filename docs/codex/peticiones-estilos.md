@@ -1,3 +1,57 @@
+## 2026-06-02 - Nómina V10.1: marco unificado todos los pasos
+
+- Contenedor: `nmv2-step-body` + `nmv2-step-frame` envuelven Parámetros, Alcance, Empleados y pasos demo (movimientos, cálculo, etc.).
+- Borde/padding del panel en `.nmv2-step-frame`; pasos sin duplicar marco interno.
+- Empleados deja grid lateral KPI/stepper; KPI dentro del panel como el resto.
+- Sin cambios a estilos globales, SQL ni motor.
+
+## 2026-06-02 - Nómina V10.1: paso Alcance — solo marco exterior
+
+- `nmv2-step-body--scope` + `alcance-perfect-layout`: continuidad visual bajo cabecera (flujo + detalle del paso), como Parámetros.
+- Contenido interno de Alcance sin cambio de patrón (KPI, opciones, checklist).
+- Sin cambios a estilos globales, SQL ni motor.
+
+## 2026-06-02 - Nómina V10.1: shell Parámetros sin «Preparar» con base guardada
+
+- Con snapshot de parámetros vigente: CTA shell **«Continuar a alcance»** (habilitado); recarga solo vía «Actualizar» (admin + MessageBox).
+- Sin base: **«Preparar nómina»** guarda snapshot y avanza.
+- `syncShellContext` reacciona a `estadoParametrosBase` del orquestador (sin depender solo del hijo).
+- Sin cambios a estilos globales, SQL ni motor.
+
+## 2026-06-02 - Nómina V10.1: componente modal acceso base parámetros
+
+- Nuevo `nomina-mensual-v2-modal-acceso-base-parametros` (vista desde presenter, inputs/outputs).
+- Permisos y evaluación en `nomina-parametros-base-acceso.rules` + `NominaParametrosBaseAccesoService`.
+- Overlays y paso Parámetros consumen el servicio; sin duplicar copy ni lógica admin.
+- Sin cambios a estilos globales, SQL ni motor.
+
+## 2026-06-02 - Nómina V10.1: bloqueo recarga base parámetros (admin)
+
+- Con base guardada: botón shell «Preparar nómina» deshabilitado para usuarios no admin; administrador ve MessageBox de decisión con repercusiones antes de recargar.
+- Modal diferencias: acción «Actualizar» solo visible para admin; RRHH ve MessageBox `blocked` si intenta recargar.
+- Validación defensiva: `guardarSnapshotParametrosBase` exige `resumen.periodo === periodoActivo`.
+- Sin cambios a estilos globales, SQL ni motor.
+
+## 2026-06-02 - Nómina V10.1: fix truncado «Detalle del paso»
+
+- Eliminado bloque legacy `.nomina-stepper-traceability` en `nomina-mensual-v2-container.css` (`max-width: 88px`, layout flex) que pisaba el grid del componente `nomina-mensual-v2-stepper-traceability` y cortaba email/historial con ellipsis prematuro.
+- Tooltip de Historial muestra el último evento completo al pasar el cursor.
+- Sin cambios a estilos globales, SQL ni motor.
+
+## 2026-06-02 - Nómina V10.1: fix cuelgue / parpadeo trazabilidad
+
+- Modal trazabilidad: el `effect` ya no escribe señales cuando el modal está cerrado (evitaba bucle de CD con cada `recomputar`).
+- Contenedor: `inicializarSesionPeriodo` solo hace `reiniciar` al cambiar período real, no en cada re-ejecución del effect.
+- Orquestador: `reiniciarPorCambioPeriodo` preserva contexto y eventos si el período es el mismo.
+- Sin cambios a estilos globales, SQL ni motor.
+
+## 2026-06-02 - Nómina V10.1: fix parpadeo «Detalle del paso»
+
+- Orquestador: no vaciar trazabilidad ni estado base si el período no cambió; token en `recomputarTrazabilidad` para ignorar respuestas obsoletas.
+- Stepper traceability: un solo `computed` (`soporteIntegridadParametros`) en lugar de dos que leían señales en distinto orden.
+- Presenter: resumen unificado desde último evento + auditoría.
+- Sin cambios a estilos globales, SQL ni motor.
+
 ## 2026-05-30 - Nómina V10.1: panel trazabilidad solo en sidebar Empleados
 
 - Retirado `app-nomina-mensual-v2-trazabilidad-paso` (variant panel) del sidebar de **Alcance**; la trazabilidad del paso sigue en el cluster del stepper superior.

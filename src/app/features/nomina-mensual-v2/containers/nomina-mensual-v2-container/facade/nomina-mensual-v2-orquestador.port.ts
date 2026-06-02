@@ -1,12 +1,15 @@
 import { Injectable, computed, signal } from '@angular/core';
 
 import type { PayrollStepId, ResultadoAlcanceNomina } from '../../../models/nomina-mensual-v2.models';
+import type { ModalAccesoBaseParametrosPort } from '../../../models/nomina-parametros-base-acceso.models';
 import type {
   DiferenciaParametroBase,
   EstadoBaseParametrosPeriodoView,
   OrigenBaseParametrosAlAvanzar,
   VistaPreviaParametrosBase,
 } from '../../../models/nomina-parametros-base.models';
+
+export type { ModalAccesoBaseParametrosPort };
 import type { NominaParametrosResumen } from '../../../models/nomina-parametros-resumen.models';
 import type {
   ContextoTrazabilidadPasoNomina,
@@ -80,6 +83,7 @@ export class NominaMensualV2OrquestadorPort {
   readonly modalActualizarParametrosBase = signal<ModalActualizarParametrosBasePort | null>(null);
   readonly modalTablaDiferenciasParametrosBase = signal<ModalTablaDiferenciasParametrosBasePort | null>(null);
   readonly modalRevisarParametros = signal<ModalRevisarParametrosPort | null>(null);
+  readonly modalAccesoBaseParametros = signal<ModalAccesoBaseParametrosPort | null>(null);
   readonly resultadoAlcance = signal<ResultadoAlcanceNomina | null>(null);
 
   readonly estadoParametrosBase = signal<EstadoBaseParametrosPeriodoView | null>(null);
@@ -95,6 +99,7 @@ export class NominaMensualV2OrquestadorPort {
 
   private readonly eventosLocales = signal<EventoTrazabilidadNomina[]>([]);
   private trazabilidadService: NominaMensualV2TrazabilidadService | null = null;
+  private tokenRecomputarTrazabilidad = 0;
 
   readonly alcanceValidado = computed(() => {
     const resultado = this.resultadoAlcance();
@@ -102,7 +107,9 @@ export class NominaMensualV2OrquestadorPort {
   });
 
   readonly parametrosPreparados = computed(
-    () => !!this.estadoParametrosBase()?.idCalculoPeriodoBase,
+    () =>
+      !!this.estadoParametrosBase()?.idCalculoPeriodoBase
+      || this.idCalculoPeriodoBase() != null,
   );
 
   readonly detalleTrazabilidadActivo = computed(() => {
@@ -155,6 +162,7 @@ export class NominaMensualV2OrquestadorPort {
     this.modalActualizarParametrosBase.set(null);
     this.modalTablaDiferenciasParametrosBase.set(null);
     this.modalRevisarParametros.set(null);
+    this.modalAccesoBaseParametros.set(null);
   }
 
   registrarOrigenBaseAlAvanzar(
@@ -202,28 +210,41 @@ export class NominaMensualV2OrquestadorPort {
   }
 
   reiniciarPorCambioPeriodo(periodo: string): void {
+    const periodoAnterior = this.contextoTrazabilidad()?.periodo;
+    const cambioPeriodo = periodoAnterior == null || periodoAnterior !== periodo;
+
     this.limpiarModalesAvance();
-    this.resultadoAlcance.set(null);
-    this.estadoParametrosBase.set(null);
-    this.origenBaseParametrosAlAvanzar.set(null);
-    this.idCalculoPeriodoBase.set(null);
-    this.auditoriaPorPaso.set({});
-    this.eventosTrazabilidad.set([]);
-    this.eventosLocales.set([]);
+    if (cambioPeriodo) {
+      this.tokenRecomputarTrazabilidad += 1;
+      this.resultadoAlcance.set(null);
+      this.estadoParametrosBase.set(null);
+      this.origenBaseParametrosAlAvanzar.set(null);
+      this.idCalculoPeriodoBase.set(null);
+      this.auditoriaPorPaso.set({});
+      this.eventosTrazabilidad.set([]);
+      this.eventosLocales.set([]);
+    }
     this.trazabilidadDrawerAbierto.set(false);
     this.trazabilidadPasoActivo.set(null);
     this.tipoModalDetalleActivo.set(null);
-    this.contextoTrazabilidad.set({ periodo });
+    const contextoActual = this.contextoTrazabilidad();
+    if (cambioPeriodo || !contextoActual) {
+      this.contextoTrazabilidad.set({ periodo });
+    } else if (contextoActual.periodo !== periodo) {
+      this.actualizarContextoTrazabilidad({ ...contextoActual, periodo });
+    }
     this.establecerAyudaAvance(null);
   }
 
   async recomputarTrazabilidad(incluirMockSiVacio = false): Promise<RecomputarTrazabilidadResult | null> {
     if (!this.trazabilidadService) return null;
+    const token = ++this.tokenRecomputarTrazabilidad;
     const result = await this.trazabilidadService.recomputar({
       eventosLocales: this.eventosLocales(),
       contexto: this.contextoTrazabilidad() ?? undefined,
       incluirMockSiVacio,
     });
+    if (token !== this.tokenRecomputarTrazabilidad) return null;
     this.eventosTrazabilidad.set(result.eventos);
     this.auditoriaPorPaso.set(result.auditoriaPorPaso);
     return result;

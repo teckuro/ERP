@@ -1,6 +1,5 @@
 <div class="nmv2-paso-parametros">
-  <div class="nmv2-step-body nmv2-step-body--parameters">
-    @if (parametrosCargaOverlay(); as overlay) {
+  @if (parametrosCargaOverlay(); as overlay) {
       <app-message-box
         variant="loading"
         mode="modal"
@@ -187,7 +186,6 @@
 
       </aside>
     </div>
-  </div>
 
   @if (modalPendientesParametros(); as modalPendientes) {
     <div class="parametros-pendientes-modal-backdrop" role="presentation" (click)="cerrarModalPendientesParametros()">

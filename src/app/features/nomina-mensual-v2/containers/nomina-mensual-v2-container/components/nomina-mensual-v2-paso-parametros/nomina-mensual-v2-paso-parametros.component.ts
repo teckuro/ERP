@@ -32,6 +32,8 @@ import type {
   ParametrosMantenedorDestino,
 } from '../../../../models/nomina-parametros-resumen.models';
 import { NominaParametrosBaseService } from '../../../../services/nomina-parametros-base.service';
+import { NominaParametrosBaseAccesoService } from '../../../../services/nomina-parametros-base-acceso.service';
+import { ayudaAvanceParametrosConBase } from '../../../../rules/nomina-parametros-base-acceso.rules';
 import { NominaParametrosResumenService } from '../../../../services/nomina-parametros-resumen.service';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 type DonutTonoPresentacion = 'exito' | 'revision' | 'bloqueo' | 'neutral';
@@ -81,7 +83,9 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   private readonly parametrosResumenService = inject(NominaParametrosResumenService);
   private readonly parametrosBaseService = inject(NominaParametrosBaseService);
   private readonly periodoActivo = inject(PeriodoActivoService);
+  private readonly accesoBaseService = inject(NominaParametrosBaseAccesoService);
   private tokenCargaPeriodo = 0;
+  private accionPendienteTrasConfirmacionAdmin: (() => void) | null = null;
 
   @Output() avanceSolicitado = new EventEmitter<PayrollStepId>();
   @Output() resumenActualizado = new EventEmitter<void>();
@@ -109,6 +113,8 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     this.formatoHoraActualizacion(this.estadoBase()?.fechaBaseGuardada),
   );
   readonly muestraLineaBaseGuardada = computed(() => !!this.estadoBase()?.idCalculoPeriodoBase);
+  readonly hayBaseParametrosGuardada = computed(() => !!this.estadoBase()?.idCalculoPeriodoBase);
+  readonly permisosRecargaBase = computed(() => this.accesoBaseService.resolverPermisos());
 
   readonly parametrosCargaOverlay = computed((): ParametrosCargaOverlayPresentacion | null => {
     if (this.parametrosRedirigiendo()) {
@@ -253,6 +259,16 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
       const resumen = this.parametrosResumen();
       if (!resumen) {
         this.orquestador.establecerAyudaAvance(null);
+        return;
+      }
+      if (this.hayBaseParametrosGuardada()) {
+        this.orquestador.establecerAyudaAvance(
+          ayudaAvanceParametrosConBase({
+            esAdmin: this.permisosRecargaBase().puedeRecargarBase,
+            hayDiferencias: this.hayDiferenciasBase(),
+          }),
+          this.hayDiferenciasBase() ? 'revision' : null,
+        );
         return;
       }
       if (resumen.bloqueosPreparacion > 0) {
@@ -401,17 +417,33 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   }
 
   solicitarActualizarBase(): void {
-    const modal = this.orquestador.modalDiferenciasParametrosBase();
-    if (!modal) return;
-    this.orquestador.modalDiferenciasParametrosBase.set(null);
-    this.orquestador.modalActualizarParametrosBase.set({ resumen: modal.resumen });
+    if (this.interceptarRecargaBaseGuardada(() => this.abrirModalActualizarBaseDesdeDiferencias())) {
+      return;
+    }
+    this.abrirModalActualizarBaseDesdeDiferencias();
   }
 
   async confirmarActualizarBaseYContinuar(): Promise<void> {
     const modal = this.orquestador.modalActualizarParametrosBase();
     if (!modal) return;
+    await this.ejecutarConfirmarActualizarBase(modal.resumen);
+  }
+
+  confirmarRecargaBaseParametrosAdmin(): void {
+    const accion = this.accionPendienteTrasConfirmacionAdmin;
+    this.accionPendienteTrasConfirmacionAdmin = null;
+    this.orquestador.modalAccesoBaseParametros.set(null);
+    accion?.();
+  }
+
+  cerrarModalAccesoBaseParametros(): void {
+    this.accionPendienteTrasConfirmacionAdmin = null;
+    this.orquestador.modalAccesoBaseParametros.set(null);
+  }
+
+  private async ejecutarConfirmarActualizarBase(resumen: NominaParametrosResumen): Promise<void> {
     try {
-      await this.ejecutarGuardadoBase(modal.resumen, 'actualizadaExplicitamente');
+      await this.ejecutarGuardadoBase(resumen, 'actualizadaExplicitamente');
       this.orquestador.modalActualizarParametrosBase.set(null);
     } catch (error) {
       console.error('[Nómina V2] Error actualizando base de parámetros', error);
@@ -445,6 +477,10 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   }
 
   async prepararNomina(): Promise<void> {
+    await this.ejecutarPrepararNomina();
+  }
+
+  private async ejecutarPrepararNomina(): Promise<void> {
     const periodo = this.periodoActivo.periodoYm();
     this.parametrosValidando.set(true);
     this.parametrosError.set(null);
@@ -572,6 +608,31 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
 
   cantidadChipsOcultosParametro(items: ParametroResumenItem[]): number {
     return Math.max(items.length - 5, 0);
+  }
+
+  private abrirModalActualizarBaseDesdeDiferencias(): void {
+    const modal = this.orquestador.modalDiferenciasParametrosBase();
+    if (!modal) return;
+    this.orquestador.modalDiferenciasParametrosBase.set(null);
+    this.orquestador.modalActualizarParametrosBase.set({ resumen: modal.resumen });
+  }
+
+  private interceptarRecargaBaseGuardada(accion: () => void): boolean {
+    const evaluacion = this.accesoBaseService.evaluarIntentoRecarga(
+      this.hayBaseParametrosGuardada(),
+      this.periodoActivo.periodoYm(),
+    );
+    if (!this.accesoBaseService.debeInterceptarRecarga(evaluacion)) {
+      return false;
+    }
+    const modal = this.accesoBaseService.modalParaEvaluacion(evaluacion);
+    if (modal) {
+      if (evaluacion.accion === 'confirmar') {
+        this.accionPendienteTrasConfirmacionAdmin = accion;
+      }
+      this.orquestador.modalAccesoBaseParametros.set(modal);
+    }
+    return true;
   }
 
   private async ejecutarGuardadoBase(

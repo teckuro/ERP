@@ -1,0 +1,14 @@
+@if (vista(); as vm) {
+  <app-message-box
+    [variant]="vm.variant"
+    mode="modal"
+    width="md"
+    [title]="vm.title"
+    [message]="vm.message"
+    [sections]="vm.sections"
+    [primaryLabel]="vm.primaryLabel"
+    [secondaryLabel]="vm.secondaryLabel ?? ''"
+    (action)="onAccionPrincipal()"
+    (secondary)="cerrar.emit()"
+  ></app-message-box>
+}

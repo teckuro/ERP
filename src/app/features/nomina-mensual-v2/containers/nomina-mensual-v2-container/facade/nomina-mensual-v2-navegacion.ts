@@ -28,6 +28,10 @@ export function esAvanceHaciaAdelante(pasoActual: PayrollStepId, destinoPaso: Pa
   return ORDEN_PASOS_NOMINA.indexOf(destinoPaso) > ORDEN_PASOS_NOMINA.indexOf(pasoActual);
 }
 
+export function esRetrocesoAPaso(pasoActual: PayrollStepId, destinoPaso: PayrollStepId): boolean {
+  return ORDEN_PASOS_NOMINA.indexOf(destinoPaso) < ORDEN_PASOS_NOMINA.indexOf(pasoActual);
+}
+
 export function obtenerTituloPaso(paso: PayrollStepId): string {
   switch (paso) {
     case 'parameters':

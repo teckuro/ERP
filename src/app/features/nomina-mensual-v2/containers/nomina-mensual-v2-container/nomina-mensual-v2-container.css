@@ -173,91 +173,10 @@ button:disabled,
   color: #b45309;
 }
 
-.nomina-stepper-traceability {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  align-self: center;
-  gap: 4px;
-  padding: 6px;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  background: #f8fafc;
-}
-
-.nomina-stepper-traceability__action {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  min-width: 52px;
-  max-width: 88px;
-  padding: 4px 6px;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: #475569;
-  font-size: 10px;
-  line-height: 1.2;
-  cursor: pointer;
-}
-
-.nomina-stepper-traceability__action:hover {
-  background: #eef2f7;
-  color: #1e293b;
-}
-
-.nomina-stepper-traceability__action--meta {
-  cursor: default;
-}
-
-.nomina-stepper-traceability__action--meta:hover {
-  background: transparent;
-}
-
-.nomina-stepper-traceability__action--ok {
-  color: #15803d;
-}
-
-.nomina-stepper-traceability__action--warn {
-  color: #b45309;
-}
-
-.nomina-stepper-traceability__action--alert {
-  color: #b45309;
-  background: #fffbeb;
-}
-
-.nomina-stepper-traceability__label {
-  display: block;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-align: center;
-}
-
-.nomina-stepper-traceability__avatar {
-  display: inline-grid;
-  place-items: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 999px;
-  background: #dbeafe;
-  color: #1d4ed8;
-  font-size: 9px;
-  font-weight: 700;
-}
-
 @media (max-width: 960px) {
   .nomina-workflow-header {
     grid-template-columns: 1fr;
     padding: 0 8px 8px;
-  }
-
-  .nomina-stepper-traceability {
-    justify-content: flex-start;
   }
 }
 
@@ -3278,18 +3197,47 @@ textarea {
 
 /* Prompt 1 + densidad: layout, alert variants, donut, proporciones */
 
-.nmv2-step-body--parameters {
+.nmv2-step-body {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
   min-height: 0;
 }
 
-.nmv2-paso-parametros,
-.nmv2-paso-alcance {
+.nmv2-step-frame {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.nmv2-step-frame > app-nomina-mensual-v2-paso-parametros,
+.nmv2-step-frame > app-nomina-mensual-v2-paso-alcance,
+.nmv2-step-frame > app-nomina-mensual-v2-paso-empleados,
+.nmv2-step-frame > app-nomina-mensual-v2-pasos-demostracion {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+}
+
+.nmv2-paso-parametros,
+.nmv2-paso-alcance,
+.nmv2-paso-empleados,
+.nmv2-pasos-demo {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 12px;
   width: 100%;
   min-height: 0;
 }
@@ -4481,34 +4429,6 @@ textarea {
 
 /* —— Empleados V7: micro pulido cabecera, toolbar, checklist, grilla —— */
 
-.nmv2-page[data-step='employees'] {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    'stepper kpis'
-    'content content'
-    'overlays overlays';
-  align-items: start;
-  gap: 12px 18px;
-}
-
-.nmv2-page[data-step='employees'] > app-nomina-mensual-v2-stepper {
-  grid-area: stepper;
-}
-
-.nmv2-page[data-step='employees'] > .nmv2-step-nav-hint {
-  grid-column: 1 / -1;
-  margin: -4px 0 0;
-}
-
-.nmv2-page[data-step='employees'] > app-nomina-mensual-v2-paso-empleados {
-  display: contents;
-}
-
-.nmv2-page[data-step='employees'] .nmv2-paso-empleados {
-  display: contents;
-}
-
 .nmv2-page[data-step='employees'] .nmv2-step-nav-hint {
   margin-top: 4px;
   font-size: 12px;
@@ -4517,27 +4437,12 @@ textarea {
 
 .nmv2-page[data-step='employees'] .empleados-kpi-strip,
 .nmv2-page[data-step='employees'] .empleados-kpis-compactos {
-  grid-area: kpis;
-  justify-self: end;
-  align-self: end;
-  margin-bottom: 2px;
-  padding-left: 12px;
-  display: inline-flex;
-  flex-wrap: nowrap;
+  display: flex;
+  flex-wrap: wrap;
   align-items: stretch;
   gap: 8px;
   max-width: none;
-  margin-top: 0;
-}
-
-.nmv2-page[data-step='employees'] .nmv2-employees-layout {
-  grid-area: content;
-  grid-column: 1 / -1;
-}
-
-.nmv2-page[data-step='employees'] > app-nomina-mensual-v2-overlays {
-  grid-area: overlays;
-  grid-column: 1 / -1;
+  margin: 0;
 }
 
 .nmv2-page[data-step='employees'] .empleados-kpi-card {
@@ -4598,23 +4503,6 @@ textarea {
 }
 
 @media (max-width: 1100px) {
-  .nmv2-page[data-step='employees'] {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      'stepper'
-      'header'
-      'kpis'
-      'content'
-      'overlays';
-  }
-
-  .nmv2-page[data-step='employees'] .empleados-kpi-strip {
-    justify-self: stretch;
-    align-self: start;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-  }
-
   .nmv2-page[data-step='employees'] .empleados-kpi-card {
     flex: 1 1 auto;
   }
@@ -5374,15 +5262,12 @@ textarea {
   }
 }
 
-/* —— Nómina V7: paso Alcance —— */
-
-.nmv2-page[data-step='scope'] > app-nomina-mensual-v2-paso-alcance {
-  min-height: 0;
-}
+/* —— Nómina V10: paso Alcance —— */
 
 .nmv2-page[data-step='scope'] .nmv2-alcance-layout.content-grid--aside {
   flex: 1 1 auto;
   min-height: 0;
+  align-items: stretch;
 }
 
 .nmv2-paso-alcance .alcance-intro-card h2 {
@@ -5655,15 +5540,12 @@ app-nomina-mensual-v2-container > .nmv2-page {
   flex: 0 0 auto;
 }
 
-.nmv2-page[data-step='parameters'] > app-nomina-mensual-v2-paso-parametros,
-.nmv2-page[data-step='scope'] > app-nomina-mensual-v2-paso-alcance,
-.nmv2-page[data-step='employees'] > app-nomina-mensual-v2-paso-empleados {
+.nmv2-page > .nmv2-step-body {
   flex: 1 1 auto;
   min-height: 0;
 }
 
-.nmv2-page[data-step='parameters'] .nmv2-paso-parametros,
-.nmv2-page[data-step='parameters'] .nmv2-step-body--parameters {
+.nmv2-page[data-step='parameters'] .nmv2-paso-parametros {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
@@ -5679,11 +5561,6 @@ app-nomina-mensual-v2-container > .nmv2-page {
 .nmv2-page[data-step='parameters'] .parameters-perfect-layout.parameters-step-content {
   height: auto;
   min-height: 100%;
-  padding: 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: #ffffff;
-  box-shadow: none;
 }
 
 .nmv2-page[data-step='parameters'] .parameters-perfect-layout .content-main,
@@ -5691,7 +5568,6 @@ app-nomina-mensual-v2-container > .nmv2-page {
   align-self: stretch;
 }
 
-.nmv2-page[data-step='scope'] .nmv2-alcance-layout.content-grid--aside,
 .nmv2-page[data-step='employees'] .nmv2-employees-layout.content-grid--aside {
   flex: 1 1 auto;
   align-items: stretch;
@@ -5700,8 +5576,6 @@ app-nomina-mensual-v2-container > .nmv2-page {
   min-height: 0;
 }
 
-.nmv2-page[data-step='scope'] .nmv2-alcance-layout .content-main,
-.nmv2-page[data-step='scope'] .nmv2-alcance-layout .content-side,
 .nmv2-page[data-step='employees'] .nmv2-employees-layout .content-main,
 .nmv2-page[data-step='employees'] .nmv2-employees-layout .content-side {
   align-self: stretch;
@@ -5709,13 +5583,8 @@ app-nomina-mensual-v2-container > .nmv2-page {
 }
 
 /* V2 shell unificado: cabecera de pasos + detalle sin franja intermedia */
-.nmv2-page.nomina-shell,
-.nmv2-page[data-step='parameters'] {
+.nmv2-page.nomina-shell {
   gap: 0;
-}
-
-.nmv2-page[data-step='employees'] {
-  row-gap: 0;
 }
 
 .nmv2-page > app-nomina-mensual-v2-stepper {
@@ -5737,23 +5606,12 @@ app-nomina-mensual-v2-container > .nmv2-page {
   background: #ffffff;
 }
 
-.nmv2-page > app-nomina-mensual-v2-paso-parametros,
-.nmv2-page > app-nomina-mensual-v2-paso-alcance,
-.nmv2-page > app-nomina-mensual-v2-paso-empleados,
-.nmv2-page > app-nomina-mensual-v2-pasos-demostracion {
+.nmv2-page > .nmv2-step-body {
   margin-top: -1px;
 }
 
-.nmv2-page > .nmv2-step-nav-hint + app-nomina-mensual-v2-paso-parametros,
-.nmv2-page > .nmv2-step-nav-hint + app-nomina-mensual-v2-paso-alcance,
-.nmv2-page > .nmv2-step-nav-hint + app-nomina-mensual-v2-paso-empleados,
-.nmv2-page > .nmv2-step-nav-hint + app-nomina-mensual-v2-pasos-demostracion {
+.nmv2-page > .nmv2-step-nav-hint + .nmv2-step-body {
   margin-top: -1px;
-}
-
-.nmv2-page[data-step='parameters'] .parameters-perfect-layout.parameters-step-content {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
 }
 
 /* Estado de carga vivo para Parametros: conserva geometria y comunica actividad. */
@@ -6114,9 +5972,7 @@ app-nomina-mensual-v2-container > .nmv2-page {
 }
 
 /* Parámetros: el card principal ocupa siempre el alto disponible de la pestaña. */
-.nmv2-page[data-step='parameters'] > app-nomina-mensual-v2-paso-parametros,
-.nmv2-page[data-step='parameters'] .nmv2-paso-parametros,
-.nmv2-page[data-step='parameters'] .nmv2-step-body--parameters {
+.nmv2-page[data-step='parameters'] .nmv2-paso-parametros {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;

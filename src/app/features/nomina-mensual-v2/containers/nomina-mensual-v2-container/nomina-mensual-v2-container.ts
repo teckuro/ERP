@@ -28,12 +28,14 @@ import { NominaMensualV2StepperComponent } from './components/nomina-mensual-v2-
 import {
   ORDEN_PASOS_NOMINA,
   esAvanceHaciaAdelante,
+  esRetrocesoAPaso,
   obtenerEtiquetaAccionPrincipal,
   obtenerSubtituloPaso,
   obtenerTituloPaso,
 } from './facade/nomina-mensual-v2-navegacion';
 import { NominaMensualV2TrazabilidadService } from '../../services/nomina-mensual-v2-trazabilidad.service';
 import { NominaMensualV2SesionService } from '../../services/nomina-mensual-v2-sesion.service';
+import { NominaParametrosBaseAccesoService } from '../../services/nomina-parametros-base-acceso.service';
 import { NominaMensualV2OrquestadorPort } from './facade/nomina-mensual-v2-orquestador.port';
 import { NominaMensualV2TrazabilidadDrawerComponent } from './components/nomina-mensual-v2-trazabilidad-drawer/nomina-mensual-v2-trazabilidad-drawer.component';
 import { NominaMensualV2TrazabilidadModalComponent } from './components/nomina-mensual-v2-trazabilidad-modal/nomina-mensual-v2-trazabilidad-modal.component';
@@ -65,11 +67,13 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   private readonly trazabilidadService = inject(NominaMensualV2TrazabilidadService);
   private readonly sesionService = inject(NominaMensualV2SesionService);
   readonly orquestador = inject(NominaMensualV2OrquestadorPort);
+  private readonly accesoBaseService = inject(NominaParametrosBaseAccesoService);
 
   private readonly pasoParametros = viewChild(NominaMensualV2PasoParametrosComponent);
   private readonly pasoAlcance = viewChild(NominaMensualV2PasoAlcanceComponent);
   private readonly pasoEmpleados = viewChild(NominaMensualV2PasoEmpleadosComponent);
   private tokenInicializacionPeriodo = 0;
+  private ultimoPeriodoInicializado: string | null = null;
 
   readonly steps = payrollSteps;
   readonly currentStep = signal<PayrollStepId>('parameters');
@@ -90,13 +94,25 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       const periodo = this.periodoActivo.periodoYm();
       void this.inicializarSesionPeriodo(periodo);
     }, { injector: this.injector });
+    effect(() => {
+      this.currentStep();
+      this.orquestador.estadoParametrosBase();
+      this.pasoParametros()?.parametrosLoading();
+      this.pasoParametros()?.parametrosValidando();
+      this.syncShellContext();
+    }, { injector: this.injector });
   }
 
   private async inicializarSesionPeriodo(periodo: string): Promise<void> {
     const token = ++this.tokenInicializacionPeriodo;
-    this.currentStep.set('parameters');
-    this.orquestador.pasoActual.set('parameters');
-    this.orquestador.reiniciarPorCambioPeriodo(periodo);
+    const cambioPeriodo = this.ultimoPeriodoInicializado !== periodo;
+    this.ultimoPeriodoInicializado = periodo;
+
+    if (cambioPeriodo) {
+      this.currentStep.set('parameters');
+      this.orquestador.pasoActual.set('parameters');
+      this.orquestador.reiniciarPorCambioPeriodo(periodo);
+    }
     this.syncShellContext();
     try {
       const sesion = await this.sesionService.resolverEstadoSesion(periodo);
@@ -108,13 +124,17 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       if (sesion.origenBase && sesion.idCalculoPeriodoBase) {
         this.orquestador.registrarOrigenBaseAlAvanzar(sesion.origenBase, sesion.idCalculoPeriodoBase);
       }
-      this.currentStep.set(sesion.pasoInicial);
-      this.orquestador.pasoActual.set(sesion.pasoInicial);
+      if (cambioPeriodo) {
+        this.currentStep.set(sesion.pasoInicial);
+        this.orquestador.pasoActual.set(sesion.pasoInicial);
+      }
     } catch (error) {
       if (token !== this.tokenInicializacionPeriodo) return;
       console.error('[Nómina V2] No fue posible restaurar la sesión del período', error);
-      this.currentStep.set('parameters');
-      this.orquestador.pasoActual.set('parameters');
+      if (cambioPeriodo) {
+        this.currentStep.set('parameters');
+        this.orquestador.pasoActual.set('parameters');
+      }
     } finally {
       if (token !== this.tokenInicializacionPeriodo) return;
       await this.orquestador.recomputarTrazabilidad(false);
@@ -126,11 +146,16 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     this.shellContext.setBindingActive(false);
     this.shellContext.clearContext();
     this.orquestador.limpiarAccionPrincipal();
+    this.ultimoPeriodoInicializado = null;
   }
 
   intentarIrAPaso(destinoPaso: PayrollStepId): void {
     if (destinoPaso === this.currentStep()) return;
-    if (destinoPaso === 'parameters' && this.debeConfirmarReingresoParametros()) {
+    if (
+      destinoPaso === 'parameters'
+      && esRetrocesoAPaso(this.currentStep(), destinoPaso)
+      && this.debeConfirmarReingresoParametros()
+    ) {
       const periodo = this.orquestador.contextoTrazabilidad()?.periodo ?? this.periodoActivo.periodoYm();
       this.orquestador.modalRevisarParametros.set({
         periodo,
@@ -198,6 +223,14 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     this.irAPaso('parameters');
   }
 
+  confirmarRecargaBaseParametros(): void {
+    this.pasoParametros()?.confirmarRecargaBaseParametrosAdmin();
+  }
+
+  cerrarModalAccesoBaseParametros(): void {
+    this.pasoParametros()?.cerrarModalAccesoBaseParametros();
+  }
+
   cerrarModalRevisarParametros(): void {
     this.orquestador.modalRevisarParametros.set(null);
   }
@@ -233,6 +266,14 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     const paso = this.currentStep();
     const parametrosValidando = paso === 'parameters' && (this.pasoParametros()?.parametrosValidando() ?? false);
     const parametrosLoading = paso === 'parameters' && (this.pasoParametros()?.parametrosLoading() ?? false);
+    const hayBaseGuardada = !!this.orquestador.estadoParametrosBase()?.idCalculoPeriodoBase;
+    const accionParametros = paso === 'parameters'
+      ? this.accesoBaseService.resolverAccionShellParametros({
+          hayBaseGuardada,
+          validando: parametrosValidando,
+          loading: parametrosLoading,
+        })
+      : null;
     const currentIndex = ORDEN_PASOS_NOMINA.indexOf(paso);
 
     this.shellContext.setContext({
@@ -247,8 +288,8 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
         tone: 'neutral',
       },
       primaryAction: {
-        label: paso === 'parameters' && parametrosValidando ? 'Preparando...' : this.primaryActionLabel(),
-        disabled: parametrosValidando || parametrosLoading,
+        label: accionParametros?.label ?? this.primaryActionLabel(),
+        disabled: accionParametros?.disabled ?? false,
         loading: paso === 'parameters' ? parametrosValidando : false,
         actionId: `nomina-mensual-v2-${paso}`,
       },

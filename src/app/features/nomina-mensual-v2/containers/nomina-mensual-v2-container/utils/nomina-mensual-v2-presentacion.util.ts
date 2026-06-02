@@ -109,3 +109,45 @@ export function iconoChecklist(status: ChecklistStatus): string {
       return 'clock-3';
   }
 }
+
+/** Estados visuales compartidos (parámetros, alcance, etc.). */
+export type TarjetaPasoEstadoVisual = 'completo' | 'pendiente' | 'bloqueo' | 'requiereRevision';
+
+export function tarjetaPasoEstadoClase(estado: TarjetaPasoEstadoVisual): string {
+  switch (estado) {
+    case 'completo':
+      return 'status-green';
+    case 'requiereRevision':
+      return 'status-amber';
+    case 'bloqueo':
+      return 'status-red';
+    case 'pendiente':
+      return 'status-gray';
+  }
+}
+
+export function tarjetaPasoEstadoIcono(estado: TarjetaPasoEstadoVisual): string {
+  switch (estado) {
+    case 'completo':
+      return 'check-circle-2';
+    case 'requiereRevision':
+      return 'triangle-alert';
+    case 'bloqueo':
+      return 'circle-alert';
+    case 'pendiente':
+      return 'clock-3';
+  }
+}
+
+export function tarjetaPasoEstadoEtiqueta(estado: TarjetaPasoEstadoVisual): string {
+  switch (estado) {
+    case 'completo':
+      return 'Seleccionado';
+    case 'requiereRevision':
+      return 'Revisar';
+    case 'bloqueo':
+      return 'No disponible';
+    case 'pendiente':
+      return 'Pendiente';
+  }
+}

@@ -14,29 +14,33 @@
     >{{ ayudaAvance }}</p>
   }
 
-  @switch (currentStep()) {
-    @case ('parameters') {
-      <app-nomina-mensual-v2-paso-parametros
-        (avanceSolicitado)="manejarAvanceDesdeParametros($event)"
-        (resumenActualizado)="syncShellContext()"
-      />
-    }
-    @case ('scope') {
-      <app-nomina-mensual-v2-paso-alcance
-        (avanceSolicitado)="manejarAvanceDesdeAlcance()"
-        (volverParametros)="intentarIrAPaso('parameters')"
-      />
-    }
-    @case ('employees') {
-      <app-nomina-mensual-v2-paso-empleados
-        (avanceSolicitado)="manejarAvanceDesdeEmpleados()"
-        (volverParametros)="intentarIrAPaso('scope')"
-      />
-    }
-    @default {
-      <app-nomina-mensual-v2-pasos-demostracion [paso]="currentStep()" />
-    }
-  }
+  <div class="nmv2-step-body">
+    <div class="nmv2-step-frame">
+      @switch (currentStep()) {
+        @case ('parameters') {
+          <app-nomina-mensual-v2-paso-parametros
+            (avanceSolicitado)="manejarAvanceDesdeParametros($event)"
+            (resumenActualizado)="syncShellContext()"
+          />
+        }
+        @case ('scope') {
+          <app-nomina-mensual-v2-paso-alcance
+            (avanceSolicitado)="manejarAvanceDesdeAlcance()"
+            (volverParametros)="intentarIrAPaso('parameters')"
+          />
+        }
+        @case ('employees') {
+          <app-nomina-mensual-v2-paso-empleados
+            (avanceSolicitado)="manejarAvanceDesdeEmpleados()"
+            (volverParametros)="intentarIrAPaso('scope')"
+          />
+        }
+        @default {
+          <app-nomina-mensual-v2-pasos-demostracion [paso]="currentStep()" />
+        }
+      }
+    </div>
+  </div>
 
   <app-nomina-mensual-v2-overlays
     (confirmarAvanceConRevision)="confirmarAvanceConRevision()"
@@ -51,6 +55,7 @@
     (solicitarActualizarBase)="solicitarActualizarBase()"
     (confirmarActualizarBaseYContinuar)="confirmarActualizarBaseYContinuar()"
     (confirmarReingresoParametros)="confirmarReingresoParametros()"
+    (confirmarRecargaBaseParametros)="confirmarRecargaBaseParametros()"
   />
 
   <app-nomina-mensual-v2-trazabilidad-modal />
