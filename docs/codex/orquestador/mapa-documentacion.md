@@ -28,7 +28,7 @@
 | Empleados | `context-packs/empleados.md` (cuando exista) + [`../modulos/empleados/README.md`](../modulos/empleados/README.md) |
 | Parámetros | `context-packs/parametros.md` (cuando exista) + [`../modulos/parametros/README.md`](../modulos/parametros/README.md) |
 
-**Regla:** no usar [`../archivo/`](../archivo/README.md) como fuente principal. No hay respaldos `.bak` en `docs/codex`. Assets activos: [`../assets/parametros-tabs/`](../assets/parametros-tabs/).
+**Regla:** no usar [`../archivo/`](../archivo/README.md) como fuente principal. No hay respaldos `.bak` ni ZIPs en `docs/codex` (auditoría 2026-06-02: [`./auditoria-docs-2026-06.md`](./auditoria-docs-2026-06.md)). Assets activos: [`../assets/parametros-tabs/`](../assets/parametros-tabs/).
 
 ## 2. Por módulo (`docs/codex/modulos/`)
 

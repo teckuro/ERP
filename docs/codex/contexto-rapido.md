@@ -27,7 +27,7 @@ Para nuevas fases:
 4. Revisar archivos reales de la base actual.
 5. No usar `docs/codex/archivo/` como fuente principal.
 
-No existen respaldos `.bak` activos en `docs/codex`. Los assets antiguos pesados fueron eliminados del repo activo; la referencia visual activa de parámetros es `docs/codex/assets/parametros-tabs/`.
+No existen respaldos `.bak` ni ZIPs en `docs/codex` (auditoría 2026-06-02: `docs/codex/orquestador/auditoria-docs-2026-06.md`). Los assets antiguos pesados fueron eliminados del repo activo; la referencia visual activa de parámetros es `docs/codex/assets/parametros-tabs/`.
 
 ## 2. Stack y alcance técnico
 

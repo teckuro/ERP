@@ -57,15 +57,21 @@ Para fases acotadas o diagnóstico rápido, partir por [`contexto-rapido.md`](./
 
 ## Poda documental
 
-`docs/codex` mantiene solo documentación activa, modular, histórica mínima y context-packs (cuando existan).
+`docs/codex` mantiene solo documentación activa, modular y context-packs (cuando existan).
 
-Se eliminaron del repo activo:
+Eliminados del repo activo (auditoría 2026-06-02; detalle en [`orquestador/auditoria-docs-2026-06.md`](./orquestador/auditoria-docs-2026-06.md)):
 
-- respaldos `.bak`;
-- assets antiguos pesados en `archivo/assets-antiguos/`;
-- duplicados raíz reemplazados por documentos modulares (prevalidaciones 9.5A/9.5B, planes de prueba por módulo).
+- 21 respaldos `.bak` bajo `archivo/backups/` (carpeta eliminada).
+- 3 ZIPs en `modulos/nomina-mensual/` redundantes con las carpetas extraídas (3.87 MB).
+- `archivo/assets-antiguos/` y su árbol `parametros-tabs-*` (96 PNG de iteraciones antiguas).
+- `archivo/fases-cerradas/` — era duplicado byte a byte de [`fases/`](./fases/). Política vigente: cuando una fase cierra se **mueve** (no se copia) y queda enlace desde [`orquestador/estado-fases.md`](./orquestador/estado-fases.md).
+- `modulos/nomina/` y `modulos/liquidaciones/` (carpetas vacías; reemplazadas por `nomina-mensual/` y `liquidaciones-oficiales/`).
 
-La documentación histórica mínima se conserva en [`archivo/fases-cerradas/`](./archivo/fases-cerradas/). No usar [`archivo/`](./archivo/README.md) como fuente principal de contratos.
+Historial completo: git. No usar [`archivo/`](./archivo/README.md) como fuente normativa.
+
+## Deuda documental conocida
+
+[`inconsistencias.md`](./inconsistencias.md) lista contradicciones de dominio (vigencia/período en parámetros, `BORRADOR` empleados vs períodos, mensajes de estado duplicados) pendientes de resolver con producto.
 
 ---
 
