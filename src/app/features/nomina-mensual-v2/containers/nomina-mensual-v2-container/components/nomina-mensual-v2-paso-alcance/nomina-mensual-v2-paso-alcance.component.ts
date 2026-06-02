@@ -48,6 +48,7 @@ export class NominaMensualV2PasoAlcanceComponent implements OnInit {
   private readonly orquestador = inject(NominaMensualV2OrquestadorPort);
   private readonly empleadosCargaService = inject(NominaEmpleadosCargaService);
   private readonly periodoActivo = inject(PeriodoActivoService);
+  private tokenCargaPeriodo = 0;
 
   @Output() avanceSolicitado = new EventEmitter<void>();
   @Output() volverParametros = new EventEmitter<void>();
@@ -98,6 +99,10 @@ export class NominaMensualV2PasoAlcanceComponent implements OnInit {
 
   constructor() {
     effect(() => {
+      const periodo = this.periodoActivo.periodoYm();
+      void this.cargarTrabajadoresPeriodo(periodo);
+    });
+    effect(() => {
       const texto = obtenerTextoAyudaAlcance(this.resultadoAlcanceVista());
       const resultado = this.resultadoAlcanceVista();
       if (!texto) {
@@ -123,7 +128,6 @@ export class NominaMensualV2PasoAlcanceComponent implements OnInit {
       this.orquestador.establecerAyudaAvance(null);
     });
     this.restaurarEstadoDesdeOrquestador();
-    void this.cargarTrabajadoresPeriodo();
   }
 
   seleccionarTipoAlcance(tipo: TipoAlcanceNomina, estado: string): void {
@@ -251,14 +255,19 @@ export class NominaMensualV2PasoAlcanceComponent implements OnInit {
     this.idsTrabajadoresManuales.set(guardado.idsTrabajadoresManuales ?? []);
   }
 
-  private async cargarTrabajadoresPeriodo(): Promise<void> {
+  private async cargarTrabajadoresPeriodo(periodo = this.periodoActivo.periodoYm()): Promise<void> {
+    const token = ++this.tokenCargaPeriodo;
     this.alcanceCargando.set(true);
     this.alcanceError.set('');
     try {
-      this.filasPeriodo.set(await this.empleadosCargaService.cargarFilasEmpleadosNomina());
+      const filas = await this.empleadosCargaService.cargarFilasEmpleadosNomina(undefined, periodo);
+      if (token !== this.tokenCargaPeriodo) return;
+      this.filasPeriodo.set(filas);
     } catch {
+      if (token !== this.tokenCargaPeriodo) return;
       this.alcanceError.set('No fue posible cargar los trabajadores del período.');
     } finally {
+      if (token !== this.tokenCargaPeriodo) return;
       this.alcanceCargando.set(false);
     }
   }

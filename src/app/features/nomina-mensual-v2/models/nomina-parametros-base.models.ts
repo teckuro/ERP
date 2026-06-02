@@ -1,4 +1,4 @@
-import type { NominaParametrosResumen } from './nomina-parametros-resumen.models';
+import type { NominaParametrosResumen, ParametroResumenBloqueo } from './nomina-parametros-resumen.models';
 
 export const VERSION_MOTOR_PARAMETROS_BASE = 'PARAMETROS-BASE-01';
 export const CODIGO_TRAZA_PARAMETROS_BASE = 'PARAMETROS_BASE_SNAPSHOT';
@@ -17,6 +17,7 @@ export type EstadoParametrosBasePeriodo =
   | 'actualizado';
 
 export type RamaAccionPreparacionParametros =
+  | { tipo: 'bloqueado'; resumen: NominaParametrosResumen; pendientes: ParametroResumenBloqueo[] }
   | { tipo: 'guardar'; resumen: NominaParametrosResumen }
   | { tipo: 'continuar'; origen: OrigenBaseParametrosAlAvanzar; idCalculoPeriodoBase: number }
   | {

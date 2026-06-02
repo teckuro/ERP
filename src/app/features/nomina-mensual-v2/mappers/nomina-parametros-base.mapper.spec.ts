@@ -24,11 +24,16 @@ function resumenMinimo(): NominaParametrosResumen {
     parametrosConfigurados: 10,
     bloqueos: 0,
     requiereRevision: 0,
+    bloqueosPreparacion: 0,
+    advertenciasOficiales: 0,
     completos: 10,
     puedeContinuar: true,
+    puedePreparar: true,
     ultimaActualizacion: null,
     areas: [],
     bloqueosActuales: [],
+    pendientesPreparacion: [],
+    advertenciasNoBloqueantes: [],
     accesos: [],
   };
 }

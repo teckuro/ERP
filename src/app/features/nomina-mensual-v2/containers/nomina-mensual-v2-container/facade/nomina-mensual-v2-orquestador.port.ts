@@ -201,6 +201,22 @@ export class NominaMensualV2OrquestadorPort {
     this.contextoTrazabilidad.set(contexto);
   }
 
+  reiniciarPorCambioPeriodo(periodo: string): void {
+    this.limpiarModalesAvance();
+    this.resultadoAlcance.set(null);
+    this.estadoParametrosBase.set(null);
+    this.origenBaseParametrosAlAvanzar.set(null);
+    this.idCalculoPeriodoBase.set(null);
+    this.auditoriaPorPaso.set({});
+    this.eventosTrazabilidad.set([]);
+    this.eventosLocales.set([]);
+    this.trazabilidadDrawerAbierto.set(false);
+    this.trazabilidadPasoActivo.set(null);
+    this.tipoModalDetalleActivo.set(null);
+    this.contextoTrazabilidad.set({ periodo });
+    this.establecerAyudaAvance(null);
+  }
+
   async recomputarTrazabilidad(incluirMockSiVacio = false): Promise<RecomputarTrazabilidadResult | null> {
     if (!this.trazabilidadService) return null;
     const result = await this.trazabilidadService.recomputar({

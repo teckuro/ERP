@@ -105,6 +105,64 @@ describe('nomina-parametros-resumen.mapper', () => {
     expect(resumen.bloqueosActuales.every((bloqueo) => bloqueo.areaId !== 'reglasCalculo')).toBe(true);
   });
 
+  it('oficiales mensuales faltantes no incrementan bloqueos de preparacion', () => {
+    const resumen = buildNominaParametrosResumen({
+      periodo: '2026-05',
+      gruposMinimos: [
+        ...gruposOk.filter((grupo) => !['mensuales_uf_utm_sueldo', 'topes_base', 'sis_fila_mensual'].includes(grupo.id)),
+        { id: 'mensuales_uf_utm_sueldo', clasificacion: 'FALTANTE', detalle: 'sin_fila' },
+        { id: 'topes_base', clasificacion: 'FALTANTE', detalle: 'topes_incompletos' },
+        { id: 'sis_fila_mensual', clasificacion: 'FALTANTE', detalle: 'sis_null' },
+      ],
+      completitud: completitudMock(),
+    });
+
+    expect(resumen.bloqueos).toBeGreaterThan(0);
+    expect(resumen.bloqueosPreparacion).toBe(0);
+    expect(resumen.advertenciasOficiales).toBe(3);
+    expect(resumen.puedePreparar).toBe(true);
+    expect(resumen.pendientesPreparacion).toEqual([]);
+    expect(resumen.advertenciasNoBloqueantes).toHaveLength(3);
+  });
+
+  it('configuracion cliente incompleta bloquea preparacion', () => {
+    const resumen = buildNominaParametrosResumen({
+      periodo: '2026-05',
+      gruposMinimos: gruposOk,
+      completitud: completitudMock({
+        pendientes: ['Falta CCAF seleccionada.'],
+        grupos: {
+          configuracionCliente: grupo('configuracionCliente', 0, 1),
+        },
+      }),
+    });
+
+    expect(resumen.bloqueosPreparacion).toBe(1);
+    expect(resumen.puedePreparar).toBe(false);
+    expect(resumen.pendientesPreparacion.some((bloqueo) => bloqueo.areaId === 'configuracionCliente')).toBe(true);
+  });
+
+  it('catalogos y vigencias no oficiales incompletos bloquean preparacion', () => {
+    const resumen = buildNominaParametrosResumen({
+      periodo: '2026-05',
+      gruposMinimos: [
+        ...gruposOk.filter((grupo) => !['catalogos_afp_impuesto', 'afc_catalogo', 'salud_catalogo'].includes(grupo.id)),
+        { id: 'catalogos_afp_impuesto', clasificacion: 'FALTANTE', detalle: 'afp_o_impuesto_vacio' },
+        { id: 'afc_catalogo', clasificacion: 'FALTANTE', detalle: 'sin_filas_afc' },
+        { id: 'salud_catalogo', clasificacion: 'FALTANTE', detalle: 'sin_isapre' },
+      ],
+      completitud: completitudMock(),
+    });
+
+    expect(resumen.bloqueosPreparacion).toBe(3);
+    expect(resumen.puedePreparar).toBe(false);
+    expect(resumen.pendientesPreparacion.map((bloqueo) => bloqueo.titulo)).toEqual([
+      'AFP e impuesto único',
+      'Salud',
+      'AFC',
+    ]);
+  });
+
   it('expone resumen por 5 secciones visibles y controles internos verificados', () => {
     const resumen = buildNominaParametrosResumen({
       periodo: '2026-05',

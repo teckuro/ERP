@@ -1,10 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  Injector,
   OnDestroy,
   OnInit,
   ViewEncapsulation,
   computed,
+  effect,
   inject,
   signal,
   viewChild,
@@ -56,6 +58,7 @@ import { NominaMensualV2TrazabilidadModalComponent } from './components/nomina-m
   encapsulation: ViewEncapsulation.None,
 })
 export class NominaMensualV2Container implements OnInit, OnDestroy {
+  private readonly injector = inject(Injector);
   private readonly router = inject(Router);
   private readonly shellContext = inject(ShellPageContextService);
   private readonly periodoActivo = inject(PeriodoActivoService);
@@ -66,6 +69,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   private readonly pasoParametros = viewChild(NominaMensualV2PasoParametrosComponent);
   private readonly pasoAlcance = viewChild(NominaMensualV2PasoAlcanceComponent);
   private readonly pasoEmpleados = viewChild(NominaMensualV2PasoEmpleadosComponent);
+  private tokenInicializacionPeriodo = 0;
 
   readonly steps = payrollSteps;
   readonly currentStep = signal<PayrollStepId>('parameters');
@@ -82,12 +86,21 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.shellContext.setBindingActive(true);
     this.orquestador.vincularTrazabilidadService(this.trazabilidadService);
-    void this.inicializarSesionPeriodo();
+    effect(() => {
+      const periodo = this.periodoActivo.periodoYm();
+      void this.inicializarSesionPeriodo(periodo);
+    }, { injector: this.injector });
   }
 
-  private async inicializarSesionPeriodo(): Promise<void> {
+  private async inicializarSesionPeriodo(periodo: string): Promise<void> {
+    const token = ++this.tokenInicializacionPeriodo;
+    this.currentStep.set('parameters');
+    this.orquestador.pasoActual.set('parameters');
+    this.orquestador.reiniciarPorCambioPeriodo(periodo);
+    this.syncShellContext();
     try {
-      const sesion = await this.sesionService.resolverEstadoSesion();
+      const sesion = await this.sesionService.resolverEstadoSesion(periodo);
+      if (token !== this.tokenInicializacionPeriodo) return;
       this.orquestador.estadoParametrosBase.set(sesion.estadoBase);
       if (sesion.contextoTrazabilidad) {
         this.orquestador.actualizarContextoTrazabilidad(sesion.contextoTrazabilidad);
@@ -98,10 +111,12 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       this.currentStep.set(sesion.pasoInicial);
       this.orquestador.pasoActual.set(sesion.pasoInicial);
     } catch (error) {
+      if (token !== this.tokenInicializacionPeriodo) return;
       console.error('[Nómina V2] No fue posible restaurar la sesión del período', error);
       this.currentStep.set('parameters');
       this.orquestador.pasoActual.set('parameters');
     } finally {
+      if (token !== this.tokenInicializacionPeriodo) return;
       await this.orquestador.recomputarTrazabilidad(false);
       this.syncShellContext();
     }

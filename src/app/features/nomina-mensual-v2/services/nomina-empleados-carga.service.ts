@@ -16,12 +16,12 @@ export class NominaEmpleadosCargaService {
 
   async cargarFilasEmpleadosNomina(
     usarDatosDemo = USAR_DATOS_DEMO_EMPLEADOS_NOMINA,
+    periodo = this.periodoActivo.periodoYm(),
   ): Promise<FilaEmpleadoNomina[]> {
     if (usarDatosDemo) {
       return mapearFilasEmpleadosNomina(employeeRows);
     }
 
-    const periodo = this.periodoActivo.periodoYm();
     const trabajadores = await this.personalRepository.listarTrabajadoresNomina();
     const elegibles = filtrarTrabajadoresElegiblesPeriodo(trabajadores, periodo);
     return mapearTrabajadoresAFilasNomina(elegibles);

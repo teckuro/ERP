@@ -70,6 +70,7 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
   private readonly orquestador = inject(NominaMensualV2OrquestadorPort);
   private readonly empleadosCargaService = inject(NominaEmpleadosCargaService);
   private readonly periodoActivo = inject(PeriodoActivoService);
+  private tokenCargaPeriodo = 0;
 
   @ViewChild(DataGridComponent) private grillaEmpleados?: DataGridComponent<FilaEmpleadoNomina>;
 
@@ -137,6 +138,10 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
 
   constructor() {
     effect(() => {
+      const periodo = this.periodoActivo.periodoYm();
+      void this.recargarGrillaEmpleados(periodo);
+    });
+    effect(() => {
       if (this.sinAlcanceValido()) {
         this.orquestador.establecerAyudaAvance(
           'Define el alcance en el paso anterior antes de revisar empleados.',
@@ -173,7 +178,6 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
       limpiarAccionPrincipal();
       this.orquestador.establecerAyudaAvance(null);
     });
-    void this.recargarGrillaEmpleados();
   }
 
   claseItemChecklistEmpleado(item: ItemChecklistEmpleadoNomina): string {
@@ -186,15 +190,19 @@ export class NominaMensualV2PasoEmpleadosComponent implements OnInit {
     return inicialesNombre(nombre);
   }
 
-  async recargarGrillaEmpleados(): Promise<void> {
+  async recargarGrillaEmpleados(periodo = this.periodoActivo.periodoYm()): Promise<void> {
+    const token = ++this.tokenCargaPeriodo;
     this.empleadosCargando.set(true);
     this.empleadosError.set('');
     try {
-      const filas = await this.empleadosCargaService.cargarFilasEmpleadosNomina();
+      const filas = await this.empleadosCargaService.cargarFilasEmpleadosNomina(undefined, periodo);
+      if (token !== this.tokenCargaPeriodo) return;
       this.filasEmpleadosNomina.set(this.filtrarFilasPorAlcance(filas));
     } catch {
+      if (token !== this.tokenCargaPeriodo) return;
       this.empleadosError.set('No fue posible cargar la base de empleados.');
     } finally {
+      if (token !== this.tokenCargaPeriodo) return;
       this.empleadosCargando.set(false);
     }
   }

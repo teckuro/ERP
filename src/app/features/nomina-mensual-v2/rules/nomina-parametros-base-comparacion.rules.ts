@@ -35,8 +35,9 @@ export function resolverRamaAccionPreparacion(input: {
   estadoBase: EstadoBaseParametrosPeriodoView;
 }): RamaAccionPreparacionParametros {
   const { resumen, estadoBase } = input;
-  // V10.1: Preparar nómina congela la base; no bloquea por validación del paso (eso aplica en Cálculo).
-
+  if (!resumen.puedePreparar) {
+    return { tipo: 'bloqueado', resumen, pendientes: resumen.pendientesPreparacion };
+  }
   if (!estadoBase.idCalculoPeriodoBase || estadoBase.estado === 'pendiente') {
     return { tipo: 'guardar', resumen };
   }

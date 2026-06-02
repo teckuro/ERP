@@ -22,11 +22,16 @@ function resumenMinimo(overrides: Partial<NominaParametrosResumen> = {}): Nomina
     parametrosConfigurados: 10,
     bloqueos: 0,
     requiereRevision: 0,
+    bloqueosPreparacion: 0,
+    advertenciasOficiales: 0,
     completos: 10,
     puedeContinuar: true,
+    puedePreparar: true,
     ultimaActualizacion: '2026-05-29T12:00:00.000Z',
     areas: [],
     bloqueosActuales: [],
+    pendientesPreparacion: [],
+    advertenciasNoBloqueantes: [],
     accesos: [],
     ...overrides,
   };
@@ -99,8 +104,51 @@ describe('nomina-parametros-base-comparacion.rules', () => {
     });
   });
 
-  it('no bloquea preparar por validación del resumen (V10.1)', () => {
-    const resumen = resumenMinimo({ bloqueos: 2, puedeContinuar: false, requiereRevision: 3 });
+  it('no guarda ni continúa si no puede preparar', () => {
+    const pendiente = {
+      id: 'configuracionCliente-0-CCAF',
+      severidad: 'revision' as const,
+      titulo: 'CCAF',
+      detalle: 'Falta CCAF seleccionada.',
+      areaId: 'configuracionCliente' as const,
+      mantenedor: { area: 'configuracionCliente' as const, tab: 'configCliente' },
+    };
+    const resumen = resumenMinimo({
+      bloqueosPreparacion: 1,
+      puedeContinuar: false,
+      puedePreparar: false,
+      pendientesPreparacion: [pendiente],
+    });
+    const estado: EstadoBaseParametrosPeriodoView = {
+      estado: 'pendiente',
+      idCalculoPeriodoBase: null,
+      fechaBaseGuardada: null,
+      comparacion: null,
+    };
+    expect(resolverRamaAccionPreparacion({ resumen, estadoBase: estado })).toEqual({
+      tipo: 'bloqueado',
+      resumen,
+      pendientes: [pendiente],
+    });
+  });
+
+  it('permite guardar con advertencias oficiales no bloqueantes', () => {
+    const resumen = resumenMinimo({
+      bloqueos: 1,
+      requiereRevision: 1,
+      advertenciasOficiales: 1,
+      puedePreparar: true,
+      advertenciasNoBloqueantes: [
+        {
+          id: 'datosOficiales-0-UF',
+          severidad: 'bloqueo',
+          titulo: 'UF / UTM / IPC',
+          detalle: 'No existe fila oficial para el período seleccionado.',
+          areaId: 'datosOficiales',
+          mantenedor: { area: 'datosOficiales', tab: 'valores' },
+        },
+      ],
+    });
     const estado: EstadoBaseParametrosPeriodoView = {
       estado: 'pendiente',
       idCalculoPeriodoBase: null,

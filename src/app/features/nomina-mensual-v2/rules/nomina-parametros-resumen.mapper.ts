@@ -58,6 +58,12 @@ const CONFIG_CLIENTE_CHECKS: Array<{ label: string; pendiente: string }> = [
   { label: 'Mutual Ley 16.744', pendiente: 'Falta mutual seleccionada.' },
 ];
 
+const GRUPOS_OFICIALES_NO_BLOQUEANTES = new Set([
+  'mensuales_uf_utm_sueldo',
+  'topes_base',
+  'sis_fila_mensual',
+]);
+
 export function buildNominaParametrosResumen(input: BuildResumenInput): NominaParametrosResumen {
   const grupos = indexarGrupos(input.gruposMinimos);
   const areas = buildAreas(grupos, input.completitud);
@@ -65,12 +71,24 @@ export function buildNominaParametrosResumen(input: BuildResumenInput): NominaPa
   const completos = items.filter((item) => item.estado === 'ok').length;
   const bloqueos = items.filter((item) => item.estado === 'bloqueo').length;
   const requiereRevision = items.filter((item) => item.estado === 'revisar').length;
+  const itemsPendientesPreparacion = items.filter((item) => item.bloqueaPreparacion && item.estado !== 'ok');
+  const itemsAdvertenciaNoBloqueante = items.filter((item) => item.advertenciaNoBloqueante && item.estado !== 'ok');
   const totalParametros = items.length;
   const seccionesTotales = areas.length;
   const seccionesListas = areas.filter((area) => area.estado === 'completo').length;
   const completitudSecciones =
     seccionesTotales === 0 ? 0 : Math.round((seccionesListas / seccionesTotales) * 100);
   const bloqueosActuales = buildBloqueos(areas);
+  const pendientesPreparacion = buildBloqueos(
+    areas,
+    (item) => item.bloqueaPreparacion === true && item.estado !== 'ok',
+    Number.POSITIVE_INFINITY,
+  );
+  const advertenciasNoBloqueantes = buildBloqueos(
+    areas,
+    (item) => item.advertenciaNoBloqueante === true && item.estado !== 'ok',
+    Number.POSITIVE_INFINITY,
+  );
 
   return {
     periodo: input.periodo,
@@ -84,11 +102,16 @@ export function buildNominaParametrosResumen(input: BuildResumenInput): NominaPa
     parametrosConfigurados: completos,
     bloqueos,
     requiereRevision,
+    bloqueosPreparacion: itemsPendientesPreparacion.length,
+    advertenciasOficiales: itemsAdvertenciaNoBloqueante.length,
     completos,
-    puedeContinuar: bloqueos === 0,
+    puedeContinuar: itemsPendientesPreparacion.length === 0,
+    puedePreparar: itemsPendientesPreparacion.length === 0,
     ultimaActualizacion: input.ultimaActualizacion ?? null,
     areas,
     bloqueosActuales,
+    pendientesPreparacion,
+    advertenciasNoBloqueantes,
     accesos: ACCESOS,
   };
 }
@@ -117,8 +140,8 @@ function buildAreas(
       icono: 'trending-up',
       mantenedor: { area: 'datosOficiales', tab: 'valores' },
       items: [
-        itemFromGrupo(grupos.get('mensuales_uf_utm_sueldo'), 'UF / UTM / sueldo mínimo'),
-        itemFromGrupo(grupos.get('topes_base'), 'Topes imponibles'),
+        itemFromGrupo(grupos.get('mensuales_uf_utm_sueldo'), 'UF / UTM / sueldo mínimo', 'mensuales_uf_utm_sueldo'),
+        itemFromGrupo(grupos.get('topes_base'), 'Topes imponibles', 'topes_base'),
       ],
     }),
     createArea({
@@ -128,9 +151,9 @@ function buildAreas(
       icono: 'heart-pulse',
       mantenedor: { area: 'catalogosVigencias', tab: 'prevision' },
       items: [
-        itemFromGrupo(grupos.get('catalogos_afp_impuesto'), 'AFP e impuesto único'),
-        itemFromGrupo(grupos.get('salud_catalogo'), 'Salud'),
-        itemFromGrupo(grupos.get('mutualidad_ley16744_ccaf'), 'CCAF / Mutual'),
+        itemFromGrupo(grupos.get('catalogos_afp_impuesto'), 'AFP e impuesto único', 'catalogos_afp_impuesto'),
+        itemFromGrupo(grupos.get('salud_catalogo'), 'Salud', 'salud_catalogo'),
+        itemFromGrupo(grupos.get('mutualidad_ley16744_ccaf'), 'CCAF / Mutual', 'mutualidad_ley16744_ccaf'),
       ],
     }),
     createArea({
@@ -140,8 +163,8 @@ function buildAreas(
       icono: 'calculator',
       mantenedor: { area: 'datosOficiales', tab: 'remuneraciones' },
       items: [
-        itemFromGrupo(grupos.get('afc_catalogo'), 'AFC'),
-        itemFromGrupo(grupos.get('sis_fila_mensual'), 'SIS mensual'),
+        itemFromGrupo(grupos.get('afc_catalogo'), 'AFC', 'afc_catalogo'),
+        itemFromGrupo(grupos.get('sis_fila_mensual'), 'SIS mensual', 'sis_fila_mensual'),
       ],
     }),
     createArea({
@@ -151,11 +174,12 @@ function buildAreas(
       icono: 'file-text',
       mantenedor: { area: 'observacionNormativa', tab: 'reforma' },
       items: [
-        itemFromGrupo(grupos.get('reforma_previsional'), 'Reforma previsional'),
+        itemFromGrupo(grupos.get('reforma_previsional'), 'Reforma previsional', 'reforma_previsional'),
         {
           label: 'Trazabilidad normativa',
           estado: completitud?.errores.length ? 'revisar' : 'ok',
           detalle: completitud?.errores[0],
+          bloqueaPreparacion: (completitud?.errores.length ?? 0) > 0,
         },
       ],
     }),
@@ -169,10 +193,10 @@ function buildConfigClienteItems(completitud?: ParametrosCompletitudResultado | 
 
   const items: ParametroResumenItem[] = CONFIG_CLIENTE_CHECKS.map(({ label, pendiente }) => {
     if (pendientes.includes(pendiente)) {
-      return { label, estado: 'revisar', detalle: pendiente };
+      return { label, estado: 'revisar', detalle: pendiente, bloqueaPreparacion: true };
     }
     if (sinConfig) {
-      return { label, estado: 'pendiente' };
+      return { label, estado: 'pendiente', bloqueaPreparacion: true };
     }
     return { label, estado: 'ok' };
   });
@@ -180,7 +204,7 @@ function buildConfigClienteItems(completitud?: ParametrosCompletitudResultado | 
   if (!sinConfig) {
     items.push(
       operativosPendiente
-        ? { label: 'Valores operativos', estado: 'revisar', detalle: operativosPendiente }
+        ? { label: 'Valores operativos', estado: 'revisar', detalle: operativosPendiente, bloqueaPreparacion: true }
         : { label: 'Valores operativos', estado: 'ok' },
     );
   }
@@ -194,6 +218,7 @@ function buildConfigClienteItems(completitud?: ParametrosCompletitudResultado | 
         ? undefined
         : (completitud?.advertencias.find((a) => a.includes('diferencias pendientes'))
           ?? 'Existen diferencias pendientes entre valores oficiales y configuración cliente.'),
+      advertenciaNoBloqueante: !consistencia.completo,
     });
   }
 
@@ -207,14 +232,29 @@ function createArea(input: Omit<ParametroResumenArea, 'estado'>): ParametroResum
   };
 }
 
-function itemFromGrupo(grupo: ProcesoMensualGrupoParametro | undefined, fallbackLabel: string): ParametroResumenItem {
+function itemFromGrupo(
+  grupo: ProcesoMensualGrupoParametro | undefined,
+  fallbackLabel: string,
+  fallbackId: string,
+): ParametroResumenItem {
+  const grupoId = grupo?.id ?? fallbackId;
+  const esOficialNoBloqueante = grupoId ? GRUPOS_OFICIALES_NO_BLOQUEANTES.has(grupoId) : false;
   if (!grupo) {
-    return { label: fallbackLabel, estado: 'pendiente' };
+    return {
+      label: fallbackLabel,
+      estado: 'pendiente',
+      bloqueaPreparacion: !esOficialNoBloqueante,
+      advertenciaNoBloqueante: esOficialNoBloqueante,
+    };
   }
+  const estado = itemEstadoFromClasificacion(grupo.clasificacion);
+  const tienePendiente = estado !== 'ok';
   return {
     label: GRUPO_LABELS[grupo.id] ?? fallbackLabel,
-    estado: itemEstadoFromClasificacion(grupo.clasificacion),
+    estado,
     detalle: detalleGrupo(grupo),
+    bloqueaPreparacion: !esOficialNoBloqueante && tienePendiente,
+    advertenciaNoBloqueante: esOficialNoBloqueante && tienePendiente,
   };
 }
 
@@ -262,10 +302,15 @@ function humanizeDetalle(detalle: string): string {
   return detalle.replace(/_/g, ' ');
 }
 
-function buildBloqueos(areas: ParametroResumenArea[]): ParametroResumenBloqueo[] {
-  return areas.flatMap((area) =>
+function buildBloqueos(
+  areas: ParametroResumenArea[],
+  predicate: (item: ParametroResumenItem) => boolean =
+    (item) => item.estado === 'bloqueo' || item.estado === 'revisar',
+  limit = 5,
+): ParametroResumenBloqueo[] {
+  const bloqueos = areas.flatMap((area) =>
     area.items
-      .filter((item) => item.estado === 'bloqueo' || item.estado === 'revisar')
+      .filter(predicate)
       .map((item, index): ParametroResumenBloqueo => ({
         id: `${area.id}-${index}-${item.label}`,
         severidad: item.estado === 'bloqueo' ? 'bloqueo' : 'revision',
@@ -274,7 +319,8 @@ function buildBloqueos(areas: ParametroResumenArea[]): ParametroResumenBloqueo[]
         areaId: area.id,
         mantenedor: area.mantenedor,
       })),
-  ).slice(0, 5);
+  );
+  return Number.isFinite(limit) ? bloqueos.slice(0, limit) : bloqueos;
 }
 
 function detalleGenerico(estado: ParametroResumenItemEstado): string {

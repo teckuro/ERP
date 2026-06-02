@@ -18,6 +18,8 @@ export type ParametroResumenItem = {
   label: string;
   estado: ParametroResumenItemEstado;
   detalle?: string;
+  bloqueaPreparacion?: boolean;
+  advertenciaNoBloqueante?: boolean;
 };
 
 export type ParametroResumenArea = {
@@ -60,10 +62,15 @@ export type NominaParametrosResumen = {
   parametrosConfigurados: number;
   bloqueos: number;
   requiereRevision: number;
+  bloqueosPreparacion: number;
+  advertenciasOficiales: number;
   completos: number;
   puedeContinuar: boolean;
+  puedePreparar: boolean;
   ultimaActualizacion: string | null;
   areas: ParametroResumenArea[];
   bloqueosActuales: ParametroResumenBloqueo[];
+  pendientesPreparacion: ParametroResumenBloqueo[];
+  advertenciasNoBloqueantes: ParametroResumenBloqueo[];
   accesos: ParametroResumenAcceso[];
 };

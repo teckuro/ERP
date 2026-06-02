@@ -16,6 +16,8 @@ import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
+import type { MessageBoxSection } from '../../../../../../shared/components/ui/feedback/message-box/message-box.types';
+import { PeriodoActivoService } from '../../../../../../core/services/periodo-activo.service';
 import type { PayrollStepId } from '../../../../models/nomina-mensual-v2.models';
 import type {
   OrigenBaseParametrosAlAvanzar,
@@ -23,6 +25,7 @@ import type {
 import type {
   NominaParametrosResumen,
   ParametroBloqueoSeveridad,
+  ParametroResumenBloqueo,
   ParametroResumenAreaId,
   ParametroResumenItem,
   ParametroResumenEstado,
@@ -38,6 +41,8 @@ type ParametrosCargaOverlayPresentacion = {
   titulo: string;
   mensaje: string;
 };
+
+type ModalPendientesParametrosTipo = 'preparacion' | 'oficiales';
 
 type ResultadoValidacionPaso = 'permitido' | 'advertencia' | 'bloqueado';
 
@@ -69,24 +74,26 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   private readonly orquestador = inject(NominaMensualV2OrquestadorPort);
   private readonly parametrosResumenService = inject(NominaParametrosResumenService);
   private readonly parametrosBaseService = inject(NominaParametrosBaseService);
+  private readonly periodoActivo = inject(PeriodoActivoService);
+  private tokenCargaPeriodo = 0;
 
   @Output() avanceSolicitado = new EventEmitter<PayrollStepId>();
   @Output() resumenActualizado = new EventEmitter<void>();
 
   readonly parametrosResumen = signal<NominaParametrosResumen | null>(null);
+  readonly modalPendientesParametros = signal<{ tipo: ModalPendientesParametrosTipo } | null>(null);
   readonly parametrosLoading = signal(true);
   readonly parametrosValidando = signal(false);
   readonly parametrosError = signal<string | null>(null);
   readonly parametrosAreas = computed(() => this.parametrosResumen()?.areas ?? []);
   readonly parametrosBloqueosActuales = computed(() => this.parametrosResumen()?.bloqueosActuales ?? []);
-  readonly parametrosPendientesSidebar = computed(() => {
-    const resumen = this.parametrosResumen();
-    const pendientes = resumen?.bloqueosActuales ?? [];
-    if ((resumen?.bloqueos ?? 0) > 0) {
-      return pendientes.filter((item) => item.severidad === 'bloqueo');
-    }
-    return pendientes.filter((item) => item.severidad === 'revision');
-  });
+  readonly parametrosPendientesPreparacion = computed(() => this.parametrosResumen()?.pendientesPreparacion ?? []);
+  readonly parametrosAdvertenciasNoBloqueantes = computed(() => this.parametrosResumen()?.advertenciasNoBloqueantes ?? []);
+  readonly parametrosPendientesPreparacionPreview = computed(() => this.parametrosPendientesPreparacion().slice(0, 2));
+  readonly parametrosPendientesPreparacionOcultos = computed(() =>
+    Math.max(this.parametrosPendientesPreparacion().length - this.parametrosPendientesPreparacionPreview().length, 0),
+  );
+  readonly parametrosPendientesSidebar = this.parametrosPendientesPreparacion;
   readonly parametrosAccesos = computed(() => this.parametrosResumen()?.accesos ?? []);
 
   readonly estadoBase = computed(() => this.orquestador.estadoParametrosBase());
@@ -112,13 +119,14 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     return null;
   });
 
-  readonly parametrosAlertaTipo = computed((): 'error' | 'bloqueo' | 'revision' | 'diferencias' | null => {
+  readonly parametrosAlertaTipo = computed((): 'error' | 'bloqueo' | 'revision' | 'oficiales' | 'diferencias' | null => {
     if (this.parametrosLoading()) return null;
     if (this.parametrosError()) return 'error';
     if (this.hayDiferenciasBase()) return 'diferencias';
     const resumen = this.parametrosResumen();
     if (!resumen) return null;
-    if (resumen.bloqueos > 0) return 'revision';
+    if (resumen.bloqueosPreparacion > 0) return 'bloqueo';
+    if (resumen.advertenciasOficiales > 0) return 'oficiales';
     if (resumen.requiereRevision > 0) return 'revision';
     return null;
   });
@@ -147,7 +155,7 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   });
 
   readonly alertaBloqueoTitulo = computed(() => {
-    const cantidad = this.parametrosResumen()?.bloqueos ?? 0;
+    const cantidad = this.parametrosResumen()?.bloqueosPreparacion ?? 0;
     const etiquetaItem = cantidad === 1
       ? 'parámetro obligatorio pendiente'
       : 'parámetros obligatorios pendientes';
@@ -155,20 +163,34 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   });
 
   readonly alertaBloqueoDescripcion = computed(() => {
-    const cantidad = this.parametrosResumen()?.bloqueos ?? 0;
+    const cantidad = this.parametrosResumen()?.bloqueosPreparacion ?? 0;
     const etiquetaAccion = cantidad === 1 ? 'Corrígelo' : 'Corrígelos';
-    return `${etiquetaAccion} en Parámetros o usa «Preparar nómina» para congelar la base actual.`;
+    return `${etiquetaAccion} en Parámetros antes de preparar la nómina.`;
+  });
+
+  readonly alertaOficialesTitulo = computed(() => {
+    const cantidad = this.parametrosResumen()?.advertenciasOficiales ?? 0;
+    const etiquetaItem = cantidad === 1 ? 'oficial pendiente' : 'oficiales pendientes';
+    return `Hay ${cantidad} ${etiquetaItem} no bloqueante`;
+  });
+
+  readonly alertaOficialesDescripcion = computed(() =>
+    'Puedes preparar la nómina; estos valores oficiales mensuales se actualizarán cuando estén disponibles.',
+  );
+
+  readonly parametrosEstadoPreparacionCompleto = computed(() => {
+    if (this.parametrosLoading() || this.parametrosValidando()) return false;
+    const resumen = this.parametrosResumen();
+    if (!resumen) return false;
+    return resumen.bloqueosPreparacion === 0;
   });
 
   readonly tituloEstadoParametros = computed(() => {
     const resumen = this.parametrosResumen();
-    if ((resumen?.bloqueos ?? 0) > 0) {
-      return 'Bloqueos actuales';
+    if ((resumen?.bloqueosPreparacion ?? 0) > 0) {
+      return 'Pendientes para preparar';
     }
-    if ((resumen?.requiereRevision ?? 0) > 0) {
-      return 'Revisiones pendientes';
-    }
-    return 'Estado actual';
+    return 'Pendientes para preparar';
   });
 
   readonly parametrosEstadoCompleto = computed(() => {
@@ -182,8 +204,8 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     if (this.parametrosLoading()) return 'neutral';
     const resumen = this.parametrosResumen();
     if (!resumen) return 'neutral';
-    if (resumen.bloqueos > 0) return 'bloqueo';
-    if (resumen.requiereRevision > 0) return 'revision';
+    if (resumen.bloqueosPreparacion > 0) return 'bloqueo';
+    if (resumen.requiereRevision > 0 || resumen.advertenciasOficiales > 0) return 'revision';
     return 'exito';
   });
 
@@ -207,6 +229,10 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
 
   constructor() {
     effect(() => {
+      const periodo = this.periodoActivo.periodoYm();
+      void this.cargarParametrosResumen(periodo);
+    });
+    effect(() => {
       if (this.parametrosLoading() || this.parametrosValidando()) {
         this.orquestador.establecerAyudaAvance(null);
         return;
@@ -216,9 +242,16 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
         this.orquestador.establecerAyudaAvance(null);
         return;
       }
-      if (resumen.bloqueos > 0) {
+      if (resumen.bloqueosPreparacion > 0) {
         this.orquestador.establecerAyudaAvance(
-          'Hay parámetros obligatorios pendientes. Usa «Preparar nómina» para congelar la base o corrígelos en Parámetros.',
+          'Completa los pendientes no oficiales exigibles antes de preparar la nómina.',
+          'bloqueo',
+        );
+        return;
+      }
+      if (resumen.advertenciasOficiales > 0) {
+        this.orquestador.establecerAyudaAvance(
+          'Hay oficiales mensuales pendientes. No bloquean la preparación del periodo.',
           'revision',
         );
         return;
@@ -237,7 +270,6 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
       limpiarAccionPrincipal();
       this.orquestador.establecerAyudaAvance(null);
     });
-    void this.cargarParametrosResumen();
   }
 
   evaluarAvance(destinoPaso: PayrollStepId): void {
@@ -246,9 +278,7 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
       const resumen = this.parametrosResumen();
       this.orquestador.modalAvanceParametros.set({
         tipo: 'bloqueo',
-        pendientes: (resumen?.bloqueosActuales ?? [])
-          .filter((item) => item.severidad === 'bloqueo')
-          .map((item) => `${item.titulo}: ${item.detalle ?? 'Pendiente'}`),
+        pendientes: (resumen?.pendientesPreparacion ?? []).map((item) => `${item.titulo}: ${item.detalle ?? 'Pendiente'}`),
       });
       return;
     }
@@ -273,15 +303,42 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
 
   irAPendientesParametros(): void {
     this.orquestador.modalAvanceParametros.set(null);
-    queueMicrotask(() => {
-      document.getElementById('parametros-pendientes-sidebar')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    });
+    this.abrirModalPendientesParametros('preparacion');
   }
 
   abrirTablaDiferencias(): void {
     const diferencias = this.estadoBase()?.comparacion?.diferencias ?? [];
     if (diferencias.length === 0) return;
     this.orquestador.modalTablaDiferenciasParametrosBase.set({ diferencias });
+  }
+
+  abrirModalPendientesParametros(tipo: ModalPendientesParametrosTipo): void {
+    this.modalPendientesParametros.set({ tipo });
+  }
+
+  cerrarModalPendientesParametros(): void {
+    this.modalPendientesParametros.set(null);
+  }
+
+  tituloModalPendientesParametros(tipo: ModalPendientesParametrosTipo): string {
+    return tipo === 'preparacion' ? 'Pendientes para preparar' : 'Oficiales pendientes';
+  }
+
+  mensajeModalPendientesParametros(tipo: ModalPendientesParametrosTipo): string {
+    return tipo === 'preparacion'
+      ? 'Completa estos datos no oficiales exigibles antes de preparar la nómina.'
+      : 'Estos oficiales mensuales no bloquean la preparación del periodo.';
+  }
+
+  seccionesModalPendientesParametros(tipo: ModalPendientesParametrosTipo): MessageBoxSection[] {
+    const items = tipo === 'preparacion'
+      ? this.parametrosPendientesPreparacion()
+      : this.parametrosAdvertenciasNoBloqueantes();
+    return this.agruparPendientesParametros(items).map(([areaId, bloqueos]) => ({
+      title: this.parametroAreaTitulo(areaId),
+      tone: tipo === 'preparacion' ? 'attention' : 'info',
+      items: bloqueos.map((bloqueo) => `${bloqueo.titulo}: ${bloqueo.detalle ?? 'Pendiente'}`),
+    }));
   }
 
   async confirmarGuardarBaseYContinuar(): Promise<void> {
@@ -338,38 +395,52 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     }
   }
 
-  async cargarParametrosResumen(): Promise<void> {
+  async cargarParametrosResumen(periodo = this.periodoActivo.periodoYm()): Promise<void> {
+    const token = ++this.tokenCargaPeriodo;
     this.parametrosLoading.set(true);
     this.parametrosError.set(null);
     try {
-      const resumen = await this.parametrosResumenService.obtenerResumen();
+      const resumen = await this.parametrosResumenService.obtenerResumen(periodo);
+      if (token !== this.tokenCargaPeriodo) return;
       this.parametrosResumen.set(resumen);
       this.actualizarContextoTrazabilidad(resumen);
       await this.actualizarEstadoBase(resumen.periodo);
+      if (token !== this.tokenCargaPeriodo) return;
       this.resumenActualizado.emit();
     } catch (error) {
+      if (token !== this.tokenCargaPeriodo) return;
       console.error('[Nómina V2] Error cargando parámetros', error);
       this.parametrosError.set('No fue posible cargar el resumen de parámetros.');
       this.resumenActualizado.emit();
     } finally {
+      if (token !== this.tokenCargaPeriodo) return;
       this.parametrosLoading.set(false);
       this.resumenActualizado.emit();
     }
   }
 
   async prepararNomina(): Promise<void> {
+    const periodo = this.periodoActivo.periodoYm();
     this.parametrosValidando.set(true);
     this.parametrosError.set(null);
     this.resumenActualizado.emit();
     try {
-      const resumen = await this.parametrosResumenService.obtenerResumen();
+      const resumen = await this.parametrosResumenService.obtenerResumen(periodo);
+      if (resumen.periodo !== this.periodoActivo.periodoYm()) return;
       this.parametrosResumen.set(resumen);
       this.actualizarContextoTrazabilidad(resumen);
       const estadoBase = await this.actualizarEstadoBase(resumen.periodo);
+      if (resumen.periodo !== this.periodoActivo.periodoYm()) return;
       this.resumenActualizado.emit();
 
       const rama = this.parametrosBaseService.resolverRamaAccionPreparacion(resumen, estadoBase);
       switch (rama.tipo) {
+        case 'bloqueado':
+          this.orquestador.modalAvanceParametros.set({
+            tipo: 'bloqueo',
+            pendientes: rama.pendientes.map((item) => `${item.titulo}: ${item.detalle ?? 'Pendiente'}`),
+          });
+          break;
         case 'guardar': {
           const preview = await this.parametrosBaseService.construirVistaPreviaParametrosBase(resumen, resumen.periodo);
           this.orquestador.modalPrepararNomina.set({ preview, resumen });
@@ -404,6 +475,16 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
         periodo: this.parametrosResumen()?.periodo,
         area: destino.area,
         tab: destino.tab,
+      },
+    });
+  }
+
+  goToMantenedorParametros(): void {
+    void this.router.navigate(['/parametros'], {
+      queryParams: {
+        periodo: this.parametrosResumen()?.periodo,
+        area: 'datosOficiales',
+        tab: 'valores',
       },
     });
   }
@@ -529,17 +610,27 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
 
   private obtenerEstadoPendientesPasoParametros(): EstadoPendientesPasoParametros {
     const resumen = this.parametrosResumen();
-    const tieneBloqueos = (resumen?.bloqueos ?? 0) > 0;
-    const tieneRevisiones = (resumen?.requiereRevision ?? 0) > 0;
-    const puedeContinuar = resumen?.puedeContinuar ?? false;
+    const tieneBloqueos = (resumen?.bloqueosPreparacion ?? 0) > 0;
+    const tieneRevisiones = (resumen?.requiereRevision ?? 0) > 0 || (resumen?.advertenciasOficiales ?? 0) > 0;
+    const puedeContinuar = resumen?.puedePreparar ?? false;
     let resultado: ResultadoValidacionPaso = 'permitido';
     if (tieneBloqueos) {
-      resultado = 'bloqueado';
-    } else if (tieneRevisiones && !puedeContinuar) {
       resultado = 'bloqueado';
     } else if (tieneRevisiones) {
       resultado = 'advertencia';
     }
     return { tieneBloqueos, tieneRevisiones, puedeContinuar, resultado };
+  }
+
+  private agruparPendientesParametros(
+    bloqueos: readonly ParametroResumenBloqueo[],
+  ): Array<[ParametroResumenAreaId, ParametroResumenBloqueo[]]> {
+    const grupos = new Map<ParametroResumenAreaId, ParametroResumenBloqueo[]>();
+    for (const bloqueo of bloqueos) {
+      const grupo = grupos.get(bloqueo.areaId) ?? [];
+      grupo.push(bloqueo);
+      grupos.set(bloqueo.areaId, grupo);
+    }
+    return [...grupos.entries()];
   }
 }
