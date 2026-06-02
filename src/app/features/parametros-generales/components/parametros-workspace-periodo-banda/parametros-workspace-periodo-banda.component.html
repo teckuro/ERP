@@ -11,7 +11,9 @@
           >{{ ws.periodoEstadoChip() }}</span
         >
       </div>
-      <p class="period-sync-hint parametros-period-sync">{{ ws.periodoContextoHint() }}</p>
+      @if (ws.periodoContextoHint(); as hint) {
+        <p class="period-sync-hint parametros-period-sync">{{ hint }}</p>
+      }
     </div>
 
     <div class="parametros-period-right" aria-label="Estado mensual">
@@ -34,7 +36,13 @@
             [visibleActions]="['back', 'save']"
             backLabel="Cancelar"
             [saveLabel]="ws.saveLabel()"
-            [saveDisabled]="ws.guardando() || ws.isLoading() || ws.isLoadingPlantilla() || ws.form.invalid"
+            [saveDisabled]="
+              ws.guardando() ||
+              ws.isLoading() ||
+              ws.isLoadingPlantilla() ||
+              !ws.datosFormularioListos() ||
+              ws.form.invalid
+            "
             (saveClick)="ws.guardar()"
             (backClick)="ws.volverParametrosAction()"
           ></app-page-actions>

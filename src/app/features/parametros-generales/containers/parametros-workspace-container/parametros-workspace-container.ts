@@ -5,7 +5,6 @@ import {
   DestroyRef,
   OnInit,
   ViewEncapsulation,
-  effect,
   inject,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
@@ -49,14 +48,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
     bindShellPageContext(inject(DestroyRef), () => ({
       breadcrumbs: [{ label: 'Parámetros' }],
     }));
-
-    effect(() => {
-      const g = this.orq.periodoGlobal.periodoYm();
-      if (g === this.orq.selectedPeriodo()) {
-        return;
-      }
-      void this.orq.seleccionarPeriodo(g, { fromGlobal: true });
-    });
+    // El effect que sincroniza con el periodo global vive en el orquestador (con guard de inicialización).
   }
 
   async ngOnInit(): Promise<void> {

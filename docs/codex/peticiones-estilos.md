@@ -1,3 +1,41 @@
+## 2026-06-02 - Parámetros: shell unificado banda + detalle (estilo nómina v2)
+
+Reorganización visual del contenedor del workspace para que la cabecera (banda de período + acciones) y el detalle (tabs + contenido) vivan dentro del mismo marco continuo, igual que los pasos de nómina v2. Sin tocar estilos globales ni el HTML del template.
+
+- **Frame único (`.parametros-frame`)**: ahora lleva el `border`, `border-radius: 10px`, fondo y sombra ligera. El `app-card` envolvente queda transparente. El `padding` del `app-card-content` (`p-4` default) se anula a `0` para que el viewhead pegue arriba.
+- **Cabecera integrada (`.parametros-viewhead`)**: padding `10px 14px`, fondo `--prm-soft`, `border-bottom` divider, y `border-top-*-radius: 9px` para coincidir con el frame. Antes era un bloque con `border-radius: 8px` y `background: #f9fafb` flotando aparte.
+- **Banda sin caja propia (`.parametros-period-band`)**: se removió su `border` + `border-radius` + `background`; ahora hereda la cabecera (`.parametros-viewhead`). Antes parecía una "isla" dentro del card.
+- **Contenido sin doble borde (`.parametros-content`)**: se removió su `border` + `border-radius` propios (el frame ya los provee). Mantiene `overflow: hidden` + `flex` para que los tabs sigan siendo header sticky y el `tab-panel` sea el único con `overflow-y: auto` (scroll interno).
+- **Full screen adaptativa**: la cadena ya estaba (`100dvh - chrome` en `.parametros-page` → `flex: 1` en shell → frame → content → tab-panel). No se cambió, solo se confirmó que sigue funcionando tras quitar los bordes intermedios.
+- **Sin tocar**: shell global, layout, fuentes, BD, servicios, formularios, contratos. CSS local del módulo. Lints + `npx tsc --noEmit -p tsconfig.app.json` limpios.
+
+## 2026-06-02 - Parámetros: captura anticipada del período por el cliente (sin oficiales)
+
+Cambio funcional acordado con el usuario (alcance: campos oficiales editables + configuración del cliente; reconciliación se mantiene como hoy; **sin cambios de BD/servicio** — se usa el guardado existente).
+
+- **Banda — botón principal**: cuando `!hasAnySyncedData()` el label de Modificar pasa a `Capturar valores`. El botón ya abría edición completa, pero el texto orientaba a "edición de configuración" y no a "captura inicial".
+- **Banda — hint del período**: nuevo texto cuando no hay oficiales: `Sin oficiales aún. El cliente puede capturar valores; NOIA los actualizará a fin de mes.`
+- **Tooltip Modificar**: caso explícito sin oficiales: `Captura los valores tentativos del cliente para este período. NOIA actualizará los oficiales a fin de mes y revisaremos diferencias.`
+- **Tab Valores — empty state**: dos pseudo-tarjetas anteriores ("con referencia" vs "sin referencia") consolidadas en una. Copy reescrito para reflejar el flujo real (el cliente puede capturar UF/UTM/UTA + sueldos + topes + %; NOIA actualiza oficiales a fin de mes). Botón CTA `Capturar valores del período` que delega en `editarParametros()` (mismo flujo que el botón de banda).
+- **Tab Valores — botón CTA**: estilo local en el componente, fondo `#1f2937`, hover `#111827`, focus ring `#2563eb`. No introduce tokens nuevos.
+- **Sin tocar**: BD, servicio, mappers, contratos, columnas grid, tabs distintas a Valores, estilos globales. La habilitación de campos editables ya estaba conectada a `generalesEditando()` en el tab; solo se cambia messaging y se ofrece un punto de entrada explícito desde el empty state.
+- **Reconciliación**: queda como hoy. Cuando NOIA carga el oficial al cierre, el flujo existente emite el chip `Revisar diferencias` y el diálogo de decisión.
+
+## 2026-06-02 - Parámetros Fase 2: tooltips dinámicos, hint contextual y limpieza de redundancias
+
+Continuación de la auditoría `docs/codex/modulos/parametros/auditoria-tab-valores-2026-06.md`. Sigue tocando solo `parametros-generales` (sin cambios globales, SQL ni motor).
+
+- **Tooltip Modificar (H-M6)**: ahora reporta el estado real — `Cargando…`, `Preparando edición…`, `Guardando…`, `No se completó la carga…`, `Período cerrado: solo lectura.`, `Modificar aplica a configuración del cliente…`, o `Abrir edición de la configuración del cliente para este período.`. Antes era un texto único con instrucciones genéricas.
+- **Toast inline en lugar de modal pre-guardado (H-G1)**: el botón Guardar de la banda se deshabilita también cuando `!datosFormularioListos()`. `guardar()` queda como defensa en profundidad sin mostrar diálogo. Eliminado el modal `Los datos del período aún se están cargando…` que aparecía si se pulsaba Guardar antes de tiempo.
+- **Observaciones de reconciliación a constantes (H-G4)**: copy persistido en BD movido a `OBSERVACIONES_RECONCILIACION` (`actualizadoConOficiales`, `mantenerConfiguracion`, `revisarDespues`). Una sola fuente para la observación que queda en historial.
+- **Doble effect de período (H-P2/P3)**: eliminado el `effect()` duplicado en `ParametrosWorkspaceContainer`. Solo queda el del orquestador (con guard de inicialización). El container ya no importa `effect` ni `seleccionarPeriodo`.
+- **Hint del período (H-E8)**: `periodoContextoHint` deja de ser un texto fijo (`Sincronizado con el período activo.`) y pasa a contexto útil: `Editando configuración del cliente.` o `Referencia oficial: Abril 2026.`; oculto cuando no hay nada que decir.
+- **Labels redundantes en TABS_PARAMETROS_WORKSPACE (H-A4)**: el `.label` del array ahora coincide con `etiquetaTabParametros()` (versión corta). La UI usa la función presenter; el `.label` queda solo por compatibilidad de tipo, sin copy fantasma.
+- **scrollActive sin rAF colgado (H-Pf2)**: el `requestAnimationFrame` previo se cancela antes de pedir uno nuevo; al destruir el panel se cancela el pendiente vía `DestroyRef.onDestroy`.
+- **Validators (H-F3)**: auditoría confirmó `min/max [0,100]` en porcentajes (sis, sanna, salud*, afc*, trabajoPesado*), `min(0)` sin tope en montos UF/CLP, validador dinámico de `immGratificacion` en función de `gratificacion`. No requiere cambios.
+- **ngSubmit sin botón submit (H-F6)**: se conserva (atajo Enter útil), ya protegido por los guards de `guardar()` y por el botón externo de la banda.
+- **Tests / tipos / lints**: `npx vitest run` sobre `rules/` + `utils/` → 54/54 verdes. `npx tsc --noEmit -p tsconfig.app.json` sin errores. Lints limpios. Pendiente del fix de runner: los specs con `TestBed` (incluido `parametros-workspace.orquestador.spec.ts`) fallan con vitest puro por falta de `initTestEnvironment` — afecta a varios módulos del repo, no es regresión introducida aquí. Documentado como deuda.
+
 ## 2026-06-02 - Parámetros Fase 1: copy NOIA, chips de banda y empty state tab Valores
 
 Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-tab-valores-2026-06.md`:

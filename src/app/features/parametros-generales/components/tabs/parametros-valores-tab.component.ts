@@ -12,98 +12,65 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
       [formGroup]="form"
       (ngSubmit)="enviarFormulario?.()"
     >
-      @if (editable) {
-        <p class="parametros-valores-aviso" role="note">
-          Al guardar se persisten también los cambios de Remuneraciones y Cliente para este período.
-        </p>
-      }
+      <section class="param-group parametros-section-card" aria-labelledby="indicadores-title">
+        <h2 id="indicadores-title">Indicadores mensuales</h2>
+        <p class="param-section-lead">UF, UTM y UTA del período.</p>
+        <div class="field-grid parametros-form-grid field-grid--values">
+          <label class="param-field">
+            <span>UF (CLP)</span>
+            @if (officialEditable) {
+              <span class="unit-field unit-field--suffix" data-unit="CLP">
+                <input
+                  class="param-input text-right"
+                  type="number"
+                  step="0.01"
+                  formControlName="uf"
+                />
+              </span>
+            } @else {
+              <span class="param-input-readonly text-right">
+                {{ form.get('uf')?.value | number: '1.2-2' : 'es-CL' }}
+              </span>
+            }
+          </label>
 
-      @if (!hasPeriodoData && !editable) {
-        @if (referenciaPeriodoLabel) {
-          <section
-            class="param-group parametros-section-card parametros-empty"
-            aria-labelledby="empty-title"
-          >
-            <h2 id="empty-title">Sin datos oficiales para {{ periodoLabel }}</h2>
-            <p class="param-section-lead">
-              Aún no se cargó el período. Puedes revisar la referencia disponible o esperar la carga oficial.
-            </p>
-            <p class="parametros-valores-referencia">
-              Referencia disponible: <strong>{{ referenciaPeriodoLabel }}</strong>
-            </p>
-          </section>
-        } @else {
-          <section
-            class="param-group parametros-section-card parametros-empty"
-            aria-labelledby="empty-title"
-          >
-            <h2 id="empty-title">Sin datos oficiales para {{ periodoLabel }}</h2>
-            <p class="param-section-lead">
-              El proceso normativo del mes aún no se ha ejecutado para este período.
-            </p>
-          </section>
-        }
-      } @else {
-        <section class="param-group parametros-section-card" aria-labelledby="indicadores-title">
-          <h2 id="indicadores-title">Indicadores mensuales</h2>
-          <p class="param-section-lead">UF, UTM y UTA del período.</p>
-          <div class="field-grid parametros-form-grid field-grid--values">
-            <label class="param-field">
-              <span>UF (CLP)</span>
-              @if (officialEditable) {
-                <span class="unit-field unit-field--suffix" data-unit="CLP">
-                  <input
-                    class="param-input text-right"
-                    type="number"
-                    step="0.01"
-                    formControlName="uf"
-                  />
-                </span>
-              } @else {
-                <span class="param-input-readonly text-right">
-                  {{ form.get('uf')?.value | number: '1.2-2' : 'es-CL' }}
-                </span>
-              }
-            </label>
+          <label class="param-field">
+            <span>UTM (CLP)</span>
+            @if (officialEditable) {
+              <span class="unit-field unit-field--suffix" data-unit="CLP">
+                <input
+                  class="param-input text-right"
+                  type="number"
+                  step="1"
+                  formControlName="utm"
+                />
+              </span>
+            } @else {
+              <span class="param-input-readonly text-right">
+                {{ form.get('utm')?.value | number: '1.0-0' : 'es-CL' }}
+              </span>
+            }
+          </label>
 
-            <label class="param-field">
-              <span>UTM (CLP)</span>
-              @if (officialEditable) {
-                <span class="unit-field unit-field--suffix" data-unit="CLP">
-                  <input
-                    class="param-input text-right"
-                    type="number"
-                    step="1"
-                    formControlName="utm"
-                  />
-                </span>
-              } @else {
-                <span class="param-input-readonly text-right">
-                  {{ form.get('utm')?.value | number: '1.0-0' : 'es-CL' }}
-                </span>
-              }
-            </label>
-
-            <label class="param-field">
-              <span>UTA (CLP)</span>
-              @if (officialEditable) {
-                <span class="unit-field unit-field--suffix" data-unit="CLP">
-                  <input
-                    class="param-input text-right"
-                    type="number"
-                    step="1"
-                    formControlName="uta"
-                  />
-                </span>
-              } @else {
-                <span class="param-input-readonly text-right">
-                  {{ form.get('uta')?.value | number: '1.0-0' : 'es-CL' }}
-                </span>
-              }
-            </label>
-          </div>
-        </section>
-      }
+          <label class="param-field">
+            <span>UTA (CLP)</span>
+            @if (officialEditable) {
+              <span class="unit-field unit-field--suffix" data-unit="CLP">
+                <input
+                  class="param-input text-right"
+                  type="number"
+                  step="1"
+                  formControlName="uta"
+                />
+              </span>
+            } @else {
+              <span class="param-input-readonly text-right">
+                {{ form.get('uta')?.value | number: '1.0-0' : 'es-CL' }}
+              </span>
+            }
+          </label>
+        </div>
+      </section>
 
       @if (fechaActualizacionLabel) {
         <footer class="tab-footnote tab-footnote--muted">
@@ -114,32 +81,21 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   `,
   styles: [
     `
-      .parametros-valores-aviso {
-        margin: 0 0 0.75rem 0;
-        padding: 0.5rem 0.75rem;
-        background: var(--noia-tone-info-bg, #f1f5f9);
-        border: 1px solid var(--noia-tone-info-border, #cbd5e1);
-        border-radius: 6px;
-        font-size: 0.85rem;
-        color: var(--noia-tone-info-text, #1e293b);
-      }
-
-      .parametros-empty {
-        text-align: left;
-      }
-
-      .parametros-valores-referencia {
-        margin: 0.5rem 0 0 0;
-        font-size: 0.9rem;
-        color: var(--noia-text-secondary, #475569);
-      }
-
       .param-input-readonly {
-        display: inline-block;
-        padding: 0.35rem 0.55rem;
-        background: transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        height: var(--erp-control-height, 22px);
+        min-height: var(--erp-control-height, 22px);
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0 6px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: #f8fafc;
+        font-size: 0.78rem;
         font-variant-numeric: tabular-nums;
-        color: var(--noia-text-primary, #1e293b);
+        color: #111827;
       }
     `,
   ],
@@ -156,4 +112,5 @@ export class ParametrosValoresTabComponent {
   @Input() fechaActualizacionLabel: string | null = null;
   @Input() enviarFormulario: (() => void) | null = null;
   @Input() verReferenciaPeriodoAnterior: (() => void) | null = null;
+  @Input() capturarValores: (() => void) | null = null;
 }

@@ -1,5 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  inject,
+} from '@angular/core';
 import type { ParametrosTabId } from '../../models/parametro-general.model';
 import type { ParametrosAreaId } from '../../models/parametros-workspace.vm';
 
@@ -39,6 +45,16 @@ export class ParametrosWorkspaceTabsPanelComponent {
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly ws = inject(ParametrosWorkspaceOrquestador);
   readonly etiquetaTab = etiquetaTabParametros;
+  private scrollRafId: number | null = null;
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => {
+      if (this.scrollRafId !== null) {
+        window.cancelAnimationFrame(this.scrollRafId);
+        this.scrollRafId = null;
+      }
+    });
+  }
 
   seleccionarArea(areaId: ParametrosAreaId): void {
     this.ws.seleccionarArea(areaId);
@@ -51,7 +67,11 @@ export class ParametrosWorkspaceTabsPanelComponent {
   }
 
   private scrollActive(selector: string): void {
-    window.requestAnimationFrame(() => {
+    if (this.scrollRafId !== null) {
+      window.cancelAnimationFrame(this.scrollRafId);
+    }
+    this.scrollRafId = window.requestAnimationFrame(() => {
+      this.scrollRafId = null;
       const root = this.hostElement.nativeElement;
       const active = root.querySelector<HTMLElement>(selector);
       active?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });

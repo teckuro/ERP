@@ -86,6 +86,13 @@ import {
   tituloRegistroTabActivo,
 } from '../utils/parametros-workspace-tabs.presenter';
 
+/** Copy estable usado al persistir decisiones de reconciliación (queda en historial). */
+const OBSERVACIONES_RECONCILIACION = {
+  actualizadoConOficiales: 'Configuración del cliente alineada con los valores oficiales del período.',
+  mantenerConfiguracion: 'No se sobrescribió la configuración del cliente.',
+  revisarDespues: 'Revisión de diferencias postergada por el usuario.',
+} as const;
+
 /** Carga, guardado, diálogos y formulario del workspace de parámetros mensuales. */
 @Injectable()
 export class ParametrosWorkspaceOrquestador {
@@ -191,6 +198,9 @@ export class ParametrosWorkspaceOrquestador {
   readonly accionConfigClienteLabel = computed(() => {
     if (this.isPreparingEdit() || this.isPreparandoDialogoCrear()) {
       return 'Preparando...';
+    }
+    if (!this.hasAnySyncedData()) {
+      return 'Capturar valores';
     }
     return 'Modificar';
   });
@@ -610,7 +620,19 @@ export class ParametrosWorkspaceOrquestador {
     return periodo ? formatearPeriodoMesAnio(periodo, this.monthOptions) : null;
   });
 
-  readonly periodoContextoHint = computed(() => 'Sincronizado con el período activo.');
+  readonly periodoContextoHint = computed(() => {
+    if (this.generalesEditando()) {
+      return 'Editando configuración del cliente.';
+    }
+    if (!this.hasAnySyncedData()) {
+      return 'Sin oficiales aún. El cliente puede capturar valores; NOIA los actualizará a fin de mes.';
+    }
+    const referencia = this.referenciaVisualPrincipalLabelCapitalizado();
+    if (referencia) {
+      return `Referencia oficial: ${referencia}.`;
+    }
+    return '';
+  });
 
   readonly referenciaParametrosGeneralesLabel = computed(() =>
     this.formatReferenciaMensualLabel(this.referenciasMensuales().parametrosGenerales),
@@ -1122,14 +1144,17 @@ export class ParametrosWorkspaceOrquestador {
       this.isLoadingPlantilla.set(false);
     }
 
+    // `referencia` se omite del diálogo: traía el snapshot completo del mes anterior
+    // (incluido UF/UTM/UTA), pero al usuario le resultaba duplicado con `ultima`.
+    // Mantenemos la lógica interna por si se reutiliza, pero solo exponemos `ultima` y `oficiales`.
     const actions = resolverOpcionesBaseConfigCliente({
       ultimaConfigDisponible,
       referenciaAnteriorDisponible: hasReferencia,
       oficialesActualesDisponibles: hasOficiales,
     })
       .filter(
-        (opcion): opcion is Exclude<ParametrosConfigClienteBaseOpcion, 'cero' | 'cancelar'> =>
-          opcion !== 'cero' && opcion !== 'cancelar',
+        (opcion): opcion is Exclude<ParametrosConfigClienteBaseOpcion, 'cero' | 'cancelar' | 'referencia'> =>
+          opcion !== 'cero' && opcion !== 'cancelar' && opcion !== 'referencia',
       )
       .sort((left, right) => this.configClienteBasePrioridad(left) - this.configClienteBasePrioridad(right))
       .slice(0, 3)
@@ -1276,7 +1301,7 @@ export class ParametrosWorkspaceOrquestador {
           estadoReconciliacionOficial: 'actualizado_con_oficiales',
           fechaReconciliacionOficial: new Date().toISOString(),
           origenReconciliacion: 'actualizar_con_oficiales',
-          observacionReconciliacion: 'Cliente actualizado con parámetros oficiales desde reconciliación.',
+          observacionReconciliacion: OBSERVACIONES_RECONCILIACION.actualizadoConOficiales,
         },
       );
       this.clienteConfig.set(saved);
@@ -1296,7 +1321,8 @@ export class ParametrosWorkspaceOrquestador {
     await this.registrarDecisionReconciliacion(
       'cliente_confirmado',
       'mantener_configuracion',
-      'No se sobrescribió tu configuración cliente.',
+      OBSERVACIONES_RECONCILIACION.mantenerConfiguracion,
+      'No se sobrescribió la configuración del cliente.',
       'La decisión quedó registrada para este período.',
     );
   }
@@ -1305,20 +1331,22 @@ export class ParametrosWorkspaceOrquestador {
     await this.registrarDecisionReconciliacion(
       'revisar_despues',
       'revisar_despues',
+      OBSERVACIONES_RECONCILIACION.revisarDespues,
       'La revisión de diferencias quedó postergada.',
-      'Nada se actualizó automáticamente. Puedes volver a revisar la configuración cliente cuando corresponda.',
+      'Nada se actualizó automáticamente. Puedes volver a revisar la configuración del cliente cuando corresponda.',
     );
   }
 
   private async registrarDecisionReconciliacion(
     estado: 'revisar_despues' | 'cliente_confirmado',
     origen: 'mantener_configuracion' | 'revisar_despues',
+    observacion: string,
     message: string,
     detail: string,
   ): Promise<void> {
     const periodo = this.selectedPeriodo();
     if (!this.clienteConfig()) {
-      this.mostrarErrorClienteConfig('No hay configuración cliente para registrar la decisión de reconciliación.');
+      this.mostrarErrorClienteConfig('No hay configuración del cliente para registrar la decisión de reconciliación.');
       return;
     }
 
@@ -1328,7 +1356,7 @@ export class ParametrosWorkspaceOrquestador {
         periodo,
         estado,
         origen,
-        observacion: message,
+        observacion,
       });
       this.clienteConfig.set(saved);
       this.dialogState.set(buildParametrosRegistroDecisionReconciliacionDialog(estado, message, detail));
@@ -1599,13 +1627,8 @@ export class ParametrosWorkspaceOrquestador {
   async guardar(): Promise<void> {
     this.form.markAllAsTouched();
 
-    if (this.guardando()) {
-      return;
-    }
-    if (!this.datosFormularioListos()) {
-      this.mostrarErrorClienteConfig(
-        'Los datos del período aún se están cargando. Espere un momento e intente guardar de nuevo.',
-      );
+    if (this.guardando() || !this.datosFormularioListos()) {
+      // Botón ya deshabilitado en estos estados; defensa en profundidad sin modal.
       return;
     }
     if (this.form.invalid) {
@@ -1750,18 +1773,36 @@ export class ParametrosWorkspaceOrquestador {
     return this.tieneDatosEditablesEnPeriodo();
   }
 
-  /** Tooltip del botón Modificar cuando la vista activa no es editable. */
+  /** Tooltip del botón Modificar según el estado del período. */
   modificarTooltipConsulta(): string {
     if (this.generalesEditando()) {
-      return 'Ya está en modo edición. Use Guardar o Cancelar en la banda del período.';
+      return 'Edición en curso. Usa Guardar o Cancelar en la banda.';
+    }
+    if (this.isLoading() || this.isLoadingPlantilla()) {
+      return 'Cargando datos del período…';
+    }
+    if (this.isPreparingEdit()) {
+      return 'Preparando edición…';
+    }
+    if (this.guardando()) {
+      return 'Guardando cambios…';
+    }
+    if (this.cargaBloqueadaPorError()) {
+      return 'No se completó la carga del período. Reintenta antes de modificar.';
     }
     if (!this.datosFormularioListos()) {
-      return 'Espere a que termine la carga del período antes de modificar.';
+      return 'Espera a que el período termine de cargar.';
+    }
+    if (this.periodoCargaEstado() === 'cerrado') {
+      return 'Período cerrado: solo lectura. Requiere reapertura auditada.';
+    }
+    if (!this.hasAnySyncedData()) {
+      return 'Captura los valores tentativos del cliente para este período. NOIA actualizará los oficiales a fin de mes y revisaremos diferencias.';
     }
     if (!this.isConfigurableTab()) {
-      return 'Modificar aplica a la configuración del cliente. Los datos oficiales se muestran para referencia.';
+      return 'Modificar aplica a la configuración del cliente. Los datos oficiales se cargan por proceso normativo.';
     }
-    return 'Abre edición para completar la configuración. Si el período aún no está listo, puede tardar un momento en preparar la edición.';
+    return 'Abrir edición de la configuración del cliente para este período.';
   }
 
   fechaActualizacionLabel(): string {

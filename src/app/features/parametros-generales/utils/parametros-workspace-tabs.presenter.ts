@@ -21,16 +21,23 @@ export const MESES_PARAMETROS_WORKSPACE: readonly MonthOption[] = [
   { value: '12', label: 'DICIEMBRE' },
 ];
 
+/**
+ * Catálogo canónico de tabs del workspace de parámetros.
+ *
+ * El campo `label` se conserva por compatibilidad de tipo (`ParametrosTab`), pero
+ * la UI renderiza los nombres mediante `etiquetaTabParametros(id)` (versión corta).
+ * Mantenemos ambos en sincronía para no introducir copy fantasma.
+ */
 export const TABS_PARAMETROS_WORKSPACE: readonly ParametrosTab[] = [
   { id: 'configCliente', label: 'Cliente' },
-  { id: 'valores', label: 'Información de Valores' },
-  { id: 'remuneraciones', label: 'Información de Remuneraciones' },
-  { id: 'ccafMutual', label: 'CCAF y Mutual' },
-  { id: 'tramosCarga', label: 'Tramos Cargas Familiares' },
-  { id: 'impuestoUnico', label: 'Impuesto único' },
+  { id: 'valores', label: 'Valores' },
+  { id: 'remuneraciones', label: 'Remuneraciones' },
+  { id: 'ccafMutual', label: 'CCAF / Mutual' },
+  { id: 'tramosCarga', label: 'Cargas' },
+  { id: 'impuestoUnico', label: 'Impuesto' },
   { id: 'salud', label: 'Salud' },
   { id: 'prevision', label: 'Previsión' },
-  { id: 'reforma', label: 'Reforma de Pensiones' },
+  { id: 'reforma', label: 'Gradualidad' },
 ];
 
 export const AREAS_PARAMETROS_WORKSPACE: readonly ParametrosArea[] = [
