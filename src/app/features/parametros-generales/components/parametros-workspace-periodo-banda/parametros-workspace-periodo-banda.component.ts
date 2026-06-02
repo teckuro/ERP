@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 
@@ -12,7 +12,9 @@ import { ParametrosWorkspaceOrquestador } from '../../facade/parametros-workspac
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, PageActionsComponent],
   templateUrl: './parametros-workspace-periodo-banda.component.html',
+  styleUrls: ['./parametros-workspace-periodo-banda.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
 })
 export class ParametrosWorkspacePeriodoBandaComponent {
   readonly ws = inject(ParametrosWorkspaceOrquestador);

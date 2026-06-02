@@ -1,3 +1,15 @@
+## 2026-06-02 - Parámetros: desacople CSS banda + tabs (move a componentes hijos)
+
+Refactor estructural sin cambio visual. Objetivo: cortar el acoplamiento entre el container y sus hijos para que cada componente cargue su propio CSS.
+
+- **Periodo-banda con CSS local**: nuevo `parametros-workspace-periodo-banda.component.css` con `.parametros-viewhead`, `.parametros-period-band`, `.parametros-period-left/right/__status/__detail/__ref/__next/actions/sync`, `.period-row__left-top`, `.period-label`, `.period-arrow`, `.period-mensual__reference`, `.period-chip` + variantes (`--success/--warning/--error/--info/--muted`) y su `@media (max-width: 720px)`. El componente declara `styleUrls` + `encapsulation: ViewEncapsulation.None` (coherente con el container). El host queda como `display: block; flex: 0 0 auto`. El selector `.parametros-frame > .parametros-viewhead` dejó de existir (ahora el host lo aporta).
+- **Tabs-panel con CSS local**: nuevo `parametros-workspace-tabs-panel.component.css` con `.parametros-area-tabs`, `.parametros-subtabs`, `.parametros-area-tab/--active`, `.parametros-subtab/--active`, scrollbar webkit, `.parametros-tab-body` + descendientes y `@media (max-width: 760px)`. Host del panel: `display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0`. El componente añade `styleUrls` + `ViewEncapsulation.None`.
+- **Container CSS depurado**: se eliminaron del `parametros-workspace-container.css` y del `.responsive.css` todas las reglas movidas. Quedan solo las del shell/page/frame/toolbar/content/cierre/inputs/etc. propias del container.
+- **Selectores aplanados**: `.parametros-page app-card.parametros-shell app-card-content.parametros-frame` → `.parametros-frame`. `.parametros-page app-card.parametros-shell` → `.parametros-shell`. Misma cascada, sin depender de los tags `app-card` / `app-card-content`.
+- **Limpieza HTML**: `<div class="parametros-content parametros-panel">` → `<div class="parametros-content">`. `parametros-panel` no estaba estilada en ningún lado.
+- **Sin tocar**: estilos globales, contratos, motor, BD, servicios, formularios. Build de desarrollo (`npx ng build --configuration=development`) verde. Lints sin nuevos errores (`.param-check {}` vacío preexistente en `responsive.css` queda fuera del alcance).
+- **Beneficio**: el container deja de saber clases internas de la banda y de los tabs; refactorizar markup o renombrar clases internas de un hijo ya no requiere editar CSS del padre.
+
 ## 2026-06-02 - Parámetros: shell unificado banda + detalle (estilo nómina v2)
 
 Reorganización visual del contenedor del workspace para que la cabecera (banda de período + acciones) y el detalle (tabs + contenido) vivan dentro del mismo marco continuo, igual que los pasos de nómina v2. Sin tocar estilos globales ni el HTML del template.

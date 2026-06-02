@@ -4,6 +4,7 @@ import {
   Component,
   DestroyRef,
   ElementRef,
+  ViewEncapsulation,
   inject,
 } from '@angular/core';
 import type { ParametrosTabId } from '../../models/parametro-general.model';
@@ -39,7 +40,9 @@ import { ParametrosWorkspaceOrquestador } from '../../facade/parametros-workspac
     TooltipComponent,
   ],
   templateUrl: './parametros-workspace-tabs-panel.component.html',
+  styleUrls: ['./parametros-workspace-tabs-panel.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
 })
 export class ParametrosWorkspaceTabsPanelComponent {
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
