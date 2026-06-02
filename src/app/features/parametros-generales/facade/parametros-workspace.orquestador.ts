@@ -192,6 +192,12 @@ export class ParametrosWorkspaceOrquestador {
     return ['edit'] as const;
   });
 
+  mostrarCargaInicial(): void {
+    this.isLoading.set(true);
+    this.datosFormularioListos.set(false);
+    this.dialogState.set(null);
+  }
+
   readonly saveLabel = computed(() => {
     if (this.guardando()) {
       return 'Guardando...';

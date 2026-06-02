@@ -44,6 +44,8 @@ export class ParametrosWorkspaceContainer implements OnInit {
   private readonly route = inject(ActivatedRoute);
 
   constructor() {
+    this.orq.mostrarCargaInicial();
+
     bindShellPageContext(inject(DestroyRef), () => ({
       breadcrumbs: [{ label: 'Parámetros' }],
     }));

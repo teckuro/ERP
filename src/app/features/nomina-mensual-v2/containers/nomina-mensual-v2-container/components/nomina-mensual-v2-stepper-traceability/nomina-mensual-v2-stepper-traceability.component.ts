@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  inject,
+} from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 
 import {
@@ -41,32 +47,39 @@ export class NominaMensualV2StepperTraceabilityComponent {
     return tono === 'bloqueo' || tono === 'revision';
   });
 
-  readonly tooltipAlerta = computed(() => this.orquestador.ayudaAvance() ?? 'Revisar advertencias del paso');
+  readonly tooltipAlerta = computed(
+    () => this.orquestador.ayudaAvance() ?? 'Revisar advertencias del paso',
+  );
 
   readonly pasoDetalleIntegridad = computed<PayrollStepId>(() =>
     this.tieneBaseParametrosGuardada() ? 'parameters' : this.orquestador.pasoActual(),
   );
 
   readonly tieneDetalleParametrosGuardados = computed(() =>
-    this.orquestador.eventosTrazabilidad().some(
-      (evento) =>
-        evento.paso === 'parameters'
-        && evento.tipoEvento === 'PARAMETROS_CONGELADOS'
-        && Array.isArray(evento.metadataPublica?.['valoresParametrosBase'])
-        && evento.metadataPublica['valoresParametrosBase'].length > 0,
-    ),
+    this.orquestador
+      .eventosTrazabilidad()
+      .some(
+        (evento) =>
+          evento.paso === 'parameters' &&
+          evento.tipoEvento === 'PARAMETROS_CONGELADOS' &&
+          Array.isArray(evento.metadataPublica?.['valoresParametrosBase']) &&
+          evento.metadataPublica['valoresParametrosBase'].length > 0,
+      ),
   );
 
-  readonly tieneBaseParametrosGuardada = computed(() =>
-    this.tieneDetalleParametrosGuardados()
-    || !!this.orquestador.idCalculoPeriodoBase()
-    || !!this.orquestador.estadoParametrosBase()?.idCalculoPeriodoBase
-    || this.orquestador.eventosTrazabilidad().some(
-      (evento) =>
-        evento.paso === 'parameters'
-        && evento.tipoEvento === 'PARAMETROS_CONGELADOS'
-        && !!evento.idSnapshotRelacionado,
-    ),
+  readonly tieneBaseParametrosGuardada = computed(
+    () =>
+      this.tieneDetalleParametrosGuardados() ||
+      !!this.orquestador.idCalculoPeriodoBase() ||
+      !!this.orquestador.estadoParametrosBase()?.idCalculoPeriodoBase ||
+      this.orquestador
+        .eventosTrazabilidad()
+        .some(
+          (evento) =>
+            evento.paso === 'parameters' &&
+            evento.tipoEvento === 'PARAMETROS_CONGELADOS' &&
+            !!evento.idSnapshotRelacionado,
+        ),
   );
 
   tooltipFecha(): string {

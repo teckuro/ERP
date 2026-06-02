@@ -190,15 +190,60 @@
   </div>
 
   @if (modalPendientesParametros(); as modalPendientes) {
-    <app-message-box
-      variant="info"
-      mode="modal"
-      width="md"
-      [title]="tituloModalPendientesParametros(modalPendientes.tipo)"
-      [message]="mensajeModalPendientesParametros(modalPendientes.tipo)"
-      [sections]="seccionesModalPendientesParametros(modalPendientes.tipo)"
-      primaryLabel="Cerrar"
-      (action)="cerrarModalPendientesParametros()"
-    ></app-message-box>
+    <div class="parametros-pendientes-modal-backdrop" role="presentation" (click)="cerrarModalPendientesParametros()">
+      <section
+        class="parametros-pendientes-modal"
+        [class.parametros-pendientes-modal--oficiales]="modalPendientes.tipo === 'oficiales'"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="parametros-pendientes-modal-title"
+        (click)="$event.stopPropagation()"
+      >
+        <header class="parametros-pendientes-modal__head">
+          <div class="parametros-pendientes-modal__eyebrow">
+            <lucide-icon [name]="modalPendientes.tipo === 'preparacion' ? 'circle-alert' : 'triangle-alert'" aria-hidden="true"></lucide-icon>
+            <span>{{ modalPendientesResumen(modalPendientes.tipo) }}</span>
+          </div>
+          <button type="button" class="parametros-pendientes-modal__close" aria-label="Cerrar" (click)="cerrarModalPendientesParametros()">
+            <lucide-icon name="x" aria-hidden="true"></lucide-icon>
+          </button>
+          <div class="parametros-pendientes-modal__titleBlock">
+            <h2 id="parametros-pendientes-modal-title">{{ tituloModalPendientesParametros(modalPendientes.tipo) }}</h2>
+            <p>{{ mensajeModalPendientesParametros(modalPendientes.tipo) }}</p>
+          </div>
+        </header>
+
+        <div class="parametros-pendientes-modal__body">
+          @for (grupo of gruposModalPendientesParametros(modalPendientes.tipo); track grupo.areaId) {
+            <section class="parametros-pendientes-group">
+              <header class="parametros-pendientes-group__head">
+                <span>{{ grupo.titulo }}</span>
+                <strong>{{ grupo.cantidad }}</strong>
+              </header>
+              <div class="parametros-pendientes-group__list">
+                @for (bloqueo of grupo.bloqueos; track bloqueo.id) {
+                  <article class="parametros-pendientes-item">
+                    <span class="parametros-pendientes-item__icon">
+                      <lucide-icon [name]="modalPendientes.tipo === 'preparacion' ? bloqueoSeveridadIcono(bloqueo.severidad) : 'triangle-alert'" aria-hidden="true"></lucide-icon>
+                    </span>
+                    <div class="parametros-pendientes-item__copy">
+                      <h3>{{ bloqueo.titulo }}</h3>
+                      <p>{{ bloqueo.detalle }}</p>
+                    </div>
+                    <button type="button" class="parametros-pendientes-item__action" (click)="goToParametros(bloqueo.mantenedor)">
+                      Abrir
+                    </button>
+                  </article>
+                }
+              </div>
+            </section>
+          }
+        </div>
+
+        <footer class="parametros-pendientes-modal__foot">
+          <button type="button" class="parametros-pendientes-modal__secondary" (click)="cerrarModalPendientesParametros()">Cerrar</button>
+        </footer>
+      </section>
+    </div>
   }
 </div>

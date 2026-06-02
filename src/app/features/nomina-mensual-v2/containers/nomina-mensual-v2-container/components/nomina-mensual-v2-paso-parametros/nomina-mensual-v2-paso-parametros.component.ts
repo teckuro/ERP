@@ -16,7 +16,6 @@ import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
-import type { MessageBoxSection } from '../../../../../../shared/components/ui/feedback/message-box/message-box.types';
 import { PeriodoActivoService } from '../../../../../../core/services/periodo-activo.service';
 import type { PayrollStepId } from '../../../../models/nomina-mensual-v2.models';
 import type {
@@ -43,6 +42,13 @@ type ParametrosCargaOverlayPresentacion = {
 };
 
 type ModalPendientesParametrosTipo = 'preparacion' | 'oficiales';
+
+type GrupoModalPendientesParametros = {
+  areaId: ParametroResumenAreaId;
+  titulo: string;
+  cantidad: number;
+  bloqueos: ParametroResumenBloqueo[];
+};
 
 type ResultadoValidacionPaso = 'permitido' | 'advertencia' | 'bloqueado';
 
@@ -84,6 +90,7 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   readonly modalPendientesParametros = signal<{ tipo: ModalPendientesParametrosTipo } | null>(null);
   readonly parametrosLoading = signal(true);
   readonly parametrosValidando = signal(false);
+  readonly parametrosRedirigiendo = signal(false);
   readonly parametrosError = signal<string | null>(null);
   readonly parametrosAreas = computed(() => this.parametrosResumen()?.areas ?? []);
   readonly parametrosBloqueosActuales = computed(() => this.parametrosResumen()?.bloqueosActuales ?? []);
@@ -104,6 +111,12 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   readonly muestraLineaBaseGuardada = computed(() => !!this.estadoBase()?.idCalculoPeriodoBase);
 
   readonly parametrosCargaOverlay = computed((): ParametrosCargaOverlayPresentacion | null => {
+    if (this.parametrosRedirigiendo()) {
+      return {
+        titulo: 'Abriendo parámetros',
+        mensaje: 'Preparando el mantenedor del período seleccionado.',
+      };
+    }
     if (this.parametrosLoading()) {
       return {
         titulo: 'Cargando parámetros',
@@ -330,15 +343,27 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
       : 'Estos oficiales mensuales no bloquean la preparación del periodo.';
   }
 
-  seccionesModalPendientesParametros(tipo: ModalPendientesParametrosTipo): MessageBoxSection[] {
-    const items = tipo === 'preparacion'
+  itemsModalPendientesParametros(tipo: ModalPendientesParametrosTipo): ParametroResumenBloqueo[] {
+    return tipo === 'preparacion'
       ? this.parametrosPendientesPreparacion()
       : this.parametrosAdvertenciasNoBloqueantes();
-    return this.agruparPendientesParametros(items).map(([areaId, bloqueos]) => ({
-      title: this.parametroAreaTitulo(areaId),
-      tone: tipo === 'preparacion' ? 'attention' : 'info',
-      items: bloqueos.map((bloqueo) => `${bloqueo.titulo}: ${bloqueo.detalle ?? 'Pendiente'}`),
+  }
+
+  gruposModalPendientesParametros(tipo: ModalPendientesParametrosTipo): GrupoModalPendientesParametros[] {
+    return this.agruparPendientesParametros(this.itemsModalPendientesParametros(tipo)).map(([areaId, bloqueos]) => ({
+      areaId,
+      titulo: this.parametroAreaTitulo(areaId),
+      cantidad: bloqueos.length,
+      bloqueos,
     }));
+  }
+
+  modalPendientesResumen(tipo: ModalPendientesParametrosTipo): string {
+    const total = this.itemsModalPendientesParametros(tipo).length;
+    const areas = this.gruposModalPendientesParametros(tipo).length;
+    const etiquetaTotal = total === 1 ? 'pendiente' : 'pendientes';
+    const etiquetaArea = areas === 1 ? 'área' : 'áreas';
+    return `${total} ${etiquetaTotal} en ${areas} ${etiquetaArea}`;
   }
 
   async confirmarGuardarBaseYContinuar(): Promise<void> {
@@ -470,23 +495,25 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   }
 
   goToParametros(destino: ParametrosMantenedorDestino): void {
+    this.parametrosRedirigiendo.set(true);
     void this.router.navigate(['/parametros'], {
       queryParams: {
         periodo: this.parametrosResumen()?.periodo,
         area: destino.area,
         tab: destino.tab,
       },
-    });
+    }).catch(() => this.parametrosRedirigiendo.set(false));
   }
 
   goToMantenedorParametros(): void {
+    this.parametrosRedirigiendo.set(true);
     void this.router.navigate(['/parametros'], {
       queryParams: {
         periodo: this.parametrosResumen()?.periodo,
         area: 'datosOficiales',
         tab: 'valores',
       },
-    });
+    }).catch(() => this.parametrosRedirigiendo.set(false));
   }
 
   parametroEstadoEtiqueta(estado: ParametroResumenEstado): string {
