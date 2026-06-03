@@ -78,6 +78,7 @@ yarn-error.log
 /docs/codex/modulos/nomina-mensual/*
 !/docs/codex/modulos/nomina-mensual/README.md
 !/docs/codex/modulos/nomina-mensual/contrato-general.md
+!/docs/codex/modulos/nomina-mensual/arquitectura-administrador-generador.md
 !/docs/codex/modulos/nomina-mensual/nomina-mensual-confirmacion-flow.md
 !/docs/codex/modulos/nomina-mensual/nomina-v10-2-alcance-trabajadores-preparacion-conceptual.md
 !/docs/codex/modulos/nomina-mensual/nomina-v11-contrato-funcional-preparaciones-lotes-por-tipo.md

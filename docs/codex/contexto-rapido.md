@@ -155,6 +155,7 @@ Parametros funciona como cierre normativo del periodo: muestra estado operativo,
 ## 8. Decisiones de producto vigentes
 
 
+- **Reconstrucción Admin + Generador (2026-06-03 — `NOM-REBUILD-NOMINA-MENSUAL-01`)**: `Nómina mensual` se convierte en **Administrador** de nóminas (bandeja de N nóminas por período, lista resúmenes); `Nómina mensual V2` se convierte en **Generador** de una nómina por `:nominaPeriodoId` con stepper de 6 pasos (`Parámetros / Dotación / Movimientos / Cálculo / Validación / Cierre`). Naming: `Dotación` (paso, reemplaza Alcance+Empleados) y `SegmentoNomina` (grupo operativo, reemplaza Sub-base / Sub-nómina). Documento rector: [`modulos/nomina-mensual/arquitectura-administrador-generador.md`](./modulos/nomina-mensual/arquitectura-administrador-generador.md). Fases F0+F1 implementadas (doc + modelos + adapter mock + tests). F2-F7 declaradas.
 - Nómina mensual confirmada es la fuente oficial para generar liquidaciones: el flujo futuro visible debe ser generar nómina, revisar trabajadores, confirmar nómina y generar liquidaciones desde esa versión. Documento rector: [`modulos/nomina-mensual/flow/nomina-mensual-confirmacion-flow.md`](./modulos/nomina-mensual/flow/nomina-mensual-confirmacion-flow.md).
 - `Movimientos del mes` y `Asignaciones recurrentes` deben evolucionar a una experiencia unificada visible: `Movimientos de remuneración`.
 - La diferencia real es temporal:

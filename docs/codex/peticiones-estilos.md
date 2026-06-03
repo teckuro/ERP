@@ -8,6 +8,98 @@
 > - [`archivo/peticiones-estilos-2026-05.md`](./archivo/peticiones-estilos-2026-05.md) — mayo 2026 y anteriores (288 entradas, rotadas el 2026-06-03 por DOCS-AUDIT-02 / L3).
 
 ---
+## 2026-06-03 - Nómina mensual — Reconstrucción Admin + Generador (NOM-REBUILD-NOMINA-MENSUAL-01 F0+F1)
+
+Inicio de la **reconstrucción controlada** del módulo según el prompt rector `prompt_reconstruccion_controlada_nomina_mensual.md`. Esta entrada cubre F0 (documentación arquitectónica) + F1 (modelos centrales + adapter mock + tests). F2-F7 declaradas pero no ejecutadas en esta iteración. **Sin cambios visuales**: el alcance es modelos + adapter mock + documentación, no UI.
+
+### Decisión arquitectónica
+
+- **Nómina mensual** → Administrador de nóminas (bandeja de N nóminas por período, lista `NominaPeriodoResumen[]`).
+- **Nómina mensual V2** → Generador de una nómina por `:nominaPeriodoId`, stepper de 6 pasos: `Parámetros / Dotación / Movimientos / Cálculo / Validación / Cierre`.
+- **Naming definitivo**: `Dotación` (paso del Generador, reemplaza Alcance+Empleados) + `SegmentoNomina` (grupo operativo, reemplaza Sub-base / Sub-nómina). NO usar `Base`, `Sub-base`, `SubBaseNomina`, `Sub-nómina`.
+- **Routing definitivo**: `/remuneraciones/nominas` (Admin) + `/remuneraciones/nominas/:nominaPeriodoId/generador` (Generador). Implementación en F3.
+- **Servicios**: sufijo `mock-adapter` para F1 (datos in-memory), `calculo-adapter` para F6 (puente al motor), `.repository.ts` / `.service.ts` para productivo futuro.
+
+### F0 — Documentación arquitectónica
+
+- **Nuevo**: [`docs/codex/modulos/nomina-mensual/arquitectura-administrador-generador.md`](./modulos/nomina-mensual/arquitectura-administrador-generador.md) (~260 líneas) — decisión rectora completa: roles, naming, stepper, routing, principio rector (trabajo por excepción), modelos centrales, adapter mock, reglas de uso de mocks, fases declaradas, restricciones levantadas vs vigentes.
+- **Actualizado**: [`docs/codex/orquestador/estado-fases/nomina-mensual.md`](./orquestador/estado-fases/nomina-mensual.md) — entrada `NOM-REBUILD-NOMINA-MENSUAL-01` (Implementada F0+F1). Marcada como `Superseded by NOM-REBUILD-NOMINA-MENSUAL-01`: `NOM-MULTI-NOMINA-01` (la nueva arquitectura resuelve los 3 escenarios planteados con `tipo: 'extraordinaria'` + Admin que maneja N nóminas por período).
+- **Actualizado**: [`docs/codex/orquestador/contexto-proyecto.md`](./orquestador/contexto-proyecto.md) — sección de módulos con la reinterpretación del menú.
+- **Actualizado**: [`docs/codex/contexto-rapido.md`](./contexto-rapido.md) — sección 8 "Decisiones de producto vigentes" con el bullet de la reconstrucción.
+- **Actualizado**: [`docs/codex/modulos/nomina-mensual/README.md`](./modulos/nomina-mensual/README.md) — cabecera con link al documento rector.
+- **Actualizado**: [`.gitignore`](../../.gitignore) — agrega excepción para `arquitectura-administrador-generador.md` siguiendo el patrón del repo (otras `nomina-*` están como excepciones explícitas).
+
+### F1 — Modelos centrales + adapter mock + tests
+
+Ubicación: `src/app/features/nomina-mensual/models/` y `.../services/` (compartido entre Admin y Generador, conviven con los modelos productivos existentes `proceso-mensual.model.ts` y `acta-operativa-periodo.model.ts`).
+
+#### Modelos nuevos (19 tipos)
+
+- **`nomina-periodo.models.ts`** (12 tipos): `EstadoNomina` (9 estados, inicial `dotacion_generada`), `TipoNomina` (mensual/quincenal/semanal/extraordinaria), `NominaPeriodoResumen`, `NominaPeriodo`, `SegmentoNomina` (tipo: planta/honorarios/centro_costo/personalizada, estado: borrador/lista/bloqueada), `IncidenciaNomina` (severidad + `bloqueante: boolean`), `ResumenValidacionNomina` (doble guardia `puedeCalcular` + `puedeCerrar`), `EstadoTrabajadorNomina` (6 estados), `FilaTrabajadorNominaResumen` (campos resumidos sin detalle), `DetalleTrabajadorNomina` (bajo demanda), `FiltroRapidoDotacion`, `PaginacionGrilla`, `EventoAuditoriaNomina` (TODO declarado para trazabilidad cierre/reapertura). Helpers: `crearNominaResumen`, `crearNomina`, `crearSegmento`, `agregarTrabajadorASegmento` (rechaza duplicidad), `moverTrabajadorEntreSegmentos` (preserva movimientos).
+- **`movimiento-nomina.models.ts`** (7 tipos): `MovimientoTipo` (union string abierta), `MovimientoCategoria` (haber/descuento/ausencia/informativo), `MovimientoUnidad`, `MovimientoFrecuencia`, `MovimientoRecurrente` (segmentación por `trabajadorId? / segmentoId? / centroCostoId? / cargoId? / tipoContratoId? / grupoId?`), `MovimientoNomina` (con `recurrenteId?` para idempotencia y `estado='omitido'` que respeta decisión manual), `CriterioAplicacionRecurrente` (discriminated union por 6 criterios — fuerza exhaustividad en `switch`), `AccionMasivaTrabajadores` (4 acciones), `PreviewAccionMasivaTrabajadores` (preview obligatorio con `puedeAplicar`).
+
+#### Mock determinístico
+
+- **`data/nomina-periodo.mock.ts`**: 5 `NominaPeriodoResumen` (mezcla `borrador / dotacion_generada / calculada / aprobada / cerrada` + 1 `extraordinaria`), 3 `SegmentoNomina` (planta 14 trab / honorarios 6 trab / proyecto 4 trab), 6 `MovimientoRecurrente` (uno por cada criterio de segmentación), 3 `MovimientoNomina` (mezcla recurrente aplicado / manual / omitido), 8 `IncidenciaNomina` (mezcla críticas bloqueantes / advertencias / informativas), 24 `FilaTrabajadorNominaResumen` (paginación), 3 `DetalleTrabajadorNomina` clave-valor por trabajador. Cabecera obligatoria: `NO importar desde servicios productivos definitivos`.
+
+#### Adapter mock
+
+- **`services/nomina-periodo-mock-adapter.service.ts`** (`@Injectable({ providedIn: 'root' })`, 9 métodos públicos):
+  - `listarResumenes()` — Admin lista resúmenes sin detalle.
+  - `obtenerNomina(id)` — Generador carga 1 nómina por id.
+  - `consolidarSegmentosParaCalculo(id): ResultadoAlcanceNomina` — puente al orquestador V2 actual (compatible).
+  - `aplicarRecurrentesANomina(id)` — **idempotente** (clave `nominaPeriodoId + trabajadorId + recurrenteId + tipo`) y **respeta omitidos** (si la clave tiene `estado='omitido'`, NO reaplica).
+  - `aplicarRecurrentePorCriterio(criterio, id, recurrenteId?)` — discriminated union por 6 criterios, exhaustivo via `never`.
+  - `validarDuplicidadTrabajadorSegmento(id)` — incidencias bloqueantes.
+  - `obtenerResumenValidacionNomina(id)` — `puedeCalcular` + `puedeCerrar`.
+  - `filtrarDotacion(id, filtro, paginacion)` — filtros + paginación, NO retorna detalle.
+  - `obtenerDetalleTrabajador(id, trabajadorId)` — bajo demanda.
+  - `previsualizarAccionMasiva(id, trabajadorIds, accion)` — preview obligatorio antes de aplicar.
+
+#### Tests (28 nuevos)
+
+- **`models/nomina-periodo.models.spec.ts`** (5 tests obligatorios): helpers de creación, estado inicial `dotacion_generada`, ordinal del segmento, **rechazo de duplicidad** entre 2 segmentos activos, **mover trabajador preservando movimientos**.
+- **`services/nomina-periodo-mock-adapter.service.spec.ts`** (23 tests, 20 obligatorios + 3 extras): aplicación de recurrentes activos, **idempotencia (dos veces no duplica)**, **respeto de omitidos (no reaplica `estado='omitido'`)**, aplicación por cada uno de los 6 criterios (trabajador/segmento/centro-costo/cargo/tipo-contrato/grupo — los dos últimos exhaustivos sin data en F1), `filtrarDotacion` por incidencia, paginación 10x10x4 (total=24), shape `FilaTrabajadorNominaResumen` sin campos de detalle, detalle bajo demanda, resumen de validación, doble guardia `puedeCalcular`/`puedeCerrar`, `puedeCerrar=true` sin críticas (con advertencias permitido), `consolidarSegmentosParaCalculo` compatible con orquestador, preview no modifica nómina, `puedeAplicar` reacciona a críticas. Extras: `listarResumenes` (N por período), `validarDuplicidadTrabajadorSegmento`, búsqueda case-insensitive.
+
+### Reglas críticas declaradas
+
+1. **Trabajo por excepción**: el usuario no revisa todos los trabajadores, solo los que tienen incidencias / cambios / movimientos especiales.
+2. **Idempotencia de recurrentes** + **respeto de omitidos**: la decisión manual gana.
+3. **Acciones masivas con preview obligatorio**: regla NO opcional antes de aplicar.
+4. **Dos guardias de validación**: `puedeCalcular` Y `puedeCerrar` (ambas falsas si hay críticas bloqueantes).
+5. **Reglas de uso de mocks**: solo tests / stories / adapters mock / UI temporal F2-F5. Prohibido importar desde servicios productivos.
+6. **Auditoría declarada**: `EventoAuditoriaNomina` reservado en `NominaPeriodo.eventosAuditoria?` como TODO; emisión real en F2+F3.
+
+### NO se tocó
+
+- Motor productivo (`features/nomina-mensual/services/proceso-mensual.service.ts`, `NominaCalculoSnapshotRepository`, etc.).
+- Routing actual (`/remuneraciones/proceso-mensual`, `/remuneraciones/nomina-mensual-v2`).
+- Menú lateral (`shell-navigation.config.ts`).
+- Stepper V2 actual (8 pasos, `nomina-mensual-v2.mock.ts`).
+- Orquestador V2 (`resultadoAlcance`, `alcanceValidado` siguen).
+- Sweep A0-A6 del paso Alcance (89 tests verdes preservados).
+- Modelos productivos existentes (`proceso-mensual.model.ts`, `acta-operativa-periodo.model.ts`, `entrada-mensual-periodo.model.ts`).
+- BD / SQL / RPC / RLS, Previred, LRE, Reportes, Licencias médicas, liquidaciones productivas.
+- `angular.json`, `postcss.config.json`, `src/styles/*`.
+
+### Validación
+
+- `ReadLints` sobre los 7 archivos nuevos → **sin errores**.
+- `npx ng test --watch=false --include="**/nomina-mensual/models/nomina-periodo.models.spec.ts" --include="**/nomina-mensual/services/nomina-periodo-mock-adapter.service.spec.ts"` → **28/28 ok** (2 archivos spec).
+- `npx ng test --watch=false` (suite completa): **1372/1379 verdes**. Los 7 fallidos (`shell-navigation.config`, `sidebar.component`, `liquidaciones-oficiales.service`, `nomina-msgbox-lab.rules`, `proceso-mensual-flow-nav.rules`) son **pre-existentes** (validado con `git stash`: fallan igual sin mis cambios). NO están relacionados con F1.
+- `npx ng build --configuration=development` → **verde, sin warnings de budget**. Bundle `nomina-mensual-v2-page` queda en **696.73 kB** (igual que antes — mis archivos son aditivos, no se importan desde V2).
+
+### Pendiente declarado para iteraciones futuras
+
+- **F2** (UI Administrador): cards resumen + grilla `NominaPeriodoResumen[]` + modal "Nueva nómina" + modal "Ver resumen" (consume `obtenerResumenValidacionNomina`) + acciones condicionadas por estado + navegación al Generador.
+- **F3** (Generador definitivo): routing nuevo + menú + stepper de 6 pasos + orquestador V2 unificado.
+- **F4** (Dotación escalable): paso unificado con segmentos + filtros rápidos + paginación + virtual scroll + acciones masivas + detalle bajo demanda.
+- **F5** (Movimientos integrados): recurrentes aplicados + manuales + omitir / editar este mes + import futuro.
+- **F6** (Cálculo / motor): adapter `Segmentos + movimientos → base consolidada → motor actual`.
+- **F7** (Limpieza): ruta antigua, stepper antiguo, mocks obsoletos, código sin uso.
+- **Deuda pre-existente** (no relacionada con esta fase): 7 tests rojos en 5 archivos de layout / liquidaciones / rules de nomina-mensual v1. Documentado para iteración separada.
+
+---
 ## 2026-06-03 - Nómina mensual V2 · Paso Alcance — Refinamiento NOIA + datagrid del sistema (A0-A3)
 
 Sweep transversal del paso Alcance siguiendo el contrato NOIA. Cuatro sub-lotes (`A0`/`A1`/`A2`/`A3`) ejecutados en secuencia para reducir ruido, alinear la selección manual con el patrón de Empleados (data-grid reutilizable) y agregar guías contextuales cuando el alcance queda incompleto.

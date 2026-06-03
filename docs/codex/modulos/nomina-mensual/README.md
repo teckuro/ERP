@@ -1,5 +1,7 @@
 # Módulo Nómina mensual — punto de entrada
 
+> **Decisión rectora vigente (2026-06-03 — `NOM-REBUILD-NOMINA-MENSUAL-01`)**: Nómina mensual es **Administrador** + Nómina V2 es **Generador**. Stepper de 6 pasos: `Parámetros / Dotación / Movimientos / Cálculo / Validación / Cierre`. Naming definitivo: `Dotación` (paso) + `SegmentoNomina` (grupo). Documento rector: [`arquitectura-administrador-generador.md`](./arquitectura-administrador-generador.md). Fases F0+F1 implementadas; F2-F7 declaradas en el documento rector.
+
 ## Estructura de la documentación
 
 > **Rotación 2026-06-03 (DOCS-AUDIT-02 / L5)**: los 69 archivos sueltos que vivían bajo `nomina-mensual/` se reorganizaron en subcarpetas por tema. Los basename se mantienen iguales (solo cambia su carpeta padre). Los enlaces internos y externos del repo se actualizaron automáticamente.
