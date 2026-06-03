@@ -62,6 +62,7 @@ import {
   standalone: true,
   imports: [CommonModule, LucideAngularModule, DataGridComponent, DataGridCellDirective, NominaMensualV2TrazabilidadPasoComponent],
   templateUrl: './nomina-mensual-v2-paso-empleados.component.html',
+  styleUrls: ['./nomina-mensual-v2-paso-empleados.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })

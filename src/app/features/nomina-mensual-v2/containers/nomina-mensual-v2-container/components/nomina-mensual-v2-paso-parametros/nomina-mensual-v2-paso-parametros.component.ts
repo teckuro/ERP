@@ -74,6 +74,7 @@ const coloresDonutPorTono: Record<DonutTonoPresentacion, string> = {
   standalone: true,
   imports: [CommonModule, LucideAngularModule, MessageBoxComponent],
   templateUrl: './nomina-mensual-v2-paso-parametros.component.html',
+  styleUrls: ['./nomina-mensual-v2-paso-parametros.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })

@@ -40,6 +40,7 @@ import {
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   templateUrl: './nomina-mensual-v2-paso-alcance.component.html',
+  styleUrls: ['./nomina-mensual-v2-paso-alcance.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })
