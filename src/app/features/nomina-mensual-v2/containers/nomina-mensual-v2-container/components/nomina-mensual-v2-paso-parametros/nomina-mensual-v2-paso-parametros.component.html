@@ -1,247 +1,214 @@
 <div class="nmv2-paso-parametros">
   @if (parametrosCargaOverlay(); as overlay) {
-      <app-message-box
-        variant="loading"
-        mode="modal"
-        width="sm"
-        [title]="overlay.titulo"
-        [message]="overlay.mensaje"
-      ></app-message-box>
-    }
-    <div
-      class="content-grid content-grid--aside parameters-perfect-layout parameters-step-content"
-      [class.parameters-step-content--busy]="parametrosLoading() || parametrosValidando()"
-      [class.parameters-step-content--loading]="parametrosLoading()"
-      [attr.aria-busy]="parametrosLoading() || parametrosValidando()"
-    >
-      <main class="content-main">
-        @if (parametrosLoading()) {
-          <section class="parameter-cards-grid parameter-cards-grid--loading" aria-hidden="true">
-            @for (item of [1, 2, 3, 4, 5]; track item) {
-              <article class="surface-card parameter-summary-card nomina-card nomina-card--corner-icon nmv2-loading-card">
-                <span class="nomina-card__icon parameter-summary-card__icon nomina-iconBadge nmv2-loading-line nmv2-loading-icon"></span>
-                <div class="nomina-card__content">
-                  <header class="parameter-summary-card__head">
-                    <span class="nmv2-loading-line nmv2-loading-title"></span>
-                    <span class="nmv2-loading-line nmv2-loading-copy"></span>
-                  </header>
-                  <div class="parameter-summary-card__chips">
-                    <span class="nmv2-loading-line nmv2-loading-chip"></span>
-                    <span class="nmv2-loading-line nmv2-loading-chip nmv2-loading-chip--short"></span>
-                    <span class="nmv2-loading-line nmv2-loading-chip"></span>
-                  </div>
-                </div>
-                <footer class="parameter-summary-card__foot nomina-card__footer">
-                  <span class="nmv2-loading-line nmv2-loading-status"></span>
-                </footer>
-              </article>
-            }
-          </section>
-        }
-        @if (parametrosAlertaTipo(); as alertaTipo) {
-          @switch (alertaTipo) {
-            @case ('error') {
-              <div class="alert-banner alert-banner--error alert-banner--parameter-inline">
-                <div class="alert-banner__icon"><lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon></div>
-                <div class="alert-banner__copy">
-                  <strong>No fue posible cargar los parámetros</strong>
-                  <p>{{ parametrosError() }}</p>
-                </div>
-              </div>
-            }
-            @case ('bloqueo') {
-              <div class="alert-banner alert-banner--warning alert-banner--parameter-inline alert-banner--with-action">
-                <div class="alert-banner__icon"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon></div>
-                <div class="alert-banner__copy">
-                  <strong>{{ alertaBloqueoTitulo() }}</strong>
-                  <p>{{ alertaBloqueoDescripcion() }}</p>
-                </div>
-                <button type="button" class="alert-banner__action" (click)="abrirModalPendientesParametros('preparacion')">
-                  Ver todos
-                </button>
-              </div>
-            }
-            @case ('revision') {
-              <div class="alert-banner alert-banner--revision alert-banner--parameter-inline">
-                <div class="alert-banner__icon"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon></div>
-                <div class="alert-banner__copy">
-                  <strong>{{ alertaRevisionTitulo() }}</strong>
-                  <p>{{ alertaRevisionDescripcion() }}</p>
-                </div>
-              </div>
-            }
-            @case ('oficiales') {
-              <div class="alert-banner alert-banner--revision alert-banner--parameter-inline alert-banner--with-action">
-                <div class="alert-banner__icon"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon></div>
-                <div class="alert-banner__copy">
-                  <strong>{{ alertaOficialesTitulo() }}</strong>
-                  <p>{{ alertaOficialesDescripcion() }}</p>
-                </div>
-                <button type="button" class="alert-banner__action" (click)="abrirModalPendientesParametros('oficiales')">
-                  Ver todos
-                </button>
-              </div>
-            }
-            @case ('diferencias') {
-              <div class="alert-banner alert-banner--revision alert-banner--parameter-inline">
-                <div class="alert-banner__icon"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon></div>
-                <div class="alert-banner__copy">
-                  <strong>Hay diferencias con la base guardada</strong>
-                  <p>Los parámetros actuales no coinciden con la base usada para preparar esta nómina.</p>
-                </div>
-              </div>
-            }
-          }
-        }
+    <app-message-box
+      variant="loading"
+      mode="modal"
+      width="sm"
+      [title]="overlay.titulo"
+      [message]="overlay.mensaje"
+    ></app-message-box>
+  }
 
-        <section class="parameter-cards-grid">
-          @for (area of parametrosAreas(); track area.id) {
-            <article
-              class="surface-card parameter-summary-card nomina-card nomina-card--interactive nomina-card--corner-icon"
-              (click)="goToParametros(area.mantenedor)"
-            >
-              <span class="nomina-card__icon parameter-summary-card__icon nomina-iconBadge nomina-iconBadge--slate">
-                <lucide-icon [name]="area.icono" aria-hidden="true"></lucide-icon>
-              </span>
-              <div class="nomina-card__content">
-                <header class="parameter-summary-card__head">
-                  <h3>{{ area.titulo }}</h3>
-                  <p>{{ area.descripcion }}</p>
-                </header>
-                @if (area.items.length > 0) {
-                  <div class="parameter-summary-card__chips" [attr.aria-label]="'Validaciones de ' + area.titulo">
-                    @for (item of chipsVisiblesParametro(area.items); track item.label) {
-                      <span class="nomina-chip nomina-chip--neutral">{{ item.label }}</span>
-                    }
-                    @if (cantidadChipsOcultosParametro(area.items) > 0) {
-                      <span class="parameter-summary-card__chips-more nomina-chip nomina-chip--neutral">+{{ cantidadChipsOcultosParametro(area.items) }} más</span>
-                    }
-                  </div>
-                }
-              </div>
-              <footer class="parameter-summary-card__foot nomina-card__footer">
-                <span class="plain-status nomina-state" [class]="parametroEstadoClase(area.estado)">
-                  <lucide-icon [name]="parametroEstadoIcono(area.estado)" aria-hidden="true"></lucide-icon>
-                  {{ parametroEstadoEtiqueta(area.estado) }}
-                </span>
-                <lucide-icon class="parameter-summary-card__chevron" name="chevron-right" aria-hidden="true"></lucide-icon>
-              </footer>
-            </article>
-          }
-        </section>
-      </main>
+  @if (modalPendientesParametros(); as modalPendientes) {
+    <app-message-box
+      variant="warning"
+      mode="modal"
+      width="md"
+      [title]="tituloModalPendientesParametros(modalPendientes.tipo)"
+      [message]="mensajeModalPendientesParametros(modalPendientes.tipo)"
+      [sections]="sectionsPendientesParaMessageBox(modalPendientes.tipo)"
+      primaryLabel="Entendido"
+      (action)="cerrarModalPendientesParametros()"
+    ></app-message-box>
+  }
 
-      <aside class="content-side parameters-sidebar-perfect parameters-sidebar-compact nomina-sidePanel">
-        <section class="surface-card side-card parameters-perfect-summary">
-          <h2>Resumen de parámetros</h2>
-          <div class="parameters-perfect-summary__top">
-            <div class="donut-summary-block">
-              <div class="donut-ring donut-ring--summary donut-ring--dynamic"
-                [class.donut-ring--success]="donutTono() === 'exito'"
-                [class.donut-ring--warning]="donutTono() === 'revision'"
-                [class.donut-ring--danger]="donutTono() === 'bloqueo'"
-                [class.donut-ring--neutral]="donutTono() === 'neutral'"
-                [style.background]="estiloArcoDonut()">
-                <span>{{ completitudSeccionesPct() }}%</span>
+  <header class="nmv2-paso-parametros__head">
+    <p class="nmv2-paso-parametros__eyebrow">
+      <span>Paso 1 · Parámetros</span>
+      @if (estadoBase()?.fechaBaseGuardada; as fecha) {
+        <span class="nmv2-paso-parametros__eyebrow-sep" aria-hidden="true">·</span>
+        <span>Configuración guardada {{ formatoHoraActualizacion(fecha) }}</span>
+      }
+    </p>
+    <div class="nmv2-paso-parametros__head-row">
+      <h2 class="nmv2-paso-parametros__title">Configuración requerida para preparar la nómina</h2>
+      <ul class="nmv2-paso-parametros__stats" aria-label="Estado de la configuración">
+        <li class="nmv2-paso-parametros__stat nmv2-paso-parametros__stat--block">
+          <strong>{{ parametrosResumen()?.bloqueosPreparacion ?? 0 }}</strong>
+          <span>{{ (parametrosResumen()?.bloqueosPreparacion ?? 0) === 1 ? 'pendiente para preparar' : 'pendientes para preparar' }}</span>
+        </li>
+        <li class="nmv2-paso-parametros__stat nmv2-paso-parametros__stat--warn">
+          <strong>{{ parametrosResumen()?.advertenciasOficiales ?? 0 }}</strong>
+          <span>{{ (parametrosResumen()?.advertenciasOficiales ?? 0) === 1 ? 'oficial pendiente' : 'oficiales pendientes' }}</span>
+        </li>
+        <li class="nmv2-paso-parametros__stat nmv2-paso-parametros__stat--ok">
+          <strong>{{ parametrosResumen()?.controlesVerificados ?? 0 }}</strong>
+          <span>verificados</span>
+        </li>
+      </ul>
+    </div>
+  </header>
+
+  <div
+    class="nmv2-paso-parametros__body"
+    [class.nmv2-paso-parametros__body--busy]="parametrosLoading() || parametrosValidando()"
+    [attr.aria-busy]="parametrosLoading() || parametrosValidando()"
+  >
+    <main class="nmv2-paso-parametros__main">
+      @if (parametrosAlertaTipo(); as alertaTipo) {
+        @switch (alertaTipo) {
+          @case ('error') {
+            <div class="alert-banner alert-banner--error alert-banner--parameter-inline">
+              <div class="alert-banner__icon"><lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon></div>
+              <div class="alert-banner__copy">
+                <strong>No fue posible cargar los parámetros</strong>
+                <p>{{ parametrosError() }}</p>
               </div>
-              <small class="donut-total-caption">{{ completitudSeccionesCaption() }}</small>
-            </div>
-            <div class="summary-state-list">
-              <div class="summary-state-row status-red"><lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon><strong>{{ parametrosResumen()?.bloqueosPreparacion ?? 0 }}</strong><span>Pendientes para preparar</span></div>
-              <div class="summary-state-row status-amber"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon><strong>{{ parametrosResumen()?.advertenciasOficiales ?? 0 }}</strong><span>Oficiales pendientes</span></div>
-              <div class="summary-state-row status-green"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><strong>{{ parametrosResumen()?.controlesVerificados ?? 0 }}</strong><span>Controles verificados</span></div>
-            </div>
-          </div>
-          <div class="updated-row updated-row--summary">
-            <span><lucide-icon name="clock-3" aria-hidden="true"></lucide-icon>Última actualización:</span>
-            <strong>{{ formatoHoraActualizacion(parametrosResumen()?.ultimaActualizacion) }}</strong>
-          </div>
-          @if (muestraLineaBaseGuardada()) {
-            <div class="updated-row updated-row--summary parameters-base-status">
-              <span>Base guardada:</span>
-              <strong>{{ fechaBaseGuardadaTexto() }}</strong>
             </div>
           }
-          @if (hayDiferenciasBase()) {
-            <div class="parameters-base-status parameters-base-status--diff">
-              <span>Hay diferencias con parámetros actuales.</span>
-              <button type="button" class="parameters-base-status__link" (click)="abrirTablaDiferencias()">
+          @case ('bloqueo') {
+            <div class="alert-banner alert-banner--warning alert-banner--parameter-inline alert-banner--with-action">
+              <div class="alert-banner__icon"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon></div>
+              <div class="alert-banner__copy">
+                <strong>{{ alertaBloqueoTitulo() }}</strong>
+                <p>{{ alertaBloqueoDescripcion() }}</p>
+              </div>
+              <button type="button" class="alert-banner__action" (click)="abrirModalPendientesParametros('preparacion')">
+                Ver todos
+              </button>
+            </div>
+          }
+          @case ('revision') {
+            <div class="alert-banner alert-banner--revision alert-banner--parameter-inline">
+              <div class="alert-banner__icon"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon></div>
+              <div class="alert-banner__copy">
+                <strong>{{ alertaRevisionTitulo() }}</strong>
+                <p>{{ alertaRevisionDescripcion() }}</p>
+              </div>
+            </div>
+          }
+          @case ('oficiales') {
+            <div class="alert-banner alert-banner--revision alert-banner--parameter-inline alert-banner--with-action">
+              <div class="alert-banner__icon"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon></div>
+              <div class="alert-banner__copy">
+                <strong>{{ alertaOficialesTitulo() }}</strong>
+                <p>{{ alertaOficialesDescripcion() }}</p>
+              </div>
+              <button type="button" class="alert-banner__action" (click)="abrirModalPendientesParametros('oficiales')">
+                Ver todos
+              </button>
+            </div>
+          }
+          @case ('diferencias') {
+            <div class="alert-banner alert-banner--revision alert-banner--parameter-inline alert-banner--with-action">
+              <div class="alert-banner__icon"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon></div>
+              <div class="alert-banner__copy">
+                <strong>Hay diferencias con la configuración guardada</strong>
+                <p>Los parámetros actuales no coinciden con la configuración usada para preparar esta nómina.</p>
+              </div>
+              <button type="button" class="alert-banner__action" (click)="abrirTablaDiferencias()">
                 Ver diferencias
               </button>
             </div>
           }
-        </section>
+        }
+      }
 
-        <section class="surface-card side-card parameter-access-card">
-          <h2>Accesos rápidos</h2>
-          <p class="side-caption">Ir al mantenedor de Parámetros.</p>
-          <div class="parameter-access-grid">
-            <button type="button" class="parameter-access-tile parameter-access-tile--single" (click)="goToMantenedorParametros()">
-              <span class="parameter-access-tile__icon nomina-iconBadge nomina-iconBadge--slate"><lucide-icon name="settings" aria-hidden="true"></lucide-icon></span>
-              <span>Parámetros</span>
-              <lucide-icon name="external-link" aria-hidden="true"></lucide-icon>
-            </button>
-          </div>
-        </section>
-
-      </aside>
-    </div>
-
-  @if (modalPendientesParametros(); as modalPendientes) {
-    <div class="parametros-pendientes-modal-backdrop" role="presentation" (click)="cerrarModalPendientesParametros()">
-      <section
-        class="parametros-pendientes-modal"
-        [class.parametros-pendientes-modal--oficiales]="modalPendientes.tipo === 'oficiales'"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="parametros-pendientes-modal-title"
-        (click)="$event.stopPropagation()"
-      >
-        <header class="parametros-pendientes-modal__head">
-          <div class="parametros-pendientes-modal__eyebrow">
-            <lucide-icon [name]="modalPendientes.tipo === 'preparacion' ? 'circle-alert' : 'triangle-alert'" aria-hidden="true"></lucide-icon>
-            <span>{{ modalPendientesResumen(modalPendientes.tipo) }}</span>
-          </div>
-          <button type="button" class="parametros-pendientes-modal__close" aria-label="Cerrar" (click)="cerrarModalPendientesParametros()">
-            <lucide-icon name="x" aria-hidden="true"></lucide-icon>
-          </button>
-          <div class="parametros-pendientes-modal__titleBlock">
-            <h2 id="parametros-pendientes-modal-title">{{ tituloModalPendientesParametros(modalPendientes.tipo) }}</h2>
-            <p>{{ mensajeModalPendientesParametros(modalPendientes.tipo) }}</p>
-          </div>
-        </header>
-
-        <div class="parametros-pendientes-modal__body">
-          @for (grupo of gruposModalPendientesParametros(modalPendientes.tipo); track grupo.areaId) {
-            <section class="parametros-pendientes-group">
-              <header class="parametros-pendientes-group__head">
-                <span>{{ grupo.titulo }}</span>
-                <strong>{{ grupo.cantidad }}</strong>
-              </header>
-              <div class="parametros-pendientes-group__list">
-                @for (bloqueo of grupo.bloqueos; track bloqueo.id) {
-                  <article class="parametros-pendientes-item">
-                    <span class="parametros-pendientes-item__icon">
-                      <lucide-icon [name]="modalPendientes.tipo === 'preparacion' ? bloqueoSeveridadIcono(bloqueo.severidad) : 'triangle-alert'" aria-hidden="true"></lucide-icon>
-                    </span>
-                    <div class="parametros-pendientes-item__copy">
-                      <h3>{{ bloqueo.titulo }}</h3>
-                      <p>{{ bloqueo.detalle }}</p>
-                    </div>
-                    <button type="button" class="parametros-pendientes-item__action" (click)="goToParametros(bloqueo.mantenedor)">
-                      Abrir
-                    </button>
-                  </article>
-                }
-              </div>
-            </section>
+      @if (parametrosLoading()) {
+        <ul class="nmv2-paso-parametros__list nmv2-paso-parametros__list--loading" aria-hidden="true">
+          @for (item of [1, 2, 3, 4, 5]; track item) {
+            <li class="nmv2-paso-parametros__row nmv2-paso-parametros__row--placeholder">
+              <span class="nmv2-paso-parametros__row-icon"></span>
+              <span class="nmv2-paso-parametros__row-copy">
+                <span class="nmv2-paso-parametros__row-line"></span>
+                <span class="nmv2-paso-parametros__row-line nmv2-paso-parametros__row-line--short"></span>
+              </span>
+              <span class="nmv2-paso-parametros__row-state"></span>
+            </li>
           }
-        </div>
+        </ul>
+      } @else {
+        <ul class="nmv2-paso-parametros__list">
+          @for (area of parametrosAreas(); track area.id) {
+            <li>
+              <button
+                type="button"
+                class="nmv2-paso-parametros__row"
+                [class]="'nmv2-paso-parametros__row--' + parametroEstadoTono(area.estado)"
+                (click)="goToParametros(area.mantenedor)"
+                [attr.aria-label]="'Abrir ' + area.titulo + ' en mantenedor'"
+              >
+                <span class="nmv2-paso-parametros__row-icon" aria-hidden="true">
+                  <lucide-icon [name]="area.icono"></lucide-icon>
+                </span>
+                <span class="nmv2-paso-parametros__row-copy">
+                  <strong>{{ area.titulo }}</strong>
+                  <small>{{ area.descripcion }}</small>
+                </span>
+                <span class="nmv2-paso-parametros__row-state" [class]="parametroEstadoClase(area.estado)">
+                  <lucide-icon [name]="parametroEstadoIcono(area.estado)" aria-hidden="true"></lucide-icon>
+                  {{ parametroEstadoEtiqueta(area.estado) }}
+                </span>
+                <span class="nmv2-paso-parametros__row-action" aria-hidden="true">
+                  Abrir
+                  <lucide-icon name="arrow-right"></lucide-icon>
+                </span>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </main>
 
-        <footer class="parametros-pendientes-modal__foot">
-          <button type="button" class="parametros-pendientes-modal__secondary" (click)="cerrarModalPendientesParametros()">Cerrar</button>
-        </footer>
+    <aside class="nmv2-paso-parametros__side" aria-label="Qué falta para continuar">
+      @if (hayDiferenciasBase()) {
+        <section class="nmv2-paso-parametros__side-block nmv2-paso-parametros__side-block--warn">
+          <header>
+            <strong>Diferencias con la configuración guardada</strong>
+          </header>
+          <p>Los valores actuales no coinciden con los usados para preparar esta nómina.</p>
+          <button type="button" class="nmv2-paso-parametros__side-link" (click)="abrirTablaDiferencias()">
+            Ver diferencias
+          </button>
+        </section>
+      }
+
+      @if ((parametrosResumen()?.bloqueosPreparacion ?? 0) > 0) {
+        <section class="nmv2-paso-parametros__side-block nmv2-paso-parametros__side-block--block">
+          <header>
+            <strong>Pendientes para preparar</strong>
+            <span>{{ parametrosResumen()?.bloqueosPreparacion ?? 0 }}</span>
+          </header>
+          <p>Datos no oficiales exigibles que deben completarse antes de preparar la nómina.</p>
+          <button type="button" class="nmv2-paso-parametros__side-link" (click)="abrirModalPendientesParametros('preparacion')">
+            Ver todos
+          </button>
+        </section>
+      }
+
+      @if ((parametrosResumen()?.advertenciasOficiales ?? 0) > 0) {
+        <section class="nmv2-paso-parametros__side-block nmv2-paso-parametros__side-block--warn">
+          <header>
+            <strong>Oficiales pendientes</strong>
+            <span>{{ parametrosResumen()?.advertenciasOficiales ?? 0 }}</span>
+          </header>
+          <p>No bloquean la preparación. Se actualizan cuando se publican.</p>
+          <button type="button" class="nmv2-paso-parametros__side-link" (click)="abrirModalPendientesParametros('oficiales')">
+            Ver todos
+          </button>
+        </section>
+      }
+
+      <section class="nmv2-paso-parametros__side-block">
+        <header>
+          <strong>Ir a Parámetros</strong>
+        </header>
+        <p>Abre el mantenedor del período para revisar o ajustar la configuración.</p>
+        <button type="button" class="nmv2-paso-parametros__side-link" (click)="goToMantenedorParametros()">
+          Abrir mantenedor
+          <lucide-icon name="external-link" aria-hidden="true"></lucide-icon>
+        </button>
       </section>
-    </div>
-  }
+    </aside>
+  </div>
 </div>

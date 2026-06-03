@@ -16,6 +16,7 @@ import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
+import type { MessageBoxSection } from '../../../../../../shared/components/ui/feedback/message-box/message-box.types';
 import { PeriodoActivoService } from '../../../../../../core/services/periodo-activo.service';
 import type { PayrollStepId } from '../../../../models/nomina-mensual-v2.models';
 import type {
@@ -577,6 +578,25 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
       case 'bloqueo': return 'status-red';
       case 'pendiente': return 'status-gray';
     }
+  }
+
+  parametroEstadoTono(estado: ParametroResumenEstado): 'ok' | 'warn' | 'block' | 'neutral' {
+    switch (estado) {
+      case 'completo': return 'ok';
+      case 'requiereRevision': return 'warn';
+      case 'bloqueo': return 'block';
+      case 'pendiente': return 'neutral';
+    }
+  }
+
+  /** Mapea los bloqueos al contrato de `MessageBoxSection` agrupando por área. */
+  sectionsPendientesParaMessageBox(tipo: ModalPendientesParametrosTipo): MessageBoxSection[] {
+    const grupos = this.gruposModalPendientesParametros(tipo);
+    return grupos.map((grupo) => ({
+      title: `${grupo.titulo} (${grupo.cantidad})`,
+      tone: tipo === 'preparacion' ? 'warning' : 'attention',
+      items: grupo.bloqueos.map((bloqueo) => `${bloqueo.titulo}: ${bloqueo.detalle ?? 'Pendiente'}`),
+    }));
   }
 
   bloqueoSeveridadClase(severidad: ParametroBloqueoSeveridad): string {

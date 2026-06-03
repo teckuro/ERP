@@ -1,3 +1,28 @@
+## 2026-06-02 - Nómina mensual V2 · L2 — Paso Parámetros NOIA
+
+Lote 2 del plan iterativo (`auditoria-nomina-v2-2026-06.md`). Rediseño visual del paso 1 sin tocar servicios, orquestador, mappers ni persistencia.
+
+- **Hallazgos resueltos**: H-P1 (cards → lista densa), H-P2 (modal local → `app-message-box`), H-P3 (sidebar sin duplicar conteos), H-P4 (skeleton inline en filas, no en cards), H-P5 (copy `Base guardada` → `Configuración guardada`), H-P6 (donut decorativo retirado), H-X4 (focus inicial heredado de `MessageBoxComponent`).
+- **Cambios en `nomina-mensual-v2-paso-parametros.component.html`**:
+  - **Header local del paso** (`nmv2-paso-parametros__head`) con eyebrow `Paso 1 · Parámetros · Configuración guardada hoy hh:mm` + título operativo + 3 conteos compactos (pendientes para preparar / oficiales pendientes / verificados) en una banda horizontal con bordes neutros. Calcado del patrón `param-record-header` de Parámetros.
+  - **Lista densa de áreas** (`nmv2-paso-parametros__list` con `<li><button>` por área): icono pequeño (28 px badge), título + descripción, pill de estado tonal (success/warning/danger/neutral) y acción `Abrir →`. Sin chevron decorativo, sin chips de detalle, sin footer. Mantiene el `goToParametros(area.mantenedor)` original.
+  - **Sidebar reducido** (`nmv2-paso-parametros__side`): bloques contextuales que aparecen solo cuando aplican — `Diferencias con la configuración guardada`, `Pendientes para preparar (N)`, `Oficiales pendientes (N)` — más el acceso permanente `Ir a Parámetros`. Cero duplicación con los conteos del header.
+  - **Modal local `parametros-pendientes-modal` eliminado**. El signal `modalPendientesParametros` ahora dispara un `app-message-box` `variant="warning"` con `sections[]` agrupados por área. Focus inicial gestionado por el shared.
+  - **Skeleton inline**: en estado `parametrosLoading()` la lista se rellena con 5 filas placeholder grises (`nmv2-paso-parametros__row--placeholder`) que conservan la geometría sin pintar tarjetas fantasma.
+  - **Copy**: `Base guardada` → `Configuración guardada`. La banda `diferencias` ahora ofrece `Ver diferencias` directo (antes solo era texto). El sidebar dejó de mostrar `Última actualización` repetida.
+- **Cambios en `nomina-mensual-v2-paso-parametros.component.ts`**:
+  - Import de `MessageBoxSection` desde el shared.
+  - Nuevo helper `parametroEstadoTono(estado)` (mapea a `ok`/`warn`/`block`/`neutral` para la fila).
+  - Nuevo `sectionsPendientesParaMessageBox(tipo)` que mapea grupos por área a `MessageBoxSection[]` con `tone` `warning`/`attention` y `items[]` formateados (`<título>: <detalle>`).
+  - Los métodos `tituloModalPendientesParametros`, `mensajeModalPendientesParametros`, `gruposModalPendientesParametros`, `modalPendientesResumen` quedan vivos como helpers internos consumidos por el `app-message-box`.
+- **Cambios en `nomina-mensual-v2-container.css`**:
+  - Nuevo bloque local `~280 líneas` con todas las clases del paso (`.nmv2-paso-parametros__head`, `__eyebrow`, `__stats`, `__body`, `__main`, `__list`, `__row`, `__row-state`, `__row-action`, `__row--placeholder`, `__side`, `__side-block`, `__side-link` + variantes `--block`/`--warn` y media query a 960 px). Bordes 1 px neutros, radios 4–6 px, sin sombras, sin gradientes, sin transformaciones.
+  - El bloque queda agrupado al inicio del archivo junto al placeholder L0, listo para migrar a CSS local del componente en L5 (desacople).
+  - **No** se eliminó el CSS legacy de `parameter-summary-card`, `parameters-perfect-summary`, `parameter-cards-grid--loading`, `nmv2-loading-*`, `parametros-pendientes-modal*` etc. Quedan como código muerto referenciado por nadie (validado: el nuevo template no usa esas clases). Limpieza profunda diferida a L5.
+- **No tocado**: orquestador, services, mappers, rules de comparación, persistencia, modelos, motor productivo, estilos globales, `angular.json`, otros pasos.
+- **Validación**: `npx ng build --configuration=development` verde (19 s). 2 warnings preexistentes de `line-clamp` (no introducidos por este lote). `npx vitest run src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/facade`: 10/10 verdes.
+- **Pendiente próximo lote**: L3 — Paso Alcance NOIA (cards → lista densa, KPI strip → banda contextual, estados disabled con patrón `--prm-field-locked-*`).
+
 ## 2026-06-02 - Nómina mensual V2 · L1 — Marco unificado del shell
 
 Lote 1 del plan iterativo (`auditoria-nomina-v2-2026-06.md`). Sin cambios funcionales; solo estructura visual del shell.
