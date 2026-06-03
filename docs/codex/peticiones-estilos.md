@@ -1,3 +1,19 @@
+## 2026-06-02 - Nómina mensual V2 · L0 — Higiene + pasos 4–8 congelados hasta V11
+
+Fase 0 del plan iterativo abierto en `docs/codex/modulos/nomina-mensual/auditoria-nomina-v2-2026-06.md`.
+
+- **Decisión rectora**: V2 productiva acotada a Parámetros → Alcance → Empleados. Los pasos `movements`, `calculation`, `validation`, `approval`, `payslips` quedan inactivos en el stepper hasta que V11 conecte motor y persistencia. Motor productivo (`/remuneraciones/proceso-mensual`) no se toca.
+- **Cambios**:
+  - `facade/nomina-mensual-v2-navegacion.ts`: añade `PASOS_CONGELADOS_V11`, `esPasoCongelado(stepId)` y `tooltipPasoCongelado()` (`«Disponible al cerrar la versión 11. Continúa por Proceso mensual mientras tanto.»`).
+  - `components/nomina-mensual-v2-stepper`: helpers `pasoCongelado(id)` y `tooltipPaso(id)`. El botón del paso aplica `[disabled]`, `[attr.aria-disabled]`, `[attr.title]` y `class="nomina-step--frozen"`. El icono de estado se sustituye por `lock` para los pasos congelados. CSS local añade tonos atenuados (cursor `not-allowed`, color `#94a3b8`).
+  - `nomina-mensual-v2-container.ts`: bloquea navegación a pasos congelados en `intentarIrAPaso`, `manejarAvanceDesdeEmpleados` y `ejecutarAccionPrincipalPasoActual`. Saca el import de `NominaMensualV2PasosDemostracionComponent` del shell.
+  - `nomina-mensual-v2-container.html`: el `@default` del `@switch` ya no renderiza la maqueta `pasos-demostracion`; en su lugar muestra un placeholder NOIA sobrio (`.nmv2-paso-congelado`) con eyebrow, título y vínculo a `/remuneraciones/proceso-mensual`. El componente `pasos-demostracion` se preserva en el árbol de archivos hasta la fase V11, pero ya no se carga en el bundle del shell.
+  - `nomina-mensual-v2-container.css`: bloque local para `.nmv2-paso-congelado` (sin sombra, sin radio decorativo, ancho contenido).
+  - Spec `facade/nomina-mensual-v2-navegacion.spec.ts`: añade `import { describe, expect, it } from 'vitest'` que faltaba (pre-existente, archivo aún untracked) y cubre los nuevos helpers.
+- **No tocado**: motor productivo, servicios v1, `angular.json`, estilos globales, Parámetros recién cerrado.
+- **Validación**: `npx ng build --configuration=development` verde (24 s, sin nuevos warnings). `npx vitest run` de `nomina-mensual-v2-navegacion.spec.ts`: 6/6 verdes. Lints sin nuevos errores en los archivos tocados.
+- **Pendiente próximo lote**: L1 — marco unificado del shell (quitar gradiente y sombras de `.nmv2-page`/`.surface-card`, banda compacta del período integrada al header).
+
 ## 2026-06-02 - Parámetros · checkbox "Con gratificación" en lectura sin azul activo
 
 - **Síntoma**: el checkbox `formControlName="gratificacion"` se veía en azul activo aún en modo lectura (no editable). Como no está DOM-`disabled` (el click se intercepta por JS para que el FormControl siga emitiendo valor), el `accent-color: #2563eb` y el check nativo se renderizaban con el azul del sistema.

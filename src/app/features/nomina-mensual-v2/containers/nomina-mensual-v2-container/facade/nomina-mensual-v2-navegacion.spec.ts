@@ -1,8 +1,13 @@
+import { describe, expect, it } from 'vitest';
+
 import {
   ORDEN_PASOS_NOMINA,
+  PASOS_CONGELADOS_V11,
+  esPasoCongelado,
   esRetrocesoAPaso,
   obtenerEtiquetaAccionPrincipal,
   obtenerTituloPaso,
+  tooltipPasoCongelado,
 } from './nomina-mensual-v2-navegacion';
 
 describe('nomina-mensual-v2-navegacion', () => {
@@ -27,5 +32,22 @@ describe('nomina-mensual-v2-navegacion', () => {
   it('detecta retroceso al paso Parametros desde Alcance', () => {
     expect(esRetrocesoAPaso('scope', 'parameters')).toBe(true);
     expect(esRetrocesoAPaso('parameters', 'scope')).toBe(false);
+  });
+
+  it('congela los pasos posteriores a Empleados hasta V11', () => {
+    expect(PASOS_CONGELADOS_V11.has('movements')).toBe(true);
+    expect(PASOS_CONGELADOS_V11.has('calculation')).toBe(true);
+    expect(PASOS_CONGELADOS_V11.has('validation')).toBe(true);
+    expect(PASOS_CONGELADOS_V11.has('approval')).toBe(true);
+    expect(PASOS_CONGELADOS_V11.has('payslips')).toBe(true);
+    expect(PASOS_CONGELADOS_V11.has('parameters')).toBe(false);
+    expect(PASOS_CONGELADOS_V11.has('scope')).toBe(false);
+    expect(PASOS_CONGELADOS_V11.has('employees')).toBe(false);
+  });
+
+  it('expone helpers `esPasoCongelado` y `tooltipPasoCongelado`', () => {
+    expect(esPasoCongelado('movements')).toBe(true);
+    expect(esPasoCongelado('employees')).toBe(false);
+    expect(tooltipPasoCongelado().toLowerCase()).toContain('versión 11');
   });
 });

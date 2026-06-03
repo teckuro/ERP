@@ -23,11 +23,11 @@ import { NominaMensualV2OverlaysComponent } from './components/nomina-mensual-v2
 import { NominaMensualV2PasoAlcanceComponent } from './components/nomina-mensual-v2-paso-alcance/nomina-mensual-v2-paso-alcance.component';
 import { NominaMensualV2PasoEmpleadosComponent } from './components/nomina-mensual-v2-paso-empleados/nomina-mensual-v2-paso-empleados.component';
 import { NominaMensualV2PasoParametrosComponent } from './components/nomina-mensual-v2-paso-parametros/nomina-mensual-v2-paso-parametros.component';
-import { NominaMensualV2PasosDemostracionComponent } from './components/nomina-mensual-v2-pasos-demostracion/nomina-mensual-v2-pasos-demostracion.component';
 import { NominaMensualV2StepperComponent } from './components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component';
 import {
   ORDEN_PASOS_NOMINA,
   esAvanceHaciaAdelante,
+  esPasoCongelado,
   esRetrocesoAPaso,
   obtenerEtiquetaAccionPrincipal,
   obtenerSubtituloPaso,
@@ -48,7 +48,6 @@ import { NominaMensualV2TrazabilidadModalComponent } from './components/nomina-m
     NominaMensualV2PasoParametrosComponent,
     NominaMensualV2PasoAlcanceComponent,
     NominaMensualV2PasoEmpleadosComponent,
-    NominaMensualV2PasosDemostracionComponent,
     NominaMensualV2OverlaysComponent,
     NominaMensualV2TrazabilidadModalComponent,
     NominaMensualV2TrazabilidadDrawerComponent,
@@ -151,6 +150,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
 
   intentarIrAPaso(destinoPaso: PayrollStepId): void {
     if (destinoPaso === this.currentStep()) return;
+    if (esPasoCongelado(destinoPaso)) return;
     if (
       destinoPaso === 'parameters'
       && esRetrocesoAPaso(this.currentStep(), destinoPaso)
@@ -191,6 +191,11 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   }
 
   manejarAvanceDesdeEmpleados(): void {
+    if (esPasoCongelado('movements')) {
+      // V2 productiva acotada a 1–3 hasta V11. El CTA de empleados confirma su validación
+      // pero el paso siguiente queda inactivo. Ver auditoria-nomina-v2-2026-06.md.
+      return;
+    }
     this.irAPaso('movements');
   }
 
@@ -302,16 +307,13 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
 
   ejecutarAccionPrincipalPasoActual(): void {
     const pasoActivo = this.currentStep();
+    if (esPasoCongelado(pasoActivo)) return;
     if (pasoActivo === 'parameters') {
       if (this.parametrosPasoOcupado()) return;
       this.orquestador.ejecutarAccionPrincipal();
       return;
     }
     if (pasoActivo === 'scope' || pasoActivo === 'employees') {
-      this.orquestador.ejecutarAccionPrincipal();
-      return;
-    }
-    if (pasoActivo === 'calculation' || pasoActivo === 'validation' || pasoActivo === 'approval' || pasoActivo === 'payslips') {
       this.orquestador.ejecutarAccionPrincipal();
       return;
     }

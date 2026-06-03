@@ -12,7 +12,12 @@ import { LucideAngularModule } from 'lucide-angular';
 
 import type { PayrollStep, PayrollStepId, PayrollStepStatus } from '../../../../models/nomina-mensual-v2.models';
 import { construirVistasStepper } from '../../../../presenters/nomina-stepper-trazabilidad.presenter';
-import { esAvanceHaciaAdelante, obtenerEstadoPaso } from '../../facade/nomina-mensual-v2-navegacion';
+import {
+  esAvanceHaciaAdelante,
+  esPasoCongelado,
+  obtenerEstadoPaso,
+  tooltipPasoCongelado,
+} from '../../facade/nomina-mensual-v2-navegacion';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 import { NominaMensualV2StepperTraceabilityComponent } from '../nomina-mensual-v2-stepper-traceability/nomina-mensual-v2-stepper-traceability.component';
 
@@ -65,6 +70,7 @@ export class NominaMensualV2StepperComponent {
   }
 
   seleccionarPaso(stepId: PayrollStepId): void {
+    if (this.pasoCongelado(stepId)) return;
     if (this.avanceDesdePasoActualBloqueado() && esAvanceHaciaAdelante(this.pasoActual(), stepId)) {
       return;
     }
@@ -73,5 +79,14 @@ export class NominaMensualV2StepperComponent {
 
   pasoAvanceBloqueado(stepId: PayrollStepId): boolean {
     return this.avanceDesdePasoActualBloqueado() && esAvanceHaciaAdelante(this.pasoActual(), stepId);
+  }
+
+  pasoCongelado(stepId: PayrollStepId): boolean {
+    return esPasoCongelado(stepId);
+  }
+
+  tooltipPaso(stepId: PayrollStepId): string | null {
+    if (this.pasoCongelado(stepId)) return tooltipPasoCongelado();
+    return null;
   }
 }

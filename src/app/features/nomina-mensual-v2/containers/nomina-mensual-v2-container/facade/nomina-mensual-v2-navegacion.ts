@@ -14,6 +14,27 @@ export const ORDEN_PASOS_NOMINA: PayrollStepId[] = [
 
 export const PASOS_NOMINA = payrollSteps;
 
+/**
+ * Pasos congelados en V2 hasta que V11 conecte motor y persistencia.
+ * Decisión rectora 2026-06-02 (`auditoria-nomina-v2-2026-06.md`):
+ * V2 productiva acotada a parameters → scope → employees.
+ */
+export const PASOS_CONGELADOS_V11: ReadonlySet<PayrollStepId> = new Set([
+  'movements',
+  'calculation',
+  'validation',
+  'approval',
+  'payslips',
+]);
+
+export function esPasoCongelado(stepId: PayrollStepId): boolean {
+  return PASOS_CONGELADOS_V11.has(stepId);
+}
+
+export function tooltipPasoCongelado(): string {
+  return 'Disponible al cerrar la versión 11. Continúa por «Proceso mensual» mientras tanto.';
+}
+
 export type AyudaAvanceTono = 'bloqueo' | 'revision' | null;
 
 export function obtenerEstadoPaso(stepId: PayrollStepId, pasoActual: PayrollStepId): PayrollStepStatus {

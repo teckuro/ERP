@@ -10,8 +10,10 @@
           [class.active]="estadoPaso(vista.clave) === 'active'"
           [class.completed]="estadoPaso(vista.clave) === 'completed'"
           [class.nomina-step--advance-blocked]="pasoAvanceBloqueado(vista.clave)"
-          [disabled]="pasoAvanceBloqueado(vista.clave)"
-          [attr.aria-disabled]="pasoAvanceBloqueado(vista.clave) ? 'true' : null"
+          [class.nomina-step--frozen]="pasoCongelado(vista.clave)"
+          [disabled]="pasoAvanceBloqueado(vista.clave) || pasoCongelado(vista.clave)"
+          [attr.aria-disabled]="pasoAvanceBloqueado(vista.clave) || pasoCongelado(vista.clave) ? 'true' : null"
+          [attr.title]="tooltipPaso(vista.clave)"
           (click)="seleccionarPaso(vista.clave)"
         >
           <span class="step-index">
@@ -27,8 +29,11 @@
             class="step-status step-status--icon-only"
             [class.step-status--ready]="vista.estado === 'completo'"
             [class.step-status--waiting]="vista.estado !== 'completo'"
+            [class.step-status--frozen]="pasoCongelado(vista.clave)"
           >
-            @if (vista.estado === 'completo') {
+            @if (pasoCongelado(vista.clave)) {
+              <lucide-icon name="lock" aria-label="Disponible al cerrar V11"></lucide-icon>
+            } @else if (vista.estado === 'completo') {
               <lucide-icon name="check" aria-label="Listo"></lucide-icon>
             } @else {
               <lucide-icon name="clock-3" aria-label="No listo"></lucide-icon>

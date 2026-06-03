@@ -36,7 +36,15 @@
           />
         }
         @default {
-          <app-nomina-mensual-v2-pasos-demostracion [paso]="currentStep()" />
+          <section class="nmv2-paso-congelado" role="status" aria-live="polite">
+            <p class="nmv2-paso-congelado__eyebrow">Disponible al cerrar la versión 11</p>
+            <h2 class="nmv2-paso-congelado__title">Este paso queda inactivo en V2</h2>
+            <p class="nmv2-paso-congelado__body">
+              Mientras la versión 11 conecta el motor de cálculo y la persistencia, los pasos posteriores a Empleados
+              están deshabilitados aquí. Continúa el cierre del período por
+              <a href="/remuneraciones/proceso-mensual">Proceso mensual</a>.
+            </p>
+          </section>
         }
       }
     </div>

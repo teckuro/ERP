@@ -1,5 +1,46 @@
 ﻿@import './nomina-mensual-v2-visual-system.css';
 
+/* Placeholder NOIA para pasos 4–8 congelados (L0, 2026-06).
+   Sustituye `pasos-demostracion`. Se retirará/expandirá en V11. */
+.nmv2-paso-congelado {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 32px 24px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #334155;
+  max-width: 640px;
+  margin: 24px;
+}
+
+.nmv2-paso-congelado__eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.nmv2-paso-congelado__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.nmv2-paso-congelado__body {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.nmv2-paso-congelado__body a {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
 :host {
   display: flex;
   flex: 1 1 auto;
