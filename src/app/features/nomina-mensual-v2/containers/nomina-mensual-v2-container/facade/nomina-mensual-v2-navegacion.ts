@@ -85,7 +85,7 @@ export function obtenerSubtituloPaso(paso: PayrollStepId): string {
     case 'movements':
       return 'Registra los eventos del mes que afectan la remuneración de los trabajadores.';
     case 'calculation':
-      return 'Revisa el cálculo preliminar y guarda el snapshot antes de validar.';
+      return 'Revisa el cálculo preliminar y guarda el registro del cálculo antes de validar.';
     case 'validation':
       return 'El sistema verifica consistencia, bloqueos, advertencias y trazabilidad antes de aprobar.';
     case 'approval':

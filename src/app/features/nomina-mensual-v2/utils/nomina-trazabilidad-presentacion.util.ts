@@ -7,7 +7,7 @@ import type {
 } from '../models/nomina-trazabilidad.models';
 import type { PayrollStepId } from '../models/nomina-mensual-v2.models';
 
-/** Copy visible de integridad; nunca implica validacion en frontend. */
+/** Copy visible de integridad. Nunca implica validación en frontend. */
 export function etiquetaIntegridadVisible(
   estado: EstadoIntegridadNomina,
   origen?: OrigenEventoTrazabilidadNomina,
@@ -16,11 +16,11 @@ export function etiquetaIntegridadVisible(
     case 'verificadoServidor':
       return 'Verificado por servidor';
     case 'registrado':
-      return origen === 'mock' ? 'Referencia demo' : 'Snapshot registrado';
+      return origen === 'mock' ? 'Referencia demo' : 'Registro guardado';
     case 'pendiente':
-      return 'Pendiente de verificacion servidor';
+      return 'Pendiente de verificación del servidor';
     case 'invalidado':
-      return 'Snapshot invalidado';
+      return 'Registro invalidado';
     case 'noDisponible':
     default:
       return 'Integridad no disponible';
@@ -67,17 +67,17 @@ export function obtenerTituloAccionPaso(resumen: ResumenAuditoriaPasoNomina | un
   if (!resumen || resumen.estado === 'pendiente') return 'Registro pendiente';
   switch (resumen.paso) {
     case 'parameters':
-      return resumen.estado === 'congelado' ? 'Parametros cerrados' : 'Parametros revisados';
+      return resumen.estado === 'congelado' ? 'Parámetros cerrados' : 'Parámetros revisados';
     case 'scope':
       return 'Alcance definido';
     case 'employees':
       return 'Empleados validados';
     case 'validation':
-      return 'Prenomina validada';
+      return 'Prenómina validada';
     case 'approval':
-      return resumen.estado === 'aprobado' ? 'Nomina aprobada' : 'Pendiente de aprobacion';
+      return resumen.estado === 'aprobado' ? 'Nómina aprobada' : 'Pendiente de aprobación';
     case 'calculation':
-      return 'Calculo ejecutado';
+      return 'Cálculo ejecutado';
     case 'payslips':
       return 'Liquidaciones generadas';
     default:
@@ -131,7 +131,7 @@ export function verboResponsablePaso(paso: PayrollStepId, estado: EstadoAuditori
 export function etiquetaEstadoAuditoriaPaso(estado: EstadoAuditoriaPasoNomina): string {
   switch (estado) {
     case 'congelado':
-      return 'Parametros congelados';
+      return 'Parámetros cerrados';
     case 'registrado':
       return 'Registrado';
     case 'validado':
@@ -141,7 +141,7 @@ export function etiquetaEstadoAuditoriaPaso(estado: EstadoAuditoriaPasoNomina): 
     case 'invalidado':
       return 'Invalidado';
     case 'requiereRevision':
-      return 'Requiere revision';
+      return 'Requiere revisión';
     case 'pendiente':
     default:
       return 'Pendiente';

@@ -12,7 +12,7 @@ import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-o
 const SECCIONES_MSG_BOX_BLOQUEO_PARAMETROS: MessageBoxSection[] = [
   {
     title: 'Pendiente',
-    text: 'Completa los datos no oficiales exigibles para preparar la nomina.',
+    text: 'Completa los datos del mes antes de preparar la nómina.',
     tone: 'attention',
   },
 ];
@@ -20,7 +20,7 @@ const SECCIONES_MSG_BOX_BLOQUEO_PARAMETROS: MessageBoxSection[] = [
 const SECCIONES_MSG_BOX_REVISION_PARAMETROS: MessageBoxSection[] = [
   {
     title: 'Observaciones',
-    text: 'Puedes continuar, pero quedaran pendientes para revisar.',
+    text: 'Puedes continuar, pero quedarán pendientes para revisar más adelante.',
     tone: 'attention',
   },
 ];
@@ -51,7 +51,7 @@ export class NominaMensualV2OverlaysComponent {
     return [
       {
         title: 'Pendientes obligatorios',
-        text: 'Completa estos datos no oficiales exigibles para preparar la nomina.',
+        text: 'Completa estos datos del mes antes de preparar la nómina.',
         tone: 'attention',
         items: pendientes.slice(0, 8),
       },

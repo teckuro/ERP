@@ -93,7 +93,7 @@ export class NominaMensualV2TrazabilidadModalComponent {
   tituloPaso(paso: PayrollStepId): string {
     switch (paso) {
       case 'parameters':
-        return 'Parametros';
+        return 'Parámetros';
       case 'scope':
         return 'Alcance';
       case 'employees':
@@ -101,11 +101,11 @@ export class NominaMensualV2TrazabilidadModalComponent {
       case 'movements':
         return 'Novedades';
       case 'calculation':
-        return 'Calculo';
+        return 'Cálculo';
       case 'validation':
-        return 'Validacion';
+        return 'Validación';
       case 'approval':
-        return 'Aprobacion';
+        return 'Aprobación';
       case 'payslips':
         return 'Liquidaciones';
     }
@@ -141,7 +141,7 @@ export class NominaMensualV2TrazabilidadModalComponent {
     const evento = this.ultimoEventoPaso();
     return [
       { label: 'Estado operativo', value: this.estadoOperativo(detalle.estadoActual) },
-      { label: 'Ultimo registro', value: evento?.descripcion ?? detalle.accionPrincipal ?? 'Sin registro' },
+      { label: 'Último registro', value: evento?.descripcion ?? detalle.accionPrincipal ?? 'Sin registro' },
       { label: 'Responsable', value: this.valorUsuario(detalle.usuarioNombre || evento?.usuarioNombre) },
       { label: 'Fecha y hora', value: formatoFechaTrazabilidad(detalle.fechaAccion ?? evento?.fechaEvento) },
     ];
@@ -191,15 +191,15 @@ export class NominaMensualV2TrazabilidadModalComponent {
       case 'ccaf_mutual':
         return 'CCAF / Mutual';
       case 'afc_catalogo':
-        return 'Seguro de cesantia';
+        return 'Seguro de cesantía';
       case 'sis_fila_mensual':
         return 'SIS mensual';
       case 'reforma_previsional':
         return 'Reforma previsional';
       case 'parametros_base':
-        return 'Base del periodo';
+        return 'Configuración del período';
       case 'parametros_generales':
-        return 'Parametros generales';
+        return 'Parámetros generales';
       default:
         return this.humanizarParametro(grupo);
     }
@@ -215,19 +215,19 @@ export class NominaMensualV2TrazabilidadModalComponent {
         return 'UTA';
       case 'sueldo_minimo':
       case 'ingreso_minimo':
-        return 'Sueldo minimo';
+        return 'Sueldo mínimo';
       case 'sueldo_minimo_18a65':
-        return 'Sueldo minimo 18 a 65 anos';
+        return 'Sueldo mínimo 18 a 65 años';
       case 'sueldo_minimo_menor18_mayor65':
-        return 'Sueldo minimo menor de 18 y mayor de 65 anos';
+        return 'Sueldo mínimo menor de 18 y mayor de 65 años';
       case 'sueldo_minimo_casa_particular':
-        return 'Sueldo minimo casa particular';
+        return 'Sueldo mínimo casa particular';
       case 'ingreso_minimo_no_remuneracional':
-        return 'Ingreso minimo no remuneracional';
+        return 'Ingreso mínimo no remuneracional';
       case 'gratificacion':
-        return 'Gratificacion legal';
+        return 'Gratificación legal';
       case 'imm_gratificacion':
-        return 'Factor tope gratificacion';
+        return 'Factor tope gratificación';
       case 'tope_imponible':
         return 'Tope imponible';
       case 'tope_imponible_afp':
@@ -243,9 +243,9 @@ export class NominaMensualV2TrazabilidadModalComponent {
         return 'Tope IPS en UF';
       case 'tope_afc':
       case 'tope_cesantia':
-        return 'Tope seguro de cesantia';
+        return 'Tope seguro de cesantía';
       case 'tope_cesantia_uf':
-        return 'Tope seguro de cesantia en UF';
+        return 'Tope seguro de cesantía en UF';
       case 'tope_apv_mensual':
         return 'Tope APV mensual';
       case 'tope_apv_mensual_uf':
@@ -255,19 +255,19 @@ export class NominaMensualV2TrazabilidadModalComponent {
       case 'tope_apv_anual_uf':
         return 'Tope APV anual en UF';
       case 'tope_deposito_convenido_anual':
-        return 'Tope deposito convenido anual';
+        return 'Tope depósito convenido anual';
       case 'tope_deposito_convenido_anual_uf':
-        return 'Tope deposito convenido anual en UF';
+        return 'Tope depósito convenido anual en UF';
       case 'tope_afp_voluntario':
         return 'Tope ahorro previsional voluntario';
       case 'impuesto_unico':
-        return 'Impuesto unico';
+        return 'Impuesto único';
       case 'afp':
         return 'AFP';
       case 'salud':
         return 'Salud';
       case 'salud_obligatoria':
-        return 'Cotizacion obligatoria de salud';
+        return 'Cotización obligatoria de salud';
       case 'salud_ccaf':
         return 'Salud CCAF';
       case 'salud_fonasa_con_ccaf':
@@ -275,7 +275,7 @@ export class NominaMensualV2TrazabilidadModalComponent {
       case 'mutual':
         return 'Mutualidad';
       case 'ccaf':
-        return 'Caja de compensacion';
+        return 'Caja de compensación';
       case 'sis':
         return 'Seguro SIS';
       case 'sanna':
@@ -285,7 +285,7 @@ export class NominaMensualV2TrazabilidadModalComponent {
       case 'aporte_empleador_afp':
         return 'Aporte empleador AFP';
       case 'descuentos_base_por_dia':
-        return 'Descuentos base por dia';
+        return 'Descuentos base por día';
       case 'afc_empleador':
         return 'Aporte AFC empleador';
       case 'afc_trabajador':
@@ -297,7 +297,7 @@ export class NominaMensualV2TrazabilidadModalComponent {
       case 'afc_empleador_plazo':
         return 'AFC empleador contrato a plazo';
       case 'afc_empleador_indefinido_once_anos_mas':
-        return 'AFC empleador indefinido 11 anos o mas';
+        return 'AFC empleador indefinido 11 años o más';
       case 'afc_empleador_casa_particular':
         return 'AFC empleador casa particular';
       case 'trabajo_pesado_empleador':
@@ -318,7 +318,7 @@ export class NominaMensualV2TrazabilidadModalComponent {
     if (!limpio) return 'Sin valor';
     switch (limpio.toLowerCase()) {
       case 'true':
-        return 'Si';
+        return 'Sí';
       case 'false':
         return 'No';
       default:
@@ -327,7 +327,7 @@ export class NominaMensualV2TrazabilidadModalComponent {
   }
 
   formatearVigenciaParametro(vigencia: string | null): string {
-    if (!vigencia) return 'Periodo vigente';
+    if (!vigencia) return 'Período vigente';
     return vigencia;
   }
 
@@ -338,9 +338,9 @@ export class NominaMensualV2TrazabilidadModalComponent {
       case 'manual':
         return 'Ingreso manual';
       case 'parametros_base':
-        return 'Base guardada';
+        return 'Configuración guardada';
       case 'parametros_generales':
-        return 'Mantenedor de parametros';
+        return 'Mantenedor de parámetros';
       case 'evento_anterior':
         return 'Registro anterior';
       case 'sistema':
@@ -367,7 +367,7 @@ export class NominaMensualV2TrazabilidadModalComponent {
         return 'Listo';
       case 'requiere revision':
       case 'requiererevision':
-        return 'Requiere revision';
+        return 'Requiere revisión';
       case 'invalidado':
         return 'Debe actualizarse';
       default:
@@ -410,10 +410,10 @@ export class NominaMensualV2TrazabilidadModalComponent {
       })));
       this.idDetalleParametrosBaseCargado.set(idCalculoPeriodoBase);
     } catch (error) {
-      console.warn('[Nomina V2] No fue posible cargar datos guardados de parametros', error);
+      console.warn('[Nomina V2] No fue posible cargar datos guardados de parámetros', error);
       this.valoresParametrosBaseRemotos.set([]);
       this.idDetalleParametrosBaseCargado.set(idCalculoPeriodoBase);
-      this.valoresParametrosBaseError.set('No fue posible cargar los valores guardados de la base de parametros.');
+      this.valoresParametrosBaseError.set('No fue posible cargar los valores guardados de la configuración de parámetros.');
     } finally {
       this.valoresParametrosBaseLoading.set(false);
     }

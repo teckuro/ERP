@@ -108,7 +108,7 @@ export class NominaParametrosBaseService {
     const resultado = await this.snapshotRepository.guardarSnapshotParametrosBase(snapshot, metadata);
     const id = resultado.snapshot.idCalculoPeriodo;
     if (!id) {
-      throw new Error('No fue posible confirmar el guardado de la base de parámetros.');
+      throw new Error('No fue posible confirmar el guardado de la configuración de parámetros.');
     }
     return { idCalculoPeriodoBase: id, fechaBaseGuardada: resultado.snapshot.fechaGeneracion };
   }

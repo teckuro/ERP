@@ -8,15 +8,15 @@
           width="lg"
           eyebrow="Responsable"
           [title]="'Responsable del paso ' + tituloPaso(detalle.paso)"
-          [message]="'Quien dejo registrada la ultima accion del paso.'"
+          [message]="'Quién dejó registrada la última acción del paso.'"
           (dismiss)="cerrar()"
         >
           <div class="nmv2-trace-modal">
             @if (!tieneRegistroResponsable(detalle)) {
               <div class="nmv2-trace-modal__empty">
                 <lucide-icon name="user-round" aria-hidden="true"></lucide-icon>
-                <strong>Aun no hay registro para este paso</strong>
-                <span>El responsable aparecera cuando se complete o guarde una accion del flujo.</span>
+                <strong>Aún no hay registro para este paso</strong>
+                <span>El responsable aparecerá cuando se complete o guarde una acción del flujo.</span>
               </div>
             } @else {
               <dl class="nmv2-trace-modal__detail-grid">
@@ -43,8 +43,8 @@
           variant="info"
           mode="modal"
           width="lg"
-          eyebrow="Bitacora"
-          [title]="'Bitacora de ' + tituloPaso(detalle.paso)"
+          eyebrow="Bitácora"
+          [title]="'Bitácora de ' + tituloPaso(detalle.paso)"
           [message]="'Movimientos relevantes registrados para este paso.'"
           (dismiss)="cerrar()"
         >
@@ -53,7 +53,7 @@
               <div class="nmv2-trace-modal__empty">
                 <lucide-icon name="history" aria-hidden="true"></lucide-icon>
                 <strong>Sin eventos registrados</strong>
-                <span>Este paso aun no tiene movimientos guardados.</span>
+                <span>Este paso aún no tiene movimientos guardados.</span>
               </div>
             } @else {
               <ol class="nmv2-trace-modal__timeline">
@@ -88,8 +88,8 @@
           mode="modal"
           width="lg"
           eyebrow="Control"
-          [title]="muestraDatosParametrosGuardados(detalle) ? 'Datos guardados de parametros' : 'Control de ' + tituloPaso(detalle.paso)"
-          [message]="muestraDatosParametrosGuardados(detalle) ? 'Valores usados por nomina para este periodo.' : 'Resumen operativo del estado del paso.'"
+          [title]="muestraDatosParametrosGuardados(detalle) ? 'Datos guardados de parámetros' : 'Control de ' + tituloPaso(detalle.paso)"
+          [message]="muestraDatosParametrosGuardados(detalle) ? 'Valores usados por la nómina para este período.' : 'Resumen operativo del estado del paso.'"
           (dismiss)="cerrar()"
         >
           <div class="nmv2-trace-modal">
@@ -98,7 +98,7 @@
                 <div class="nmv2-trace-modal__empty">
                   <lucide-icon name="loader-circle" aria-hidden="true"></lucide-icon>
                   <strong>Cargando datos guardados</strong>
-                  <span>Consultando los valores guardados para este periodo.</span>
+                  <span>Consultando los valores guardados para este período.</span>
                 </div>
               } @else if (valoresParametrosBaseError()) {
                 <div class="nmv2-trace-modal__empty nmv2-trace-modal__empty--attention">
@@ -115,14 +115,14 @@
               } @else {
                 <div class="nmv2-trace-modal__table-head">
                   <span>{{ totalParametrosGuardados() }} valores guardados</span>
-                  <span>Base usada por nomina</span>
+                  <span>Configuración usada por la nómina</span>
                 </div>
                 <div class="nmv2-trace-modal__table-wrap">
                   <table class="nmv2-trace-modal__table">
                     <thead>
                       <tr>
                         <th>Grupo</th>
-                        <th>Parametro</th>
+                        <th>Parámetro</th>
                         <th>Valor</th>
                         <th>Vigencia</th>
                         <th>Fuente</th>

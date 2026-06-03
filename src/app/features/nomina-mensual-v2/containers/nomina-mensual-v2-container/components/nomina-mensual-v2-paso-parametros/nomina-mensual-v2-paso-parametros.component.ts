@@ -134,7 +134,7 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     if (this.parametrosValidando()) {
       return {
         titulo: 'Preparando nómina',
-        mensaje: 'Revisando parámetros y base guardada antes de continuar.',
+        mensaje: 'Revisando parámetros y configuración guardada antes de continuar.',
       };
     }
     return null;
@@ -168,11 +168,11 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   readonly alertaRevisionDescripcion = computed(() => {
     const resumen = this.parametrosResumen();
     if ((resumen?.bloqueos ?? 0) > 0) {
-      return 'Puedes usar «Preparar nómina» para congelar la base actual o corregirlos en Parámetros.';
+      return 'Puedes usar «Preparar nómina» para guardar la configuración actual o corregirlos en Parámetros.';
     }
     const cantidad = resumen?.requiereRevision ?? 0;
     if (cantidad === 0) return '';
-    return 'Puedes usar «Preparar nómina» igual; el cálculo validará más adelante.';
+    return 'Puedes usar «Preparar nómina» igual. El cálculo validará más adelante.';
   });
 
   readonly alertaBloqueoTitulo = computed(() => {
@@ -191,12 +191,14 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
 
   readonly alertaOficialesTitulo = computed(() => {
     const cantidad = this.parametrosResumen()?.advertenciasOficiales ?? 0;
-    const etiquetaItem = cantidad === 1 ? 'oficial pendiente' : 'oficiales pendientes';
-    return `Hay ${cantidad} ${etiquetaItem} no bloqueante`;
+    const etiquetaItem = cantidad === 1
+      ? 'oficial pendiente, no bloqueante'
+      : 'oficiales pendientes, no bloqueantes';
+    return `Hay ${cantidad} ${etiquetaItem}`;
   });
 
   readonly alertaOficialesDescripcion = computed(() =>
-    'Puedes preparar la nómina; estos valores oficiales mensuales se actualizarán cuando estén disponibles.',
+    'Puedes preparar la nómina. Estos valores oficiales mensuales se actualizarán cuando estén disponibles.',
   );
 
   readonly parametrosEstadoPreparacionCompleto = computed(() => {
@@ -275,14 +277,14 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
       }
       if (resumen.bloqueosPreparacion > 0) {
         this.orquestador.establecerAyudaAvance(
-          'Completa los pendientes no oficiales exigibles antes de preparar la nómina.',
+          'Completa los datos del mes pendientes antes de preparar la nómina.',
           'bloqueo',
         );
         return;
       }
       if (resumen.advertenciasOficiales > 0) {
         this.orquestador.establecerAyudaAvance(
-          'Hay oficiales mensuales pendientes. No bloquean la preparación del periodo.',
+          'Hay oficiales mensuales pendientes. No bloquean la preparación del período.',
           'revision',
         );
         return;
@@ -357,8 +359,8 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
 
   mensajeModalPendientesParametros(tipo: ModalPendientesParametrosTipo): string {
     return tipo === 'preparacion'
-      ? 'Completa estos datos no oficiales exigibles antes de preparar la nómina.'
-      : 'Estos oficiales mensuales no bloquean la preparación del periodo.';
+      ? 'Completa estos datos del mes antes de preparar la nómina.'
+      : 'Estos oficiales mensuales no bloquean la preparación del período.';
   }
 
   itemsModalPendientesParametros(tipo: ModalPendientesParametrosTipo): ParametroResumenBloqueo[] {
@@ -704,17 +706,17 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   private mensajeErrorPersistenciaBase(error: unknown): string {
     const detalle = error instanceof Error ? error.message : '';
     if (/row-level security|RLS|permission denied/i.test(detalle)) {
-      return 'No fue posible guardar la base de parámetros: la sesión no tiene permiso de escritura. Inicia sesión nuevamente o contacta a administración.';
+      return 'No fue posible guardar la configuración de parámetros. Tu sesión no tiene permiso de escritura. Inicia sesión nuevamente o pide acceso a administración.';
     }
-    return detalle || 'No fue posible guardar la base de parámetros.';
+    return detalle || 'No fue posible guardar la configuración de parámetros.';
   }
 
   private mensajeErrorPreparacion(error: unknown): string {
     const detalle = error instanceof Error ? error.message : '';
     if (/row-level security|RLS|permission denied/i.test(detalle)) {
-      return 'No fue posible consultar o guardar la base de parámetros por permisos de sesión.';
+      return 'No fue posible consultar o guardar la configuración de parámetros por permisos de la sesión.';
     }
-    return detalle || 'No fue posible preparar la nómina con la base de parámetros.';
+    return detalle || 'No fue posible preparar la nómina con la configuración guardada.';
   }
 
   private obtenerEstadoPendientesPasoParametros(): EstadoPendientesPasoParametros {

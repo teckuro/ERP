@@ -68,8 +68,8 @@ export function ayudaAvanceParametrosConBase(input: {
 }): string {
   if (input.hayDiferencias) {
     return input.esAdmin
-      ? 'Hay diferencias con la base guardada. Puedes mantenerla o actualizarla con los valores actuales.'
-      : 'Hay diferencias con la base guardada. Puedes mantener la base para continuar; actualizar requiere administración.';
+      ? 'Hay diferencias con la configuración guardada. Puedes mantenerla o actualizarla con los valores actuales.'
+      : 'Hay diferencias con la configuración guardada. Puedes mantenerla para continuar. Actualizarla requiere administración.';
   }
-  return 'La base del período está preparada. Usa «Continuar a alcance» para seguir.';
+  return 'La configuración del período está preparada. Usa «Continuar a alcance» para seguir.';
 }
