@@ -35,15 +35,20 @@ function rutDv(body) {
 const FECHA_INICIO = '2025-05-01';
 const RUT_BODIES = ['25050001', '25050002', '25050003', '25050004', '25050005', '25050006', '25050007', '25050008'];
 
+// 2026-06-02: U6/U7/U8 se degradan a `dependiente_activo` para que queden
+// aptos. Quedan 6 aptos (U1, U4, U5, U6, U7, U8) + 2 borradores (U2, U3),
+// suficiente para poblar el alcance de Nomina V2 sin perder cobertura de
+// borradores. Casos antiguos (honorarios F10, basico F2, ficha incompleta F12)
+// se cubren por separado en `scripts/seed-empleados-prueba-errores.mjs`.
 const USERS = [
   { key: 'U1', nombres: 'Dependiente Activo', flujo: 'F5/F7', tipo: 'dependiente_activo' },
   { key: 'U2', nombres: 'Borrador Paso Dos', flujo: 'F3', tipo: 'borrador_paso2' },
   { key: 'U3', nombres: 'Borrador Reanudar', flujo: 'F4', tipo: 'borrador_reanudar' },
   { key: 'U4', nombres: 'Casa Particular', flujo: 'F8', tipo: 'casa_particular' },
   { key: 'U5', nombres: 'Exclusion Jornada', flujo: 'F9', tipo: 'exclusion_jornada' },
-  { key: 'U6', nombres: 'Honorarios', flujo: 'F10', tipo: 'honorarios' },
-  { key: 'U7', nombres: 'Alta Basica', flujo: 'F2', tipo: 'basico' },
-  { key: 'U8', nombres: 'Ficha Incompleta', flujo: 'F12', tipo: 'ficha_incompleta' },
+  { key: 'U6', nombres: 'Operario Apto', flujo: 'F5', tipo: 'dependiente_activo' },
+  { key: 'U7', nombres: 'Vendedor Apto', flujo: 'F5', tipo: 'dependiente_activo' },
+  { key: 'U8', nombres: 'Tecnico Apto', flujo: 'F5', tipo: 'dependiente_activo' },
 ].map((u, i) => ({
   ...u,
   rut: RUT_BODIES[i],

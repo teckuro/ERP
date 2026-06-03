@@ -1,3 +1,40 @@
+## 2026-06-02 - Empleados · Seeds separados (`auditoria` / `aptos` / `errores`)
+
+Sin cambios de UI. Solo `scripts/` + `package.json`. Origen: tras correr `seed:empleados:ok` quedaron solo 3 aptos (U1, U4, U5) por diseño de la batería de auditoría, insuficiente para poblar el alcance del paso 3 de Nómina mensual V2 con holgura.
+
+- **`scripts/auditoria-empleados-fixtures.mjs`**: degradados U6/U7/U8 a `dependiente_activo`. Quedan **6 aptos (U1, U4, U5, U6, U7, U8) + 2 borradores (U2 `borrador_paso2`, U3 `borrador_reanudar`)**. Casos antiguos (`honorarios` F10, `basico` F2, `ficha_incompleta` F12) salen de la auditoría base y vuelven a cubrirse vía `seed:empleados:errores` cuando se necesiten.
+- **`scripts/verify-empleados-qa-post-e2e.mjs`**: actualizados asserts. U6 ahora `apto === true` (sin HONORARIOS); U8 ahora `estado === ACTIVO` y `estado_ficha === VALIDO` (sin INCOMPLETO). Se eliminó el helper `loadContratoHonorarios` que ya no aplica.
+- **Nuevo `scripts/seed-empleados-aptos.mjs`**: 10 empleados productivos puros (RUT `27.000.001–010`, apellido `Productivo`, contrato `INDEFINIDO`, sueldo $900.000, jornada completa 44 h, AFP + ISAPRE + cuenta bancaria; persona `ACTIVO/VALIDO/apto=true`). Soporta `--confirm`, `--dry-run`, `--purge-only`, `--append` (este último solo borra y recrea RUT 27.000.001–010 sin tocar U1–U8 ni ERR).
+- **`package.json` — scripts npm de empleados reorganizados**:
+  - `seed:empleados:auditoria` → `node scripts/auditoria-empleados-fixtures.mjs` (nombre real del fixture).
+  - `seed:empleados:aptos` → `node scripts/seed-empleados-aptos.mjs --confirm`.
+  - `seed:empleados:aptos:append` → mismo con `--append`.
+  - `seed:empleados:errores` y `seed:empleados:errores:append` (sin cambios funcionales).
+  - `seed:empleados:ok` queda como **alias deprecated** apuntando a `seed:empleados:auditoria` (no romper docs/CI antiguos). Mismo criterio que `seed:empleados-prueba-errores`.
+- **No tocado**: `scripts/lib/empleados-cleanup.mjs` (utilería compartida), `seed-empleados-prueba-errores.mjs`, tests, UI, estilos globales, motor de cálculo.
+- **Combinación recomendada para poblar Nómina V2**: `npm run seed:empleados:auditoria` (6 aptos + 2 borradores) + `npm run seed:empleados:aptos` (10 aptos puros) + opcionalmente `npm run seed:empleados:errores:append` (10 bloqueantes sin tocar el resto). Total: **16 aptos disponibles** para el alcance + 2 borradores + 10 con bloqueos para validar flujos de error.
+- **Validación**: `node --check` verde sobre los 3 scripts modificados. JSON `package.json` válido. No se ejecutó el seed contra BD remota en esta sesión (lo lanzas desde tu terminal con las credenciales `.env`).
+
+## 2026-06-02 - Nómina mensual V2 · L4 — Paso Empleados NOIA
+
+Lote 4 del plan iterativo (`auditoria-nomina-v2-2026-06.md`). Sin tocar presenter, services, orquestador, ni `app-data-grid` shared.
+
+- **Hallazgos resueltos**: H-E1 (KPI strip de 4 cards → banda de stats en header local), H-E2 (banner sin-alcance ya con estética `alert-banner--parameter-inline`, sin sombras), H-E3 (toolbar local sobria sustituye `empleados-grid-toolbar` con bordes y chips coherentes), H-E4 (sidebar reducido tipo L3, checklist denso sin `surface-card`), H-E5 (estados `disabled` del checklist coherentes con `--prm-field-locked-*`).
+- **Cambios en `nomina-mensual-v2-paso-empleados.component.html`** (reescritura completa, misma lógica/binds):
+  - **Header local** (`nmv2-paso-empleados__head`) con eyebrow `Paso 3 · Empleados · <leyenda del grid>` + título operativo + banda horizontal de 4 stats (Activos / Contrato vigente / Bancarios pendientes / Docs. incompletas), tonos `--green/--blue/--amber/--red`, `title` con el porcentaje del total.
+  - **Toolbar local** (`nmv2-paso-empleados__toolbar`) sustituye `empleados-grid-toolbar`: contiene `Filtros avanzados` (con estado activo en azul tenue), chip de filtro de checklist activo (cerrable) y conteo. Borde 1 px neutro, radio 6 px.
+  - **Anchor + `app-data-grid`** intacto: mismo `persistenceKey`, mismos `ng-template appDataGridCell` y mismas columnas. Sin nuevos botones export (siguen siendo acción del grid).
+  - **Sidebar reducido** (`nmv2-paso-empleados__side`): bloque `Lista para continuar` con `trazabilidad-paso panel` + checklist denso (`<li><button>`, icono + título + pill de severidad + descripción + chevron) + acceso `Ver resumen de pendientes`. Bloque adicional `Volver a alcance` con link `Ir a Alcance`. Sin `surface-card`, sin `side-card`, sin info-banner.
+  - **Checklist items**: estados `--activo` (azul tenue), `--locked`/`:disabled` calcados al patrón `--prm-field-locked-*` (color `#94a3b8`, icono `#cbd5e1`). Severidad mantiene tonos sobrios (`correcto/advertencia/bloqueante`).
+- **Cambios en `nomina-mensual-v2-paso-empleados.component.ts`**: ninguno. Toda la lógica (`metricasEmpleados`, `checklistEmpleados`, `filasEmpleadosVista`, `filtroPendienteEmpleados`, `recargarGrillaEmpleados`, `ejecutarAccionPrincipal`, modal `abrirModalResumenPendientes`) se reutiliza tal cual.
+- **Cambios en `nomina-mensual-v2-container.css`**:
+  - Nuevo bloque local (~410 líneas) con `.nmv2-paso-empleados__*`: head, eyebrow, head-row, title, stats (`--green/--blue/--amber/--red`), body, main, grid, toolbar, toolbar-filters, toolbar-btn (`--activo`), chip-filtro, toolbar-conteo, side, side-block, side-link, checklist, checklist-item (`--activo/--locked`), checklist-icon/copy/row-title/severity/mark + variantes por status (`.status-success/.status-warning/.status-error/.status-pending`).
+  - Aplanado del wrapper legacy del data-grid: `.empleados-grid-module` y `.nmv2-page[data-step='employees'] .empleados-grid-module__card` ahora son `border-radius: 6px`, sin `box-shadow`, borde neutro 1 px (en línea con L1).
+  - El CSS legacy `empleados-kpi-strip`, `empleados-kpi-card*`, `empleados-grid-toolbar*`, `empleados-checklist-card`, `empleados-checklist-item*`, `empleados-resumen-pendientes-button` queda como código muerto (no referenciado por el nuevo template). Limpieza profunda en L5.
+- **No tocado**: presenter de empleados/validación, service de carga, orquestador, modelos, `app-data-grid`, motor productivo, estilos globales, `angular.json`, otros pasos.
+- **Validación**: `npx ng build --configuration=development` verde (16 s). 2 warnings preexistentes de `line-clamp` (no introducidos por este lote). `npx vitest run src/app/features/nomina-mensual-v2/{presenters,rules,mappers,containers}`: 48/48 verdes; los 3 archivos en rojo son los preexistentes ya identificados en L3.
+- **Pendiente próximo lote**: L5 — Limpieza / desacople CSS (migrar bloques L0–L4 desde `container.css` a CSS local por componente y borrar el código muerto: `parameter-summary-card*`, `parameters-perfect-summary*`, `alcance-*-card`, `empleados-grid-toolbar*`, `empleados-kpi-card*`, `empleados-checklist-card`, modal local, skeletons en card).
+
 ## 2026-06-02 - Nómina mensual V2 · L3 — Paso Alcance NOIA
 
 Lote 3 del plan iterativo (`auditoria-nomina-v2-2026-06.md`). Sin tocar presenter, services, orquestador, ni la lógica de cálculo del alcance.

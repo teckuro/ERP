@@ -1,6 +1,10 @@
 /**
  * Verificación ligera post E2E empleados (fixtures U1–U8 y ERR).
  * Uso: node scripts/verify-empleados-qa-post-e2e.mjs
+ *
+ * 2026-06-02: U6/U7/U8 degradados a dependiente_activo apto. Los asserts
+ * históricos (HONORARIOS, INCOMPLETO) se removieron. Casos especiales
+ * (honorarios/básico/ficha incompleta) ahora viven en `seed:empleados:errores`.
  */
 import { config } from 'dotenv';
 import { resolve } from 'node:path';
@@ -27,18 +31,6 @@ async function loadPersona(supabase, rut) {
   return data;
 }
 
-async function loadContratoHonorarios(supabase, idPersona) {
-  const { data, error } = await supabase
-    .from('contrato')
-    .select('relacion_laboral')
-    .eq('id_persona', idPersona)
-    .order('id_contrato', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) throw new Error(`contrato: ${error.message}`);
-  return data;
-}
-
 function assert(cond, msg) {
   if (!cond) throw new Error(msg);
 }
@@ -56,13 +48,12 @@ async function main() {
 
   const u6 = await loadPersona(supabase, RUT_BODIES.U6);
   assert(u6, 'U6 no existe');
-  assert(u6.apto_para_remuneraciones === false, 'U6 honorarios apto debe ser false');
-  const c6 = await loadContratoHonorarios(supabase, u6.id_persona);
-  assert(c6?.relacion_laboral === 'HONORARIOS', 'U6 relacion HONORARIOS');
+  assert(u6.apto_para_remuneraciones === true, 'U6 (Operario Apto) debe quedar apto tras degradación');
 
   const u8 = await loadPersona(supabase, RUT_BODIES.U8);
   assert(u8, 'U8 no existe');
-  assert(String(u8.estado_ficha).toUpperCase() === 'INCOMPLETO', 'U8 estado_ficha INCOMPLETO');
+  assert(String(u8.estado).toUpperCase() === 'ACTIVO', 'U8 (Tecnico Apto) debe estar ACTIVO');
+  assert(String(u8.estado_ficha).toUpperCase() === 'VALIDO', 'U8 ficha debe ser VALIDO');
 
   const err = await loadPersona(supabase, RUT_BODIES.ERR01);
   if (err) {
