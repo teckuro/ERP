@@ -90,7 +90,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(240px, 280px);
   gap: 14px;
-  align-items: start;
+  align-items: stretch;
   min-height: 0;
 }
 
@@ -120,7 +120,7 @@
   grid-template-columns: 28px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 8px 12px;
   border: 0;
   background: transparent;
   text-align: left;
@@ -197,13 +197,13 @@
   gap: 4px;
   font-size: 11.5px;
   font-weight: 600;
-  color: #475569;
+  color: #94a3b8;
   white-space: nowrap;
 }
 
 .nmv2-paso-alcance__row-mark lucide-icon {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
 }
 
 .nmv2-paso-alcance__row:hover:not(:disabled) .nmv2-paso-alcance__row-mark,
@@ -222,7 +222,7 @@
 }
 
 .nmv2-paso-alcance__row--activa .nmv2-paso-alcance__row-mark {
-  color: #1d4ed8;
+  color: #047857;
 }
 
 /* Lock: usa el mismo patrón disabled/readonly que Parámetros (`--prm-field-locked-*`). */
@@ -318,103 +318,90 @@
   color: #1d4ed8;
 }
 
-.nmv2-paso-alcance__search {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  background: #ffffff;
+/* Panel "grilla" — el data-grid del sistema se renderiza inline sin card extra. */
+.nmv2-paso-alcance__panel--grilla {
+  padding: 8px 10px;
 }
 
-.nmv2-paso-alcance__search lucide-icon {
-  width: 14px;
-  height: 14px;
-  color: #64748b;
-  flex: 0 0 14px;
+.nmv2-paso-alcance__panel--grilla .nmv2-paso-alcance__grid-shell {
+  margin: 0;
 }
 
-.nmv2-paso-alcance__search input {
-  flex: 1 1 auto;
-  min-width: 0;
+.nmv2-paso-alcance__panel--grilla .nmv2-paso-alcance__grid-card {
   border: 0;
+  box-shadow: none;
   background: transparent;
-  font: inherit;
-  font-size: 12px;
-  color: #0f172a;
-  outline: none;
 }
 
-.nmv2-paso-alcance__manual {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  max-height: 280px;
-  overflow-y: auto;
-  border: 1px solid #eef2f7;
-  border-radius: 4px;
-  background: #fcfdff;
+/* Panel "incidencias" — mismo patrón que --grilla, con acento ámbar suave para indicar revisión. */
+.nmv2-paso-alcance__panel--incidencias {
+  padding: 8px 10px;
+  border-color: #fcd34d;
+  background: #fffbeb;
 }
 
-.nmv2-paso-alcance__manual > li + li {
-  border-top: 1px solid #eef2f7;
-}
-
-.nmv2-paso-alcance__manual-state {
-  padding: 10px 12px;
-  font-size: 12px;
-  color: #64748b;
-}
-
-.nmv2-paso-alcance__manual-row {
-  display: grid;
-  grid-template-columns: 18px 26px minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
-  padding: 6px 10px;
-  cursor: pointer;
-}
-
-.nmv2-paso-alcance__manual-row:hover {
-  background: #f8fafc;
-}
-
-.nmv2-paso-alcance__manual-row input[type='checkbox'] {
+.nmv2-paso-alcance__panel--incidencias .nmv2-paso-alcance__grid-shell {
   margin: 0;
 }
 
-.nmv2-paso-alcance__manual-avatar {
+.nmv2-paso-alcance__panel--incidencias .nmv2-paso-alcance__grid-card {
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.nmv2-paso-alcance__panel-head--incidencias h3 {
+  color: #92400e;
+}
+
+.nmv2-paso-alcance__panel-head--incidencias p {
+  color: #78350f;
+}
+
+/* Celda checkbox de inclusión */
+.nmv2-paso-alcance__incluir-cell {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.nmv2-paso-alcance__incluir-cell input[type='checkbox'] {
+  margin: 0;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+/* Celda Nombre con avatar (mismo patrón que paso Empleados) */
+.nmv2-paso-alcance__nombre-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.nmv2-paso-alcance__nombre-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
   border-radius: 999px;
   background: #e2e8f0;
   color: #475569;
   font-size: 10.5px;
   font-weight: 700;
+  flex: 0 0 24px;
 }
 
-.nmv2-paso-alcance__manual-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
+.nmv2-paso-alcance__nombre-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   min-width: 0;
-}
-
-.nmv2-paso-alcance__manual-copy strong {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #0f172a;
-  line-height: 1.25;
-}
-
-.nmv2-paso-alcance__manual-copy small {
-  font-size: 11px;
-  color: #64748b;
-  line-height: 1.3;
 }
 
 /* Sidebar reducido del paso Alcance */
@@ -513,20 +500,63 @@
 .nmv2-paso-alcance__checklist-copy {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
   min-width: 0;
 }
 
-.nmv2-paso-alcance__checklist-copy strong {
+.nmv2-paso-alcance__checklist-row-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+
+.nmv2-paso-alcance__checklist-row-title strong {
   font-size: 12px;
   font-weight: 600;
   color: #0f172a;
+  line-height: 1.3;
+  min-width: 0;
 }
 
 .nmv2-paso-alcance__checklist-copy small {
   font-size: 11px;
   color: #64748b;
   line-height: 1.35;
+}
+
+.nmv2-paso-alcance__checklist-severity {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.nmv2-paso-alcance__checklist-severity.nmv2-paso-alcance__checklist-severity--correcto {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.nmv2-paso-alcance__checklist-severity.nmv2-paso-alcance__checklist-severity--advertencia {
+  background: #fff7ed;
+  color: #b45309;
+}
+
+.nmv2-paso-alcance__checklist-severity.nmv2-paso-alcance__checklist-severity--bloqueante {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.nmv2-paso-alcance__checklist-severity.nmv2-paso-alcance__checklist-severity--neutro {
+  background: #f1f5f9;
+  color: #475569;
 }
 
 .nmv2-paso-alcance__checklist-item.status-success .nmv2-paso-alcance__checklist-icon { color: #047857; }

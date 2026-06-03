@@ -45,7 +45,6 @@ import {
   DataGridComponent,
 } from '../../../../../../shared/components/ui/data-grid';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
-import { NominaMensualV2TrazabilidadPasoComponent } from '../nomina-mensual-v2-trazabilidad-paso/nomina-mensual-v2-trazabilidad-paso.component';
 import {
   claseChecklist,
   claseChipFiltroChecklist,
@@ -60,7 +59,7 @@ import {
 @Component({
   selector: 'app-nomina-mensual-v2-paso-empleados',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, DataGridComponent, DataGridCellDirective, NominaMensualV2TrazabilidadPasoComponent],
+  imports: [CommonModule, LucideAngularModule, DataGridComponent, DataGridCellDirective],
   templateUrl: './nomina-mensual-v2-paso-empleados.component.html',
   styleUrls: ['./nomina-mensual-v2-paso-empleados.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

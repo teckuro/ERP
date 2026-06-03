@@ -33,14 +33,6 @@ export function obtenerOpcionesAlcanceNomina(): OpcionAlcanceNomina[] {
       estado: 'disponible',
     },
     {
-      id: 'contrato',
-      titulo: 'Por contrato',
-      descripcion: 'Disponible cuando el tipo de contrato esté expuesto en los datos de personal.',
-      icono: 'file-text',
-      estado: 'preparado',
-      etiqueta: 'Próximamente',
-    },
-    {
       id: 'seleccionManual',
       titulo: 'Selección manual',
       descripcion: 'Elige trabajadores específicos para una preparación parcial o reproceso.',

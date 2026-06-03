@@ -8,7 +8,7 @@
       }
     </p>
     <div class="nmv2-paso-alcance__head-row">
-      <h2 class="nmv2-paso-alcance__title">¿Qué trabajadores quieres preparar para esta nómina?</h2>
+      <h2 class="nmv2-paso-alcance__title">Define el alcance de la nómina</h2>
       <ul class="nmv2-paso-alcance__stats" aria-label="Resumen del alcance">
         @for (metric of metricasAlcance(); track metric.id) {
           <li class="nmv2-paso-alcance__stat" [class]="'nmv2-paso-alcance__stat--' + metric.tone">
@@ -28,6 +28,16 @@
           <div class="alert-banner__copy">
             <strong>No fue posible cargar trabajadores</strong>
             <p>{{ alcanceError() }}</p>
+          </div>
+        </div>
+      }
+
+      @if (alcanceVacioRequiereSeleccion()) {
+        <div class="alert-banner alert-banner--warning alert-banner--parameter-inline">
+          <div class="alert-banner__icon"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon></div>
+          <div class="alert-banner__copy">
+            <strong>Falta completar la selección</strong>
+            <p>{{ mensajeAlcanceVacio() }}</p>
           </div>
         </div>
       }
@@ -60,12 +70,11 @@
               <span class="nmv2-paso-alcance__row-mark" aria-hidden="true">
                 @if (tipoAlcanceSeleccionado() === opcion.id) {
                   <lucide-icon name="check"></lucide-icon>
-                  Seleccionado
                 } @else if (opcion.estado !== 'disponible') {
                   <lucide-icon name="lock"></lucide-icon>
                   No disponible
                 } @else {
-                  Elegir
+                  <lucide-icon name="chevron-right"></lucide-icon>
                 }
               </span>
             </button>
@@ -95,46 +104,127 @@
         </section>
       }
 
+      @if (mostrarPanelIncidencias()) {
+        <section class="nmv2-paso-alcance__panel nmv2-paso-alcance__panel--incidencias" aria-labelledby="nmv2-alcance-incidencias-title">
+          <header class="nmv2-paso-alcance__panel-head nmv2-paso-alcance__panel-head--incidencias">
+            <div>
+              <h3 id="nmv2-alcance-incidencias-title">Trabajadores con pendientes en el alcance</h3>
+              <p>{{ trabajadoresConIncidencias().length }} de {{ resultadoAlcanceVista().resumen.trabajadoresIncluidos }} incluidos tiene observaciones. Revísalos antes de avanzar al paso Empleados.</p>
+            </div>
+          </header>
+          <app-data-grid
+            title=""
+            [columns]="columnasGrillaAlcanceIncidencias"
+            [rows]="trabajadoresConIncidencias()"
+            [filters]="[]"
+            [filtersEnabled]="false"
+            [filtersCollapsible]="false"
+            headerCountDisplay="text"
+            headerCountNoun="trabajadores"
+            [headerShowActiveFiltersCount]="false"
+            [loading]="false"
+            [selectable]="false"
+            [trackBy]="trackFilaSeleccionManual"
+            [persistenceKey]="clavePersistenciaGrillaIncidencias()"
+            toolbarLayout="operativa"
+            emptyTitle="Sin incidencias"
+            emptyDescription="Todos los trabajadores incluidos están listos para nómina."
+            className="nmv2-paso-alcance__grid-shell"
+            cardClassName="nmv2-paso-alcance__grid-card"
+          >
+            <ng-template appDataGridCell="nombre" let-fila>
+              <div class="nmv2-paso-alcance__nombre-cell" [title]="fila.nombreCompleto">
+                <span class="nmv2-paso-alcance__nombre-avatar" aria-hidden="true">{{ inicialesEmpleado(fila.nombreCompleto) }}</span>
+                <span class="nmv2-paso-alcance__nombre-text">{{ fila.nombreCompleto }}</span>
+              </div>
+            </ng-template>
+
+            <ng-template appDataGridCell="estadoNomina" let-fila>
+              <span class="nmv2-grid-badge" [ngClass]="claseBadgeEstadoNomina(fila.estadoNomina)">
+                <span class="nmv2-grid-badge__dot" aria-hidden="true"></span>
+                {{ fila.etiquetaEstadoNomina }}
+              </span>
+            </ng-template>
+
+            <ng-template appDataGridCell="contrato" let-fila>
+              <span class="nmv2-grid-badge" [ngClass]="claseBadgeContrato(fila.contrato)">
+                <span class="nmv2-grid-badge__dot" aria-hidden="true"></span>
+                {{ fila.etiquetaContrato }}
+              </span>
+            </ng-template>
+
+            <ng-template appDataGridCell="datosBancarios" let-fila>
+              <span class="nmv2-grid-badge" [ngClass]="claseBadgeDatosBancarios(fila.datosBancarios)">
+                <span class="nmv2-grid-badge__dot" aria-hidden="true"></span>
+                {{ fila.etiquetaDatosBancarios }}
+              </span>
+            </ng-template>
+          </app-data-grid>
+        </section>
+      }
+
       @if (tipoAlcanceSeleccionado() === 'seleccionManual') {
-        <section class="nmv2-paso-alcance__panel" aria-labelledby="nmv2-alcance-manual-title">
+        <section class="nmv2-paso-alcance__panel nmv2-paso-alcance__panel--grilla" aria-labelledby="nmv2-alcance-manual-title">
           <header class="nmv2-paso-alcance__panel-head">
             <h3 id="nmv2-alcance-manual-title">Selección manual</h3>
-            <p>Marca los trabajadores que entrarán a esta preparación.</p>
+            <p>Marca los trabajadores que entrarán a esta preparación. {{ totalTrabajadoresManual() }} disponibles en el período.</p>
           </header>
-          <label class="nmv2-paso-alcance__search">
-            <lucide-icon name="search" aria-hidden="true"></lucide-icon>
-            <input
-              type="search"
-              aria-label="Buscar trabajador"
-              placeholder="Buscar por nombre, RUT o cargo"
-              [value]="busquedaManual()"
-              (input)="busquedaManual.set($any($event.target).value)"
-            />
-          </label>
-          <ul class="nmv2-paso-alcance__manual">
-            @if (alcanceCargando()) {
-              <li class="nmv2-paso-alcance__manual-state">Cargando trabajadores...</li>
-            } @else {
-              @for (fila of filasSeleccionManual(); track fila.id) {
-                <li>
-                  <label class="nmv2-paso-alcance__manual-row">
-                    <input
-                      type="checkbox"
-                      [checked]="trabajadorManualSeleccionado(fila.id)"
-                      (change)="alternarTrabajadorManual(fila.id)"
-                    />
-                    <span class="nmv2-paso-alcance__manual-avatar" aria-hidden="true">{{ inicialesEmpleado(fila.nombreCompleto) }}</span>
-                    <span class="nmv2-paso-alcance__manual-copy">
-                      <strong>{{ fila.nombreCompleto }}</strong>
-                      <small>{{ fila.rut }} · {{ fila.cargo }}</small>
-                    </span>
-                  </label>
-                </li>
-              } @empty {
-                <li class="nmv2-paso-alcance__manual-state">Sin trabajadores que coincidan con la búsqueda.</li>
-              }
-            }
-          </ul>
+          <app-data-grid
+            title=""
+            [columns]="columnasGrillaAlcanceManual"
+            [rows]="filasPeriodo()"
+            [filters]="filtrosGrillaAlcanceManual()"
+            [filtersEnabled]="true"
+            [filtersCollapsible]="false"
+            filterChipsDisplay="whenFiltersHidden"
+            headerCountDisplay="text"
+            headerCountNoun="trabajadores"
+            [headerShowActiveFiltersCount]="false"
+            [loading]="alcanceCargando()"
+            loadingLabel="Cargando trabajadores del período..."
+            [selectable]="false"
+            [trackBy]="trackFilaSeleccionManual"
+            [persistenceKey]="clavePersistenciaGrillaAlcanceManual()"
+            toolbarLayout="operativa"
+            emptyTitleWhenFiltered="No se encontraron trabajadores con esos filtros."
+            emptyDescriptionWhenFiltered="Ajusta la búsqueda o limpia los filtros para ver más resultados."
+            emptyTitle="Sin trabajadores en el período"
+            emptyDescription="No hay trabajadores activos para este período de nómina."
+            className="nmv2-paso-alcance__grid-shell"
+            cardClassName="nmv2-paso-alcance__grid-card"
+          >
+            <ng-template appDataGridCell="incluir" let-fila>
+              <label class="nmv2-paso-alcance__incluir-cell" (click)="$event.stopPropagation()">
+                <input
+                  type="checkbox"
+                  [checked]="trabajadorManualSeleccionado(fila.id)"
+                  (change)="alternarTrabajadorManual(fila.id)"
+                  [attr.aria-label]="'Incluir a ' + fila.nombreCompleto + ' en la nómina'"
+                />
+              </label>
+            </ng-template>
+
+            <ng-template appDataGridCell="nombre" let-fila>
+              <div class="nmv2-paso-alcance__nombre-cell" [title]="fila.nombreCompleto">
+                <span class="nmv2-paso-alcance__nombre-avatar" aria-hidden="true">{{ inicialesEmpleado(fila.nombreCompleto) }}</span>
+                <span class="nmv2-paso-alcance__nombre-text">{{ fila.nombreCompleto }}</span>
+              </div>
+            </ng-template>
+
+            <ng-template appDataGridCell="estadoNomina" let-fila>
+              <span class="nmv2-grid-badge" [ngClass]="claseBadgeEstadoNomina(fila.estadoNomina)">
+                <span class="nmv2-grid-badge__dot" aria-hidden="true"></span>
+                {{ fila.etiquetaEstadoNomina }}
+              </span>
+            </ng-template>
+
+            <ng-template appDataGridCell="contrato" let-fila>
+              <span class="nmv2-grid-badge" [ngClass]="claseBadgeContrato(fila.contrato)">
+                <span class="nmv2-grid-badge__dot" aria-hidden="true"></span>
+                {{ fila.etiquetaContrato }}
+              </span>
+            </ng-template>
+          </app-data-grid>
         </section>
       }
     </main>
@@ -151,7 +241,15 @@
                 <lucide-icon [name]="iconoChecklist(item.status)"></lucide-icon>
               </span>
               <span class="nmv2-paso-alcance__checklist-copy">
-                <strong>{{ item.title }}</strong>
+                <span class="nmv2-paso-alcance__checklist-row-title">
+                  <strong>{{ item.title }}</strong>
+                  <span
+                    class="nmv2-paso-alcance__checklist-severity"
+                    [class]="claseSeveridadChecklistAlcance(item.status)"
+                  >
+                    {{ etiquetaSeveridadChecklistAlcance(item.status) }}
+                  </span>
+                </span>
                 <small>{{ item.description }}</small>
               </span>
             </li>

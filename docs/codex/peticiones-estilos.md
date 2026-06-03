@@ -8,6 +8,170 @@
 > - [`archivo/peticiones-estilos-2026-05.md`](./archivo/peticiones-estilos-2026-05.md) — mayo 2026 y anteriores (288 entradas, rotadas el 2026-06-03 por DOCS-AUDIT-02 / L3).
 
 ---
+## 2026-06-03 - Nómina mensual V2 · Paso Alcance — Refinamiento NOIA + datagrid del sistema (A0-A3)
+
+Sweep transversal del paso Alcance siguiendo el contrato NOIA. Cuatro sub-lotes (`A0`/`A1`/`A2`/`A3`) ejecutados en secuencia para reducir ruido, alinear la selección manual con el patrón de Empleados (data-grid reutilizable) y agregar guías contextuales cuando el alcance queda incompleto.
+
+### Cambios
+
+- **A0 — Aside stretch + título compacto + banda stats inteligente**
+  - `nomina-mensual-v2-paso-alcance.component.css`: `.nmv2-paso-alcance__body { align-items: stretch }` (antes `start`) — el `<aside>` ahora llega al final del contenido, mismo fix que aplicamos en Empleados.
+  - `nomina-mensual-v2-paso-alcance.component.html`: `<h2>` cambia de `"¿Qué trabajadores quieres preparar para esta nómina?"` (8 palabras, competía con la banda de stats por ancho) a **`"Define el alcance de la nómina"`** (6 palabras, NOIA operativo).
+  - `nomina-mensual-v2-paso-alcance.component.ts` (`metricasAlcance`): la banda de 4 stats ahora se filtra dinámicamente. Antes mostraba siempre `Encontrados / Incluidos / Excluidos / Bloqueados` con `0`. Ahora:
+    - **Sin tipo elegido (`sinConfigurar`)**: solo `Encontrados`.
+    - **Con tipo elegido**: `Encontrados + Incluidos + Excluidos`.
+    - **Bloqueados**: solo aparece si `> 0` (deja de mostrar `0` que parecía falso positivo).
+
+- **A1 — Lista de 3 tipos NOIA puro**
+  - `nomina-mensual-v2-paso-alcance.component.html`: en `__row-mark` se elimina el texto `"Elegir"` / `"Seleccionado"` (redundante con el ícono check y el highlight del row activo). Estado activo muestra solo el ícono `check`; estado disponible muestra `chevron-right`; estado locked sigue mostrando `lock + No disponible` (estado informativo válido).
+  - `nomina-mensual-v2-paso-alcance.component.css`: `__row` con `padding: 8px 12px` (antes `10px 12px`, −20% altura). `__row-mark` ahora con color `#94a3b8` (slate-400, antes `#475569`) y `lucide-icon` de `14×14` (antes `12×12`) para que el ícono lea como mark visual sin texto. Estado activo: `__row-mark` cambia a `#047857` (verde afirmativo) en lugar de `#1d4ed8` (azul de la fila activa) para no duplicar el código de color.
+
+- **A2 — Selección manual con `app-data-grid` (reutilización del sistema)**
+  - **Nuevo presenter**: `presenters/nomina-alcance-grid.presenter.ts` exporta `COLUMNAS_GRILLA_ALCANCE_MANUAL` (7 columnas: `incluir` ★, `nombre`, `rut`, `cargo`, `centroCosto`, `estadoNomina`, `contrato`) y `crearFiltrosGrillaAlcanceManual(filas)` (búsqueda por tokens + 3 selects sobrios: centro de costo / estado nómina / contrato).
+  - **Componente**: importa `DataGridComponent` y `DataGridCellDirective` del `shared/components/ui/data-grid`. Se eliminan los signals `busquedaManual` y `filasSeleccionManual` (ya no se necesitan: el grid maneja su propio filtrado). Se reutiliza el modelo existente `FilaEmpleadoNomina` (mismo del paso Empleados — un solo origen de verdad).
+  - **HTML**: el `@if (tipoAlcanceSeleccionado() === 'seleccionManual')` reemplaza la `<ul class="nmv2-paso-alcance__manual">` + input de búsqueda por un `<app-data-grid>` completo con 4 templates de celda custom (`incluir` con checkbox + `nombre` con avatar + `estadoNomina` con badge + `contrato` con badge). Persistencia clave `nmv2-paso-alcance-manual:{periodoYm}` (filtros del usuario se guardan por período).
+  - **Por qué**: cuando hay >100 trabajadores, la lista vertical escalaba mal (overflow vertical, sin filtros laterales). El data-grid añade búsqueda por tokens, filtros sobrios, ordenamiento, paginación y empty states diferenciados — todo gratis del componente del sistema, sin código local nuevo.
+
+- **A3 — Sidebar operativo + alert-banner inline**
+  - **Alert-banner inline contextual**: nuevo `@if (alcanceVacioRequiereSeleccion())` dentro de `__main` que muestra `alert-banner alert-banner--warning` cuando hay tipo elegido (`grupo` o `seleccionManual`) pero `trabajadoresIncluidos === 0`. Mensaje viene del presenter (`obtenerDescripcionAlcanceVacia(tipo)` ya existente). Antes esta señal solo se notaba en la banda de stats con un `0` ambiguo.
+  - **Pill de severidad en checklist**: cada item del sidebar `Lista para continuar` ahora muestra una pill con `Listo` / `Revisar` / `Bloqueo` / `Pendiente` (mismo patrón visual que Empleados con `--correcto / --advertencia / --bloqueante / --neutro`). Los helpers `etiquetaSeveridadChecklistAlcance(status)` y `claseSeveridadChecklistAlcance(status)` son locales al componente (mapean `ChecklistStatus → label/clase`).
+  - **CSS**: nuevas reglas `.nmv2-paso-alcance__checklist-row-title` (flex space-between para acomodar título + pill) y `.nmv2-paso-alcance__checklist-severity--*` (4 modificadores).
+
+### NO se tocó
+
+- Modelo `TipoAlcanceNomina` ni discriminant (`'contrato'` sigue válido para fase futura).
+- Presenter `nomina-alcance.presenter.ts`: sin cambios (las descripciones y reglas ya cumplían NOIA tras la sesión anterior).
+- Orquestador, services productivos, motor, modal de trazabilidad.
+- CSS global, `angular.json`, `postcss.config.json`, `src/styles/*`.
+- Lógica de avance (`ejecutarAccionPrincipal`, `guardarResultadoYAvanzar`): el contrato sigue igual.
+
+### Hallazgo declarado: nóminas múltiples (NOM-MULTI-NOMINA-01 — propuesta futura)
+
+Durante el sweep surgió la pregunta de cómo generar **múltiples nóminas del mismo período** (ej. nómina principal + complementaria por bono retroactivo + nómina paralela de honorarios). El paso Alcance **no es el lugar correcto** para resolver esto: el modelo actual asume `1 preparación → 1 alcance → 1 resultado` en `orquestador.resultadoAlcance`. La propuesta queda registrada en `orquestador/estado-fases/nomina-mensual.md` como **NOM-MULTI-NOMINA-01 (Propuesta)** para evaluarse cuando se necesite. Tres escenarios diferenciados:
+
+1. **Nómina complementaria** del mismo período (bono retroactivo, finiquito parcial): nuevo `tipoCalculo` sobre la preparación cerrada — no es nuevo alcance.
+2. **Reproceso** del mismo alcance: ya cubierto con `seleccionManual` + volver al paso Empleados.
+3. **Nóminas paralelas** del mismo período (planta/honorarios/obreros): hoy se modela con `grupo` (centros de costo) — no requiere nóminas separadas.
+
+### Validación
+
+- `ReadLints` sobre los 4 archivos tocados + nuevo presenter — **sin errores**.
+- `npx ng test --watch=false --include="**/nomina-mensual-v2/**/nomina-mensual-v2-paso-alcance.component.spec.ts"` → **11/11 ok** (6 previos + 5 nuevos: `metricasAlcance` sin tipo, `metricasAlcance` con tipo, `etiquetaSeveridadChecklistAlcance`, `claseSeveridadChecklistAlcance`, `alcanceVacioRequiereSeleccion`).
+- `npx ng test --watch=false --include="**/nomina-mensual-v2/**/*.spec.ts"` → **85/85 ok** (17 specs en V2). Sin regresiones.
+- `npx ng build --configuration=development` → **verde, sin warnings de budget**. Bundle lazy `nomina-mensual-v2-page` quedó en 684.05 kB (alta ~6 kB respecto al estado anterior por la importación del `DataGridComponent`; aceptable porque el chunk del data-grid se reutiliza con el paso Empleados, no es código nuevo).
+
+---
+
+## 2026-06-03 - Nómina mensual V2 · Paso Alcance — Panel de incidencias contextual (A6)
+
+Extensión del sweep `NOM-V2-PASO-ALCANCE-REFINAMIENTO-01`. Cuando el usuario elige **`empresaCompleta`** o **`grupo`** y el alcance resultante incluye trabajadores con pendientes (contrato vencido, datos bancarios incompletos, AFP/Salud sin asignar, jornada/centro de costo sin definir, documentación incompleta o estado de nómina observado), se despliega inline un **datagrid del sistema** con esos trabajadores y sus badges de problema. La idea es que el RRHH **vea exactamente quién requiere revisión** antes de avanzar al paso Empleados, en lugar de descubrirlo en el siguiente paso.
+
+### Cambios
+
+- **`presenters/nomina-alcance-grid.presenter.ts`** (extendido):
+  - Importa `centroCostoAsignado`, `documentacionIncompleta`, `jornadaDefinida` desde `nomina-empleados-grid.presenter.ts` (reuso, no duplicación).
+  - Nuevo helper **`filaTieneIncidenciaAlcance(fila): boolean`**: detecta cualquier dimensión que rompa el alcance (7 criterios — mismos del presenter de validación de empleados).
+  - Nuevo helper **`obtenerTrabajadoresConIncidencias(filas, idsIncluidos): FilaEmpleadoNomina[]`**: filtra del conjunto las filas que están incluidas en el alcance Y tienen al menos una incidencia.
+  - Nueva columna export **`COLUMNAS_GRILLA_ALCANCE_INCIDENCIAS`** (6 columnas: nombre+avatar, RUT, centro de costo, estado nómina con badge, contrato con badge, datos bancarios con badge). Sin checkbox de "Incluir" (estos trabajadores ya están incluidos: el panel es informativo, no de selección).
+
+- **`nomina-mensual-v2-paso-alcance.component.ts`**:
+  - Nuevos computeds: `trabajadoresConIncidencias()` (lista filtrada), `mostrarPanelIncidencias()` (true solo si tipo es `empresaCompleta`/`grupo` y hay ≥1 incidencia), `clavePersistenciaGrillaIncidencias()` (clave por período + tipo de alcance — los filtros que el usuario abra se guardan por contexto).
+  - Importa `COLUMNAS_GRILLA_ALCANCE_INCIDENCIAS`, `obtenerTrabajadoresConIncidencias` y `claseBadgeDatosBancarios`.
+
+- **`nomina-mensual-v2-paso-alcance.component.html`**:
+  - Nuevo `@if (mostrarPanelIncidencias())` después del panel de grupo (y antes del de selección manual). Sección con título `"Trabajadores con pendientes en el alcance"` + contador `X de Y incluidos tiene observaciones. Revísalos antes de avanzar al paso Empleados.` + `<app-data-grid>` con `[filters]="[]"` (sin filtros — la lista ya es acotada), 4 templates de celda (`nombre`, `estadoNomina`, `contrato`, `datosBancarios`).
+  - **No aparece** para `seleccionManual` porque la grilla manual ya muestra los badges en cada fila y permite revisar al elegir.
+
+- **`nomina-mensual-v2-paso-alcance.component.css`**:
+  - Nuevas reglas `.nmv2-paso-alcance__panel--incidencias` (mismo patrón que `--grilla` pero con `border-color: #fcd34d` y `background: #fffbeb` — acento ámbar suave que comunica "revisar" sin gritar). Header con `color: #92400e` (titular) y `color: #78350f` (descripción) — ámbar más oscuro para WCAG AA contra fondo ámbar claro.
+
+### NO se tocó
+
+- Modelo de validación: `obtenerResultadoValidacionEmpleados` y `filtrarEmpleadosConPendientes` siguen igual; el helper de incidencias del alcance reusa los predicados base.
+- Presenter `nomina-alcance.presenter.ts`: sin cambios.
+- Paso Empleados, orquestador, services productivos, motor, BD/RPC/RLS.
+
+### Decisiones rectoras
+
+- **Por qué no usar `app-message-box`**: el dataset puede tener decenas de trabajadores. Un message-box con bullet list escala mal y no permite filtrar/ordenar. El `app-data-grid` es el patrón correcto.
+- **Por qué no hay filtros en este datagrid**: la lista ya es acotada (solo incidencias) y agregar filtros invitaría a ocultar problemas. El usuario debe **ver todos** los pendientes y decidir cómo proceder (volver a Parámetros o avanzar a Empleados para corregirlos uno por uno).
+- **Por qué no mostrarlo en `seleccionManual`**: en ese modo la grilla principal ya muestra los badges de cada trabajador en sus columnas. Duplicar el panel sería redundante y confuso.
+- **Por qué acento ámbar y no rojo**: el panel comunica "revisar", no "bloqueo crítico". El usuario aún puede avanzar (con `app-message-box` de revisión) y resolver en el paso Empleados. Rojo se reservó para `alert-banner--error` del header (errores de carga).
+
+### Validación
+
+- `ReadLints` sobre los 3 archivos tocados (presenter + component.ts + component.html + component.css) — **sin errores**.
+- `npx ng test --watch=false --include="**/nomina-mensual-v2/**/nomina-mensual-v2-paso-alcance.component.spec.ts"` → **15/15 ok** (11 previos + 4 nuevos: `filaTieneIncidenciaAlcance` por dimensión, `obtenerTrabajadoresConIncidencias` filtra solo incluidos, `mostrarPanelIncidencias` false en manual, `mostrarPanelIncidencias` true en empresaCompleta).
+- `npx ng test --watch=false --include="**/nomina-mensual-v2/**/*.spec.ts"` → **89/89 ok** (17 specs). Sin regresiones.
+- `npx ng build --configuration=development` → **verde, sin warnings de budget**. Bundle lazy `nomina-mensual-v2-page` quedó en 696.73 kB (alta ~13 kB respecto a A5 por las nuevas columnas + templates; aceptable, dentro del budget).
+
+---
+
+## 2026-06-03 - Nómina mensual V2 · Paso Alcance — Omitir opción "Por contrato"
+
+Decisión rectora: la opción **"Por contrato"** (estado `preparado` + etiqueta "Próximamente") se omite del listado visible del paso Alcance. La fase para exponer el tipo de contrato desde Personal queda planificada aparte; mientras tanto, mostrar la opción inerte aporta ruido visual y confunde al usuario.
+
+### Cambios
+
+- **`presenters/nomina-alcance.presenter.ts`**: eliminado el bloque `{ id: 'contrato', titulo: 'Por contrato', descripcion: '...', icono: 'file-text', estado: 'preparado', etiqueta: 'Próximamente' }` del array `obtenerOpcionesAlcanceNomina()`. Quedan **3 opciones**: `empresaCompleta`, `grupo`, `seleccionManual`.
+- **Branches defensivos preservados**: los `case 'contrato'` en `calcularIdsTrabajadoresIncluidos`, `obtenerResultadoAlcance` (estado `sinConfigurar`), `obtenerMensajeAlcanceBloqueado` y `obtenerDescripcionResumenAlcance` se **mantienen intactos** para que el tipo `TipoAlcanceNomina = 'contrato'` siga siendo válido en el modelo cuando la fase regrese. No se borra el discriminant; solo se oculta la opción de UI.
+- **`containers/.../components/nomina-mensual-v2-paso-alcance/nomina-mensual-v2-paso-alcance.component.spec.ts`**:
+  - Test renombrado `expone las cuatro opciones de alcance` → `expone las tres opciones de alcance del presenter (sin "contrato", se hará en otra fase)`. Espera ahora `['empresaCompleta', 'grupo', 'seleccionManual']` y `toHaveLength(3)`.
+  - Test `seleccionarTipoAlcance ignora opciones deshabilitadas o ya preparadas`: el caso de `deshabilitado` ahora usa `'grupo'` en lugar de `'contrato'` (que ya no aparece en `opcionesAlcance`). La validación de la guard sigue siendo la misma (estado prevalece sobre id).
+- **HTML del paso-alcance**: sin cambios manuales — el `@for (opcion of opcionesAlcance; track opcion.id)` deja de renderizar la opción automáticamente al desaparecer del array.
+
+### NO se tocó
+
+- Modelo `TipoAlcanceNomina` (sigue siendo `'empresaCompleta' | 'grupo' | 'contrato' | 'seleccionManual'`). El tipo se preserva para que la fase futura pueda reactivar la opción sin migración de datos.
+- Orquestador, services productivos, motor, modal de trazabilidad, copy de otros pasos.
+- Spec del presenter (`nomina-alcance.presenter.spec.ts`): no tenía aserciones específicas de `'contrato'`.
+
+### Validación
+
+- `ReadLints` sobre presenter + spec — sin errores.
+- `npx ng test --watch=false --include="**/nomina-mensual-v2/**/nomina-mensual-v2-paso-alcance.component.spec.ts"` → **6/6 ok**.
+- `npx ng test --watch=false --include="**/nomina-mensual-v2/**/nomina-alcance.presenter.spec.ts"` → **3/3 ok** (branches defensivos no rotos).
+- HMR de `npm start` activo: recompiló `nomina-mensual-v2-page` (699.52 kB, −0.25 kB vs anterior) sin errores ni warnings.
+
+---
+
+## 2026-06-03 - Nómina mensual V2 · Paso Empleados — Quitar panel de Trazabilidad + aside hasta el final
+
+Continuación inmediata del cambio anterior ("Quitar 'Registro del paso'"). Decisión rectora: el **panel completo de trazabilidad** ya no aporta valor en el sidebar de Empleados; el contexto ya está cubierto por la cabecera + checklist + leyenda de filtrado, y los detalles de auditoría siguen accesibles desde el modal de trazabilidad global (no afectado).
+
+### Cambios
+
+- **`components/nomina-mensual-v2-paso-empleados/nomina-mensual-v2-paso-empleados.component.html`**: eliminada la línea `<app-nomina-mensual-v2-trazabilidad-paso paso="employees" variant="panel" />` del bloque `Lista para continuar` del sidebar. El bloque ahora arranca con la `<header>` (`Lista para continuar` + lead) seguido directo del `<ul class="...checklist">`.
+- **`components/nomina-mensual-v2-paso-empleados/nomina-mensual-v2-paso-empleados.component.ts`**: removido el `import` de `NominaMensualV2TrazabilidadPasoComponent` y su referencia en el array `imports` del `@Component`.
+- **`components/nomina-mensual-v2-paso-empleados/nomina-mensual-v2-paso-empleados.component.css`**: `nmv2-paso-empleados__body` cambia de `align-items: start` → `align-items: stretch` para que el `aside` ocupe la **misma altura que el main** (grilla + toolbar), llegando al final del contenido en lugar de quedar acortado a su altura natural.
+- **Componente eliminado**: `components/nomina-mensual-v2-trazabilidad-paso/` (carpeta completa borrada — `.html` + `.ts`). Era usado **solo** desde el paso Empleados con `variant="panel"`; la variante `inline` no se usaba en ningún sitio (verificado con grep sobre `src/`).
+- **`nomina-mensual-v2-container.css`**: borradas **12 reglas / ~87 líneas** del cluster `.nmv2-trazabilidad-panel*` y `.nmv2-trazabilidad-paso*` (`__head h3`, `__meta`, `__meta div/dt/dd`, `__action`, `__copy`, `__copy em`, `__icon`, `--compact`). Las reglas `.nmv2-trazabilidad-drawer-*` se conservan intactas (corresponden al modal global de trazabilidad, sin relación).
+- **NO se tocó**: orquestador, services, presenters, motor, modal global de trazabilidad (`nomina-mensual-v2-trazabilidad-modal`), specs existentes ni copy de otros pasos.
+
+### Validación
+
+- `ReadLints` sobre los 4 archivos editados — sin errores.
+- Grep en `src/` de `NominaMensualV2TrazabilidadPasoComponent`, `app-nomina-mensual-v2-trazabilidad-paso`, `nmv2-trazabilidad-panel`, `nmv2-trazabilidad-paso` → **0 matches** residuales.
+- `npm start` con HMR activo: recompiló `nomina-mensual-v2-page` (699 kB) en 0,9–2 s, sin errores ni warnings nuevos. Component update enviado al cliente.
+
+### Notas para limpieza futura (opcional)
+
+El orquestador (`nomina-mensual-v2-orquestador.port.ts`) sigue exponiendo `auditoriaPorPaso()`, `eventosTrazabilidad()` y `abrirTrazabilidadPaso()`. Esos métodos siguen vivos porque los consume el modal global de trazabilidad (`nomina-mensual-v2-trazabilidad-modal`) y el stepper. No se tocan en este lote.
+
+---
+
+## 2026-06-03 - Nómina mensual V2 · Paso Empleados — Quitar "Registro del paso"
+
+Cambio NOIA local del panel de trazabilidad del paso Empleados (sidebar "Lista para continuar"). El label estático **"Registro del paso"** es redundante porque el panel ya vive dentro del sidebar del paso Empleados y muestra el título de la acción dinámica debajo (`tituloRegistro()`).
+
+- **Archivo HTML**: `components/nomina-mensual-v2-trazabilidad-paso/nomina-mensual-v2-trazabilidad-paso.component.html` — en la rama `variant === 'panel'` se eliminó el `<h3>Registro del paso</h3>` y se promovió el `<p>{{ tituloRegistro() }}</p>` a `<h3>{{ tituloRegistro() }}</h3>` para preservar jerarquía semántica + tamaño (12 px / 700, el mismo que tenía el label).
+- **Archivo CSS**: `nomina-mensual-v2-container.css` — eliminada la regla muerta `.nmv2-trazabilidad-panel__head p { margin: 4px 0 0; font-size: 11px; color: #64748b; }`. La regla `.nmv2-trazabilidad-panel__head h3` se conserva intacta.
+- **Scope verificado**: el componente `app-nomina-mensual-v2-trazabilidad-paso` solo se usa con `variant="panel"` en un único punto del repo (paso Empleados, `nomina-mensual-v2-paso-empleados.component.html` línea 159). El resto de usos pasan por `variant="inline"` (default), que no tiene cabecera y no se ve afectado.
+- **NO se tocó**: presenter, services, orquestador, motor, copy de otros pasos, estilos globales. Tampoco se tocó la deuda L5.3 ni el resumen-pendientes.
+- **Validación**: `ReadLints` sobre HTML + CSS sin errores. Grep `"Registro del paso"` en `src/` → 0 matches residuales (no hay specs que dependan del literal).
+
+---
+
 ## 2026-06-03 - DOCS-AUDIT-02 · L0-L7 ejecutado (rotación docs/codex)
 
 Plan iterativo declarado en `docs/codex/auditorias/auditoria-docs-codex-2026-06-03.md`. **Sin cambios visuales en la app** (solo reorganización documental). Se registra aquí únicamente porque la auditoría toca políticas operativas de documentación que afectan flujos de trabajo.
