@@ -1,3 +1,23 @@
+## 2026-06-02 - Nómina mensual V2 · L3 — Paso Alcance NOIA
+
+Lote 3 del plan iterativo (`auditoria-nomina-v2-2026-06.md`). Sin tocar presenter, services, orquestador, ni la lógica de cálculo del alcance.
+
+- **Hallazgos resueltos**: H-A1 (cards de tipo de alcance → lista densa), H-A2 (KPI strip → banda compacta en header), H-A3 (estados disabled coherentes con el patrón `--prm-field-locked-*` de Parámetros), H-A4 (panel inline de centros / selección manual sin envolver en card extra), H-A5 (sidebar reducido a checklist + volver, sin duplicar conteos del header).
+- **Cambios en `nomina-mensual-v2-paso-alcance.component.html`** (reescritura completa, mismo bind/lógica):
+  - **Header local del paso** (`nmv2-paso-alcance__head`) con eyebrow `Paso 2 · Alcance · <descripción>` + título operativo + banda horizontal de 4 conteos (`Encontrados / Incluidos / Excluidos / Bloqueados`), bordes neutros 1 px y sin badges decorativos.
+  - **Lista densa de tipos de alcance** (`nmv2-paso-alcance__list` con `<li><button class="nmv2-paso-alcance__row">`): icono pequeño (28 px badge), título + descripción, etiqueta `Próximamente` cuando aplica, y acción contextual (`Seleccionado`/`Elegir`/`No disponible`). Estados `disponible/preparado/deshabilitado` preservados; los no disponibles van con `[disabled]` + `[aria-disabled]` y se ven como los `--prm-field-locked-*` de Parámetros (fondo `#f8fafc`, borde implícito y color `#94a3b8`).
+  - **Panel inline** (`nmv2-paso-alcance__panel`) que aparece solo cuando hay un alcance que requiere detalle: chips de centros de costo (`__chip` activa con `#eff6ff / #93c5fd / #1d4ed8`) o búsqueda + lista de trabajadores (`__manual`, max-height 280 px con scroll interno, sin card).
+  - **Sidebar reducido** (`nmv2-paso-alcance__side`): bloque `Lista para continuar` (checklist contextual con tonalidades success/warning/error/pending) + bloque `Volver a parámetros` con link `Ir a Parámetros`. Cero duplicación con los conteos del header.
+  - **Modal y orquestador**: `modalAvanceAlcance` sigue siendo gestionado por `nomina-mensual-v2-overlays`; el paso solo dispara `ejecutarAccionPrincipal()`.
+- **Cambios en `nomina-mensual-v2-paso-alcance.component.ts`**: ninguno. La lógica de selección, validación y avance se reutiliza tal cual (`tipoAlcanceSeleccionado`, `centrosCostoSeleccionados`, `idsTrabajadoresManuales`, `resultadoAlcanceVista`, `checklistAlcance`, `metricasAlcance`, `cargarTrabajadoresPeriodo`).
+- **Cambios en `nomina-mensual-v2-container.css`**:
+  - Nuevo bloque local (~380 líneas) con todas las clases `.nmv2-paso-alcance__*`: head, eyebrow, head-row, title, stats (`--blue/--green/--gray/--red`), body, main, list, row (`--activa/--locked`), row-icon/copy/tag/mark, panel, panel-head, chips, chip (`--activo`), search, manual, manual-row/avatar/copy/state, side, side-block, side-link, checklist, checklist-item (`.status-success/.status-warning/.status-error/.status-pending`), checklist-icon/copy. Bordes 1 px neutros, radios 4–6 px (chips 999 px), sin sombras, sin gradientes, sin transformaciones.
+  - El bloque queda agrupado junto a L2 y el placeholder de L0, listo para migrar a CSS local del componente en L5.
+  - **No** se eliminó el CSS legacy `.alcance-grid`, `.alcance-option`, `.alcance-option__*`, `.alcance-context-card`, `.kpi-strip`, etc. Quedan como código muerto; limpieza profunda en L5.
+- **No tocado**: presenter de alcance, service de carga de empleados, orquestador, modelos, motor productivo, estilos globales, `angular.json`, otros pasos, mantenedores.
+- **Validación**: `npx ng build --configuration=development` verde (19 s). 2 warnings preexistentes de `line-clamp` (no introducidos por este lote). `npx vitest run src/app/features/nomina-mensual-v2/{presenters,rules,mappers,containers}`: 48/48 verdes; los 3 archivos en rojo fallan por `describe is not defined` (preexistente, sin imports de vitest, no tocados en L3).
+- **Pendiente próximo lote**: L4 — Paso Empleados NOIA (drawer modal-like → side-panel sin sombras, métricas en banda, exportar como acción secundaria, checklist coherente con L3).
+
 ## 2026-06-02 - Nómina mensual V2 · L2 — Paso Parámetros NOIA
 
 Lote 2 del plan iterativo (`auditoria-nomina-v2-2026-06.md`). Rediseño visual del paso 1 sin tocar servicios, orquestador, mappers ni persistencia.
