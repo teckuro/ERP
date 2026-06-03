@@ -25,4 +25,4 @@ Cuando una fase cierra se **mueve** (no se copia) a la carpeta histórica corres
 
 Los assets activos de parámetros viven en [`../assets/parametros-tabs/`](../assets/parametros-tabs/).
 
-Detalle de la poda: [`../orquestador/auditoria-docs-2026-06.md`](../orquestador/auditoria-docs-2026-06.md).
+Detalle de la poda: [`../auditorias/auditoria-docs-2026-06.md`](../auditorias/auditoria-docs-2026-06.md).

@@ -45,7 +45,7 @@ Criterios operativos de pantalla (estado → pendientes → acción, qué evitar
 | **Haberes / descuentos** | Asignaciones recurrentes por trabajador (en evolución); no sustituyen conceptos ni liquidaciones. |
 | **Conceptos de remuneración** | **Fase fuerte en curso**; Fase 9 **documental cerrada** (diagnóstico + contrato funcional). Catálogo maestro para haberes, descuentos, aportes y liquidaciones. Entrada: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md). |
 | **Movimientos variables** | Haberes/descuentos **puntuales** por trabajador y período (`YYYY-MM`). Contrato **9.4A**, modelo **9.4B**, persistencia **9.4C**, service **9.4D** y UI carga manual **9.4E** (`/remuneraciones/movimientos-variables`) en [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md); RLS y proceso mensual en fases posteriores. |
-| **Proceso mensual / motor / liquidaciones** | **Proceso mensual:** prevalidaciones por `YYYY-MM` (**9.5A–9.5B**, sin motor) en [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md). **Motor / liquidaciones:** futuro checklist, cálculo, cierre y congelado de resultados. |
+| **Proceso mensual / motor / liquidaciones** | **Proceso mensual:** prevalidaciones por `YYYY-MM` (**9.5A–9.5B**, sin motor) en [`../modulos/nomina-mensual/preparar-nomina/README.md`](../modulos/nomina-mensual/preparar-nomina/README.md). **Motor / liquidaciones:** futuro checklist, cálculo, cierre y congelado de resultados. |
 | **Previred / LRE** | Fases posteriores con trazabilidad y validaciones. |
 
 ## 6. Estado resumido — Empleados
@@ -76,7 +76,7 @@ Uso actual acotado a **asignaciones recurrentes** por trabajador, con período g
 
 - **Conceptos** — documentación de gobernanza (Fase 9) **cerrada**; sigue prioridad alta **cerrar implementación** (permisos, pruebas, reglas motor en UI) antes de motor fuerte.
 - **Movimientos variables mensuales** — 9.4A documental + 9.4B modelo TS/reglas + 9.4C SQL/repositorio + 9.4D service fino + 9.4E UI carga manual: [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md).
-- Proceso mensual tipo checklist (parámetros → aptos → recurrentes → variables → cálculo → cierre); en Angular hay **prevalidaciones** por periodo sin liquidación ([`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md)).
+- Proceso mensual tipo checklist (parámetros → aptos → recurrentes → variables → cálculo → cierre); en Angular hay **prevalidaciones** por periodo sin liquidación ([`../modulos/nomina-mensual/preparar-nomina/README.md`](../modulos/nomina-mensual/preparar-nomina/README.md)).
 - Motor de cálculo y **liquidaciones congeladas** (resultado, no formulario principal).
 - Previred y LRE con trazabilidad y versiones.
 
@@ -151,4 +151,4 @@ Hasta cerrar las fases previas del tablero y el contrato correspondiente:
 | Python carga mensual | [`../modulos/parametros/python-carga-mensual.md`](../modulos/parametros/python-carga-mensual.md) |
 | Conceptos (módulo) | [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md), [`../modulos/conceptos-remuneracion/contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md), [`../modulos/conceptos-remuneracion/diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md) |
 | Haberes / descuentos | [`../modulos/haberes-descuentos/README.md`](../modulos/haberes-descuentos/README.md) |
-| Nómina mensual (visión) | [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md) |
+| Nómina mensual (visión) | [`../modulos/nomina-mensual/preparar-nomina/README.md`](../modulos/nomina-mensual/preparar-nomina/README.md) |

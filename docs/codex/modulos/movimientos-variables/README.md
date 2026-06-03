@@ -43,7 +43,7 @@ Todo movimiento pertenece a un periodo `YYYY-MM`. No hay movimiento sin periodo.
 
 ## Relacion con Proceso mensual
 
-**9.5A:** la pantalla Proceso mensual (`ProcesoMensualService`) llama `MovimientosVariablesService.listarPorPeriodo` para prevalidar conteos por estado (bloqueos/advertencias; sin motor). Contrato: [`../nomina-mensual/prevalidaciones-9-5A.md`](../nomina-mensual/prevalidaciones-9-5A.md).
+**9.5A:** la pantalla Proceso mensual (`ProcesoMensualService`) llama `MovimientosVariablesService.listarPorPeriodo` para prevalidar conteos por estado (bloqueos/advertencias; sin motor). Contrato: [`../nomina-mensual/prevalidaciones/prevalidaciones-9-5A.md`](../nomina-mensual/prevalidaciones/prevalidaciones-9-5A.md).
 
 Entrada futura del calculo: solo movimientos **VALIDADO** (o equivalente aprobado). No entran BORRADOR, OBSERVADO, ANULADO ni bloqueados por otra razon; **ANULADO** se ignora en reglas de bloqueo de prevalidacion.
 

@@ -1,5 +1,27 @@
 # Mapa de documentación (`docs/codex`)
 
+## 0. Convenciones de naming (declaradas en DOCS-AUDIT-02 / L7, 2026-06-03)
+
+| Tipo de documento | Convención | Ejemplo |
+|-------------------|------------|---------|
+| README de carpeta | `README.md` (siempre) | `modulos/parametros/README.md` |
+| Contrato canónico por módulo | `contrato-general.md` (o con prefijo de módulo) | `modulos/auth/contrato-general.md` |
+| Fase cerrada con ID | `<ID-en-kebab-case-minuscula>.md` | `nom-mensual-flow-unificado-03.md` |
+| Auditoría con snapshot puntual | `auditoria-<tema>-YYYY-MM[-DD].md` en `auditorias/` o `modulos/<m>/` | `auditoria-docs-codex-2026-06-03.md` |
+| Documento por iteración / fase de un mismo eje | `<base>-<version>.md` (ej. `prevalidaciones-9-5A.md`, `motor-calculo-persistencia-03A.md`) | `prevalidaciones/prevalidaciones-9-5A.md` |
+| Documentos transversales del módulo (matriz, contrato, README) | viven en la raíz del módulo, no en subcarpetas | `modulos/nomina-mensual/matriz-bloqueos-periodo.md` |
+| Subcarpeta temática dentro de un módulo | sustantivo en singular, kebab-case | `nomina-mensual/motor-calculo/`, `nomina-mensual/modales-periodo/` |
+| Bitácoras cronológicas (mes/iteración) | nombre fijo + rotación a `archivo/<nombre>-YYYY-MM.md` cuando crece | `peticiones-estilos.md` ↔ `archivo/peticiones-estilos-2026-05.md` |
+| Estado de fases por dominio | `orquestador/estado-fases/<dominio>.md` | `orquestador/estado-fases/empleados.md` |
+
+### Reglas generales
+
+- **Kebab-case** en minúscula (`mi-archivo.md`); evitar `MI_ARCHIVO.MD` o `miArchivo.md` salvo IDs canónicos (`AUTH-BASE-01.md` se acepta como nombre de fase histórica).
+- **Sin acentos ni eñes** en nombres de archivo (los acentos viven en el contenido, no en filenames).
+- **Sin fechas** en nombres de fase salvo que sean snapshots con utilidad histórica (`auditoria-*-YYYY-MM-DD.md`).
+- **No mezclar** documentos sueltos con subcarpetas; si una carpeta tiene >10 .md, subagrupar (criterio aplicado en L5 a `nomina-mensual/`).
+- **Auditorías**: técnicas/cross-módulo en `auditorias/`; UX por módulo pueden vivir en `modulos/<m>/auditoria-*.md`.
+
 ## 1. Globales (siempre relevantes)
 
 | Documento                                                                          | Rol                                                                                    |
@@ -39,7 +61,7 @@
 | Conceptos remuneración            | [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md) — además [`diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md), [`decisiones-operativas.md`](../modulos/conceptos-remuneracion/decisiones-operativas.md), [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md), [`contrato-general.md`](../modulos/conceptos-remuneracion/contrato-general.md)                                                                                                                                                                                                                               |
 | Haberes y descuentos              | [`../modulos/haberes-descuentos/README.md`](../modulos/haberes-descuentos/README.md) — rutas oficiales bajo `/remuneraciones/*` (Fase 9.3B.1 en [`estado-fases.md`](./estado-fases.md))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Movimientos variables (mensuales) | [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md) — contrato 9.4A; modelo TS/reglas 9.4B en [`modelo-tecnico-9-4B.md`](../modulos/movimientos-variables/modelo-tecnico-9-4B.md); persistencia 9.4C en [`persistencia-9-4C.md`](../modulos/movimientos-variables/persistencia-9-4C.md); service 9.4D en [`service-9-4D.md`](../modulos/movimientos-variables/service-9-4D.md); UI carga manual 9.4E en [`ui-9-4E.md`](../modulos/movimientos-variables/ui-9-4E.md); endurecimiento CHILE-FIX-01 en [`hardening-chile-fix-01.md`](../modulos/movimientos-variables/hardening-chile-fix-01.md); tablero [`estado-fases.md`](./estado-fases.md) |
-| Nómina mensual / proceso mensual  | [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md) — [`contrato-general.md`](../modulos/nomina-mensual/contrato-general.md), [`prevalidaciones-9-5A.md`](../modulos/nomina-mensual/prevalidaciones-9-5A.md), [`prevalidaciones-9-5B.md`](../modulos/nomina-mensual/prevalidaciones-9-5B.md)                                                                                                                                                                                                                                                                                                                                                                |
+| Nómina mensual / proceso mensual  | [`../modulos/nomina-mensual/preparar-nomina/README.md`](../modulos/nomina-mensual/preparar-nomina/README.md) — [`contrato-general.md`](../modulos/nomina-mensual/contrato-general.md), [`prevalidaciones-9-5A.md`](../modulos/nomina-mensual/prevalidaciones/prevalidaciones-9-5A.md), [`prevalidaciones-9-5B.md`](../modulos/nomina-mensual/prevalidaciones/prevalidaciones-9-5B.md)                                                                                                                                                                                                                                                                                                                                                                |
 | Remuneraciones (movimientos)      | [`../modulos/remuneraciones/README.md`](../modulos/remuneraciones/README.md) — [`movimientos-de-remuneracion.md`](../modulos/remuneraciones/movimientos-de-remuneracion.md), [`movimientos-remuneracion-simple.md`](../modulos/remuneraciones/movimientos-remuneracion-simple.md)                                                                                                                                                                                                                                                                                                                                                                                                      |
 
 ## 3. Vigentes en `temas/` (transversal o no migrado)
@@ -109,4 +131,4 @@ Los siguientes nombres en **`docs/codex/temas/*.md`** (y el SQL listado) son **r
 | [`../ux-comercial/copywriting-operativo.md`](../ux-comercial/copywriting-operativo.md) | Lenguaje visible recomendado |
 | [`../ux-comercial/checklist-cursor-ux.md`](../ux-comercial/checklist-cursor-ux.md) | Checklist antes de cerrar fase UX |
 | [`../fases/ux-comercial/UX-COMERCIAL-01.md`](../fases/ux-comercial/UX-COMERCIAL-01.md) | Fase canonica siguiente |
-| [`../prompts-cursor/CURSOR-UX-COMERCIAL-01.md`](../prompts-cursor/CURSOR-UX-COMERCIAL-01.md) | Prompt de ejecucion para Cursor |
+| [`../prompts/CURSOR-UX-COMERCIAL-01.md`](../prompts/CURSOR-UX-COMERCIAL-01.md) | Prompt de ejecucion para Cursor |

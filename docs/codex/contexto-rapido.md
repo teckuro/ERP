@@ -27,7 +27,7 @@ Para nuevas fases:
 4. Revisar archivos reales de la base actual.
 5. No usar `docs/codex/archivo/` como fuente principal.
 
-No existen respaldos `.bak` ni ZIPs en `docs/codex` (auditoría 2026-06-02: `docs/codex/orquestador/auditoria-docs-2026-06.md`). Los assets antiguos pesados fueron eliminados del repo activo; la referencia visual activa de parámetros es `docs/codex/assets/parametros-tabs/`.
+No existen respaldos `.bak` ni ZIPs en `docs/codex` (auditoría 2026-06-02: `docs/codex/auditorias/auditoria-docs-2026-06.md`). Los assets antiguos pesados fueron eliminados del repo activo; la referencia visual activa de parámetros es `docs/codex/assets/parametros-tabs/`.
 
 ## 2. Stack y alcance técnico
 
@@ -155,7 +155,7 @@ Parametros funciona como cierre normativo del periodo: muestra estado operativo,
 ## 8. Decisiones de producto vigentes
 
 
-- Nómina mensual confirmada es la fuente oficial para generar liquidaciones: el flujo futuro visible debe ser generar nómina, revisar trabajadores, confirmar nómina y generar liquidaciones desde esa versión. Documento rector: [`modulos/nomina-mensual/nomina-mensual-confirmacion-flow.md`](./modulos/nomina-mensual/nomina-mensual-confirmacion-flow.md).
+- Nómina mensual confirmada es la fuente oficial para generar liquidaciones: el flujo futuro visible debe ser generar nómina, revisar trabajadores, confirmar nómina y generar liquidaciones desde esa versión. Documento rector: [`modulos/nomina-mensual/flow/nomina-mensual-confirmacion-flow.md`](./modulos/nomina-mensual/flow/nomina-mensual-confirmacion-flow.md).
 - `Movimientos del mes` y `Asignaciones recurrentes` deben evolucionar a una experiencia unificada visible: `Movimientos de remuneración`.
 - La diferencia real es temporal:
   - `Del periodo`: impacto puntual del periodo.

@@ -169,7 +169,7 @@ Para **cierre de período**, **consola de decisión** y **bandeja de severidad**
 
 Estructura: bitacora lateral + consola central + bandeja RRHH + modal diagnostico.
 
-Decision funcional vigente: [`NOM-MENSUAL-CONFIRMACION-FLOW-00`](../modulos/nomina-mensual/nomina-mensual-confirmacion-flow.md). La pantalla visible debe comunicar `Nomina mensual`, `Generar nomina`, `Revisar trabajadores`, `Confirmar nomina` y `Generar liquidaciones`. `Preparar nomina` queda como nombre historico/tecnico del patron existente, no como concepto principal visible.
+Decision funcional vigente: [`NOM-MENSUAL-CONFIRMACION-FLOW-00`](../modulos/nomina-mensual/flow/nomina-mensual-confirmacion-flow.md). La pantalla visible debe comunicar `Nomina mensual`, `Generar nomina`, `Revisar trabajadores`, `Confirmar nomina` y `Generar liquidaciones`. `Preparar nomina` queda como nombre historico/tecnico del patron existente, no como concepto principal visible.
 
 Doc tecnico historico: [`../modulos/nomina-mensual/preparar-nomina/`](../modulos/nomina-mensual/preparar-nomina/README.md).
 

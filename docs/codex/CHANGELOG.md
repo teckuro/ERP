@@ -131,7 +131,7 @@
 ## 2026-05-18 - NOM-CONTAINER-SPEC-REPARO
 
 - **Tests:** eliminado `describe.skip` (43 legacy); `proceso-mensual-container.spec.helpers.ts`; ~31 tests integración container (shell, flujo, overlay, rehidratación).
-- **Docs:** [`modulos/nomina-mensual/nom-mensual-container-spec-reparo-01.md`](./modulos/nomina-mensual/nom-mensual-container-spec-reparo-01.md); matriz MIGRAR/ADAPTAR/RETIRAR.
+- **Docs:** [`modulos/nomina-mensual/flow/nom-mensual-container-spec-reparo-01.md`](./modulos/nomina-mensual/flow/nom-mensual-container-spec-reparo-01.md); matriz MIGRAR/ADAPTAR/RETIRAR.
 - **Build:** `*.spec.helpers.ts` excluido de `tsconfig.app.json`.
 - **Copy:** timeline estado operativo alineado a «Generar nómina» / «Confirmar nómina».
 
@@ -157,7 +157,7 @@
 ## 2026-05-18 - NOM-MODALES-PERIODO-01
 
 - **Nómina mensual:** matriz NOIA de overlays y modales (revisión vs MessageBox vs inline vs rail).
-- **Documentación:** [`modulos/nomina-mensual/modales-periodo-01.md`](./modulos/nomina-mensual/modales-periodo-01.md) — inventario, contrato propuesto `ProcesoMensualOverlay`, entradas, prioridades y fase siguiente `NOM-MODALES-PERIODO-INFO-02`.
+- **Documentación:** [`modulos/nomina-mensual/modales-periodo/modales-periodo-01.md`](./modulos/nomina-mensual/modales-periodo/modales-periodo-01.md) — inventario, contrato propuesto `ProcesoMensualOverlay`, entradas, prioridades y fase siguiente `NOM-MODALES-PERIODO-INFO-02`.
 - **Alcance:** solo Codex; sin cambios en HTML/CSS/TS productivo, servicios, SQL, motor ni estilos globales.
 
 ## 2026-05-18 - NOM-MENSUAL-WORKSPACE-UI-01

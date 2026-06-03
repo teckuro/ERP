@@ -1,4 +1,4 @@
-﻿# Bitacora Operativa NOIA
+# Bitacora Operativa NOIA
 
 ## Estado
 
@@ -584,7 +584,7 @@ Esta fase no modifica:
 - `docs/codex/orquestador/estado-fases.md`
 - `docs/codex/modulos/empleados/README.md`
 - `docs/codex/modulos/empleados/creacion-avanzada.md`
-- `docs/codex/modulos/nomina-mensual/README.md`
+- `docs/codex/modulos/nomina-mensual/preparar-nomina/README.md`
 - `docs/codex/modulos/movimientos-variables/README.md`
 - `docs/codex/modulos/haberes-descuentos/README.md`
 - `docs/codex/modulos/liquidaciones-oficiales/README.md`

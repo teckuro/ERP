@@ -1,5 +1,32 @@
 # Módulo Nómina mensual — punto de entrada
 
+## Estructura de la documentación
+
+> **Rotación 2026-06-03 (DOCS-AUDIT-02 / L5)**: los 69 archivos sueltos que vivían bajo `nomina-mensual/` se reorganizaron en subcarpetas por tema. Los basename se mantienen iguales (solo cambia su carpeta padre). Los enlaces internos y externos del repo se actualizaron automáticamente.
+
+| Subcarpeta | Contenido | Archivos |
+|------------|-----------|---------:|
+| [`motor-calculo/`](./motor-calculo/) | Contrato del motor, casos de prueba, persistencia 03A/B/C, integraciones haberes/parámetros | 12 |
+| [`modales-periodo/`](./modales-periodo/) | Matriz de modales y overlays del período (revisión, incidencias, copy, polish) | 10 |
+| [`flow/`](./flow/) | Flujo, navegación, persistencia/integridad de estado, container/facade | 18 |
+| [`workspace/`](./workspace/) | Workspace operativo, preparar nómina (acta), revisión por trabajador, masivos | 11 |
+| [`prevalidaciones/`](./prevalidaciones/) | Prevalidaciones 9.5A/B/C + novedades mensuales | 5 |
+| [`vision/`](./vision/) | Visión futura, fases/casos de uso, Figma, arquitectura funcional | 6 |
+| [`v2/`](./v2/) | V10/V10.2/V11 (preparaciones por lotes, trazabilidad V10) | 4 |
+| [`auditorias/`](./auditorias/) | Auditoría V2 (NOIA), cleanup, cierre mensual post-reset | 3 |
+| [`preparar-nomina/`](./preparar-nomina/) | Preparar nómina (V1) — flujo operativo, mapa de pantalla, arquitectura | 6 |
+
+### En la raíz del módulo
+
+- [`README.md`](./preparar-nomina/README.md) — este archivo (índice + bitácora histórica de H2 por ID).
+- [`contrato-general.md`](./contrato-general.md) — contrato funcional canónico del módulo.
+- [`matriz-bloqueos-periodo.md`](./matriz-bloqueos-periodo.md) — matriz transversal de bloqueos por período.
+
+### Segregación V1 / V2
+
+- **V1** = flujo histórico `/remuneraciones/proceso-mensual` (motor activo, productivo). La mayor parte de los documentos en `flow/`, `modales-periodo/`, `workspace/`, `motor-calculo/`, `prevalidaciones/` se refieren a V1.
+- **V2** = `/remuneraciones/nomina-mensual-v2` (pasos 1–3 productivos hasta V11). Auditoría NOIA y plan iterativo L0–L7 documentados en [`auditorias/auditoria-nomina-v2-2026-06.md`](./auditorias/auditoria-nomina-v2-2026-06.md) (DOCS-AUDIT-02 cerró 2026-06-03). El stack V11 (preparaciones por lotes) vive en [`v2/`](./v2/).
+
 ## Estado
 
 ## NOM-MENSUAL-FLOW-UNIFICADO-03 — Epic UI cerrado (5.C BD con gate)
@@ -8,11 +35,11 @@ Epic flujo unificado: dispatcher al 100% (siguiente código). Fases 2–5 en doc
 
 | Doc | Contenido |
 |-----|-----------|
-| [`nom-mensual-flow-unificado-03.md`](./nom-mensual-flow-unificado-03.md) | Índice, hecho, **Fase 1 implementada** |
-| [`nom-mensual-flow-unificado-03-fase-02-deep-links.md`](./nom-mensual-flow-unificado-03-fase-02-deep-links.md) | `idPersona` en query + Novedades |
-| [`nom-mensual-flow-unificado-03-fase-03-panel-modales.md`](./nom-mensual-flow-unificado-03-fase-03-panel-modales.md) | Modal movimientos local, incidencias, filtros |
-| [`nom-mensual-flow-unificado-03-fase-04-modal-global.md`](./nom-mensual-flow-unificado-03-fase-04-modal-global.md) | Modal global excepcional |
-| [`nom-mensual-flow-unificado-03-fase-05-calidad-productivo.md`](./nom-mensual-flow-unificado-03-fase-05-calidad-productivo.md) | TS audit, E2E, confirmación BD (gate) |
+| [`nom-mensual-flow-unificado-03.md`](./flow/nom-mensual-flow-unificado-03.md) | Índice, hecho, **Fase 1 implementada** |
+| [`nom-mensual-flow-unificado-03-fase-02-deep-links.md`](./flow/nom-mensual-flow-unificado-03-fase-02-deep-links.md) | `idPersona` en query + Novedades |
+| [`nom-mensual-flow-unificado-03-fase-03-panel-modales.md`](./flow/nom-mensual-flow-unificado-03-fase-03-panel-modales.md) | Modal movimientos local, incidencias, filtros |
+| [`nom-mensual-flow-unificado-03-fase-04-modal-global.md`](./flow/nom-mensual-flow-unificado-03-fase-04-modal-global.md) | Modal global excepcional |
+| [`nom-mensual-flow-unificado-03-fase-05-calidad-productivo.md`](./flow/nom-mensual-flow-unificado-03-fase-05-calidad-productivo.md) | TS audit, E2E, confirmación BD (gate) |
 
 ## NOM-MENSUAL-FLUJOS-ACTUALES-FUTUROS-01 aplicado
 
@@ -46,39 +73,39 @@ Cambios aplicados: Liquidaciones oficiales ya no debe describirse como fase futu
 
 ## NOMINA V10.2 — Alcance y trabajadores como preparación conceptual
 
-Documento de planificación funcional para ordenar Alcance y Trabajadores como un mismo universo conceptual de nómina mensual, sin persistencia nueva ni cambio de lenguaje visible NOIA. Mantiene `Nómina mensual` como concepto principal para RRHH y deja preparaciones/lotes persistidos para V11/backend. Documento: [`nomina-v10-2-alcance-trabajadores-preparacion-conceptual.md`](./nomina-v10-2-alcance-trabajadores-preparacion-conceptual.md).
+Documento de planificación funcional para ordenar Alcance y Trabajadores como un mismo universo conceptual de nómina mensual, sin persistencia nueva ni cambio de lenguaje visible NOIA. Mantiene `Nómina mensual` como concepto principal para RRHH y deja preparaciones/lotes persistidos para V11/backend. Documento: [`nomina-v10-2-alcance-trabajadores-preparacion-conceptual.md`](./v2/nomina-v10-2-alcance-trabajadores-preparacion-conceptual.md).
 
 ## NOMINA V11 — Contrato funcional preparaciones/lotes por tipo
 
-Contrato funcional futuro para backend completo: define objetivo, creación, datos requeridos, alcance, cálculo, relación con nómina previa, bloqueos, disponibilidad inicial y liquidación esperada para `mensualCompleta`, `porCentroCosto`, `seleccionManual`, `complementaria`, `reproceso`, `retroactiva`, `finiquito` y `especial`. Mantiene V10.2 acotado a UI/concepto y deja preparaciones/lotes persistidos para V11. Documento: [`nomina-v11-contrato-funcional-preparaciones-lotes-por-tipo.md`](./nomina-v11-contrato-funcional-preparaciones-lotes-por-tipo.md).
+Contrato funcional futuro para backend completo: define objetivo, creación, datos requeridos, alcance, cálculo, relación con nómina previa, bloqueos, disponibilidad inicial y liquidación esperada para `mensualCompleta`, `porCentroCosto`, `seleccionManual`, `complementaria`, `reproceso`, `retroactiva`, `finiquito` y `especial`. Mantiene V10.2 acotado a UI/concepto y deja preparaciones/lotes persistidos para V11. Documento: [`nomina-v11-contrato-funcional-preparaciones-lotes-por-tipo.md`](./v2/nomina-v11-contrato-funcional-preparaciones-lotes-por-tipo.md).
 
 ## NOMINA V11 — Backend preparaciones/lotes
 
-Plan técnico V11 para derivar el contrato funcional a schema/RPC/repositorios/UI: `nomina_preparacion -> nomina_calculo_periodo -> nomina_liquidacion_periodo`, fases 30-33, FK tardías, compatibilidad legacy solo de lectura, enlace con cálculo/liquidaciones, contratos frontend, UI V2 y validaciones. Documento: [`nomina-v11-backend-preparaciones-lotes.md`](./nomina-v11-backend-preparaciones-lotes.md).
+Plan técnico V11 para derivar el contrato funcional a schema/RPC/repositorios/UI: `nomina_preparacion -> nomina_calculo_periodo -> nomina_liquidacion_periodo`, fases 30-33, FK tardías, compatibilidad legacy solo de lectura, enlace con cálculo/liquidaciones, contratos frontend, UI V2 y validaciones. Documento: [`nomina-v11-backend-preparaciones-lotes.md`](./v2/nomina-v11-backend-preparaciones-lotes.md).
 
 ## NOM-MENSUAL-FLOW-NAV-02 aplicado
 
-Cierre del flujo RRHH: acciones en grillas Detalle mensual, preselección de trabajador, rehidratación al volver con `returnTo`, matriz única de destino workspace y modal reducido (resumen/resultado). Documento: [`nom-mensual-flow-nav-02.md`](./nom-mensual-flow-nav-02.md). Precede: [`nom-mensual-flow-nav-01.md`](./nom-mensual-flow-nav-01.md).
+Cierre del flujo RRHH: acciones en grillas Detalle mensual, preselección de trabajador, rehidratación al volver con `returnTo`, matriz única de destino workspace y modal reducido (resumen/resultado). Documento: [`nom-mensual-flow-nav-02.md`](./flow/nom-mensual-flow-nav-02.md). Precede: [`nom-mensual-flow-nav-01.md`](./flow/nom-mensual-flow-nav-01.md).
 
 ## NOM-MENSUAL-FLOW-NAV-01 aplicado
 
-Panel Detalle mensual canónico, estado RRHH en sidebar, deep links con período y segment nav en modal. Documento: [`nom-mensual-flow-nav-01.md`](./nom-mensual-flow-nav-01.md).
+Panel Detalle mensual canónico, estado RRHH en sidebar, deep links con período y segment nav en modal. Documento: [`nom-mensual-flow-nav-01.md`](./flow/nom-mensual-flow-nav-01.md).
 
 ## NOM-MENSUAL-DETALLE-MENSUAL-UNIFICADO-01 aplicado
 
-Workspace con tabbar **Detalle mensual | Historial**, parámetros en franja lateral, movimientos y recurrentes en una tabla con **Origen / duración**, filtros internos compactos e historial como trazabilidad. Cubre parcialmente la intención documental de `NOM-MOVIMIENTOS-UNIFICADOS-UX-01` en consola de período. Documento: [`nom-mensual-detalle-mensual-unificado-01.md`](./nom-mensual-detalle-mensual-unificado-01.md).
+Workspace con tabbar **Detalle mensual | Historial**, parámetros en franja lateral, movimientos y recurrentes en una tabla con **Origen / duración**, filtros internos compactos e historial como trazabilidad. Cubre parcialmente la intención documental de `NOM-MOVIMIENTOS-UNIFICADOS-UX-01` en consola de período. Documento: [`nom-mensual-detalle-mensual-unificado-01.md`](./workspace/nom-mensual-detalle-mensual-unificado-01.md).
 
 ## NOM-MENSUAL-PERSISTENCIA-ESTADO-01 aplicado
 
-Borrador al generar nómina persiste trabajadores, issues y metadata de verificación. Rehidratación al recargar alimenta workspace y revisión completa. Documento: [`nom-mensual-persistencia-estado-01.md`](./nom-mensual-persistencia-estado-01.md).
+Borrador al generar nómina persiste trabajadores, issues y metadata de verificación. Rehidratación al recargar alimenta workspace y revisión completa. Documento: [`nom-mensual-persistencia-estado-01.md`](./flow/nom-mensual-persistencia-estado-01.md).
 
 ## NOM-FLOW-REVISION-01 aplicado
 
-Flujo RRHH: «Verificar período» antes de «Generar nómina». Bitácora en sidebar. Guardado técnico del borrador en acciones `<details>`. Diagnóstico persistido en BD. Documentos: [`nom-workspace-loc-maquetacion-01.md`](./nom-workspace-loc-maquetacion-01.md), [`nom-periodo-diagnostico-persist-01.md`](./nom-periodo-diagnostico-persist-01.md).
+Flujo RRHH: «Verificar período» antes de «Generar nómina». Bitácora en sidebar. Guardado técnico del borrador en acciones `<details>`. Diagnóstico persistido en BD. Documentos: [`nom-workspace-loc-maquetacion-01.md`](./workspace/nom-workspace-loc-maquetacion-01.md), [`nom-periodo-diagnostico-persist-01.md`](./flow/nom-periodo-diagnostico-persist-01.md).
 
 ## NOM-WORKSPACE-LOC-MAQUETACION-01 aplicado
 
-Consola con **sidebar operativo** (franja KPI, bitácora, revisión, guía) y **6 tabs** en panel derecho (sin tab Resumen). Orden único Param → Trab → Mov → Rec. Documento: [`nom-workspace-loc-maquetacion-01.md`](./nom-workspace-loc-maquetacion-01.md).
+Consola con **sidebar operativo** (franja KPI, bitácora, revisión, guía) y **6 tabs** en panel derecho (sin tab Resumen). Orden único Param → Trab → Mov → Rec. Documento: [`nom-workspace-loc-maquetacion-01.md`](./workspace/nom-workspace-loc-maquetacion-01.md).
 
 ## NOM-PREVALIDACION-PARAMETROS-CTA-01 aplicado
 
@@ -90,7 +117,7 @@ Click en tile **Parámetros** (franja lateral) consulta async solo `ParametrosGe
 
 ## NOM-PERIODO-VERIFICAR-MODAL-02 aplicado
 
-Modal automático tras verificar el período (MessageBox): críticos, advertencias o período listo con CTA «Generar nómina». Documento: [`nom-periodo-diagnostico-persist-01.md`](./nom-periodo-diagnostico-persist-01.md).
+Modal automático tras verificar el período (MessageBox): críticos, advertencias o período listo con CTA «Generar nómina». Documento: [`nom-periodo-diagnostico-persist-01.md`](./flow/nom-periodo-diagnostico-persist-01.md).
 
 ## NOM-PERIODO-TRABAJADORES-NO-APTOS-01 aplicado
 
@@ -98,67 +125,67 @@ Tras verificar, el payload persistido incluye `trabajadoresPendientesRevision` (
 
 ## NOM-PERIODO-PREVIEW-PERSIST-01 aplicado
 
-Preview persistente «Qué falta ahora» en sidebar y tab Trabajadores antes de generar nómina. Resumen masivo desde filas mergeadas. Documento: [`nom-periodo-preview-persist-01.md`](./nom-periodo-preview-persist-01.md).
+Preview persistente «Qué falta ahora» en sidebar y tab Trabajadores antes de generar nómina. Resumen masivo desde filas mergeadas. Documento: [`nom-periodo-preview-persist-01.md`](./flow/nom-periodo-preview-persist-01.md).
 
 ## NOM-PERIODO-DIAGNOSTICO-PERSIST-01 aplicado
 
-Verificación del período con diagnóstico **persistente en servidor** (`nomina_periodo_diagnostico` + RPC). Rehidratación al volver sin snapshot. Documento: [`nom-periodo-diagnostico-persist-01.md`](./nom-periodo-diagnostico-persist-01.md).
+Verificación del período con diagnóstico **persistente en servidor** (`nomina_periodo_diagnostico` + RPC). Rehidratación al volver sin snapshot. Documento: [`nom-periodo-diagnostico-persist-01.md`](./flow/nom-periodo-diagnostico-persist-01.md).
 
 ## NOM-MENSUAL-MASIVO-LAYOUT-01 aplicado
 
-Tab `Trabajadores` del modal de revision preparado para nomina masiva: resumen agregado, filtros compactos, busqueda, DataGrid paginado y detalle unico bajo demanda. Mantiene `incidenciasPeriodo()` como fuente unica. Las incidencias globales permanecen en Resumen y no se duplican por trabajador. Documento: [`nom-mensual-masivo-layout-01.md`](./nom-mensual-masivo-layout-01.md).
+Tab `Trabajadores` del modal de revision preparado para nomina masiva: resumen agregado, filtros compactos, busqueda, DataGrid paginado y detalle unico bajo demanda. Mantiene `incidenciasPeriodo()` como fuente unica. Las incidencias globales permanecen en Resumen y no se duplican por trabajador. Documento: [`nom-mensual-masivo-layout-01.md`](./workspace/nom-mensual-masivo-layout-01.md).
 
 ## Handoff Figma — maquetación nómina mensual
 
-Documento para recrear la consola en Figma (tokens, medidas, estados, modal): [`nomina-mensual-figma-maquetacion.md`](./nomina-mensual-figma-maquetacion.md).
+Documento para recrear la consola en Figma (tokens, medidas, estados, modal): [`nomina-mensual-figma-maquetacion.md`](./vision/nomina-mensual-figma-maquetacion.md).
 
 ## NOM-MENSUAL-REAPERTURA-ELIMINACION-01 aplicado
 
-Acciones controladas para abrir o descartar la nómina generada cuando no hay liquidaciones. Bloqueo RRHH con copy claro si hay liquidaciones. Forzar apertura/eliminación solo admin en ambiente no productivo. Documento: [`nom-mensual-reapertura-eliminacion-01.md`](./nom-mensual-reapertura-eliminacion-01.md).
+Acciones controladas para abrir o descartar la nómina generada cuando no hay liquidaciones. Bloqueo RRHH con copy claro si hay liquidaciones. Forzar apertura/eliminación solo admin en ambiente no productivo. Documento: [`nom-mensual-reapertura-eliminacion-01.md`](./flow/nom-mensual-reapertura-eliminacion-01.md).
 
 ## NOM-MODALES-PERIODO-REVISION-COPY-03 aplicado
 
-Modal de revision con copy RRHH: claves tecnicas humanizadas antes del DOM visible, resumen coherente con bloqueos globales, parametros con accion agrupada y lectura operativa de movimientos/recurrentes. Documento: [`nom-modales-periodo-revision-copy-03.md`](./nom-modales-periodo-revision-copy-03.md).
+Modal de revision con copy RRHH: claves tecnicas humanizadas antes del DOM visible, resumen coherente con bloqueos globales, parametros con accion agrupada y lectura operativa de movimientos/recurrentes. Documento: [`nom-modales-periodo-revision-copy-03.md`](./modales-periodo/nom-modales-periodo-revision-copy-03.md).
 
 ## NOM-MODALES-PERIODO-COPY-LIMPIO-05 aplicado
 
-Modal de revisión con copy normalizado en rules (`limpiarCopyTecnicoNomina`): sin claves técnicas, snake_case ni signos accidentales en listas visibles. `humanizarDetalleRevisionTexto` delega al helper único. Documento: [`nom-modales-periodo-copy-limpio-05.md`](./nom-modales-periodo-copy-limpio-05.md).
+Modal de revisión con copy normalizado en rules (`limpiarCopyTecnicoNomina`): sin claves técnicas, snake_case ni signos accidentales en listas visibles. `humanizarDetalleRevisionTexto` delega al helper único. Documento: [`nom-modales-periodo-copy-limpio-05.md`](./modales-periodo/nom-modales-periodo-copy-limpio-05.md).
 
 ## NOM-MODALES-PERIODO-INCIDENCIAS-QA-05 aplicado
 
-Candado QA post-INCIDENCIAS-04: tests de regresión en rules/component (dedupe, indicadores, expediente, seguimiento, orden severidad, copy) y checklist manual del modal en doc de fase. Documento: [`nom-modales-periodo-revision-incidencias-qa-05.md`](./nom-modales-periodo-revision-incidencias-qa-05.md).
+Candado QA post-INCIDENCIAS-04: tests de regresión en rules/component (dedupe, indicadores, expediente, seguimiento, orden severidad, copy) y checklist manual del modal en doc de fase. Documento: [`nom-modales-periodo-revision-incidencias-qa-05.md`](./modales-periodo/nom-modales-periodo-revision-incidencias-qa-05.md).
 
 ## NOM-MODALES-PERIODO-INCIDENCIAS-04 aplicado
 
-Modal de revision con registro unico de incidencias: `buildIncidenciasPeriodo`, Resumen «Pendientes del periodo», tabs con enlace «Ver en resumen (N)» sin repetir listas paralelas. Conteos desde fuente deduplicada. Documento: [`nom-modales-periodo-revision-incidencias-04.md`](./nom-modales-periodo-revision-incidencias-04.md).
+Modal de revision con registro unico de incidencias: `buildIncidenciasPeriodo`, Resumen «Pendientes del periodo», tabs con enlace «Ver en resumen (N)» sin repetir listas paralelas. Conteos desde fuente deduplicada. Documento: [`nom-modales-periodo-revision-incidencias-04.md`](./modales-periodo/nom-modales-periodo-revision-incidencias-04.md).
 
 ## NOM-MODALES-PERIODO-REVISION-IA-02 aplicado
 
-Modal de revision reordenado por arquitectura de informacion: expediente oficial y CTA solo en Resumen. Observaciones unificadas sin DataGrid. Tabs de trabajadores, parametros, movimientos/recurrentes y resultado con lead local, lista, grid o empty segun datos. Documento: [`nom-modales-periodo-revision-ia-02.md`](./nom-modales-periodo-revision-ia-02.md).
+Modal de revision reordenado por arquitectura de informacion: expediente oficial y CTA solo en Resumen. Observaciones unificadas sin DataGrid. Tabs de trabajadores, parametros, movimientos/recurrentes y resultado con lead local, lista, grid o empty segun datos. Documento: [`nom-modales-periodo-revision-ia-02.md`](./modales-periodo/nom-modales-periodo-revision-ia-02.md).
 
 ## NOM-MODALES-PERIODO-REVISION-UX-01 aplicado
 
-Modal de revisión con pestañas que señalan pendientes, grillas por área (movimientos, recurrentes, resultado, observaciones), CTA del expediente en franja interna y enlace «Ver revisión completa» contextual. Documento: [`nom-modales-periodo-revision-ux-01.md`](./nom-modales-periodo-revision-ux-01.md).
+Modal de revisión con pestañas que señalan pendientes, grillas por área (movimientos, recurrentes, resultado, observaciones), CTA del expediente en franja interna y enlace «Ver revisión completa» contextual. Documento: [`nom-modales-periodo-revision-ux-01.md`](./modales-periodo/nom-modales-periodo-revision-ux-01.md).
 
 ## NOM-MENSUAL-FACADE-SLIM-01 aplicado
 
-Refactor interno del facade de presentación: view models pesados en `rules/` (`resultado-preliminar`, `revision-aprobacion`, `payroll-seguimiento`) y labels en `utils/proceso-mensual-presentacion.labels.ts`. Sin cambio de copy, HTML, CSS ni contratos de store/servicios. Documento: [`nom-mensual-facade-slim-01.md`](./nom-mensual-facade-slim-01.md).
+Refactor interno del facade de presentación: view models pesados en `rules/` (`resultado-preliminar`, `revision-aprobacion`, `payroll-seguimiento`) y labels en `utils/proceso-mensual-presentacion.labels.ts`. Sin cambio de copy, HTML, CSS ni contratos de store/servicios. Documento: [`nom-mensual-facade-slim-01.md`](./flow/nom-mensual-facade-slim-01.md).
 
 ## NOM-MENSUAL-INTEGRIDAD-REGISTRO-01 aplicado
 
-Expediente del período consultable desde BD: view model `expedienteNominaPeriodo`, carga al abrir revisión, modal y tab Detalle con estados explícitos (cargando / error / sin detalle / versión guardada o confirmada). Sin cambio SQL en esta fase. Documento: [`nom-mensual-integridad-registro-01.md`](./nom-mensual-integridad-registro-01.md).
+Expediente del período consultable desde BD: view model `expedienteNominaPeriodo`, carga al abrir revisión, modal y tab Detalle con estados explícitos (cargando / error / sin detalle / versión guardada o confirmada). Sin cambio SQL en esta fase. Documento: [`nom-mensual-integridad-registro-01.md`](./flow/nom-mensual-integridad-registro-01.md).
 
 ## NOM-MODALES-PERIODO-DETALLE-POLISH-01 aplicado
 
-Modal de revisión (`app-proceso-mensual-detalle-modal`): footer sin duplicar CTA del workspace, copy operativo, CSS local y sin bloque técnico visible. Documento: [`nom-modales-periodo-detalle-polish-01.md`](./nom-modales-periodo-detalle-polish-01.md).
+Modal de revisión (`app-proceso-mensual-detalle-modal`): footer sin duplicar CTA del workspace, copy operativo, CSS local y sin bloque técnico visible. Documento: [`nom-modales-periodo-detalle-polish-01.md`](./modales-periodo/nom-modales-periodo-detalle-polish-01.md).
 
 ## NOM-CONTAINER-SPEC-REPARO aplicado
 
-Specs de integración del contenedor alineados al shell modular (workspace + overlays): sin `describe.skip` legacy. Helpers `proceso-mensual-container.spec.helpers.ts`. Cobertura equivalente vía rules existentes + ~31 tests container. Documento: [`nom-mensual-container-spec-reparo-01.md`](./nom-mensual-container-spec-reparo-01.md).
+Specs de integración del contenedor alineados al shell modular (workspace + overlays): sin `describe.skip` legacy. Helpers `proceso-mensual-container.spec.helpers.ts`. Cobertura equivalente vía rules existentes + ~31 tests container. Documento: [`nom-mensual-container-spec-reparo-01.md`](./flow/nom-mensual-container-spec-reparo-01.md).
 
 ## NOM-MENSUAL-PERSISTENCIA-ESTADO-01 aplicado
 
-Al entrar o cambiar de período, si existe versión revisable activa en BD, el store rehidrata cabecera y detalle sin vaciar el snapshot antes del fetch. La facade infiere prevalidación, base y cálculo desde el snapshot para bitácora, franja y estado operativo. Sin guardar versión revisable, la pantalla sigue en «Generar nómina». Documento: [`nom-mensual-persistencia-estado-01.md`](./nom-mensual-persistencia-estado-01.md).
+Al entrar o cambiar de período, si existe versión revisable activa en BD, el store rehidrata cabecera y detalle sin vaciar el snapshot antes del fetch. La facade infiere prevalidación, base y cálculo desde el snapshot para bitácora, franja y estado operativo. Sin guardar versión revisable, la pantalla sigue en «Generar nómina». Documento: [`nom-mensual-persistencia-estado-01.md`](./flow/nom-mensual-persistencia-estado-01.md).
 
 ## NOM-MENSUAL-WORKSPACE-UI-01 aplicado
 
@@ -182,9 +209,9 @@ Se documenta la decision rectora del modulo:
 Nómina mensual confirmada = fuente oficial para generar liquidaciones.
 ```
 
-La experiencia futura debe entenderse como `Nómina mensual`: generar nómina, revisar trabajadores, confirmar la versión oficial y generar liquidaciones desde esa versión. `Preparar nómina` puede seguir existiendo como ruta/componente por compatibilidad, pero deja de ser el concepto principal de producto para nuevas fases. Documento rector: [`nomina-mensual-confirmacion-flow.md`](./nomina-mensual-confirmacion-flow.md).
+La experiencia futura debe entenderse como `Nómina mensual`: generar nómina, revisar trabajadores, confirmar la versión oficial y generar liquidaciones desde esa versión. `Preparar nómina` puede seguir existiendo como ruta/componente por compatibilidad, pero deja de ser el concepto principal de producto para nuevas fases. Documento rector: [`nomina-mensual-confirmacion-flow.md`](./flow/nomina-mensual-confirmacion-flow.md).
 
-**Prevalidaciones 9.5A + 9.5B** implementadas y conectadas al flujo de nomina mensual: recurrentes por mes, grupos minimos de parametros + catalogos, resumen en UI, reglas estrictas de trabajadores listos para nomina y bloqueos criticos antes de confirmar. Vision de producto: [`vision-futura.md`](./vision-futura.md). Orquestador: [`../../orquestador/estado-fases.md`](../../orquestador/estado-fases.md).
+**Prevalidaciones 9.5A + 9.5B** implementadas y conectadas al flujo de nomina mensual: recurrentes por mes, grupos minimos de parametros + catalogos, resumen en UI, reglas estrictas de trabajadores listos para nomina y bloqueos criticos antes de confirmar. Vision de producto: [`vision-futura.md`](./vision/vision-futura.md). Orquestador: [`../../orquestador/estado-fases.md`](../../orquestador/estado-fases.md).
 
 ## REM-MOV-UNIFY-01 aplicado
 
@@ -206,37 +233,37 @@ La estructura queda compacta y vertical: bloque Movimiento, Detalle administrati
 
 ## NOM-MENSUAL-WORKSPACE-LAYOUT-POLISH-01 aplicado
 
-Pulido de maquetación del workspace (franja, rail, focus, tabs, responsive). Documento: [`nom-mensual-workspace-layout-polish-01.md`](./nom-mensual-workspace-layout-polish-01.md).
+Pulido de maquetación del workspace (franja, rail, focus, tabs, responsive). Documento: [`nom-mensual-workspace-layout-polish-01.md`](./workspace/nom-mensual-workspace-layout-polish-01.md).
 
 ## NOM-MODALES-PERIODO-STATE-03 aplicado
 
-Overlay unificado: `ProcesoMensualOverlay`, signal `overlay`, host `app-proceso-mensual-overlays`, `cerrarOverlay()`. Documento: [`modales-periodo-state-03.md`](./modales-periodo-state-03.md).
+Overlay unificado: `ProcesoMensualOverlay`, signal `overlay`, host `app-proceso-mensual-overlays`, `cerrarOverlay()`. Documento: [`modales-periodo-state-03.md`](./modales-periodo/modales-periodo-state-03.md).
 
 ## NOM-MODALES-PERIODO-INFO-02 aplicado
 
-Información guiada post-generación: rules `proceso-mensual-informacion-periodo`, signal `informacionPeriodo`, modal `app-proceso-mensual-informacion-modal`, banner condicionado y rail contextual. Documento: [`modales-periodo-info-02.md`](./modales-periodo-info-02.md).
+Información guiada post-generación: rules `proceso-mensual-informacion-periodo`, signal `informacionPeriodo`, modal `app-proceso-mensual-informacion-modal`, banner condicionado y rail contextual. Documento: [`modales-periodo-info-02.md`](./modales-periodo/modales-periodo-info-02.md).
 
 ## NOM-MODALES-PERIODO-01 aplicado (documental)
 
-Matriz NOIA de overlays y modales para la pantalla modular (`proceso-mensual-workspace`, `proceso-mensual-detalle-modal`, `app-message-box`, banner `errorEjecucion`). Define contrato propuesto `ProcesoMensualOverlay` y fase siguiente **NOM-MODALES-PERIODO-INFO-02** (errores/bloqueos post-generación). Sin cambios en UI productiva en esta fase. Documento: [`modales-periodo-01.md`](./modales-periodo-01.md).
+Matriz NOIA de overlays y modales para la pantalla modular (`proceso-mensual-workspace`, `proceso-mensual-detalle-modal`, `app-message-box`, banner `errorEjecucion`). Define contrato propuesto `ProcesoMensualOverlay` y fase siguiente **NOM-MODALES-PERIODO-INFO-02** (errores/bloqueos post-generación). Sin cambios en UI productiva en esta fase. Documento: [`modales-periodo-01.md`](./modales-periodo/modales-periodo-01.md).
 
 ## Documentos
 
 | Archivo | Rol |
 |---------|-----|
-| [`nom-modales-periodo-revision-incidencias-04.md`](./nom-modales-periodo-revision-incidencias-04.md) | Registro único incidencias, dedupe y Resumen índice (planeada) |
-| [`nom-modales-periodo-revision-copy-03.md`](./nom-modales-periodo-revision-copy-03.md) | Copy RRHH modal revisión. Límite explícito vs INCIDENCIAS-04 |
-| [`modales-periodo-01.md`](./modales-periodo-01.md) | Matriz overlays/modales NOIA, inventario, contrato propuesto, entradas y prioridades (NOM-MODALES-PERIODO-01) |
-| [`nom-mensual-container-modular-01.md`](./nom-mensual-container-modular-01.md) | Refactor contenedor modular fases 1-5 (store, facade, hijos) |
+| [`nom-modales-periodo-revision-incidencias-04.md`](./modales-periodo/nom-modales-periodo-revision-incidencias-04.md) | Registro único incidencias, dedupe y Resumen índice (planeada) |
+| [`nom-modales-periodo-revision-copy-03.md`](./modales-periodo/nom-modales-periodo-revision-copy-03.md) | Copy RRHH modal revisión. Límite explícito vs INCIDENCIAS-04 |
+| [`modales-periodo-01.md`](./modales-periodo/modales-periodo-01.md) | Matriz overlays/modales NOIA, inventario, contrato propuesto, entradas y prioridades (NOM-MODALES-PERIODO-01) |
+| [`nom-mensual-container-modular-01.md`](./flow/nom-mensual-container-modular-01.md) | Refactor contenedor modular fases 1-5 (store, facade, hijos) |
 | [`contrato-general.md`](./contrato-general.md) | Objetivo, alcance, relaciones con Parametros, empleados, conceptos, MV, motor futuro |
-| [`nomina-mensual-persistencia-bd-mapa.md`](./nomina-mensual-persistencia-bd-mapa.md) | Mapa acción→BD vs sesión/mock; principio «todo en BD» y brechas V11 |
-| [`nomina-mensual-confirmacion-flow.md`](./nomina-mensual-confirmacion-flow.md) | Define nómina mensual confirmada como fuente oficial para generar liquidaciones |
-| [`nomina-mensual-diseno-visual-pruebas-unitarias-2026-05-18.md`](./nomina-mensual-diseno-visual-pruebas-unitarias-2026-05-18.md) | Diseno visual actual respaldado por pruebas unitarias y de componente |
-| [`nomina-mensual-fases-casos-uso-2026-05-18.md`](./nomina-mensual-fases-casos-uso-2026-05-18.md) | Estado actual por fases y casos de uso de Nomina mensual |
-| [`nomina-mensual-premium-design-mejoras-ux-2026-05-18.md`](./nomina-mensual-premium-design-mejoras-ux-2026-05-18.md) | Diseno premium y mejoras premium propuestas para Nomina mensual |
-| [`prevalidaciones-9-5A.md`](./prevalidaciones-9-5A.md) | Reglas base 9.5A (periodo, fila PG, calendario, empleados, conceptos, MV) |
-| [`prevalidaciones-9-5B.md`](./prevalidaciones-9-5B.md) | Recurrentes por `YYYY-MM`, grupos minimos de parametros, archivos y pruebas 9.5B |
-| [`vision-futura.md`](./vision-futura.md) | Checklist orientativo y relación con otros módulos |
+| [`nomina-mensual-persistencia-bd-mapa.md`](./flow/nomina-mensual-persistencia-bd-mapa.md) | Mapa acción→BD vs sesión/mock; principio «todo en BD» y brechas V11 |
+| [`nomina-mensual-confirmacion-flow.md`](./flow/nomina-mensual-confirmacion-flow.md) | Define nómina mensual confirmada como fuente oficial para generar liquidaciones |
+| [`nomina-mensual-diseno-visual-pruebas-unitarias-2026-05-18.md`](./vision/nomina-mensual-diseno-visual-pruebas-unitarias-2026-05-18.md) | Diseno visual actual respaldado por pruebas unitarias y de componente |
+| [`nomina-mensual-fases-casos-uso-2026-05-18.md`](./vision/nomina-mensual-fases-casos-uso-2026-05-18.md) | Estado actual por fases y casos de uso de Nomina mensual |
+| [`nomina-mensual-premium-design-mejoras-ux-2026-05-18.md`](./vision/nomina-mensual-premium-design-mejoras-ux-2026-05-18.md) | Diseno premium y mejoras premium propuestas para Nomina mensual |
+| [`prevalidaciones-9-5A.md`](./prevalidaciones/prevalidaciones-9-5A.md) | Reglas base 9.5A (periodo, fila PG, calendario, empleados, conceptos, MV) |
+| [`prevalidaciones-9-5B.md`](./prevalidaciones/prevalidaciones-9-5B.md) | Recurrentes por `YYYY-MM`, grupos minimos de parametros, archivos y pruebas 9.5B |
+| [`vision-futura.md`](./vision/vision-futura.md) | Checklist orientativo y relación con otros módulos |
 
 ## Relación con flujos documentados
 

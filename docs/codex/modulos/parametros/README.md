@@ -31,7 +31,7 @@ Fases **1** y **2** del tablero cerradas (UI período/vigencia/catálogo; Python
 
 ## Auditoria PARAM-CHILE-01 (proceso mensual vs demo)
 
-La pantalla **Proceso mensual** (`/remuneraciones/proceso-mensual`) no debe mostrar cifras normativas demo: quedo alineado en **PARAM-CHILE-01** con enlace a **`/parametros`** como fuente de valores. Informe ASCII: [`../../auditorias/param-chile-01-parametros-y-demo-proceso.md`](../../auditorias/param-chile-01-parametros-y-demo-proceso.md). La lectura automatica en ese flujo usa `obtenerUltimoHastaPeriodo`, `obtenerPeriodoRemuneracion` y **`listarCatalogos`** para prevalidaciones (**9.5A** + **9.5B**); ver [`../nomina-mensual/prevalidaciones-9-5A.md`](../nomina-mensual/prevalidaciones-9-5A.md) y [`../nomina-mensual/prevalidaciones-9-5B.md`](../nomina-mensual/prevalidaciones-9-5B.md).
+La pantalla **Proceso mensual** (`/remuneraciones/proceso-mensual`) no debe mostrar cifras normativas demo: quedo alineado en **PARAM-CHILE-01** con enlace a **`/parametros`** como fuente de valores. Informe ASCII: [`../../auditorias/param-chile-01-parametros-y-demo-proceso.md`](../../auditorias/param-chile-01-parametros-y-demo-proceso.md). La lectura automatica en ese flujo usa `obtenerUltimoHastaPeriodo`, `obtenerPeriodoRemuneracion` y **`listarCatalogos`** para prevalidaciones (**9.5A** + **9.5B**); ver [`../nomina-mensual/prevalidaciones/prevalidaciones-9-5A.md`](../nomina-mensual/prevalidaciones/prevalidaciones-9-5A.md) y [`../nomina-mensual/prevalidaciones/prevalidaciones-9-5B.md`](../nomina-mensual/prevalidaciones/prevalidaciones-9-5B.md).
 ## ERP-NOIA-BITACORA-OPERATIVA-00 - Lectura de modulo
 
 Parametros queda alineado a [`NOIA / Bitacora Operativa`](../../diseno/bitacora-operativa-noia.md) como `Registro normativo`.

@@ -78,6 +78,4 @@ Fuera de alcance vigente:
 
 Fases relacionadas:
 
-- `../../fases/auth/AUTH-BASE-01.md`
-- `../../fases/auth/ENV-E2E-01.md`
-- `../../fases/auth/AUTH-SEED-01.md`
+- `AUTH-BASE-01`, `ENV-E2E-01`, `AUTH-SEED-01`: registradas en [`../../orquestador/estado-fases.md`](../../orquestador/estado-fases.md). El detalle operativo vive en este README y en [`contrato-general.md`](./contrato-general.md). No hay carpeta `fases/auth/` separada porque AUTH-BASE-01 sirve como contrato canónico.

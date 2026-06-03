@@ -40,18 +40,22 @@ Para fases acotadas o diagnóstico rápido, partir por [`contexto-rapido.md`](./
 
 ## `docs/codex/modulos/` — contratos por módulo
 
-| Módulo | README |
-|--------|--------|
-| Empleados | [`modulos/empleados/README.md`](./modulos/empleados/README.md) |
-| Parámetros | [`modulos/parametros/README.md`](./modulos/parametros/README.md) |
-| Conceptos remuneración | [`modulos/conceptos-remuneracion/README.md`](./modulos/conceptos-remuneracion/README.md) (diagnóstico + [`contrato-funcional.md`](./modulos/conceptos-remuneracion/contrato-funcional.md)) |
-| Haberes y descuentos | [`modulos/haberes-descuentos/README.md`](./modulos/haberes-descuentos/README.md) |
-| Movimientos variables (mensuales) | [`modulos/movimientos-variables/README.md`](./modulos/movimientos-variables/README.md) |
-| Remuneraciones (punto de entrada) | [`modulos/remuneraciones/README.md`](./modulos/remuneraciones/README.md) |
-| Movimientos de remuneración (producto) | [`modulos/remuneraciones/movimientos-de-remuneracion.md`](./modulos/remuneraciones/movimientos-de-remuneracion.md) |
-| Movimientos — resumen para agentes | [`orquestador/resumen-trabajo-movimientos-remuneracion.md`](./orquestador/resumen-trabajo-movimientos-remuneracion.md) |
-| Remuneraciones — fases y decisión | [`modulos/remuneraciones/movimientos-remuneracion-simple.md`](./modulos/remuneraciones/movimientos-remuneracion-simple.md) |
-| Nómina mensual (visión) | [`modulos/nomina-mensual/README.md`](./modulos/nomina-mensual/README.md) |
+| Módulo | README | Estado |
+|--------|--------|--------|
+| Empleados | [`modulos/empleados/README.md`](./modulos/empleados/README.md) | productivo |
+| Parámetros | [`modulos/parametros/README.md`](./modulos/parametros/README.md) | productivo (feature: `src/app/features/parametros-generales/`) |
+| Conceptos remuneración | [`modulos/conceptos-remuneracion/README.md`](./modulos/conceptos-remuneracion/README.md) (diagnóstico + [`contrato-funcional.md`](./modulos/conceptos-remuneracion/contrato-funcional.md)) | productivo |
+| Haberes y descuentos | [`modulos/haberes-descuentos/README.md`](./modulos/haberes-descuentos/README.md) | productivo |
+| Movimientos variables (mensuales) | [`modulos/movimientos-variables/README.md`](./modulos/movimientos-variables/README.md) | productivo |
+| Remuneraciones (punto de entrada) | [`modulos/remuneraciones/README.md`](./modulos/remuneraciones/README.md) | productivo (transversal del dominio) |
+| Movimientos de remuneración (producto) | [`modulos/remuneraciones/movimientos-de-remuneracion.md`](./modulos/remuneraciones/movimientos-de-remuneracion.md) | productivo |
+| Movimientos — resumen para agentes | [`orquestador/resumen-trabajo-movimientos-remuneracion.md`](./orquestador/resumen-trabajo-movimientos-remuneracion.md) | resumen |
+| Remuneraciones — fases y decisión | [`modulos/remuneraciones/movimientos-remuneracion-simple.md`](./modulos/remuneraciones/movimientos-remuneracion-simple.md) | productivo |
+| Nómina mensual (visión) | [`modulos/nomina-mensual/preparar-nomina/README.md`](./modulos/nomina-mensual/preparar-nomina/README.md) | productivo (V1 + V2 acotada pasos 1–3) |
+| Auth | [`modulos/auth/README.md`](./modulos/auth/README.md) | productivo (código en `src/app/core/auth/`) |
+| Empresas | [`modulos/empresas/README.md`](./modulos/empresas/README.md) | productivo |
+| Liquidaciones oficiales | [`modulos/liquidaciones-oficiales/README.md`](./modulos/liquidaciones-oficiales/README.md) | productivo |
+| LRE (Libro Remuneraciones Electrónico) | [`modulos/lre/README.md`](./modulos/lre/README.md) | plan futuro (sin feature) |
 
 ---
 
@@ -59,7 +63,7 @@ Para fases acotadas o diagnóstico rápido, partir por [`contexto-rapido.md`](./
 
 `docs/codex` mantiene solo documentación activa, modular y context-packs (cuando existan).
 
-Eliminados del repo activo (auditoría 2026-06-02; detalle en [`orquestador/auditoria-docs-2026-06.md`](./orquestador/auditoria-docs-2026-06.md)):
+Eliminados del repo activo (auditoría 2026-06-02; detalle en [`auditorias/auditoria-docs-2026-06.md`](./auditorias/auditoria-docs-2026-06.md)):
 
 - 21 respaldos `.bak` bajo `archivo/backups/` (carpeta eliminada).
 - 3 ZIPs en `modulos/nomina-mensual/` redundantes con las carpetas extraídas (3.87 MB).
@@ -171,7 +175,7 @@ Para cambios de experiencia visible leer:
 - [`ux-comercial/patrones-pantallas-erp.md`](./ux-comercial/patrones-pantallas-erp.md)
 - [`ux-comercial/sistema-estados-acciones.md`](./ux-comercial/sistema-estados-acciones.md)
 - [`fases/ux-comercial/UX-COMERCIAL-01.md`](./fases/ux-comercial/UX-COMERCIAL-01.md)
-- [`prompts-cursor/CURSOR-UX-COMERCIAL-01.md`](./prompts-cursor/CURSOR-UX-COMERCIAL-01.md)
+- [`prompts/CURSOR-UX-COMERCIAL-01.md`](./prompts/CURSOR-UX-COMERCIAL-01.md)
 
 Regla: despues de liquidaciones oficiales internas, el foco inmediato es UX comercial antes de Previred/LRE/banco/contabilidad.
 ## ERP-NOIA-BITACORA-OPERATIVA-00 - Identidad global

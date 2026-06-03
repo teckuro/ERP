@@ -45,7 +45,7 @@ Liquidaciones no se generan desde datos vivos.
 Liquidaciones se generan desde nomina_mensual_confirmada o equivalente tecnico confirmado.
 ```
 
-Documento rector: [`../modulos/nomina-mensual/nomina-mensual-confirmacion-flow.md`](../modulos/nomina-mensual/nomina-mensual-confirmacion-flow.md).
+Documento rector: [`../modulos/nomina-mensual/flow/nomina-mensual-confirmacion-flow.md`](../modulos/nomina-mensual/flow/nomina-mensual-confirmacion-flow.md).
 
 ## Flujo obligatorio para una tarea UI
 
