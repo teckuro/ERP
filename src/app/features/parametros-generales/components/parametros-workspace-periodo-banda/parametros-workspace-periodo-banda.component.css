@@ -9,24 +9,31 @@ app-parametros-workspace-periodo-banda {
 
 .parametros-viewhead {
   display: grid;
-  gap: 6px;
-  padding: 10px 14px 8px;
+  gap: 0;
+  padding: 0;
   background: transparent;
+  border: 0;
   flex: 0 0 auto;
 }
 
-.parametros-period-band {
+/* Overrides con especificidad 0,2,0 para vencer la regla global
+   `.parametros-page .period-row, .parametros-page .parametros-period-band`
+   de src/styles.css sin tocar el archivo protegido. */
+.parametros-page .parametros-period-band {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px 12px;
+  gap: 6px 12px;
   align-items: center;
   border: 0;
+  border-bottom: 1px solid var(--prm-line, #e5e7eb);
   border-radius: 0;
   background: transparent;
-  padding: 0;
+  padding: 6px 12px 6px;
+  box-shadow: none;
 }
 
-.parametros-period-left {
+.parametros-page .parametros-period-left {
+  flex: initial;
   min-width: 0;
 }
 
@@ -130,11 +137,30 @@ app-parametros-workspace-periodo-banda {
   background: #ffffff;
   color: #475569;
   cursor: pointer;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    opacity 140ms ease;
+}
+
+.period-arrow:hover:not(:disabled) {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  color: var(--prm-ink, #111827);
+}
+
+.period-arrow:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
 }
 
 .period-arrow:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 0.5;
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-color: #e5e7eb;
 }
 
 .period-mensual__reference {

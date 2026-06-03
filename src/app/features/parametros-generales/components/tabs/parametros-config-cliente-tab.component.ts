@@ -39,7 +39,10 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
             </span>
           </label>
 
-          <label class="param-checkbox-inline">
+          <label
+            class="param-checkbox-inline"
+            [class.param-checkbox-inline--locked]="!editable"
+          >
             <input type="checkbox" formControlName="gratificacion" (click)="onReadonlyToggle($event)" />
             <span>Con gratificacion</span>
           </label>

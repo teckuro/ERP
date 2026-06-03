@@ -86,10 +86,18 @@
 
 .param-record-header p {
   margin: 0;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
   color: #64748b;
   font-size: 0.72rem;
   font-weight: 560;
   line-height: 1.35;
+}
+
+.param-record-header .param-eyebrow {
+  color: #475569;
 }
 
 .parametros-toolbar {
@@ -197,23 +205,93 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
 }
 
-.param-input:is([readonly], :disabled) {
+.param-input[readonly],
+.param-select[readonly] {
   background: var(--prm-field-readonly-bg);
   color: var(--prm-field-readonly-text);
   border-color: var(--prm-field-readonly-border);
   cursor: default;
+}
+
+.param-input:disabled,
+.param-select:disabled {
+  background: var(--prm-field-locked-bg);
+  color: var(--prm-field-locked-muted);
+  border-color: var(--prm-field-locked-border);
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.param-input:disabled::placeholder {
+  color: var(--prm-field-locked-muted);
+  opacity: 0.7;
 }
 
 .parametros-page .param-field-search-select .select-field.is-disabled {
-  opacity: 1;
+  opacity: 0.85;
+  background: var(--prm-field-locked-bg);
+  border-color: var(--prm-field-locked-border);
+  color: var(--prm-field-locked-muted);
+  cursor: not-allowed;
+}
+
+.parametros-page .param-field-search-select .select-field.is-disabled .select-value {
+  color: var(--prm-field-locked-muted);
+}
+
+.parametros-page .param-field-search-select .select-field.is-readonly {
   background: var(--prm-field-readonly-bg);
   border-color: var(--prm-field-readonly-border);
   color: var(--prm-field-readonly-text);
   cursor: default;
 }
 
-.parametros-page .param-field-search-select .select-field.is-disabled .select-value {
-  color: var(--prm-field-readonly-text);
+.parametros-page input[type='checkbox']:disabled,
+.parametros-page input[type='radio']:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  accent-color: #94a3b8;
+}
+
+.parametros-page label:has(input:disabled) {
+  cursor: not-allowed;
+  color: var(--prm-field-locked-muted);
+}
+
+/* Checkbox "lock" sin DOM disabled: el control está habilitado para que Angular
+   reactive forms siga emitiendo valor, pero el click está bloqueado vía JS y
+   visualmente debe leerse como readonly (sin azul activo). */
+.parametros-page .param-checkbox-inline--locked input[type='checkbox'],
+.parametros-page .param-check--locked input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-grid;
+  place-content: center;
+  margin: 0;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--prm-field-locked-border);
+  border-radius: 3px;
+  background: var(--prm-field-locked-bg);
+  accent-color: transparent;
+  cursor: default;
+}
+
+.parametros-page .param-checkbox-inline--locked input[type='checkbox']:checked,
+.parametros-page .param-check--locked input[type='checkbox']:checked {
+  border-color: var(--prm-field-locked-border);
+  background-color: #e2e8f0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 6.2 4.8 8.5 9.5 3.5' stroke='%23334155' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 11px 11px;
+}
+
+.parametros-page .param-checkbox-inline--locked,
+.parametros-page .param-check--locked,
+.parametros-page .erp-choice-radio--locked {
+  cursor: default;
+  color: var(--prm-field-locked-muted);
 }
 
 /* Selects: evitar que el texto empuje el layout */
@@ -489,12 +567,48 @@ select.param-input {
   border: 1px solid var(--prm-blue, #2563eb);
   background: var(--prm-blue, #2563eb);
   color: #ffffff;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    opacity 140ms ease;
+}
+
+.parametros-cierre-action:hover:not(:disabled) {
+  background: var(--prm-blue-hover, #1d4ed8);
+  border-color: var(--prm-blue-hover, #1d4ed8);
+}
+
+.parametros-cierre-action:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
 .parametros-cierre-ghost {
   border: 1px solid #cbd5e1;
   background: #ffffff;
   color: #334155;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    opacity 140ms ease;
+}
+
+.parametros-cierre-ghost:hover:not(:disabled) {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  color: var(--prm-ink, #111827);
+}
+
+.parametros-cierre-action:disabled,
+.parametros-cierre-ghost:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  background: var(--prm-field-locked-bg);
+  border-color: var(--prm-field-locked-border);
+  color: var(--prm-field-locked-muted);
+  box-shadow: none;
 }
 
 .parametros-cierre-group {
@@ -587,12 +701,11 @@ select.param-input {
 
 .parametros-page .param-record-header {
   flex: 0 0 auto;
-  display: grid;
+  display: block;
   min-width: 0;
-  gap: 3px;
-  border-bottom: 1px solid #e5e7eb;
-  background: #ffffff;
-  padding: 7px 10px;
+  border: 0;
+  background: transparent;
+  padding: 4px 12px 2px;
   overflow: visible;
 }
 

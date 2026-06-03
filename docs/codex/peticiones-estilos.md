@@ -1,3 +1,11 @@
+## 2026-06-02 - Parámetros · checkbox "Con gratificación" en lectura sin azul activo
+
+- **Síntoma**: el checkbox `formControlName="gratificacion"` se veía en azul activo aún en modo lectura (no editable). Como no está DOM-`disabled` (el click se intercepta por JS para que el FormControl siga emitiendo valor), el `accent-color: #2563eb` y el check nativo se renderizaban con el azul del sistema.
+- **Cambio**:
+  - `parametros-config-cliente-tab.component.ts`: el label ahora añade la clase `param-checkbox-inline--locked` cuando `!editable`.
+  - `parametros-workspace-container.css`: reglas espejo de `:disabled` para `.param-checkbox-inline--locked input[type='checkbox']` y `:checked` (mismo aspecto que readonly: borde y fondo `--prm-field-locked-*`, check oscuro SVG en lugar del nativo azul). También se cubren `.param-check--locked` y `.erp-choice-radio--locked` por consistencia.
+- **No tocado**: ni `formControlName`, ni el handler `onReadonlyToggle`, ni reglas globales. Riesgo nulo sobre la persistencia del valor.
+
 ## 2026-06-02 - Parámetros: revisión transversal iterativa (flujos banda, edición, guardado, reconciliación)
 
 Iteración por lotes pequeños sobre flujos que cruzan todas las tabs. Sin doc previo. Alcance acotado al módulo `parametros-generales` y al shared `app-page-actions` (extensión backward-compatible).

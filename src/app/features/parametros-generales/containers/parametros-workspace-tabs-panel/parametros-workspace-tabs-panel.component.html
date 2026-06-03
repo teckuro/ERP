@@ -29,13 +29,14 @@
 }
 
 <div class="parametros-tab-body" role="region" aria-label="Contenido de la sección">
-  <header class="param-record-header" aria-label="Contexto de la seccion activa">
-    <div>
-      <span class="param-eyebrow">{{ ws.activeRecordKind() }}</span>
-      <h2>{{ ws.activeRecordTitle() }}</h2>
-      <p>{{ ws.activeRecordDetail() }}</p>
-    </div>
-  </header>
+  @if (ws.activeArea() !== 'cierrePeriodo' && ws.activeRecordDetail()) {
+    <header class="param-record-header" aria-label="Contexto de la sección activa">
+      <p>
+        <span class="param-eyebrow">{{ ws.activeRecordKind() }}</span>
+        {{ ws.activeRecordDetail() }}
+      </p>
+    </header>
+  }
 
   @if (ws.activeArea() === 'cierrePeriodo') {
     <section class="parametros-cierre" aria-label="Cierre del período">
