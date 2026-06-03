@@ -1,3 +1,24 @@
+## 2026-06-02 - Nómina mensual V2 · L1 — Marco unificado del shell
+
+Lote 1 del plan iterativo (`auditoria-nomina-v2-2026-06.md`). Sin cambios funcionales; solo estructura visual del shell.
+
+- **Hallazgos resueltos**: H-S1, H-S2, H-S3, H-S5 (P0/P1 del shell) + aplanado de `.nomina-card` (que se compartía con cards de los pasos 1–3).
+- **Cambios en `nomina-mensual-v2-container.css`**:
+  - `.nmv2-page`: fuera el `linear-gradient(180deg, #f8fafc, #f5f7fb)` → fondo plano `#f6f8fb`. `gap: 12px` → `0` (las piezas se leen contiguas). `padding: 16px 18px 18px` → `12px 14px 14px` (alineado al patrón de Parámetros).
+  - `.nmv2-stepper-card, .surface-card, .toolbar-card, .alert-banner, .validation-summary-card, .footer-bar, .tabs-bar`: `border-radius: 18px` → `6px`; `box-shadow: 0 16px 40px ...` → `none`.
+  - `.nmv2-stepper-card`: borde completo arriba/laterales con `border-radius: 6px 6px 0 0` y `border-bottom: 0`; el frame continúa la divisoria desde abajo.
+  - `.nomina-workflow-header`: fuera `border-bottom: 1px solid #e2e8f0`; la divisoria la pinta ahora `.nmv2-step-frame` (un solo trazo).
+  - `.nmv2-step-frame`: `border-radius: 8px → 0 0 6px 6px`; `border-top: 1px solid #e2e8f0` explícito; sin `border-top-*-radius: 0` redundantes.
+  - `.nmv2-step-nav-hint`: deja de ser margin flotante; pasa a banda fina pegada al stepper con bordes laterales y bottom y variantes `--bloqueo` (#fef2f2/#fecaca) / `--revision` (#fffbeb/#fde68a) tonalmente sobrios.
+  - Overrides al final del archivo (`.nmv2-page > .nmv2-step-nav-hint`, `.nmv2-page > .nmv2-step-body`, `.nmv2-page[data-step='parameters']` gap) recalibrados para que stepper + hint + frame queden contiguos sin doble borde.
+- **Cambios en `nomina-mensual-v2-visual-system.css`**:
+  - `.nomina-card`: `border-radius: 14px` → `6px`. Sólo `transition: border-color`. Hover de `nomina-card--interactive` mantiene cambio de borde pero deja de aplicar `box-shadow: 0 4px 14px ...` y `transform: translateY(-1px)`.
+- **Cambios en `nomina-mensual-v2-stepper.component.css`**:
+  - `.nmv2-page .nomina-workflow-header.nmv2-stepper-card`: armoniza con el container (`border-radius: 8px 8px 0 0 → 6px 6px 0 0`, `border-bottom: 0`).
+- **No tocado**: cards internas de los pasos (`parameter-summary-card`, `alcance-opcion-card`, `summary-metric`, etc.) — se rediseñan en L2/L3/L4. Tampoco `nomina-mensual-v2-container.html` ni la lógica de navegación.
+- **Validación**: `npx ng build --configuration=development` verde (17.3 s). 2 warnings preexistentes de `line-clamp` (no introducidos por este lote). Lints sin nuevos errores.
+- **Pendiente próximo lote**: L2 — Paso Parámetros NOIA (cards → lista densa, donut → conteos inline, modal local → `app-message-box`).
+
 ## 2026-06-02 - Nómina mensual V2 · L0 — Higiene + pasos 4–8 congelados hasta V11
 
 Fase 0 del plan iterativo abierto en `docs/codex/modulos/nomina-mensual/auditoria-nomina-v2-2026-06.md`.
