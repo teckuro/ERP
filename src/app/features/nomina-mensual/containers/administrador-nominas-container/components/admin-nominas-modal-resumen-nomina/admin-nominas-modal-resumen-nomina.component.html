@@ -1,0 +1,138 @@
+<div
+  class="adm-nom-resumen__backdrop"
+  role="presentation"
+  (click)="onBackdrop($event)"
+  (keydown)="onEscape($event)"
+  tabindex="-1"
+>
+  <div
+    class="adm-nom-resumen"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="adm-nom-resumen-title"
+  >
+    <header class="adm-nom-resumen__head">
+      <div class="adm-nom-resumen__head-copy">
+        <p class="adm-nom-resumen__eyebrow">Resumen de validación</p>
+        <h2 id="adm-nom-resumen-title" class="adm-nom-resumen__title">
+          @if (contextoVista(); as c) {
+            {{ c.empresa }} · {{ c.periodo }}
+          } @else {
+            Resumen de nómina
+          }
+        </h2>
+        @if (contextoVista(); as c) {
+          <div class="adm-nom-resumen__chips">
+            <span class="adm-nom-resumen__chip adm-nom-resumen__chip--neutral">{{ c.tipo }}</span>
+            <span class="adm-nom-resumen__chip" [class]="'adm-nom-resumen__chip--' + c.badge.variant">
+              <span class="adm-nom-resumen__chip-dot" aria-hidden="true"></span>
+              {{ c.badge.label }}
+            </span>
+          </div>
+        }
+      </div>
+      <button
+        type="button"
+        class="adm-nom-resumen__close"
+        (click)="cerrarModal()"
+        aria-label="Cerrar"
+      >
+        <lucide-icon name="x" aria-hidden="true"></lucide-icon>
+      </button>
+    </header>
+
+    <div class="adm-nom-resumen__body">
+      <section class="adm-nom-resumen__section" aria-labelledby="adm-nom-resumen-totales">
+        <h3 id="adm-nom-resumen-totales" class="adm-nom-resumen__section-title">Totales</h3>
+        <ul class="adm-nom-resumen__metricas">
+          @for (m of metricas(); track m.id) {
+            <li>
+              <strong>{{ m.value }}</strong>
+              <span>{{ m.label }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <section class="adm-nom-resumen__section" aria-labelledby="adm-nom-resumen-guardias">
+        <h3 id="adm-nom-resumen-guardias" class="adm-nom-resumen__section-title">Guardias</h3>
+        <div class="adm-nom-resumen__guardias">
+          <div
+            class="adm-nom-resumen__guardia"
+            [class.adm-nom-resumen__guardia--ok]="resumen().puedeCalcular"
+            [class.adm-nom-resumen__guardia--bloqueada]="!resumen().puedeCalcular"
+          >
+            <lucide-icon
+              [name]="resumen().puedeCalcular ? 'circle-check' : 'circle-alert'"
+              aria-hidden="true"
+            ></lucide-icon>
+            <span>
+              <strong>{{ resumen().puedeCalcular ? 'Puede calcular' : 'Bloqueada para cálculo' }}</strong>
+              <small>{{ resumen().puedeCalcular ? 'No hay incidencias críticas bloqueantes.' : 'Resuelve las incidencias críticas antes del cálculo.' }}</small>
+            </span>
+          </div>
+          <div
+            class="adm-nom-resumen__guardia"
+            [class.adm-nom-resumen__guardia--ok]="resumen().puedeCerrar"
+            [class.adm-nom-resumen__guardia--bloqueada]="!resumen().puedeCerrar"
+          >
+            <lucide-icon
+              [name]="resumen().puedeCerrar ? 'circle-check' : 'circle-alert'"
+              aria-hidden="true"
+            ></lucide-icon>
+            <span>
+              <strong>{{ resumen().puedeCerrar ? 'Puede cerrar' : 'Bloqueada para cierre' }}</strong>
+              <small>{{ resumen().puedeCerrar ? 'Lista para aprobar y cerrar.' : 'Hay incidencias bloqueantes que impiden el cierre.' }}</small>
+            </span>
+          </div>
+        </div>
+        <p class="adm-nom-resumen__mensaje">{{ mensajeGuardia() }}</p>
+      </section>
+
+      @if (resumen().incidenciasCriticas.length > 0) {
+        <section class="adm-nom-resumen__section" aria-labelledby="adm-nom-resumen-criticas">
+          <h3 id="adm-nom-resumen-criticas" class="adm-nom-resumen__section-title adm-nom-resumen__section-title--danger">
+            Incidencias críticas ({{ resumen().incidenciasCriticas.length }})
+          </h3>
+          <ul class="adm-nom-resumen__lista">
+            @for (incidencia of resumen().incidenciasCriticas; track trackIncidencia($index, incidencia)) {
+              <li class="adm-nom-resumen__item adm-nom-resumen__item--danger">
+                <lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon>
+                <span>{{ incidencia.mensaje }}</span>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
+      @if (resumen().advertencias.length > 0) {
+        <section class="adm-nom-resumen__section" aria-labelledby="adm-nom-resumen-advertencias">
+          <h3 id="adm-nom-resumen-advertencias" class="adm-nom-resumen__section-title adm-nom-resumen__section-title--warning">
+            Advertencias ({{ resumen().advertencias.length }})
+          </h3>
+          <ul class="adm-nom-resumen__lista">
+            @for (incidencia of resumen().advertencias; track trackIncidencia($index, incidencia)) {
+              <li class="adm-nom-resumen__item adm-nom-resumen__item--warning">
+                <lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon>
+                <span>{{ incidencia.mensaje }}</span>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
+      @if (resumen().incidenciasCriticas.length === 0 && resumen().advertencias.length === 0) {
+        <section class="adm-nom-resumen__section">
+          <p class="adm-nom-resumen__sin-observaciones">
+            <lucide-icon name="circle-check" aria-hidden="true"></lucide-icon>
+            Sin observaciones registradas en esta nómina.
+          </p>
+        </section>
+      }
+    </div>
+
+    <footer class="adm-nom-resumen__foot">
+      <button type="button" class="adm-nom-resumen__btn" (click)="cerrarModal()">Cerrar</button>
+    </footer>
+  </div>
+</div>

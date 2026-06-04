@@ -8,6 +8,85 @@
 > - [`archivo/peticiones-estilos-2026-05.md`](./archivo/peticiones-estilos-2026-05.md) — mayo 2026 y anteriores (288 entradas, rotadas el 2026-06-03 por DOCS-AUDIT-02 / L3).
 
 ---
+## 2026-06-04 - Nómina mensual — Administrador de nóminas (NOM-REBUILD-NOMINA-MENSUAL-01 F2)
+
+Implementación de **F2 — UI Administrador de Nóminas** del plan `NOM-REBUILD-NOMINA-MENSUAL-01`. Estrena la ruta definitiva `/remuneraciones/nominas` y agrega un item nuevo de menú "Administrador de Nóminas", sin tocar V1 (`/remuneraciones/proceso-mensual`) ni V2 (`/remuneraciones/nomina-mensual-v2`). Coexistencia controlada hasta que F7 limpie las rutas legacy.
+
+### Decisiones (confirmadas por el usuario en plan)
+
+- Ruta **definitiva** `/remuneraciones/nominas` ya en F2 (no provisional). F3 sumará `/:id/generador`.
+- F2 completo de una pasada: estructura + grilla + filtros + KPIs + 2 modales + acción "Abrir generador".
+- Item nuevo en menú lateral (no reemplaza los existentes). Ícono `clipboard-list`. Insertado entre V2 y Liquidaciones.
+- Acciones por fila acotadas: `Abrir generador` y `Ver resumen` (las acciones avanzadas — calcular, validar, aprobar, cerrar, reabrir, anular, eliminar borrador — quedan declaradas en `rules` para F3+, pero NO se renderizan).
+
+### Archivos nuevos
+
+- **Page wrapper**: [`src/app/pages/administrador-nominas.page.ts`](../../src/app/pages/administrador-nominas.page.ts). Monta el container con `:host { display: flex; flex: 1 1 auto; min-height: 0 }` (patrón estándar del repo).
+- **Container**: [`src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.{ts,html,css}`](../../src/app/features/nomina-mensual/containers/administrador-nominas-container/). Standalone, `OnPush`, `ViewEncapsulation.None`, signals + computed. Prefijo CSS local `adm-nom-*`.
+- **Modal "Nueva nómina"**: `components/admin-nominas-modal-nueva-nomina/*.{ts,html,css}`. Form simple (período + empresa + tipo) en modal con backdrop propio. Submit dispara `crearNomina()` factory y emite `(creada)`. **No persiste** (limitación F2 — F3 conectará persistencia real).
+- **Modal "Resumen de nómina"**: `components/admin-nominas-modal-resumen-nomina/*.{ts,html,css}`. Read-only. Consume `obtenerResumenValidacionNomina()` del adapter mock. Muestra 5 métricas, 2 guardias (`puedeCalcular`/`puedeCerrar` con tono ok/bloqueada) y listas separadas de críticas/advertencias.
+- **Presenter**: [`src/app/features/nomina-mensual/presenters/admin-nominas.presenter.ts`](../../src/app/features/nomina-mensual/presenters/admin-nominas.presenter.ts). `COLUMNAS_ADMIN_NOMINAS` (9 columnas: período, empresa, tipo, trabajadores, segmentos, incidencias, estado, actualizada, acciones), `crearFiltrosAdminNominas(resumenes)` (5 filtros: búsqueda + período + estado + tipo + observaciones), `filtrarResumenes(resumenes, filtros)` (predicado puro para tests), `PERSISTENCIA_GRILLA_ADMIN = 'admin-nominas-grid-v1'`.
+- **Rules**: [`src/app/features/nomina-mensual/rules/admin-nominas.rules.ts`](../../src/app/features/nomina-mensual/rules/admin-nominas.rules.ts). `puedeEliminarBorrador`, `puedeReabrir`, `tieneLiquidaciones`, `puedeAnular`, `accionesDisponibles(estado)`. Declaradas para F3+; en F2 sólo se usan `abrir-generador` y `ver-resumen`.
+- **Util**: `containers/administrador-nominas-container/utils/admin-nominas-presentacion.util.ts`. `estadoNominaToBadge` (9 estados → 5 variantes), `tipoNominaToLabel` (4 tipos), `formatearActualizada` (Hoy / Ayer / Hace N días / dd/mm/yyyy), `calcularKpisAdminNominas` (KPIs operativos: abiertas / en cálculo / pendientes de cierre / con críticas).
+
+### Archivos modificados (cambios mínimos quirúrgicos)
+
+- [`src/app/app.routes.ts`](../../src/app/app.routes.ts) — agregada ruta hija `path: 'nominas'` dentro de `path: 'remuneraciones'`, después de `nomina-mensual-v2` y antes de `liquidaciones`. `loadComponent` apunta al page wrapper nuevo.
+- [`src/app/layout/shell-navigation.config.ts`](../../src/app/layout/shell-navigation.config.ts) — agregado item `Administrador de Nóminas` (ícono `clipboard-list`) en la sección `Principal`, entre V2 y Liquidaciones. Sin `badgeKey` (el badge "período" ya está cubierto por las dos entradas operativas existentes; el Admin es transversal a varios períodos).
+- [`src/app/layout/shell-route-context.config.ts`](../../src/app/layout/shell-route-context.config.ts) — agregado breadcrumb para `/remuneraciones/nominas` (`Remuneraciones › Administrador de Nóminas`).
+
+### Layout NOIA
+
+Vertical compacto, sin cards decorativas:
+
+1. **Encabezado** — eyebrow `Remuneraciones · Administrador`, título `Administrador de nóminas`, subtítulo dinámico (`N nóminas en seguimiento · M abiertas`), botón primario `Nueva nómina`.
+2. **Franja KPIs** — 4 métricas inline (`Abiertas / En cálculo / Pendientes de cierre / Con críticas`) sobre fondo subtle, separadores entre items. NO son cards: es una sola franja con grid responsivo.
+3. **`<app-data-grid>`** — `filtersCollapsible=false`, `filterChipsDisplay="whenFiltersHidden"`, `headerCountDisplay="text"`, `toolbarLayout="operativa"`, `persistenceKey="admin-nominas-grid-v1"`. Celdas custom via `<ng-template appDataGridCell>` para período (tabular), empresa (nombre + id muted), tipo (chip neutral), incidencias (chip danger/warning condicional), estado (chip con dot + variante), actualizada (formato humano), acciones (dos botones).
+4. **Modales** — backdrop propio (no usan `app-message-box`; era opción pero necesitábamos slots ricos para form y métricas), z-index 50, focus en el cierre por backdrop y por Escape.
+
+### Reglas NOIA respetadas
+
+- Sin colores neón, gradientes ni paletas nuevas. Usa la misma paleta que Alcance V2: `#1d4ed8` (info), `#047857` (success), `#b45309` (warning), `#b91c1c` (danger), `#374151` (neutral). Variables CSS estándar del repo.
+- Sin fuentes nuevas.
+- Sin cards decorativas: la franja de KPIs es operativa, no comercial.
+- Sin barras laterales fuertes ni sombras decorativas. Sólo borde + radio contenido.
+- Densidad compacta: padding 5-12 px, font-size 11-13 px, chips de 3 px vertical.
+- Una acción principal por zona (`Nueva nómina` en el head, `Abrir` por fila).
+- Copy operativo: "Administrador de nóminas", "Nóminas en seguimiento", "Pendientes de cierre", "Con críticas", "Borrador", "Dotación lista", "Calculada", "Cerrada". Sin jerga técnica visible (sin IDs internos, sin `dotacion_generada`, sin `nominaPeriodoId`).
+- Estados claros con badges sobrios (chip + dot + label).
+- Empty state operativo: "Aún no hay nóminas / Crea la primera nómina del período para empezar".
+- Reutilización del repo: `app-data-grid` (mismo patrón que Alcance V2), íconos lucide existentes, vars CSS estándar.
+
+### Tests (38 nuevos)
+
+- `admin-nominas.presenter.spec.ts` (7): columnas en orden, filtros sin duplicados, `filtrarResumenes` por estado, por observaciones (críticas/advertencias/limpias), búsqueda libre, combinaciones AND.
+- `admin-nominas.rules.spec.ts` (8): `puedeEliminarBorrador` (solo borrador), `puedeReabrir` (solo cerrada), `tieneLiquidaciones`, `puedeAnular`, `accionesDisponibles` para borrador, cerrada y anulada (matriz).
+- `admin-nominas-presentacion.util.spec.ts` (7): `estadoNominaToBadge` para los 9 estados, `tipoNominaToLabel` para los 4 tipos, `formatearActualizada` (Hoy / dd/mm/yyyy / inválida), `calcularKpisAdminNominas` con lista poblada y con lista vacía.
+- `admin-nominas-modal-nueva-nomina.component.spec.ts` (5): inicialización (período actual + primera empresa + tipo mensual), validación de período, emisión `(creada)` con `NominaPeriodo` válida, `cerrarModal` emite `(cerrar)`, período inválido NO emite.
+- `admin-nominas-modal-resumen-nomina.component.spec.ts` (5): métricas reflejan totales, `mensajeGuardia` positivo cuando `puedeCalcular && puedeCerrar`, bloquea cuando hay críticas, `contextoVista` expone empresa/periodo/badge, `cerrarModal` emite.
+- `administrador-nominas-container.spec.ts` (6): instancia + carga adapter, KPIs reflejan adapter, `abrirNuevaNomina/cerrarNuevaNomina` alterna flag, `abrirResumen` carga `ResumenValidacionNomina`, `abrirGenerador` llama a `router.navigate(['/remuneraciones/nomina-mensual-v2'], { queryParams: { periodo, nominaPeriodoId } })`, `onNominaCreada` agrega resumen al inicio y cierra modal.
+
+### Validación
+
+- `npx ng test --watch=false` con scope F2: **38/38 passed**.
+- `npx ng test --watch=false` suite completa: **1410 passed / 7 failed** (los 7 son los mismos pre-existentes documentados en F1; F2 no introduce regresiones).
+- `npx ng build --configuration=development`: bundle correcto, sin nuevos budget warnings. Nuevo lazy chunk `administrador-nominas-page = 140.44 KB` (bajo el budget de 150 KB del plan). Initial total sin cambios (2.35 MB).
+- `ReadLints` sobre F2: 0 errores.
+
+### Limitaciones conocidas (declaradas, NO bugs)
+
+- **Sin persistencia real**: el adapter mock de F1 no expone `crearNominaPeriodo`. F2 inyecta la `NominaPeriodo` recién creada en memoria local del container. Refresh de página la pierde. F3 conectará persistencia.
+- **Sin acciones avanzadas en UI**: `eliminar-borrador`, `reabrir`, `anular`, `ver-liquidaciones` están declaradas en `rules` y testeadas, pero NO se renderizan en F2. F3+ las habilitará.
+- **Navegación al Generador es placeholder**: la ruta definitiva `/remuneraciones/nominas/:id/generador` no existe en F2. F2 navega a `/remuneraciones/nomina-mensual-v2?periodo=...&nominaPeriodoId=...`. V2 actual no lee `nominaPeriodoId` todavía; no hace daño. F3 conectará la ruta definitiva.
+
+### Archivos NO tocados
+
+- `src/styles/*`, `angular.json`, `postcss.config.json`, fuentes globales — sin cambios.
+- V1 (`proceso-mensual-container/*`) y V2 (`nomina-mensual-v2/*`) — sin cambios.
+- Adapter mock de F1 — sin cambios (F2 sólo consume).
+- BD / SQL / RPC / RLS — sin cambios.
+
+---
 ## 2026-06-03 - Nómina mensual — Reconstrucción Admin + Generador (NOM-REBUILD-NOMINA-MENSUAL-01 F0+F1)
 
 Inicio de la **reconstrucción controlada** del módulo según el prompt rector `prompt_reconstruccion_controlada_nomina_mensual.md`. Esta entrada cubre F0 (documentación arquitectónica) + F1 (modelos centrales + adapter mock + tests). F2-F7 declaradas pero no ejecutadas en esta iteración. **Sin cambios visuales**: el alcance es modelos + adapter mock + documentación, no UI.

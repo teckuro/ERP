@@ -1,0 +1,225 @@
+.adm-nom-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 80px 16px 16px;
+  z-index: 50;
+  outline: none;
+}
+
+.adm-nom-modal {
+  background: #fff;
+  border: 1px solid var(--erp-border, #e5e7eb);
+  border-radius: 10px;
+  width: min(100%, 480px);
+  max-height: calc(100vh - 96px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 14px 32px -16px rgba(15, 23, 42, 0.28);
+}
+
+.adm-nom-modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid var(--erp-border, #e5e7eb);
+}
+
+.adm-nom-modal__eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--erp-text-muted, #6b7280);
+  margin: 0 0 4px;
+}
+
+.adm-nom-modal__title {
+  margin: 0 0 4px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--erp-text-strong, #0f172a);
+}
+
+.adm-nom-modal__subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: var(--erp-text-muted, #6b7280);
+  line-height: 1.4;
+}
+
+.adm-nom-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--erp-text-muted, #6b7280);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.adm-nom-modal__close:hover {
+  background: var(--erp-bg-subtle, #f8fafc);
+  border-color: var(--erp-border, #e5e7eb);
+}
+
+.adm-nom-modal__close lucide-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.adm-nom-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 20px 20px;
+  overflow-y: auto;
+}
+
+.adm-nom-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.adm-nom-modal__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--erp-text-strong, #0f172a);
+}
+
+.adm-nom-modal__input {
+  font-size: 13px;
+  padding: 8px 10px;
+  border: 1px solid var(--erp-border, #e5e7eb);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--erp-text-strong, #0f172a);
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.adm-nom-modal__input:focus {
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.15);
+}
+
+.adm-nom-modal__hint {
+  font-size: 11px;
+  color: var(--erp-text-muted, #6b7280);
+  line-height: 1.4;
+}
+
+.adm-nom-modal__hint--error {
+  color: #b91c1c;
+}
+
+.adm-nom-modal__tipos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.adm-nom-modal__tipo {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--erp-border, #e5e7eb);
+  border-radius: 6px;
+  cursor: pointer;
+  background: #fff;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.adm-nom-modal__tipo:hover {
+  background: var(--erp-bg-subtle, #f8fafc);
+}
+
+.adm-nom-modal__tipo input {
+  margin-top: 3px;
+  accent-color: #1d4ed8;
+}
+
+.adm-nom-modal__tipo-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.adm-nom-modal__tipo-copy strong {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--erp-text-strong, #0f172a);
+}
+
+.adm-nom-modal__tipo-copy small {
+  font-size: 11px;
+  color: var(--erp-text-muted, #6b7280);
+  line-height: 1.4;
+}
+
+.adm-nom-modal__tipo--activo {
+  border-color: #1d4ed8;
+  background: rgba(29, 78, 216, 0.06);
+}
+
+.adm-nom-modal__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+  border-top: 1px solid var(--erp-border, #e5e7eb);
+  padding-top: 12px;
+}
+
+.adm-nom-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--erp-border, #e5e7eb);
+  background: #fff;
+  color: var(--erp-text-strong, #0f172a);
+}
+
+.adm-nom-modal__btn:hover {
+  background: var(--erp-bg-subtle, #f8fafc);
+}
+
+.adm-nom-modal__btn--primary {
+  background: var(--erp-color-primary, #0f172a);
+  border-color: var(--erp-color-primary, #0f172a);
+  color: #fff;
+}
+
+.adm-nom-modal__btn--primary:hover {
+  background: var(--erp-color-primary-hover, #1e293b);
+  border-color: var(--erp-color-primary-hover, #1e293b);
+}
+
+.adm-nom-modal__btn--primary:disabled {
+  background: #94a3b8;
+  border-color: #94a3b8;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .adm-nom-modal__tipos {
+    grid-template-columns: 1fr;
+  }
+}

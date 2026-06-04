@@ -1,0 +1,138 @@
+<div class="adm-nom">
+  <header class="adm-nom__head">
+    <div class="adm-nom__head-copy">
+      <p class="adm-nom__eyebrow">Remuneraciones · Administrador</p>
+      <h1 class="adm-nom__title">Administrador de nóminas</h1>
+      <p class="adm-nom__subtitle">{{ subtitulo() }}</p>
+    </div>
+    <div class="adm-nom__head-actions">
+      <button type="button" class="adm-nom__btn-primary" (click)="abrirNuevaNomina()">
+        <lucide-icon name="plus" aria-hidden="true"></lucide-icon>
+        Nueva nómina
+      </button>
+    </div>
+  </header>
+
+  <ul class="adm-nom__kpis" aria-label="Resumen operativo del administrador">
+    @for (kpi of kpis().items; track kpi.id) {
+      <li class="adm-nom__kpi" [class]="'adm-nom__kpi--' + kpi.tone">
+        <strong>{{ kpi.value }}</strong>
+        <span>{{ kpi.label }}</span>
+      </li>
+    }
+  </ul>
+
+  <section class="adm-nom__grid-shell" aria-labelledby="adm-nom-grid-title">
+    <h2 id="adm-nom-grid-title" class="sr-only">Listado de nóminas</h2>
+    <app-data-grid
+      title=""
+      [columns]="columnas"
+      [rows]="resumenes()"
+      [filters]="filtros()"
+      [filtersEnabled]="true"
+      [filtersCollapsible]="false"
+      filterChipsDisplay="whenFiltersHidden"
+      headerCountDisplay="text"
+      headerCountNoun="nóminas"
+      [headerShowActiveFiltersCount]="true"
+      [selectable]="false"
+      [trackBy]="trackResumen"
+      [persistenceKey]="persistenceKey"
+      toolbarLayout="operativa"
+      emptyTitle="Aún no hay nóminas"
+      emptyDescription="Crea la primera nómina del período para empezar."
+      emptyTitleWhenFiltered="Sin nóminas con esos filtros"
+      emptyDescriptionWhenFiltered="Ajusta o limpia los filtros para ampliar el resultado."
+      className="adm-nom__grid"
+      cardClassName="adm-nom__grid-card"
+    >
+      <ng-template appDataGridCell="periodo" let-fila>
+        <span class="adm-nom__cell-periodo">{{ fila.periodo }}</span>
+      </ng-template>
+
+      <ng-template appDataGridCell="empresa" let-fila>
+        <div class="adm-nom__cell-empresa">
+          <span class="adm-nom__cell-empresa-nombre">{{ fila.empresaNombre }}</span>
+          <span class="adm-nom__cell-empresa-id">{{ fila.empresaId }}</span>
+        </div>
+      </ng-template>
+
+      <ng-template appDataGridCell="tipo" let-fila>
+        <span class="adm-nom__chip adm-nom__chip--neutral">{{ tipoNominaToLabel(fila.tipo) }}</span>
+      </ng-template>
+
+      <ng-template appDataGridCell="trabajadores" let-fila>
+        <span class="adm-nom__cell-num">{{ fila.totalTrabajadores }}</span>
+      </ng-template>
+
+      <ng-template appDataGridCell="segmentos" let-fila>
+        <span class="adm-nom__cell-num">{{ fila.totalSegmentos }}</span>
+      </ng-template>
+
+      <ng-template appDataGridCell="incidencias" let-fila>
+        @if (fila.totalIncidenciasCriticas > 0) {
+          <span class="adm-nom__chip adm-nom__chip--danger" [title]="fila.totalIncidenciasCriticas + ' incidencias críticas'">
+            {{ fila.totalIncidenciasCriticas }} crítica@if (fila.totalIncidenciasCriticas !== 1) {s}
+          </span>
+        } @else if (fila.totalAdvertencias > 0) {
+          <span class="adm-nom__chip adm-nom__chip--warning" [title]="fila.totalAdvertencias + ' advertencias'">
+            {{ fila.totalAdvertencias }} aviso@if (fila.totalAdvertencias !== 1) {s}
+          </span>
+        } @else {
+          <span class="adm-nom__cell-muted">Sin observaciones</span>
+        }
+      </ng-template>
+
+      <ng-template appDataGridCell="estado" let-fila>
+        @let badge = estadoNominaToBadge(fila.estado);
+        <span class="adm-nom__chip" [class]="'adm-nom__chip--' + badge.variant">
+          <span class="adm-nom__chip-dot" aria-hidden="true"></span>
+          {{ badge.label }}
+        </span>
+      </ng-template>
+
+      <ng-template appDataGridCell="actualizada" let-fila>
+        <span class="adm-nom__cell-muted">{{ formatearActualizada(fila.updatedAt) }}</span>
+      </ng-template>
+
+      <ng-template appDataGridCell="acciones" let-fila>
+        <div class="adm-nom__row-actions" (click)="$event.stopPropagation()">
+          <button
+            type="button"
+            class="adm-nom__row-action"
+            (click)="abrirResumen(fila)"
+            [attr.aria-label]="'Ver resumen de ' + fila.empresaNombre + ' ' + fila.periodo"
+          >
+            <lucide-icon name="file-text" aria-hidden="true"></lucide-icon>
+            Resumen
+          </button>
+          <button
+            type="button"
+            class="adm-nom__row-action adm-nom__row-action--primary"
+            (click)="abrirGenerador(fila)"
+            [attr.aria-label]="'Abrir generador de ' + fila.empresaNombre + ' ' + fila.periodo"
+          >
+            Abrir
+            <lucide-icon name="arrow-right" aria-hidden="true"></lucide-icon>
+          </button>
+        </div>
+      </ng-template>
+    </app-data-grid>
+  </section>
+
+  @if (modalNuevaAbierto()) {
+    <app-admin-nominas-modal-nueva-nomina
+      [empresasDisponibles]="resumenes()"
+      (creada)="onNominaCreada($event)"
+      (cerrar)="cerrarNuevaNomina()"
+    />
+  }
+
+  @if (resumenSeleccionado(); as resumen) {
+    <app-admin-nominas-modal-resumen-nomina
+      [nomina]="nominaSeleccionada()"
+      [resumen]="resumen"
+      (cerrar)="cerrarResumen()"
+    />
+  }
+</div>

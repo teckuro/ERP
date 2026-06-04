@@ -1,0 +1,102 @@
+<div
+  class="adm-nom-modal__backdrop"
+  role="presentation"
+  (click)="onBackdrop($event)"
+  (keydown)="onEscape($event)"
+  tabindex="-1"
+>
+  <div
+    class="adm-nom-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="adm-nom-modal-nueva-title"
+  >
+    <header class="adm-nom-modal__head">
+      <div>
+        <p class="adm-nom-modal__eyebrow">Crear nómina</p>
+        <h2 id="adm-nom-modal-nueva-title" class="adm-nom-modal__title">Nueva nómina</h2>
+        <p class="adm-nom-modal__subtitle">Define el período, la empresa y el tipo. Podrás ajustar la dotación dentro del Generador.</p>
+      </div>
+      <button
+        type="button"
+        class="adm-nom-modal__close"
+        (click)="cerrarModal()"
+        aria-label="Cerrar"
+      >
+        <lucide-icon name="x" aria-hidden="true"></lucide-icon>
+      </button>
+    </header>
+
+    <form class="adm-nom-modal__body" (submit)="$event.preventDefault(); confirmar()">
+      <div class="adm-nom-modal__field">
+        <label for="adm-nom-modal-periodo" class="adm-nom-modal__label">Período</label>
+        <input
+          id="adm-nom-modal-periodo"
+          type="month"
+          class="adm-nom-modal__input"
+          [value]="periodo()"
+          (input)="setPeriodo($any($event.target).value)"
+          required
+        />
+        @if (!periodoEsValido()) {
+          <small class="adm-nom-modal__hint adm-nom-modal__hint--error">Indica un período válido (formato AAAA-MM).</small>
+        } @else {
+          <small class="adm-nom-modal__hint">Cualquier mes del calendario. El cierre y la fecha de pago se definen en el Generador.</small>
+        }
+      </div>
+
+      <div class="adm-nom-modal__field">
+        <label for="adm-nom-modal-empresa" class="adm-nom-modal__label">Empresa</label>
+        <select
+          id="adm-nom-modal-empresa"
+          class="adm-nom-modal__input"
+          [value]="empresaId()"
+          (change)="setEmpresa($any($event.target).value)"
+          required
+        >
+          @if (empresas().length === 0) {
+            <option value="" disabled>No hay empresas disponibles</option>
+          }
+          @for (empresa of empresas(); track empresa.id) {
+            <option [value]="empresa.id">{{ empresa.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="adm-nom-modal__field">
+        <span class="adm-nom-modal__label">Tipo de nómina</span>
+        <div class="adm-nom-modal__tipos" role="radiogroup" aria-label="Tipo de nómina">
+          @for (opcion of tiposNomina; track opcion.id) {
+            <label
+              class="adm-nom-modal__tipo"
+              [class.adm-nom-modal__tipo--activo]="tipo() === opcion.id"
+            >
+              <input
+                type="radio"
+                name="adm-nom-modal-tipo"
+                [value]="opcion.id"
+                [checked]="tipo() === opcion.id"
+                (change)="setTipo(opcion.id)"
+              />
+              <span class="adm-nom-modal__tipo-copy">
+                <strong>{{ opcion.label }}</strong>
+                <small>{{ opcion.descripcion }}</small>
+              </span>
+            </label>
+          }
+        </div>
+      </div>
+
+      <footer class="adm-nom-modal__foot">
+        <button type="button" class="adm-nom-modal__btn" (click)="cerrarModal()">Cancelar</button>
+        <button
+          type="submit"
+          class="adm-nom-modal__btn adm-nom-modal__btn--primary"
+          [disabled]="!puedeCrear()"
+        >
+          Crear nómina
+        </button>
+      </footer>
+    </form>
+  </div>
+</div>

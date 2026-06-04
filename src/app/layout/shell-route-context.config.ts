@@ -19,6 +19,13 @@ export const SHELL_ROUTE_CONTEXT_ENTRIES: readonly ShellRouteContextEntry[] = [
     ],
   },
   {
+    match: '/remuneraciones/nominas',
+    breadcrumbs: [
+      { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+      { label: 'Administrador de Nóminas' },
+    ],
+  },
+  {
     match: '/remuneraciones/proceso-mensual',
     breadcrumbs: [
       { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },

@@ -38,6 +38,11 @@ export const SHELL_NAV_SECTIONS: ShellNavSection[] = [
         icon: 'sparkles',
         badgeKey: 'periodoMes',
       },
+      {
+        path: '/remuneraciones/nominas',
+        label: 'Administrador de Nóminas',
+        icon: 'clipboard-list',
+      },
       { path: '/remuneraciones/liquidaciones', label: 'Liquidaciones', icon: 'file-check-2' },
       { path: '/parametros', label: 'Parámetros', icon: 'settings' },
     ],

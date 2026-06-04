@@ -160,7 +160,7 @@ Resumen del contrato. Detalle completo en el spec.
 |------|---------|--------|
 | **F0** ✓ | Documentación (este archivo + estado-fases + contexto). | Solo `docs/codex/`. |
 | **F1** ✓ | Modelos + adapter mock + tests. | `features/nomina-mensual/models/ + services/ + data/`. Aditivo. |
-| **F2** | UI Administrador (cards resumen, grilla, modal nueva nómina, modal resumen). | `features/nomina-mensual/` (pantalla actual). |
+| **F2** ✓ | UI Administrador (KPIs operativos, grilla `app-data-grid`, modal nueva nómina, modal resumen, acción "Abrir generador"). | `features/nomina-mensual/containers/administrador-nominas-container/`, `pages/administrador-nominas.page.ts`, `presenters/admin-nominas.presenter.ts`, `rules/admin-nominas.rules.ts`, ruta `/remuneraciones/nominas`, menú + breadcrumbs. Sin tocar V1 ni V2. |
 | **F3** | Generador definitivo (6 pasos, nueva ruta). | Routing, menú, stepper, orquestador V2. |
 | **F4** | Dotación escalable (segmentos, filtros, paginación, acciones masivas, detalle bajo demanda). | Pasos `scope` + `employees` actuales (reemplazados por `Dotación`). |
 | **F5** | Movimientos integrados (recurrentes aplicados, manuales, omitir, editar este mes). | Paso `movements` actual. |
