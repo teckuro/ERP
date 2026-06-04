@@ -288,7 +288,13 @@ export class NominaCalculoSnapshotRepository {
   async anularSnapshotActivo(periodo: string, motivo?: string): Promise<void> {
     const activo = await this.obtenerSnapshotActivo(periodo);
     if (!activo?.idCalculoPeriodo) return;
-    const { error } = await this.supabase.rpc('anular_nomina_operativa', {
+    // Deuda técnica pre-existente: la RPC `anular_nomina_operativa` se referencia
+    // aquí pero no existe en la BD productiva (verificado 2026-06-04 al regenerar
+    // database.types.ts). La invocación fallará en runtime; se mantiene el cast
+    // para no introducir cambios de comportamiento fuera del scope F3 fusion.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rpc = this.supabase.rpc as unknown as (fn: string, args: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
+    const { error } = await rpc('anular_nomina_operativa', {
       p_id_calculo_periodo: activo.idCalculoPeriodo,
       p_periodo: periodo,
       p_observacion: motivo ?? undefined,

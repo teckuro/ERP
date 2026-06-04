@@ -275,6 +275,7 @@ create index if not exists ix_evento_auditoria_periodo
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   new.updated_at = now();
@@ -310,6 +311,8 @@ create trigger trg_movimiento_nomina_updated
 create or replace function public.tg_audit_nomina_periodo()
 returns trigger
 language plpgsql
+security definer
+set search_path = public
 as $$
 declare
   v_user uuid;
@@ -464,3 +467,7 @@ grant select, insert, update, delete on public.movimiento_recurrente     to auth
 grant select, insert, update, delete on public.movimiento_nomina         to authenticated;
 grant select, insert, update, delete on public.incidencia_nomina         to authenticated;
 grant select, insert                  on public.evento_auditoria_nomina  to authenticated;
+
+-- Funciones invocadas desde RLS deben ser ejecutables por roles autenticados.
+revoke all on function public.current_user_empresa_id() from public;
+grant execute on function public.current_user_empresa_id() to authenticated, anon, service_role;

@@ -8,6 +8,64 @@
 > - [`archivo/peticiones-estilos-2026-05.md`](./archivo/peticiones-estilos-2026-05.md) — mayo 2026 y anteriores (288 entradas, rotadas el 2026-06-03 por DOCS-AUDIT-02 / L3).
 
 ---
+## 2026-06-04 - Nómina mensual — F3 fusion · migración aplicada a PROD
+
+Migración SQL `supabase/migrations/20260604180000_nomina_rebuild_admin_generador.sql` aplicada al proyecto Supabase productivo `api-remuneraciones` (ref `mjrckxodzrfkyqjkyjkn`) usando `supabase db push` (CLI v2.101.0).
+
+### Pasos ejecutados
+
+1. **Dry-run** `supabase db push --dry-run` → confirmó que solo se aplicaría `20260604180000`.
+2. **Aplicación** `supabase db push` → aplicada en una sola transacción. NOTICEs de `drop ... if exists` esperados (primera aplicación).
+3. **Verificación remota** vía `supabase db query --linked`:
+   - 6 tablas existen y son consultables (count = 0).
+   - RLS habilitado en las 6 (`pg_tables.rowsecurity = true`).
+   - 5 triggers activos (`trg_nomina_periodo_updated`, `trg_segmento_nomina_updated`, `trg_movimiento_recurrente_updated`, `trg_movimiento_nomina_updated`, `trg_audit_nomina_periodo`).
+   - 3 funciones con `search_path = public` configurado y `security definer` en las que correspondía (`current_user_empresa_id`, `tg_audit_nomina_periodo`); `set_updated_at` queda sin secdef como corresponde.
+4. **Regeneración de types** `npm run types:supabase` → `src/app/core/models/database.types.ts` reemplazado con los tipos canónicos desde la BD real (1238 ins / 710 del). El archivo regenerado destapó una deuda técnica pre-existente: `nomina-calculo-snapshot.repository.ts:288` llamaba a la RPC `anular_nomina_operativa` que no existe en BD (solo existe `anular_nomina_preparacion` con firma distinta). Se preservó el comportamiento con un cast tipado mínimo + comentario explicativo. Es código fuera del scope F3 fusion y queda como TODO técnico.
+5. **`npx tsc --noEmit -p tsconfig.app.json`** → 0 errores.
+6. **`npx ng test --watch=false`** → 1458 pass / 4 fail. Las 4 fallas son exactamente las pre-existentes documentadas en F3 fusion (`liquidaciones-oficiales.service.spec.ts` ×2, `nomina-msgbox-lab.rules.spec.ts` ×1, `proceso-mensual-flow-nav.rules.spec.ts` ×1). **Cero regresiones nuevas**.
+7. **Smoke funcional en BD real**:
+   - INSERT en `nomina_periodo` (empresa 1, periodo `2025-01`) → UUID generado, defaults OK.
+   - Trigger de auditoría INSERT creó `evento_auditoria_nomina.accion = 'creada'`.
+   - UPDATE de estado a `calculada` → trigger creó `evento_auditoria_nomina.accion = 'calculada'`.
+   - `select public.current_user_empresa_id()` → retorna `1` (fallback OK).
+   - DELETE en cascada limpió el registro de prueba y los eventos asociados (`on delete cascade` funcional).
+
+### Archivos tocados
+
+- `src/app/core/models/database.types.ts` — regenerado con `npm run types:supabase` (Relationships ahora completas en las 6 tablas nuevas).
+- `src/app/features/nomina-mensual/data-access/nomina-calculo-snapshot.repository.ts` — cast mínimo en la llamada a `anular_nomina_operativa` (RPC inexistente, deuda técnica pre-existente). NO se cambia comportamiento de runtime.
+- `docs/codex/peticiones-estilos.md` — esta entrada.
+
+### Archivos NO tocados
+
+`angular.json`, `postcss.config.*`, `tailwind.config.*`, `src/styles/*`, mappers, repositorio nuevo, servicios productivos, componentes V2, motor V1, migración SQL (ya aplicada en push anterior).
+
+### Deuda técnica registrada
+
+- `anular_nomina_operativa` en `nomina-calculo-snapshot.repository.ts:288` se mantiene cast hasta resolver: crear la RPC en BD o reemplazar la llamada por la firma de `anular_nomina_preparacion(p_id_preparacion_nomina, p_motivo, p_metadata)`. Fuera del scope F3 fusion.
+
+---
+## 2026-06-04 - Nómina mensual — F3 fusion · hardening migración BD
+
+Endurecimiento de la migración `supabase/migrations/20260604180000_nomina_rebuild_admin_generador.sql` tras revisión a pedido del usuario ("revisa las migraciones y que quede todo ok"):
+
+- `public.current_user_empresa_id()` ahora tiene `revoke all from public` + `grant execute to authenticated, anon, service_role` explícitos (evita depender de defaults de Supabase).
+- `public.set_updated_at()` añade `set search_path = public` (lint Supabase).
+- `public.tg_audit_nomina_periodo()` se vuelve `security definer` con `search_path` fijo: el trigger inserta en `evento_auditoria_nomina` aunque la política RLS de inserción no llegue a ver la fila recién creada dentro de la misma transacción.
+- Documento `docs/codex/modulos/nomina-mensual/migracion-bd-nomina-rebuild.md` actualizado: verificación rápida ahora incluye consulta de RLS y triggers; rollback ahora incluye `drop function` de las tres funciones nuevas; sección 4 documenta los endurecimientos.
+
+No hay cambios en código TS, mappers, repositorios ni componentes. La migración sigue siendo idempotente (`create or replace`, `drop policy if exists`, etc.). UI sin cambios visibles.
+
+**Archivos tocados**:
+
+- `supabase/migrations/20260604180000_nomina_rebuild_admin_generador.sql` (funciones reforzadas + grants explícitos).
+- `docs/codex/modulos/nomina-mensual/migracion-bd-nomina-rebuild.md` (verificación + rollback + hardening).
+- `docs/codex/peticiones-estilos.md` (esta entrada).
+
+**Archivos NO tocados**: `angular.json`, `postcss.config.*`, `tailwind.config.*`, `src/styles/*`, `database.types.ts`, mappers, repositorios, servicios, componentes V2 ni motor V1.
+
+---
 ## 2026-06-04 - Nómina mensual — F3 fusion (Generador V2 renovado + BD real)
 
 Implementación de la fase **F3 fusion** del rebuild `NOM-REBUILD-NOMINA-MENSUAL-01` (F3 + F4 + F5 unificadas). El Generador V2 se reescribe en sitio para operar con 6 pasos (Parámetros, Dotación, Movimientos, Cálculo, Validación, Cierre) y se conecta a Supabase con tablas, RLS y triggers nuevos. El motor productivo V1 (`/remuneraciones/proceso-mensual`) sigue intacto: la coexistencia se resuelve por capas (`nomina_periodo` cabecera operativa + `nomina_calculo_*` snapshot del motor V1, unidas por `periodo + id_empresa`).
