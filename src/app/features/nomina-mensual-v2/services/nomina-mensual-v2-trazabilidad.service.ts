@@ -39,8 +39,7 @@ const EVENTOS_PERSISTIDOS_POR_PASO: Partial<Record<PayrollStepId, readonly TipoE
   parameters: ['PARAMETROS_CONGELADOS', 'PARAMETROS_VALIDADOS', 'SNAPSHOT_INVALIDADO'],
   calculation: ['CALCULO_EJECUTADO', 'SNAPSHOT_INVALIDADO'],
   validation: ['PRENOMINA_VALIDADA', 'SNAPSHOT_INVALIDADO'],
-  approval: ['PRENOMINA_APROBADA', 'RECALCULO_SOLICITADO'],
-  payslips: ['LIQUIDACIONES_GENERADAS'],
+  closure: ['PRENOMINA_APROBADA', 'RECALCULO_SOLICITADO', 'LIQUIDACIONES_GENERADAS'],
 };
 
 @Injectable({ providedIn: 'root' })
@@ -152,7 +151,7 @@ export class NominaMensualV2TrazabilidadService {
     return {
       idEvento: `srv-liq-${liquidacion.idLiquidacionPeriodo}`,
       periodo: liquidacion.periodo,
-      paso: 'payslips',
+      paso: 'closure',
       tipoEvento: 'LIQUIDACIONES_GENERADAS',
       usuarioId: liquidacion.usuarioGeneracionId ?? usuarioMetadata.id,
       usuarioNombre:
@@ -208,27 +207,15 @@ export class NominaMensualV2TrazabilidadService {
   ): void {
     if (!contexto) return;
 
-    const ultimoAlcance = locales.find((e) => e.paso === 'scope' && e.origen === 'local');
-    if (ultimoAlcance && auditoria.scope) {
-      auditoria.scope = {
-        ...auditoria.scope,
+    const ultimoDotacion = locales.find((e) => e.paso === 'dotacion' && e.origen === 'local');
+    if (ultimoDotacion && auditoria.dotacion) {
+      auditoria.dotacion = {
+        ...auditoria.dotacion,
         estado: 'validado',
-        accionPrincipal: ultimoAlcance.descripcion,
-        usuarioNombre: ultimoAlcance.usuarioNombre,
-        fechaAccion: ultimoAlcance.fechaEvento,
-        integridad: ultimoAlcance.integridad,
-      };
-    }
-
-    const ultimoEmpleados = locales.find((e) => e.paso === 'employees' && e.origen === 'local');
-    if (ultimoEmpleados && auditoria.employees) {
-      auditoria.employees = {
-        ...auditoria.employees,
-        estado: 'validado',
-        accionPrincipal: ultimoEmpleados.descripcion,
-        usuarioNombre: ultimoEmpleados.usuarioNombre,
-        fechaAccion: ultimoEmpleados.fechaEvento,
-        integridad: ultimoEmpleados.integridad,
+        accionPrincipal: ultimoDotacion.descripcion,
+        usuarioNombre: ultimoDotacion.usuarioNombre,
+        fechaAccion: ultimoDotacion.fechaEvento,
+        integridad: ultimoDotacion.integridad,
       };
     }
 

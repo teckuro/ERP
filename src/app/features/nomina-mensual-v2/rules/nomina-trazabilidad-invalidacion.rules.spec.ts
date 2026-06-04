@@ -6,8 +6,8 @@ import {
 
 describe('nomina-trazabilidad-invalidacion.rules', () => {
   it('lista pasos posteriores a parameters', () => {
-    expect(pasosPosterioresA('parameters')).toContain('scope');
-    expect(pasosPosterioresA('parameters')).toContain('approval');
+    expect(pasosPosterioresA('parameters')).toContain('dotacion');
+    expect(pasosPosterioresA('parameters')).toContain('closure');
   });
 
   it('invalida cuando hay alcance confirmado y se revalidan parámetros', () => {

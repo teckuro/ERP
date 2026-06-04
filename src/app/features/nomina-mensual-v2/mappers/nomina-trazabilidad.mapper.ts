@@ -21,13 +21,11 @@ import { etiquetaEstadoAuditoriaPaso } from '../utils/nomina-trazabilidad-presen
 
 const TITULOS_PASO: Record<PayrollStepId, string> = {
   parameters: 'Parámetros',
-  scope: 'Alcance',
-  employees: 'Empleados',
-  movements: 'Novedades',
+  dotacion: 'Dotación',
+  movements: 'Movimientos',
   calculation: 'Cálculo',
   validation: 'Validación',
-  approval: 'Aprobación',
-  payslips: 'Liquidaciones',
+  closure: 'Cierre',
 };
 
 /** Integridad desde snapshot servidor: registrado, no verificado (V10 no valida server-side). */
@@ -94,7 +92,7 @@ export function mapSnapshotsToEventosTrazabilidad(
       eventos.push({
         idEvento: `srv-apr-${idSnapshot}-${snapshot.aprobacionOperativa.fecha}`,
         periodo: snapshot.periodo,
-        paso: 'approval',
+        paso: 'closure',
         tipoEvento: 'PRENOMINA_APROBADA',
         usuarioId: snapshot.aprobacionOperativa.usuarioId,
         usuarioNombre: snapshot.aprobacionOperativa.usuarioLabel || 'Usuario no disponible en esta sesion',
@@ -110,7 +108,7 @@ export function mapSnapshotsToEventosTrazabilidad(
       eventos.push({
         idEvento: `srv-cierre-${idSnapshot}-${snapshot.cierreOperativo.fecha}`,
         periodo: snapshot.periodo,
-        paso: 'payslips',
+        paso: 'closure',
         tipoEvento: 'LIQUIDACIONES_GENERADAS',
         usuarioId: snapshot.cierreOperativo.usuarioId,
         usuarioNombre: snapshot.cierreOperativo.usuarioLabel || 'Usuario no disponible en esta sesion',
@@ -126,7 +124,7 @@ export function mapSnapshotsToEventosTrazabilidad(
       eventos.push({
         idEvento: `srv-reap-${idSnapshot}-${snapshot.reaperturaOperativa.fecha}`,
         periodo: snapshot.periodo,
-        paso: 'approval',
+        paso: 'closure',
         tipoEvento: 'RECALCULO_SOLICITADO',
         usuarioId: snapshot.reaperturaOperativa.usuarioId,
         usuarioNombre: snapshot.reaperturaOperativa.usuarioLabel || 'Usuario no disponible en esta sesion',
@@ -209,7 +207,7 @@ export function buildAuditoriaPorPaso(
 ): Partial<Record<PayrollStepId, ResumenAuditoriaPasoNomina>> {
   const resultado: Partial<Record<PayrollStepId, ResumenAuditoriaPasoNomina>> = {};
   const pasos: PayrollStepId[] = [
-    'parameters', 'scope', 'employees', 'movements', 'calculation', 'validation', 'approval', 'payslips',
+    'parameters', 'dotacion', 'movements', 'calculation', 'validation', 'closure',
   ];
 
   for (const paso of pasos) {
@@ -223,7 +221,7 @@ export function buildAuditoriaPorPaso(
         usuarioNombre: '—',
         fechaAccion: null,
         integridad: { estadoIntegridad: 'noDisponible' },
-        requiereAprobacion: paso === 'approval',
+        requiereAprobacion: paso === 'closure',
       };
       continue;
     }
@@ -238,7 +236,7 @@ export function buildAuditoriaPorPaso(
       usuarioNombre: ultimo.usuarioNombre,
       fechaAccion: ultimo.fechaEvento,
       integridad: ultimo.integridad,
-      requiereAprobacion: paso === 'approval' && ultimo.tipoEvento !== 'PRENOMINA_APROBADA',
+      requiereAprobacion: paso === 'closure' && ultimo.tipoEvento !== 'PRENOMINA_APROBADA',
       aprobadoPor: ultimo.tipoEvento === 'PRENOMINA_APROBADA' ? ultimo.usuarioNombre : null,
       fechaAprobacion: ultimo.tipoEvento === 'PRENOMINA_APROBADA' ? ultimo.fechaEvento : null,
     };
@@ -269,13 +267,13 @@ export function buildDetalleModal(
     } else {
       resumenFuncional.push('Base de parámetros preparada para el período');
     }
-  } else if (paso === 'scope' && ctx?.alcance) {
+  } else if (paso === 'dotacion' && ctx?.alcance) {
     const a = ctx.alcance;
     resumenFuncional.push(`${a.trabajadoresIncluidos} trabajadores incluidos`);
     resumenFuncional.push(`${a.bloqueados} bloqueados`);
     resumenFuncional.push(`${a.advertencias} advertencias`);
     resumenFuncional.push(`Tipo: ${a.tipoAlcance}`);
-  } else if (paso === 'employees' && ctx?.empleados) {
+  } else if (paso === 'dotacion' && ctx?.empleados) {
     const e = ctx.empleados;
     resumenFuncional.push(`${e.revisados} trabajadores revisados`);
     resumenFuncional.push(`${e.bloqueos} bloqueos`);

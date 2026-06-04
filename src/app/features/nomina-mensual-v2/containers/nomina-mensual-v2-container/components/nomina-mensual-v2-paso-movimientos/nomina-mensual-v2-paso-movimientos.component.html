@@ -1,0 +1,248 @@
+<section class="paso-mov" aria-labelledby="paso-mov-title">
+  <header class="paso-mov__head">
+    <div class="paso-mov__copy">
+      <p class="paso-mov__eyebrow">Paso 3 · Movimientos</p>
+      <h2 id="paso-mov-title" class="paso-mov__title">Movimientos del período</h2>
+      <p class="paso-mov__subtitle">
+        Aplica recurrentes activos, agrega manuales por excepción y omite lo que no corresponde
+        a este período. La aplicación de recurrentes es idempotente: no duplica ni reaplica omitidos.
+      </p>
+    </div>
+    <div class="paso-mov__counters">
+      <span class="paso-mov__stat">
+        <strong>{{ movimientosAplicados().length }}</strong>
+        <small>aplicados</small>
+      </span>
+      <span class="paso-mov__stat">
+        <strong>{{ movimientosManuales().length }}</strong>
+        <small>manuales</small>
+      </span>
+      <span class="paso-mov__stat">
+        <strong>{{ movimientosOmitidos().length }}</strong>
+        <small>omitidos</small>
+      </span>
+    </div>
+  </header>
+
+  <nav class="paso-mov__tabs" role="tablist">
+    <button
+      type="button"
+      role="tab"
+      class="paso-mov__tab"
+      [class.is-active]="tabActivo() === 'recurrentes'"
+      [attr.aria-selected]="tabActivo() === 'recurrentes'"
+      (click)="cambiarTab('recurrentes')"
+    >Recurrentes ({{ recurrentes().length }})</button>
+    <button
+      type="button"
+      role="tab"
+      class="paso-mov__tab"
+      [class.is-active]="tabActivo() === 'manuales'"
+      [attr.aria-selected]="tabActivo() === 'manuales'"
+      (click)="cambiarTab('manuales')"
+    >Manuales ({{ movimientosManuales().length }})</button>
+    <button
+      type="button"
+      role="tab"
+      class="paso-mov__tab"
+      [class.is-active]="tabActivo() === 'omitidos'"
+      [attr.aria-selected]="tabActivo() === 'omitidos'"
+      (click)="cambiarTab('omitidos')"
+    >Omitidos este mes ({{ movimientosOmitidos().length }})</button>
+  </nav>
+
+  @if (error(); as msg) {
+    <p class="paso-mov__alert is-error" role="alert">{{ msg }}</p>
+  }
+  @if (mensaje(); as msg) {
+    <p class="paso-mov__alert is-info" role="status">{{ msg }}</p>
+  }
+
+  @if (loading()) {
+    <p class="paso-mov__placeholder">Cargando movimientos…</p>
+  }
+
+  @switch (tabActivo()) {
+    @case ('recurrentes') {
+      <div class="paso-mov__tab-body">
+        <div class="paso-mov__bar">
+          <p class="paso-mov__bar-copy">
+            Se aplican los recurrentes activos según sus criterios. No reaplica movimientos
+            omitidos ni duplica los ya aplicados.
+          </p>
+          <button
+            type="button"
+            class="paso-mov__btn is-primary"
+            (click)="aplicarRecurrentes()"
+            [disabled]="aplicando() || !nominaPeriodoId()"
+          >
+            {{ aplicando() ? 'Aplicando…' : 'Aplicar recurrentes a la nómina' }}
+          </button>
+        </div>
+        @if (recurrentes().length === 0) {
+          <p class="paso-mov__placeholder">No hay recurrentes activos en la empresa.</p>
+        } @else {
+          <ul class="paso-mov__list">
+            @for (rec of recurrentes(); track rec.id) {
+              <li class="paso-mov__list-item">
+                <div class="paso-mov__list-main">
+                  <strong>{{ rec.tipo }}</strong>
+                  <span class="paso-mov__list-meta">
+                    {{ rec.categoria }} · {{ rec.frecuencia }}
+                    @if (rec.monto != null) {
+                      · ${{ rec.monto | number:'1.0-0' }}
+                    }
+                  </span>
+                  @if (rec.glosa) {
+                    <small class="paso-mov__list-glosa">{{ rec.glosa }}</small>
+                  }
+                </div>
+                <span class="paso-mov__chip" [attr.data-estado]="rec.estado">{{ rec.estado }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+    @case ('manuales') {
+      <div class="paso-mov__tab-body">
+        <form class="paso-mov__form" (submit)="$event.preventDefault(); crearMovimientoManual()">
+          <div class="paso-mov__form-row">
+            <label class="paso-mov__field">
+              Trabajador (ID)
+              <input
+                type="text"
+                [value]="borradorManual().trabajadorId"
+                (input)="actualizarTrabajadorManual($any($event.target).value)"
+                placeholder="123"
+                required
+              />
+            </label>
+            <label class="paso-mov__field">
+              Tipo
+              <input
+                type="text"
+                [value]="borradorManual().tipo"
+                (input)="actualizarTipoManual($any($event.target).value)"
+                placeholder="bono, descuento, hora-extra…"
+                required
+              />
+            </label>
+            <label class="paso-mov__field">
+              Categoría
+              <select
+                [value]="borradorManual().categoria"
+                (change)="actualizarCategoriaManual($any($event.target).value)"
+              >
+                <option value="haber">Haber</option>
+                <option value="descuento">Descuento</option>
+                <option value="ausencia">Ausencia</option>
+                <option value="informativo">Informativo</option>
+              </select>
+            </label>
+            <label class="paso-mov__field">
+              Monto
+              <input
+                type="number"
+                [value]="borradorManual().monto"
+                (input)="actualizarMontoManual($any($event.target).valueAsNumber)"
+                min="0"
+                step="1"
+              />
+            </label>
+            <label class="paso-mov__field paso-mov__field--wide">
+              Glosa
+              <input
+                type="text"
+                [value]="borradorManual().glosa ?? ''"
+                (input)="actualizarGlosaManual($any($event.target).value)"
+                placeholder="Justificación operativa"
+              />
+            </label>
+            <button
+              type="submit"
+              class="paso-mov__btn is-primary"
+              [disabled]="aplicando() || !borradorManual().trabajadorId"
+            >Agregar movimiento</button>
+          </div>
+        </form>
+
+        @if (movimientosManuales().length === 0) {
+          <p class="paso-mov__placeholder">Aún no hay movimientos manuales.</p>
+        } @else {
+          <ul class="paso-mov__list">
+            @for (mov of movimientosManuales(); track mov.id) {
+              <li class="paso-mov__list-item">
+                <div class="paso-mov__list-main">
+                  <strong>{{ mov.tipo }}</strong>
+                  <span class="paso-mov__list-meta">
+                    Trabajador {{ mov.trabajadorId }} · {{ mov.categoria }}
+                    @if (mov.monto != null) {
+                      · ${{ mov.monto | number:'1.0-0' }}
+                    }
+                  </span>
+                  @if (mov.glosa) {
+                    <small class="paso-mov__list-glosa">{{ mov.glosa }}</small>
+                  }
+                </div>
+                <div class="paso-mov__list-actions">
+                  <span class="paso-mov__chip" [attr.data-estado]="mov.estado">{{ mov.estado }}</span>
+                  @if (mov.estado !== 'omitido') {
+                    <button
+                      type="button"
+                      class="paso-mov__link"
+                      (click)="omitirMovimiento(mov.id)"
+                    >Omitir</button>
+                  } @else {
+                    <button
+                      type="button"
+                      class="paso-mov__link"
+                      (click)="aplicarMovimientoIndividual(mov.id)"
+                    >Reaplicar</button>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+    @case ('omitidos') {
+      <div class="paso-mov__tab-body">
+        @if (movimientosOmitidos().length === 0) {
+          <p class="paso-mov__placeholder">No hay movimientos omitidos en este período.</p>
+        } @else {
+          <ul class="paso-mov__list">
+            @for (mov of movimientosOmitidos(); track mov.id) {
+              <li class="paso-mov__list-item">
+                <div class="paso-mov__list-main">
+                  <strong>{{ mov.tipo }}</strong>
+                  <span class="paso-mov__list-meta">
+                    Trabajador {{ mov.trabajadorId }} · {{ mov.origen }}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  class="paso-mov__link"
+                  (click)="aplicarMovimientoIndividual(mov.id)"
+                >Reaplicar</button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+  }
+
+  <footer class="paso-mov__footer">
+    <button type="button" class="paso-mov__btn is-ghost" (click)="emitirVolver()">
+      Volver a dotación
+    </button>
+    <button
+      type="button"
+      class="paso-mov__btn is-primary"
+      (click)="emitirAvance()"
+      [disabled]="!puedeAvanzar() || loading() || aplicando()"
+    >Continuar al cálculo</button>
+  </footer>
+</section>

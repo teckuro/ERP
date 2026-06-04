@@ -1,0 +1,119 @@
+<section class="paso-val" aria-labelledby="paso-val-title">
+  <header class="paso-val__head">
+    <div class="paso-val__copy">
+      <p class="paso-val__eyebrow">Paso 5 · Validación</p>
+      <h2 id="paso-val-title" class="paso-val__title">Resumen de validación</h2>
+      <p class="paso-val__subtitle">
+        Revisa incidencias críticas y advertencias antes de aprobar el cierre. Sólo se habilita
+        la aprobación cuando no quedan bloqueos críticos.
+      </p>
+    </div>
+    <button type="button" class="paso-val__btn is-ghost" (click)="recargar()" [disabled]="cargando()">
+      Refrescar
+    </button>
+  </header>
+
+  @if (cargando()) {
+    <p class="paso-val__placeholder">Cargando resumen…</p>
+  }
+
+  @if (error(); as msg) {
+    <p class="paso-val__alert is-error" role="alert">{{ msg }}</p>
+  }
+
+  @if (resumen(); as r) {
+    <ul class="paso-val__metrics" aria-label="Totales de validación">
+      <li>
+        <strong>{{ r.totalTrabajadores }}</strong>
+        <small>en dotación</small>
+      </li>
+      <li>
+        <strong>{{ r.listosParaCalculo }}</strong>
+        <small>listos</small>
+      </li>
+      <li>
+        <strong>{{ r.conIncidenciasCriticas }}</strong>
+        <small>con incidencias críticas</small>
+      </li>
+      <li>
+        <strong>{{ r.conAdvertencias }}</strong>
+        <small>con advertencias</small>
+      </li>
+      <li>
+        <strong>{{ r.conMovimientosEspeciales }}</strong>
+        <small>con movimientos especiales</small>
+      </li>
+    </ul>
+
+    <div class="paso-val__filters">
+      <label class="paso-val__field">
+        Severidad
+        <select
+          [value]="filtroSeveridad()"
+          (change)="cambiarFiltroSeveridad($any($event.target).value)"
+        >
+          <option value="todas">Todas</option>
+          <option value="critica">Solo críticas</option>
+          <option value="advertencia">Solo advertencias</option>
+        </select>
+      </label>
+      <label class="paso-val__field paso-val__field--wide">
+        Buscar mensaje
+        <input
+          type="search"
+          [value]="busqueda()"
+          (input)="busqueda.set($any($event.target).value)"
+          placeholder="palabra clave"
+        />
+      </label>
+    </div>
+
+    @if (incidenciasFiltradas().length === 0) {
+      <p class="paso-val__placeholder">
+        @if (r.totalTrabajadores === 0) {
+          La nómina aún no tiene trabajadores con incidencias.
+        } @else {
+          No hay incidencias para los criterios seleccionados.
+        }
+      </p>
+    } @else {
+      <ul class="paso-val__list">
+        @for (inc of incidenciasFiltradas(); track inc.id) {
+          <li class="paso-val__list-item" [attr.data-severidad]="inc.severidad">
+            <div class="paso-val__list-main">
+              <strong>{{ inc.mensaje }}</strong>
+              <small class="paso-val__list-meta">
+                {{ inc.tipo }}
+                @if (inc.trabajadorId) {
+                  · Trabajador {{ inc.trabajadorId }}
+                }
+                @if (inc.bloqueante) {
+                  · Bloqueante
+                }
+              </small>
+            </div>
+            @if (inc.trabajadorId) {
+              <button
+                type="button"
+                class="paso-val__link"
+                (click)="emitirVerEnDotacion(inc.trabajadorId)"
+              >Ver en dotación</button>
+            }
+          </li>
+        }
+      </ul>
+    }
+  }
+
+  <footer class="paso-val__footer">
+    <button type="button" class="paso-val__btn is-ghost" (click)="emitirVolver()">
+      Volver al cálculo
+    </button>
+    <button
+      type="button"
+      class="paso-val__btn is-primary"
+      (click)="emitirAprobar()"
+      [disabled]="!puedeAprobar()"
+    >Aprobar para cierre</button>
+  </footer>
+</section>

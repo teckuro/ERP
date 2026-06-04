@@ -3,13 +3,11 @@ import type { TipoEventoTrazabilidadNomina } from '../models/nomina-trazabilidad
 
 const ORDEN_PASOS: PayrollStepId[] = [
   'parameters',
-  'scope',
-  'employees',
+  'dotacion',
   'movements',
   'calculation',
   'validation',
-  'approval',
-  'payslips',
+  'closure',
 ];
 
 export function pasosPosterioresA(paso: PayrollStepId): PayrollStepId[] {
@@ -24,8 +22,7 @@ export function pasosInvalidadosPorEvento(
 ): PayrollStepId[] {
   if (tipo !== 'SNAPSHOT_INVALIDADO' && tipo !== 'RECALCULO_SOLICITADO') {
     if (pasoOrigen === 'parameters') return pasosPosterioresA('parameters');
-    if (pasoOrigen === 'scope') return pasosPosterioresA('scope').filter((p) => p !== 'movements' || pasoOrigen === 'scope');
-    if (pasoOrigen === 'employees') return pasosPosterioresA('employees');
+    if (pasoOrigen === 'dotacion') return pasosPosterioresA('dotacion');
   }
   if (tipo === 'SNAPSHOT_INVALIDADO' || tipo === 'RECALCULO_SOLICITADO') {
     return pasosPosterioresA(pasoOrigen);

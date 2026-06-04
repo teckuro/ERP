@@ -12,17 +12,10 @@ export const SHELL_ROUTE_CONTEXT_ENTRIES: readonly ShellRouteContextEntry[] = [
   { match: '/empleados/nuevo', breadcrumbs: [{ label: 'Empleados', path: '/empleados' }, { label: 'Nuevo empleado' }] },
   { match: '/empleados', breadcrumbs: [{ label: 'Empleados' }] },
   {
-    match: '/remuneraciones/nomina-mensual-v2',
-    breadcrumbs: [
-      { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
-      { label: 'Nómina mensual V2' },
-    ],
-  },
-  {
     match: '/remuneraciones/nominas',
     breadcrumbs: [
       { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
-      { label: 'Administrador de Nóminas' },
+      { label: 'Administrador de nóminas' },
     ],
   },
   {
@@ -85,6 +78,14 @@ export function resolveShellRouteBreadcrumbs(url: string): ShellBreadcrumbItem[]
 
   if (normalized.startsWith('/empresas/') && normalized !== '/empresas/nueva') {
     return [{ label: 'Empresas', path: '/empresas' }, { label: 'Ficha empresa' }];
+  }
+
+  if (/^\/remuneraciones\/nominas\/[^/]+\/generador$/.test(normalized)) {
+    return [
+      { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+      { label: 'Administrador de nóminas', path: '/remuneraciones/nominas' },
+      { label: 'Generador' },
+    ];
   }
 
   const sorted = [...SHELL_ROUTE_CONTEXT_ENTRIES].sort((a, b) => b.match.length - a.match.length);

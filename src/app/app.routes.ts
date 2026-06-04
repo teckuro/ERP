@@ -88,13 +88,18 @@ export const routes: Routes = [
           },
           {
             path: 'nomina-mensual-v2',
-            loadComponent: () =>
-              import('./pages/nomina-mensual-v2.page').then((m) => m.NominaMensualV2Page),
+            pathMatch: 'full',
+            redirectTo: 'nominas',
           },
           {
             path: 'nominas',
             loadComponent: () =>
               import('./pages/administrador-nominas.page').then((m) => m.AdministradorNominasPage),
+          },
+          {
+            path: 'nominas/:nominaPeriodoId/generador',
+            loadComponent: () =>
+              import('./pages/nomina-mensual-v2.page').then((m) => m.NominaMensualV2Page),
           },
           {
             path: 'msgbox-lab',

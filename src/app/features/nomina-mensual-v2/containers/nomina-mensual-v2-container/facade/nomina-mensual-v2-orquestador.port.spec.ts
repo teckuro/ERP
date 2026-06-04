@@ -31,7 +31,7 @@ describe('NominaMensualV2OrquestadorPort', () => {
   it('reinicia el estado dependiente del periodo al cambiar mes o anio', () => {
     const orquestador = new NominaMensualV2OrquestadorPort();
 
-    orquestador.modalAvanceParametros.set({ tipo: 'revision', destinoPaso: 'scope' });
+    orquestador.modalAvanceParametros.set({ tipo: 'revision', destinoPaso: 'dotacion' });
     orquestador.resultadoAlcance.set({
       tipo: 'empresaCompleta',
       descripcion: 'Empresa completa',

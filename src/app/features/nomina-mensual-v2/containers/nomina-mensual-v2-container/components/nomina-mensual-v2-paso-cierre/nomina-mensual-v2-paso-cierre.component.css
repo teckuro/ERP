@@ -1,0 +1,225 @@
+:host { display: block; width: 100%; }
+
+.paso-cierre {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.paso-cierre__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.paso-cierre__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 720px;
+}
+
+.paso-cierre__eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.paso-cierre__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.paso-cierre__subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.paso-cierre__chip {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.paso-cierre__chip[data-estado='cerrada'] {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.paso-cierre__chip[data-estado='borrador'] {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.paso-cierre__chip[data-estado='reabierta'] {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.paso-cierre__placeholder {
+  margin: 0;
+  padding: 18px;
+  text-align: center;
+  font-size: 13px;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 4px;
+}
+
+.paso-cierre__alert {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.paso-cierre__alert.is-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.paso-cierre__alert.is-info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e3a8a;
+}
+
+.paso-cierre__check {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.paso-cierre__check-item {
+  display: flex;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+}
+
+.paso-cierre__check-item.is-cumplido {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.paso-cierre__check-icon {
+  font-size: 18px;
+  line-height: 1;
+  color: #94a3b8;
+  width: 20px;
+  text-align: center;
+}
+
+.paso-cierre__check-item.is-cumplido .paso-cierre__check-icon {
+  color: #047857;
+}
+
+.paso-cierre__check-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.paso-cierre__check-body small {
+  font-size: 12px;
+  color: #475569;
+}
+
+.paso-cierre__form,
+.paso-cierre__reopen,
+.paso-cierre__reopen-form {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.paso-cierre__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #475569;
+  flex: 1 1 240px;
+}
+
+.paso-cierre__field input {
+  padding: 6px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #ffffff;
+  font-size: 13px;
+}
+
+.paso-cierre__field--wide {
+  flex: 1 1 100%;
+}
+
+.paso-cierre__btn {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.paso-cierre__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paso-cierre__btn.is-primary {
+  background: #1d4ed8;
+  color: #ffffff;
+  border-color: #1d4ed8;
+}
+
+.paso-cierre__btn.is-primary:disabled {
+  background: #cbd5e1;
+  border-color: #cbd5e1;
+}
+
+.paso-cierre__btn.is-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: #475569;
+}
+
+.paso-cierre__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 12px;
+}

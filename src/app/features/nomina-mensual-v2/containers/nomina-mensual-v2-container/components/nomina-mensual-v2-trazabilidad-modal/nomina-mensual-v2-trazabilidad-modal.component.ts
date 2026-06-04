@@ -94,20 +94,16 @@ export class NominaMensualV2TrazabilidadModalComponent {
     switch (paso) {
       case 'parameters':
         return 'Parámetros';
-      case 'scope':
-        return 'Alcance';
-      case 'employees':
-        return 'Empleados';
+      case 'dotacion':
+        return 'Dotación';
       case 'movements':
-        return 'Novedades';
+        return 'Movimientos';
       case 'calculation':
         return 'Cálculo';
       case 'validation':
         return 'Validación';
-      case 'approval':
-        return 'Aprobación';
-      case 'payslips':
-        return 'Liquidaciones';
+      case 'closure':
+        return 'Cierre';
     }
   }
 

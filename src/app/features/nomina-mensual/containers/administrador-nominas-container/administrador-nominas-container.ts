@@ -1,12 +1,8 @@
 /**
  * Administrador de Nóminas — bandeja de N nóminas por período.
  *
- * Pantalla rectora de F2 (`NOM-REBUILD-NOMINA-MENSUAL-01`).
- *
- * Consume `NominaPeriodoMockAdapterService.listarResumenes()` (sólo resúmenes,
- * sin detalle). Navega al Generador (`/remuneraciones/nomina-mensual-v2`) con
- * queryParams puente hasta que F3 active la ruta definitiva
- * `/remuneraciones/nominas/:id/generador`.
+ * Pantalla rectora de F2 (`NOM-REBUILD-NOMINA-MENSUAL-01`). En F3 (fusion)
+ * pasa a consumir el servicio productivo `NominaPeriodoService` contra BD real.
  *
  * Documento rector: `docs/codex/modulos/nomina-mensual/arquitectura-administrador-generador.md`.
  */
@@ -25,9 +21,8 @@ import { LucideAngularModule } from 'lucide-angular';
 
 import { DataGridComponent } from '../../../../shared/components/ui/data-grid/data-grid.component';
 import { DataGridCellDirective } from '../../../../shared/components/ui/data-grid/data-grid.directives';
-import { NominaPeriodoMockAdapterService } from '../../services/nomina-periodo-mock-adapter.service';
+import { NominaPeriodoService } from '../../services/nomina-periodo.service';
 import type {
-  NominaPeriodo,
   NominaPeriodoResumen,
   ResumenValidacionNomina,
 } from '../../models/nomina-periodo.models';
@@ -63,12 +58,14 @@ import { AdminNominasModalResumenNominaComponent } from './components/admin-nomi
 })
 export class AdministradorNominasContainer {
   private readonly router = inject(Router);
-  private readonly adapter = inject(NominaPeriodoMockAdapterService);
+  private readonly servicio = inject(NominaPeriodoService);
 
   readonly resumenes = signal<NominaPeriodoResumen[]>([]);
   readonly modalNuevaAbierto = signal(false);
   readonly resumenSeleccionado = signal<ResumenValidacionNomina | null>(null);
   readonly nominaSeleccionada = signal<NominaPeriodoResumen | null>(null);
+  readonly cargando = signal(false);
+  readonly errorCarga = signal<string | null>(null);
 
   readonly columnas = COLUMNAS_ADMIN_NOMINAS;
   readonly persistenceKey = PERSISTENCIA_GRILLA_ADMIN;
@@ -86,7 +83,7 @@ export class AdministradorNominasContainer {
   });
 
   constructor() {
-    this.resumenes.set(this.adapter.listarResumenes());
+    void this.cargarResumenes();
   }
 
   readonly trackResumen = (_index: number, fila: NominaPeriodoResumen): string => fila.id;
@@ -94,6 +91,20 @@ export class AdministradorNominasContainer {
   estadoNominaToBadge = estadoNominaToBadge;
   tipoNominaToLabel = tipoNominaToLabel;
   formatearActualizada = formatearActualizada;
+
+  async cargarResumenes(): Promise<void> {
+    this.cargando.set(true);
+    this.errorCarga.set(null);
+    try {
+      const lista = await this.servicio.listarResumenes();
+      this.resumenes.set(lista);
+    } catch (err) {
+      const mensaje = err instanceof Error ? err.message : 'No fue posible cargar las nóminas.';
+      this.errorCarga.set(mensaje);
+    } finally {
+      this.cargando.set(false);
+    }
+  }
 
   abrirNuevaNomina(): void {
     this.modalNuevaAbierto.set(true);
@@ -103,32 +114,29 @@ export class AdministradorNominasContainer {
     this.modalNuevaAbierto.set(false);
   }
 
-  onNominaCreada(nomina: NominaPeriodo): void {
-    const resumen: NominaPeriodoResumen = {
-      id: nomina.id,
-      periodo: nomina.periodo,
-      empresaId: nomina.empresaId,
-      empresaNombre: nomina.empresaNombre,
-      tipo: nomina.tipo,
-      estado: nomina.estado,
-      totalTrabajadores: nomina.trabajadorIds.length,
-      totalSegmentos: nomina.segmentos.length,
-      totalHaberes: nomina.totalHaberes,
-      totalDescuentos: nomina.totalDescuentos,
-      totalLiquido: nomina.totalLiquido,
-      totalIncidenciasCriticas: nomina.incidencias.filter((i) => i.severidad === 'critica').length,
-      totalAdvertencias: nomina.incidencias.filter((i) => i.severidad === 'advertencia').length,
-      createdAt: nomina.createdAt,
-      updatedAt: nomina.updatedAt,
-    };
+  onNominaCreada(resumen: NominaPeriodoResumen): void {
     this.resumenes.update((lista) => [resumen, ...lista]);
     this.modalNuevaAbierto.set(false);
   }
 
-  abrirResumen(fila: NominaPeriodoResumen): void {
-    const resumen = this.adapter.obtenerResumenValidacionNomina(fila.id);
+  async abrirResumen(fila: NominaPeriodoResumen): Promise<void> {
     this.nominaSeleccionada.set(fila);
-    this.resumenSeleccionado.set(resumen);
+    try {
+      const resumen = await this.servicio.obtenerResumenValidacionNomina(fila.id);
+      this.resumenSeleccionado.set(resumen);
+    } catch {
+      this.resumenSeleccionado.set({
+        totalTrabajadores: fila.totalTrabajadores,
+        listosParaCalculo: 0,
+        conIncidenciasCriticas: fila.totalIncidenciasCriticas,
+        conAdvertencias: fila.totalAdvertencias,
+        conMovimientosEspeciales: 0,
+        puedeCalcular: false,
+        puedeCerrar: false,
+        incidenciasCriticas: [],
+        advertencias: [],
+      });
+    }
   }
 
   cerrarResumen(): void {
@@ -137,11 +145,6 @@ export class AdministradorNominasContainer {
   }
 
   abrirGenerador(fila: NominaPeriodoResumen): void {
-    void this.router.navigate(['/remuneraciones/nomina-mensual-v2'], {
-      queryParams: {
-        periodo: fila.periodo,
-        nominaPeriodoId: fila.id,
-      },
-    });
+    void this.router.navigate(['/remuneraciones/nominas', fila.id, 'generador']);
   }
 }

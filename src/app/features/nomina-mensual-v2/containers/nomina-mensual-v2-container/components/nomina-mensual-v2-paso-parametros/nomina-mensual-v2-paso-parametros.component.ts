@@ -674,7 +674,7 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   private continuarHaciaAlcance(resumen: NominaParametrosResumen): void {
     this.actualizarContextoTrazabilidad(resumen);
     this.orquestador.modalAvanceParametros.set(null);
-    this.avanceSolicitado.emit('scope');
+    this.avanceSolicitado.emit('dotacion');
   }
 
   private async actualizarEstadoBase(periodo: string) {

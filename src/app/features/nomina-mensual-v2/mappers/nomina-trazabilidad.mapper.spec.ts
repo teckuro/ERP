@@ -142,7 +142,7 @@ describe('nomina-trazabilidad.mapper', () => {
   it('construye auditoría por paso con pendientes', () => {
     const auditoria = buildAuditoriaPorPaso([]);
     expect(auditoria.parameters?.estado).toBe('pendiente');
-    expect(auditoria.approval?.requiereAprobacion).toBe(true);
+    expect(auditoria.closure?.requiereAprobacion).toBe(true);
   });
 
   it('presenta estado vacio cuando el paso no tiene eventos', () => {

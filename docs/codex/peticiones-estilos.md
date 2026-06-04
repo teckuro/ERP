@@ -8,6 +8,95 @@
 > - [`archivo/peticiones-estilos-2026-05.md`](./archivo/peticiones-estilos-2026-05.md) — mayo 2026 y anteriores (288 entradas, rotadas el 2026-06-03 por DOCS-AUDIT-02 / L3).
 
 ---
+## 2026-06-04 - Nómina mensual — F3 fusion (Generador V2 renovado + BD real)
+
+Implementación de la fase **F3 fusion** del rebuild `NOM-REBUILD-NOMINA-MENSUAL-01` (F3 + F4 + F5 unificadas). El Generador V2 se reescribe en sitio para operar con 6 pasos (Parámetros, Dotación, Movimientos, Cálculo, Validación, Cierre) y se conecta a Supabase con tablas, RLS y triggers nuevos. El motor productivo V1 (`/remuneraciones/proceso-mensual`) sigue intacto: la coexistencia se resuelve por capas (`nomina_periodo` cabecera operativa + `nomina_calculo_*` snapshot del motor V1, unidas por `periodo + id_empresa`).
+
+### Decisiones rectoras de la fase
+
+- **Renovación V2 en sitio**: `features/nomina-mensual-v2/` se transforma a 6 pasos. No se duplica pantalla.
+- **Levantamiento controlado de la restricción BD**: por única vez para esta fase se permite tocar Supabase (migración + RLS + triggers + tipos). Documentado como decisión rectora en `arquitectura-administrador-generador.md`.
+- **BD productiva**: 6 tablas nuevas (`nomina_periodo`, `segmento_nomina`, `movimiento_recurrente`, `movimiento_nomina`, `incidencia_nomina`, `evento_auditoria_nomina`) con FKs hacia `empresa`, `persona`, `centro_costo`; índices operativos; trigger `updated_at` y trigger de auditoría automática sobre `nomina_periodo`; políticas RLS estrictas por `id_empresa` resuelto por `public.current_user_empresa_id()`.
+- **`EmpresaActivaService`**: nuevo servicio que expone signal `empresaActivaId`; resuelve desde `app_metadata.id_empresa`/`user_metadata.id_empresa` y, si no, hace fallback a `.from('empresa').limit(1)` (igual que V1).
+- **Idempotencia de recurrentes**: `aplicarRecurrentesANomina` respeta la clave `(nominaPeriodoId, trabajadorId, recurrenteId, tipo)` y NO reaplica movimientos en estado `omitido`.
+- **Routing**: `/remuneraciones/nominas/:nominaPeriodoId/generador` es la ruta canónica del Generador. La antigua `/remuneraciones/nomina-mensual-v2` queda como redirect al Administrador (`/remuneraciones/nominas`).
+- **Menú lateral**: se retira el item "Nómina mensual V2" del sidebar (acceso único desde Administrador). El item "Administrador de nóminas" pasa a llamarse así (sin mayúsculas decorativas) y hereda `badgeKey: 'periodoMes'`.
+
+### Archivos nuevos
+
+- **Migración SQL**: `supabase/migrations/20260604180000_nomina_rebuild_admin_generador.sql` — 6 tablas + helper `current_user_empresa_id()` + triggers + RLS.
+- **EmpresaActivaService**: `src/app/core/services/empresa-activa.service.{ts,spec.ts}`.
+- **Mappers / Repository / Service**:
+  - `src/app/features/nomina-mensual/mappers/nomina-periodo.mapper.ts` (rowTo… / …ToInsert para las 6 tablas).
+  - `src/app/features/nomina-mensual/data-access/nomina-periodo.repository.{ts,spec.ts}`.
+  - `src/app/features/nomina-mensual/services/nomina-periodo.service.{ts,spec.ts}` (servicio productivo; el mock adapter queda sólo para tests).
+- **Generador V2 — pasos nuevos**:
+  - `containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion/*.{ts,html,css}` (reemplaza scope + employees).
+  - `…/nomina-mensual-v2-paso-movimientos/*.{ts,html,css}` (Recurrentes / Manuales / Omitidos).
+  - `…/nomina-mensual-v2-paso-calculo/*.{ts,html,css}` (orquesta motor V1).
+  - `…/nomina-mensual-v2-paso-validacion/*.{ts,html,css}` (filtros + guard de aprobación).
+  - `…/nomina-mensual-v2-paso-cierre/*.{ts,html,css}` (checklist + cierre con auditoría + reapertura).
+- **Reglas y presenters**:
+  - `features/nomina-mensual-v2/presenters/nomina-dotacion-grid.presenter.{ts,spec.ts}`.
+  - `features/nomina-mensual-v2/rules/nomina-dotacion.rules.{ts,spec.ts}`.
+
+### Archivos modificados (cambios quirúrgicos)
+
+- `src/app/core/models/database.types.ts` — se añadieron a mano los tipos `Row`/`Insert`/`Update`/`Relationships` de las 6 tablas nuevas (no se regeneró con CLI por falta de acceso en este entorno; el comando recomendado se documenta en `migracion-bd-nomina-rebuild.md`).
+- `src/app/features/nomina-mensual-v2/models/nomina-mensual-v2.models.ts` — `PayrollStepId = 'parameters' | 'dotacion' | 'movements' | 'calculation' | 'validation' | 'closure'` (eliminados `scope`, `employees`, `approval`, `payslips`).
+- `src/app/features/nomina-mensual-v2/data/nomina-mensual-v2.mock.ts` — `payrollSteps` rearmado a la nueva secuencia.
+- `containers/nomina-mensual-v2-container/facade/nomina-mensual-v2-navegacion.ts` — orden de pasos, copy y `PASOS_CONGELADOS_V11` ahora vacío (todos los pasos quedan funcionales en F3 fusion).
+- `containers/nomina-mensual-v2-container/nomina-mensual-v2-container.{ts,html,css}` — carga `nominaPeriodoId` desde el route param, llama a `obtenerNomina(id)` y dispatcha al componente correspondiente. CSS legacy `data-step='scope'` / `data-step='employees'` migrado a `data-step='dotacion'`.
+- `mappers/nomina-trazabilidad.mapper.ts` y `services/nomina-mensual-v2-trazabilidad.service.ts` — referencias a pasos antiguos reemplazadas por `dotacion` / `closure`.
+- `containers/administrador-nominas-container/*` — Admin F2 ahora consume el `NominaPeriodoService` productivo (en vez del mock adapter). La acción "Abrir generador" navega a `/remuneraciones/nominas/:id/generador`.
+- `src/app/app.routes.ts` — ruta canónica `nominas/:nominaPeriodoId/generador` + redirect `nomina-mensual-v2 → nominas`.
+- `src/app/layout/shell-navigation.config.ts` y `shell-route-context.config.ts` — sidebar y breadcrumbs ajustados (retirado V2; resolveShellRouteBreadcrumbs resuelve dinámicamente la ruta del generador).
+- `src/app/app.config.ts` — registrado ícono Lucide `ClipboardList` (faltaba en el set global y rompía el sidebar en algunos tests).
+
+### Pasos de la fase
+
+| Sub-fase | Alcance | Estado |
+|---|---|---|
+| F3a | Infraestructura BD + EmpresaActivaService | ✅ |
+| F3b | 6 repositories + servicio productivo + mappers | ✅ |
+| F3c | Refactor Admin F2 a servicio productivo | ✅ |
+| F3d | Estructura del Generador (6 pasos + routing) | ✅ |
+| F3e-1..6 | Pasos productivos (Parámetros / Dotación / Movimientos / Cálculo / Validación / Cierre) | ✅ |
+| F3f | Tests + ng build dev sin nuevas regresiones | ✅ |
+| F3g | Documentación + cierre | ✅ |
+
+### Validaciones ejecutadas
+
+- `npx ng build --configuration=development` → OK, sin warnings nuevos. Chunk `nomina-mensual-v2-page` ~700 kB (igual orden de magnitud que antes de la fusion; el incremento por los 4 componentes nuevos se compensa con la eliminación de pasos legacy).
+- `npx ng test --watch=false` → 1458 tests pasan, 4 fallos pre-existentes (todos en módulos no tocados por F3: `liquidaciones-oficiales`, `proceso-mensual-flow-nav`, `nomina-msgbox-lab`). Reducimos de 7 fallos pre-existentes a 4 (los 3 que se arreglaron en F3 fusion fueron los del sidebar/shell-navigation/spec).
+- `ReadLints` limpio en archivos tocados.
+
+### Reglas NOIA respetadas
+
+- Sin cards decorativas: el Generador usa franjas operativas (stats inline + grid HTML) y la dotación usa un grid sobrio con filtros chip.
+- Sin colores fuera del manual: misma paleta del Admin (`#1d4ed8` info, `#047857` success, `#b45309` warning, `#b91c1c` danger, neutros `#0f172a/#475569/#64748b/#cbd5e1/#e2e8f0/#f1f5f9/#f8fafc/#fef2f2/#fffbeb/#f0fdf4`).
+- Una acción principal por paso (`Confirmar dotación`, `Aplicar recurrentes`, `Calcular nómina`, `Aprobar para cierre`, `Cerrar nómina`).
+- Sin fuentes nuevas, sin sombras fuertes, sin gradientes.
+- Lenguaje operativo en cada paso (`Aplicar recurrentes`, `Omitir`, `Reabrir`, `Volver a parámetros`).
+- Sin nombres técnicos visibles: las tablas SQL, RPC y los IDs internos no se exponen al usuario.
+
+### Riesgos asumidos (declarados desde el plan)
+
+- La migración SQL debe aplicarse manualmente antes de probar F3b+ (instrucciones en `migracion-bd-nomina-rebuild.md`). Sin aplicar, los repos fallan en runtime pero el código compila.
+- `database.types.ts` se editó a mano. Se recomienda regenerar con `supabase gen types typescript --linked` cuando se tenga CLI disponible.
+- Los componentes Paso Dotación, Movimientos, Cálculo, Validación y Cierre son MVP funcionales: no integran `app-data-grid`, ni virtual scroll, ni modal de segmentos avanzados, ni preview formal de acción masiva (esos quedan declarados para iteración posterior).
+- Movimientos manuales aún piden trabajador por ID textual; la integración con el selector de personas queda pendiente.
+
+### Lo que NO entra en F3 fusion
+
+- Motor de cálculo productivo nuevo (sigue usándose V1).
+- Migración histórica de datos `nomina_calculo_*` → `nomina_periodo`.
+- Limpieza del módulo V1 (intacto).
+- Importación masiva de movimientos.
+- Virtual scroll y rendimiento > 1000 trabajadores.
+- Pantalla de auditoría visual (los eventos sí se persisten en `evento_auditoria_nomina`).
+
+---
 ## 2026-06-04 - Nómina mensual — Administrador de nóminas (NOM-REBUILD-NOMINA-MENSUAL-01 F2)
 
 Implementación de **F2 — UI Administrador de Nóminas** del plan `NOM-REBUILD-NOMINA-MENSUAL-01`. Estrena la ruta definitiva `/remuneraciones/nominas` y agrega un item nuevo de menú "Administrador de Nóminas", sin tocar V1 (`/remuneraciones/proceso-mensual`) ni V2 (`/remuneraciones/nomina-mensual-v2`). Coexistencia controlada hasta que F7 limpie las rutas legacy.

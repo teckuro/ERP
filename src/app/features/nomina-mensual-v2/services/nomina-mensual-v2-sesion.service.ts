@@ -44,7 +44,7 @@ export class NominaMensualV2SesionService {
     }
 
     return {
-      pasoInicial: parametrosPreparados ? 'scope' : 'parameters',
+      pasoInicial: parametrosPreparados ? 'dotacion' : 'parameters',
       parametrosPreparados,
       estadoBase,
       origenBase,

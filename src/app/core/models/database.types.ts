@@ -4692,6 +4692,370 @@ export type Database = {
           },
         ]
       }
+      // === NOM-REBUILD-NOMINA-MENSUAL-01 (F3a) — tablas agregadas a mano hasta regenerar tipos ===
+      nomina_periodo: {
+        Row: {
+          closed_at: string | null
+          created_at: string
+          empresa_nombre: string | null
+          estado: string
+          fecha_pago: string | null
+          id: string
+          id_empresa: number
+          periodo: string
+          tipo: string
+          total_advertencias: number
+          total_descuentos: number
+          total_haberes: number
+          total_incidencias_criticas: number
+          total_liquido: number
+          total_segmentos: number
+          total_trabajadores: number
+          updated_at: string
+        }
+        Insert: {
+          closed_at?: string | null
+          created_at?: string
+          empresa_nombre?: string | null
+          estado?: string
+          fecha_pago?: string | null
+          id?: string
+          id_empresa: number
+          periodo: string
+          tipo?: string
+          total_advertencias?: number
+          total_descuentos?: number
+          total_haberes?: number
+          total_incidencias_criticas?: number
+          total_liquido?: number
+          total_segmentos?: number
+          total_trabajadores?: number
+          updated_at?: string
+        }
+        Update: {
+          closed_at?: string | null
+          created_at?: string
+          empresa_nombre?: string | null
+          estado?: string
+          fecha_pago?: string | null
+          id?: string
+          id_empresa?: number
+          periodo?: string
+          tipo?: string
+          total_advertencias?: number
+          total_descuentos?: number
+          total_haberes?: number
+          total_incidencias_criticas?: number
+          total_liquido?: number
+          total_segmentos?: number
+          total_trabajadores?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_periodo_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+        ]
+      }
+      segmento_nomina: {
+        Row: {
+          created_at: string
+          estado: string
+          id: string
+          id_empresa: number
+          id_nomina_periodo: string
+          nombre: string
+          ordinal: number
+          tipo: string | null
+          total_advertencias: number
+          total_incidencias_criticas: number
+          total_trabajadores: number
+          trabajador_ids: number[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          estado?: string
+          id?: string
+          id_empresa: number
+          id_nomina_periodo: string
+          nombre: string
+          ordinal?: number
+          tipo?: string | null
+          total_advertencias?: number
+          total_incidencias_criticas?: number
+          total_trabajadores?: number
+          trabajador_ids?: number[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          estado?: string
+          id?: string
+          id_empresa?: number
+          id_nomina_periodo?: string
+          nombre?: string
+          ordinal?: number
+          tipo?: string | null
+          total_advertencias?: number
+          total_incidencias_criticas?: number
+          total_trabajadores?: number
+          trabajador_ids?: number[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "segmento_nomina_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+          {
+            foreignKeyName: "segmento_nomina_id_nomina_periodo_fkey"
+            columns: ["id_nomina_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_periodo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      movimiento_recurrente: {
+        Row: {
+          activo_desde: string
+          activo_hasta: string | null
+          cantidad: number | null
+          categoria: string
+          created_at: string
+          estado: string
+          frecuencia: string
+          glosa: string | null
+          id: string
+          id_cargo: number | null
+          id_centro_costo: number | null
+          id_empresa: number
+          id_grupo: number | null
+          id_persona: number | null
+          id_segmento_nomina: string | null
+          id_tipo_contrato: number | null
+          monto: number | null
+          tipo: string
+          unidad: string | null
+          updated_at: string
+        }
+        Insert: {
+          activo_desde: string
+          activo_hasta?: string | null
+          cantidad?: number | null
+          categoria: string
+          created_at?: string
+          estado?: string
+          frecuencia?: string
+          glosa?: string | null
+          id?: string
+          id_cargo?: number | null
+          id_centro_costo?: number | null
+          id_empresa: number
+          id_grupo?: number | null
+          id_persona?: number | null
+          id_segmento_nomina?: string | null
+          id_tipo_contrato?: number | null
+          monto?: number | null
+          tipo: string
+          unidad?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activo_desde?: string
+          activo_hasta?: string | null
+          cantidad?: number | null
+          categoria?: string
+          created_at?: string
+          estado?: string
+          frecuencia?: string
+          glosa?: string | null
+          id?: string
+          id_cargo?: number | null
+          id_centro_costo?: number | null
+          id_empresa?: number
+          id_grupo?: number | null
+          id_persona?: number | null
+          id_segmento_nomina?: string | null
+          id_tipo_contrato?: number | null
+          monto?: number | null
+          tipo?: string
+          unidad?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      movimiento_nomina: {
+        Row: {
+          cantidad: number | null
+          categoria: string
+          created_at: string
+          estado: string
+          fecha_desde: string | null
+          fecha_hasta: string | null
+          glosa: string | null
+          id: string
+          id_empresa: number
+          id_nomina_periodo: string
+          id_persona: number
+          id_recurrente: string | null
+          id_segmento_nomina: string | null
+          monto: number | null
+          origen: string
+          tipo: string
+          unidad: string | null
+          updated_at: string
+        }
+        Insert: {
+          cantidad?: number | null
+          categoria: string
+          created_at?: string
+          estado?: string
+          fecha_desde?: string | null
+          fecha_hasta?: string | null
+          glosa?: string | null
+          id?: string
+          id_empresa: number
+          id_nomina_periodo: string
+          id_persona: number
+          id_recurrente?: string | null
+          id_segmento_nomina?: string | null
+          monto?: number | null
+          origen?: string
+          tipo: string
+          unidad?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cantidad?: number | null
+          categoria?: string
+          created_at?: string
+          estado?: string
+          fecha_desde?: string | null
+          fecha_hasta?: string | null
+          glosa?: string | null
+          id?: string
+          id_empresa?: number
+          id_nomina_periodo?: string
+          id_persona?: number
+          id_recurrente?: string | null
+          id_segmento_nomina?: string | null
+          monto?: number | null
+          origen?: string
+          tipo?: string
+          unidad?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimiento_nomina_id_nomina_periodo_fkey"
+            columns: ["id_nomina_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_periodo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimiento_nomina_id_recurrente_fkey"
+            columns: ["id_recurrente"]
+            isOneToOne: false
+            referencedRelation: "movimiento_recurrente"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incidencia_nomina: {
+        Row: {
+          bloqueante: boolean
+          created_at: string
+          id: string
+          id_nomina_periodo: string
+          id_persona: number | null
+          id_segmento_nomina: string | null
+          mensaje: string
+          resuelta_at: string | null
+          severidad: string
+          tipo: string
+        }
+        Insert: {
+          bloqueante?: boolean
+          created_at?: string
+          id?: string
+          id_nomina_periodo: string
+          id_persona?: number | null
+          id_segmento_nomina?: string | null
+          mensaje: string
+          resuelta_at?: string | null
+          severidad: string
+          tipo: string
+        }
+        Update: {
+          bloqueante?: boolean
+          created_at?: string
+          id?: string
+          id_nomina_periodo?: string
+          id_persona?: number | null
+          id_segmento_nomina?: string | null
+          mensaje?: string
+          resuelta_at?: string | null
+          severidad?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidencia_nomina_id_nomina_periodo_fkey"
+            columns: ["id_nomina_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_periodo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evento_auditoria_nomina: {
+        Row: {
+          accion: string
+          created_at: string
+          id: string
+          id_nomina_periodo: string
+          id_usuario: string | null
+          motivo: string | null
+          payload: Json | null
+        }
+        Insert: {
+          accion: string
+          created_at?: string
+          id?: string
+          id_nomina_periodo: string
+          id_usuario?: string | null
+          motivo?: string | null
+          payload?: Json | null
+        }
+        Update: {
+          accion?: string
+          created_at?: string
+          id?: string
+          id_nomina_periodo?: string
+          id_usuario?: string | null
+          motivo?: string | null
+          payload?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evento_auditoria_nomina_id_nomina_periodo_fkey"
+            columns: ["id_nomina_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_periodo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       vw_persona_factores: {

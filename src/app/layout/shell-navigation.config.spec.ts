@@ -10,6 +10,7 @@ describe('shell-navigation.config', () => {
       '/',
       '/empleados',
       '/remuneraciones/proceso-mensual',
+      '/remuneraciones/nominas',
       '/remuneraciones/liquidaciones',
       '/parametros',
     ]);

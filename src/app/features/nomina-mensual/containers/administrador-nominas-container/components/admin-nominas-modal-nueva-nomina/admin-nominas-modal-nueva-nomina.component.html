@@ -87,14 +87,25 @@
         </div>
       </div>
 
+      @if (error()) {
+        <div class="adm-nom-modal__error" role="alert">{{ error() }}</div>
+      }
+
       <footer class="adm-nom-modal__foot">
-        <button type="button" class="adm-nom-modal__btn" (click)="cerrarModal()">Cancelar</button>
+        <button
+          type="button"
+          class="adm-nom-modal__btn"
+          (click)="cerrarModal()"
+          [disabled]="guardando()"
+        >
+          Cancelar
+        </button>
         <button
           type="submit"
           class="adm-nom-modal__btn adm-nom-modal__btn--primary"
           [disabled]="!puedeCrear()"
         >
-          Crear nómina
+          {{ guardando() ? 'Creando…' : 'Crear nómina' }}
         </button>
       </footer>
     </form>

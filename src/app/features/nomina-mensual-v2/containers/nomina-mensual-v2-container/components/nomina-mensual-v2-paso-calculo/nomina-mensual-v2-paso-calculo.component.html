@@ -1,0 +1,109 @@
+<section class="paso-calc" aria-labelledby="paso-calc-title">
+  <header class="paso-calc__head">
+    <div class="paso-calc__copy">
+      <p class="paso-calc__eyebrow">Paso 4 · Cálculo</p>
+      <h2 id="paso-calc-title" class="paso-calc__title">Cálculo de la nómina</h2>
+      <p class="paso-calc__subtitle">
+        El cálculo es ejecutado por el motor productivo del proceso mensual y genera el snapshot
+        del período. Si hay incidencias bloqueantes la ejecución se detiene.
+      </p>
+    </div>
+  </header>
+
+  @if (cargando()) {
+    <p class="paso-calc__placeholder">Cargando estado de la nómina…</p>
+  }
+
+  @if (error(); as msg) {
+    <p class="paso-calc__alert is-error" role="alert">{{ msg }}</p>
+  }
+  @if (mensaje(); as msg) {
+    <p class="paso-calc__alert is-info" role="status">{{ msg }}</p>
+  }
+
+  @if (preValidacion(); as valid) {
+    <section class="paso-calc__panel">
+      <h3 class="paso-calc__panel-title">Pre-validación</h3>
+      <ul class="paso-calc__list-inline">
+        <li><strong>{{ valid.totalTrabajadores }}</strong> en dotación</li>
+        <li><strong>{{ valid.listosParaCalculo }}</strong> listos para calcular</li>
+        <li><strong>{{ valid.conIncidenciasCriticas }}</strong> con incidencias críticas</li>
+        <li><strong>{{ valid.conAdvertencias }}</strong> con advertencias</li>
+      </ul>
+      @if (!valid.puedeCalcular) {
+        <p class="paso-calc__alert is-error">
+          Hay incidencias bloqueantes. Resuelve los críticos en dotación antes de calcular.
+        </p>
+      }
+    </section>
+  }
+
+  <div class="paso-calc__cta">
+    <button
+      type="button"
+      class="paso-calc__btn is-primary"
+      (click)="calcular()"
+      [disabled]="!puedeCalcular()"
+    >
+      {{ calculando() ? 'Calculando…' : (resultado() ? 'Recalcular' : 'Calcular nómina') }}
+    </button>
+  </div>
+
+  @if (resultado(); as res) {
+    <section class="paso-calc__panel">
+      <h3 class="paso-calc__panel-title">Resumen del snapshot</h3>
+      <ul class="paso-calc__metrics">
+        <li>
+          <strong>{{ res.resumen.totalTrabajadoresCalculados }}</strong>
+          <small>trabajadores calculados</small>
+        </li>
+        <li>
+          <strong>{{ res.resumen.totalBloqueados }}</strong>
+          <small>bloqueados</small>
+        </li>
+        <li>
+          <strong>{{ res.resumen.totalConAdvertencias }}</strong>
+          <small>con advertencias</small>
+        </li>
+        <li>
+          <strong>${{ res.resumen.totalHaberes | number:'1.0-0' }}</strong>
+          <small>haberes totales</small>
+        </li>
+        <li>
+          <strong>${{ res.resumen.totalDescuentos | number:'1.0-0' }}</strong>
+          <small>descuentos totales</small>
+        </li>
+        <li>
+          <strong>${{ res.resumen.totalLiquidoPreliminar | number:'1.0-0' }}</strong>
+          <small>líquido preliminar</small>
+        </li>
+      </ul>
+
+      <h4 class="paso-calc__panel-subtitle">Top 5 líquidos del período</h4>
+      @if (topLiquidaciones().length === 0) {
+        <p class="paso-calc__placeholder">Sin liquidaciones en el snapshot.</p>
+      } @else {
+        <ul class="paso-calc__list">
+          @for (liq of topLiquidaciones(); track liq.rut) {
+            <li>
+              <strong>{{ liq.nombreCompleto || liq.rut }}</strong>
+              <span>${{ liq.liquidoAPago | number:'1.0-0' }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+
+  <footer class="paso-calc__footer">
+    <button type="button" class="paso-calc__btn is-ghost" (click)="emitirVolver()">
+      Volver a movimientos
+    </button>
+    <button
+      type="button"
+      class="paso-calc__btn is-primary"
+      (click)="emitirAvance()"
+      [disabled]="!puedeAvanzar()"
+    >Continuar a validación</button>
+  </footer>
+</section>

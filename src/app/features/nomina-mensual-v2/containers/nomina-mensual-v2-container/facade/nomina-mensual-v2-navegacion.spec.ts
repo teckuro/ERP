@@ -7,47 +7,47 @@ import {
   esRetrocesoAPaso,
   obtenerEtiquetaAccionPrincipal,
   obtenerTituloPaso,
-  tooltipPasoCongelado,
 } from './nomina-mensual-v2-navegacion';
 
-describe('nomina-mensual-v2-navegacion', () => {
-  it('incluye scope entre parameters y employees', () => {
+describe('nomina-mensual-v2-navegacion (F3 fusion — 6 pasos)', () => {
+  it('expone exactamente 6 pasos en el orden definido por la fase F3', () => {
+    expect(ORDEN_PASOS_NOMINA).toEqual([
+      'parameters',
+      'dotacion',
+      'movements',
+      'calculation',
+      'validation',
+      'closure',
+    ]);
+  });
+
+  it('incluye dotacion entre parameters y movements', () => {
     const indiceParametros = ORDEN_PASOS_NOMINA.indexOf('parameters');
-    const indiceAlcance = ORDEN_PASOS_NOMINA.indexOf('scope');
-    const indiceEmpleados = ORDEN_PASOS_NOMINA.indexOf('employees');
+    const indiceDotacion = ORDEN_PASOS_NOMINA.indexOf('dotacion');
+    const indiceMovimientos = ORDEN_PASOS_NOMINA.indexOf('movements');
 
-    expect(indiceAlcance).toBe(indiceParametros + 1);
-    expect(indiceEmpleados).toBe(indiceAlcance + 1);
+    expect(indiceDotacion).toBe(indiceParametros + 1);
+    expect(indiceMovimientos).toBe(indiceDotacion + 1);
   });
 
-  it('expone copy del paso Alcance', () => {
-    expect(obtenerTituloPaso('scope')).toBe('Alcance de generación');
-    expect(obtenerEtiquetaAccionPrincipal('scope')).toBe('Validar alcance');
+  it('expone copy del paso Dotación', () => {
+    expect(obtenerTituloPaso('dotacion')).toBe('Dotación del período');
+    expect(obtenerEtiquetaAccionPrincipal('dotacion')).toBe('Confirmar dotación');
   });
 
-  it('expone Preparar nómina en parámetros', () => {
-    expect(obtenerEtiquetaAccionPrincipal('parameters')).toBe('Preparar nómina');
+  it('expone copy del paso Cierre', () => {
+    expect(obtenerTituloPaso('closure')).toBe('Cierre y liquidaciones');
+    expect(obtenerEtiquetaAccionPrincipal('closure')).toBe('Cerrar nómina');
   });
 
-  it('detecta retroceso al paso Parametros desde Alcance', () => {
-    expect(esRetrocesoAPaso('scope', 'parameters')).toBe(true);
-    expect(esRetrocesoAPaso('parameters', 'scope')).toBe(false);
+  it('detecta retroceso al paso Parametros desde Dotación', () => {
+    expect(esRetrocesoAPaso('dotacion', 'parameters')).toBe(true);
+    expect(esRetrocesoAPaso('parameters', 'dotacion')).toBe(false);
   });
 
-  it('congela los pasos posteriores a Empleados hasta V11', () => {
-    expect(PASOS_CONGELADOS_V11.has('movements')).toBe(true);
-    expect(PASOS_CONGELADOS_V11.has('calculation')).toBe(true);
-    expect(PASOS_CONGELADOS_V11.has('validation')).toBe(true);
-    expect(PASOS_CONGELADOS_V11.has('approval')).toBe(true);
-    expect(PASOS_CONGELADOS_V11.has('payslips')).toBe(true);
-    expect(PASOS_CONGELADOS_V11.has('parameters')).toBe(false);
-    expect(PASOS_CONGELADOS_V11.has('scope')).toBe(false);
-    expect(PASOS_CONGELADOS_V11.has('employees')).toBe(false);
-  });
-
-  it('expone helpers `esPasoCongelado` y `tooltipPasoCongelado`', () => {
-    expect(esPasoCongelado('movements')).toBe(true);
-    expect(esPasoCongelado('employees')).toBe(false);
-    expect(tooltipPasoCongelado().toLowerCase()).toContain('versión 11');
+  it('no congela ningún paso en F3 fusion: PASOS_CONGELADOS_V11 está vacío', () => {
+    expect(PASOS_CONGELADOS_V11.size).toBe(0);
+    expect(esPasoCongelado('movements')).toBe(false);
+    expect(esPasoCongelado('closure')).toBe(false);
   });
 });

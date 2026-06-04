@@ -1,0 +1,112 @@
+/**
+ * Paso Validación — F3 fusion (F3e-5).
+ *
+ * Muestra `ResumenValidacionNomina` ya calculado por el motor + lista de
+ * incidencias críticas y advertencias filtrables. El botón "Aprobar para cierre"
+ * sólo se habilita si no hay incidencias bloqueantes.
+ */
+
+import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import type {
+  IncidenciaNomina,
+  ResumenValidacionNomina,
+} from '../../../../../nomina-mensual/models/nomina-periodo.models';
+import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
+
+type FiltroSeveridad = 'todas' | 'critica' | 'advertencia';
+
+@Component({
+  selector: 'app-nomina-mensual-v2-paso-validacion',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './nomina-mensual-v2-paso-validacion.component.html',
+  styleUrl: './nomina-mensual-v2-paso-validacion.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class NominaMensualV2PasoValidacionComponent {
+  private readonly servicio = inject(NominaPeriodoService);
+
+  readonly nominaPeriodoId = input<string | null>(null);
+  readonly volverCalculo = output<void>();
+  readonly aprobarSolicitado = output<void>();
+  readonly verEnDotacionSolicitado = output<string>();
+
+  readonly resumen = signal<ResumenValidacionNomina | null>(null);
+  readonly cargando = signal(false);
+  readonly error = signal<string | null>(null);
+  readonly filtroSeveridad = signal<FiltroSeveridad>('todas');
+  readonly busqueda = signal('');
+
+  readonly incidenciasFiltradas = computed<IncidenciaNomina[]>(() => {
+    const resumen = this.resumen();
+    if (!resumen) return [];
+    const filtro = this.filtroSeveridad();
+    const busqueda = this.busqueda().trim().toLowerCase();
+    const todas = [...resumen.incidenciasCriticas, ...resumen.advertencias];
+
+    return todas.filter((inc) => {
+      if (filtro !== 'todas' && inc.severidad !== filtro) return false;
+      if (busqueda && !inc.mensaje.toLowerCase().includes(busqueda)) return false;
+      return true;
+    });
+  });
+
+  readonly puedeAprobar = computed(() => {
+    const r = this.resumen();
+    return !!r && r.conIncidenciasCriticas === 0 && r.puedeCerrar;
+  });
+
+  constructor() {
+    effect(() => {
+      const id = this.nominaPeriodoId();
+      if (id) void this.cargar(id);
+    });
+  }
+
+  private async cargar(nominaPeriodoId: string): Promise<void> {
+    this.cargando.set(true);
+    this.error.set(null);
+    try {
+      const resumen = await this.servicio.obtenerResumenValidacionNomina(nominaPeriodoId);
+      this.resumen.set(resumen);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Error desconocido';
+      this.error.set(`No fue posible cargar el resumen de validación: ${msg}`);
+    } finally {
+      this.cargando.set(false);
+    }
+  }
+
+  recargar(): void {
+    const id = this.nominaPeriodoId();
+    if (id) void this.cargar(id);
+  }
+
+  cambiarFiltroSeveridad(value: FiltroSeveridad): void {
+    this.filtroSeveridad.set(value);
+  }
+
+  emitirVerEnDotacion(trabajadorId: string | undefined): void {
+    if (trabajadorId) this.verEnDotacionSolicitado.emit(trabajadorId);
+  }
+
+  emitirAprobar(): void {
+    if (this.puedeAprobar()) this.aprobarSolicitado.emit();
+  }
+
+  emitirVolver(): void {
+    this.volverCalculo.emit();
+  }
+}

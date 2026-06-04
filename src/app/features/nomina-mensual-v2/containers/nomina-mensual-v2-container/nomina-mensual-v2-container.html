@@ -23,28 +23,40 @@
             (resumenActualizado)="syncShellContext()"
           />
         }
-        @case ('scope') {
-          <app-nomina-mensual-v2-paso-alcance
+        @case ('dotacion') {
+          <app-nomina-mensual-v2-paso-dotacion
+            [nominaPeriodoId]="nominaPeriodoId()"
             (avanceSolicitado)="manejarAvanceDesdeAlcance()"
             (volverParametros)="intentarIrAPaso('parameters')"
           />
         }
-        @case ('employees') {
-          <app-nomina-mensual-v2-paso-empleados
-            (avanceSolicitado)="manejarAvanceDesdeEmpleados()"
-            (volverParametros)="intentarIrAPaso('scope')"
+        @case ('movements') {
+          <app-nomina-mensual-v2-paso-movimientos
+            [nominaPeriodoId]="nominaPeriodoId()"
+            (avanceSolicitado)="intentarIrAPaso('calculation')"
+            (volverDotacion)="intentarIrAPaso('dotacion')"
           />
         }
-        @default {
-          <section class="nmv2-paso-congelado" role="status" aria-live="polite">
-            <p class="nmv2-paso-congelado__eyebrow">Disponible al cerrar la versión 11</p>
-            <h2 class="nmv2-paso-congelado__title">Este paso queda inactivo en V2</h2>
-            <p class="nmv2-paso-congelado__body">
-              Mientras la versión 11 conecta el motor de cálculo y la persistencia, los pasos posteriores a Empleados
-              están deshabilitados aquí. Continúa el cierre del período por
-              <a href="/remuneraciones/proceso-mensual">Proceso mensual</a>.
-            </p>
-          </section>
+        @case ('calculation') {
+          <app-nomina-mensual-v2-paso-calculo
+            [nominaPeriodoId]="nominaPeriodoId()"
+            (avanceSolicitado)="intentarIrAPaso('validation')"
+            (volverMovimientos)="intentarIrAPaso('movements')"
+          />
+        }
+        @case ('validation') {
+          <app-nomina-mensual-v2-paso-validacion
+            [nominaPeriodoId]="nominaPeriodoId()"
+            (aprobarSolicitado)="intentarIrAPaso('closure')"
+            (verEnDotacionSolicitado)="intentarIrAPaso('dotacion')"
+            (volverCalculo)="intentarIrAPaso('calculation')"
+          />
+        }
+        @case ('closure') {
+          <app-nomina-mensual-v2-paso-cierre
+            [nominaPeriodoId]="nominaPeriodoId()"
+            (volverValidacion)="intentarIrAPaso('validation')"
+          />
         }
       }
     </div>

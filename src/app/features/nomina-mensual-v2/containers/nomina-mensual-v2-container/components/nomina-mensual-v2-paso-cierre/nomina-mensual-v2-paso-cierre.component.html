@@ -1,0 +1,98 @@
+<section class="paso-cierre" aria-labelledby="paso-cierre-title">
+  <header class="paso-cierre__head">
+    <div class="paso-cierre__copy">
+      <p class="paso-cierre__eyebrow">Paso 6 · Cierre</p>
+      <h2 id="paso-cierre-title" class="paso-cierre__title">Cierre operativo y liquidaciones</h2>
+      <p class="paso-cierre__subtitle">
+        Revisa la checklist final, confirma el cierre y deja constancia en auditoría. Una vez cerrada,
+        la nómina queda bloqueada y solo se puede reabrir con motivo.
+      </p>
+    </div>
+    @if (nomina(); as n) {
+      <span class="paso-cierre__chip" [attr.data-estado]="n.estado">
+        Estado actual: {{ n.estado }}
+      </span>
+    }
+  </header>
+
+  @if (cargando()) {
+    <p class="paso-cierre__placeholder">Cargando checklist…</p>
+  }
+
+  @if (error(); as msg) {
+    <p class="paso-cierre__alert is-error" role="alert">{{ msg }}</p>
+  }
+  @if (mensaje(); as msg) {
+    <p class="paso-cierre__alert is-info" role="status">{{ msg }}</p>
+  }
+
+  @if (checklist().length > 0) {
+    <ul class="paso-cierre__check">
+      @for (item of checklist(); track item.id) {
+        <li class="paso-cierre__check-item" [class.is-cumplido]="item.cumplido">
+          <span class="paso-cierre__check-icon" aria-hidden="true">
+            {{ item.cumplido ? '✓' : '•' }}
+          </span>
+          <div class="paso-cierre__check-body">
+            <strong>{{ item.label }}</strong>
+            <small>{{ item.detalle }}</small>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (!cerrada()) {
+    <section class="paso-cierre__form">
+      <label class="paso-cierre__field paso-cierre__field--wide">
+        Motivo del cierre (opcional)
+        <input
+          type="text"
+          [value]="motivoCierre()"
+          (input)="motivoCierre.set($any($event.target).value)"
+          placeholder="Ej.: cierre del período mayo, sin observaciones"
+        />
+      </label>
+      <button
+        type="button"
+        class="paso-cierre__btn is-primary"
+        (click)="cerrarNomina()"
+        [disabled]="!todoCumplido() || ejecutando()"
+      >{{ ejecutando() ? 'Cerrando…' : 'Cerrar nómina' }}</button>
+    </section>
+  } @else {
+    <section class="paso-cierre__reopen">
+      <button type="button" class="paso-cierre__btn is-ghost" (click)="mostrarReabrir.set(!mostrarReabrir())">
+        {{ mostrarReabrir() ? 'Cancelar reapertura' : 'Reabrir nómina' }}
+      </button>
+      @if (mostrarReabrir()) {
+        <div class="paso-cierre__reopen-form">
+          <label class="paso-cierre__field paso-cierre__field--wide">
+            Motivo de reapertura (obligatorio)
+            <input
+              type="text"
+              [value]="motivoReapertura()"
+              (input)="motivoReapertura.set($any($event.target).value)"
+              placeholder="Indica por qué se reabre"
+            />
+          </label>
+          <button
+            type="button"
+            class="paso-cierre__btn is-primary"
+            (click)="reabrirNomina()"
+            [disabled]="!motivoReapertura().trim() || ejecutando()"
+          >Confirmar reapertura</button>
+        </div>
+      }
+    </section>
+  }
+
+  <footer class="paso-cierre__footer">
+    <button type="button" class="paso-cierre__btn is-ghost" (click)="emitirVolver()">
+      Volver a validación
+    </button>
+    <button type="button" class="paso-cierre__btn" (click)="volverAdministrador()">
+      Volver al administrador de nóminas
+    </button>
+  </footer>
+</section>

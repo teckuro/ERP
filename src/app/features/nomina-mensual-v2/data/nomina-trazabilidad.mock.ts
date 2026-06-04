@@ -31,7 +31,7 @@ export function buildEventosTrazabilidadMock(periodo: string): EventoTrazabilida
     {
       idEvento: `${base}-apr`,
       periodo,
-      paso: 'approval',
+      paso: 'closure',
       tipoEvento: 'PRENOMINA_APROBADA',
       usuarioId: null,
       usuarioNombre: '—',

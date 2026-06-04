@@ -68,18 +68,16 @@ export function obtenerTituloAccionPaso(resumen: ResumenAuditoriaPasoNomina | un
   switch (resumen.paso) {
     case 'parameters':
       return resumen.estado === 'congelado' ? 'Parámetros cerrados' : 'Parámetros revisados';
-    case 'scope':
-      return 'Alcance definido';
-    case 'employees':
-      return 'Empleados validados';
+    case 'dotacion':
+      return 'Dotación confirmada';
+    case 'movements':
+      return 'Movimientos aplicados';
     case 'validation':
       return 'Prenómina validada';
-    case 'approval':
-      return resumen.estado === 'aprobado' ? 'Nómina aprobada' : 'Pendiente de aprobación';
+    case 'closure':
+      return resumen.estado === 'aprobado' ? 'Nómina cerrada' : 'Pendiente de cierre';
     case 'calculation':
       return 'Cálculo ejecutado';
-    case 'payslips':
-      return 'Liquidaciones generadas';
     default:
       return etiquetaEstadoAuditoriaPaso(resumen.estado);
   }
@@ -115,14 +113,14 @@ export function verboResponsablePaso(paso: PayrollStepId, estado: EstadoAuditori
   switch (paso) {
     case 'parameters':
       return estado === 'congelado' ? 'Cerrado por' : 'Revisado por';
-    case 'scope':
-      return 'Definido por';
-    case 'employees':
-      return 'Validado por';
+    case 'dotacion':
+      return 'Confirmado por';
+    case 'movements':
+      return 'Aplicado por';
     case 'validation':
       return 'Validado por';
-    case 'approval':
-      return estado === 'aprobado' ? 'Aprobado por' : 'Revisado por';
+    case 'closure':
+      return estado === 'aprobado' ? 'Cerrado por' : 'Revisado por';
     default:
       return 'Registrado por';
   }

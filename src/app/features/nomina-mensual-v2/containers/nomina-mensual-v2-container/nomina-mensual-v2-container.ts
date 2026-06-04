@@ -11,16 +11,23 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { ShellPageContextService } from '../../../../layout/shell-page-context.service';
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
+import { NominaPeriodoService } from '../../../nomina-mensual/services/nomina-periodo.service';
+import type { NominaPeriodo } from '../../../nomina-mensual/models/nomina-periodo.models';
 import { payrollSteps } from '../../data/nomina-mensual-v2.mock';
 import type { PayrollStepId } from '../../models/nomina-mensual-v2.models';
 import type { TipoPendienteEmpleado } from '../../presenters/nomina-empleados-validacion.presenter';
 
 import { NominaMensualV2OverlaysComponent } from './components/nomina-mensual-v2-overlays/nomina-mensual-v2-overlays.component';
 import { NominaMensualV2PasoAlcanceComponent } from './components/nomina-mensual-v2-paso-alcance/nomina-mensual-v2-paso-alcance.component';
+import { NominaMensualV2PasoCalculoComponent } from './components/nomina-mensual-v2-paso-calculo/nomina-mensual-v2-paso-calculo.component';
+import { NominaMensualV2PasoCierreComponent } from './components/nomina-mensual-v2-paso-cierre/nomina-mensual-v2-paso-cierre.component';
+import { NominaMensualV2PasoDotacionComponent } from './components/nomina-mensual-v2-paso-dotacion/nomina-mensual-v2-paso-dotacion.component';
+import { NominaMensualV2PasoMovimientosComponent } from './components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component';
+import { NominaMensualV2PasoValidacionComponent } from './components/nomina-mensual-v2-paso-validacion/nomina-mensual-v2-paso-validacion.component';
 import { NominaMensualV2PasoEmpleadosComponent } from './components/nomina-mensual-v2-paso-empleados/nomina-mensual-v2-paso-empleados.component';
 import { NominaMensualV2PasoParametrosComponent } from './components/nomina-mensual-v2-paso-parametros/nomina-mensual-v2-paso-parametros.component';
 import { NominaMensualV2StepperComponent } from './components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component';
@@ -46,8 +53,11 @@ import { NominaMensualV2TrazabilidadModalComponent } from './components/nomina-m
   imports: [
     NominaMensualV2StepperComponent,
     NominaMensualV2PasoParametrosComponent,
-    NominaMensualV2PasoAlcanceComponent,
-    NominaMensualV2PasoEmpleadosComponent,
+    NominaMensualV2PasoDotacionComponent,
+    NominaMensualV2PasoMovimientosComponent,
+    NominaMensualV2PasoCalculoComponent,
+    NominaMensualV2PasoValidacionComponent,
+    NominaMensualV2PasoCierreComponent,
     NominaMensualV2OverlaysComponent,
     NominaMensualV2TrazabilidadModalComponent,
     NominaMensualV2TrazabilidadDrawerComponent,
@@ -61,10 +71,12 @@ import { NominaMensualV2TrazabilidadModalComponent } from './components/nomina-m
 export class NominaMensualV2Container implements OnInit, OnDestroy {
   private readonly injector = inject(Injector);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly shellContext = inject(ShellPageContextService);
   private readonly periodoActivo = inject(PeriodoActivoService);
   private readonly trazabilidadService = inject(NominaMensualV2TrazabilidadService);
   private readonly sesionService = inject(NominaMensualV2SesionService);
+  private readonly nominaPeriodoService = inject(NominaPeriodoService);
   readonly orquestador = inject(NominaMensualV2OrquestadorPort);
   private readonly accesoBaseService = inject(NominaParametrosBaseAccesoService);
 
@@ -73,9 +85,12 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   private readonly pasoEmpleados = viewChild(NominaMensualV2PasoEmpleadosComponent);
   private tokenInicializacionPeriodo = 0;
   private ultimoPeriodoInicializado: string | null = null;
+  private ultimoNominaIdCargado: string | null = null;
 
   readonly steps = payrollSteps;
   readonly currentStep = signal<PayrollStepId>('parameters');
+  readonly nominaPeriodoId = signal<string | null>(null);
+  readonly nominaCargada = signal<NominaPeriodo | null>(null);
 
   readonly pageTitle = computed(() => obtenerTituloPaso(this.currentStep()));
   readonly pageSubtitle = computed(() => obtenerSubtituloPaso(this.currentStep()));
@@ -89,6 +104,14 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.shellContext.setBindingActive(true);
     this.orquestador.vincularTrazabilidadService(this.trazabilidadService);
+    this.route.paramMap.subscribe((params) => {
+      const id = params.get('nominaPeriodoId');
+      this.nominaPeriodoId.set(id);
+      if (id && id !== this.ultimoNominaIdCargado) {
+        this.ultimoNominaIdCargado = id;
+        void this.cargarNominaProductiva(id);
+      }
+    });
     effect(() => {
       const periodo = this.periodoActivo.periodoYm();
       void this.inicializarSesionPeriodo(periodo);
@@ -100,6 +123,23 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       this.pasoParametros()?.parametrosValidando();
       this.syncShellContext();
     }, { injector: this.injector });
+  }
+
+  private async cargarNominaProductiva(nominaPeriodoId: string): Promise<void> {
+    try {
+      const nomina = await this.nominaPeriodoService.obtenerNomina(nominaPeriodoId);
+      if (!nomina) {
+        this.nominaCargada.set(null);
+        return;
+      }
+      this.nominaCargada.set(nomina);
+      if (nomina.periodo && nomina.periodo !== this.periodoActivo.getPeriodo()) {
+        this.periodoActivo.setPeriodoYm(nomina.periodo);
+      }
+    } catch (error) {
+      console.error('[Nómina V2] No fue posible cargar la nómina', error);
+      this.nominaCargada.set(null);
+    }
   }
 
   private async inicializarSesionPeriodo(periodo: string): Promise<void> {
@@ -167,35 +207,33 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       this.ejecutarAccionPrincipalPasoActual();
       return;
     }
-    if (this.currentStep() === 'scope' && esAvanceHaciaAdelante(this.currentStep(), destinoPaso)) {
-      if (destinoPaso === 'employees') {
-        this.ejecutarAccionPrincipalPasoActual();
-      } else {
-        this.irAPaso(destinoPaso);
-      }
-      return;
-    }
     this.irAPaso(destinoPaso);
   }
 
   manejarAvanceDesdeParametros(destinoPaso: PayrollStepId): void {
+    void this.persistirCabeceraTrasParametros();
     this.irAPaso(destinoPaso);
   }
 
+  private async persistirCabeceraTrasParametros(): Promise<void> {
+    const nominaId = this.nominaPeriodoId();
+    if (!nominaId) return;
+    try {
+      await this.nominaPeriodoService.guardarParametrosNomina(nominaId, { estado: 'borrador' });
+    } catch (error) {
+      console.error('[Nómina V2] No fue posible persistir cabecera tras parámetros', error);
+    }
+  }
+
   manejarAvanceDesdeAlcance(): void {
-    this.irAPaso('employees');
+    this.irAPaso('movements');
   }
 
   irAPasoAlcance(): void {
-    this.irAPaso('scope');
+    this.irAPaso('dotacion');
   }
 
   manejarAvanceDesdeEmpleados(): void {
-    if (esPasoCongelado('movements')) {
-      // V2 productiva acotada a 1–3 hasta V11. El CTA de empleados confirma su validación
-      // pero el paso siguiente queda inactivo. Ver auditoria-nomina-v2-2026-06.md.
-      return;
-    }
     this.irAPaso('movements');
   }
 
@@ -313,7 +351,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       this.orquestador.ejecutarAccionPrincipal();
       return;
     }
-    if (pasoActivo === 'scope' || pasoActivo === 'employees') {
+    if (pasoActivo === 'dotacion') {
       this.orquestador.ejecutarAccionPrincipal();
       return;
     }
@@ -333,7 +371,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
 
   private irAPaso(destinoPaso: PayrollStepId): void {
     this.orquestador.limpiarModalesAvance();
-    if (destinoPaso !== 'parameters' && destinoPaso !== 'scope' && destinoPaso !== 'employees') {
+    if (destinoPaso !== 'parameters' && destinoPaso !== 'dotacion') {
       this.orquestador.establecerAyudaAvance(null);
     }
     this.currentStep.set(destinoPaso);

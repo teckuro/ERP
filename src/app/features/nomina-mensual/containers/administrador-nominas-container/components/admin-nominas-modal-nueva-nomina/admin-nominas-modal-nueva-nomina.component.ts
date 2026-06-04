@@ -1,12 +1,12 @@
 /**
- * Modal "Nueva nómina" del Administrador (F2).
+ * Modal "Nueva nómina" del Administrador.
  *
- * Form simple (período + empresa + tipo) que emite `(creada)` con una
- * `NominaPeriodo` recién instanciada vía `crearNomina()`.
+ * Form simple (período + empresa + tipo) que emite `(creada)` con el
+ * `NominaPeriodoResumen` recién persistido en BD vía `NominaPeriodoService`.
  *
- * IMPORTANTE: en F2 NO persiste. El adapter mock no expone aún
- * `crearNominaPeriodo`. El container la inyecta en memoria local. F3 conectará
- * persistencia real.
+ * F3 (fusion): persiste contra Supabase. La empresa se resuelve desde
+ * `EmpresaActivaService`. Si el usuario solo ve 1 empresa, el selector queda
+ * deshabilitado y prellenado.
  */
 
 import { CommonModule } from '@angular/common';
@@ -23,8 +23,9 @@ import {
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 
-import { NominaPeriodoMockAdapterService } from '../../../../services/nomina-periodo-mock-adapter.service';
-import { crearNomina, type NominaPeriodo, type NominaPeriodoResumen, type TipoNomina } from '../../../../models/nomina-periodo.models';
+import { EmpresaActivaService } from '../../../../../../core/services/empresa-activa.service';
+import { NominaPeriodoService } from '../../../../services/nomina-periodo.service';
+import type { NominaPeriodoResumen, TipoNomina } from '../../../../models/nomina-periodo.models';
 
 interface OpcionEmpresa {
   id: string;
@@ -45,10 +46,6 @@ function periodoActual(): string {
   return `${anio}-${mes}`;
 }
 
-function generarIdLocal(): string {
-  return `nom-borrador-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
-}
-
 @Component({
   selector: 'app-admin-nominas-modal-nueva-nomina',
   standalone: true,
@@ -59,10 +56,11 @@ function generarIdLocal(): string {
   encapsulation: ViewEncapsulation.None,
 })
 export class AdminNominasModalNuevaNominaComponent {
-  private readonly adapter = inject(NominaPeriodoMockAdapterService);
+  private readonly servicio = inject(NominaPeriodoService);
+  private readonly empresaActiva = inject(EmpresaActivaService);
 
   readonly empresasDisponibles = input<readonly NominaPeriodoResumen[]>([]);
-  readonly creada = output<NominaPeriodo>();
+  readonly creada = output<NominaPeriodoResumen>();
   readonly cerrar = output<void>();
 
   readonly tiposNomina = TIPOS_NOMINA;
@@ -70,15 +68,22 @@ export class AdminNominasModalNuevaNominaComponent {
   readonly periodo = signal(periodoActual());
   readonly empresaId = signal('');
   readonly tipo = signal<TipoNomina>('mensual');
+  readonly guardando = signal(false);
+  readonly error = signal<string | null>(null);
 
   readonly empresas = computed<OpcionEmpresa[]>(() => {
-    const fuente = this.empresasDisponibles().length > 0
-      ? this.empresasDisponibles()
-      : this.adapter.listarResumenes();
+    const fuente = this.empresasDisponibles();
     const mapa = new Map<string, string>();
     for (const r of fuente) {
       if (!mapa.has(r.empresaId)) {
         mapa.set(r.empresaId, r.empresaNombre);
+      }
+    }
+    const empresaActivaSnap = this.empresaActiva.empresa();
+    if (empresaActivaSnap) {
+      const id = String(empresaActivaSnap.idEmpresa);
+      if (!mapa.has(id)) {
+        mapa.set(id, empresaActivaSnap.nombre || empresaActivaSnap.razonSocial);
       }
     }
     return [...mapa.entries()]
@@ -93,7 +98,9 @@ export class AdminNominasModalNuevaNominaComponent {
     return this.empresas().find((e) => e.id === id)?.nombre ?? '';
   });
 
-  readonly puedeCrear = computed(() => this.periodoEsValido() && this.empresaId().length > 0);
+  readonly puedeCrear = computed(
+    () => !this.guardando() && this.periodoEsValido() && this.empresaId().length > 0,
+  );
 
   constructor() {
     const primera = this.empresas()[0];
@@ -115,34 +122,39 @@ export class AdminNominasModalNuevaNominaComponent {
   }
 
   cerrarModal(): void {
+    if (this.guardando()) return;
     this.cerrar.emit();
   }
 
   onBackdrop(event: MouseEvent): void {
     if (event.target === event.currentTarget) {
-      this.cerrar.emit();
+      this.cerrarModal();
     }
   }
 
   onEscape(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
-      this.cerrar.emit();
+      this.cerrarModal();
     }
   }
 
-  confirmar(): void {
+  async confirmar(): Promise<void> {
     if (!this.puedeCrear()) return;
-
-    const nombre = this.empresaSeleccionadaNombre();
-    const nomina = crearNomina({
-      id: generarIdLocal(),
-      periodo: this.periodo(),
-      empresaId: this.empresaId(),
-      empresaNombre: nombre,
-      tipo: this.tipo(),
-      estado: 'borrador',
-    });
-
-    this.creada.emit(nomina);
+    this.guardando.set(true);
+    this.error.set(null);
+    try {
+      const resumen = await this.servicio.crearNominaPeriodo({
+        periodo: this.periodo(),
+        tipo: this.tipo(),
+        empresaId: this.empresaId(),
+        empresaNombre: this.empresaSeleccionadaNombre(),
+      });
+      this.creada.emit(resumen);
+    } catch (err) {
+      const mensaje = err instanceof Error ? err.message : 'No fue posible crear la nómina.';
+      this.error.set(mensaje);
+    } finally {
+      this.guardando.set(false);
+    }
   }
 }

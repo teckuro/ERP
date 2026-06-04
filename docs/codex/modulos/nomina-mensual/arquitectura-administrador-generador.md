@@ -4,6 +4,15 @@
 >
 > **Sustituye** y absorbe: `NOM-ADMIN-GENERADOR-01` (plan v2.2 intermedio, nunca implementado), `NOM-GRILLA-BASE-01` (plan v2.1 intermedio), `NOM-MULTI-NOMINA-01` (propuesta abierta el 2026-06-03).
 
+## Decisión rectora 2026-06-04 — F3 fusion (BD real + Generador V2 renovado)
+
+A partir de 2026-06-04 la fase F3 se ejecutó como una **fusion** de F3 + F4 + F5: el Generador V2 se renueva en sitio para operar con 6 pasos y se conecta a Supabase con tablas, RLS y triggers nuevos. El motor V1 (`/remuneraciones/proceso-mensual`) sigue intacto: se mantiene la coexistencia por capas (`nomina_periodo` cabecera operativa + `nomina_calculo_*` snapshot del motor V1, unidos por `periodo + id_empresa`).
+
+- Se levanta de forma controlada la restricción "BD/SQL/RPC/RLS bloqueado" SOLO para esta fase. Se documenta en `migracion-bd-nomina-rebuild.md`.
+- Se introduce `EmpresaActivaService` (resuelve `id_empresa` por JWT o fallback) y `NominaPeriodoService` productivo que reemplaza al mock adapter en producción (el mock queda para tests).
+- Los pasos `scope`, `employees`, `approval`, `payslips` desaparecen del modelo `PayrollStepId`. Quedan: `parameters`, `dotacion`, `movements`, `calculation`, `validation`, `closure`.
+- El motor productivo nuevo (F6) y la migración histórica `nomina_calculo_*` → `nomina_periodo` NO entran en F3 fusion.
+
 ## 1. Decisión rectora
 
 Reconstruir Nómina mensual como módulo definitivo bajo dos roles separados:

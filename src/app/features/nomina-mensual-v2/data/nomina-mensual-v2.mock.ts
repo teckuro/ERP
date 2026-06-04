@@ -18,13 +18,11 @@ export const USAR_DATOS_DEMO_EMPLEADOS_NOMINA = false;
 
 export const payrollSteps: PayrollStep[] = [
   { id: 'parameters', number: 1, title: 'Parámetros', subtitle: 'Configurar' },
-  { id: 'scope', number: 2, title: 'Alcance', subtitle: 'Definir' },
-  { id: 'employees', number: 3, title: 'Empleados', subtitle: 'Revisar' },
-  { id: 'movements', number: 4, title: 'Novedades', subtitle: 'Registrar' },
-  { id: 'calculation', number: 5, title: 'Cálculo', subtitle: 'Procesar' },
-  { id: 'validation', number: 6, title: 'Validación', subtitle: 'Revisar' },
-  { id: 'approval', number: 7, title: 'Aprobación', subtitle: 'Autorizar' },
-  { id: 'payslips', number: 8, title: 'Liquidaciones', subtitle: 'Generar' },
+  { id: 'dotacion', number: 2, title: 'Dotación', subtitle: 'Revisar' },
+  { id: 'movements', number: 3, title: 'Movimientos', subtitle: 'Registrar' },
+  { id: 'calculation', number: 4, title: 'Cálculo', subtitle: 'Procesar' },
+  { id: 'validation', number: 5, title: 'Validación', subtitle: 'Verificar' },
+  { id: 'closure', number: 6, title: 'Cierre', subtitle: 'Autorizar' },
 ];
 
 export const parameterCards: ConfigCard[] = [
