@@ -221,4 +221,38 @@ describe('NominaMensualV2PasoCierreComponent (CIE-ENUM-01)', () => {
       expect(cmp.confirmarCierreVisible()).toBe(true);
     });
   });
+
+  describe('puedeContinuar() — validación pura', () => {
+    it('retorna ok:false cuando la nómina ya está cerrada', () => {
+      configurarTestBed();
+      const fixture = TestBed.createComponent(NominaMensualV2PasoCierreComponent);
+      const cmp = fixture.componentInstance;
+      cmp.nomina.set(nominaMock({ estado: 'cerrada' }));
+      const r = cmp.puedeContinuar();
+      expect(r.ok).toBe(false);
+    });
+
+    it('retorna ok:false si la checklist está incompleta (no abre modal)', () => {
+      configurarTestBed();
+      const fixture = TestBed.createComponent(NominaMensualV2PasoCierreComponent);
+      const cmp = fixture.componentInstance;
+      cmp.nomina.set(nominaMock({ estado: 'borrador', trabajadorIds: [] }));
+      cmp.resumen.set({
+        totalTrabajadores: 0,
+        listosParaCalculo: 0,
+        conIncidenciasCriticas: 0,
+        conAdvertencias: 0,
+        conMovimientosEspeciales: 0,
+        puedeCalcular: false,
+        puedeValidar: false,
+        puedeCerrar: false,
+        calculoVigente: false,
+        incidenciasCriticas: [],
+        advertencias: [],
+      });
+      const r = cmp.puedeContinuar();
+      expect(r.ok).toBe(false);
+      expect(cmp.confirmarCierreVisible()).toBe(false);
+    });
+  });
 });

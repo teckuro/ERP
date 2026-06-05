@@ -4,10 +4,17 @@ import { crearNominaResumen } from '../../../models/nomina-periodo.models';
 import type { EstadoNomina, TipoNomina } from '../../../models/nomina-periodo.models';
 import {
   calcularKpisAdminNominas,
+  desgloseIncidencias,
   estadoNominaToBadge,
+  etiquetaMaximoPasoCompletado,
+  etiquetaPasoVisitado,
   formatearActualizada,
+  formatearActualizadaCompleta,
+  mostrarEnCurso,
+  proximoPasoToIcon,
   tipoNominaToLabel,
 } from './admin-nominas-presentacion.util';
+import type { PayrollStepId } from '../../../../nomina-mensual-v2/models/nomina-mensual-v2.models';
 
 describe('admin-nominas-presentacion.util — mapeos de badge', () => {
   it('Test 16 — estadoNominaToBadge mapea los 9 estados a una variante visible', () => {
@@ -81,5 +88,115 @@ describe('admin-nominas-presentacion.util — calcularKpisAdminNominas', () => {
     expect(kpis.abiertas).toBe(0);
     expect(kpis.conCriticas).toBe(0);
     expect(kpis.items.every((item) => item.value === 0)).toBe(true);
+  });
+});
+
+describe('admin-nominas-presentacion.util — proximoPasoToIcon', () => {
+  it('Test 23 — devuelve un icono lucide por paso conocido', () => {
+    expect(proximoPasoToIcon('parametros')).toBe('settings');
+    expect(proximoPasoToIcon('dotacion')).toBe('users');
+    expect(proximoPasoToIcon('movimientos')).toBe('repeat');
+    expect(proximoPasoToIcon('calculo')).toBe('calculator');
+    expect(proximoPasoToIcon('validacion')).toBe('shield-check');
+    expect(proximoPasoToIcon('cierre')).toBe('lock');
+    expect(proximoPasoToIcon('liquidaciones')).toBe('receipt');
+    expect(proximoPasoToIcon('sin_accion')).toBe('minus');
+  });
+
+  it('Test 24 — null/undefined degradan a "minus" sin romper la celda', () => {
+    expect(proximoPasoToIcon(null as never)).toBe('minus');
+    expect(proximoPasoToIcon(undefined as never)).toBe('minus');
+  });
+});
+
+describe('admin-nominas-presentacion.util — formatearActualizadaCompleta', () => {
+  it('Test 25 — devuelve cadena dd/mm/yyyy HH:mm en zona local', () => {
+    const fecha = new Date(2026, 5, 4, 9, 7, 0); // junio = mes 5
+    const iso = fecha.toISOString();
+    const formato = formatearActualizadaCompleta(iso);
+    expect(formato).toMatch(/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/);
+  });
+
+  it('Test 26 — entrada vacía/invalida devuelve cadena vacía', () => {
+    expect(formatearActualizadaCompleta(undefined)).toBe('');
+    expect(formatearActualizadaCompleta('')).toBe('');
+    expect(formatearActualizadaCompleta('no-es-fecha')).toBe('');
+  });
+});
+
+describe('admin-nominas-presentacion.util — desgloseIncidencias', () => {
+  it('Test 27 — fila sin críticas ni avisos devuelve cadena vacía', () => {
+    expect(desgloseIncidencias({ totalIncidenciasCriticas: 0, totalAdvertencias: 0 })).toBe('');
+  });
+
+  it('Test 28 — solo críticas: pluraliza correctamente', () => {
+    expect(desgloseIncidencias({ totalIncidenciasCriticas: 1, totalAdvertencias: 0 })).toBe('1 crítica');
+    expect(desgloseIncidencias({ totalIncidenciasCriticas: 3, totalAdvertencias: 0 })).toBe('3 críticas');
+  });
+
+  it('Test 29 — combina críticas y avisos en un solo string', () => {
+    expect(
+      desgloseIncidencias({ totalIncidenciasCriticas: 2, totalAdvertencias: 5 }),
+    ).toBe('2 críticas · 5 avisos');
+  });
+
+  it('Test 30 — solo avisos pluraliza correctamente', () => {
+    expect(desgloseIncidencias({ totalIncidenciasCriticas: 0, totalAdvertencias: 1 })).toBe('1 aviso');
+    expect(desgloseIncidencias({ totalIncidenciasCriticas: 0, totalAdvertencias: 4 })).toBe('4 avisos');
+  });
+});
+
+describe('admin-nominas-presentacion.util — sub-renglón "Avance"', () => {
+  it('Test 31 — etiquetaMaximoPasoCompletado cubre los 6 PayrollStepId', () => {
+    const pares: Array<[PayrollStepId, string]> = [
+      ['parameters', 'Parámetros'],
+      ['dotacion', 'Dotación'],
+      ['movements', 'Movimientos'],
+      ['calculation', 'Cálculo'],
+      ['validation', 'Validación'],
+      ['closure', 'Cierre'],
+    ];
+    for (const [paso, etiqueta] of pares) {
+      expect(etiquetaMaximoPasoCompletado(paso)).toBe(etiqueta);
+    }
+  });
+
+  it('Test 32 — etiquetaMaximoPasoCompletado devuelve cadena vacía para nulos/undefined', () => {
+    expect(etiquetaMaximoPasoCompletado(null)).toBe('');
+    expect(etiquetaMaximoPasoCompletado(undefined)).toBe('');
+  });
+
+  it('Test 32b — etiquetaPasoVisitado (deprecated alias) sigue funcionando', () => {
+    expect(etiquetaPasoVisitado('calculation')).toBe('Cálculo');
+    expect(etiquetaPasoVisitado(null)).toBe('');
+  });
+
+  it('Test 33 — mostrarEnCurso es false cuando no hay maximoPasoCompletado', () => {
+    const fila = crearNominaResumen({ proximoPaso: 'dotacion', maximoPasoCompletado: null });
+    expect(mostrarEnCurso(fila)).toBe(false);
+  });
+
+  it('Test 34 — mostrarEnCurso es false cuando el paso completado coincide con proximoPaso', () => {
+    const fila = crearNominaResumen({
+      proximoPaso: 'calculo',
+      maximoPasoCompletado: 'calculation',
+    });
+    expect(mostrarEnCurso(fila)).toBe(false);
+  });
+
+  it('Test 35 — mostrarEnCurso es true cuando difiere del proximoPaso', () => {
+    const fila = crearNominaResumen({
+      proximoPaso: 'dotacion',
+      maximoPasoCompletado: 'calculation',
+    });
+    expect(mostrarEnCurso(fila)).toBe(true);
+  });
+
+  it('Test 36 — mostrarEnCurso es true cuando proximoPaso es sin_accion y hay paso completado', () => {
+    const fila = crearNominaResumen({
+      proximoPaso: 'sin_accion',
+      maximoPasoCompletado: 'validation',
+    });
+    expect(mostrarEnCurso(fila)).toBe(true);
   });
 });

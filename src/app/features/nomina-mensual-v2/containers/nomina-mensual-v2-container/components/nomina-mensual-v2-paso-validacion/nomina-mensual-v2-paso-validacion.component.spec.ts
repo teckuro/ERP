@@ -102,4 +102,25 @@ describe('NominaMensualV2PasoValidacionComponent — avanzar() (AG-NAV-03)', () 
     }
     expect(servicio.validarYAprobarNomina).not.toHaveBeenCalled();
   });
+
+  describe('puedeContinuar() — validación pura', () => {
+    it('retorna ok:true cuando puedeAprobar y cálculo vigente', async () => {
+      const fixture = TestBed.createComponent(NominaMensualV2PasoValidacionComponent);
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      const cmp = fixture.componentInstance;
+      await fixture.whenStable();
+      expect(cmp.puedeContinuar()).toEqual({ ok: true });
+    });
+
+    it('retorna ok:false con razón sin invocar el servicio cuando el cálculo no está vigente', async () => {
+      servicio = configurarTestBed(resumenMock({ calculoVigente: false }));
+      const fixture = TestBed.createComponent(NominaMensualV2PasoValidacionComponent);
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      const cmp = fixture.componentInstance;
+      await fixture.whenStable();
+      const r = cmp.puedeContinuar();
+      expect(r.ok).toBe(false);
+      expect(servicio.validarYAprobarNomina).not.toHaveBeenCalled();
+    });
+  });
 });

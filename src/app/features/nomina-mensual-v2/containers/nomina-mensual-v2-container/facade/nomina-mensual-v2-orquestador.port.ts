@@ -68,6 +68,17 @@ export type ModalRevisarParametrosPort = {
   periodoEtiqueta: string;
 };
 
+/**
+ * Modal uniforme de confirmación al volver atrás en el flujo del Generador.
+ * Aplica a pasos 2..5 (parameters tiene su rama propia
+ * `modalRevisarParametros`). El usuario confirma con conocimiento de que si
+ * modifica el paso destino se invalidará el avance posterior.
+ */
+export type ModalConfirmarRetrocesoPort = {
+  destino: PayrollStepId;
+  etiquetaDestino: string;
+};
+
 export type TipoModalDetallePasoNomina = 'owner' | 'history' | 'integrity';
 
 @Injectable()
@@ -83,6 +94,7 @@ export class NominaMensualV2OrquestadorPort {
   readonly modalActualizarParametrosBase = signal<ModalActualizarParametrosBasePort | null>(null);
   readonly modalTablaDiferenciasParametrosBase = signal<ModalTablaDiferenciasParametrosBasePort | null>(null);
   readonly modalRevisarParametros = signal<ModalRevisarParametrosPort | null>(null);
+  readonly modalConfirmarRetroceso = signal<ModalConfirmarRetrocesoPort | null>(null);
   readonly modalAccesoBaseParametros = signal<ModalAccesoBaseParametrosPort | null>(null);
   readonly resultadoAlcance = signal<ResultadoAlcanceNomina | null>(null);
 
@@ -162,6 +174,7 @@ export class NominaMensualV2OrquestadorPort {
     this.modalActualizarParametrosBase.set(null);
     this.modalTablaDiferenciasParametrosBase.set(null);
     this.modalRevisarParametros.set(null);
+    this.modalConfirmarRetroceso.set(null);
     this.modalAccesoBaseParametros.set(null);
   }
 

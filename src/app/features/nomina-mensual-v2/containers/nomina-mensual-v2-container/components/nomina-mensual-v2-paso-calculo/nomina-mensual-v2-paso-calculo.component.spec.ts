@@ -150,4 +150,24 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
       expect(resultado).toEqual({ ok: true });
     });
   });
+
+  describe('puedeContinuar() — validación pura', () => {
+    it('retorna ok:false sin resultado', () => {
+      const fixture = TestBed.createComponent(NominaMensualV2PasoCalculoComponent);
+      const cmp = fixture.componentInstance;
+      cmp.resultado.set(null);
+      const r = cmp.puedeContinuar();
+      expect(r.ok).toBe(false);
+    });
+
+    it('retorna ok:false si el cálculo no está vigente', () => {
+      const fixture = TestBed.createComponent(NominaMensualV2PasoCalculoComponent);
+      const cmp = fixture.componentInstance;
+      cmp.nomina.set(
+        nominaMock({ evidenciaCalculo: { versionCalculo: 2, calculoVigente: false } }),
+      );
+      const r = cmp.puedeContinuar();
+      expect(r.ok).toBe(false);
+    });
+  });
 });

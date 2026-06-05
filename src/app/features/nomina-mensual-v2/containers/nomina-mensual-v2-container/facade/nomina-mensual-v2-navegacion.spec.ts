@@ -7,10 +7,16 @@ import {
   ejecutarAvancePaso,
   esPasoCongelado,
   esRetrocesoAPaso,
+  indiceMaximoPasoAccesible,
+  indiceMaximoPasoAccesibleEfectivo,
   indiceUltimoPasoCompletado,
+  indiceUltimoPasoCompletadoPorEstado,
   obtenerEstadoPaso,
   obtenerEtiquetaAccionPrincipal,
+  obtenerEtiquetaBrevePaso,
   obtenerTituloPaso,
+  puedeContinuarPaso,
+  tooltipPasoNoAccesible,
   type PasoNominaPort,
   type ResultadoAvancePaso,
 } from './nomina-mensual-v2-navegacion';
@@ -182,9 +188,68 @@ describe('indiceUltimoPasoCompletado / obtenerEstadoPaso desde evidencia (AG-NAV
   });
 });
 
+describe('indiceUltimoPasoCompletadoPorEstado (variante para caller ligero)', () => {
+  it('devuelve -1 cuando el estado es null', () => {
+    expect(indiceUltimoPasoCompletadoPorEstado(null)).toBe(-1);
+  });
+
+  it('coincide con la variante completa para cada estado', () => {
+    const estados: NominaPeriodo['estado'][] = [
+      'borrador',
+      'dotacion_generada',
+      'en_revision',
+      'calculada',
+      'validada',
+      'aprobada',
+      'cerrada',
+      'reabierta',
+      'anulada',
+    ];
+    for (const estado of estados) {
+      const n = nominaConEstado(estado);
+      expect(indiceUltimoPasoCompletadoPorEstado(estado)).toBe(
+        indiceUltimoPasoCompletado(n),
+      );
+    }
+  });
+});
+
+describe('indiceMaximoPasoAccesible — restringe rehidratación a pasos alcanzables', () => {
+  it('borrador permite solo parameters', () => {
+    expect(indiceMaximoPasoAccesible('borrador')).toBe(ORDEN_PASOS_NOMINA.indexOf('parameters'));
+  });
+
+  it('dotacion_generada permite hasta dotacion', () => {
+    expect(indiceMaximoPasoAccesible('dotacion_generada')).toBe(ORDEN_PASOS_NOMINA.indexOf('dotacion'));
+  });
+
+  it('en_revision permite hasta calculation (paso en curso es accesible)', () => {
+    expect(indiceMaximoPasoAccesible('en_revision')).toBe(ORDEN_PASOS_NOMINA.indexOf('calculation'));
+  });
+
+  it('calculada/validada permiten hasta validation', () => {
+    expect(indiceMaximoPasoAccesible('calculada')).toBe(ORDEN_PASOS_NOMINA.indexOf('validation'));
+    expect(indiceMaximoPasoAccesible('validada')).toBe(ORDEN_PASOS_NOMINA.indexOf('validation'));
+  });
+
+  it('aprobada/cerrada/reabierta permiten hasta closure', () => {
+    const max = ORDEN_PASOS_NOMINA.indexOf('closure');
+    expect(indiceMaximoPasoAccesible('aprobada')).toBe(max);
+    expect(indiceMaximoPasoAccesible('cerrada')).toBe(max);
+    expect(indiceMaximoPasoAccesible('reabierta')).toBe(max);
+  });
+
+  it('anulada devuelve -1 (ninguno)', () => {
+    expect(indiceMaximoPasoAccesible('anulada')).toBe(-1);
+  });
+});
+
 describe('ejecutarAvancePaso — delegación del CTA del shell (AG-NAV-03)', () => {
-  function paso(resultado: ResultadoAvancePaso): PasoNominaPort {
-    return { avanzar: () => Promise.resolve(resultado) };
+  function paso(resultado: ResultadoAvancePaso, completable: ResultadoAvancePaso = { ok: true }): PasoNominaPort {
+    return {
+      puedeContinuar: () => completable,
+      avanzar: () => Promise.resolve(resultado),
+    };
   }
 
   it('retorna ok:false y siguientePaso:null cuando no hay paso activo (ViewChild no instanciado)', async () => {
@@ -210,5 +275,71 @@ describe('ejecutarAvancePaso — delegación del CTA del shell (AG-NAV-03)', () 
     const r = await ejecutarAvancePaso('dotacion', paso({ ok: false, razon: 'Hay incidencias.' }));
     expect(r.resultado).toEqual({ ok: false, razon: 'Hay incidencias.' });
     expect(r.siguientePaso).toBeNull();
+  });
+});
+
+describe('puedeContinuarPaso — consulta pura para CTA/stepper', () => {
+  it('devuelve ok:false sin razón vacía cuando no hay paso activo', () => {
+    const r = puedeContinuarPaso(null);
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.razon).toBeTruthy();
+    }
+  });
+
+  it('delega al puedeContinuar() del paso activo', () => {
+    const paso: PasoNominaPort = {
+      puedeContinuar: () => ({ ok: false, razon: 'Falta cargar.' }),
+      avanzar: () => Promise.resolve({ ok: true }),
+    };
+    expect(puedeContinuarPaso(paso)).toEqual({ ok: false, razon: 'Falta cargar.' });
+  });
+});
+
+describe('indiceMaximoPasoAccesibleEfectivo — combina estado + contenido', () => {
+  it('contenido limita por debajo del techo estado: en_revision con contenido en dotacion sólo da hasta movements', () => {
+    // estado en_revision permite hasta `calculation` (índice 3)
+    // contenido completado = dotacion (índice 1) → max+1 = 2 (movements)
+    expect(indiceMaximoPasoAccesibleEfectivo('en_revision', 1)).toBe(2);
+  });
+
+  it('estado limita por debajo del contenido: borrador con contenido en movements igual da solo parameters', () => {
+    expect(indiceMaximoPasoAccesibleEfectivo('borrador', 2)).toBe(
+      ORDEN_PASOS_NOMINA.indexOf('parameters'),
+    );
+  });
+
+  it('contenido -1 (nada completo) da el techo de estado sin cambios cuando techo <= 0', () => {
+    expect(indiceMaximoPasoAccesibleEfectivo('borrador', -1)).toBe(0);
+  });
+
+  it('anulada propaga -1 sin importar el contenido', () => {
+    expect(indiceMaximoPasoAccesibleEfectivo('anulada', 5)).toBe(-1);
+  });
+
+  it('estado cerrada con contenido cierre permite hasta cierre', () => {
+    expect(indiceMaximoPasoAccesibleEfectivo('cerrada', 5)).toBe(
+      ORDEN_PASOS_NOMINA.indexOf('closure'),
+    );
+  });
+});
+
+describe('tooltipPasoNoAccesible / obtenerEtiquetaBrevePaso', () => {
+  it('etiqueta breve por paso', () => {
+    expect(obtenerEtiquetaBrevePaso('parameters')).toBe('Parámetros');
+    expect(obtenerEtiquetaBrevePaso('dotacion')).toBe('Dotación');
+    expect(obtenerEtiquetaBrevePaso('movements')).toBe('Movimientos');
+    expect(obtenerEtiquetaBrevePaso('calculation')).toBe('Cálculo');
+    expect(obtenerEtiquetaBrevePaso('validation')).toBe('Validación');
+    expect(obtenerEtiquetaBrevePaso('closure')).toBe('Cierre');
+  });
+
+  it('tooltipPasoNoAccesible cita el paso anterior', () => {
+    expect(tooltipPasoNoAccesible('movements')).toBe('Completa Dotación para continuar.');
+    expect(tooltipPasoNoAccesible('validation')).toBe('Completa Cálculo para continuar.');
+  });
+
+  it('tooltipPasoNoAccesible para el primer paso devuelve mensaje genérico', () => {
+    expect(tooltipPasoNoAccesible('parameters')).toBe('Completa el paso actual para continuar.');
   });
 });

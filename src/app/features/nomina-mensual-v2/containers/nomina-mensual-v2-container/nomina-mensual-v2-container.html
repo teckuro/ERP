@@ -4,6 +4,7 @@
     [steps]="steps"
     [nomina]="nominaCargada()"
     [avanceDesdePasoActualBloqueado]="parametrosPasoOcupado()"
+    [indiceMaximoAccesible]="indiceMaximoAccesibleEfectivo()"
     (pasoSeleccionado)="intentarIrAPaso($event)"
   />
 
@@ -76,6 +77,7 @@
     (confirmarActualizarBaseYContinuar)="confirmarActualizarBaseYContinuar()"
     (confirmarReingresoParametros)="confirmarReingresoParametros()"
     (confirmarRecargaBaseParametros)="confirmarRecargaBaseParametros()"
+    (confirmarRetrocesoAPaso)="confirmarRetrocesoAPaso()"
   />
 
   <app-nomina-mensual-v2-trazabilidad-modal />

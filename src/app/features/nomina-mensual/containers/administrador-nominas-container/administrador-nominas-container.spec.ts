@@ -6,11 +6,18 @@ import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { LucideAngularModule } from 'lucide-angular';
 import {
   ArrowRight,
+  Calculator,
   Eye,
+  Lock,
+  Minus,
   OctagonX,
   Receipt,
   RefreshCw,
+  Repeat,
+  Settings,
+  ShieldCheck,
   Trash2,
+  Users,
 } from 'lucide-angular/src/icons';
 
 import type { NominaPeriodoResumen } from '../../models/nomina-periodo.models';
@@ -54,11 +61,18 @@ function configurar(opts: { servicio: ServicioMock; navigate?: ReturnType<typeof
     providers: [
       importProvidersFrom(LucideAngularModule.pick({
         ArrowRight,
+        Calculator,
         Eye,
+        Lock,
+        Minus,
         OctagonX,
         Receipt,
         RefreshCw,
+        Repeat,
+        Settings,
+        ShieldCheck,
         Trash2,
+        Users,
       })),
       { provide: Router, useValue: { navigate } },
       { provide: NominaPeriodoService, useValue: opts.servicio },
@@ -270,5 +284,88 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     expect(cmp.accionDetalle('eliminar')).toContain('no se puede deshacer');
     expect(cmp.accionDetalle('reabrir')).toBe('');
     expect(cmp.accionDetalle('anular')).toBe('');
+  });
+
+  it('Test 45 — subtitulo refleja total + cuantas requieren accion y cuantas con criticas (NOIA)', async () => {
+    servicio.listarResumenes.mockReset().mockResolvedValue([
+      resumenMock({ id: 'a', estado: 'borrador', totalIncidenciasCriticas: 0, totalAdvertencias: 0 }),
+      resumenMock({ id: 'b', estado: 'dotacion_generada', totalIncidenciasCriticas: 2 }),
+      resumenMock({ id: 'c', estado: 'cerrada', totalIncidenciasCriticas: 0 }),
+    ]);
+    configurar({ servicio });
+    const fixture = TestBed.createComponent(AdministradorNominasContainer);
+    const cmp = fixture.componentInstance;
+    await cmp.cargarResumenes();
+
+    const sub = cmp.subtitulo();
+    expect(sub).toContain('3 nóminas en seguimiento');
+    expect(sub).toContain('1 con críticas');
+    expect(sub).toMatch(/requieren? acción/);
+  });
+
+  it('Test 46 — subtitulo sin nominas en sistema usa copy de bandeja vacia', async () => {
+    servicio.listarResumenes.mockReset().mockResolvedValue([]);
+    configurar({ servicio });
+    const fixture = TestBed.createComponent(AdministradorNominasContainer);
+    const cmp = fixture.componentInstance;
+    await cmp.cargarResumenes();
+
+    expect(cmp.subtitulo()).toBe('Sin nóminas cargadas todavía.');
+  });
+
+  it('Test 47 — esFilaPrioritaria marca filas con criticas o que requieren accion', () => {
+    configurar({ servicio });
+    const fixture = TestBed.createComponent(AdministradorNominasContainer);
+    const cmp = fixture.componentInstance;
+
+    const conCriticas = resumenMock({ estado: 'cerrada', totalIncidenciasCriticas: 1 });
+    const requiereAccion = resumenMock({ estado: 'borrador', totalIncidenciasCriticas: 0 });
+    const limpia = resumenMock({ estado: 'cerrada', totalIncidenciasCriticas: 0, totalAdvertencias: 0 });
+
+    expect(cmp.esFilaPrioritaria(conCriticas)).toBe(true);
+    expect(cmp.esFilaPrioritaria(requiereAccion)).toBe(true);
+    expect(cmp.esFilaPrioritaria(limpia)).toBe(false);
+  });
+
+  it('Test 48 — la celda "Siguiente acción" muestra "Avance: X" cuando hay paso completado distinto', async () => {
+    servicio.listarResumenes.mockReset().mockResolvedValue([
+      resumenMock({
+        id: 'nom-en-curso',
+        proximoPaso: 'dotacion',
+        maximoPasoCompletado: 'calculation',
+      }),
+    ]);
+    configurar({ servicio });
+    const fixture = TestBed.createComponent(AdministradorNominasContainer);
+    fixture.componentInstance['cargando'].set(false);
+    await fixture.componentInstance.cargarResumenes();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const enCurso = fixture.debugElement.query(By.css('.adm-nom__en-curso'));
+    expect(enCurso).not.toBeNull();
+    expect(enCurso.nativeElement.textContent).toContain('Avance:');
+    expect(enCurso.nativeElement.textContent).toContain('Cálculo');
+  });
+
+  it('Test 49 — la celda no muestra "Avance" cuando el paso completado coincide con próximo paso', async () => {
+    servicio.listarResumenes.mockReset().mockResolvedValue([
+      resumenMock({
+        id: 'nom-sin-curso',
+        proximoPaso: 'calculo',
+        maximoPasoCompletado: 'calculation',
+      }),
+    ]);
+    configurar({ servicio });
+    const fixture = TestBed.createComponent(AdministradorNominasContainer);
+    fixture.componentInstance['cargando'].set(false);
+    await fixture.componentInstance.cargarResumenes();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const enCurso = fixture.debugElement.query(By.css('.adm-nom__en-curso'));
+    expect(enCurso).toBeNull();
   });
 });

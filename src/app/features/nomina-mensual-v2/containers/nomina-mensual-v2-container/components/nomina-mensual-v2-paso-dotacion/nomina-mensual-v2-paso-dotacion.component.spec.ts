@@ -3,6 +3,7 @@ import { describe, expect, it, beforeEach, vi } from 'vitest';
 
 import type { FilaTrabajadorNominaResumen } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
+import { EmpleadosService } from '../../../../../empleados/services/empleados.service';
 import { NominaMensualV2PasoDotacionComponent } from './nomina-mensual-v2-paso-dotacion.component';
 
 function filaMock(parcial: Partial<FilaTrabajadorNominaResumen> = {}): FilaTrabajadorNominaResumen {
@@ -32,7 +33,13 @@ function filaBloqueada(): FilaTrabajadorNominaResumen {
 function configurarTestBed(servicio: Record<string, unknown>): void {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
-    providers: [{ provide: NominaPeriodoService, useValue: servicio }],
+    providers: [
+      { provide: NominaPeriodoService, useValue: servicio },
+      {
+        provide: EmpleadosService,
+        useValue: { listar: vi.fn().mockResolvedValue([]) },
+      },
+    ],
   });
 }
 
@@ -45,6 +52,9 @@ describe('NominaMensualV2PasoDotacionComponent (DOT-DET-04)', () => {
       previsualizarAccionMasiva: vi.fn().mockResolvedValue(null),
       aplicarAccionMasiva: vi.fn().mockResolvedValue(undefined),
       confirmarDotacion: vi.fn().mockResolvedValue(undefined),
+      agregarTrabajadoresANomina: vi
+        .fn()
+        .mockResolvedValue({ agregados: [], yaEstaban: [] }),
       obtenerDetalleTrabajador: vi.fn().mockResolvedValue({
         trabajadorId: 'tr-1',
         movimientos: [],
@@ -179,6 +189,119 @@ describe('NominaMensualV2PasoDotacionComponent (DOT-DET-04)', () => {
       const resultado = await cmp.avanzar();
 
       expect(resultado).toEqual({ ok: false, razon: 'Cargando la dotación.' });
+    });
+  });
+
+  describe('puedeContinuar() — validación pura (Generador secuencial puro)', () => {
+    it('retorna ok:true cuando hay filas y no hay bloqueos', () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoDotacionComponent);
+      const cmp = fixture.componentInstance;
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      cmp.vista.set({ filas: [filaMock()], total: 1 });
+      expect(cmp.puedeContinuar()).toEqual({ ok: true });
+    });
+
+    it('retorna ok:false sin side-effects cuando hay trabajadores bloqueados', () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoDotacionComponent);
+      const cmp = fixture.componentInstance;
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      cmp.vista.set({ filas: [filaBloqueada()], total: 1 });
+      const r = cmp.puedeContinuar();
+      expect(r.ok).toBe(false);
+      expect((servicio as Record<string, ReturnType<typeof vi.fn>>)['confirmarDotacion']).not.toHaveBeenCalled();
+    });
+
+    it('retorna ok:false mientras carga la dotación', () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoDotacionComponent);
+      const cmp = fixture.componentInstance;
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      cmp.loading.set(true);
+      expect(cmp.puedeContinuar()).toEqual({ ok: false, razon: 'Cargando la dotación.' });
+    });
+  });
+
+  describe('Picker "Agregar trabajadores"', () => {
+    it('abrirPicker marca el modal como abierto cuando hay nómina activa', () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoDotacionComponent);
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      const cmp = fixture.componentInstance;
+      cmp.abrirPicker();
+      expect(cmp.pickerAbierto()).toBe(true);
+    });
+
+    it('abrirPicker no hace nada si no hay nómina', () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoDotacionComponent);
+      const cmp = fixture.componentInstance;
+      cmp.abrirPicker();
+      expect(cmp.pickerAbierto()).toBe(false);
+    });
+
+    it('cerrarPicker no cierra mientras se está aplicando inclusión', () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoDotacionComponent);
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      const cmp = fixture.componentInstance;
+      cmp.pickerAbierto.set(true);
+      cmp.aplicandoInclusion.set(true);
+      cmp.cerrarPicker();
+      expect(cmp.pickerAbierto()).toBe(true);
+    });
+
+    it('incluirTrabajadores llama al servicio y refresca la dotación', async () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoDotacionComponent);
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      const cmp = fixture.componentInstance;
+      cmp.pickerAbierto.set(true);
+
+      await cmp.incluirTrabajadores(['tr-9', 'tr-10']);
+
+      expect(servicio['agregarTrabajadoresANomina']).toHaveBeenCalledWith('np-1', [
+        'tr-9',
+        'tr-10',
+      ]);
+      expect(cmp.pickerAbierto()).toBe(false);
+      // filtrarDotacion se llama dos veces: una vez por el effect inicial al
+      // resolver el input nominaPeriodoId, y otra vez tras incluir.
+      expect((servicio['filtrarDotacion'] as ReturnType<typeof vi.fn>).mock.calls.length)
+        .toBeGreaterThanOrEqual(1);
+    });
+
+    it('incluirTrabajadores propaga errores como mensaje visible', async () => {
+      const servicioConError = {
+        ...servicio,
+        agregarTrabajadoresANomina: vi.fn().mockRejectedValue(new Error('fallo upsert')),
+      };
+      configurarTestBed(servicioConError);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoDotacionComponent);
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      const cmp = fixture.componentInstance;
+
+      await cmp.incluirTrabajadores(['tr-9']);
+
+      expect(cmp.errorMensaje()).toMatch(/incluir/i);
+      expect(cmp.aplicandoInclusion()).toBe(false);
+    });
+  });
+
+  describe('idsActualesEnNomina', () => {
+    it('expone los ids cargados en la grilla actual', () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoDotacionComponent);
+      const cmp = fixture.componentInstance;
+      cmp.vista.set({
+        filas: [
+          filaMock({ trabajadorId: 'tr-1' }),
+          filaMock({ trabajadorId: 'tr-2' }),
+        ],
+        total: 2,
+      });
+      expect(cmp.idsActualesEnNomina()).toEqual(['tr-1', 'tr-2']);
     });
   });
 });

@@ -9,8 +9,9 @@
         [class.completed]="estadoPaso(vista.clave) === 'completed'"
         [class.nomina-step--advance-blocked]="pasoAvanceBloqueado(vista.clave)"
         [class.nomina-step--frozen]="pasoCongelado(vista.clave)"
-        [disabled]="pasoAvanceBloqueado(vista.clave) || pasoCongelado(vista.clave)"
-        [attr.aria-disabled]="pasoAvanceBloqueado(vista.clave) || pasoCongelado(vista.clave) ? 'true' : null"
+        [class.nomina-step--locked]="pasoNoAccesible(vista.clave)"
+        [disabled]="pasoAvanceBloqueado(vista.clave) || pasoCongelado(vista.clave) || pasoNoAccesible(vista.clave)"
+        [attr.aria-disabled]="pasoAvanceBloqueado(vista.clave) || pasoCongelado(vista.clave) || pasoNoAccesible(vista.clave) ? 'true' : null"
         [attr.title]="tooltipPaso(vista.clave)"
         (click)="seleccionarPaso(vista.clave)"
       >
@@ -28,9 +29,12 @@
           [class.step-status--ready]="vista.estado === 'completo'"
           [class.step-status--waiting]="vista.estado !== 'completo'"
           [class.step-status--frozen]="pasoCongelado(vista.clave)"
+          [class.step-status--locked]="pasoNoAccesible(vista.clave)"
         >
           @if (pasoCongelado(vista.clave)) {
             <lucide-icon name="lock" aria-label="Disponible al cerrar V11"></lucide-icon>
+          } @else if (pasoNoAccesible(vista.clave)) {
+            <lucide-icon name="lock" aria-label="Completa el paso anterior para desbloquear"></lucide-icon>
           } @else if (vista.estado === 'completo') {
             <lucide-icon name="check" aria-label="Listo"></lucide-icon>
           } @else {

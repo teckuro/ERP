@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import type { FilaTrabajadorNominaResumen } from '../../nomina-mensual/models/nomina-periodo.models';
 import {
+  COLUMNAS_DOTACION,
+  FILTROS_DOTACION,
+  PERSISTENCIA_GRILLA_DOTACION,
   calcularStatsDotacion,
   etiquetaEstadoDotacion,
   hayFiltrosActivos,
@@ -63,5 +66,48 @@ describe('nomina-dotacion-grid.presenter', () => {
 
   it('lista los estados ordenados de menor a mayor gravedad operativa', () => {
     expect(listaEstadosDotacion()).toEqual(['listo', 'advertencia', 'critico', 'bloqueado']);
+  });
+
+  describe('Contrato declarativo para app-data-grid', () => {
+    it('expone clave de persistencia estable y columnas tipadas', () => {
+      expect(PERSISTENCIA_GRILLA_DOTACION).toBe('nomina-v2-dotacion-grid-v1');
+      const ids = COLUMNAS_DOTACION.map((c) => c.id);
+      expect(ids).toEqual([
+        'nombre',
+        'rut',
+        'cargo',
+        'estado',
+        'totalIncidenciasCriticas',
+        'totalMovimientos',
+        'acciones',
+      ]);
+    });
+
+    it('filtro de estado deja pasar solo el estado coincidente', () => {
+      const filtros = FILTROS_DOTACION([]);
+      const filtroEstado = filtros.find((f) => f.id === 'estado');
+      expect(filtroEstado).toBeDefined();
+      expect(filtroEstado?.predicate?.(filaEjemplo({ estado: 'critico' }), 'critico')).toBe(true);
+      expect(filtroEstado?.predicate?.(filaEjemplo({ estado: 'listo' }), 'critico')).toBe(false);
+      expect(filtroEstado?.predicate?.(filaEjemplo({ estado: 'listo' }), '')).toBe(true);
+    });
+
+    it('filtro de incidencias suma críticas y advertencias para decidir', () => {
+      const filtros = FILTROS_DOTACION([]);
+      const filtro = filtros.find((f) => f.id === 'incidencias');
+      const conIncidencia = filaEjemplo({ totalIncidenciasCriticas: 1 });
+      const sinIncidencia = filaEjemplo({ totalIncidenciasCriticas: 0, totalAdvertencias: 0 });
+      expect(filtro?.predicate?.(conIncidencia, 'con')).toBe(true);
+      expect(filtro?.predicate?.(sinIncidencia, 'con')).toBe(false);
+      expect(filtro?.predicate?.(sinIncidencia, 'sin')).toBe(true);
+    });
+
+    it('filtro de movimientos discrimina filas con/sin movimientos', () => {
+      const filtros = FILTROS_DOTACION([]);
+      const filtro = filtros.find((f) => f.id === 'movimientos');
+      expect(filtro?.predicate?.(filaEjemplo({ totalMovimientos: 0 }), 'con')).toBe(false);
+      expect(filtro?.predicate?.(filaEjemplo({ totalMovimientos: 2 }), 'con')).toBe(true);
+      expect(filtro?.predicate?.(filaEjemplo({ totalMovimientos: 0 }), 'sin')).toBe(true);
+    });
   });
 });

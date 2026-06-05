@@ -72,6 +72,7 @@ export class NominaMensualV2OverlaysComponent {
   @Output() confirmarActualizarBaseYContinuar = new EventEmitter<void>();
   @Output() confirmarReingresoParametros = new EventEmitter<void>();
   @Output() confirmarRecargaBaseParametros = new EventEmitter<void>();
+  @Output() confirmarRetrocesoAPaso = new EventEmitter<void>();
 
   seccionesPrepararNomina(preview: {
     seccionesListas: number;
@@ -143,6 +144,11 @@ export class NominaMensualV2OverlaysComponent {
 
   cerrarModalAccesoBaseParametros(): void {
     this.orquestador.modalAccesoBaseParametros.set(null);
+    this.cerrarModal.emit();
+  }
+
+  cerrarModalConfirmarRetroceso(): void {
+    this.orquestador.modalConfirmarRetroceso.set(null);
     this.cerrarModal.emit();
   }
 }

@@ -91,4 +91,40 @@ describe('HeaderComponent', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Reportes');
   });
+
+  it('propaga el tooltip de la primaryAction como [title] y [aria-label] en el CTA', () => {
+    shellContext.setContext({
+      breadcrumbs: [{ label: 'Nómina mensual' }],
+      primaryAction: {
+        label: 'Continuar',
+        disabled: true,
+        loading: false,
+        actionId: 'avanzarPaso',
+        tooltip: 'Completa Dotación para continuar.',
+      },
+    });
+    fixture.detectChanges();
+
+    const cta = fixture.nativeElement.querySelector('.erp-shell-header__cta') as HTMLButtonElement;
+    expect(cta).toBeTruthy();
+    expect(cta.getAttribute('title')).toBe('Completa Dotación para continuar.');
+    expect(cta.getAttribute('aria-label')).toBe('Completa Dotación para continuar.');
+  });
+
+  it('omite title/aria-label cuando primaryAction no tiene tooltip', () => {
+    shellContext.setContext({
+      breadcrumbs: [{ label: 'Nómina mensual' }],
+      primaryAction: {
+        label: 'Continuar',
+        disabled: false,
+        loading: false,
+        actionId: 'avanzarPaso',
+      },
+    });
+    fixture.detectChanges();
+
+    const cta = fixture.nativeElement.querySelector('.erp-shell-header__cta') as HTMLButtonElement;
+    expect(cta).toBeTruthy();
+    expect(cta.getAttribute('title')).toBeNull();
+  });
 });

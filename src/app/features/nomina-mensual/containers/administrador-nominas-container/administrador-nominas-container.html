@@ -26,9 +26,9 @@
         toolbarLayout="operativa"
         [gridHeight]="'100%'"
         emptyTitle="Aún no hay nóminas"
-        emptyDescription="Crea la primera nómina del período para empezar."
-        emptyTitleWhenFiltered="Sin nóminas con esos filtros"
-        emptyDescriptionWhenFiltered="Ajusta o limpia los filtros para ampliar el resultado."
+        emptyDescription="Crea la primera nómina del período desde la acción principal."
+        emptyTitleWhenFiltered="Sin resultados con los filtros actuales"
+        emptyDescriptionWhenFiltered="Cambia o limpia los filtros para ampliar la búsqueda."
         className="adm-nom__grid"
         cardClassName="adm-nom__grid-card"
       >
@@ -57,11 +57,11 @@
 
       <ng-template appDataGridCell="incidencias" let-fila>
         @if (fila.totalIncidenciasCriticas > 0) {
-          <span class="adm-nom__chip adm-nom__chip--danger" [title]="fila.totalIncidenciasCriticas + ' incidencias críticas'">
+          <span class="adm-nom__chip adm-nom__chip--danger" [title]="desgloseIncidencias(fila)">
             {{ fila.totalIncidenciasCriticas }} crítica@if (fila.totalIncidenciasCriticas !== 1) {s}
           </span>
         } @else if (fila.totalAdvertencias > 0) {
-          <span class="adm-nom__chip adm-nom__chip--warning" [title]="fila.totalAdvertencias + ' advertencias'">
+          <span class="adm-nom__chip adm-nom__chip--warning" [title]="desgloseIncidencias(fila)">
             {{ fila.totalAdvertencias }} aviso@if (fila.totalAdvertencias !== 1) {s}
           </span>
         } @else {
@@ -78,11 +78,34 @@
       </ng-template>
 
       <ng-template appDataGridCell="proximoPaso" let-fila>
-        <span class="adm-nom__next-step">{{ proximoPasoToLabel(fila.proximoPaso) }}</span>
+        <div class="adm-nom__next-step-wrapper">
+          <span
+            class="adm-nom__next-step"
+            [class.is-priority]="esFilaPrioritaria(fila)"
+            [attr.aria-label]="esFilaPrioritaria(fila)
+              ? proximoPasoToLabel(fila.proximoPaso) + ' (requiere atención)'
+              : null"
+          >
+            <lucide-icon
+              [name]="proximoPasoToIcon(fila.proximoPaso)"
+              class="adm-nom__next-step-icon"
+              aria-hidden="true"
+            ></lucide-icon>
+            <span class="adm-nom__next-step-label">{{ proximoPasoToLabel(fila.proximoPaso) }}</span>
+          </span>
+          @if (mostrarEnCurso(fila)) {
+            <small class="adm-nom__en-curso">
+              Avance: {{ etiquetaMaximoPasoCompletado(fila.maximoPasoCompletado) }}
+            </small>
+          }
+        </div>
       </ng-template>
 
       <ng-template appDataGridCell="actualizada" let-fila>
-        <span class="adm-nom__cell-muted">{{ formatearActualizada(fila.updatedAt) }}</span>
+        <span
+          class="adm-nom__cell-muted"
+          [title]="formatearActualizadaCompleta(fila.updatedAt)"
+        >{{ formatearActualizada(fila.updatedAt) }}</span>
       </ng-template>
 
       <ng-template appDataGridCell="acciones" let-fila>
@@ -151,6 +174,7 @@
           </button>
         </div>
       </ng-template>
+
       </app-data-grid>
     }
     @if (cargando()) {

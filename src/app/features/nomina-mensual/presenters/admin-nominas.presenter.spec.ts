@@ -55,7 +55,7 @@ function muestraResumenes(): NominaPeriodoResumen[] {
 }
 
 describe('admin-nominas.presenter — columnas y filtros declarativos', () => {
-  it('Test 1 — COLUMNAS_ADMIN_NOMINAS expone 9 columnas en el orden esperado', () => {
+  it('Test 1 — COLUMNAS_ADMIN_NOMINAS expone 10 columnas en el orden esperado y "Acciones" tiene header visible', () => {
     expect(COLUMNAS_ADMIN_NOMINAS).toHaveLength(10);
     expect(COLUMNAS_ADMIN_NOMINAS.map((c) => c.id)).toEqual([
       'proximoPaso',
@@ -69,10 +69,16 @@ describe('admin-nominas.presenter — columnas y filtros declarativos', () => {
       'actualizada',
       'acciones',
     ]);
+    const acciones = COLUMNAS_ADMIN_NOMINAS.find((c) => c.id === 'acciones');
+    expect(acciones?.header).toBe('Acciones');
+    expect(acciones?.align).toBe('center');
+    expect(acciones?.headerClass).toContain('text-center');
+    expect(acciones?.headerClass).toContain('font-semibold');
+    expect(acciones?.sortable).toBe(false);
     expect(PERSISTENCIA_GRILLA_ADMIN).toBe('admin-nominas-grid-v2');
   });
 
-  it('Test 2 — crearFiltrosAdminNominas genera filtros con IDs únicos y conserva el filtro búsqueda + observaciones', () => {
+  it('Test 2 — crearFiltrosAdminNominas genera filtros con IDs únicos y vista operativa con 3 opciones (sin duplicado con Estado)', () => {
     const filtros = crearFiltrosAdminNominas(muestraResumenes());
     const ids = filtros.map((f) => f.id);
 
@@ -84,6 +90,13 @@ describe('admin-nominas.presenter — columnas y filtros declarativos', () => {
     expect(ids).toContain('estado');
     expect(ids).toContain('tipo');
     expect(filtros[0]?.initialValue).toBe('requiere-accion');
+
+    const opciones = (filtros[0]?.options ?? []) as Array<{ value: string }>;
+    expect(opciones.map((o) => o.value)).toEqual([
+      'requiere-accion',
+      'con-criticas',
+      'todas',
+    ]);
   });
 });
 
@@ -125,11 +138,7 @@ describe('admin-nominas.presenter — filtrarResumenes', () => {
     expect(filtradas[0].id).toBe('r-4');
   });
 
-  it('Test 8 — vista operativa concentra el resumen dentro de la grilla', () => {
-    expect(filtrarResumenes(muestraResumenes(), { vistaOperativa: 'abiertas' }))
-      .toHaveLength(3);
-    expect(filtrarResumenes(muestraResumenes(), { vistaOperativa: 'en-calculo' })
-      .map((fila) => fila.id)).toEqual(['r-4']);
+  it('Test 8 — vista operativa concentra el resumen dentro de la grilla (3 opciones)', () => {
     expect(filtrarResumenes(muestraResumenes(), { vistaOperativa: 'con-criticas' })
       .map((fila) => fila.id)).toEqual(['r-1']);
     expect(filtrarResumenes(muestraResumenes(), { vistaOperativa: 'todas' }))

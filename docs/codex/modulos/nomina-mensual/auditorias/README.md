@@ -37,6 +37,10 @@ Documento rector del módulo: [`../arquitectura-administrador-generador.md`](../
 | Rediseño visual full-bleed Admin + Generador | Aplicado (decisión opuesta a ARC-FRM-03) | `auditoria-admin-generador-nomina-2026-06.md` §15 |
 | Sub-lote P0 (ADM-MOD-05, CIE-ENUM-01, DOT-DET-04, MOV-ID-03, CAL-INV-05, QA-FOC-01) | Aplicado (2026-06-05) | `peticiones-estilos.md` (entrada sub-lote P0) · `auditoria-admin-generador-nomina-2026-06.md` §15 Tabla A |
 | Lote estructural (AG-NAV-03, AG-CTA-01, AG-NAV-02) | Aplicado (2026-06-05) | `peticiones-estilos.md` (entrada lote estructural) · `auditoria-admin-generador-nomina-2026-06.md` §15 Tabla A |
+| Pulido bandeja Administrador (filtros 3 op, columna Acciones, celdas, prioridad) | Aplicado (2026-06-05) | `peticiones-estilos.md` (entrada pulido bandeja) · `auditoria-admin-generador-nomina-2026-06.md` §15 Tabla A |
+| Persistencia último paso visitado del Generador (server-side + sub-renglón "En curso") | Aplicado (2026-06-05) | `peticiones-estilos.md` (entrada "En curso: X") · `auditoria-admin-generador-nomina-2026-06.md` §15 Tabla A · `supabase/migrations/20260605130000_nomina_periodo_paso_visitado.sql` |
+| Generador secuencial puro (bloqueo de avance + candado en stepper + confirmación al volver atrás + `maximo_paso_completado` monótono + sub-renglón "Avance: X") | Aplicado (2026-06-05) | `peticiones-estilos.md` (entrada "Generador secuencial puro") · `auditoria-admin-generador-nomina-2026-06.md` §15 Tabla A · `supabase/migrations/20260606120000_nomina_periodo_maximo_paso_completado.sql` |
+| Dotación · Picker "Agregar trabajadores" + grilla `app-data-grid` | Aplicado (2026-06-05) | `peticiones-estilos.md` (entrada "Dotación · Agregar trabajadores") · `auditoria-admin-generador-nomina-2026-06.md` §15 Tabla A |
 | P0 críticos restantes (6 ítems: PAR-CTA-03, DOT-SEL-02, MOV-CON-01, VAL-STA-02, VAL-APP-03, CIE-REO-04) | **Pendiente** | `auditoria-admin-generador-nomina-2026-06.md` §6 y §15 Tabla B |
 | P1 escalabilidad | **Pendiente** | `auditoria-admin-generador-nomina-2026-06.md` §6 |
 | P2 visual NOIA y mantenibilidad | **Pendiente** | `auditoria-admin-generador-nomina-2026-06.md` §6.9 |

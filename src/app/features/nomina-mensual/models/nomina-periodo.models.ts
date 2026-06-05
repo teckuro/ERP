@@ -14,7 +14,31 @@
  * Compartido entre `nomina-mensual/` (Admin) y `nomina-mensual-v2/` (Generador).
  */
 
+import type { PayrollStepId } from '../../nomina-mensual-v2/models/nomina-mensual-v2.models';
 import type { MovimientoNomina } from './movimiento-nomina.models';
+
+/**
+ * Set canónico de pasos válidos del Generador. Se usa para sanear valores
+ * provenientes de BD que no encajen en `PayrollStepId` (defensa frente a
+ * migraciones tardías o datos legacy).
+ */
+const PASOS_VALIDOS: ReadonlySet<string> = new Set<PayrollStepId>([
+  'parameters',
+  'dotacion',
+  'movements',
+  'calculation',
+  'validation',
+  'closure',
+]);
+
+/**
+ * Convierte un valor crudo de `ultimo_paso_visitado` (BD) a `PayrollStepId`.
+ * Devuelve `null` si el valor es nulo, vacío o desconocido (no rompe la UI).
+ */
+export function parsePayrollStepId(raw: string | null | undefined): PayrollStepId | null {
+  if (!raw) return null;
+  return PASOS_VALIDOS.has(raw) ? (raw as PayrollStepId) : null;
+}
 
 export type EstadoNomina =
   | 'borrador'
@@ -78,6 +102,22 @@ export interface NominaPeriodoResumen {
   ultimaActividad?: string;
   evidenciaCalculo?: EvidenciaCalculoNomina;
 
+  /**
+   * Último paso del Generador visitado por el usuario. Metadata UX —
+   * independiente de la máquina de estados. Permite mostrar "En curso: X"
+   * en la bandeja y rehidratar el container al volver al generador.
+   */
+  ultimoPasoVisitado?: PayrollStepId | null;
+  pasoVisitadoAt?: string | null;
+  /**
+   * Máximo paso del Generador completado según criterio UI ("poblado
+   * correctamente"). Monótono creciente — no retrocede automáticamente.
+   * Es lo que la bandeja del Administrador muestra como "Avance: X" y lo
+   * que el container usa para bloquear el stepper hacia adelante.
+   */
+  maximoPasoCompletado?: PayrollStepId | null;
+  maximoPasoCompletadoAt?: string | null;
+
   createdAt: string;
   updatedAt: string;
   closedAt?: string;
@@ -111,6 +151,10 @@ export interface NominaPeriodo {
 
   fechaPago?: string;
   evidenciaCalculo?: EvidenciaCalculoNomina;
+  ultimoPasoVisitado?: PayrollStepId | null;
+  pasoVisitadoAt?: string | null;
+  maximoPasoCompletado?: PayrollStepId | null;
+  maximoPasoCompletadoAt?: string | null;
 
   eventosAuditoria?: EventoAuditoriaNomina[];
 
@@ -311,6 +355,10 @@ export function crearNominaResumen(
       versionCalculo: 0,
       calculoVigente: false,
     },
+    ultimoPasoVisitado: null,
+    pasoVisitadoAt: null,
+    maximoPasoCompletado: null,
+    maximoPasoCompletadoAt: null,
     createdAt: ahora,
     updatedAt: ahora,
     ...overrides,
@@ -343,6 +391,10 @@ export function crearNomina(overrides: Partial<NominaPeriodo> = {}): NominaPerio
       versionCalculo: 0,
       calculoVigente: false,
     },
+    ultimoPasoVisitado: null,
+    pasoVisitadoAt: null,
+    maximoPasoCompletado: null,
+    maximoPasoCompletadoAt: null,
     createdAt: ahora,
     updatedAt: ahora,
     ...overrides,

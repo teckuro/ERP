@@ -24,11 +24,21 @@ import {
 /** Clave de persistencia local de la grilla del Administrador. */
 export const PERSISTENCIA_GRILLA_ADMIN = 'admin-nominas-grid-v2';
 
+/**
+ * Vista operativa visible en la grilla. Se reduce a 3 opciones para evitar
+ * solapamiento con el filtro granular `Estado`:
+ *
+ *  - `requiere-accion`: nominas que requieren intervencion del RRHH (estado +
+ *    flag `requiereAccion`).
+ *  - `con-criticas`: nominas con incidencias criticas (independiente del estado).
+ *  - `todas`: sin filtro.
+ *
+ * Valores legacy (`abiertas`, `en-calculo`, `pendientes-cierre`) se mantienen
+ * solo como compatibilidad en el predicado (`coincideVistaOperativa`), que
+ * degrada a "todas" si llega un valor desconocido desde `localStorage`.
+ */
 export type VistaOperativaAdminNominas =
   | 'requiere-accion'
-  | 'abiertas'
-  | 'en-calculo'
-  | 'pendientes-cierre'
   | 'con-criticas'
   | 'todas';
 
@@ -142,15 +152,15 @@ export const COLUMNAS_ADMIN_NOMINAS: DataGridColumn<NominaPeriodoResumen>[] = [
   },
   {
     id: 'acciones',
-    header: '',
-    width: '9rem',
-    minWidth: '9rem',
-    align: 'right',
+    header: 'Acciones',
+    width: '10rem',
+    minWidth: '9.5rem',
+    align: 'center',
     sortable: false,
     hideable: false,
     filterable: false,
-    headerClass: 'text-right',
-    cellClass: 'text-right',
+    headerClass: 'text-center font-semibold',
+    cellClass: 'text-center',
   },
 ];
 
@@ -213,9 +223,6 @@ export function crearFiltrosAdminNominas(
     emptyLabel: 'Todas las nóminas',
     options: [
       { label: `Requieren acción (${contarVista('requiere-accion')})`, value: 'requiere-accion' },
-      { label: `Abiertas (${contarVista('abiertas')})`, value: 'abiertas' },
-      { label: `En cálculo (${contarVista('en-calculo')})`, value: 'en-calculo' },
-      { label: `Pendientes de cierre (${contarVista('pendientes-cierre')})`, value: 'pendientes-cierre' },
       { label: `Con críticas (${contarVista('con-criticas')})`, value: 'con-criticas' },
       { label: `Todas (${contarVista('todas')})`, value: 'todas' },
     ],
@@ -370,6 +377,13 @@ export function filtrarResumenes(
   });
 }
 
+/**
+ * Predicado para la vista operativa.
+ *
+ * Acepta valores legacy (`abiertas`, `en-calculo`, `pendientes-cierre`) que
+ * pueden venir del `localStorage` persistido en versiones anteriores. En esos
+ * casos degrada a "todas" para no romper la sesion del usuario.
+ */
 export function coincideVistaOperativa(
   fila: NominaPeriodoResumen,
   vista: VistaOperativaAdminNominas | '',
@@ -378,18 +392,10 @@ export function coincideVistaOperativa(
   if (vista === 'requiere-accion') {
     return nominaRequiereAccion(fila.estado) && (fila.requiereAccion ?? true);
   }
-  if (vista === 'abiertas') {
-    return fila.estado !== 'cerrada'
-      && fila.estado !== 'aprobada'
-      && fila.estado !== 'anulada';
+  if (vista === 'con-criticas') {
+    return fila.totalIncidenciasCriticas > 0;
   }
-  if (vista === 'en-calculo') {
-    return fila.estado === 'calculada' || fila.estado === 'validada';
-  }
-  if (vista === 'pendientes-cierre') {
-    return fila.estado === 'aprobada' || fila.estado === 'reabierta';
-  }
-  return fila.totalIncidenciasCriticas > 0;
+  return true;
 }
 
 export function ordenarResumenesOperativos(

@@ -96,14 +96,17 @@ describe('NominaMensualV2PasoMovimientosComponent (MOV-ID-03)', () => {
   });
 
   describe('avanzar() — comando único (AG-NAV-03)', () => {
-    it('retorna ok:true (paso navegacional)', async () => {
+    it('retorna ok:false sin movimientos aplicados (criterio Generador secuencial puro)', async () => {
       configurarTestBed(servicio);
       const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
       const cmp = fixture.componentInstance;
 
       const resultado = await cmp.avanzar();
 
-      expect(resultado).toEqual({ ok: true });
+      expect(resultado.ok).toBe(false);
+      if (!resultado.ok) {
+        expect(resultado.razon).toBeTruthy();
+      }
     });
 
     it('retorna ok:false mientras se aplican recurrentes', async () => {
@@ -115,6 +118,49 @@ describe('NominaMensualV2PasoMovimientosComponent (MOV-ID-03)', () => {
       const resultado = await cmp.avanzar();
 
       expect(resultado).toEqual({ ok: false, razon: 'Hay movimientos aplicándose.' });
+    });
+
+    it('retorna ok:true cuando hay al menos un movimiento aplicado', async () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+      const cmp = fixture.componentInstance;
+      cmp.movimientos.set([
+        {
+          id: 'mov-1',
+          nominaPeriodoId: 'np-1',
+          trabajadorId: 'tr-1',
+          tipo: 'manual',
+          estado: 'aplicado',
+        } as never,
+      ]);
+      const resultado = await cmp.avanzar();
+      expect(resultado).toEqual({ ok: true });
+    });
+  });
+
+  describe('puedeContinuar() — validación pura', () => {
+    it('retorna ok:false sin movimientos aplicados', () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+      const cmp = fixture.componentInstance;
+      const r = cmp.puedeContinuar();
+      expect(r.ok).toBe(false);
+    });
+
+    it('retorna ok:true cuando hay al menos un movimiento aplicado', () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+      const cmp = fixture.componentInstance;
+      cmp.movimientos.set([
+        {
+          id: 'mov-1',
+          nominaPeriodoId: 'np-1',
+          trabajadorId: 'tr-1',
+          tipo: 'manual',
+          estado: 'aplicado',
+        } as never,
+      ]);
+      expect(cmp.puedeContinuar()).toEqual({ ok: true });
     });
   });
 });

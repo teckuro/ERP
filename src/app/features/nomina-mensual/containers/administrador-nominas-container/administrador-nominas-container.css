@@ -130,9 +130,53 @@
 }
 
 .adm-nom__next-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
   font-weight: 500;
   color: #1d4ed8;
+  line-height: 1.3;
+  min-width: 0;
+}
+
+.adm-nom__next-step-icon {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  color: #64748b;
+}
+
+.adm-nom__next-step-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adm-nom__next-step.is-priority {
+  color: #b45309;
+}
+
+.adm-nom__next-step.is-priority .adm-nom__next-step-icon {
+  color: #b45309;
+}
+
+.adm-nom__next-step-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.adm-nom__en-curso {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: #64748b;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .adm-nom__state {
@@ -211,7 +255,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .adm-nom__row-action {
@@ -235,6 +279,11 @@
   border-color: #cbd5e1;
 }
 
+.adm-nom__row-action:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
 .adm-nom__row-action lucide-icon {
   width: 14px;
   height: 14px;
@@ -247,6 +296,10 @@
 .adm-nom__row-action--danger:hover {
   background: #fef2f2;
   border-color: #fecaca;
+}
+
+.adm-nom__row-action--danger:focus-visible {
+  outline-color: #b91c1c;
 }
 
 .adm-nom__row-action--primary {

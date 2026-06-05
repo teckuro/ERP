@@ -9,6 +9,191 @@
 
 ---
 
+## 2026-06-05 — Dotación · "Agregar trabajadores" explícito + grilla migrada a `app-data-grid`
+
+Refactor del paso 2 (Dotación) del Generador V2: la grilla pasa a usar el `app-data-grid` productivo (mismo componente que el Administrador) y se introduce un picker explícito para seleccionar qué trabajadores entran a la nómina, eliminando la dependencia del auto-poblado opaco que hacía aparecer la grilla vacía cuando no había segmentos.
+
+### Decisiones
+
+- **Picker explícito en lugar de auto-poblado opaco**: si la grilla de Dotación no muestra trabajadores (o si el RRHH quiere agregar más), aparece un nuevo botón primario **"Agregar trabajadores"** en la cabecera del paso. Abre un modal con la lista de trabajadores activos y aptos de la empresa, con selección múltiple, filtro de disponibilidad (`Solo elegibles` / `Ya en nómina`), ordenamiento y persistencia local de preferencias de columnas. Los trabajadores ya incluidos en algún segmento de la nómina aparecen marcados y no se vuelven a contar al confirmar la inclusión.
+- **Acción de inclusión idempotente**: el nuevo `NominaPeriodoService.agregarTrabajadoresANomina(nominaId, ids)` agrega ids al segmento principal (el de menor `ordinal`). Si no existe ningún segmento, crea uno llamado `Dotación principal`. Deduplica contra los ids ya presentes en cualquier segmento, actualiza `total_trabajadores`, transiciona la nómina a `dotacion_generada` si estaba en `borrador`, y reusa `invalidarCalculoPorCambio` cuando ya había cálculo vigente. No toca SQL/RPC nuevas: reusa `upsertSegmento`.
+- **Grilla migrada a `app-data-grid`**: se reemplaza la grilla HTML manual del paso por el `app-data-grid` productivo. Se ganan automáticamente: búsqueda integrada, filtros declarativos (`Estado`, `Incidencias`, `Movimientos`), ordenamiento, persistencia de preferencias (`nomina-v2-dotacion-grid-v1`), densidad NOIA, accesibilidad (selección con checkbox, headers con sort), responsividad. Las acciones masivas reusan el flujo `bulkActions` del data-grid (confirmación nativa), y la única acción expuesta es `Excluir de la nómina` (alineada con la fase anterior). Las píldoras de estado y la celda "Acciones / Ver detalle" se renderizan vía `<ng-template appDataGridCell="…">` para preservar la identidad visual previa.
+- **Inputs eliminados que ya cubre el data-grid**: el toolbar custom (`busqueda`, chips por estado, selects de incidencias/movimientos, paginación manual) se elimina del template del paso. La página queda más liviana y obtiene la misma capacidad operativa a través del data-grid. Empty state queda con copy NOIA: `"Aún no hay trabajadores en esta dotación · Usa "Agregar trabajadores" para incluir personas en este período."`.
+- **Confirmación inline para exclusiones bloqueadas**: si la previsualización de la exclusión vuelve `puedeAplicar: false`, el componente surface los mensajes del preview en el banner `paso-dotacion__error` (no se reabre un modal redundante porque el data-grid ya pidió confirmación antes de emitir la acción).
+- **Sin nuevas paletas**: el modal usa el mismo set de colores y radios que `nomina-mensual-v2-modal-acceso-base-parametros` (modal lleno con backdrop, header eyebrow + título + subtítulo, footer con CTA secundaria y botón "Cerrar" deshabilitado mientras se aplica). Las píldoras `Elegible` / `Ya en nómina` usan los tonos NOIA estándar (verde sobrio / gris).
+
+### Archivos tocados
+
+- [src/app/features/nomina-mensual/services/nomina-periodo.service.ts](../../src/app/features/nomina-mensual/services/nomina-periodo.service.ts) — nuevo método `agregarTrabajadoresANomina(nominaId, ids)`.
+- [src/app/features/nomina-mensual/services/nomina-periodo.service.spec.ts](../../src/app/features/nomina-mensual/services/nomina-periodo.service.spec.ts) — 6 tests nuevos para la inclusión masiva (dedupe, creación de segmento, idempotencia, validación de empresa activa, invalidación de cálculo).
+- [src/app/features/nomina-mensual-v2/presenters/nomina-dotacion-grid.presenter.ts](../../src/app/features/nomina-mensual-v2/presenters/nomina-dotacion-grid.presenter.ts) — contrato declarativo `COLUMNAS_DOTACION` + `FILTROS_DOTACION` + `PERSISTENCIA_GRILLA_DOTACION` para `app-data-grid`.
+- [src/app/features/nomina-mensual-v2/presenters/nomina-dotacion-grid.presenter.spec.ts](../../src/app/features/nomina-mensual-v2/presenters/nomina-dotacion-grid.presenter.spec.ts) — tests del contrato declarativo (columnas, predicados de filtros).
+- [src/app/features/nomina-mensual-v2/presenters/nomina-incluir-trabajadores.presenter.ts](../../src/app/features/nomina-mensual-v2/presenters/nomina-incluir-trabajadores.presenter.ts) — nuevo presenter del picker: columnas, filtro de disponibilidad y clave de persistencia.
+- [src/app/features/nomina-mensual-v2/presenters/nomina-incluir-trabajadores.presenter.spec.ts](../../src/app/features/nomina-mensual-v2/presenters/nomina-incluir-trabajadores.presenter.spec.ts) — tests del presenter del picker.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-modal-incluir-trabajadores/](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-modal-incluir-trabajadores/) — nuevo modal picker (`.ts/.html/.css`).
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion/](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion/) — paso Dotación migrado a `app-data-grid` (`.ts/.html/.css`) y wireado al picker. CSS local reducido: se eliminaron `__toolbar`, `__filters`, `__grid-head`, `__grid-row`, `__pagination`, `__modal*` (ahora los provee el data-grid o ya no aplican).
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion/nomina-mensual-v2-paso-dotacion.component.spec.ts](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion/nomina-mensual-v2-paso-dotacion.component.spec.ts) — provider mock de `EmpleadosService`; 6 tests nuevos cubriendo `abrirPicker` / `cerrarPicker` / `incluirTrabajadores` (camino feliz + error) e `idsActualesEnNomina`.
+
+### Archivos NO tocados
+
+- Estilos globales, `angular.json`, `postcss.config.json`, `src/styles/**`.
+- SQL / RPC / motor de cálculo / liquidaciones (la inclusión se resuelve con `upsertSegmento` existente).
+- El paso `parameters`, `movements`, `calculation`, `validation`, `closure`.
+- La regla `puedeAvanzarDotacion` y el contrato del Generador secuencial puro: el paso 2 sigue diagnosticando avance con el mismo `puedeContinuar()` puro.
+
+### Validaciones ejecutadas
+
+- `npx ng test --watch=false --include="**/nomina-mensual-v2/**/*.spec.ts" --include="**/nomina-mensual/services/**/*.spec.ts" --include="**/nomina-mensual/data-access/**/*.spec.ts"` → **322 tests pasando** (34 archivos).
+- `npx tsc --noEmit -p tsconfig.app.json` → sin errores.
+
+---
+
+## 2026-06-05 — Generador secuencial puro: bloqueo de avance, candado en stepper, confirmación al volver atrás y "Avance" persistido
+
+Refuerzo UX del Generador V2: el usuario solo puede avanzar al paso siguiente cuando el paso actual está "poblado correctamente" según criterio UI; volver a un paso previo siempre pide confirmación; y se persisten dos campos en `nomina_periodo` para diferenciar **dónde está el usuario visualmente** (`ultimo_paso_visitado`) de **cuánto avance real** se ha consolidado (`maximo_paso_completado`, monótono creciente). La bandeja del Administrador deja de mostrar "En curso: X" y pasa a mostrar **"Avance: X"** alimentado por el nuevo campo.
+
+### Decisiones
+
+- **"Completo" se decide en el cliente**, no solo en el estado server-side. Cada paso del Generador implementa un `puedeContinuar(): ResultadoAvancePaso` puro (sin side-effects) que el CTA del shell y el stepper consultan en tiempo real. `avanzar()` reusa internamente `puedeContinuar()` antes de ejecutar la acción terminal — el contrato queda explícito y testeable.
+  - `parameters`: parámetros preparados y sin bloqueos de preparación.
+  - `dotacion`: `puedeAvanzarDotacion(filas).puede === true`.
+  - `movements`: al menos un movimiento aplicado (recurrente o manual).
+  - `calculation`: cálculo vigente con resultado disponible.
+  - `validation`: sin críticas y cálculo vigente.
+  - `closure`: checklist completa.
+- **Stepper con candado**: pasos cuyo índice supera el `indiceMaximoPasoAccesibleEfectivo` (intersección de estado server-side ∩ contenido completo cliente) se renderizan con la clase `nomina-step--locked`, ícono `lock` y tooltip `"Completa {paso anterior} para continuar."`. El click queda inerte. Mantiene la mismo lenguaje visual del paso "congelado V11" (sin paleta nueva, sin badges).
+- **CTA "Continuar" del shell** con razón visible: `ShellPagePrimaryAction` ahora acepta un `tooltip?` opcional y el header pinta `[title]` + `[aria-label]` en el botón. Cuando `puedeContinuar()` devuelve `ok: false`, el botón queda `disabled` y muestra la razón concreta al hover (densidad NOIA: ya no hay banda decorativa adicional, la razón vive en el tooltip más la banda `ayudaAvance` existente).
+- **Confirmación SIEMPRE al volver atrás**: cualquier retroceso desde el stepper (excepto a `parameters`, que tiene su propio modal específico cuando la base está preparada) abre un `MessageBox` uniforme con copy `"Vas a revisar {paso destino}. Si modificas algo, se invalidará el avance posterior."`, acciones `Cancelar` / `Continuar`. Centralizado en `intentarIrAPaso` para que ajustar el criterio en el futuro sea un cambio único.
+- **Persistencia dual**: se mantiene `ultimo_paso_visitado` (donde está visualmente el usuario) y se agrega `maximo_paso_completado` + `maximo_paso_completado_at` (avance real, monótono creciente) mediante migración `20260606120000_nomina_periodo_maximo_paso_completado.sql` y RPC dedicada `actualizar_maximo_paso_completado_nomina`. La RPC compara posiciones en el orden canónico y solo escribe si el nuevo paso supera al actual; nunca retrocede. Tampoco toca `updated_at`. Cliente-side hay un `Map<nominaId, paso>` para dedupe estricto entre llamadas.
+- **Rehidratación robusta**: la sesión ahora valida el `ultimoPasoVisitado` contra `indiceMaximoPasoAccesibleEfectivo(estado, indiceMaxContenido)`. Si el visitado quedó por encima del techo efectivo (p. ej. anulación, reapertura, contenido invalidado), el usuario cae al máximo accesible efectivo — no al `pasoInicial` — para no perder contexto.
+- **Bandeja Admin**: el sub-renglón `Siguiente acción` deja de decir "En curso: X" y pasa a decir **"Avance: X"** usando el nuevo `maximoPasoCompletado`. El criterio para mostrarlo se mantiene (oculto cuando coincide con el próximo paso). Helper renombrado a `etiquetaMaximoPasoCompletado` con alias `etiquetaPasoVisitado` deprecado para no romper código terceros.
+
+### Archivos tocados
+
+- [supabase/migrations/20260606120000_nomina_periodo_maximo_paso_completado.sql](../../supabase/migrations/20260606120000_nomina_periodo_maximo_paso_completado.sql) — nueva migración (columnas + RPC monótona).
+- [src/app/core/models/database.types.ts](../../src/app/core/models/database.types.ts) — `nomina_periodo` agrega `maximo_paso_completado` / `maximo_paso_completado_at`; `Functions` declara `actualizar_maximo_paso_completado_nomina`.
+- [src/app/features/nomina-mensual/models/nomina-periodo.models.ts](../../src/app/features/nomina-mensual/models/nomina-periodo.models.ts) — `NominaPeriodoResumen` y `NominaPeriodo` exponen `maximoPasoCompletado?` y `maximoPasoCompletadoAt?`.
+- [src/app/features/nomina-mensual/mappers/nomina-periodo.mapper.ts](../../src/app/features/nomina-mensual/mappers/nomina-periodo.mapper.ts) — leen las columnas nuevas con `parsePayrollStepId` (valores legacy degradan a `null`).
+- [src/app/features/nomina-mensual/data-access/nomina-periodo.repository.ts](../../src/app/features/nomina-mensual/data-access/nomina-periodo.repository.ts) — nuevo `actualizarMaximoPasoCompletado(id, paso)`.
+- [src/app/features/nomina-mensual/services/nomina-periodo.service.ts](../../src/app/features/nomina-mensual/services/nomina-periodo.service.ts) — `registrarPasoCompletado(id, paso)` con dedupe monótono (solo invoca RPC si el paso supera al último registrado). Tolerante a errores (`console.warn`).
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/facade/nomina-mensual-v2-navegacion.ts](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/facade/nomina-mensual-v2-navegacion.ts) — `PasoNominaPort` con `puedeContinuar()` + `avanzar()`; helpers `puedeContinuarPaso`, `indiceMaximoPasoAccesibleEfectivo`, `obtenerEtiquetaBrevePaso`, `tooltipPasoNoAccesible`.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion/](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion) — implementa `puedeContinuar()`.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos) — `puedeAvanzar` ahora requiere `movimientosAplicados.length > 0`; implementa `puedeContinuar()`.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-calculo/](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-calculo), [paso-validacion/](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-validacion), [paso-cierre/](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-cierre) — implementan `puedeContinuar()` (cálculo vigente, sin críticas, checklist).
+- [src/app/layout/shell-page-context.service.ts](../../src/app/layout/shell-page-context.service.ts) — `ShellPagePrimaryAction.tooltip?: string | null`.
+- [src/app/layout/header.component.ts](../../src/app/layout/header.component.ts) — CTA refleja `tooltip` como `[attr.title]` + `[attr.aria-label]`.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component.ts](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component.ts) + `.html` + `.css` — input `indiceMaximoAccesible`, método `pasoNoAccesible`, ícono `lock`, tooltip, click bloqueado, clases `nomina-step--locked` / `step-status--locked`.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/facade/nomina-mensual-v2-orquestador.port.ts](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/facade/nomina-mensual-v2-orquestador.port.ts) — `modalConfirmarRetroceso` signal + `ModalConfirmarRetrocesoPort`.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-overlays/](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-overlays) — render del MessageBox uniforme de retroceso.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container.ts](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container.ts) + `.html` — computed `pasoActualCompleto`, `indiceMaximoCompletadoPorContenido`, `indiceMaximoAccesibleEfectivo`; effect que registra el máximo completado; `intentarIrAPaso` dispara la confirmación; el stepper recibe el nuevo input.
+- [src/app/features/nomina-mensual-v2/services/nomina-mensual-v2-sesion.service.ts](../../src/app/features/nomina-mensual-v2/services/nomina-mensual-v2-sesion.service.ts) — rehidratación valida contra `indiceMaximoPasoAccesibleEfectivo` y cae al máximo accesible si el visitado quedó fuera.
+- [src/app/features/nomina-mensual/containers/administrador-nominas-container/utils/admin-nominas-presentacion.util.ts](../../src/app/features/nomina-mensual/containers/administrador-nominas-container/utils/admin-nominas-presentacion.util.ts) — `etiquetaMaximoPasoCompletado` (con alias `etiquetaPasoVisitado` deprecado); `mostrarEnCurso` ahora compara contra `maximoPasoCompletado`.
+- [src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.html](../../src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.html) + `.ts` — sub-renglón "Avance: X".
+- Specs nuevos/extendidos: `nomina-periodo.mapper.spec.ts` (+ 2 tests `maximo_paso_completado`), `nomina-periodo.repository.spec.ts` (+ 2 tests RPC monótona), `nomina-periodo.service.spec.ts` (+ describe `registrarPasoCompletado`), `nomina-mensual-v2-sesion.service.spec.ts` (rehidratación con accesibilidad efectiva), `nomina-mensual-v2-navegacion.spec.ts` (+ `puedeContinuarPaso`, `indiceMaximoPasoAccesibleEfectivo`, `obtenerEtiquetaBrevePaso`, `tooltipPasoNoAccesible`), `nomina-mensual-v2-stepper.component.spec.ts` (nuevo, candado + click bloqueado), `header.component.spec.ts` (+ tooltip CTA), `admin-nominas-presentacion.util.spec.ts` (renombre/alias), `administrador-nominas-container.spec.ts` (Tests 48–49 ahora con `maximoPasoCompletado`), y `puedeContinuar()` por componente paso (dotacion/movements/calculo/validacion/cierre).
+
+### Archivos NO tocados (auditoría rápida)
+
+- `angular.json`, `postcss.config.json`, `tailwind.config.*`, `src/styles.css`, `src/styles/*` — sin cambios globales.
+- Estilos de marca, paleta NOIA, tipografía: sin cambios.
+- Motor de cálculo, liquidaciones productivas, RPC de cierre/anulación: sin cambios.
+- Rutas/guards globales: sin cambios.
+
+### Notas operativas
+
+- La migración SQL **no se aplica automáticamente** en este repo (la `supabase/migrations` se aplica en deploy). Mientras no esté presente en BD, el `console.warn` del service tolera el fallo del RPC y la UI sigue funcionando con el comportamiento legacy (el campo queda `null`, la bandeja muestra "Sin iniciar" si corresponde).
+- Si la nómina se **anula**, `indiceMaximoPasoAccesibleEfectivo` devuelve `-1` y el stepper queda completamente bloqueado (consistente con la regla "anulada → no rehidratar").
+- Si la nómina se **reabre**, el techo de estado vuelve a `closure`, pero `maximo_paso_completado` no se rebobina; el usuario puede revisar todo el flujo según el contenido ya consolidado.
+
+---
+
+## 2026-06-05 - Generador + Administrador: "En curso: X" persistente (paso visitado)
+
+Pequeño aporte UX sin reorganización de pantalla. Cada vez que el usuario cambia de paso dentro del Generador, ese paso se persiste server-side en `nomina_periodo` (metadata UX, fuera de la máquina de estados). Al volver a entrar al generador, el container rehidrata el paso. En la bandeja del Administrador la celda `Siguiente acción` muestra debajo un sub-renglón gris `En curso: X` cuando el paso visitado no coincide con el próximo paso recomendado.
+
+### Decisiones
+
+- **No se crea una columna nueva** en la grilla del Administrador. La información va como sub-renglón de la celda `Siguiente acción` para mantener la densidad NOIA y no inflar el ancho de la tabla. El estilo del sub-renglón es sobrio: `11px / color: #64748b / weight: 400`, sin separador ni icono.
+- **El sub-renglón no aparece** si la fila no tiene paso visitado o si el paso visitado coincide con el próximo paso (evita decir "En curso: Cálculo" en una fila cuyo próximo paso ya es Cálculo).
+- **Server-side**: nueva migración SQL (`20260605130000_nomina_periodo_paso_visitado.sql`) con `ALTER TABLE` para dos columnas opcionales (`ultimo_paso_visitado`, `paso_visitado_at`) y RPC dedicada `actualizar_paso_visitado_nomina`. La RPC **no** toca `updated_at` para no contaminar el orden por "Actualizada" (que sigue reflejando cambios de negocio reales).
+- **Rehidratación**: automática al abrir el generador. La regla de accesibilidad usa una matriz por estado (`indiceMaximoPasoAccesible`); si la nómina retrocedió (p. ej. invalidación de cálculo) y el paso visitado ya no es alcanzable, se descarta y se cae al `pasoInicial` derivado del estado de parámetros.
+- **Invalidación de cálculo**: el paso visitado **se mantiene tal cual**. La banda "Cálculo no vigente" del paso de cálculo (lote previo) ya explica el desfase. No se rebobina server-side.
+- **Dedupe en memoria**: el service tiene un `Map<nominaId, paso>` que evita escribir el mismo paso dos veces seguidas dentro de la misma sesión. El effect del container también pre-hidrata ese cache al rehidratar para que el primer cambio no provoque una escritura redundante.
+
+### Archivos tocados
+
+- [supabase/migrations/20260605130000_nomina_periodo_paso_visitado.sql](../../supabase/migrations/20260605130000_nomina_periodo_paso_visitado.sql) — migración SQL + RPC dedicada.
+- [src/app/core/models/database.types.ts](../../src/app/core/models/database.types.ts) — `nomina_periodo` agrega `ultimo_paso_visitado` y `paso_visitado_at` (Row/Insert/Update); `Functions` declara `actualizar_paso_visitado_nomina`.
+- [src/app/features/nomina-mensual/models/nomina-periodo.models.ts](../../src/app/features/nomina-mensual/models/nomina-periodo.models.ts) — `NominaPeriodoResumen` y `NominaPeriodo` exponen `ultimoPasoVisitado?` y `pasoVisitadoAt?`; nuevo helper `parsePayrollStepId` para sanear valores legacy.
+- [src/app/features/nomina-mensual/mappers/nomina-periodo.mapper.ts](../../src/app/features/nomina-mensual/mappers/nomina-periodo.mapper.ts) — `rowToNominaPeriodoResumen` y `ensamblarNominaPeriodo` leen las columnas nuevas; valores desconocidos degradan a `null`.
+- [src/app/features/nomina-mensual/data-access/nomina-periodo.repository.ts](../../src/app/features/nomina-mensual/data-access/nomina-periodo.repository.ts) — nuevo `actualizarUltimoPasoVisitado(id, paso)` que invoca el RPC.
+- [src/app/features/nomina-mensual/services/nomina-periodo.service.ts](../../src/app/features/nomina-mensual/services/nomina-periodo.service.ts) — `registrarPasoVisitado(id, paso)` con dedupe y `console.warn` tolerante (no rompe UI si la migración aún no se aplicó).
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/facade/nomina-mensual-v2-navegacion.ts](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/facade/nomina-mensual-v2-navegacion.ts) — refactor de `indiceUltimoPasoCompletado` y nuevas funciones `indiceUltimoPasoCompletadoPorEstado` y `indiceMaximoPasoAccesible`.
+- [src/app/features/nomina-mensual-v2/services/nomina-mensual-v2-sesion.service.ts](../../src/app/features/nomina-mensual-v2/services/nomina-mensual-v2-sesion.service.ts) — `EstadoSesionNominaV2` agrega `pasoVisitadoSugerido`; `resolverEstadoSesion(periodo, nominaPeriodoId?)` resuelve el paso visitado contra la matriz de accesibilidad.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container.ts](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container.ts) — effect de rehidratación + effect de guardado con flag `pasoVisitadoRehidratado` para evitar pisado durante el arranque.
+- [src/app/features/nomina-mensual/containers/administrador-nominas-container/utils/admin-nominas-presentacion.util.ts](../../src/app/features/nomina-mensual/containers/administrador-nominas-container/utils/admin-nominas-presentacion.util.ts) — helpers `etiquetaPasoVisitado` y `mostrarEnCurso`.
+- [src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.ts](../../src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.ts) — expone los helpers nuevos.
+- [src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.html](../../src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.html) — wrapper `.adm-nom__next-step-wrapper` con el sub-renglón opcional `<small class="adm-nom__en-curso">`.
+- [src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.css](../../src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.css) — clases `.adm-nom__next-step-wrapper` y `.adm-nom__en-curso`.
+- Specs nuevos/extendidos: `nomina-periodo.mapper.spec.ts` (nuevo), `nomina-periodo.repository.spec.ts` (+ RPC), `nomina-periodo.service.spec.ts` (+ describe `registrarPasoVisitado`), `nomina-mensual-v2-sesion.service.spec.ts` (nuevo), `nomina-mensual-v2-navegacion.spec.ts` (+ matriz de accesibilidad), `admin-nominas-presentacion.util.spec.ts` (Tests 31–36), `administrador-nominas-container.spec.ts` (Tests 48–49).
+
+### Archivos NO tocados
+
+Motor de cálculo, `proceso-mensual.service.ts`, `nomina-calculo-snapshot.repository.ts`, reglas `nomina-periodo-state.rules.ts`, `app-data-grid` compartido, estilos globales (`src/styles/**`, `angular.json`, `postcss.config.json`, Tailwind, fuentes), RPC `transicionar_nomina_periodo` y el resto de migraciones SQL.
+
+### Validación
+
+- `npx ng test --watch=false --include` sobre los 7 specs tocados: 113/113 verdes (75 + 38).
+- Specs pre-existentes en rojo que no pertenecen a este alcance se mantienen igual (no se tocaron).
+
+### Caveats
+
+- Requiere aplicar la migración `20260605130000_nomina_periodo_paso_visitado.sql` (Supabase). Mientras no se aplique, el RPC `actualizar_paso_visitado_nomina` no existe y el service traga el error con `console.warn`; la UI no rompe pero el sub-renglón "En curso" no aparecerá en la bandeja.
+- Si el equipo regenera `database.types.ts` automáticamente con `supabase gen types typescript`, hay que ejecutarlo después de aplicar la migración para que las columnas y la RPC queden tipadas oficialmente (entretanto, el repo funciona porque las propiedades están declaradas a mano y todas son opcionales).
+- Multi-usuario concurrente sobre la misma nómina: dos usuarios editando a la vez pueden pisarse el campo. Aceptado porque es metadata UX, no parte de la máquina de estados.
+
+---
+
+## 2026-06-05 - Administrador de nóminas: pulido de bandeja (filtros, columna Acciones, celdas y prioridad)
+
+Lote de pulido visual de la bandeja del Administrador de Nóminas. Solo presentación: sin cambios en servicios, motor, SQL/RPC/RLS, estilos globales, `angular.json`, fuentes, Tailwind, ni persistencia. Resuelve duplicidad de filtros, da contexto humano a las celdas y devuelve identidad a la columna de acciones.
+
+### Cambios visuales
+
+- **Vista operativa simplificada a 3 opciones** (`Requieren acción`, `Con críticas`, `Todas`) para eliminar el solapamiento con el filtro granular `Estado`. Los subsets `Abiertas`, `En cálculo` y `Pendientes de cierre` desaparecen del select porque ya quedaban cubiertos por la combinación Vista operativa + Estado. Valores legacy en `localStorage` degradan a "Todas" sin romper la sesión.
+- **Columna Acciones con título visible**: pasa de `header: ''` (sin encabezado) a `header: 'Acciones'` centrado y con el mismo peso visual (`font-semibold`) que el resto de cabeceras, sin icono de orden (`sortable: false`). Los botones por fila se alinean al centro de la celda.
+- **Siguiente acción con icono y marca de prioridad**: cada paso lleva su icono lucide inline (`settings`/`users`/`repeat`/`calculator`/`shield-check`/`lock`/`receipt`/`minus`). Cuando la fila requiere acción o tiene incidencias críticas se activa una marca sutil (`is-priority`: punto + tinte ámbar) en esa misma celda, sin barra lateral fuerte ni tinte de fila completa.
+- **Incidencias con tooltip desglosado**: el `title` del chip pasa a mostrar `N críticas · M avisos` cuando aplique, en lugar del conteo aislado.
+- **Actualizada con tooltip de fecha completa**: la celda mantiene el texto relativo (`Hoy`, `Ayer`, `Hace N días`, `dd/mm/yyyy`) y agrega `title="dd/mm/yyyy HH:mm"`.
+- **Foco accesible en los botones por fila**: `:focus-visible` con outline azul 2px (rojo en la variante danger), sin alterar el tamaño/borde base.
+- **Empty states diferenciados**: `emptyTitleWhenFiltered="Sin resultados con los filtros actuales"` distingue "no hay nóminas" de "no hay resultados con los filtros".
+- **Subtítulo del shell**: deja de hablar de "abiertas" (vista eliminada) y refleja el estado real: `N nóminas en seguimiento · X requieren acción · Y con críticas.`
+
+### Archivos tocados
+
+- [src/app/features/nomina-mensual/presenters/admin-nominas.presenter.ts](../../src/app/features/nomina-mensual/presenters/admin-nominas.presenter.ts) — tipo `VistaOperativaAdminNominas` reducido, `crearFiltrosAdminNominas` con 3 opciones, `coincideVistaOperativa` con fallback legacy, columna `acciones` con `header`/`align`/`headerClass`.
+- [src/app/features/nomina-mensual/containers/administrador-nominas-container/utils/admin-nominas-presentacion.util.ts](../../src/app/features/nomina-mensual/containers/administrador-nominas-container/utils/admin-nominas-presentacion.util.ts) — nuevos helpers `proximoPasoToIcon`, `formatearActualizadaCompleta`, `desgloseIncidencias`.
+- [src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.ts](../../src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.ts) — `subtitulo()` reescrito, helper `esFilaPrioritaria`, expone helpers nuevos.
+- [src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.html](../../src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.html) — celdas `proximoPaso`, `incidencias`, `actualizada` enriquecidas; copy de `empty*` diferenciado.
+- [src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.css](../../src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.css) — `.adm-nom__next-step` con flex/icono/`is-priority`, `:focus-visible` en `.adm-nom__row-action`, `justify-content: center` para la celda Acciones.
+- Specs alineadas: `admin-nominas.presenter.spec.ts`, `admin-nominas-presentacion.util.spec.ts`, `administrador-nominas-container.spec.ts` (+ iconos lucide adicionales en el `LucideAngularModule.pick` del test bed).
+
+### Archivos NO tocados
+
+`src/app/shared/components/ui/data-grid/*`, estilos globales (`src/styles/**`, `angular.json`, `postcss.config.json`), motor de cálculo, servicios productivos, persistencia, mappers, payloads ni reglas de negocio.
+
+### Validación
+
+- `npx ng test --watch=false --include` scoped a los 3 specs del feature → 38/38 verdes.
+- `npx ng test --watch=false` completo: 1545/1550. Los 5 fallos pertenecen a archivos fuera de este alcance (`liquidaciones-oficiales.service.spec`, `nomina-msgbox-lab.rules.spec`, `proceso-mensual-flow-nav.rules.spec`, `form-empleado.spec`) y son pre-existentes; no se modificaron en este lote.
+- `npx ng build` no introdujo nuevos budgets CSS. Los warnings/errors de budget pre-existentes (`nomina-mensual-v2-container.css`, `proceso-mensual-container.css`, etc.) no involucran a `administrador-nominas-container.css`.
+
+### Caveats
+
+- Si un usuario tenía `vistaOperativa = "abiertas" | "en-calculo" | "pendientes-cierre"` cacheado en `localStorage`, el predicado degrada a "Todas". Si se necesita restaurar el filtro inicial se debe rotar `PERSISTENCIA_GRILLA_ADMIN` (no se hizo en este lote para no descartar las otras preferencias del usuario; el degrade ya es seguro).
+- Tooltips siguen usando `title` nativo (NOIA: sin librerías de tooltips). Si se quiere mejor presentación, hay que cerrar otro lote.
+
+---
+
 ## 2026-06-05 - Administrador de nóminas: loader, filtro operativo y acciones compactas
 
 Se elimina la franja independiente "Resumen operativo del administrador" y sus métricas pasan al primer filtro de `app-data-grid`, denominado `Vista operativa`. La vista inicial es `Requieren acción` y conserva las alternativas Abiertas, En cálculo, Pendientes de cierre, Con críticas y Todas, incluyendo sus cantidades.

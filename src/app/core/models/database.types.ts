@@ -3085,6 +3085,9 @@ export type Database = {
           id: string
           id_calculo_periodo_vigente: number | null
           id_empresa: number
+          maximo_paso_completado: string | null
+          maximo_paso_completado_at: string | null
+          paso_visitado_at: string | null
           periodo: string
           tipo: string
           total_advertencias: number
@@ -3094,6 +3097,7 @@ export type Database = {
           total_liquido: number
           total_segmentos: number
           total_trabajadores: number
+          ultimo_paso_visitado: string | null
           updated_at: string
           validado_at: string | null
           version_calculo: number
@@ -3110,6 +3114,9 @@ export type Database = {
           id?: string
           id_calculo_periodo_vigente?: number | null
           id_empresa: number
+          maximo_paso_completado?: string | null
+          maximo_paso_completado_at?: string | null
+          paso_visitado_at?: string | null
           periodo: string
           tipo?: string
           total_advertencias?: number
@@ -3119,6 +3126,7 @@ export type Database = {
           total_liquido?: number
           total_segmentos?: number
           total_trabajadores?: number
+          ultimo_paso_visitado?: string | null
           updated_at?: string
           validado_at?: string | null
           version_calculo?: number
@@ -3135,6 +3143,9 @@ export type Database = {
           id?: string
           id_calculo_periodo_vigente?: number | null
           id_empresa?: number
+          maximo_paso_completado?: string | null
+          maximo_paso_completado_at?: string | null
+          paso_visitado_at?: string | null
           periodo?: string
           tipo?: string
           total_advertencias?: number
@@ -3144,6 +3155,7 @@ export type Database = {
           total_liquido?: number
           total_segmentos?: number
           total_trabajadores?: number
+          ultimo_paso_visitado?: string | null
           updated_at?: string
           validado_at?: string | null
           version_calculo?: number
@@ -5614,6 +5626,20 @@ export type Database = {
           p_total_haberes?: number | null
           p_total_liquido?: number | null
           p_total_trabajadores?: number | null
+        }
+        Returns: Database["public"]["Tables"]["nomina_periodo"]["Row"]
+      }
+      actualizar_paso_visitado_nomina: {
+        Args: {
+          p_nomina_id: string
+          p_paso: string
+        }
+        Returns: Database["public"]["Tables"]["nomina_periodo"]["Row"]
+      }
+      actualizar_maximo_paso_completado_nomina: {
+        Args: {
+          p_nomina_id: string
+          p_paso: string
         }
         Returns: Database["public"]["Tables"]["nomina_periodo"]["Row"]
       }

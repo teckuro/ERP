@@ -76,14 +76,16 @@ const FILA_NOMINA = {
 describe('NominaPeriodoRepository', () => {
   let repo: NominaPeriodoRepository;
   let from: ReturnType<typeof vi.fn>;
+  let rpc: ReturnType<typeof vi.fn>;
 
-  function setSupabase(handler: (tabla: string) => FakeBuilder) {
+  function setSupabase(handler: (tabla: string) => FakeBuilder, rpcResult: { data?: unknown; error?: unknown } = { data: null, error: null }) {
     from = vi.fn().mockImplementation(handler);
+    rpc = vi.fn().mockResolvedValue(rpcResult);
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         NominaPeriodoRepository,
-        { provide: SUPABASE_CLIENT, useValue: { from } },
+        { provide: SUPABASE_CLIENT, useValue: { from, rpc } },
       ],
     });
     repo = TestBed.inject(NominaPeriodoRepository);
@@ -200,5 +202,37 @@ describe('NominaPeriodoRepository', () => {
     const builder = makeBuilder({ data: null, error: { message: 'denied' } });
     setSupabase(() => builder);
     await expect(repo.listarResumenes(7)).rejects.toThrow(/listarResumenes: denied/);
+  });
+
+  it('actualizarUltimoPasoVisitado invoca el RPC con los parámetros correctos', async () => {
+    setSupabase(() => makeBuilder({ data: null, error: null }));
+    await repo.actualizarUltimoPasoVisitado('nom-uuid-1', 'calculation');
+    expect(rpc).toHaveBeenCalledWith('actualizar_paso_visitado_nomina', {
+      p_nomina_id: 'nom-uuid-1',
+      p_paso: 'calculation',
+    });
+  });
+
+  it('actualizarUltimoPasoVisitado propaga el error con contexto cuando el RPC falla', async () => {
+    setSupabase(() => makeBuilder({ data: null, error: null }), { data: null, error: { message: 'rpc not found' } });
+    await expect(
+      repo.actualizarUltimoPasoVisitado('nom-uuid-1', 'closure'),
+    ).rejects.toThrow(/actualizarUltimoPasoVisitado: rpc not found/);
+  });
+
+  it('actualizarMaximoPasoCompletado invoca el RPC monótono con los parámetros correctos', async () => {
+    setSupabase(() => makeBuilder({ data: null, error: null }));
+    await repo.actualizarMaximoPasoCompletado('nom-uuid-1', 'calculation');
+    expect(rpc).toHaveBeenCalledWith('actualizar_maximo_paso_completado_nomina', {
+      p_nomina_id: 'nom-uuid-1',
+      p_paso: 'calculation',
+    });
+  });
+
+  it('actualizarMaximoPasoCompletado propaga el error con contexto cuando el RPC falla', async () => {
+    setSupabase(() => makeBuilder({ data: null, error: null }), { data: null, error: { message: 'rpc fail' } });
+    await expect(
+      repo.actualizarMaximoPasoCompletado('nom-uuid-1', 'closure'),
+    ).rejects.toThrow(/actualizarMaximoPasoCompletado: rpc fail/);
   });
 });

@@ -18,6 +18,20 @@
   ></app-message-box>
 }
 
+@if (orquestador.modalConfirmarRetroceso(); as modalRetro) {
+  <app-message-box
+    variant="decision"
+    mode="modal"
+    width="md"
+    [title]="'Volver a ' + modalRetro.etiquetaDestino"
+    [message]="'Vas a revisar ' + modalRetro.etiquetaDestino + '. Si modificas algo, se invalidará el avance posterior.'"
+    primaryLabel="Continuar"
+    secondaryLabel="Cancelar"
+    (action)="confirmarRetrocesoAPaso.emit()"
+    (secondary)="cerrarModalConfirmarRetroceso()"
+  ></app-message-box>
+}
+
 @if (orquestador.modalTablaDiferenciasParametrosBase(); as modalTabla) {
   <app-message-box
     variant="info"

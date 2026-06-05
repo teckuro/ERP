@@ -20,6 +20,7 @@ import type {
   SegmentoNomina,
   TipoNomina,
 } from '../models/nomina-periodo.models';
+import { parsePayrollStepId } from '../models/nomina-periodo.models';
 import {
   nominaRequiereAccion,
   proximoPasoNomina,
@@ -90,6 +91,10 @@ export function rowToNominaPeriodoResumen(
       aprobadoAt: row.aprobado_at ?? undefined,
       calculoVigente: row.calculo_vigente,
     },
+    ultimoPasoVisitado: parsePayrollStepId(row.ultimo_paso_visitado),
+    pasoVisitadoAt: row.paso_visitado_at ?? null,
+    maximoPasoCompletado: parsePayrollStepId(row.maximo_paso_completado),
+    maximoPasoCompletadoAt: row.maximo_paso_completado_at ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     closedAt: row.closed_at ?? undefined,
@@ -361,6 +366,10 @@ export function ensamblarNominaPeriodo(input: {
       aprobadoAt: input.cabecera.aprobado_at ?? undefined,
       calculoVigente: input.cabecera.calculo_vigente,
     },
+    ultimoPasoVisitado: parsePayrollStepId(input.cabecera.ultimo_paso_visitado),
+    pasoVisitadoAt: input.cabecera.paso_visitado_at ?? null,
+    maximoPasoCompletado: parsePayrollStepId(input.cabecera.maximo_paso_completado),
+    maximoPasoCompletadoAt: input.cabecera.maximo_paso_completado_at ?? null,
     eventosAuditoria: input.eventosAuditoria?.map(rowToEventoAuditoria),
     createdAt: input.cabecera.created_at,
     updatedAt: input.cabecera.updated_at,

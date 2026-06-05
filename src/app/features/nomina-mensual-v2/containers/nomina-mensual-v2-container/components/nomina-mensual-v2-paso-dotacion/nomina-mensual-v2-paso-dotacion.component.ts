@@ -28,6 +28,12 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import {
+  DataGridCellDirective,
+  DataGridComponent,
+  type DataGridBulkActionEvent,
+  type DataGridBulkActionOption,
+} from '../../../../../../shared/components/ui/data-grid';
 import type {
   DetalleTrabajadorNomina,
   FilaTrabajadorNominaResumen,
@@ -35,17 +41,18 @@ import type {
 } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
 import {
+  COLUMNAS_DOTACION,
+  FILTROS_DOTACION,
+  PERSISTENCIA_GRILLA_DOTACION,
   calcularStatsDotacion,
   etiquetaEstadoDotacion,
-  hayFiltrosActivos,
-  listaEstadosDotacion,
 } from '../../../../presenters/nomina-dotacion-grid.presenter';
 import { puedeAvanzarDotacion } from '../../../../rules/nomina-dotacion.rules';
-import type { PreviewAccionMasivaTrabajadores } from '../../../../../nomina-mensual/models/movimiento-nomina.models';
 import type {
   PasoNominaPort,
   ResultadoAvancePaso,
 } from '../../facade/nomina-mensual-v2-navegacion';
+import { NominaMensualV2ModalIncluirTrabajadoresComponent } from '../nomina-mensual-v2-modal-incluir-trabajadores/nomina-mensual-v2-modal-incluir-trabajadores.component';
 
 interface VistaDotacion {
   filas: FilaTrabajadorNominaResumen[];
@@ -55,7 +62,13 @@ interface VistaDotacion {
 @Component({
   selector: 'app-nomina-mensual-v2-paso-dotacion',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DataGridComponent,
+    DataGridCellDirective,
+    NominaMensualV2ModalIncluirTrabajadoresComponent,
+  ],
   templateUrl: './nomina-mensual-v2-paso-dotacion.component.html',
   styleUrl: './nomina-mensual-v2-paso-dotacion.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -75,27 +88,39 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
   readonly errorMensaje = signal<string | null>(null);
   readonly vista = signal<VistaDotacion>({ filas: [], total: 0 });
   readonly filtro = signal<FiltroRapidoDotacion>({});
-  readonly busquedaInput = signal('');
-  readonly seleccion = signal<Set<string>>(new Set());
   readonly trabajadorSeleccionado = signal<string | null>(null);
   readonly detalleTrabajador = signal<DetalleTrabajadorNomina | null>(null);
   readonly detalleTrabajadorIdentidad = signal<{ nombre: string; rut: string } | null>(null);
   readonly detalleLoading = signal(false);
   readonly confirmando = signal(false);
   readonly pagina = signal(1);
-  readonly pageSize = 50;
-  readonly previewMasivo = signal<PreviewAccionMasivaTrabajadores | null>(null);
+  readonly pageSize = 200;
   readonly aplicandoMasiva = signal(false);
+  readonly pickerAbierto = signal(false);
+  readonly aplicandoInclusion = signal(false);
 
-  readonly estadosDisponibles = listaEstadosDotacion();
+  readonly columnas = COLUMNAS_DOTACION;
+  readonly persistenceKey = PERSISTENCIA_GRILLA_DOTACION;
+  readonly accionesMasivas: DataGridBulkActionOption[] = [
+    {
+      id: 'excluir-nomina',
+      label: 'Excluir de la nómina',
+      tone: 'warning',
+      confirmLabel: 'Excluir seleccionados',
+      confirmTitle: 'Excluir trabajadores',
+      confirmMessage:
+        'Los trabajadores seleccionados quedarán fuera del cálculo y se moverán fuera del segmento.',
+    },
+  ];
 
   readonly stats = computed(() => calcularStatsDotacion(this.vista().filas));
-  readonly hayFiltros = computed(() => hayFiltrosActivos(this.filtro()));
+  readonly filtros = computed(() => FILTROS_DOTACION(this.vista().filas));
   readonly evaluacionAvance = computed(() => puedeAvanzarDotacion(this.vista().filas));
   readonly puedeAvanzar = computed(() => this.evaluacionAvance().puede);
   readonly motivoBloqueo = computed(() => this.evaluacionAvance().motivo ?? null);
-  readonly totalSeleccionados = computed(() => this.seleccion().size);
-  readonly puedeAplicarMasiva = computed(() => this.totalSeleccionados() > 0);
+  readonly idsActualesEnNomina = computed(() =>
+    this.vista().filas.map((fila) => fila.trabajadorId),
+  );
   readonly totalPaginas = computed(() => Math.max(1, Math.ceil(this.vista().total / this.pageSize)));
 
   etiquetaEstado = etiquetaEstadoDotacion;
@@ -116,11 +141,11 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
     this.loading.set(true);
     this.errorMensaje.set(null);
     try {
-      const filtroActual: FiltroRapidoDotacion = {
-        ...this.filtro(),
-        busqueda: this.busquedaInput().trim() || undefined,
-      };
-      const { filas, total } = await this.servicio.filtrarDotacion(id, filtroActual, {
+      // Se carga la primera página con un tamaño grande (`pageSize=200`) porque
+      // la búsqueda, ordenamiento y filtros se resuelven en `app-data-grid`. Si
+      // el listado supera ese tamaño, se paginará del lado servidor en una fase
+      // posterior (registrar en peticiones-estilos.md).
+      const { filas, total } = await this.servicio.filtrarDotacion(id, this.filtro(), {
         page: this.pagina(),
         pageSize: this.pageSize,
         total: 0,
@@ -135,104 +160,71 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
     }
   }
 
-  aplicarFiltroEstado(estado: FilaTrabajadorNominaResumen['estado'] | null): void {
-    this.pagina.set(1);
-    this.filtro.update((actual) => ({ ...actual, estado: estado ?? undefined }));
-    void this.cargar();
-  }
+  trackFila = (_index: number, fila: FilaTrabajadorNominaResumen) => fila.trabajadorId;
 
-  cambiarFiltroIncidencias(value: 'todas' | 'con' | 'sin'): void {
-    this.pagina.set(1);
-    this.filtro.update((actual) => ({
-      ...actual,
-      conIncidencias: value === 'todas' ? undefined : value === 'con',
-    }));
-    void this.cargar();
-  }
-
-  cambiarFiltroMovimientos(value: 'todas' | 'con' | 'sin'): void {
-    this.pagina.set(1);
-    this.filtro.update((actual) => ({
-      ...actual,
-      conMovimientos: value === 'todas' ? undefined : value === 'con',
-    }));
-    void this.cargar();
-  }
-
-  limpiarFiltros(): void {
-    this.pagina.set(1);
-    this.filtro.set({});
-    this.busquedaInput.set('');
-    void this.cargar();
-  }
-
-  buscar(): void {
-    this.pagina.set(1);
-    void this.cargar();
-  }
-
-  paginaAnterior(): void {
-    if (this.pagina() <= 1) return;
-    this.pagina.update((pagina) => pagina - 1);
-    this.limpiarSeleccion();
-    void this.cargar();
-  }
-
-  paginaSiguiente(): void {
-    if (this.pagina() >= this.totalPaginas()) return;
-    this.pagina.update((pagina) => pagina + 1);
-    this.limpiarSeleccion();
-    void this.cargar();
-  }
-
-  toggleSeleccion(trabajadorId: string): void {
-    this.seleccion.update((actual) => {
-      const proximo = new Set(actual);
-      if (proximo.has(trabajadorId)) proximo.delete(trabajadorId);
-      else proximo.add(trabajadorId);
-      return proximo;
-    });
-  }
-
-  seleccionarTodos(): void {
-    const ids = this.vista().filas.map((f) => f.trabajadorId);
-    this.seleccion.set(new Set(ids));
-  }
-
-  limpiarSeleccion(): void {
-    this.seleccion.set(new Set());
-  }
-
-  async previsualizarExclusion(): Promise<void> {
+  async manejarAccionMasiva(
+    evento: DataGridBulkActionEvent<FilaTrabajadorNominaResumen>,
+  ): Promise<void> {
+    if (evento.action !== 'excluir-nomina') return;
     const id = this.nominaPeriodoId();
-    if (!id || this.seleccion().size === 0) return;
-    this.errorMensaje.set(null);
-    try {
-      this.previewMasivo.set(await this.servicio.previsualizarAccionMasiva(
-        id,
-        [...this.seleccion()],
-        { tipo: 'excluir-nomina' },
-      ));
-    } catch (error) {
-      this.errorMensaje.set(error instanceof Error ? error.message : 'No fue posible previsualizar la acción.');
-    }
-  }
-
-  async confirmarAccionMasiva(): Promise<void> {
-    const id = this.nominaPeriodoId();
-    const preview = this.previewMasivo();
-    if (!id || !preview?.puedeAplicar) return;
+    if (!id || evento.rows.length === 0) return;
+    const ids = evento.rows.map((fila) => fila.trabajadorId);
     this.aplicandoMasiva.set(true);
     this.errorMensaje.set(null);
     try {
-      await this.servicio.aplicarAccionMasiva(id, [...this.seleccion()], preview.accion);
-      this.previewMasivo.set(null);
-      this.limpiarSeleccion();
+      const preview = await this.servicio.previsualizarAccionMasiva(id, ids, {
+        tipo: 'excluir-nomina',
+      });
+      if (!preview.puedeAplicar) {
+        const mensajes = preview.mensajes.join(' · ');
+        this.errorMensaje.set(
+          mensajes
+            ? `La exclusión quedó bloqueada: ${mensajes}`
+            : 'La exclusión está bloqueada por incidencias críticas.',
+        );
+        return;
+      }
+      await this.servicio.aplicarAccionMasiva(id, ids, preview.accion);
       await this.cargar();
     } catch (error) {
-      this.errorMensaje.set(error instanceof Error ? error.message : 'No fue posible aplicar la acción.');
+      this.errorMensaje.set(
+        error instanceof Error ? error.message : 'No fue posible aplicar la acción.',
+      );
     } finally {
       this.aplicandoMasiva.set(false);
+    }
+  }
+
+  abrirPicker(): void {
+    if (!this.nominaPeriodoId()) return;
+    this.pickerAbierto.set(true);
+  }
+
+  cerrarPicker(): void {
+    if (this.aplicandoInclusion()) return;
+    this.pickerAbierto.set(false);
+  }
+
+  async incluirTrabajadores(trabajadorIds: string[]): Promise<void> {
+    const id = this.nominaPeriodoId();
+    if (!id || trabajadorIds.length === 0) {
+      this.cerrarPicker();
+      return;
+    }
+    this.aplicandoInclusion.set(true);
+    this.errorMensaje.set(null);
+    try {
+      await this.servicio.agregarTrabajadoresANomina(id, trabajadorIds);
+      this.pickerAbierto.set(false);
+      await this.cargar();
+    } catch (error) {
+      this.errorMensaje.set(
+        error instanceof Error
+          ? `No fue posible incluir los trabajadores: ${error.message}`
+          : 'No fue posible incluir los trabajadores.',
+      );
+    } finally {
+      this.aplicandoInclusion.set(false);
     }
   }
 
@@ -289,11 +281,12 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
   }
 
   /**
-   * Comando único de avance (AG-NAV-03). Paso terminal: confirma la dotación y
-   * pide al container navegar. No emite el output `avanceSolicitado` (eso lo
-   * decide el container con el resultado).
+   * Diagnóstico puro de "completitud" del paso. Lo consultan el CTA del shell
+   * y el stepper para deshabilitarse con razón visible antes del click.
+   * Refleja las mismas precondiciones que evalúa `avanzar()` antes de
+   * ejecutar `confirmarDotacion`, pero sin side-effects.
    */
-  async avanzar(): Promise<ResultadoAvancePaso> {
+  puedeContinuar(): ResultadoAvancePaso {
     if (this.loading()) {
       return { ok: false, razon: 'Cargando la dotación.' };
     }
@@ -306,6 +299,20 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
         razon: this.motivoBloqueo() ?? 'Hay incidencias por resolver en la dotación.',
       };
     }
+    if (!this.nominaPeriodoId()) {
+      return { ok: false, razon: 'No hay una nómina activa.' };
+    }
+    return { ok: true };
+  }
+
+  /**
+   * Comando único de avance (AG-NAV-03). Paso terminal: confirma la dotación y
+   * pide al container navegar. No emite el output `avanceSolicitado` (eso lo
+   * decide el container con el resultado).
+   */
+  async avanzar(): Promise<ResultadoAvancePaso> {
+    const diagnostico = this.puedeContinuar();
+    if (!diagnostico.ok) return diagnostico;
     const id = this.nominaPeriodoId();
     if (!id) {
       return { ok: false, razon: 'No hay una nómina activa.' };

@@ -124,6 +124,8 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
               type="button"
               class="erp-shell-header__cta"
               [attr.data-testid]="action.actionId"
+              [attr.title]="action.tooltip ?? null"
+              [attr.aria-label]="action.tooltip ?? null"
               [disabled]="action.disabled || action.loading"
               (click)="onPrimaryAction()"
             >

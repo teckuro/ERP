@@ -4,257 +4,184 @@
       <p class="paso-dotacion__eyebrow">Paso 2 · Dotación</p>
       <h2 id="paso-dotacion-title" class="paso-dotacion__title">Dotación del período</h2>
       <p class="paso-dotacion__subtitle">
-        Revisa la grilla, ajusta segmentos y atiende excepciones antes de pasar a movimientos.
+        Agrega los trabajadores que participan, revisa la grilla y atiende excepciones
+        antes de pasar a movimientos.
       </p>
     </div>
-    <div class="paso-dotacion__stats" role="group" aria-label="Resumen de dotación">
-      <span class="paso-dotacion__stat">
-        <strong>{{ stats().total }}</strong>
-        <small>trabajadores</small>
-      </span>
-      <span class="paso-dotacion__stat is-listo">
-        <strong>{{ stats().listos }}</strong>
-        <small>listos</small>
-      </span>
-      <span class="paso-dotacion__stat is-advertencia">
-        <strong>{{ stats().conAdvertencias }}</strong>
-        <small>con advertencia</small>
-      </span>
-      <span class="paso-dotacion__stat is-critico">
-        <strong>{{ stats().conCriticos }}</strong>
-        <small>con incidencia crítica</small>
-      </span>
-      <span class="paso-dotacion__stat is-bloqueado">
-        <strong>{{ stats().bloqueados }}</strong>
-        <small>bloqueados</small>
-      </span>
+    <div class="paso-dotacion__head-actions">
+      <button
+        type="button"
+        class="paso-dotacion__primary"
+        (click)="abrirPicker()"
+        [disabled]="!nominaPeriodoId() || loading()"
+      >
+        Agregar trabajadores
+      </button>
     </div>
   </header>
 
-  <div class="paso-dotacion__toolbar">
-    <div class="paso-dotacion__search">
-      <label for="dotacion-busqueda" class="paso-dotacion__label">Buscar</label>
-      <input
-        id="dotacion-busqueda"
-        type="search"
-        class="paso-dotacion__input"
-        placeholder="RUT, nombre, cargo o centro de costo"
-        [ngModel]="busquedaInput()"
-        (ngModelChange)="busquedaInput.set($event)"
-        (keyup.enter)="buscar()"
-      />
-      <button type="button" class="paso-dotacion__chip" (click)="buscar()" [disabled]="loading()">
-        Buscar
-      </button>
-    </div>
-
-    <div class="paso-dotacion__filters" role="group" aria-label="Filtros rápidos">
-      <button
-        type="button"
-        class="paso-dotacion__chip"
-        [class.is-active]="!filtro().estado"
-        (click)="aplicarFiltroEstado(null)"
-      >Todos</button>
-      @for (estado of estadosDisponibles; track estado) {
-        <button
-          type="button"
-          class="paso-dotacion__chip"
-          [class.is-active]="filtro().estado === estado"
-          (click)="aplicarFiltroEstado(estado)"
-        >{{ etiquetaEstado(estado) }}</button>
-      }
-      <label class="paso-dotacion__select">
-        Incidencias
-        <select
-          (change)="cambiarFiltroIncidencias($any($event.target).value)"
-          [value]="filtro().conIncidencias === undefined ? 'todas' : (filtro().conIncidencias ? 'con' : 'sin')"
-        >
-          <option value="todas">Todas</option>
-          <option value="con">Con incidencias</option>
-          <option value="sin">Sin incidencias</option>
-        </select>
-      </label>
-      <label class="paso-dotacion__select">
-        Movimientos
-        <select
-          (change)="cambiarFiltroMovimientos($any($event.target).value)"
-          [value]="filtro().conMovimientos === undefined ? 'todas' : (filtro().conMovimientos ? 'con' : 'sin')"
-        >
-          <option value="todas">Todas</option>
-          <option value="con">Con movimientos</option>
-          <option value="sin">Sin movimientos</option>
-        </select>
-      </label>
-      @if (hayFiltros()) {
-        <button type="button" class="paso-dotacion__chip is-ghost" (click)="limpiarFiltros()">
-          Limpiar filtros
-        </button>
-      }
-    </div>
+  <div class="paso-dotacion__stats" role="group" aria-label="Resumen de dotación">
+    <span class="paso-dotacion__stat">
+      <strong>{{ stats().total }}</strong>
+      <small>trabajadores</small>
+    </span>
+    <span class="paso-dotacion__stat is-listo">
+      <strong>{{ stats().listos }}</strong>
+      <small>listos</small>
+    </span>
+    <span class="paso-dotacion__stat is-advertencia">
+      <strong>{{ stats().conAdvertencias }}</strong>
+      <small>con advertencia</small>
+    </span>
+    <span class="paso-dotacion__stat is-critico">
+      <strong>{{ stats().conCriticos }}</strong>
+      <small>con incidencia crítica</small>
+    </span>
+    <span class="paso-dotacion__stat is-bloqueado">
+      <strong>{{ stats().bloqueados }}</strong>
+      <small>bloqueados</small>
+    </span>
   </div>
 
   @if (errorMensaje(); as msg) {
     <p class="paso-dotacion__error" role="alert">{{ msg }}</p>
   }
 
-  <div class="paso-dotacion__body">
-    <div class="paso-dotacion__grid" role="region" aria-label="Grilla de dotación">
-      <div class="paso-dotacion__grid-head" role="row">
-        <span role="columnheader">
-          <input
-            type="checkbox"
-            (change)="$any($event.target).checked ? seleccionarTodos() : limpiarSeleccion()"
-            [checked]="totalSeleccionados() === vista().filas.length && vista().filas.length > 0"
-            aria-label="Seleccionar todos"
-          />
+  <div class="paso-dotacion__grid-wrapper">
+    <app-data-grid
+      title=""
+      [columns]="columnas"
+      [rows]="vista().filas"
+      [filters]="filtros()"
+      [filtersEnabled]="true"
+      [filtersCollapsible]="false"
+      filterChipsDisplay="whenFiltersHidden"
+      headerCountDisplay="text"
+      headerCountNoun="trabajadores"
+      [headerShowActiveFiltersCount]="true"
+      [selectable]="true"
+      selectionLabel="trabajadores"
+      [bulkActions]="accionesMasivas"
+      [bulkActionLoading]="aplicandoMasiva()"
+      [loading]="loading()"
+      loadingLabel="Cargando dotación…"
+      [trackBy]="trackFila"
+      [persistenceKey]="persistenceKey"
+      toolbarLayout="operativa"
+      [gridHeight]="'100%'"
+      emptyTitle="Aún no hay trabajadores en esta dotación"
+      emptyDescription="Usa “Agregar trabajadores” para incluir personas en este período."
+      emptyTitleWhenFiltered="Sin resultados con los filtros actuales"
+      emptyDescriptionWhenFiltered="Cambia o limpia los filtros para ampliar la búsqueda."
+      className="paso-dotacion__data-grid"
+      cardClassName="paso-dotacion__data-grid-card"
+      (bulkAction)="manejarAccionMasiva($event)"
+    >
+      <ng-template appDataGridCell="estado" let-fila>
+        <span class="paso-dotacion__estado" [attr.data-estado]="fila.estado">
+          {{ etiquetaEstado(fila.estado) }}
         </span>
-        <span role="columnheader">Trabajador</span>
-        <span role="columnheader">RUT</span>
-        <span role="columnheader">Estado</span>
-        <span role="columnheader">Incid.</span>
-        <span role="columnheader">Movs.</span>
-        <span role="columnheader">Acciones</span>
-      </div>
-
-      @if (loading() && vista().filas.length === 0) {
-        <div class="paso-dotacion__placeholder">Cargando dotación…</div>
-      } @else if (vista().filas.length === 0) {
-        <div class="paso-dotacion__placeholder">
-          {{ hayFiltros() ? 'Sin resultados para los filtros aplicados.' : 'Aún no hay trabajadores en esta dotación.' }}
-        </div>
-      } @else {
-        @for (fila of vista().filas; track fila.trabajadorId) {
-          <div class="paso-dotacion__grid-row" role="row" [attr.data-estado]="fila.estado">
-            <span>
-              <input
-                type="checkbox"
-                [checked]="seleccion().has(fila.trabajadorId)"
-                (change)="toggleSeleccion(fila.trabajadorId)"
-                [attr.aria-label]="'Seleccionar ' + fila.nombre"
-              />
-            </span>
-            <span class="paso-dotacion__cell-name">{{ fila.nombre }}</span>
-            <span>{{ fila.rut }}</span>
-            <span class="paso-dotacion__estado" [attr.data-estado]="fila.estado">
-              {{ etiquetaEstado(fila.estado) }}
-            </span>
-            <span class="paso-dotacion__cell-num">
-              @if (fila.totalIncidenciasCriticas + fila.totalAdvertencias > 0) {
-                {{ fila.totalIncidenciasCriticas + fila.totalAdvertencias }}
-              } @else {
-                —
-              }
-            </span>
-            <span class="paso-dotacion__cell-num">
-              {{ fila.totalMovimientos || '—' }}
-            </span>
-            <span>
-              <button
-                type="button"
-                class="paso-dotacion__link"
-                (click)="abrirDetalle(fila.trabajadorId)"
-              >Ver detalle</button>
-            </span>
-          </div>
-        }
-      }
-    </div>
-
-    <div class="paso-dotacion__pagination" aria-label="Paginación de dotación">
-      <span>
-        Página {{ pagina() }} de {{ totalPaginas() }} · {{ vista().total }} trabajadores
-      </span>
-      <div>
-        <button type="button" class="paso-dotacion__chip is-ghost" (click)="paginaAnterior()" [disabled]="pagina() <= 1 || loading()">
-          Anterior
-        </button>
-        <button type="button" class="paso-dotacion__chip is-ghost" (click)="paginaSiguiente()" [disabled]="pagina() >= totalPaginas() || loading()">
-          Siguiente
-        </button>
-      </div>
-    </div>
-
-    @if (trabajadorSeleccionado(); as tid) {
-      <aside
-        #detalleAside
-        class="paso-dotacion__detalle"
-        tabindex="-1"
-        aria-labelledby="paso-dotacion-detalle-title"
-        (keydown.escape)="cerrarDetalle()"
-      >
-        <header class="paso-dotacion__detalle-head">
-          <h3 id="paso-dotacion-detalle-title" class="paso-dotacion__detalle-title">
-            Detalle del trabajador
-          </h3>
-          <button type="button" class="paso-dotacion__chip is-ghost" (click)="cerrarDetalle()">
-            Cerrar
-          </button>
-        </header>
-        @if (detalleLoading()) {
-          <p class="paso-dotacion__placeholder">Cargando…</p>
-        } @else if (detalleTrabajador(); as det) {
-          @if (detalleTrabajadorIdentidad(); as id) {
-            <p class="paso-dotacion__detalle-meta">
-              <strong>{{ id.nombre }}</strong>
-              <span class="paso-dotacion__detalle-rut">{{ id.rut }}</span>
-            </p>
-          } @else {
-            <p class="paso-dotacion__detalle-meta">
-              <strong>Trabajador sin identificar</strong>
-              <span class="paso-dotacion__detalle-rut" [attr.data-trabajador-id]="det.trabajadorId">
-                Identidad no disponible en la página actual
-              </span>
-            </p>
-          }
-          <section>
-            <h4 class="paso-dotacion__detalle-subtitle">Movimientos del período</h4>
-            @if (det.movimientos.length === 0) {
-              <p class="paso-dotacion__placeholder">Sin movimientos registrados.</p>
-            } @else {
-              <ul class="paso-dotacion__detalle-list">
-                @for (mov of det.movimientos; track mov.id) {
-                  <li>
-                    <strong>{{ mov.tipo }}</strong>
-                    @if (mov.monto != null) {
-                      · ${{ mov.monto | number:'1.0-0' }}
-                    }
-                    · {{ mov.estado }}
-                  </li>
-                }
-              </ul>
-            }
-          </section>
-          <section>
-            <h4 class="paso-dotacion__detalle-subtitle">Incidencias</h4>
-            @if (det.incidencias.length === 0) {
-              <p class="paso-dotacion__placeholder">Sin incidencias.</p>
-            } @else {
-              <ul class="paso-dotacion__detalle-list">
-                @for (inc of det.incidencias; track inc.id) {
-                  <li>
-                    <strong>{{ inc.severidad }}</strong> · {{ inc.mensaje }}
-                  </li>
-                }
-              </ul>
-            }
-          </section>
+      </ng-template>
+      <ng-template appDataGridCell="totalIncidenciasCriticas" let-fila>
+        @if (fila.totalIncidenciasCriticas + fila.totalAdvertencias > 0) {
+          {{ fila.totalIncidenciasCriticas + fila.totalAdvertencias }}
         } @else {
-          <p class="paso-dotacion__placeholder">No fue posible cargar el detalle.</p>
+          —
         }
-      </aside>
-    }
+      </ng-template>
+      <ng-template appDataGridCell="totalMovimientos" let-fila>
+        {{ fila.totalMovimientos || '—' }}
+      </ng-template>
+      <ng-template appDataGridCell="acciones" let-fila>
+        <button
+          type="button"
+          class="paso-dotacion__link"
+          (click)="abrirDetalle(fila.trabajadorId)"
+        >Ver detalle</button>
+      </ng-template>
+    </app-data-grid>
   </div>
+
+  @if (trabajadorSeleccionado(); as tid) {
+    <aside
+      #detalleAside
+      class="paso-dotacion__detalle"
+      tabindex="-1"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="paso-dotacion-detalle-title"
+      (keydown.escape)="cerrarDetalle()"
+    >
+      <header class="paso-dotacion__detalle-head">
+        <h3 id="paso-dotacion-detalle-title" class="paso-dotacion__detalle-title">
+          Detalle del trabajador
+        </h3>
+        <button type="button" class="paso-dotacion__chip is-ghost" (click)="cerrarDetalle()">
+          Cerrar
+        </button>
+      </header>
+      @if (detalleLoading()) {
+        <p class="paso-dotacion__placeholder">Cargando…</p>
+      } @else if (detalleTrabajador(); as det) {
+        @if (detalleTrabajadorIdentidad(); as id) {
+          <p class="paso-dotacion__detalle-meta">
+            <strong>{{ id.nombre }}</strong>
+            <span class="paso-dotacion__detalle-rut">{{ id.rut }}</span>
+          </p>
+        } @else {
+          <p class="paso-dotacion__detalle-meta">
+            <strong>Trabajador sin identificar</strong>
+            <span class="paso-dotacion__detalle-rut" [attr.data-trabajador-id]="det.trabajadorId">
+              Identidad no disponible en la página actual
+            </span>
+          </p>
+        }
+        <section>
+          <h4 class="paso-dotacion__detalle-subtitle">Movimientos del período</h4>
+          @if (det.movimientos.length === 0) {
+            <p class="paso-dotacion__placeholder">Sin movimientos registrados.</p>
+          } @else {
+            <ul class="paso-dotacion__detalle-list">
+              @for (mov of det.movimientos; track mov.id) {
+                <li>
+                  <strong>{{ mov.tipo }}</strong>
+                  @if (mov.monto != null) {
+                    · ${{ mov.monto | number:'1.0-0' }}
+                  }
+                  · {{ mov.estado }}
+                </li>
+              }
+            </ul>
+          }
+        </section>
+        <section>
+          <h4 class="paso-dotacion__detalle-subtitle">Incidencias</h4>
+          @if (det.incidencias.length === 0) {
+            <p class="paso-dotacion__placeholder">Sin incidencias.</p>
+          } @else {
+            <ul class="paso-dotacion__detalle-list">
+              @for (inc of det.incidencias; track inc.id) {
+                <li>
+                  <strong>{{ inc.severidad }}</strong> · {{ inc.mensaje }}
+                </li>
+              }
+            </ul>
+          }
+        </section>
+      } @else {
+        <p class="paso-dotacion__placeholder">No fue posible cargar el detalle.</p>
+      }
+    </aside>
+  }
 
   <footer class="paso-dotacion__footer">
     <div class="paso-dotacion__footer-info" aria-live="polite">
-      @if (totalSeleccionados() > 0) {
-        <span>{{ totalSeleccionados() }} trabajadores seleccionados</span>
-        <button type="button" class="paso-dotacion__chip is-ghost" (click)="previsualizarExclusion()">
-          Excluir de la nómina
-        </button>
-      }
       @if (motivoBloqueo(); as motivo) {
         <span class="paso-dotacion__warning">{{ motivo }}</span>
+      } @else if (stats().total === 0) {
+        <span class="paso-dotacion__hint">
+          Aún no hay trabajadores en la dotación. Usa “Agregar trabajadores” para empezar.
+        </span>
       }
     </div>
     <div class="paso-dotacion__footer-actions">
@@ -265,27 +192,11 @@
   </footer>
 </section>
 
-@if (previewMasivo(); as preview) {
-  <div class="paso-dotacion__modal-backdrop" role="presentation">
-    <section class="paso-dotacion__modal" role="dialog" aria-modal="true" aria-labelledby="dotacion-preview-title">
-      <h3 id="dotacion-preview-title">Previsualizar exclusión</h3>
-      <ul>
-        @for (mensaje of preview.mensajes; track mensaje) {
-          <li>{{ mensaje }}</li>
-        }
-      </ul>
-      @if (!preview.puedeAplicar) {
-        <p class="paso-dotacion__error">La acción está bloqueada por incidencias críticas.</p>
-      }
-      <footer>
-        <button type="button" class="paso-dotacion__chip is-ghost" (click)="previewMasivo.set(null)">Cancelar</button>
-        <button
-          type="button"
-          class="paso-dotacion__chip is-primary"
-          (click)="confirmarAccionMasiva()"
-          [disabled]="!preview.puedeAplicar || aplicandoMasiva()"
-        >{{ aplicandoMasiva() ? 'Aplicando…' : 'Confirmar exclusión' }}</button>
-      </footer>
-    </section>
-  </div>
+@if (pickerAbierto()) {
+  <app-nomina-mensual-v2-modal-incluir-trabajadores
+    [nominaPeriodoId]="nominaPeriodoId()"
+    [idsYaEnNomina]="idsActualesEnNomina()"
+    (incluir)="incluirTrabajadores($event)"
+    (cerrar)="cerrarPicker()"
+  />
 }

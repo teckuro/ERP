@@ -19,6 +19,12 @@ export type ShellPageContext = {
     disabled?: boolean;
     loading?: boolean;
     actionId: string;
+    /**
+     * Tooltip opcional para el CTA del header. Lo usan los containers que
+     * deshabilitan la acción con razón visible (p. ej. Generador de nómina
+     * cuando el paso activo no está poblado correctamente).
+     */
+    tooltip?: string | null;
   };
 };
 

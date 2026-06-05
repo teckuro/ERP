@@ -94,6 +94,8 @@ interface RepoMock {
   invalidarCalculo: ReturnType<typeof vi.fn>;
   actualizarTotales: ReturnType<typeof vi.fn>;
   eliminarBorrador: ReturnType<typeof vi.fn>;
+  actualizarUltimoPasoVisitado: ReturnType<typeof vi.fn>;
+  actualizarMaximoPasoCompletado: ReturnType<typeof vi.fn>;
   listarSegmentos: ReturnType<typeof vi.fn>;
   obtenerSegmento: ReturnType<typeof vi.fn>;
   upsertSegmento: ReturnType<typeof vi.fn>;
@@ -122,6 +124,8 @@ function repoMock(): RepoMock {
     invalidarCalculo: vi.fn().mockResolvedValue(undefined),
     actualizarTotales: vi.fn().mockResolvedValue(undefined),
     eliminarBorrador: vi.fn().mockResolvedValue(undefined),
+    actualizarUltimoPasoVisitado: vi.fn().mockResolvedValue(undefined),
+    actualizarMaximoPasoCompletado: vi.fn().mockResolvedValue(undefined),
     listarSegmentos: vi.fn().mockResolvedValue([]),
     obtenerSegmento: vi.fn().mockResolvedValue(null),
     upsertSegmento: vi.fn(),
@@ -408,5 +412,247 @@ describe('NominaPeriodoService', () => {
     const service = configurar({ repo });
     const resultado = await service.consolidarSegmentosParaCalculo('nom-1');
     expect(resultado.estado).toBe('bloqueado');
+  });
+
+  describe('registrarPasoVisitado', () => {
+    it('persiste el paso vía repo en la primera llamada', async () => {
+      const service = configurar({ repo });
+      await service.registrarPasoVisitado('nom-1', 'calculation');
+      expect(repo.actualizarUltimoPasoVisitado).toHaveBeenCalledTimes(1);
+      expect(repo.actualizarUltimoPasoVisitado).toHaveBeenCalledWith('nom-1', 'calculation');
+    });
+
+    it('hace dedupe: dos llamadas consecutivas con el mismo paso solo invocan el RPC una vez', async () => {
+      const service = configurar({ repo });
+      await service.registrarPasoVisitado('nom-1', 'movements');
+      await service.registrarPasoVisitado('nom-1', 'movements');
+      expect(repo.actualizarUltimoPasoVisitado).toHaveBeenCalledTimes(1);
+    });
+
+    it('vuelve a invocar el RPC si cambia el paso', async () => {
+      const service = configurar({ repo });
+      await service.registrarPasoVisitado('nom-1', 'movements');
+      await service.registrarPasoVisitado('nom-1', 'calculation');
+      expect(repo.actualizarUltimoPasoVisitado).toHaveBeenCalledTimes(2);
+    });
+
+    it('mantiene el dedupe por nómina (cada id tiene su propio último paso)', async () => {
+      const service = configurar({ repo });
+      await service.registrarPasoVisitado('nom-1', 'movements');
+      await service.registrarPasoVisitado('nom-2', 'movements');
+      expect(repo.actualizarUltimoPasoVisitado).toHaveBeenCalledTimes(2);
+    });
+
+    it('traga errores del repo y no rompe la promesa', async () => {
+      repo.actualizarUltimoPasoVisitado.mockRejectedValueOnce(new Error('RPC missing'));
+      const service = configurar({ repo });
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      await expect(
+        service.registrarPasoVisitado('nom-1', 'closure'),
+      ).resolves.toBeUndefined();
+      expect(warnSpy).toHaveBeenCalled();
+      warnSpy.mockRestore();
+    });
+
+    it('al fallar permite reintentar con el mismo paso (no queda el dedupe pegado)', async () => {
+      repo.actualizarUltimoPasoVisitado.mockRejectedValueOnce(new Error('boom'));
+      const service = configurar({ repo });
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      await service.registrarPasoVisitado('nom-1', 'closure');
+      await service.registrarPasoVisitado('nom-1', 'closure');
+      expect(repo.actualizarUltimoPasoVisitado).toHaveBeenCalledTimes(2);
+      warnSpy.mockRestore();
+    });
+
+    it('ignora invocaciones con nominaId o paso vacíos', async () => {
+      const service = configurar({ repo });
+      await service.registrarPasoVisitado('', 'movements');
+      await service.registrarPasoVisitado('nom-1', '' as never);
+      expect(repo.actualizarUltimoPasoVisitado).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('registrarPasoCompletado (monótono creciente)', () => {
+    it('persiste el paso vía repo en la primera llamada', async () => {
+      const service = configurar({ repo });
+      await service.registrarPasoCompletado('nom-1', 'calculation');
+      expect(repo.actualizarMaximoPasoCompletado).toHaveBeenCalledTimes(1);
+      expect(repo.actualizarMaximoPasoCompletado).toHaveBeenCalledWith('nom-1', 'calculation');
+    });
+
+    it('dedupe monótono: si el paso es igual o menor al último registrado, no invoca el RPC', async () => {
+      const service = configurar({ repo });
+      await service.registrarPasoCompletado('nom-1', 'movements');
+      await service.registrarPasoCompletado('nom-1', 'movements');
+      await service.registrarPasoCompletado('nom-1', 'dotacion');
+      expect(repo.actualizarMaximoPasoCompletado).toHaveBeenCalledTimes(1);
+    });
+
+    it('vuelve a invocar el RPC cuando el paso avanza', async () => {
+      const service = configurar({ repo });
+      await service.registrarPasoCompletado('nom-1', 'movements');
+      await service.registrarPasoCompletado('nom-1', 'calculation');
+      await service.registrarPasoCompletado('nom-1', 'closure');
+      expect(repo.actualizarMaximoPasoCompletado).toHaveBeenCalledTimes(3);
+    });
+
+    it('mantiene el dedupe por nómina (cada id tiene su propio máximo)', async () => {
+      const service = configurar({ repo });
+      await service.registrarPasoCompletado('nom-1', 'calculation');
+      await service.registrarPasoCompletado('nom-2', 'dotacion');
+      expect(repo.actualizarMaximoPasoCompletado).toHaveBeenCalledTimes(2);
+    });
+
+    it('traga errores del repo y no rompe la promesa', async () => {
+      repo.actualizarMaximoPasoCompletado.mockRejectedValueOnce(new Error('RPC missing'));
+      const service = configurar({ repo });
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      await expect(
+        service.registrarPasoCompletado('nom-1', 'closure'),
+      ).resolves.toBeUndefined();
+      expect(warnSpy).toHaveBeenCalled();
+      warnSpy.mockRestore();
+    });
+
+    it('al fallar permite reintentar con el mismo paso (no queda el dedupe pegado)', async () => {
+      repo.actualizarMaximoPasoCompletado.mockRejectedValueOnce(new Error('boom'));
+      const service = configurar({ repo });
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      await service.registrarPasoCompletado('nom-1', 'closure');
+      await service.registrarPasoCompletado('nom-1', 'closure');
+      expect(repo.actualizarMaximoPasoCompletado).toHaveBeenCalledTimes(2);
+      warnSpy.mockRestore();
+    });
+
+    it('ignora invocaciones con nominaId o paso vacíos', async () => {
+      const service = configurar({ repo });
+      await service.registrarPasoCompletado('', 'movements');
+      await service.registrarPasoCompletado('nom-1', '' as never);
+      expect(repo.actualizarMaximoPasoCompletado).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('agregarTrabajadoresANomina', () => {
+    it('agrega ids al segmento principal y deduplica los existentes', async () => {
+      repo.obtenerNominaCompleta.mockResolvedValue(
+        nomina({
+          estado: 'dotacion_generada',
+          segmentos: [
+            segmento({ id: 'seg-1', trabajadorIds: ['10', '11'], ordinal: 1 }),
+            segmento({ id: 'seg-2', trabajadorIds: ['12'], ordinal: 2 }),
+          ],
+        }),
+      );
+      repo.upsertSegmento.mockImplementation((s: SegmentoNomina) =>
+        Promise.resolve(s),
+      );
+      const service = configurar({ repo });
+
+      const resultado = await service.agregarTrabajadoresANomina('nom-1', [
+        '10',
+        '20',
+        '21',
+      ]);
+
+      expect(resultado.agregados.sort()).toEqual(['20', '21']);
+      expect(resultado.yaEstaban).toEqual(['10']);
+      expect(repo.upsertSegmento).toHaveBeenCalledTimes(1);
+      const segmentoUpsertado = repo.upsertSegmento.mock.calls[0][0] as SegmentoNomina;
+      expect(segmentoUpsertado.id).toBe('seg-1');
+      expect(segmentoUpsertado.trabajadorIds.sort()).toEqual([
+        '10',
+        '11',
+        '20',
+        '21',
+      ]);
+      expect(repo.actualizarTotales).toHaveBeenCalledWith('nom-1', {
+        totalTrabajadores: 5,
+      });
+    });
+
+    it('crea un segmento "Dotación principal" si no hay segmentos', async () => {
+      repo.obtenerNominaCompleta.mockResolvedValue(
+        nomina({ estado: 'borrador', segmentos: [], trabajadorIds: [] }),
+      );
+      repo.upsertSegmento.mockImplementation((s: SegmentoNomina) =>
+        Promise.resolve(s),
+      );
+      const service = configurar({ repo });
+
+      await service.agregarTrabajadoresANomina('nom-1', ['30', '31']);
+
+      expect(repo.upsertSegmento).toHaveBeenCalledTimes(1);
+      const segmentoCreado = repo.upsertSegmento.mock.calls[0][0] as SegmentoNomina;
+      expect(segmentoCreado.id).toBe('');
+      expect(segmentoCreado.nombre).toBe('Dotación principal');
+      expect(segmentoCreado.trabajadorIds.sort()).toEqual(['30', '31']);
+      expect(repo.transicionarEstado).toHaveBeenCalledWith('nom-1', {
+        estadoEsperado: 'borrador',
+        estadoDestino: 'dotacion_generada',
+      });
+    });
+
+    it('no toca el repo si todos los ids ya estaban en la nómina', async () => {
+      repo.obtenerNominaCompleta.mockResolvedValue(
+        nomina({
+          estado: 'dotacion_generada',
+          segmentos: [
+            segmento({ id: 'seg-1', trabajadorIds: ['10', '11'], ordinal: 1 }),
+          ],
+        }),
+      );
+      const service = configurar({ repo });
+
+      const resultado = await service.agregarTrabajadoresANomina('nom-1', ['10', '11']);
+
+      expect(resultado).toEqual({ agregados: [], yaEstaban: ['10', '11'] });
+      expect(repo.upsertSegmento).not.toHaveBeenCalled();
+      expect(repo.actualizarTotales).not.toHaveBeenCalled();
+    });
+
+    it('devuelve estructura vacía si la lista está vacía', async () => {
+      const service = configurar({ repo });
+      const resultado = await service.agregarTrabajadoresANomina('nom-1', []);
+      expect(resultado).toEqual({ agregados: [], yaEstaban: [] });
+      expect(repo.obtenerNominaCompleta).not.toHaveBeenCalled();
+    });
+
+    it('lanza si no hay empresa activa', async () => {
+      const service = configurar({ repo, empresaId: null });
+      await expect(
+        service.agregarTrabajadoresANomina('nom-1', ['10']),
+      ).rejects.toThrow(/empresa activa/i);
+    });
+
+    it('invalida el cálculo si la nómina ya tenía un cálculo vigente', async () => {
+      repo.obtenerNominaCompleta.mockResolvedValue(
+        nomina({
+          estado: 'calculada',
+          segmentos: [segmento({ id: 'seg-1', trabajadorIds: ['10'], ordinal: 1 })],
+          evidenciaCalculo: {
+            idCalculoPeriodo: 1,
+            versionCalculo: 1,
+            calculoVigente: true,
+          },
+        }),
+      );
+      repo.upsertSegmento.mockImplementation((s: SegmentoNomina) =>
+        Promise.resolve(s),
+      );
+      const service = configurar({ repo });
+
+      await service.agregarTrabajadoresANomina('nom-1', ['20']);
+
+      expect(repo.invalidarCalculo).toHaveBeenCalledWith('nom-1');
+      // No re-transiciona a dotacion_generada si ya estaba en calculada (solo
+      // cambia a en_revision como efecto de invalidarCalculoPorCambio).
+      const transicionesADotacion = (repo.transicionarEstado.mock.calls as unknown[][]).filter(
+        (call) => {
+          const arg = call[1] as { estadoDestino?: string } | undefined;
+          return arg?.estadoDestino === 'dotacion_generada';
+        },
+      );
+      expect(transicionesADotacion).toHaveLength(0);
+    });
   });
 });

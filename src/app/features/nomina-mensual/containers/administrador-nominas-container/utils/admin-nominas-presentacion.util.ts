@@ -10,6 +10,7 @@ import type {
   NominaPeriodoResumen,
   TipoNomina,
 } from '../../../models/nomina-periodo.models';
+import type { PayrollStepId } from '../../../../nomina-mensual-v2/models/nomina-mensual-v2.models';
 
 const ETIQUETA_PROXIMO_PASO: Record<string, string> = {
   parametros: 'Completar parámetros',
@@ -20,6 +21,24 @@ const ETIQUETA_PROXIMO_PASO: Record<string, string> = {
   cierre: 'Cerrar nómina',
   liquidaciones: 'Generar liquidaciones',
   sin_accion: 'Sin acción',
+};
+
+/**
+ * Mapa de paso del flujo → nombre de icono lucide (kebab-case).
+ *
+ * Se usa en la celda "Siguiente acción" para reforzar visualmente la naturaleza
+ * del paso sin agregar otra columna. Todos los iconos están registrados en
+ * `app.config.ts` vía `LucideAngularModule.pick`.
+ */
+const ICONO_PROXIMO_PASO: Record<string, string> = {
+  parametros: 'settings',
+  dotacion: 'users',
+  movimientos: 'repeat',
+  calculo: 'calculator',
+  validacion: 'shield-check',
+  cierre: 'lock',
+  liquidaciones: 'receipt',
+  sin_accion: 'minus',
 };
 
 export type AdminBadgeVariant = 'neutral' | 'info' | 'warning' | 'success' | 'danger';
@@ -61,6 +80,104 @@ export function proximoPasoToLabel(paso: NominaPeriodoResumen['proximoPaso']): s
 }
 
 /**
+ * Nombre del icono lucide asociado al paso. Fallback `minus` si el paso no se
+ * reconoce (estado defensivo para migraciones tardías).
+ */
+export function proximoPasoToIcon(paso: NominaPeriodoResumen['proximoPaso']): string {
+  return ICONO_PROXIMO_PASO[paso ?? 'sin_accion'] ?? 'minus';
+}
+
+// ---------------------------------------------------------------------------
+// Sub-renglón "Avance: X" (máximo paso completado dentro del Generador).
+// ---------------------------------------------------------------------------
+
+/**
+ * Etiqueta humana administrativa para cada paso del Generador. Se usa en el
+ * sub-renglón de la celda "Siguiente acción".
+ */
+const ETIQUETA_PASO_COMPLETADO: Record<PayrollStepId, string> = {
+  parameters: 'Parámetros',
+  dotacion: 'Dotación',
+  movements: 'Movimientos',
+  calculation: 'Cálculo',
+  validation: 'Validación',
+  closure: 'Cierre',
+};
+
+/**
+ * Mapeo `PayrollStepId` (canónico del Generador) → `PasoSiguienteNomina`
+ * (etiqueta del próximo paso en la bandeja). Permite comparar si el paso
+ * completado coincide con el paso anterior al próximo paso recomendado para
+ * no mostrar redundancia.
+ */
+const STEP_A_PROXIMO: Record<PayrollStepId, NominaPeriodoResumen['proximoPaso']> = {
+  parameters: 'parametros',
+  dotacion: 'dotacion',
+  movements: 'movimientos',
+  calculation: 'calculo',
+  validation: 'validacion',
+  closure: 'cierre',
+};
+
+/**
+ * Devuelve la etiqueta humana del máximo paso completado. Cadena vacía si
+ * es nulo, para que el binding no pinte nada (en lugar de mostrar
+ * "Avance: ").
+ */
+export function etiquetaMaximoPasoCompletado(paso: PayrollStepId | null | undefined): string {
+  if (!paso) return '';
+  return ETIQUETA_PASO_COMPLETADO[paso] ?? '';
+}
+
+/**
+ * @deprecated Compatibilidad con consumidores previos al modelo "secuencial
+ * puro". Equivalente a `etiquetaMaximoPasoCompletado`. Será removido cuando
+ * todos los call-sites migren.
+ */
+export function etiquetaPasoVisitado(paso: PayrollStepId | null | undefined): string {
+  return etiquetaMaximoPasoCompletado(paso);
+}
+
+/**
+ * Define si la fila debe mostrar el sub-renglón "Avance: X" en la celda
+ * "Siguiente acción". Sólo se muestra cuando:
+ *
+ *  - La fila tiene `maximoPasoCompletado` registrado.
+ *  - Ese paso no coincide con el `proximoPaso` derivado del estado (evita
+ *    redundancia: si el próximo paso ya es "Cálculo" no agregamos
+ *    "Avance: Cálculo").
+ */
+export function mostrarEnCurso(fila: NominaPeriodoResumen): boolean {
+  const completado = fila.maximoPasoCompletado;
+  if (!completado) return false;
+  const equivalente = STEP_A_PROXIMO[completado];
+  return equivalente !== fila.proximoPaso;
+}
+
+/**
+ * Resumen humano de incidencias para tooltips, sin exponer enums.
+ *
+ * Devuelve cadena vacía si la fila no tiene ni críticas ni avisos, para no
+ * mostrar un `title` redundante con la celda "Sin observaciones".
+ */
+export function desgloseIncidencias(fila: {
+  totalIncidenciasCriticas: number;
+  totalAdvertencias: number;
+}): string {
+  const criticas = fila.totalIncidenciasCriticas;
+  const avisos = fila.totalAdvertencias;
+  if (criticas === 0 && avisos === 0) return '';
+  const partes: string[] = [];
+  if (criticas > 0) {
+    partes.push(`${criticas} crítica${criticas === 1 ? '' : 's'}`);
+  }
+  if (avisos > 0) {
+    partes.push(`${avisos} aviso${avisos === 1 ? '' : 's'}`);
+  }
+  return partes.join(' · ');
+}
+
+/**
  * Formato humano de fecha de actualización. Si la fecha cae en el mismo día,
  * muestra "Hoy"; si fue ayer, "Ayer"; si fue dentro de la semana, "Hace N
  * días"; en otro caso, formato `dd/mm/yyyy`.
@@ -81,6 +198,22 @@ export function formatearActualizada(iso: string | undefined, ahora: Date = new 
   const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
   const anio = fecha.getFullYear();
   return `${dia}/${mes}/${anio}`;
+}
+
+/**
+ * Fecha completa para tooltip: `dd/mm/yyyy HH:mm`. Devuelve cadena vacía si
+ * el ISO es nulo o inválido, para que `[title]` no quede como tooltip vacío.
+ */
+export function formatearActualizadaCompleta(iso: string | undefined): string {
+  if (!iso) return '';
+  const fecha = new Date(iso);
+  if (Number.isNaN(fecha.getTime())) return '';
+  const dia = fecha.getDate().toString().padStart(2, '0');
+  const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+  const anio = fecha.getFullYear();
+  const hh = fecha.getHours().toString().padStart(2, '0');
+  const mm = fecha.getMinutes().toString().padStart(2, '0');
+  return `${dia}/${mes}/${anio} ${hh}:${mm}`;
 }
 
 // ---------------------------------------------------------------------------

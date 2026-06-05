@@ -157,11 +157,13 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   }
 
   /**
-   * Comando único de avance (AG-NAV-03). Paso navegacional con guard: requiere
-   * un resultado de cálculo vigente. La acción operativa real (`Calcular
-   * nómina`) sigue siendo un botón inline en el cuerpo del paso.
+   * Diagnóstico puro de "completitud" del paso. Requiere cálculo procesado y
+   * vigente. Sin side-effects.
    */
-  async avanzar(): Promise<ResultadoAvancePaso> {
+  puedeContinuar(): ResultadoAvancePaso {
+    if (this.cargando()) {
+      return { ok: false, razon: 'Cargando el resumen de cálculo.' };
+    }
     if (this.calculando()) {
       return { ok: false, razon: 'Cálculo en curso.' };
     }
@@ -175,6 +177,15 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
       return { ok: false, razon: 'Procesa el cálculo antes de continuar.' };
     }
     return { ok: true };
+  }
+
+  /**
+   * Comando único de avance (AG-NAV-03). Paso navegacional con guard: requiere
+   * un resultado de cálculo vigente. La acción operativa real (`Calcular
+   * nómina`) sigue siendo un botón inline en el cuerpo del paso.
+   */
+  async avanzar(): Promise<ResultadoAvancePaso> {
+    return this.puedeContinuar();
   }
 
   emitirVolver(): void {

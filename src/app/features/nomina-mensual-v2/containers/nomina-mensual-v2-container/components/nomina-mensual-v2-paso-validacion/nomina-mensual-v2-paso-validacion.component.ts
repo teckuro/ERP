@@ -132,11 +132,10 @@ export class NominaMensualV2PasoValidacionComponent implements PasoNominaPort {
   }
 
   /**
-   * Comando único de avance (AG-NAV-03). Paso terminal: ejecuta la aprobación
-   * y, si es exitosa, deja al container navegar a cierre. No emite
-   * `aprobarSolicitado` (la navegación la decide el container).
+   * Diagnóstico puro de "completitud" del paso. Lo consultan CTA y stepper
+   * antes del click. Sin side-effects.
    */
-  async avanzar(): Promise<ResultadoAvancePaso> {
+  puedeContinuar(): ResultadoAvancePaso {
     if (this.cargando()) {
       return { ok: false, razon: 'Cargando la validación.' };
     }
@@ -155,6 +154,20 @@ export class NominaMensualV2PasoValidacionComponent implements PasoNominaPort {
         razon: 'Aún hay incidencias críticas o la validación no está lista para aprobar.',
       };
     }
+    if (!this.nominaPeriodoId()) {
+      return { ok: false, razon: 'No hay una nómina activa.' };
+    }
+    return { ok: true };
+  }
+
+  /**
+   * Comando único de avance (AG-NAV-03). Paso terminal: ejecuta la aprobación
+   * y, si es exitosa, deja al container navegar a cierre. No emite
+   * `aprobarSolicitado` (la navegación la decide el container).
+   */
+  async avanzar(): Promise<ResultadoAvancePaso> {
+    const diagnostico = this.puedeContinuar();
+    if (!diagnostico.ok) return diagnostico;
     const id = this.nominaPeriodoId();
     if (!id) {
       return { ok: false, razon: 'No hay una nómina activa.' };

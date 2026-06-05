@@ -172,12 +172,10 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   }
 
   /**
-   * Comando único de avance (AG-NAV-03). Paso terminal: abre el modal de
-   * confirmación del cierre. El cierre real ocurre cuando el usuario confirma
-   * dentro del modal (`cerrarNomina()`). El container NO navega tras
-   * `ok: true` porque cierre es el paso final del flujo.
+   * Diagnóstico puro de "completitud" del paso. Sin side-effects. Lo
+   * consultan CTA y stepper.
    */
-  async avanzar(): Promise<ResultadoAvancePaso> {
+  puedeContinuar(): ResultadoAvancePaso {
     if (this.cerrada()) {
       return { ok: false, razon: 'La nómina ya está cerrada.' };
     }
@@ -190,6 +188,18 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
     if (!this.todoCumplido()) {
       return { ok: false, razon: 'Aún hay ítems pendientes en la checklist de cierre.' };
     }
+    return { ok: true };
+  }
+
+  /**
+   * Comando único de avance (AG-NAV-03). Paso terminal: abre el modal de
+   * confirmación del cierre. El cierre real ocurre cuando el usuario confirma
+   * dentro del modal (`cerrarNomina()`). El container NO navega tras
+   * `ok: true` porque cierre es el paso final del flujo.
+   */
+  async avanzar(): Promise<ResultadoAvancePaso> {
+    const diagnostico = this.puedeContinuar();
+    if (!diagnostico.ok) return diagnostico;
     this.solicitarCierre();
     return { ok: true };
   }

@@ -38,10 +38,14 @@ import {
   esAvanceHaciaAdelante,
   esPasoCongelado,
   esRetrocesoAPaso,
+  indiceMaximoPasoAccesibleEfectivo,
   obtenerEtiquetaAccionPrincipal,
+  obtenerEtiquetaBrevePaso,
   obtenerSubtituloPaso,
   obtenerTituloPaso,
+  puedeContinuarPaso,
   type PasoNominaPort,
+  type ResultadoAvancePaso,
 } from './facade/nomina-mensual-v2-navegacion';
 import { NominaMensualV2TrazabilidadService } from '../../services/nomina-mensual-v2-trazabilidad.service';
 import { NominaMensualV2SesionService } from '../../services/nomina-mensual-v2-sesion.service';
@@ -99,6 +103,14 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   readonly nominaPeriodoId = signal<string | null>(null);
   readonly nominaCargada = signal<NominaPeriodo | null>(null);
 
+  /**
+   * Marca que la rehidratación del último paso visitado para la nómina actual
+   * ya se aplicó (o se intentó). Mientras es `false`, el effect de guardado
+   * NO escribe, evitando pisar el paso visitado con `parameters` justo
+   * después de entrar.
+   */
+  private readonly pasoVisitadoRehidratado = signal(false);
+
   readonly pageTitle = computed(() => obtenerTituloPaso(this.currentStep()));
   readonly pageSubtitle = computed(() => obtenerSubtituloPaso(this.currentStep()));
   readonly primaryActionLabel = computed(() => obtenerEtiquetaAccionPrincipal(this.currentStep()));
@@ -109,6 +121,78 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     return (paso?.parametrosLoading() ?? false) || (paso?.parametrosValidando() ?? false);
   });
 
+  /**
+   * Diagnóstico de "completitud" del paso activo. Para `parameters` se
+   * deriva de la bandera del orquestador (`parametrosPreparados`); para los
+   * pasos 2-6 se delega en el `PasoNominaPort.puedeContinuar()` del
+   * ViewChild correspondiente.
+   *
+   * Si el ViewChild aún no está montado, devuelve `{ok:false}` con razón
+   * neutra: el CTA queda deshabilitado durante el render inicial.
+   */
+  readonly pasoActualCompleto = computed<ResultadoAvancePaso>(() => {
+    const paso = this.currentStep();
+    if (paso === 'parameters') {
+      const componente = this.pasoParametros();
+      if (!componente) return { ok: false, razon: 'Cargando parámetros.' };
+      if (this.parametrosPasoOcupado()) {
+        return { ok: false, razon: 'Procesando parámetros.' };
+      }
+      if (!this.orquestador.parametrosPreparados()) {
+        return {
+          ok: false,
+          razon: 'Completa los parámetros del período antes de continuar.',
+        };
+      }
+      return { ok: true };
+    }
+    return puedeContinuarPaso(this.obtenerPasoActivoConComando());
+  });
+
+  /**
+   * Índice del paso más alto que el cliente considera "completo" según el
+   * criterio UI. Combina dos fuentes:
+   *  - El paso activo: si su `puedeContinuar()` responde `ok`, su índice cae
+   *    en el conjunto.
+   *  - El persistido server-side (`maximoPasoCompletado` en la nómina
+   *    cargada).
+   *
+   * Devuelve `-1` si nada está completo (escenario raro: nómina nueva con
+   * usuario en `parameters` y parámetros aún no preparados).
+   */
+  readonly indiceMaximoCompletadoPorContenido = computed(() => {
+    const indices: number[] = [];
+    const persistido = this.nominaCargada()?.maximoPasoCompletado ?? null;
+    if (persistido) {
+      const idx = ORDEN_PASOS_NOMINA.indexOf(persistido);
+      if (idx >= 0) indices.push(idx);
+    }
+    if (this.pasoActualCompleto().ok) {
+      const idx = ORDEN_PASOS_NOMINA.indexOf(this.currentStep());
+      if (idx >= 0) indices.push(idx);
+    }
+    return indices.length > 0 ? Math.max(...indices) : -1;
+  });
+
+  /**
+   * Índice máximo al que el usuario puede navegar combinando el techo
+   * server-side (`indiceMaximoPasoAccesible(estado)`) con el contenido
+   * cliente (`indiceMaximoCompletadoPorContenido + 1`). Es la fuente de
+   * verdad que consume el stepper para bloquear pasos no accesibles.
+   */
+  readonly indiceMaximoAccesibleEfectivo = computed(() =>
+    indiceMaximoPasoAccesibleEfectivo(
+      this.nominaCargada()?.estado ?? null,
+      this.indiceMaximoCompletadoPorContenido(),
+    ),
+  );
+
+  /**
+   * Etiqueta breve del paso activo, útil para mensajes y tooltips que el
+   * container construye sin acceder al stepper.
+   */
+  readonly etiquetaPasoActual = computed(() => obtenerEtiquetaBrevePaso(this.currentStep()));
+
   constructor() {
     // Effect en constructor para que se limpie con DestroyRef al cerrar el
     // container. Importante: `bindShellPageContext` ya crea su propio effect
@@ -118,11 +202,77 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       void this.onPeriodoActivoCambiado(periodo);
     });
 
+    // Rehidratación del último paso visitado: corre una sola vez por id de
+    // nómina. Al limpiarse el id (salida del generador o cambio de nómina),
+    // se reinicia el flag para que la próxima entrada vuelva a rehidratar.
+    effect(() => {
+      const id = this.nominaPeriodoId();
+      if (!id) {
+        this.pasoVisitadoRehidratado.set(false);
+        return;
+      }
+      if (this.pasoVisitadoRehidratado()) return;
+      void this.aplicarRehidratacionPasoVisitado(id);
+    }, { allowSignalWrites: true });
+
+    // Guardado del paso al cambiar. Sólo escribe después de que la
+    // rehidratación se haya aplicado, evitando pisar el paso visitado con el
+    // valor que el container tenía antes de leer la cabecera.
+    effect(() => {
+      const paso = this.currentStep();
+      const id = this.nominaPeriodoId();
+      if (!id) return;
+      if (!this.pasoVisitadoRehidratado()) return;
+      void this.nominaPeriodoService.registrarPasoVisitado(id, paso);
+    });
+
+    // Registro de máximo paso completado: cuando el paso activo está
+    // "poblado correctamente" (criterio UI), persistimos su índice. El
+    // service tiene dedupe monótono — solo escribe si supera al último
+    // registrado.
+    effect(() => {
+      const id = this.nominaPeriodoId();
+      if (!id) return;
+      if (!this.pasoVisitadoRehidratado()) return;
+      const completitud = this.pasoActualCompleto();
+      if (!completitud.ok) return;
+      const paso = this.currentStep();
+      void this.nominaPeriodoService.registrarPasoCompletado(id, paso);
+    });
+
     bindShellPageContext(this.destroyRef, () => this.computeShellContext(), {
       onPrimaryAction: () => {
         void this.ejecutarAccionPrincipalPasoActual();
       },
     });
+  }
+
+  private async aplicarRehidratacionPasoVisitado(nominaPeriodoId: string): Promise<void> {
+    try {
+      const periodo = this.periodoActivo.periodoYm();
+      const sesion = await this.sesionService.resolverEstadoSesion(periodo, nominaPeriodoId);
+      // Si hay `pasoVisitadoSugerido` válido se prefiere por sobre el
+      // `pasoInicial` derivado del estado de parámetros (que es solo el
+      // arranque por defecto). De lo contrario aplicamos el `pasoInicial`.
+      const pasoTarget = sesion.pasoVisitadoSugerido ?? sesion.pasoInicial;
+      if (pasoTarget !== this.currentStep()) {
+        this.currentStep.set(pasoTarget);
+        this.orquestador.pasoActual.set(pasoTarget);
+      }
+      if (sesion.pasoVisitadoSugerido) {
+        // Pre-hidrata el cache de dedupe del service para que el effect de
+        // guardado, al dispararse con el mismo paso, no provoque un RPC
+        // redundante.
+        void this.nominaPeriodoService.registrarPasoVisitado(
+          nominaPeriodoId,
+          sesion.pasoVisitadoSugerido,
+        );
+      }
+    } catch (error) {
+      console.warn('[Nómina V2] Rehidratación de paso visitado falló', error);
+    } finally {
+      this.pasoVisitadoRehidratado.set(true);
+    }
   }
 
   ngOnInit(): void {
@@ -208,9 +358,18 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     const cambioPeriodo = this.ultimoPeriodoInicializado !== periodo;
     this.ultimoPeriodoInicializado = periodo;
 
+    // Cuando hay nómina cargada, el effect de rehidratación se encarga del
+    // `currentStep` (puede aplicar `pasoVisitadoSugerido` además del
+    // `pasoInicial`). Si no hay nómina, mantenemos el comportamiento
+    // histórico de arrancar en `parameters` y luego ajustar al `pasoInicial`
+    // según el estado de parámetros.
+    const sinNomina = !this.nominaPeriodoId();
+
     if (cambioPeriodo) {
-      this.currentStep.set('parameters');
-      this.orquestador.pasoActual.set('parameters');
+      if (sinNomina) {
+        this.currentStep.set('parameters');
+        this.orquestador.pasoActual.set('parameters');
+      }
       this.orquestador.reiniciarPorCambioPeriodo(periodo);
     }
     try {
@@ -223,14 +382,14 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       if (sesion.origenBase && sesion.idCalculoPeriodoBase) {
         this.orquestador.registrarOrigenBaseAlAvanzar(sesion.origenBase, sesion.idCalculoPeriodoBase);
       }
-      if (cambioPeriodo) {
+      if (cambioPeriodo && sinNomina) {
         this.currentStep.set(sesion.pasoInicial);
         this.orquestador.pasoActual.set(sesion.pasoInicial);
       }
     } catch (error) {
       if (token !== this.tokenInicializacionPeriodo) return;
       console.error('[Nómina V2] No fue posible restaurar la sesión del período', error);
-      if (cambioPeriodo) {
+      if (cambioPeriodo && sinNomina) {
         this.currentStep.set('parameters');
         this.orquestador.pasoActual.set('parameters');
       }
@@ -250,6 +409,11 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   intentarIrAPaso(destinoPaso: PayrollStepId): void {
     if (destinoPaso === this.currentStep()) return;
     if (esPasoCongelado(destinoPaso)) return;
+    // Bloqueo por accesibilidad efectiva: si el destino supera el techo
+    // (estado server ∩ contenido cliente), ignoramos el click. El stepper
+    // pinta el icono lock y el tooltip; aquí blindamos la lógica.
+    const indiceDestino = ORDEN_PASOS_NOMINA.indexOf(destinoPaso);
+    if (indiceDestino > this.indiceMaximoAccesibleEfectivo()) return;
     if (
       destinoPaso === 'parameters'
       && esRetrocesoAPaso(this.currentStep(), destinoPaso)
@@ -262,11 +426,37 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       });
       return;
     }
+    if (
+      destinoPaso !== 'parameters'
+      && esRetrocesoAPaso(this.currentStep(), destinoPaso)
+    ) {
+      // Pasos 2..5 hacia atrás: modal uniforme de confirmación.
+      this.orquestador.modalConfirmarRetroceso.set({
+        destino: destinoPaso,
+        etiquetaDestino: obtenerEtiquetaBrevePaso(destinoPaso),
+      });
+      return;
+    }
     if (this.currentStep() === 'parameters' && esAvanceHaciaAdelante(this.currentStep(), destinoPaso)) {
       void this.ejecutarAccionPrincipalPasoActual();
       return;
     }
     this.irAPaso(destinoPaso);
+  }
+
+  /**
+   * Handler de la confirmación del modal "Volver atrás". Navega al destino
+   * registrado en el modal y limpia el estado.
+   */
+  confirmarRetrocesoAPaso(): void {
+    const modal = this.orquestador.modalConfirmarRetroceso();
+    this.orquestador.modalConfirmarRetroceso.set(null);
+    if (!modal) return;
+    this.irAPaso(modal.destino);
+  }
+
+  cerrarModalConfirmarRetroceso(): void {
+    this.orquestador.modalConfirmarRetroceso.set(null);
   }
 
   manejarAvanceDesdeParametros(destinoPaso: PayrollStepId): void {
@@ -399,6 +589,17 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       : null;
     const currentIndex = ORDEN_PASOS_NOMINA.indexOf(paso);
 
+    // Para los pasos 2..6 (`PasoNominaPort`) el CTA queda deshabilitado con
+    // tooltip cuando el paso no está poblado correctamente. Parámetros
+    // mantiene su rama propia (modales de acceso/diferencias) y la matriz
+    // `accesoBaseService.resolverAccionShellParametros` ya define su
+    // `disabled`.
+    const completitud = this.pasoActualCompleto();
+    const disabledPorContenido = paso !== 'parameters' && !completitud.ok;
+    const tooltipPorContenido = paso !== 'parameters' && !completitud.ok
+      ? (completitud.razon ?? null)
+      : null;
+
     return {
       breadcrumbs: [
         { label: 'Nómina', path: '/remuneraciones/proceso-mensual' },
@@ -412,9 +613,10 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       },
       primaryAction: {
         label: accionParametros?.label ?? this.primaryActionLabel(),
-        disabled: accionParametros?.disabled ?? false,
+        disabled: (accionParametros?.disabled ?? false) || disabledPorContenido,
         loading: paso === 'parameters' ? parametrosValidando : false,
         actionId: `nomina-mensual-v2-${paso}`,
+        tooltip: tooltipPorContenido,
       },
     };
   }

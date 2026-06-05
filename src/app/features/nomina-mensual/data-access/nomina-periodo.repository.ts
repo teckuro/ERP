@@ -32,6 +32,7 @@ import type {
   MovimientoNomina,
   MovimientoRecurrente,
 } from '../models/movimiento-nomina.models';
+import type { PayrollStepId } from '../../nomina-mensual-v2/models/nomina-mensual-v2.models';
 import {
   ensamblarNominaPeriodo,
   eventoAuditoriaToInsert,
@@ -195,6 +196,32 @@ export class NominaPeriodoRepository {
       throw new Error('transicionarEstado: BD no retornó la nómina actualizada');
     }
     return rowToNominaPeriodoResumen(data);
+  }
+
+  /**
+   * Persiste el último paso del Generador visitado (metadata UX, no parte de
+   * la máquina de estados). Invoca el RPC dedicado para no contaminar
+   * `updated_at` (que sigue reflejando cambios productivos del negocio).
+   */
+  async actualizarUltimoPasoVisitado(id: string, paso: PayrollStepId): Promise<void> {
+    const { error } = await this.supabase.rpc('actualizar_paso_visitado_nomina', {
+      p_nomina_id: id,
+      p_paso: paso,
+    });
+    throwIfError(error, 'actualizarUltimoPasoVisitado');
+  }
+
+  /**
+   * Persiste el máximo paso completado (criterio UI). La RPC es monótona:
+   * si el paso actual ya es igual o posterior, no actualiza. No toca
+   * `updated_at`, igual que `actualizarUltimoPasoVisitado`.
+   */
+  async actualizarMaximoPasoCompletado(id: string, paso: PayrollStepId): Promise<void> {
+    const { error } = await this.supabase.rpc('actualizar_maximo_paso_completado_nomina', {
+      p_nomina_id: id,
+      p_paso: paso,
+    });
+    throwIfError(error, 'actualizarMaximoPasoCompletado');
   }
 
   async invalidarCalculo(id: string): Promise<void> {

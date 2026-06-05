@@ -34,14 +34,19 @@ import {
   COLUMNAS_ADMIN_NOMINAS,
   PERSISTENCIA_GRILLA_ADMIN,
   crearFiltrosAdminNominas,
-  coincideVistaOperativa,
   ordenarResumenesOperativos,
 } from '../../presenters/admin-nominas.presenter';
+import { nominaRequiereAccion } from '../../rules/nomina-periodo-state.rules';
 import {
+  desgloseIncidencias,
   estadoNominaToBadge,
-  tipoNominaToLabel,
+  etiquetaMaximoPasoCompletado,
   formatearActualizada,
+  formatearActualizadaCompleta,
+  mostrarEnCurso,
+  proximoPasoToIcon,
   proximoPasoToLabel,
+  tipoNominaToLabel,
 } from './utils/admin-nominas-presentacion.util';
 import { AdminNominasModalNuevaNominaComponent } from './components/admin-nominas-modal-nueva-nomina/admin-nominas-modal-nueva-nomina.component';
 import { AdminNominasModalResumenNominaComponent } from './components/admin-nominas-modal-resumen-nomina/admin-nominas-modal-resumen-nomina.component';
@@ -100,11 +105,24 @@ export class AdministradorNominasContainer {
 
   readonly subtitulo = computed(() => {
     const total = this.resumenes().length;
-    const abiertas = this.resumenes().filter((fila) => coincideVistaOperativa(fila, 'abiertas')).length;
     if (total === 0) {
       return 'Sin nóminas cargadas todavía.';
     }
-    return `${total} ${total === 1 ? 'nómina' : 'nóminas'} en seguimiento · ${abiertas} ${abiertas === 1 ? 'abierta' : 'abiertas'}.`;
+    const requierenAccion = this.resumenes().filter(
+      (fila) => nominaRequiereAccion(fila.estado) && (fila.requiereAccion ?? true),
+    ).length;
+    const conCriticas = this.resumenes().filter(
+      (fila) => fila.totalIncidenciasCriticas > 0,
+    ).length;
+    const base = `${total} ${total === 1 ? 'nómina' : 'nóminas'} en seguimiento`;
+    const partes: string[] = [base];
+    if (requierenAccion > 0) {
+      partes.push(`${requierenAccion} requiere${requierenAccion === 1 ? '' : 'n'} acción`);
+    }
+    if (conCriticas > 0) {
+      partes.push(`${conCriticas} con críticas`);
+    }
+    return `${partes.join(' · ')}.`;
   });
 
   constructor() {
@@ -136,11 +154,27 @@ export class AdministradorNominasContainer {
   estadoNominaToBadge = estadoNominaToBadge;
   tipoNominaToLabel = tipoNominaToLabel;
   formatearActualizada = formatearActualizada;
+  formatearActualizadaCompleta = formatearActualizadaCompleta;
   proximoPasoToLabel = proximoPasoToLabel;
+  proximoPasoToIcon = proximoPasoToIcon;
+  desgloseIncidencias = desgloseIncidencias;
+  etiquetaMaximoPasoCompletado = etiquetaMaximoPasoCompletado;
+  mostrarEnCurso = mostrarEnCurso;
   puedeEliminarBorrador = puedeEliminarBorrador;
   puedeReabrir = puedeReabrir;
   puedeAnular = puedeAnular;
   tieneLiquidaciones = tieneLiquidaciones;
+
+  /**
+   * Marca visual de prioridad para la celda "Siguiente acción". Se activa
+   * cuando la fila requiere acción del equipo (estado abierto) o cuando tiene
+   * incidencias críticas pendientes. No depende del filtro activo, refleja la
+   * situación real del registro.
+   */
+  esFilaPrioritaria(fila: NominaPeriodoResumen): boolean {
+    if (fila.totalIncidenciasCriticas > 0) return true;
+    return nominaRequiereAccion(fila.estado) && (fila.requiereAccion ?? true);
+  }
 
   async cargarResumenes(): Promise<void> {
     this.cargando.set(true);

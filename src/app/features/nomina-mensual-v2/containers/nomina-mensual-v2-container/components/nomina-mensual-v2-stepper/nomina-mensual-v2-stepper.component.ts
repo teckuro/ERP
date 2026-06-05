@@ -14,10 +14,12 @@ import type { PayrollStep, PayrollStepId, PayrollStepStatus } from '../../../../
 import type { NominaPeriodo } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { construirVistasStepper } from '../../../../presenters/nomina-stepper-trazabilidad.presenter';
 import {
+  ORDEN_PASOS_NOMINA,
   esAvanceHaciaAdelante,
   esPasoCongelado,
   obtenerEstadoPaso,
   tooltipPasoCongelado,
+  tooltipPasoNoAccesible,
 } from '../../facade/nomina-mensual-v2-navegacion';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 
@@ -41,6 +43,18 @@ export class NominaMensualV2StepperComponent {
    * inicial o estado degradado) los pasos no-activos quedan `pending`.
    */
   readonly nomina = input<NominaPeriodo | null>(null);
+
+  /**
+   * Índice máximo accesible efectivo del flujo (estado server-side ∩
+   * contenido cliente). Pasos cuyo índice supera este valor quedan
+   * deshabilitados con icono `lock` y tooltip explicativo. El container
+   * computa este valor con `indiceMaximoPasoAccesibleEfectivo`.
+   *
+   * Default `Number.MAX_SAFE_INTEGER` para no introducir regresiones en
+   * usos sin migrar (ningún paso queda bloqueado por accesibilidad
+   * efectiva).
+   */
+  readonly indiceMaximoAccesible = input<number>(Number.MAX_SAFE_INTEGER);
 
   @Output() pasoSeleccionado = new EventEmitter<PayrollStepId>();
 
@@ -78,6 +92,7 @@ export class NominaMensualV2StepperComponent {
 
   seleccionarPaso(stepId: PayrollStepId): void {
     if (this.pasoCongelado(stepId)) return;
+    if (this.pasoNoAccesible(stepId)) return;
     if (this.avanceDesdePasoActualBloqueado() && esAvanceHaciaAdelante(this.pasoActual(), stepId)) {
       return;
     }
@@ -92,8 +107,21 @@ export class NominaMensualV2StepperComponent {
     return esPasoCongelado(stepId);
   }
 
+  /**
+   * `true` si el paso queda fuera del techo `indiceMaximoAccesible`
+   * (combinación de estado + contenido). El stepper lo deshabilita,
+   * pinta el icono `lock` y muestra tooltip con el paso anterior a
+   * completar.
+   */
+  pasoNoAccesible(stepId: PayrollStepId): boolean {
+    const indice = ORDEN_PASOS_NOMINA.indexOf(stepId);
+    if (indice < 0) return false;
+    return indice > this.indiceMaximoAccesible();
+  }
+
   tooltipPaso(stepId: PayrollStepId): string | null {
     if (this.pasoCongelado(stepId)) return tooltipPasoCongelado();
+    if (this.pasoNoAccesible(stepId)) return tooltipPasoNoAccesible(stepId);
     return null;
   }
 }

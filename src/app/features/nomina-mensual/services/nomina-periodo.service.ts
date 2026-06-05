@@ -47,7 +47,10 @@ import type {
   MovimientoRecurrente,
   PreviewAccionMasivaTrabajadores,
 } from '../models/movimiento-nomina.models';
-import type { ResultadoAlcanceNomina } from '../../nomina-mensual-v2/models/nomina-mensual-v2.models';
+import type {
+  PayrollStepId,
+  ResultadoAlcanceNomina,
+} from '../../nomina-mensual-v2/models/nomina-mensual-v2.models';
 import { EmpleadosService } from '../../empleados/services/empleados.service';
 import { crearSegmento } from '../models/nomina-periodo.models';
 import {
@@ -88,6 +91,31 @@ export class NominaPeriodoService {
 
   private readonly resumenesState = signal<NominaPeriodoResumen[]>([]);
   private readonly cargandoState = signal(false);
+
+  /**
+   * Cache de dedupe para `registrarPasoVisitado`. Solo se llama al RPC si el
+   * paso cambió respecto a la última vez que escribimos en esta sesión.
+   * Evita escrituras innecesarias cuando el `effect` se re-evalúa sin que
+   * `currentStep()` haya cambiado.
+   */
+  private readonly ultimoPasoRegistrado = new Map<string, PayrollStepId>();
+
+  /**
+   * Cache de dedupe para `registrarPasoCompletado`. Es monótono creciente:
+   * solo llamamos al RPC si el paso supera al último registrado en esta
+   * sesión (el RPC server-side también es monótono, esto solo evita la
+   * ida-vuelta innecesaria).
+   */
+  private readonly ultimoPasoCompletadoRegistrado = new Map<string, PayrollStepId>();
+
+  private readonly ORDEN_PASOS_PAYROLL: readonly PayrollStepId[] = [
+    'parameters',
+    'dotacion',
+    'movements',
+    'calculation',
+    'validation',
+    'closure',
+  ];
 
   readonly resumenes = computed(() => this.resumenesState());
   readonly cargando = computed(() => this.cargandoState());
@@ -198,6 +226,71 @@ export class NominaPeriodoService {
     await this.transicionar(nomina, 'cerrada', payload.motivo);
   }
 
+  /**
+   * Registra el último paso del Generador visitado para una nómina. Metadata
+   * UX exclusivamente:
+   *
+   * - Dedupe en memoria: si el paso ya coincide con el último registrado en
+   *   esta sesión, no se invoca al RPC (evita ruido en BD y red).
+   * - Tolerante a errores: si el RPC falla (por ejemplo, la migración aún no
+   *   se aplicó, RLS o red), se traga el error y se loguea con `console.warn`
+   *   en vez de propagarlo. La UI no debe romperse por no poder persistir
+   *   este dato.
+   */
+  async registrarPasoVisitado(nominaPeriodoId: string, paso: PayrollStepId): Promise<void> {
+    if (!nominaPeriodoId || !paso) return;
+
+    const previo = this.ultimoPasoRegistrado.get(nominaPeriodoId);
+    if (previo === paso) return;
+
+    this.ultimoPasoRegistrado.set(nominaPeriodoId, paso);
+    try {
+      await this.repo.actualizarUltimoPasoVisitado(nominaPeriodoId, paso);
+    } catch (error) {
+      this.ultimoPasoRegistrado.delete(nominaPeriodoId);
+      const mensaje = error instanceof Error ? error.message : String(error);
+      console.warn('[NominaPeriodoService] No se pudo persistir el paso visitado:', mensaje);
+    }
+  }
+
+  /**
+   * Registra el máximo paso del Generador completado por el usuario (criterio
+   * UI: "poblado correctamente"). Es monótono creciente:
+   *
+   * - Dedupe en memoria: solo llama al RPC si el paso es estrictamente mayor
+   *   que el último registrado en esta sesión. El RPC server-side también
+   *   ignora regresiones (no-op idempotente), pero el cliente evita el
+   *   round-trip.
+   * - Tolerante a errores: si el RPC falla, se traga el error con
+   *   `console.warn`. La UI no debe romperse por no poder persistir avance.
+   */
+  async registrarPasoCompletado(nominaPeriodoId: string, paso: PayrollStepId): Promise<void> {
+    if (!nominaPeriodoId || !paso) return;
+
+    const indiceNuevo = this.ORDEN_PASOS_PAYROLL.indexOf(paso);
+    if (indiceNuevo < 0) return;
+
+    const previo = this.ultimoPasoCompletadoRegistrado.get(nominaPeriodoId);
+    if (previo) {
+      const indicePrevio = this.ORDEN_PASOS_PAYROLL.indexOf(previo);
+      if (indiceNuevo <= indicePrevio) return;
+    }
+
+    this.ultimoPasoCompletadoRegistrado.set(nominaPeriodoId, paso);
+    try {
+      await this.repo.actualizarMaximoPasoCompletado(nominaPeriodoId, paso);
+    } catch (error) {
+      // Si la RPC falla, retroceder al previo o limpiar para reintentar.
+      if (previo) {
+        this.ultimoPasoCompletadoRegistrado.set(nominaPeriodoId, previo);
+      } else {
+        this.ultimoPasoCompletadoRegistrado.delete(nominaPeriodoId);
+      }
+      const mensaje = error instanceof Error ? error.message : String(error);
+      console.warn('[NominaPeriodoService] No se pudo persistir el paso completado:', mensaje);
+    }
+  }
+
   async reabrirNomina(nominaPeriodoId: string, payload: ReabrirNominaPayload): Promise<void> {
     const nomina = await this.exigirNomina(nominaPeriodoId);
     await this.transicionar(nomina, 'reabierta', payload.motivo);
@@ -274,6 +367,98 @@ export class NominaPeriodoService {
     await this.exigirNominaEditable(segmento.nominaPeriodoId);
     await this.repo.eliminarSegmento(segmentoId);
     await this.invalidarCalculoPorCambio(segmento.nominaPeriodoId, 'Segmento eliminado.');
+  }
+
+  /**
+   * Agrega trabajadores al segmento principal (el primero por ordinal) de la
+   * nómina. Si no existe ningún segmento, crea uno llamado "Dotación principal".
+   *
+   * - Idempotente: si un id ya está en algún segmento de la nómina, se ignora.
+   * - Actualiza el total de trabajadores de la cabecera.
+   * - Invalida el cálculo si la dotación cambió.
+   *
+   * Devuelve los ids efectivamente agregados (los que no estaban).
+   */
+  async agregarTrabajadoresANomina(
+    nominaPeriodoId: string,
+    trabajadorIds: string[],
+  ): Promise<{ agregados: string[]; yaEstaban: string[] }> {
+    if (!nominaPeriodoId || trabajadorIds.length === 0) {
+      return { agregados: [], yaEstaban: [] };
+    }
+    const idEmpresa = await this.resolverEmpresaActiva();
+    if (idEmpresa == null) {
+      throw new Error('No hay empresa activa para incluir trabajadores.');
+    }
+    const nomina = await this.exigirNominaEditable(nominaPeriodoId);
+
+    const idsExistentes = new Set(
+      nomina.segmentos.flatMap((segmento) => segmento.trabajadorIds),
+    );
+    const idsUnicos = Array.from(new Set(trabajadorIds.map(String)));
+    const agregados: string[] = [];
+    const yaEstaban: string[] = [];
+    for (const id of idsUnicos) {
+      if (idsExistentes.has(id)) {
+        yaEstaban.push(id);
+      } else {
+        agregados.push(id);
+      }
+    }
+    if (agregados.length === 0) {
+      return { agregados, yaEstaban };
+    }
+
+    const segmentosOrdenados = [...nomina.segmentos].sort(
+      (a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0),
+    );
+    const principal = segmentosOrdenados[0];
+
+    if (principal) {
+      const trabajadorIdsActualizados = Array.from(
+        new Set([...principal.trabajadorIds, ...agregados]),
+      );
+      await this.repo.upsertSegmento(
+        {
+          ...principal,
+          trabajadorIds: trabajadorIdsActualizados,
+          totalTrabajadores: trabajadorIdsActualizados.length,
+        },
+        idEmpresa,
+      );
+    } else {
+      await this.repo.upsertSegmento(
+        crearSegmento({
+          id: '',
+          nominaPeriodoId,
+          nombre: 'Dotación principal',
+          tipo: 'planta',
+          estado: 'borrador',
+          trabajadorIds: agregados,
+        }),
+        idEmpresa,
+      );
+    }
+
+    const totalTrabajadores = new Set([
+      ...idsExistentes,
+      ...agregados,
+    ]).size;
+    await this.repo.actualizarTotales(nominaPeriodoId, { totalTrabajadores });
+
+    if (nomina.estado === 'borrador') {
+      await this.repo.transicionarEstado(nominaPeriodoId, {
+        estadoEsperado: 'borrador',
+        estadoDestino: 'dotacion_generada',
+      });
+    } else {
+      await this.invalidarCalculoPorCambio(
+        nominaPeriodoId,
+        `Dotación ampliada en ${agregados.length} trabajadores.`,
+      );
+    }
+
+    return { agregados, yaEstaban };
   }
 
   // -------------------------------------------------------------------------

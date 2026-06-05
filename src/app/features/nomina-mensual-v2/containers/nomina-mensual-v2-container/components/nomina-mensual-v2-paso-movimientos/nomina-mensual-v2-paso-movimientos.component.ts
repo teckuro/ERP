@@ -88,7 +88,13 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
   readonly movimientosOmitidos = computed(() =>
     this.movimientos().filter((m) => m.estado === 'omitido'),
   );
-  readonly puedeAvanzar = computed(() => true); // no bloquea — el cálculo valida
+  /**
+   * El paso de movimientos se considera "poblado correctamente" cuando existe
+   * al menos un movimiento aplicado (recurrente o manual). Mientras la lista
+   * esté vacía, el CTA del shell queda deshabilitado con razón visible y
+   * el stepper bloquea adelante.
+   */
+  readonly puedeAvanzar = computed(() => this.movimientosAplicados().length > 0);
 
   /**
    * Cache acumulativo de identidad humana (nombre + RUT) por `trabajadorId`,
@@ -283,16 +289,34 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
   }
 
   /**
-   * Comando único de avance (AG-NAV-03). Paso navegacional: el cálculo valida
-   * que haya movimientos suficientes, por lo que aquí siempre se permite
-   * continuar. Las acciones operativas (`Aplicar recurrentes`, `Agregar
-   * movimiento manual`) permanecen como botones inline en el cuerpo del paso.
+   * Diagnóstico puro de "completitud" del paso. Requiere al menos un
+   * movimiento aplicado (recurrente o manual). Sin side-effects.
    */
-  async avanzar(): Promise<ResultadoAvancePaso> {
+  puedeContinuar(): ResultadoAvancePaso {
+    if (this.loading()) {
+      return { ok: false, razon: 'Cargando los movimientos.' };
+    }
     if (this.aplicando()) {
       return { ok: false, razon: 'Hay movimientos aplicándose.' };
     }
+    if (this.movimientosAplicados().length === 0) {
+      return {
+        ok: false,
+        razon: 'Aplica al menos un movimiento recurrente o agrega uno manual antes de continuar.',
+      };
+    }
     return { ok: true };
+  }
+
+  /**
+   * Comando único de avance (AG-NAV-03). Paso navegacional: valida que el
+   * paso esté "poblado correctamente" (al menos un movimiento aplicado) y
+   * deja al container navegar. Las acciones operativas (`Aplicar
+   * recurrentes`, `Agregar movimiento manual`) permanecen como botones
+   * inline en el cuerpo del paso.
+   */
+  async avanzar(): Promise<ResultadoAvancePaso> {
+    return this.puedeContinuar();
   }
 
   emitirVolver(): void {
