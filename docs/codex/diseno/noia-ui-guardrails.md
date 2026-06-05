@@ -15,6 +15,25 @@ No se debe diseñar como una plantilla genérica de cards, dashboard SaaS ni int
 
 ---
 
+## Marco de página: `<app-page-frame>` (obligatorio)
+
+> Desde `NOM-UI-PAGE-FRAME-PILOTO-01` (2026-06-04) toda pantalla nueva del ERP **debe** envolver su contenido en `<app-page-frame>` (`src/app/shared/components/ui/page-frame/`).
+
+- El **Shell** (`ShellPageContextService` + `header.component`) ya provee breadcrumbs, **título**, subtítulo opcional y **acción primaria global**. No duplicar esa identidad in-page.
+- El frame es **solo el marco** (padding, flex column, body full-bleed) y expone los tokens `--pf-*` (ver [`noia-bases-sistema-referencia.md`](./noia-bases-sistema-referencia.md) §2.C).
+- KPIs / contadores van en el slot `[pageFrameSummary]` como **franja inline sobria** (chips con separadores finos), no como caja con fondo decorativo.
+- Filtros y búsqueda van en `[pageFrameToolbar]` o dentro del `data-grid` ya integrado.
+- Pantalla típica: `<app-page-frame tone="workspace">` → `<app-data-grid …>` o stepper → fin. **El grid o stepper debe estar al 100 % del ancho del frame** (no se envuelve en cards adicionales).
+
+Antipatrones explícitos contra el frame:
+
+- Duplicar título/eyebrow/subtítulo in-page cuando el shell ya los muestra.
+- Envolver el frame en un `div` con padding adicional para "ajustar" el layout (se pierde la densidad compacta).
+- Definir `--pf-*` o tokens de página fuera del CSS local de `page-frame.component.css`.
+- Mover reglas del frame a `src/styles.css` o `src/styles/*` para "saltarse" el componente.
+
+---
+
 ## Principios visuales
 
 ### 1. Claridad antes que decoración

@@ -1,28 +1,16 @@
-<div class="adm-nom">
-  <header class="adm-nom__head">
-    <div class="adm-nom__head-copy">
-      <p class="adm-nom__eyebrow">Remuneraciones · Administrador</p>
-      <h1 class="adm-nom__title">Administrador de nóminas</h1>
-      <p class="adm-nom__subtitle">{{ subtitulo() }}</p>
+<section class="adm-nom__page" aria-label="Administrador de nóminas">
+  @if (kpis().items.length > 0) {
+    <div class="adm-nom__summary" role="group" aria-label="Resumen operativo del administrador">
+      @for (kpi of kpis().items; track kpi.id) {
+        <span class="adm-nom__metric" [class]="'adm-nom__metric--' + kpi.tone">
+          <span class="adm-nom__metric-value">{{ kpi.value }}</span>
+          <span class="adm-nom__metric-label">{{ kpi.label }}</span>
+        </span>
+      }
     </div>
-    <div class="adm-nom__head-actions">
-      <button type="button" class="adm-nom__btn-primary" (click)="abrirNuevaNomina()">
-        <lucide-icon name="plus" aria-hidden="true"></lucide-icon>
-        Nueva nómina
-      </button>
-    </div>
-  </header>
+  }
 
-  <ul class="adm-nom__kpis" aria-label="Resumen operativo del administrador">
-    @for (kpi of kpis().items; track kpi.id) {
-      <li class="adm-nom__kpi" [class]="'adm-nom__kpi--' + kpi.tone">
-        <strong>{{ kpi.value }}</strong>
-        <span>{{ kpi.label }}</span>
-      </li>
-    }
-  </ul>
-
-  <section class="adm-nom__grid-shell" aria-labelledby="adm-nom-grid-title">
+  <div class="adm-nom__grid-shell" aria-labelledby="adm-nom-grid-title">
     <h2 id="adm-nom-grid-title" class="sr-only">Listado de nóminas</h2>
     <app-data-grid
       title=""
@@ -39,6 +27,7 @@
       [trackBy]="trackResumen"
       [persistenceKey]="persistenceKey"
       toolbarLayout="operativa"
+      [gridHeight]="'100%'"
       emptyTitle="Aún no hay nóminas"
       emptyDescription="Crea la primera nómina del período para empezar."
       emptyTitleWhenFiltered="Sin nóminas con esos filtros"
@@ -118,21 +107,21 @@
         </div>
       </ng-template>
     </app-data-grid>
-  </section>
+  </div>
+</section>
 
-  @if (modalNuevaAbierto()) {
-    <app-admin-nominas-modal-nueva-nomina
-      [empresasDisponibles]="resumenes()"
-      (creada)="onNominaCreada($event)"
-      (cerrar)="cerrarNuevaNomina()"
-    />
-  }
+@if (modalNuevaAbierto()) {
+  <app-admin-nominas-modal-nueva-nomina
+    [empresasDisponibles]="resumenes()"
+    (creada)="onNominaCreada($event)"
+    (cerrar)="cerrarNuevaNomina()"
+  />
+}
 
-  @if (resumenSeleccionado(); as resumen) {
-    <app-admin-nominas-modal-resumen-nomina
-      [nomina]="nominaSeleccionada()"
-      [resumen]="resumen"
-      (cerrar)="cerrarResumen()"
-    />
-  }
-</div>
+@if (resumenSeleccionado(); as resumen) {
+  <app-admin-nominas-modal-resumen-nomina
+    [nomina]="nominaSeleccionada()"
+    [resumen]="resumen"
+    (cerrar)="cerrarResumen()"
+  />
+}

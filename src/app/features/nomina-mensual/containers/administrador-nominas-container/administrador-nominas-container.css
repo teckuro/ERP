@@ -1,156 +1,149 @@
-.adm-nom {
+/**
+ * Administrador de Nóminas — estilos locales (encapsulation Emulated).
+ *
+ * Patrón canónico replicado del Listado de Empleados:
+ *
+ *   .erp-shell-scroll                     (shell global)
+ *     > app-administrador-nominas-container  (:host de este componente)
+ *       > .adm-nom__page                    (flex column, full-height)
+ *         > .adm-nom__summary  (opcional)   (KPIs sobrios, flex:0 0 auto)
+ *         > .adm-nom__grid-shell            (flex:1 1 auto, hospeda al data-grid)
+ *           > app-data-grid                 (gridHeight=100% activa display:flex)
+ *             > app-card                    (estirada por data-grid)
+ *
+ * Layout (alto/ancho/padding) se gestiona aquí. El shell global aporta título
+ * y acción primaria; aquí solo viven la franja de resumen y la grilla.
+ *
+ * NOTA: el header del page-frame queda fuera (frame ya no se usa: complicaba
+ * la cadena flex con padding y gaps extra). Replicamos directamente el patrón
+ * de empleados que funciona.
+ */
+
+:host {
   display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
-  flex-direction: column;
-  min-height: 0;
-  gap: 16px;
-  padding: 20px 24px 24px;
   width: 100%;
-}
-
-.adm-nom__head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.adm-nom__head-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
-.adm-nom__eyebrow {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--erp-text-muted, #6b7280);
-  margin: 0;
-}
-
-.adm-nom__title {
-  font-size: 22px;
-  font-weight: 600;
-  line-height: 1.2;
-  color: var(--erp-text-strong, #0f172a);
-  margin: 0;
-}
-
-.adm-nom__subtitle {
-  font-size: 13px;
-  color: var(--erp-text-muted, #6b7280);
-  margin: 0;
-}
-
-.adm-nom__head-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.adm-nom__btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 6px;
-  border: 1px solid var(--erp-color-primary, #0f172a);
-  background: var(--erp-color-primary, #0f172a);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 120ms ease, border-color 120ms ease;
-}
-
-.adm-nom__btn-primary:hover {
-  background: var(--erp-color-primary-hover, #1e293b);
-  border-color: var(--erp-color-primary-hover, #1e293b);
-}
-
-.adm-nom__btn-primary lucide-icon {
-  width: 14px;
-  height: 14px;
-}
-
-/* KPIs operativos (sin cards) ---------------------------------------------- */
-
-.adm-nom__kpis {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
-  margin: 0;
-  padding: 12px 14px;
-  list-style: none;
-  background: var(--erp-bg-subtle, #f8fafc);
-  border: 1px solid var(--erp-border, #e5e7eb);
-  border-radius: 8px;
-}
-
-.adm-nom__kpi {
+.adm-nom__page {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 0 4px;
-  border-right: 1px solid var(--erp-border, #e5e7eb);
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #f6f7f4;
 }
 
-.adm-nom__kpi:last-child {
+/* Franja de resumen operativo (chips inline sobrios) ---------------------- */
+
+.adm-nom__summary {
+  display: flex;
+  flex: 0 0 auto;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 18px;
+  padding: 8px 16px;
+  font-size: 12px;
+  color: #647084;
+  background: #ffffff;
+  border-bottom: 1px solid #eef0eb;
+}
+
+.adm-nom__metric {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-right: 18px;
+  border-right: 1px solid #eef0eb;
+  line-height: 1.2;
+}
+
+.adm-nom__metric:last-child {
   border-right: none;
+  padding-right: 0;
 }
 
-.adm-nom__kpi strong {
-  font-size: 20px;
+.adm-nom__metric-value {
+  font-size: 14px;
   font-weight: 600;
-  color: var(--erp-text-strong, #0f172a);
-  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
 }
 
-.adm-nom__kpi span {
+.adm-nom__metric-label {
   font-size: 11px;
-  color: var(--erp-text-muted, #6b7280);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  color: #647084;
 }
 
-.adm-nom__kpi--danger strong {
+.adm-nom__metric--danger .adm-nom__metric-value {
   color: #b91c1c;
 }
 
-.adm-nom__kpi--warning strong {
+.adm-nom__metric--warning .adm-nom__metric-value {
   color: #b45309;
 }
 
-.adm-nom__kpi--success strong {
+.adm-nom__metric--success .adm-nom__metric-value {
   color: #047857;
 }
 
-/* Grilla -------------------------------------------------------------------- */
+/* Shell del grid (igual que .listado-content de empleados) ---------------- */
 
 .adm-nom__grid-shell {
+  position: relative;
   display: flex;
-  flex-direction: column;
   flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
   min-height: 0;
+  height: 100%;
+  overflow: visible;
 }
 
-.adm-nom__grid {
+/* Host del <app-data-grid> y su <app-card> interna (mismo patrón
+   `empleados-grid-shell` del listado de empleados, ver
+   src/app/features/empleados/components/tabla-empleados/tabla-empleados.css).
+   `gridHeight="100%"` activa la clase data-grid-host--sized del grid, que
+   ya aporta display:flex + height:100% al host y a la card. Aquí solo
+   reforzamos width:100% y min-width:0 para evitar overflow horizontal. */
+:host ::ng-deep app-data-grid.adm-nom__grid {
   display: flex;
-  flex-direction: column;
   flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
   min-height: 0;
+  height: 100%;
 }
 
-.adm-nom__grid-card {
+:host ::ng-deep app-data-grid.adm-nom__grid > app-card.adm-nom__grid-card {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+}
+
+:host ::ng-deep app-data-grid.adm-nom__grid .data-grid-scroll {
   flex: 1 1 auto;
   min-height: 0;
+  overflow: auto;
 }
 
 /* Celdas ------------------------------------------------------------------- */
@@ -158,7 +151,7 @@
 .adm-nom__cell-periodo {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: var(--erp-text-strong, #0f172a);
+  color: #0f172a;
 }
 
 .adm-nom__cell-empresa {
@@ -170,7 +163,7 @@
 
 .adm-nom__cell-empresa-nombre {
   font-weight: 500;
-  color: var(--erp-text-strong, #0f172a);
+  color: #0f172a;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -178,7 +171,7 @@
 
 .adm-nom__cell-empresa-id {
   font-size: 11px;
-  color: var(--erp-text-muted, #6b7280);
+  color: #6b7280;
   font-variant-numeric: tabular-nums;
 }
 
@@ -187,21 +180,21 @@
 }
 
 .adm-nom__cell-muted {
-  color: var(--erp-text-muted, #6b7280);
+  color: #6b7280;
   font-size: 12px;
 }
 
-/* Chips de estado ---------------------------------------------------------- */
+/* Chips de estado (compactos, sobrios) ------------------------------------ */
 
 .adm-nom__chip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 8px;
+  padding: 2px 8px;
   border-radius: 999px;
   font-size: 11px;
   font-weight: 500;
-  line-height: 1.2;
+  line-height: 1.4;
   border: 1px solid transparent;
   white-space: nowrap;
 }
@@ -256,20 +249,20 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 5px 10px;
+  padding: 4px 10px;
   font-size: 12px;
   font-weight: 500;
   border-radius: 5px;
-  border: 1px solid var(--erp-border, #e5e7eb);
+  border: 1px solid #e5e7eb;
   background: #fff;
-  color: var(--erp-text-strong, #0f172a);
+  color: #0f172a;
   cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease;
 }
 
 .adm-nom__row-action:hover {
-  background: var(--erp-bg-subtle, #f8fafc);
-  border-color: var(--erp-border-strong, #cbd5e1);
+  background: #f8fafc;
+  border-color: #cbd5e1;
 }
 
 .adm-nom__row-action lucide-icon {
@@ -278,14 +271,14 @@
 }
 
 .adm-nom__row-action--primary {
-  background: var(--erp-color-primary, #0f172a);
+  background: #2563eb;
   color: #fff;
-  border-color: var(--erp-color-primary, #0f172a);
+  border-color: #2563eb;
 }
 
 .adm-nom__row-action--primary:hover {
-  background: var(--erp-color-primary-hover, #1e293b);
-  border-color: var(--erp-color-primary-hover, #1e293b);
+  background: #1d4ed8;
+  border-color: #1d4ed8;
 }
 
 /* Accesibilidad ------------------------------------------------------------ */

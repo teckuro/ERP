@@ -46,11 +46,13 @@ import { NominaParametrosBaseAccesoService } from '../../services/nomina-paramet
 import { NominaMensualV2OrquestadorPort } from './facade/nomina-mensual-v2-orquestador.port';
 import { NominaMensualV2TrazabilidadDrawerComponent } from './components/nomina-mensual-v2-trazabilidad-drawer/nomina-mensual-v2-trazabilidad-drawer.component';
 import { NominaMensualV2TrazabilidadModalComponent } from './components/nomina-mensual-v2-trazabilidad-modal/nomina-mensual-v2-trazabilidad-modal.component';
+import { PageFrameComponent } from '../../../../shared/components/ui/page-frame/page-frame.component';
 
 @Component({
   selector: 'app-nomina-mensual-v2-container',
   standalone: true,
   imports: [
+    PageFrameComponent,
     NominaMensualV2StepperComponent,
     NominaMensualV2PasoParametrosComponent,
     NominaMensualV2PasoDotacionComponent,
@@ -95,6 +97,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   readonly pageTitle = computed(() => obtenerTituloPaso(this.currentStep()));
   readonly pageSubtitle = computed(() => obtenerSubtituloPaso(this.currentStep()));
   readonly primaryActionLabel = computed(() => obtenerEtiquetaAccionPrincipal(this.currentStep()));
+
   readonly parametrosPasoOcupado = computed(() => {
     if (this.currentStep() !== 'parameters') return false;
     const paso = this.pasoParametros();

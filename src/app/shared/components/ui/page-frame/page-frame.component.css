@@ -1,0 +1,179 @@
+/**
+ * Page-frame: sistema de diseno de pagina del ERP (NOIA, densidad compacta).
+ *
+ * Capa de tokens local --pf-*: NO se define en estilos globales. Se mapea a
+ * tokens globales protegidos (--erp-* / --bitacora-*) declarados en
+ * src/styles.css. El contenido proyectado los hereda por cascada.
+ *
+ * Filosofia: el SHELL ya provee titulo + accion primaria. El frame es un
+ * wrapper de layout (padding, flex column, full-height, body full-bleed).
+ * El header in-page solo se renderiza cuando se pasan eyebrow/title/subtitle.
+ *
+ * No introduce paleta nueva, no usa cards por defecto, no usa sombras fuertes
+ * ni gradientes decorativos. Una sola accion primaria por pagina (en shell).
+ */
+
+:host {
+  /* ---- Tokens de pagina (capa --pf-*) ------------------------------- */
+  /* Spacing por escala */
+  --pf-space-1: 2px;
+  --pf-space-2: 4px;
+  --pf-space-3: 8px;
+  --pf-space-4: 12px;
+  --pf-space-5: 16px;
+  --pf-space-6: 20px;
+  --pf-space-7: 24px;
+
+  /* Superficie / borde / texto */
+  --pf-surface: var(--bitacora-surface, #ffffff);
+  --pf-surface-soft: var(--bitacora-surface-soft, #fafaf7);
+  --pf-bg: var(--bitacora-bg, #f6f7f4);
+  --pf-border: var(--bitacora-border, #e5e7eb);
+  --pf-border-soft: var(--bitacora-border-soft, #eef0eb);
+  --pf-text-strong: var(--bitacora-text, #0f172a);
+  --pf-text-muted: var(--bitacora-muted, #647084);
+
+  /* Accion primaria */
+  --pf-primary: var(--erp-primary, #2563eb);
+  --pf-primary-hover: var(--erp-primary-hover, #1d4ed8);
+  --pf-primary-soft: var(--erp-primary-soft, #eff6ff);
+  --pf-ring: var(--erp-primary-ring, rgba(37, 99, 235, 0.18));
+
+  /* Tipografia de pagina */
+  --pf-eyebrow-size: 11px;
+  --pf-title-size: 18px;
+  --pf-subtitle-size: 12.5px;
+
+  /* Radios */
+  --pf-radius: 8px;
+  --pf-radius-sm: 6px;
+
+  /* Padding base (compact). Lo aporta el host y lo reemplazan density/tone. */
+  --pf-padding-y: var(--pf-space-4);
+  --pf-padding-x: var(--pf-space-5);
+  --pf-gap: var(--pf-space-4);
+
+  /* ---- Layout del host --------------------------------------------- */
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding: var(--pf-padding-y) var(--pf-padding-x);
+  gap: var(--pf-gap);
+  box-sizing: border-box;
+  color: var(--pf-text-strong);
+  background-color: var(--pf-bg);
+}
+
+/* density --------------------------------------------------------------- */
+
+:host([data-density='comfortable']) {
+  --pf-padding-y: var(--pf-space-6);
+  --pf-padding-x: var(--pf-space-7);
+  --pf-gap: var(--pf-space-5);
+}
+
+/* tone ------------------------------------------------------------------ */
+
+/* Workspace: stepper/grid casi al borde (padding lateral fino). */
+:host([data-tone='workspace']) {
+  --pf-padding-x: var(--pf-space-4);
+}
+
+/* Flush: listados full-bleed. Sin padding lateral; padding vertical mínimo
+   solo para separar la franja de resumen del borde superior. La tabla se
+   ancla al borde izquierdo / derecho como en el patrón Empleados. */
+:host([data-tone='flush']) {
+  --pf-padding-y: var(--pf-space-3);
+  --pf-padding-x: 0;
+  --pf-gap: var(--pf-space-3);
+}
+
+/* ---- Header in-page (solo si hay eyebrow/title/subtitle) -------------- */
+
+.pf-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--pf-space-5);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.pf-head__copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pf-space-1);
+  min-width: 0;
+}
+
+.pf-head__eyebrow {
+  margin: 0;
+  font-size: var(--pf-eyebrow-size);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pf-text-muted);
+}
+
+.pf-head__title {
+  margin: 0;
+  font-size: var(--pf-title-size);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--pf-text-strong);
+}
+
+.pf-head__subtitle {
+  margin: 0;
+  font-size: var(--pf-subtitle-size);
+  line-height: 1.4;
+  color: var(--pf-text-muted);
+}
+
+.pf-head__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--pf-space-3);
+  flex-shrink: 0;
+}
+
+/* ---- Body ------------------------------------------------------------ */
+
+.pf-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+}
+
+/* Un unico hijo (data-grid, stepper) ocupa alto y ancho completo. */
+.pf-body > :only-child {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+}
+
+/* ---- Responsive ------------------------------------------------------ */
+
+@media (max-width: 768px) {
+  :host {
+    --pf-padding-y: var(--pf-space-3);
+    --pf-padding-x: var(--pf-space-3);
+    --pf-gap: var(--pf-space-3);
+  }
+
+  :host([data-tone='workspace']) {
+    --pf-padding-x: var(--pf-space-2);
+  }
+
+  .pf-head {
+    gap: var(--pf-space-3);
+  }
+}

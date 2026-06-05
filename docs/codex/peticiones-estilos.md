@@ -8,6 +8,127 @@
 > - [`archivo/peticiones-estilos-2026-05.md`](./archivo/peticiones-estilos-2026-05.md) — mayo 2026 y anteriores (288 entradas, rotadas el 2026-06-03 por DOCS-AUDIT-02 / L3).
 
 ---
+## 2026-06-04 - Admin de nóminas: revertimos al patrón canónico de listado (sin page-frame)
+
+**Problema reportado**: tras introducir `<app-page-frame tone="flush">` en `administrador-nominas-container`, la tabla seguía "separándose en 2" y "quitando los bordes-radios". Acumulamos varias capas de CSS intentando arreglar la cadena de alto sin éxito.
+
+**Diagnóstico**: la cadena de alto desde `.erp-shell-scroll` hasta la `app-card` del data-grid estaba bloqueada por **cuatro eslabones acumulados**:
+
+1. `src/app/pages/administrador-nominas.page.ts` (wrapper inerte `<app-administrador-nominas-page>`) que se interponía entre el shell y el container, sin estilos propios y sin selector que recibiera `flex: 1 1 auto`.
+2. `ViewEncapsulation.None` en el container, lo cual deshabilita el `:host` (Angular lo deja como selector inválido fuera de shadow DOM). Mis reglas `:host { display:flex; height:100% }` no aplicaban.
+3. `<app-page-frame>` añadía `padding: 8px 0` + `gap: 8px` + un `<div.pf-body>` intermedio. La regla `.pf-body > :only-child` dejaba de aplicar cuando había summary (porque la sección quedaba como segundo hijo), rompiendo la propagación del alto.
+4. El `tone="flush"` ponía la card pegada al borde del viewport, mostrando esquinas con `border-radius` cortadas (visualmente "rotas").
+
+**Fix aplicado** (replicando exactamente el patrón del listado de empleados, que sí funciona):
+
+- Eliminé `src/app/pages/administrador-nominas.page.ts` y `src/app/pages/nomina-mensual-v2.page.ts`. Las rutas ahora cargan directamente los containers (igual que `empleados.routes.ts`).
+- Container ahora usa `ViewEncapsulation.Emulated` (default) y `:host { display:flex; height:100%; ... }` correctamente.
+- Quité `<app-page-frame>` del Admin. El HTML pasó a: `<section.adm-nom__page>` → opcional `<div.adm-nom__summary>` + `<div.adm-nom__grid-shell>` → `<app-data-grid [gridHeight]="100%">`.
+- `:host ::ng-deep app-data-grid.adm-nom__grid` + `app-card.adm-nom__grid-card`: forzados a `display:flex; height:100%; border-radius:0; border-left:none; border-right:none` (mismo patrón que `empleados-grid-shell` en `tabla-empleados.css`).
+
+**Archivos tocados**:
+
+- `src/app/app.routes.ts` (apunta a containers directos).
+- `src/app/features/nomina-mensual/containers/administrador-nominas-container/{html,css,ts}` (sin page-frame, encapsulation Emulated).
+- Borrados: `src/app/pages/administrador-nominas.page.ts`, `src/app/pages/nomina-mensual-v2.page.ts`.
+
+**Lección documental**: el componente `<app-page-frame>` queda restringido a workspaces step-by-step (V2 generador). **No usar en listados full-bleed**: para listados el patrón canónico sigue siendo el del listado de empleados (`:host` flex column → sección page → wrap del data-grid con `::ng-deep` sobre `app-data-grid` + `app-card`). Documentado también en `noia-ui-guardrails.md`.
+
+**Validaciones**: `npx tsc --noEmit` limpio, `ReadLints` sin errores, dev server recompila el chunk `administrador-nominas-container` en ~1.2s sin warnings.
+
+---
+## 2026-06-04 - Sistema de diseño de página (page-frame) — piloto F3
+
+Se introduce `<app-page-frame>` como **marco unificado de página** del ERP. Reemplaza wrappers ad-hoc (`.adm-nom`, `.nmv2-page`, …) por un único componente standalone (`src/app/shared/components/ui/page-frame/`) que aporta el patrón canónico del listado de empleados: flex column full-height, padding compacto, body full-bleed, y una capa local de tokens `--pf-*` mapeada a `--erp-*` / `--bitacora-*` globales (cero hex nuevo, cero edición de estilos globales).
+
+### Decisiones de usabilidad (criterio NOIA productivo)
+
+- **Una sola identidad por página**: el título y la acción primaria los provee el **Shell** (`ShellPageContextService` → `header.component`). El frame **NO duplica header**; sus inputs `eyebrow/title/subtitle` quedan opcionales para casos puntuales que aún no consuman el shell.
+- **Resumen operativo sobrio**: KPIs como franja inline (chips con separadores finos), no como caja con fondo decorativo.
+- **Contenido al 100 %**: grid / stepper ocupan todo el ancho del frame; `tone="workspace"` reduce el padding lateral.
+- **Densidad compacta**: padding base `12 × 16 px` (`--pf-space-4` × `--pf-space-5`); `density="comfortable"` lo escala a `20 × 24 px`.
+- **Cero ruido visual**: sin sombras fuertes, sin gradientes, sin barras laterales fuertes.
+
+### Tokens locales `--pf-*` (definidos en `page-frame.component.css`)
+
+| Grupo | Tokens | Mapea a |
+| --- | --- | --- |
+| Spacing | `--pf-space-1..7` (2/4/8/12/16/20/24) | escala compacta NOIA |
+| Superficie | `--pf-surface`, `--pf-surface-soft`, `--pf-bg`, `--pf-border`, `--pf-border-soft` | `--bitacora-*` |
+| Texto | `--pf-text-strong`, `--pf-text-muted` | `--bitacora-text/muted` |
+| Acción primaria | `--pf-primary`, `--pf-primary-hover`, `--pf-primary-soft`, `--pf-ring` | `--erp-primary*` |
+| Tipografía | `--pf-eyebrow-size` 11, `--pf-title-size` 18, `--pf-subtitle-size` 12.5 | escala de página |
+| Radios | `--pf-radius` 8, `--pf-radius-sm` 6 | densidad NOIA |
+| Padding host | `--pf-padding-y/-x`, `--pf-gap` | reasignados por density/tone |
+
+### API del componente
+
+```ts
+@Input() eyebrow?: string | null   // contexto/módulo (opcional, normalmente nulo cuando el shell ya lo provee)
+@Input() title?: string | null     // título in-page (opcional)
+@Input() subtitle?: string | null  // subtítulo in-page (opcional)
+@Input() density: 'compact' | 'comfortable' = 'compact'
+@Input() tone: 'page' | 'workspace' = 'page'
+```
+
+Slots vía content-projection:
+
+- `[pageFrameActions]` — botones del header in-page (solo si se usa el header).
+- `[pageFrameSummary]` — franja de KPIs / contadores operativos (chips inline sobrios).
+- `[pageFrameToolbar]` — filtros / búsqueda.
+- default (`ng-content`) — body principal (grid, stepper, etc.).
+- `[pageFrameFooter]` — barra inferior opcional.
+
+### Pantallas piloto
+
+1. **Administrador de nóminas** (`/remuneraciones/nominas`)
+   - Shell ahora setea `pageTitle = 'Administrador de nóminas'`, `pageSubtitle` derivado del conteo y acción primaria **"Nueva nómina"** (handler ya cableado).
+   - KPIs renderizados como franja inline con separadores finos (`adm-nom__summary` / `adm-nom__metric`), sin caja con fondo.
+   - Grid `app-data-grid` ocupa el 100 % del ancho del frame; chips compactos en columnas estado / incidencias / tipo.
+2. **Generador V2** (`/remuneraciones/nominas/:id/generador`)
+   - Frame en `tone="workspace"` para que el stepper, hint y step-body sean full-bleed.
+   - El header in-page del frame se eliminó; el shell ya muestra título del paso + breadcrumbs + acción principal del paso.
+   - `.nmv2-page` mantiene sus selectores `[data-step='…']` (las reglas hijas no se tocan), pero ya no aplica padding/background/min-height redundantes con el frame.
+
+### Archivos tocados
+
+- `src/app/shared/components/ui/page-frame/page-frame.component.ts` *(nuevo)*
+- `src/app/shared/components/ui/page-frame/page-frame.component.html` *(nuevo)*
+- `src/app/shared/components/ui/page-frame/page-frame.component.css` *(nuevo, ~155 líneas, tokens `--pf-*` definidos aquí)*
+- `src/app/shared/components/ui/page-frame/page-frame.component.spec.ts` *(nuevo, 4 specs)*
+- `src/app/shared/components/ui/page-frame/index.ts` *(nuevo, barrel)*
+- `src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.{ts,html,css}` — frame, shell context, KPIs sobrios. CSS reducido (~304 → ~225 líneas), sin header in-page.
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container.{ts,html,css}` — frame tone=workspace; `.nmv2-page` sin padding/bg redundantes; computed signals temporales (`tituloPeriodo`, `contextoEmpresa`) **removidos** ya que el shell maneja la identidad.
+- `docs/codex/peticiones-estilos.md` — esta entrada.
+- `docs/codex/diseno/noia-bases-sistema-referencia.md` — nota de capa transversal `<app-page-frame>` + `--pf-*`.
+- `docs/codex/diseno/noia-ui-guardrails.md` — referencia obligatoria al frame al crear pantallas nuevas.
+- `docs/codex/orquestador/estado-fases/nomina-mensual.md` — sección `NOM-UI-PAGE-FRAME-PILOTO-01`.
+
+### Archivos NO tocados
+
+- `angular.json`, `postcss.config.*`, `tailwind.config.*`.
+- `src/styles.css`, `src/styles/index.css`, `src/styles/tailwind.css`, `src/styles/fonts.css`, `src/styles/theme.css`.
+- Motor V1, RPCs, mappers, repositorios, payloads, servicios.
+- Los 6 componentes hijos del Generador V2 (`paso-parametros`, `paso-dotacion`, `paso-movimientos`, `paso-calculo`, `paso-validacion`, `paso-cierre`).
+
+### Validaciones ejecutadas
+
+1. `ReadLints` sobre archivos tocados → 0 errores.
+2. `npx tsc --noEmit -p tsconfig.app.json` → 0 errores.
+3. `npx ng test --watch=false --include='**/page-frame/**/*.spec.ts'` → **4/4 pass**.
+4. `npx ng test --watch=false --include='**/administrador-nominas-container.spec.ts'` → **7/7 pass**.
+5. `npx ng test --watch=false --include='**/nomina-mensual-v2/**/*.spec.ts'` → **99/99 pass**.
+6. `npx ng test --watch=false` (suite completa) → **1462/1466 pass**. Los 4 fail son las pre-existentes (`liquidaciones-oficiales` ×2, `nomina-msgbox-lab` ×1, `proceso-mensual-flow-nav` ×1); **cero regresiones nuevas**.
+7. `npx ng build --configuration=development` → bundle generado sin warnings de budget.
+
+### Pendientes / sweep futuro
+
+- Decidir si `Empleados/listado` y `Ficha empleado` adoptan formalmente `<app-page-frame>` o quedan como referencia canónica de contenido bajo el frame.
+- Sweep Remuneraciones (Liquidaciones, Conceptos, Haberes/Descuentos, Novedades, Movimientos, Proceso mensual, Parámetros generales).
+- Sweep transversal (Dashboard, Reportes, módulos shell).
+- Cada pantalla migrada consume los tokens `--pf-*` ya definidos, sin redefinir paletas ni spacing.
+
+---
 ## 2026-06-04 - Nómina mensual — F3 fusion · migración aplicada a PROD
 
 Migración SQL `supabase/migrations/20260604180000_nomina_rebuild_admin_generador.sql` aplicada al proyecto Supabase productivo `api-remuneraciones` (ref `mjrckxodzrfkyqjkyjkn`) usando `supabase db push` (CLI v2.101.0).

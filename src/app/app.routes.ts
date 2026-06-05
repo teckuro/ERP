@@ -94,12 +94,16 @@ export const routes: Routes = [
           {
             path: 'nominas',
             loadComponent: () =>
-              import('./pages/administrador-nominas.page').then((m) => m.AdministradorNominasPage),
+              import(
+                './features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container'
+              ).then((m) => m.AdministradorNominasContainer),
           },
           {
             path: 'nominas/:nominaPeriodoId/generador',
             loadComponent: () =>
-              import('./pages/nomina-mensual-v2.page').then((m) => m.NominaMensualV2Page),
+              import(
+                './features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container'
+              ).then((m) => m.NominaMensualV2Container),
           },
           {
             path: 'msgbox-lab',

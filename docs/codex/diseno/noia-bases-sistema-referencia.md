@@ -69,9 +69,32 @@ Definidos en documento [`bitacora-operativa-noia.md`](./bitacora-operativa-noia.
 
 **Regla:** en un módulo nuevo de flujo guiado, **reutilizar estos nombres y valores** en CSS local del contenedor (prefijo del módulo), no inventar `--nom-*` o hex distintos sin fase documentada.
 
+### C. Tokens de página (`--pf-*`) — capa transversal del frame
+
+Desde el piloto `NOM-UI-PAGE-FRAME-PILOTO-01` (2026-06-04) existe una **tercera capa local**, definida dentro de `src/app/shared/components/ui/page-frame/page-frame.component.css`. No es un set global nuevo; es un **mapeo de página** sobre los tokens ERP y Bitácora, expuesto por `<app-page-frame>` y heredado por su contenido proyectado.
+
+```css
+--pf-space-1..7    /* escala compacta NOIA: 2/4/8/12/16/20/24 */
+--pf-surface       /* = --bitacora-surface */
+--pf-bg            /* = --bitacora-bg */
+--pf-border        /* = --bitacora-border */
+--pf-border-soft   /* = --bitacora-border-soft */
+--pf-text-strong   /* = --bitacora-text */
+--pf-text-muted    /* = --bitacora-muted */
+--pf-primary*      /* = --erp-primary, --erp-primary-hover, --erp-primary-soft */
+--pf-ring          /* = --erp-primary-ring */
+--pf-eyebrow-size 11, --pf-title-size 18, --pf-subtitle-size 12.5
+--pf-radius 8, --pf-radius-sm 6
+--pf-padding-y, --pf-padding-x, --pf-gap   /* reasignados por [data-density] / [data-tone] */
+```
+
+**Regla:** al migrar una pantalla al frame, consumir `--pf-*` desde el CSS local del feature; no redefinir hex ni spacing. El frame es la **capa transversal de página**; las capas ERP / Bitácora siguen siendo válidas para componentes y bloques internos.
+
 ---
 
 ## 3. Referencia canónica: Creación avanzada (Bitácora laboral)
+
+> **Nota 2026-06-04 (NOM-UI-PAGE-FRAME-PILOTO-01)**: la referencia canónica de **contenido / bitácora** sigue siendo Creación avanzada. La referencia canónica de **marco de página** pasa a ser `<app-page-frame>` (`src/app/shared/components/ui/page-frame/`), validado en Administrador de nóminas y Generador V2. Una pantalla nueva monta su contenido (estilo Bitácora cuando corresponda) **dentro del frame**, no en lugar de él.
 
 | Concepto NOIA | Implementación |
 |---------------|----------------|
