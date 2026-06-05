@@ -39,6 +39,7 @@ import {
   listaEstadosDotacion,
 } from '../../../../presenters/nomina-dotacion-grid.presenter';
 import { puedeAvanzarDotacion } from '../../../../rules/nomina-dotacion.rules';
+import type { PreviewAccionMasivaTrabajadores } from '../../../../../nomina-mensual/models/movimiento-nomina.models';
 
 interface VistaDotacion {
   filas: FilaTrabajadorNominaResumen[];
@@ -69,6 +70,11 @@ export class NominaMensualV2PasoDotacionComponent {
   readonly trabajadorSeleccionado = signal<string | null>(null);
   readonly detalleTrabajador = signal<DetalleTrabajadorNomina | null>(null);
   readonly detalleLoading = signal(false);
+  readonly confirmando = signal(false);
+  readonly pagina = signal(1);
+  readonly pageSize = 50;
+  readonly previewMasivo = signal<PreviewAccionMasivaTrabajadores | null>(null);
+  readonly aplicandoMasiva = signal(false);
 
   readonly estadosDisponibles = listaEstadosDotacion();
 
@@ -79,6 +85,7 @@ export class NominaMensualV2PasoDotacionComponent {
   readonly motivoBloqueo = computed(() => this.evaluacionAvance().motivo ?? null);
   readonly totalSeleccionados = computed(() => this.seleccion().size);
   readonly puedeAplicarMasiva = computed(() => this.totalSeleccionados() > 0);
+  readonly totalPaginas = computed(() => Math.max(1, Math.ceil(this.vista().total / this.pageSize)));
 
   etiquetaEstado = etiquetaEstadoDotacion;
 
@@ -103,8 +110,8 @@ export class NominaMensualV2PasoDotacionComponent {
         busqueda: this.busquedaInput().trim() || undefined,
       };
       const { filas, total } = await this.servicio.filtrarDotacion(id, filtroActual, {
-        page: 1,
-        pageSize: 200,
+        page: this.pagina(),
+        pageSize: this.pageSize,
         total: 0,
       });
       this.vista.set({ filas, total });
@@ -118,11 +125,13 @@ export class NominaMensualV2PasoDotacionComponent {
   }
 
   aplicarFiltroEstado(estado: FilaTrabajadorNominaResumen['estado'] | null): void {
+    this.pagina.set(1);
     this.filtro.update((actual) => ({ ...actual, estado: estado ?? undefined }));
     void this.cargar();
   }
 
   cambiarFiltroIncidencias(value: 'todas' | 'con' | 'sin'): void {
+    this.pagina.set(1);
     this.filtro.update((actual) => ({
       ...actual,
       conIncidencias: value === 'todas' ? undefined : value === 'con',
@@ -131,6 +140,7 @@ export class NominaMensualV2PasoDotacionComponent {
   }
 
   cambiarFiltroMovimientos(value: 'todas' | 'con' | 'sin'): void {
+    this.pagina.set(1);
     this.filtro.update((actual) => ({
       ...actual,
       conMovimientos: value === 'todas' ? undefined : value === 'con',
@@ -139,12 +149,28 @@ export class NominaMensualV2PasoDotacionComponent {
   }
 
   limpiarFiltros(): void {
+    this.pagina.set(1);
     this.filtro.set({});
     this.busquedaInput.set('');
     void this.cargar();
   }
 
   buscar(): void {
+    this.pagina.set(1);
+    void this.cargar();
+  }
+
+  paginaAnterior(): void {
+    if (this.pagina() <= 1) return;
+    this.pagina.update((pagina) => pagina - 1);
+    this.limpiarSeleccion();
+    void this.cargar();
+  }
+
+  paginaSiguiente(): void {
+    if (this.pagina() >= this.totalPaginas()) return;
+    this.pagina.update((pagina) => pagina + 1);
+    this.limpiarSeleccion();
     void this.cargar();
   }
 
@@ -164,6 +190,39 @@ export class NominaMensualV2PasoDotacionComponent {
 
   limpiarSeleccion(): void {
     this.seleccion.set(new Set());
+  }
+
+  async previsualizarExclusion(): Promise<void> {
+    const id = this.nominaPeriodoId();
+    if (!id || this.seleccion().size === 0) return;
+    this.errorMensaje.set(null);
+    try {
+      this.previewMasivo.set(await this.servicio.previsualizarAccionMasiva(
+        id,
+        [...this.seleccion()],
+        { tipo: 'excluir-nomina' },
+      ));
+    } catch (error) {
+      this.errorMensaje.set(error instanceof Error ? error.message : 'No fue posible previsualizar la acción.');
+    }
+  }
+
+  async confirmarAccionMasiva(): Promise<void> {
+    const id = this.nominaPeriodoId();
+    const preview = this.previewMasivo();
+    if (!id || !preview?.puedeAplicar) return;
+    this.aplicandoMasiva.set(true);
+    this.errorMensaje.set(null);
+    try {
+      await this.servicio.aplicarAccionMasiva(id, [...this.seleccion()], preview.accion);
+      this.previewMasivo.set(null);
+      this.limpiarSeleccion();
+      await this.cargar();
+    } catch (error) {
+      this.errorMensaje.set(error instanceof Error ? error.message : 'No fue posible aplicar la acción.');
+    } finally {
+      this.aplicandoMasiva.set(false);
+    }
   }
 
   async abrirDetalle(trabajadorId: string): Promise<void> {
@@ -187,9 +246,21 @@ export class NominaMensualV2PasoDotacionComponent {
     this.detalleTrabajador.set(null);
   }
 
-  emitirAvance(): void {
+  async emitirAvance(): Promise<void> {
     if (!this.puedeAvanzar()) return;
-    this.avanceSolicitado.emit();
+    const id = this.nominaPeriodoId();
+    if (!id) return;
+    this.confirmando.set(true);
+    this.errorMensaje.set(null);
+    try {
+      await this.servicio.confirmarDotacion(id);
+      this.avanceSolicitado.emit();
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido';
+      this.errorMensaje.set(`No fue posible confirmar la dotación: ${mensaje}`);
+    } finally {
+      this.confirmando.set(false);
+    }
   }
 
   emitirVolver(): void {

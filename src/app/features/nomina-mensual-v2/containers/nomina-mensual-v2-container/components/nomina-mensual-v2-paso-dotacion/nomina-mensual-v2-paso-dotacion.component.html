@@ -160,6 +160,20 @@
       }
     </div>
 
+    <div class="paso-dotacion__pagination" aria-label="Paginación de dotación">
+      <span>
+        Página {{ pagina() }} de {{ totalPaginas() }} · {{ vista().total }} trabajadores
+      </span>
+      <div>
+        <button type="button" class="paso-dotacion__chip is-ghost" (click)="paginaAnterior()" [disabled]="pagina() <= 1 || loading()">
+          Anterior
+        </button>
+        <button type="button" class="paso-dotacion__chip is-ghost" (click)="paginaSiguiente()" [disabled]="pagina() >= totalPaginas() || loading()">
+          Siguiente
+        </button>
+      </div>
+    </div>
+
     @if (trabajadorSeleccionado(); as tid) {
       <aside class="paso-dotacion__detalle" aria-labelledby="paso-dotacion-detalle-title">
         <header class="paso-dotacion__detalle-head">
@@ -219,6 +233,9 @@
     <div class="paso-dotacion__footer-info" aria-live="polite">
       @if (totalSeleccionados() > 0) {
         <span>{{ totalSeleccionados() }} trabajadores seleccionados</span>
+        <button type="button" class="paso-dotacion__chip is-ghost" (click)="previsualizarExclusion()">
+          Excluir de la nómina
+        </button>
       }
       @if (motivoBloqueo(); as motivo) {
         <span class="paso-dotacion__warning">{{ motivo }}</span>
@@ -232,8 +249,33 @@
         type="button"
         class="paso-dotacion__chip is-primary"
         (click)="emitirAvance()"
-        [disabled]="!puedeAvanzar() || loading()"
-      >Confirmar dotación</button>
+        [disabled]="!puedeAvanzar() || loading() || confirmando()"
+      >{{ confirmando() ? 'Confirmando…' : 'Confirmar dotación' }}</button>
     </div>
   </footer>
 </section>
+
+@if (previewMasivo(); as preview) {
+  <div class="paso-dotacion__modal-backdrop" role="presentation">
+    <section class="paso-dotacion__modal" role="dialog" aria-modal="true" aria-labelledby="dotacion-preview-title">
+      <h3 id="dotacion-preview-title">Previsualizar exclusión</h3>
+      <ul>
+        @for (mensaje of preview.mensajes; track mensaje) {
+          <li>{{ mensaje }}</li>
+        }
+      </ul>
+      @if (!preview.puedeAplicar) {
+        <p class="paso-dotacion__error">La acción está bloqueada por incidencias críticas.</p>
+      }
+      <footer>
+        <button type="button" class="paso-dotacion__chip is-ghost" (click)="previewMasivo.set(null)">Cancelar</button>
+        <button
+          type="button"
+          class="paso-dotacion__chip is-primary"
+          (click)="confirmarAccionMasiva()"
+          [disabled]="!preview.puedeAplicar || aplicandoMasiva()"
+        >{{ aplicandoMasiva() ? 'Aplicando…' : 'Confirmar exclusión' }}</button>
+      </footer>
+    </section>
+  </div>
+}

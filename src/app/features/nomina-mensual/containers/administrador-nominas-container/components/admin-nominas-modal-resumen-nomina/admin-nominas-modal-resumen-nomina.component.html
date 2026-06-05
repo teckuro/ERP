@@ -133,6 +133,11 @@
 
     <footer class="adm-nom-resumen__foot">
       <button type="button" class="adm-nom-resumen__btn" (click)="cerrarModal()">Cerrar</button>
+      @if (nomina()?.requiereAccion) {
+        <button type="button" class="adm-nom-resumen__btn" (click)="abrirAccionRecomendada()">
+          Continuar en el generador
+        </button>
+      }
     </footer>
   </div>
 </div>

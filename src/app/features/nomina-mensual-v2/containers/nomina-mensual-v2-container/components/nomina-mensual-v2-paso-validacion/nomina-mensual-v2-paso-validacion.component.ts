@@ -48,6 +48,7 @@ export class NominaMensualV2PasoValidacionComponent {
   readonly error = signal<string | null>(null);
   readonly filtroSeveridad = signal<FiltroSeveridad>('todas');
   readonly busqueda = signal('');
+  readonly aprobando = signal(false);
 
   readonly incidenciasFiltradas = computed<IncidenciaNomina[]>(() => {
     const resumen = this.resumen();
@@ -65,7 +66,7 @@ export class NominaMensualV2PasoValidacionComponent {
 
   readonly puedeAprobar = computed(() => {
     const r = this.resumen();
-    return !!r && r.conIncidenciasCriticas === 0 && r.puedeCerrar;
+    return !!r && r.conIncidenciasCriticas === 0 && r.puedeValidar === true;
   });
 
   constructor() {
@@ -102,8 +103,21 @@ export class NominaMensualV2PasoValidacionComponent {
     if (trabajadorId) this.verEnDotacionSolicitado.emit(trabajadorId);
   }
 
-  emitirAprobar(): void {
-    if (this.puedeAprobar()) this.aprobarSolicitado.emit();
+  async emitirAprobar(): Promise<void> {
+    const id = this.nominaPeriodoId();
+    if (!id || !this.puedeAprobar()) return;
+    this.aprobando.set(true);
+    this.error.set(null);
+    try {
+      await this.servicio.validarYAprobarNomina(id);
+      await this.cargar(id);
+      this.aprobarSolicitado.emit();
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Error desconocido';
+      this.error.set(`No fue posible aprobar la validación: ${msg}`);
+    } finally {
+      this.aprobando.set(false);
+    }
   }
 
   emitirVolver(): void {

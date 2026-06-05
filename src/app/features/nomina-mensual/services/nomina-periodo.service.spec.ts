@@ -16,6 +16,7 @@ import type {
   MovimientoRecurrente,
 } from '../models/movimiento-nomina.models';
 import { NominaPeriodoService } from './nomina-periodo.service';
+import { EmpleadosService } from '../../empleados/services/empleados.service';
 
 function nomina(overrides: Partial<NominaPeriodo> = {}): NominaPeriodo {
   return {
@@ -89,20 +90,25 @@ interface RepoMock {
   obtenerNominaCompleta: ReturnType<typeof vi.fn>;
   crear: ReturnType<typeof vi.fn>;
   actualizarEstado: ReturnType<typeof vi.fn>;
+  transicionarEstado: ReturnType<typeof vi.fn>;
+  invalidarCalculo: ReturnType<typeof vi.fn>;
   actualizarTotales: ReturnType<typeof vi.fn>;
   eliminarBorrador: ReturnType<typeof vi.fn>;
   listarSegmentos: ReturnType<typeof vi.fn>;
+  obtenerSegmento: ReturnType<typeof vi.fn>;
   upsertSegmento: ReturnType<typeof vi.fn>;
   eliminarSegmento: ReturnType<typeof vi.fn>;
   listarRecurrentes: ReturnType<typeof vi.fn>;
   listarRecurrentesActivos: ReturnType<typeof vi.fn>;
   listarMovimientos: ReturnType<typeof vi.fn>;
+  obtenerMovimiento: ReturnType<typeof vi.fn>;
   insertarMovimientos: ReturnType<typeof vi.fn>;
   actualizarEstadoMovimiento: ReturnType<typeof vi.fn>;
   listarIncidencias: ReturnType<typeof vi.fn>;
   reemplazarIncidencias: ReturnType<typeof vi.fn>;
   listarEventosAuditoria: ReturnType<typeof vi.fn>;
   registrarEventoAuditoria: ReturnType<typeof vi.fn>;
+  listarDotacionPaginada: ReturnType<typeof vi.fn>;
 }
 
 function repoMock(): RepoMock {
@@ -112,20 +118,25 @@ function repoMock(): RepoMock {
     obtenerNominaCompleta: vi.fn().mockResolvedValue(null),
     crear: vi.fn(),
     actualizarEstado: vi.fn().mockResolvedValue(undefined),
+    transicionarEstado: vi.fn().mockResolvedValue({}),
+    invalidarCalculo: vi.fn().mockResolvedValue(undefined),
     actualizarTotales: vi.fn().mockResolvedValue(undefined),
     eliminarBorrador: vi.fn().mockResolvedValue(undefined),
     listarSegmentos: vi.fn().mockResolvedValue([]),
+    obtenerSegmento: vi.fn().mockResolvedValue(null),
     upsertSegmento: vi.fn(),
     eliminarSegmento: vi.fn().mockResolvedValue(undefined),
     listarRecurrentes: vi.fn().mockResolvedValue([]),
     listarRecurrentesActivos: vi.fn().mockResolvedValue([]),
     listarMovimientos: vi.fn().mockResolvedValue([]),
+    obtenerMovimiento: vi.fn().mockResolvedValue(null),
     insertarMovimientos: vi.fn().mockResolvedValue([]),
     actualizarEstadoMovimiento: vi.fn().mockResolvedValue(undefined),
     listarIncidencias: vi.fn().mockResolvedValue([]),
     reemplazarIncidencias: vi.fn().mockResolvedValue(undefined),
     listarEventosAuditoria: vi.fn().mockResolvedValue([]),
     registrarEventoAuditoria: vi.fn(),
+    listarDotacionPaginada: vi.fn().mockResolvedValue({ filas: [], total: 0 }),
   };
 }
 
@@ -152,6 +163,7 @@ function configurar(opts: {
       { provide: NominaPeriodoRepository, useValue: opts.repo },
       { provide: EmpresaActivaService, useValue: fakeEmpresaActiva(empresaId) },
       { provide: SUPABASE_CLIENT, useValue: supabase },
+      { provide: EmpleadosService, useValue: { listar: vi.fn().mockResolvedValue([]) } },
     ],
   });
   return TestBed.inject(NominaPeriodoService);
@@ -213,24 +225,61 @@ describe('NominaPeriodoService', () => {
   });
 
   it('cerrarNomina actualiza estado y registra evento si hay motivo', async () => {
+    repo.obtenerNominaCompleta.mockResolvedValue(nomina({
+      estado: 'aprobada',
+      evidenciaCalculo: {
+        idCalculoPeriodo: 44,
+        versionCalculo: 1,
+        calculoVigente: true,
+      },
+    }));
     const service = configurar({ repo });
     await service.cerrarNomina('nom-1', { motivo: 'cierre regular' });
-    expect(repo.actualizarEstado).toHaveBeenCalledWith('nom-1', 'cerrada');
-    expect(repo.registrarEventoAuditoria).toHaveBeenCalledWith(
-      expect.objectContaining({ accion: 'cerrada', motivo: 'cierre regular' }),
+    expect(repo.transicionarEstado).toHaveBeenCalledWith(
+      'nom-1',
+      expect.objectContaining({ estadoEsperado: 'aprobada', estadoDestino: 'cerrada' }),
+    );
+    expect(repo.transicionarEstado).toHaveBeenCalledWith(
+      'nom-1',
+      expect.objectContaining({ motivo: 'cierre regular' }),
     );
   });
 
   it('reabrirNomina siempre registra evento (motivo obligatorio)', async () => {
+    repo.obtenerNominaCompleta.mockResolvedValue(nomina({
+      estado: 'cerrada',
+      evidenciaCalculo: {
+        idCalculoPeriodo: 44,
+        versionCalculo: 1,
+        calculoVigente: true,
+      },
+    }));
     const service = configurar({ repo });
     await service.reabrirNomina('nom-1', { motivo: 'rev externa' });
-    expect(repo.actualizarEstado).toHaveBeenCalledWith('nom-1', 'reabierta');
-    expect(repo.registrarEventoAuditoria).toHaveBeenCalledWith(
-      expect.objectContaining({ accion: 'reabierta', motivo: 'rev externa' }),
+    expect(repo.transicionarEstado).toHaveBeenCalledWith(
+      'nom-1',
+      expect.objectContaining({ estadoEsperado: 'cerrada', estadoDestino: 'reabierta' }),
+    );
+    expect(repo.invalidarCalculo).toHaveBeenCalledWith('nom-1');
+    expect(repo.transicionarEstado).toHaveBeenCalledWith(
+      'nom-1',
+      expect.objectContaining({ motivo: 'rev externa' }),
     );
   });
 
   it('omitirMovimiento marca el movimiento como omitido', async () => {
+    repo.obtenerMovimiento.mockResolvedValue({
+      id: 'mov-1',
+      nominaPeriodoId: 'nom-1',
+      trabajadorId: '10',
+      tipo: 'BONO',
+      categoria: 'haber',
+      origen: 'manual',
+      estado: 'aplicado',
+      createdAt: '',
+      updatedAt: '',
+    });
+    repo.obtenerNominaCompleta.mockResolvedValue(nomina({ estado: 'en_revision' }));
     const service = configurar({ repo });
     await service.omitirMovimiento('mov-1');
     expect(repo.actualizarEstadoMovimiento).toHaveBeenCalledWith('mov-1', 'omitido');
@@ -311,7 +360,7 @@ describe('NominaPeriodoService', () => {
     expect(resumen.conIncidenciasCriticas).toBe(1);
   });
 
-  it('obtenerResumenValidacionNomina permite cierre cuando solo hay advertencias', async () => {
+  it('obtenerResumenValidacionNomina permite calcular pero no cerrar sin cálculo vigente', async () => {
     const incidencia: IncidenciaNomina = {
       id: 'inc-adv',
       nominaPeriodoId: 'nom-1',
@@ -327,7 +376,7 @@ describe('NominaPeriodoService', () => {
     const service = configurar({ repo });
     const resumen = await service.obtenerResumenValidacionNomina('nom-1');
     expect(resumen.puedeCalcular).toBe(true);
-    expect(resumen.puedeCerrar).toBe(true);
+    expect(resumen.puedeCerrar).toBe(false);
   });
 
   it('validarDuplicidadTrabajadorSegmento detecta trabajadores en >1 segmento', async () => {

@@ -29,6 +29,25 @@ export type EstadoNomina =
 
 export type TipoNomina = 'mensual' | 'quincenal' | 'semanal' | 'extraordinaria';
 
+export type PasoSiguienteNomina =
+  | 'parametros'
+  | 'dotacion'
+  | 'movimientos'
+  | 'calculo'
+  | 'validacion'
+  | 'cierre'
+  | 'liquidaciones'
+  | 'sin_accion';
+
+export interface EvidenciaCalculoNomina {
+  idCalculoPeriodo?: number;
+  versionCalculo: number;
+  calculadoAt?: string;
+  validadoAt?: string;
+  aprobadoAt?: string;
+  calculoVigente: boolean;
+}
+
 /**
  * Resumen que carga el Administrador (bandeja de nóminas).
  *
@@ -54,6 +73,10 @@ export interface NominaPeriodoResumen {
   totalAdvertencias: number;
 
   fechaPago?: string;
+  proximoPaso?: PasoSiguienteNomina;
+  requiereAccion?: boolean;
+  ultimaActividad?: string;
+  evidenciaCalculo?: EvidenciaCalculoNomina;
 
   createdAt: string;
   updatedAt: string;
@@ -87,6 +110,7 @@ export interface NominaPeriodo {
   totalLiquido: number;
 
   fechaPago?: string;
+  evidenciaCalculo?: EvidenciaCalculoNomina;
 
   eventosAuditoria?: EventoAuditoriaNomina[];
 
@@ -154,7 +178,9 @@ export interface ResumenValidacionNomina {
   conMovimientosEspeciales: number;
 
   puedeCalcular: boolean;
+  puedeValidar?: boolean;
   puedeCerrar: boolean;
+  calculoVigente?: boolean;
 
   incidenciasCriticas: IncidenciaNomina[];
   advertencias: IncidenciaNomina[];
@@ -239,6 +265,9 @@ export interface EventoAuditoriaNomina {
 
   accion:
     | 'creada'
+    | 'dotacion_confirmada'
+    | 'movimientos_actualizados'
+    | 'calculo_invalidado'
     | 'calculada'
     | 'validada'
     | 'aprobada'
@@ -275,6 +304,13 @@ export function crearNominaResumen(
     totalLiquido: 0,
     totalIncidenciasCriticas: 0,
     totalAdvertencias: 0,
+    proximoPaso: 'dotacion',
+    requiereAccion: true,
+    ultimaActividad: ahora,
+    evidenciaCalculo: {
+      versionCalculo: 0,
+      calculoVigente: false,
+    },
     createdAt: ahora,
     updatedAt: ahora,
     ...overrides,
@@ -303,6 +339,10 @@ export function crearNomina(overrides: Partial<NominaPeriodo> = {}): NominaPerio
     totalHaberes: 0,
     totalDescuentos: 0,
     totalLiquido: 0,
+    evidenciaCalculo: {
+      versionCalculo: 0,
+      calculoVigente: false,
+    },
     createdAt: ahora,
     updatedAt: ahora,
     ...overrides,

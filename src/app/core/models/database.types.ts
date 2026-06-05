@@ -3074,12 +3074,16 @@ export type Database = {
       }
       nomina_periodo: {
         Row: {
+          aprobado_at: string | null
+          calculado_at: string | null
+          calculo_vigente: boolean
           closed_at: string | null
           created_at: string
           empresa_nombre: string | null
           estado: string
           fecha_pago: string | null
           id: string
+          id_calculo_periodo_vigente: number | null
           id_empresa: number
           periodo: string
           tipo: string
@@ -3091,14 +3095,20 @@ export type Database = {
           total_segmentos: number
           total_trabajadores: number
           updated_at: string
+          validado_at: string | null
+          version_calculo: number
         }
         Insert: {
+          aprobado_at?: string | null
+          calculado_at?: string | null
+          calculo_vigente?: boolean
           closed_at?: string | null
           created_at?: string
           empresa_nombre?: string | null
           estado?: string
           fecha_pago?: string | null
           id?: string
+          id_calculo_periodo_vigente?: number | null
           id_empresa: number
           periodo: string
           tipo?: string
@@ -3110,14 +3120,20 @@ export type Database = {
           total_segmentos?: number
           total_trabajadores?: number
           updated_at?: string
+          validado_at?: string | null
+          version_calculo?: number
         }
         Update: {
+          aprobado_at?: string | null
+          calculado_at?: string | null
+          calculo_vigente?: boolean
           closed_at?: string | null
           created_at?: string
           empresa_nombre?: string | null
           estado?: string
           fecha_pago?: string | null
           id?: string
+          id_calculo_periodo_vigente?: number | null
           id_empresa?: number
           periodo?: string
           tipo?: string
@@ -3129,6 +3145,8 @@ export type Database = {
           total_segmentos?: number
           total_trabajadores?: number
           updated_at?: string
+          validado_at?: string | null
+          version_calculo?: number
         }
         Relationships: [
           {
@@ -5585,6 +5603,43 @@ export type Database = {
       }
     }
     Functions: {
+      transicionar_nomina_periodo: {
+        Args: {
+          p_estado_destino: string
+          p_estado_esperado: string
+          p_id_calculo_periodo?: number | null
+          p_motivo?: string | null
+          p_nomina_id: string
+          p_total_descuentos?: number | null
+          p_total_haberes?: number | null
+          p_total_liquido?: number | null
+          p_total_trabajadores?: number | null
+        }
+        Returns: Database["public"]["Tables"]["nomina_periodo"]["Row"]
+      }
+      listar_dotacion_nomina: {
+        Args: {
+          p_busqueda?: string | null
+          p_con_incidencias?: boolean | null
+          p_con_movimientos?: boolean | null
+          p_estado?: string | null
+          p_nomina_id: string
+          p_page?: number
+          p_page_size?: number
+          p_segmento_id?: string | null
+        }
+        Returns: {
+          estado: string
+          nombre: string
+          rut: string
+          segmento_id: string | null
+          total_advertencias: number
+          total_count: number
+          total_incidencias_criticas: number
+          total_movimientos: number
+          trabajador_id: number
+        }[]
+      }
       anular_nomina_preparacion: {
         Args: {
           p_id_preparacion_nomina: number

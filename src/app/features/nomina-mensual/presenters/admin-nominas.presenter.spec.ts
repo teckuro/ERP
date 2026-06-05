@@ -56,8 +56,9 @@ function muestraResumenes(): NominaPeriodoResumen[] {
 
 describe('admin-nominas.presenter — columnas y filtros declarativos', () => {
   it('Test 1 — COLUMNAS_ADMIN_NOMINAS expone 9 columnas en el orden esperado', () => {
-    expect(COLUMNAS_ADMIN_NOMINAS).toHaveLength(9);
+    expect(COLUMNAS_ADMIN_NOMINAS).toHaveLength(10);
     expect(COLUMNAS_ADMIN_NOMINAS.map((c) => c.id)).toEqual([
+      'proximoPaso',
       'periodo',
       'empresa',
       'tipo',

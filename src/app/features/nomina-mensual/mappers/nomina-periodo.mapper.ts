@@ -20,6 +20,10 @@ import type {
   SegmentoNomina,
   TipoNomina,
 } from '../models/nomina-periodo.models';
+import {
+  nominaRequiereAccion,
+  proximoPasoNomina,
+} from '../rules/nomina-periodo-state.rules';
 import type {
   EstadoMovimientoNomina,
   EstadoMovimientoRecurrente,
@@ -75,6 +79,17 @@ export function rowToNominaPeriodoResumen(
     totalIncidenciasCriticas: row.total_incidencias_criticas,
     totalAdvertencias: row.total_advertencias,
     fechaPago: row.fecha_pago ?? undefined,
+    proximoPaso: proximoPasoNomina(row.estado as EstadoNomina),
+    requiereAccion: nominaRequiereAccion(row.estado as EstadoNomina),
+    ultimaActividad: row.updated_at,
+    evidenciaCalculo: {
+      idCalculoPeriodo: row.id_calculo_periodo_vigente ?? undefined,
+      versionCalculo: row.version_calculo,
+      calculadoAt: row.calculado_at ?? undefined,
+      validadoAt: row.validado_at ?? undefined,
+      aprobadoAt: row.aprobado_at ?? undefined,
+      calculoVigente: row.calculo_vigente,
+    },
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     closedAt: row.closed_at ?? undefined,
@@ -338,6 +353,14 @@ export function ensamblarNominaPeriodo(input: {
     totalDescuentos: Number(input.cabecera.total_descuentos ?? 0),
     totalLiquido: Number(input.cabecera.total_liquido ?? 0),
     fechaPago: input.cabecera.fecha_pago ?? undefined,
+    evidenciaCalculo: {
+      idCalculoPeriodo: input.cabecera.id_calculo_periodo_vigente ?? undefined,
+      versionCalculo: input.cabecera.version_calculo,
+      calculadoAt: input.cabecera.calculado_at ?? undefined,
+      validadoAt: input.cabecera.validado_at ?? undefined,
+      aprobadoAt: input.cabecera.aprobado_at ?? undefined,
+      calculoVigente: input.cabecera.calculo_vigente,
+    },
     eventosAuditoria: input.eventosAuditoria?.map(rowToEventoAuditoria),
     createdAt: input.cabecera.created_at,
     updatedAt: input.cabecera.updated_at,

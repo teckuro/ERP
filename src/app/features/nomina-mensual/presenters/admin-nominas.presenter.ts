@@ -16,12 +16,23 @@ import type {
   NominaPeriodoResumen,
   TipoNomina,
 } from '../models/nomina-periodo.models';
+import { prioridadNomina } from '../rules/nomina-periodo-state.rules';
 
 /** Clave de persistencia local de la grilla del Administrador. */
 export const PERSISTENCIA_GRILLA_ADMIN = 'admin-nominas-grid-v1';
 
 /** Columnas declarativas de la grilla. */
 export const COLUMNAS_ADMIN_NOMINAS: DataGridColumn<NominaPeriodoResumen>[] = [
+  {
+    id: 'proximoPaso',
+    header: 'Siguiente acción',
+    field: 'proximoPaso',
+    type: 'text',
+    width: '9rem',
+    minWidth: '8rem',
+    priorityResponsive: 'secondary',
+    filterable: false,
+  },
   {
     id: 'periodo',
     header: 'Período',
@@ -301,5 +312,15 @@ export function filtrarResumenes(
     }
 
     return true;
+  });
+}
+
+export function ordenarResumenesOperativos(
+  resumenes: readonly NominaPeriodoResumen[],
+): NominaPeriodoResumen[] {
+  return [...resumenes].sort((a, b) => {
+    const prioridad = prioridadNomina(a) - prioridadNomina(b);
+    if (prioridad !== 0) return prioridad;
+    return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
   });
 }

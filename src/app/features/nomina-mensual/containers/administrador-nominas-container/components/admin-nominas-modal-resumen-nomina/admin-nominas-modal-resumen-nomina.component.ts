@@ -43,6 +43,7 @@ export class AdminNominasModalResumenNominaComponent {
   readonly resumen = input.required<ResumenValidacionNomina>();
   readonly nomina = input<NominaPeriodoResumen | null>(null);
   readonly cerrar = output<void>();
+  readonly abrirGenerador = output<void>();
 
   readonly metricas = computed<MetricaResumenView[]>(() => {
     const r = this.resumen();
@@ -79,6 +80,10 @@ export class AdminNominasModalResumenNominaComponent {
 
   cerrarModal(): void {
     this.cerrar.emit();
+  }
+
+  abrirAccionRecomendada(): void {
+    this.abrirGenerador.emit();
   }
 
   onBackdrop(event: MouseEvent): void {

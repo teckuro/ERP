@@ -32,15 +32,31 @@ import {
   COLUMNAS_ADMIN_NOMINAS,
   PERSISTENCIA_GRILLA_ADMIN,
   crearFiltrosAdminNominas,
+  ordenarResumenesOperativos,
 } from '../../presenters/admin-nominas.presenter';
 import {
   calcularKpisAdminNominas,
   estadoNominaToBadge,
   tipoNominaToLabel,
   formatearActualizada,
+  proximoPasoToLabel,
 } from './utils/admin-nominas-presentacion.util';
 import { AdminNominasModalNuevaNominaComponent } from './components/admin-nominas-modal-nueva-nomina/admin-nominas-modal-nueva-nomina.component';
 import { AdminNominasModalResumenNominaComponent } from './components/admin-nominas-modal-resumen-nomina/admin-nominas-modal-resumen-nomina.component';
+import {
+  puedeAnular,
+  puedeEliminarBorrador,
+  puedeReabrir,
+  tieneLiquidaciones,
+} from '../../rules/admin-nominas.rules';
+
+type FiltroRapidoAdmin = 'requiere-accion' | 'abiertas' | 'en-calculo' | 'pendientes-cierre' | 'con-criticas' | 'todas';
+type AccionAdministrativa = 'eliminar' | 'anular' | 'reabrir';
+
+interface AccionAdministrativaPendiente {
+  tipo: AccionAdministrativa;
+  nomina: NominaPeriodoResumen;
+}
 
 @Component({
   selector: 'app-administrador-nominas-container',
@@ -68,12 +84,28 @@ export class AdministradorNominasContainer {
   readonly nominaSeleccionada = signal<NominaPeriodoResumen | null>(null);
   readonly cargando = signal(false);
   readonly errorCarga = signal<string | null>(null);
+  readonly filtroRapido = signal<FiltroRapidoAdmin>('requiere-accion');
+  readonly accionPendiente = signal<AccionAdministrativaPendiente | null>(null);
+  readonly motivoAccion = signal('');
+  readonly ejecutandoAccion = signal(false);
+  readonly errorAccion = signal<string | null>(null);
 
   readonly columnas = COLUMNAS_ADMIN_NOMINAS;
   readonly persistenceKey = PERSISTENCIA_GRILLA_ADMIN;
 
   readonly filtros = computed(() => crearFiltrosAdminNominas(this.resumenes()));
   readonly kpis = computed(() => calcularKpisAdminNominas(this.resumenes()));
+  readonly resumenesVisibles = computed(() => {
+    const filtro = this.filtroRapido();
+    const filtrados = this.resumenes().filter((fila) => {
+      if (filtro === 'todas') return true;
+      if (filtro === 'requiere-accion' || filtro === 'abiertas') return fila.requiereAccion ?? true;
+      if (filtro === 'en-calculo') return fila.estado === 'calculada' || fila.estado === 'validada';
+      if (filtro === 'pendientes-cierre') return fila.estado === 'aprobada' || fila.estado === 'reabierta';
+      return fila.totalIncidenciasCriticas > 0;
+    });
+    return ordenarResumenesOperativos(filtrados);
+  });
 
   readonly subtitulo = computed(() => {
     const total = this.resumenes().length;
@@ -113,6 +145,11 @@ export class AdministradorNominasContainer {
   estadoNominaToBadge = estadoNominaToBadge;
   tipoNominaToLabel = tipoNominaToLabel;
   formatearActualizada = formatearActualizada;
+  proximoPasoToLabel = proximoPasoToLabel;
+  puedeEliminarBorrador = puedeEliminarBorrador;
+  puedeReabrir = puedeReabrir;
+  puedeAnular = puedeAnular;
+  tieneLiquidaciones = tieneLiquidaciones;
 
   async cargarResumenes(): Promise<void> {
     this.cargando.set(true);
@@ -139,6 +176,7 @@ export class AdministradorNominasContainer {
   onNominaCreada(resumen: NominaPeriodoResumen): void {
     this.resumenes.update((lista) => [resumen, ...lista]);
     this.modalNuevaAbierto.set(false);
+    this.abrirGenerador(resumen);
   }
 
   async abrirResumen(fila: NominaPeriodoResumen): Promise<void> {
@@ -168,5 +206,62 @@ export class AdministradorNominasContainer {
 
   abrirGenerador(fila: NominaPeriodoResumen): void {
     void this.router.navigate(['/remuneraciones/nominas', fila.id, 'generador']);
+  }
+
+  aplicarFiltroRapido(filtro: FiltroRapidoAdmin): void {
+    this.filtroRapido.set(filtro);
+  }
+
+  solicitarAccion(tipo: AccionAdministrativa, nomina: NominaPeriodoResumen): void {
+    this.accionPendiente.set({ tipo, nomina });
+    this.motivoAccion.set('');
+    this.errorAccion.set(null);
+  }
+
+  cancelarAccion(): void {
+    if (this.ejecutandoAccion()) return;
+    this.accionPendiente.set(null);
+    this.motivoAccion.set('');
+    this.errorAccion.set(null);
+  }
+
+  async confirmarAccion(): Promise<void> {
+    const pendiente = this.accionPendiente();
+    if (!pendiente) return;
+    const motivo = this.motivoAccion().trim();
+    if (pendiente.tipo !== 'eliminar' && !motivo) {
+      this.errorAccion.set('Debes indicar el motivo de la acción.');
+      return;
+    }
+    this.ejecutandoAccion.set(true);
+    this.errorAccion.set(null);
+    try {
+      if (pendiente.tipo === 'eliminar') {
+        await this.servicio.eliminarBorrador(pendiente.nomina.id);
+      } else if (pendiente.tipo === 'reabrir') {
+        await this.servicio.reabrirNomina(pendiente.nomina.id, { motivo });
+      } else {
+        await this.servicio.anularNomina(pendiente.nomina.id, motivo);
+      }
+      this.accionPendiente.set(null);
+      this.motivoAccion.set('');
+      this.errorAccion.set(null);
+      await this.cargarResumenes();
+    } catch (error) {
+      this.errorAccion.set(error instanceof Error ? error.message : 'No fue posible completar la acción.');
+    } finally {
+      this.ejecutandoAccion.set(false);
+    }
+  }
+
+  verLiquidaciones(fila: NominaPeriodoResumen): void {
+    if (!tieneLiquidaciones(fila.estado) || !fila.evidenciaCalculo?.idCalculoPeriodo) return;
+    void this.router.navigate(['/remuneraciones/liquidaciones'], {
+      queryParams: {
+        periodo: fila.periodo,
+        nominaPeriodoId: fila.id,
+        idCalculoPeriodo: fila.evidenciaCalculo.idCalculoPeriodo,
+      },
+    });
   }
 }

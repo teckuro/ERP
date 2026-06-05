@@ -8,6 +8,14 @@
 > - [`archivo/peticiones-estilos-2026-05.md`](./archivo/peticiones-estilos-2026-05.md) — mayo 2026 y anteriores (288 entradas, rotadas el 2026-06-03 por DOCS-AUDIT-02 / L3).
 
 ---
+
+## 2026-06-05 - Administrador y nóminas abiertas con acción operativa
+
+El Administrador deja de ser una grilla pasiva: los KPIs filtran la bandeja, la vista inicial muestra registros que requieren acción, cada fila informa el siguiente paso y los errores de carga ofrecen reintento. Las acciones por estado permiten eliminar borrador, anular, reabrir y navegar a liquidaciones únicamente desde una nómina cerrada con snapshot.
+
+En el Generador, Dotación incorpora paginación y preview para exclusión masiva; Movimientos selecciona trabajadores por nombre/RUT; Cierre reemplaza `window.confirm` por `app-message-box`. Se mantienen densidad compacta, CSS local, franja operativa y tabla contextual según NOIA.
+
+No se tocaron `src/styles.css`, `src/styles/*`, `angular.json`, Tailwind ni fuentes globales.
 ## 2026-06-04 - Shell residual al navegar (fix global con tokens de propiedad)
 
 **Bug reportado**: «al seleccionar menús o botones que cambian a otra interfaz se queda el shell antiguo en la cabecera» (título, subtítulo, CTA o chips del container anterior persisten en el topbar tras la navegación).
@@ -63,6 +71,15 @@ Resultado observable: breadcrumbs nuevos pero título y acción primaria vacíos
 - Estilos globales / config / rutas / SQL / motor.
 
 **Validaciones**: `npx tsc --noEmit` OK, `npx ng test --include="src/app/layout/**/*.spec.ts" --watch=false` → 24 tests pasaron, `npx ng build --configuration=development` OK (30.7s). Hay 3 fallos de tests preexistentes en `nomina-msgbox-lab.rules.spec.ts`, `proceso-mensual-flow-nav.rules.spec.ts` y `form-empleado.spec.ts` que **no están relacionados con el shell ni se tocaron en este cambio**.
+
+**Smoke E2E del fix** (`tests/shell-page-context-navigation.spec.ts`, nuevo): 4 tests Playwright que se loguean vía UI (skip automático si faltan `E2E_SUPABASE_AUTH_EMAIL` / `E2E_SUPABASE_AUTH_PASSWORD`) y navegan entre `/empleados`, `/remuneraciones/nominas`, `/parametros` y `/reportes` verificando que:
+
+- `Administrador de nóminas` publica título + CTA `Nueva nómina` y se limpian al ir a `/empleados`.
+- `/parametros` tras Admin no hereda `Administrador de nóminas` ni el CTA.
+- Cadena Empleados → Admin → Parámetros → Reportes → Admin: cada pantalla muestra su título/CTA correcto, y al volver al Admin el título y CTA reaparecen sin residuo (`Reportes` publica su propio CTA `Ver liquidaciones`, no debe quedar `Nueva nómina`).
+- El bloque `.erp-shell-header__title` desaparece cuando la nueva pantalla no publica `pageTitle` (no se queda con texto del anterior).
+
+Resultado: **4/4 pass en ~1.4 min** sobre el server dev real (`npm start`).
 
 ---
 ## 2026-06-04 - Generador V2: fix del filtro de mes del shell con nómina cargada

@@ -11,6 +11,17 @@ import type {
   TipoNomina,
 } from '../../../models/nomina-periodo.models';
 
+const ETIQUETA_PROXIMO_PASO: Record<string, string> = {
+  parametros: 'Completar parámetros',
+  dotacion: 'Revisar dotación',
+  movimientos: 'Revisar movimientos',
+  calculo: 'Calcular nómina',
+  validacion: 'Validar resultado',
+  cierre: 'Cerrar nómina',
+  liquidaciones: 'Generar liquidaciones',
+  sin_accion: 'Sin acción',
+};
+
 export type AdminBadgeVariant = 'neutral' | 'info' | 'warning' | 'success' | 'danger';
 
 export interface AdminBadgeView {
@@ -43,6 +54,10 @@ export function estadoNominaToBadge(estado: EstadoNomina): AdminBadgeView {
 
 export function tipoNominaToLabel(tipo: TipoNomina): string {
   return MAPA_TIPO[tipo];
+}
+
+export function proximoPasoToLabel(paso: NominaPeriodoResumen['proximoPaso']): string {
+  return ETIQUETA_PROXIMO_PASO[paso ?? 'sin_accion'] ?? 'Continuar revisión';
 }
 
 /**

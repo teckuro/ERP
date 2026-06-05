@@ -48,6 +48,12 @@ import type {
   PreviewAccionMasivaTrabajadores,
 } from '../models/movimiento-nomina.models';
 import type { ResultadoAlcanceNomina } from '../../nomina-mensual-v2/models/nomina-mensual-v2.models';
+import { EmpleadosService } from '../../empleados/services/empleados.service';
+import { crearSegmento } from '../models/nomina-periodo.models';
+import {
+  estadoNominaBloqueaEdicion,
+  exigirTransicionNomina,
+} from '../rules/nomina-periodo-state.rules';
 
 export interface CrearNominaPayload {
   periodo: string;
@@ -78,6 +84,7 @@ export class NominaPeriodoService {
   private readonly repo = inject(NominaPeriodoRepository);
   private readonly empresaActiva = inject(EmpresaActivaService);
   private readonly supabase = injectSupabase();
+  private readonly empleados = inject(EmpleadosService);
 
   private readonly resumenesState = signal<NominaPeriodoResumen[]>([]);
   private readonly cargandoState = signal(false);
@@ -126,12 +133,42 @@ export class NominaPeriodoService {
       ?? empresaSnap?.razonSocial
       ?? '';
 
-    return this.repo.crear({
-      empresaId: payload.empresaId ?? String(idEmpresa),
-      empresaNombre,
-      periodo: payload.periodo,
-      tipo: payload.tipo,
-    });
+    try {
+      const creada = await this.repo.crear({
+        empresaId: payload.empresaId ?? String(idEmpresa),
+        empresaNombre,
+        periodo: payload.periodo,
+        tipo: payload.tipo,
+      });
+      const activos = (await this.empleados.listar()).filter(
+        (empleado) => empleado.estado === 'activo' && empleado.aptoParaRemuneraciones,
+      );
+      if (activos.length === 0) return creada;
+
+      await this.repo.upsertSegmento(crearSegmento({
+        id: '',
+        nominaPeriodoId: creada.id,
+        nombre: 'Dotación general',
+        tipo: 'planta',
+        estado: 'lista',
+        trabajadorIds: activos.map((empleado) => String(empleado.id)),
+      }), idEmpresa);
+      await this.repo.actualizarTotales(creada.id, {
+        totalTrabajadores: activos.length,
+        totalSegmentos: 1,
+      });
+      await this.repo.transicionarEstado(creada.id, {
+        estadoEsperado: 'borrador',
+        estadoDestino: 'dotacion_generada',
+      });
+      return (await this.repo.obtenerCabecera(creada.id)) ?? creada;
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : String(error);
+      if (/duplicate|unique|duplic/i.test(mensaje)) {
+        throw new Error('Ya existe una nómina ordinaria para esa empresa, período y tipo.');
+      }
+      throw error;
+    }
   }
 
   async guardarParametrosNomina(
@@ -153,27 +190,63 @@ export class NominaPeriodoService {
   }
 
   async cerrarNomina(nominaPeriodoId: string, payload: CerrarNominaPayload = {}): Promise<void> {
-    await this.repo.actualizarEstado(nominaPeriodoId, 'cerrada');
-    if (payload.motivo) {
-      await this.repo.registrarEventoAuditoria({
-        nominaPeriodoId,
-        accion: 'cerrada',
-        motivo: payload.motivo,
-      });
+    const nomina = await this.exigirNomina(nominaPeriodoId);
+    const validacion = await this.obtenerResumenValidacionNomina(nominaPeriodoId);
+    if (nomina.estado !== 'aprobada' || !validacion.puedeCerrar) {
+      throw new Error('La nómina debe estar aprobada, con cálculo vigente y sin bloqueos.');
     }
+    await this.transicionar(nomina, 'cerrada', payload.motivo);
   }
 
   async reabrirNomina(nominaPeriodoId: string, payload: ReabrirNominaPayload): Promise<void> {
-    await this.repo.actualizarEstado(nominaPeriodoId, 'reabierta');
-    await this.repo.registrarEventoAuditoria({
-      nominaPeriodoId,
-      accion: 'reabierta',
-      motivo: payload.motivo,
-    });
+    const nomina = await this.exigirNomina(nominaPeriodoId);
+    await this.transicionar(nomina, 'reabierta', payload.motivo);
+    await this.repo.invalidarCalculo(nominaPeriodoId);
   }
 
   async eliminarBorrador(nominaPeriodoId: string): Promise<void> {
     await this.repo.eliminarBorrador(nominaPeriodoId);
+  }
+
+  async anularNomina(nominaPeriodoId: string, motivo: string): Promise<void> {
+    const nomina = await this.exigirNomina(nominaPeriodoId);
+    await this.transicionar(nomina, 'anulada', motivo);
+  }
+
+  async confirmarDotacion(nominaPeriodoId: string): Promise<void> {
+    let nomina = await this.exigirNominaEditable(nominaPeriodoId);
+    if (nomina.trabajadorIds.length === 0) {
+      throw new Error('La dotación debe incluir al menos un trabajador.');
+    }
+    if (nomina.estado === 'borrador') {
+      await this.transicionar(nomina, 'dotacion_generada');
+      nomina = await this.exigirNomina(nominaPeriodoId);
+    }
+    if (nomina.estado === 'dotacion_generada') {
+      await this.transicionar(nomina, 'en_revision');
+    } else if (nomina.estado !== 'en_revision' && nomina.estado !== 'reabierta') {
+      await this.invalidarCalculoPorCambio(nominaPeriodoId, 'Dotación modificada.');
+    }
+    await this.repo.registrarEventoAuditoria({
+      nominaPeriodoId,
+      accion: 'dotacion_confirmada',
+      motivo: `${nomina.trabajadorIds.length} trabajadores confirmados.`,
+    });
+  }
+
+  async validarYAprobarNomina(nominaPeriodoId: string): Promise<void> {
+    let nomina = await this.exigirNomina(nominaPeriodoId);
+    const resumen = await this.obtenerResumenValidacionNomina(nominaPeriodoId);
+    if (!resumen.puedeValidar) {
+      throw new Error('La nómina requiere un cálculo vigente y no debe tener bloqueos.');
+    }
+    if (nomina.estado === 'calculada') {
+      await this.transicionar(nomina, 'validada');
+      nomina = await this.exigirNomina(nominaPeriodoId);
+    }
+    if (nomina.estado === 'validada') {
+      await this.transicionar(nomina, 'aprobada');
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -189,11 +262,18 @@ export class NominaPeriodoService {
     if (idEmpresa == null) {
       throw new Error('No hay empresa activa para actualizar segmento.');
     }
-    return this.repo.upsertSegmento(segmento, idEmpresa);
+    await this.exigirNominaEditable(segmento.nominaPeriodoId);
+    const guardado = await this.repo.upsertSegmento(segmento, idEmpresa);
+    await this.invalidarCalculoPorCambio(segmento.nominaPeriodoId, 'Segmento modificado.');
+    return guardado;
   }
 
   async eliminarSegmento(segmentoId: string): Promise<void> {
+    const segmento = await this.repo.obtenerSegmento(segmentoId);
+    if (!segmento) throw new Error('Segmento no encontrado.');
+    await this.exigirNominaEditable(segmento.nominaPeriodoId);
     await this.repo.eliminarSegmento(segmentoId);
+    await this.invalidarCalculoPorCambio(segmento.nominaPeriodoId, 'Segmento eliminado.');
   }
 
   // -------------------------------------------------------------------------
@@ -215,11 +295,17 @@ export class NominaPeriodoService {
   }
 
   async omitirMovimiento(movimientoId: string): Promise<void> {
+    const movimiento = await this.buscarMovimiento(movimientoId);
+    await this.exigirNominaEditable(movimiento.nominaPeriodoId);
     await this.repo.actualizarEstadoMovimiento(movimientoId, 'omitido');
+    await this.invalidarCalculoPorCambio(movimiento.nominaPeriodoId, 'Movimiento omitido.');
   }
 
   async aplicarMovimiento(movimientoId: string): Promise<void> {
+    const movimiento = await this.buscarMovimiento(movimientoId);
+    await this.exigirNominaEditable(movimiento.nominaPeriodoId);
     await this.repo.actualizarEstadoMovimiento(movimientoId, 'aplicado');
+    await this.invalidarCalculoPorCambio(movimiento.nominaPeriodoId, 'Movimiento reaplicado.');
   }
 
   async agregarMovimientoManual(
@@ -229,7 +315,10 @@ export class NominaPeriodoService {
     if (idEmpresa == null) {
       throw new Error('No hay empresa activa para agregar movimiento.');
     }
-    return this.repo.insertarMovimientos([{ ...mov, origen: 'manual' }], idEmpresa);
+    await this.exigirNominaEditable(mov.nominaPeriodoId);
+    const insertados = await this.repo.insertarMovimientos([{ ...mov, origen: 'manual' }], idEmpresa);
+    await this.invalidarCalculoPorCambio(mov.nominaPeriodoId, 'Movimiento manual agregado.');
+    return insertados;
   }
 
   /**
@@ -250,6 +339,9 @@ export class NominaPeriodoService {
       this.repo.listarMovimientos(nominaPeriodoId),
     ]);
     if (!nomina) return [];
+    if (estadoNominaBloqueaEdicion(nomina.estado)) {
+      throw new Error(`La nómina ${nomina.estado} no admite cambios.`);
+    }
 
     const nuevosInsertar: Array<Omit<MovimientoNomina, 'createdAt' | 'updatedAt'>> = [];
 
@@ -294,6 +386,7 @@ export class NominaPeriodoService {
     }
 
     const insertados = await this.repo.insertarMovimientos(nuevosInsertar, idEmpresa);
+    await this.invalidarCalculoPorCambio(nominaPeriodoId, 'Recurrentes aplicados.');
     return [
       ...movimientosExistentes.filter(
         (m) => m.origen === 'recurrente' && m.estado === 'aplicado',
@@ -346,6 +439,7 @@ export class NominaPeriodoService {
     );
 
     const hayBloqueante = nomina.incidencias.some((i) => i.bloqueante);
+    const calculoVigente = nomina.evidenciaCalculo?.calculoVigente ?? false;
     const totalTrabajadores = nomina.trabajadorIds.length;
 
     return {
@@ -355,7 +449,11 @@ export class NominaPeriodoService {
       conAdvertencias: trabajadoresAdvertencia.size,
       conMovimientosEspeciales: trabajadoresConMovimientos.size,
       puedeCalcular: !hayBloqueante,
-      puedeCerrar: !hayBloqueante,
+      puedeValidar: !hayBloqueante && calculoVigente && nomina.estado === 'calculada',
+      puedeCerrar: !hayBloqueante
+        && calculoVigente
+        && (nomina.estado === 'validada' || nomina.estado === 'aprobada'),
+      calculoVigente,
       incidenciasCriticas,
       advertencias,
     };
@@ -446,6 +544,14 @@ export class NominaPeriodoService {
   // -------------------------------------------------------------------------
 
   async filtrarDotacion(
+    nominaPeriodoId: string,
+    filtro: FiltroRapidoDotacion,
+    paginacion: PaginacionGrilla,
+  ): Promise<{ filas: FilaTrabajadorNominaResumen[]; total: number }> {
+    return this.repo.listarDotacionPaginada(nominaPeriodoId, filtro, paginacion);
+  }
+
+  private async filtrarDotacionLegacy(
     nominaPeriodoId: string,
     filtro: FiltroRapidoDotacion,
     paginacion: PaginacionGrilla,
@@ -579,6 +685,59 @@ export class NominaPeriodoService {
       mensajes,
       puedeAplicar: incidenciasBloqueantes.length === 0,
     };
+  }
+
+  async aplicarAccionMasiva(
+    nominaPeriodoId: string,
+    trabajadorIds: string[],
+    accion: AccionMasivaTrabajadores,
+  ): Promise<PreviewAccionMasivaTrabajadores> {
+    const preview = await this.previsualizarAccionMasiva(nominaPeriodoId, trabajadorIds, accion);
+    if (!preview.puedeAplicar) {
+      throw new Error('La acción masiva tiene incidencias bloqueantes.');
+    }
+    const nomina = await this.exigirNominaEditable(nominaPeriodoId);
+    const ids = new Set(trabajadorIds);
+    const idEmpresa = Number(nomina.empresaId);
+
+    if (accion.tipo === 'excluir-nomina' || accion.tipo === 'mover-segmento') {
+      const segmentos = nomina.segmentos.map((segmento) => ({
+        ...segmento,
+        trabajadorIds: segmento.trabajadorIds.filter((id) => !ids.has(id)),
+      }));
+      if (accion.tipo === 'mover-segmento') {
+        const destino = segmentos.find((segmento) => segmento.id === accion.segmentoDestinoId);
+        if (!destino) throw new Error('Segmento de destino no encontrado.');
+        destino.trabajadorIds = Array.from(new Set([...destino.trabajadorIds, ...trabajadorIds]));
+      }
+      for (const segmento of segmentos) {
+        segmento.totalTrabajadores = segmento.trabajadorIds.length;
+        await this.repo.upsertSegmento(segmento, idEmpresa);
+      }
+      const totalTrabajadores = new Set(segmentos.flatMap((segmento) => segmento.trabajadorIds)).size;
+      await this.repo.actualizarTotales(nominaPeriodoId, { totalTrabajadores });
+    } else if (accion.tipo === 'agregar-movimiento') {
+      const movimientos = trabajadorIds.map((trabajadorId) => ({
+        id: '',
+        nominaPeriodoId,
+        trabajadorId,
+        tipo: accion.movimiento.tipo ?? 'movimiento-masivo',
+        categoria: accion.movimiento.categoria ?? 'haber',
+        monto: accion.movimiento.monto,
+        cantidad: accion.movimiento.cantidad,
+        unidad: accion.movimiento.unidad,
+        origen: 'manual' as const,
+        estado: 'aplicado' as const,
+        glosa: accion.movimiento.glosa,
+      }));
+      await this.repo.insertarMovimientos(movimientos, idEmpresa);
+    }
+
+    await this.invalidarCalculoPorCambio(
+      nominaPeriodoId,
+      `Acción masiva ${accion.tipo} sobre ${trabajadorIds.length} trabajadores.`,
+    );
+    return preview;
   }
 
   /** Aplica un recurrente solo a los trabajadores que matchean un criterio único. */
@@ -753,5 +912,77 @@ export class NominaPeriodoService {
       if (!haystack.includes(q)) return false;
     }
     return true;
+  }
+
+  private async exigirNomina(nominaPeriodoId: string): Promise<NominaPeriodo> {
+    const nomina = await this.repo.obtenerNominaCompleta(nominaPeriodoId);
+    if (!nomina) throw new Error('Nómina no encontrada.');
+    return nomina;
+  }
+
+  private async exigirNominaEditable(nominaPeriodoId: string): Promise<NominaPeriodo> {
+    const nomina = await this.exigirNomina(nominaPeriodoId);
+    if (estadoNominaBloqueaEdicion(nomina.estado)) {
+      throw new Error(`La nómina ${nomina.estado} no admite cambios.`);
+    }
+    return nomina;
+  }
+
+  private async transicionar(
+    nomina: NominaPeriodo,
+    destino: EstadoNomina,
+    motivo?: string,
+    calculo?: {
+      idCalculoPeriodo?: number;
+      totalTrabajadores: number;
+      totalHaberes: number;
+      totalDescuentos: number;
+      totalLiquido: number;
+    },
+  ): Promise<void> {
+    exigirTransicionNomina(nomina.estado, destino);
+    await this.repo.transicionarEstado(nomina.id, {
+      estadoEsperado: nomina.estado,
+      estadoDestino: destino,
+      motivo,
+      ...calculo,
+    });
+  }
+
+  async registrarCalculo(
+    nominaPeriodoId: string,
+    calculo: {
+      idCalculoPeriodo?: number;
+      totalTrabajadores: number;
+      totalHaberes: number;
+      totalDescuentos: number;
+      totalLiquido: number;
+    },
+  ): Promise<void> {
+    const nomina = await this.exigirNomina(nominaPeriodoId);
+    if (nomina.estado !== 'en_revision' && nomina.estado !== 'reabierta') {
+      throw new Error('La nómina debe estar en revisión antes de calcular.');
+    }
+    await this.transicionar(nomina, 'calculada', undefined, calculo);
+  }
+
+  private async invalidarCalculoPorCambio(nominaPeriodoId: string, motivo: string): Promise<void> {
+    const nomina = await this.exigirNomina(nominaPeriodoId);
+    if (!nomina.evidenciaCalculo?.calculoVigente) return;
+    if (nomina.estado === 'calculada' || nomina.estado === 'validada' || nomina.estado === 'aprobada' || nomina.estado === 'reabierta') {
+      await this.transicionar(nomina, 'en_revision', motivo);
+    }
+    await this.repo.invalidarCalculo(nominaPeriodoId);
+    await this.repo.registrarEventoAuditoria({
+      nominaPeriodoId,
+      accion: 'calculo_invalidado',
+      motivo,
+    });
+  }
+
+  private async buscarMovimiento(movimientoId: string): Promise<MovimientoNomina> {
+    const movimiento = await this.repo.obtenerMovimiento(movimientoId);
+    if (movimiento) return movimiento;
+    throw new Error('Movimiento no encontrado.');
   }
 }

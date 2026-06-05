@@ -56,7 +56,7 @@
       <button
         type="button"
         class="paso-cierre__btn is-primary"
-        (click)="cerrarNomina()"
+        (click)="solicitarCierre()"
         [disabled]="!todoCumplido() || ejecutando()"
       >{{ ejecutando() ? 'Cerrando…' : 'Cerrar nómina' }}</button>
     </section>
@@ -96,3 +96,20 @@
     </button>
   </footer>
 </section>
+
+@if (confirmarCierreVisible()) {
+  <app-message-box
+    mode="modal"
+    variant="confirm"
+    eyebrow="Cierre operativo"
+    title="Cerrar nómina"
+    message="La nómina quedará bloqueada y las liquidaciones deberán generarse desde este cálculo vigente."
+    detail="La acción queda registrada en auditoría. Para volver a editar será obligatorio reabrir con motivo."
+    primaryLabel="Cerrar nómina"
+    secondaryLabel="Cancelar"
+    [dismissible]="true"
+    (action)="cerrarNomina()"
+    (secondary)="confirmarCierreVisible.set(false)"
+    (dismiss)="confirmarCierreVisible.set(false)"
+  />
+}

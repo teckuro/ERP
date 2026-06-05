@@ -30,7 +30,7 @@ export function puedeReabrir(estado: EstadoNomina): boolean {
 
 /** Una nómina aprobada o cerrada puede tener liquidaciones generadas. */
 export function tieneLiquidaciones(estado: EstadoNomina): boolean {
-  return estado === 'aprobada' || estado === 'cerrada' || estado === 'reabierta';
+  return estado === 'cerrada';
 }
 
 /** Una nómina anulada o ya cerrada no puede anularse. */

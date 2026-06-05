@@ -224,9 +224,12 @@ export class ProcesoMensualService {
     };
   }
 
-  async generarCalculoPeriodo(periodo: string): Promise<MotorCalculoPeriodoResultado> {
+  async generarCalculoPeriodo(
+    periodo: string,
+    trabajadorIds?: readonly number[],
+  ): Promise<MotorCalculoPeriodoResultado> {
     const p = periodo.trim();
-    const input = await this.construirInputMotorPeriodo(p);
+    const input = await this.construirInputMotorPeriodo(p, trabajadorIds);
     const resultado = generarCalculoPreliminarPeriodo(input, new Date().toISOString());
     this.calculosPorPeriodo.set(p, resultado);
     this.insumosCalculoPorPeriodo.set(p, {
@@ -992,7 +995,10 @@ export class ProcesoMensualService {
     }
   }
 
-  private async construirInputMotorPeriodo(periodo: string): Promise<MotorCalculoInput> {
+  private async construirInputMotorPeriodo(
+    periodo: string,
+    trabajadorIds?: readonly number[],
+  ): Promise<MotorCalculoInput> {
     const [prevalidacion, parametrosPeriodo, catalogos, empleadosListado, recurrentes] = await Promise.all([
       this.ejecutarPrevalidaciones(periodo),
       this.parametrosGenerales.obtenerUltimoHastaPeriodo(periodo),
@@ -1016,9 +1022,10 @@ export class ProcesoMensualService {
       personaEntradas.push(entrada);
       entradasPorPersona.set(entrada.idPersona, personaEntradas);
     }
+    const alcance = trabajadorIds ? new Set(trabajadorIds) : null;
     const aptos = empleadosListado.filter(
       (e) => evaluarAptitudOperativaNominaTrabajador(e, entradasPorPersona.get(e.id) ?? []).listoParaNomina,
-    );
+    ).filter((e) => !alcance || alcance.has(e.id));
     const fichas = await Promise.all(aptos.map((e) => this.empleados.obtenerPorId(e.id)));
     const trabajadores = fichas.filter((f): f is NonNullable<typeof f> => f != null).map(trabajadorSnapshotDesdeFicha);
 
@@ -1029,8 +1036,14 @@ export class ProcesoMensualService {
       parametrosPeriodo,
       catalogos,
       trabajadores,
-      recurrentes,
-      entradasMensuales: construirEntradasMensualesMotor(asArray(prevalidacion.entradasMensuales)),
+      recurrentes: alcance
+        ? recurrentes.filter((fila) => alcance.has(fila.asignacion.idPersona))
+        : recurrentes,
+      entradasMensuales: construirEntradasMensualesMotor(
+        asArray(prevalidacion.entradasMensuales).filter(
+          (entrada) => !alcance || alcance.has(entrada.idPersona),
+        ),
+      ),
       empresaLey16744: resolveEmpresaMutualSnapshot(empresaRow, periodo),
     };
   }

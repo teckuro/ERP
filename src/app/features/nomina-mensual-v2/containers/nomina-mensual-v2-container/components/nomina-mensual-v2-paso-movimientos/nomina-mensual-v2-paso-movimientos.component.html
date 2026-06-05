@@ -109,14 +109,30 @@
         <form class="paso-mov__form" (submit)="$event.preventDefault(); crearMovimientoManual()">
           <div class="paso-mov__form-row">
             <label class="paso-mov__field">
-              Trabajador (ID)
+              Buscar trabajador
               <input
-                type="text"
-                [value]="borradorManual().trabajadorId"
-                (input)="actualizarTrabajadorManual($any($event.target).value)"
-                placeholder="123"
-                required
+                type="search"
+                [value]="busquedaTrabajador()"
+                placeholder="Nombre o RUT"
+                (input)="buscarTrabajadores($any($event.target).value)"
               />
+            </label>
+            <label class="paso-mov__field">
+              Trabajador
+              <select
+                [value]="borradorManual().trabajadorId"
+                (change)="actualizarTrabajadorManual($any($event.target).value)"
+                required
+              >
+                <option value="">
+                  {{ buscandoTrabajadores() ? 'Buscando...' : 'Selecciona un trabajador' }}
+                </option>
+                @for (trabajador of trabajadores(); track trabajador.trabajadorId) {
+                  <option [value]="trabajador.trabajadorId">
+                    {{ trabajador.nombre }} · {{ trabajador.rut }}
+                  </option>
+                }
+              </select>
             </label>
             <label class="paso-mov__field">
               Tipo

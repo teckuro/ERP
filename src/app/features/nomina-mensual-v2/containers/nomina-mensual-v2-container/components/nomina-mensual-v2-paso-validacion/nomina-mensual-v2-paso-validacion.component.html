@@ -113,7 +113,7 @@
       type="button"
       class="paso-val__btn is-primary"
       (click)="emitirAprobar()"
-      [disabled]="!puedeAprobar()"
-    >Aprobar para cierre</button>
+      [disabled]="!puedeAprobar() || aprobando()"
+    >{{ aprobando() ? 'Aprobando…' : 'Aprobar para cierre' }}</button>
   </footer>
 </section>

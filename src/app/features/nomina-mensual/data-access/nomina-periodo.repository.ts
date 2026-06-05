@@ -18,10 +18,15 @@ import { Injectable } from '@angular/core';
 
 import { injectSupabase } from '../../../core/services/supabase.service';
 import type {
+  EstadoNomina,
   EventoAuditoriaNomina,
   IncidenciaNomina,
   NominaPeriodo,
   SegmentoNomina,
+  EstadoTrabajadorNomina,
+  FilaTrabajadorNominaResumen,
+  FiltroRapidoDotacion,
+  PaginacionGrilla,
 } from '../models/nomina-periodo.models';
 import type {
   MovimientoNomina,
@@ -61,6 +66,17 @@ interface GuardarTotalesPayload {
   totalSegmentos?: number;
   totalIncidenciasCriticas?: number;
   totalAdvertencias?: number;
+}
+
+export interface TransicionNominaPayload {
+  estadoEsperado: EstadoNomina;
+  estadoDestino: EstadoNomina;
+  motivo?: string;
+  idCalculoPeriodo?: number;
+  totalTrabajadores?: number;
+  totalHaberes?: number;
+  totalDescuentos?: number;
+  totalLiquido?: number;
 }
 
 function throwIfError(error: { message: string } | null, contexto: string): void {
@@ -159,6 +175,41 @@ export class NominaPeriodoRepository {
     throwIfError(error, 'actualizarEstado');
   }
 
+  async transicionarEstado(
+    id: string,
+    payload: TransicionNominaPayload,
+  ): Promise<NominaPeriodoResumen> {
+    const { data, error } = await this.supabase.rpc('transicionar_nomina_periodo', {
+      p_nomina_id: id,
+      p_estado_esperado: payload.estadoEsperado,
+      p_estado_destino: payload.estadoDestino,
+      p_motivo: payload.motivo ?? null,
+      p_id_calculo_periodo: payload.idCalculoPeriodo ?? null,
+      p_total_trabajadores: payload.totalTrabajadores ?? null,
+      p_total_haberes: payload.totalHaberes ?? null,
+      p_total_descuentos: payload.totalDescuentos ?? null,
+      p_total_liquido: payload.totalLiquido ?? null,
+    });
+    throwIfError(error, 'transicionarEstado');
+    if (!data) {
+      throw new Error('transicionarEstado: BD no retornó la nómina actualizada');
+    }
+    return rowToNominaPeriodoResumen(data);
+  }
+
+  async invalidarCalculo(id: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('nomina_periodo')
+      .update({
+        calculo_vigente: false,
+        id_calculo_periodo_vigente: null,
+        validado_at: null,
+        aprobado_at: null,
+      })
+      .eq('id', id);
+    throwIfError(error, 'invalidarCalculo');
+  }
+
   async actualizarTotales(id: string, totales: GuardarTotalesPayload): Promise<void> {
     const update: NominaPeriodoUpdate = {};
     if (totales.totalHaberes !== undefined) update.total_haberes = totales.totalHaberes;
@@ -201,6 +252,16 @@ export class NominaPeriodoRepository {
     return (data ?? []).map(rowToSegmentoNomina);
   }
 
+  async obtenerSegmento(id: string): Promise<SegmentoNomina | null> {
+    const { data, error } = await this.supabase
+      .from('segmento_nomina')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+    throwIfError(error, 'obtenerSegmento');
+    return data ? rowToSegmentoNomina(data) : null;
+  }
+
   async upsertSegmento(segmento: SegmentoNomina, idEmpresa: number): Promise<SegmentoNomina> {
     const insert = segmentoNominaToInsert(segmento, idEmpresa);
     const { data, error } = await this.supabase
@@ -219,6 +280,40 @@ export class NominaPeriodoRepository {
   async eliminarSegmento(id: string): Promise<void> {
     const { error } = await this.supabase.from('segmento_nomina').delete().eq('id', id);
     throwIfError(error, 'eliminarSegmento');
+  }
+
+  async listarDotacionPaginada(
+    nominaPeriodoId: string,
+    filtro: FiltroRapidoDotacion,
+    paginacion: PaginacionGrilla,
+  ): Promise<{ filas: FilaTrabajadorNominaResumen[]; total: number }> {
+    const { data, error } = await this.supabase.rpc('listar_dotacion_nomina', {
+      p_nomina_id: nominaPeriodoId,
+      p_page: paginacion.page,
+      p_page_size: paginacion.pageSize,
+      p_busqueda: filtro.busqueda ?? null,
+      p_estado: filtro.estado ?? null,
+      p_segmento_id: filtro.segmentoId ?? null,
+      p_con_incidencias: filtro.conIncidencias ?? null,
+      p_con_movimientos: filtro.conMovimientos ?? null,
+    });
+    throwIfError(error, 'listarDotacionPaginada');
+    const rows = data ?? [];
+    return {
+      total: Number(rows[0]?.total_count ?? 0),
+      filas: rows.map((row) => ({
+        trabajadorId: String(row.trabajador_id),
+        nombre: row.nombre,
+        rut: row.rut,
+        segmentoId: row.segmento_id ?? undefined,
+        estado: row.estado as EstadoTrabajadorNomina,
+        totalIncidenciasCriticas: Number(row.total_incidencias_criticas),
+        totalAdvertencias: Number(row.total_advertencias),
+        totalMovimientos: Number(row.total_movimientos),
+        tieneDatosBancarios: true,
+        tieneDatosPrevisionales: true,
+      })),
+    };
   }
 
   // -------------------------------------------------------------------------
@@ -256,6 +351,16 @@ export class NominaPeriodoRepository {
       .eq('id_nomina_periodo', nominaPeriodoId);
     throwIfError(error, 'listarMovimientos');
     return (data ?? []).map(rowToMovimientoNomina);
+  }
+
+  async obtenerMovimiento(id: string): Promise<MovimientoNomina | null> {
+    const { data, error } = await this.supabase
+      .from('movimiento_nomina')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+    throwIfError(error, 'obtenerMovimiento');
+    return data ? rowToMovimientoNomina(data) : null;
   }
 
   async insertarMovimientos(

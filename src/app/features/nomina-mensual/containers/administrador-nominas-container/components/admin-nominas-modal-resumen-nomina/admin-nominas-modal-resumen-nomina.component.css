@@ -324,6 +324,7 @@
 .adm-nom-resumen__foot {
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
   padding: 12px 20px 16px;
   border-top: 1px solid var(--erp-border, #e5e7eb);
 }

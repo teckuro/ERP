@@ -28,12 +28,12 @@ import type {
   MotorCalculoPeriodoResultado,
   LiquidacionCalculada,
 } from '../../../../../nomina-mensual/models/proceso-mensual.model';
-import { ProcesoMensualService } from '../../../../../nomina-mensual/services/proceso-mensual.service';
 import type {
   NominaPeriodo,
   ResumenValidacionNomina,
 } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
+import { NominaPeriodoCalculoAdapterService } from '../../../../../nomina-mensual/services/nomina-periodo-calculo-adapter.service';
 
 @Component({
   selector: 'app-nomina-mensual-v2-paso-calculo',
@@ -44,7 +44,7 @@ import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nom
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NominaMensualV2PasoCalculoComponent {
-  private readonly motor = inject(ProcesoMensualService);
+  private readonly calculoAdapter = inject(NominaPeriodoCalculoAdapterService);
   private readonly servicio = inject(NominaPeriodoService);
 
   readonly nominaPeriodoId = input<string | null>(null);
@@ -106,12 +106,13 @@ export class NominaMensualV2PasoCalculoComponent {
     this.error.set(null);
     this.mensaje.set(null);
     try {
-      const resultado = await this.motor.generarCalculoPeriodo(nomina.periodo);
+      const { resultado } = await this.calculoAdapter.calcular(nomina.id);
       this.resultado.set(resultado);
       this.mensaje.set(
         `Cálculo generado: ${resultado.resumen.totalTrabajadoresCalculados} trabajadores procesados.`,
       );
-      await this.registrarEventoCalculo(nomina, resultado);
+      this.nomina.set(await this.servicio.obtenerNomina(nomina.id));
+      this.preValidacion.set(await this.servicio.obtenerResumenValidacionNomina(nomina.id));
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido';
       this.error.set(`No fue posible ejecutar el cálculo: ${mensaje}`);

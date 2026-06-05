@@ -34,10 +34,10 @@ describe('admin-nominas.rules — guardas por estado', () => {
     }
   });
 
-  it('Test 10 — tieneLiquidaciones para aprobada/cerrada/reabierta y no en estados anteriores', () => {
-    expect(tieneLiquidaciones('aprobada')).toBe(true);
+  it('Test 10 — tieneLiquidaciones solo para nómina cerrada y trazable', () => {
+    expect(tieneLiquidaciones('aprobada')).toBe(false);
     expect(tieneLiquidaciones('cerrada')).toBe(true);
-    expect(tieneLiquidaciones('reabierta')).toBe(true);
+    expect(tieneLiquidaciones('reabierta')).toBe(false);
     expect(tieneLiquidaciones('borrador')).toBe(false);
     expect(tieneLiquidaciones('calculada')).toBe(false);
     expect(tieneLiquidaciones('anulada')).toBe(false);

@@ -22,6 +22,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { MessageBoxComponent } from '../../../../../../shared/components/ui/message-box.component';
 
 import type {
   NominaPeriodo,
@@ -39,7 +40,7 @@ interface ChecklistItem {
 @Component({
   selector: 'app-nomina-mensual-v2-paso-cierre',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MessageBoxComponent],
   templateUrl: './nomina-mensual-v2-paso-cierre.component.html',
   styleUrl: './nomina-mensual-v2-paso-cierre.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -60,6 +61,7 @@ export class NominaMensualV2PasoCierreComponent {
   readonly motivoCierre = signal('');
   readonly motivoReapertura = signal('');
   readonly mostrarReabrir = signal(false);
+  readonly confirmarCierreVisible = signal(false);
 
   readonly checklist = computed<ChecklistItem[]>(() => {
     const n = this.nomina();
@@ -69,7 +71,7 @@ export class NominaMensualV2PasoCierreComponent {
       {
         id: 'parametros',
         label: 'Parámetros guardados',
-        cumplido: n.estado !== 'borrador' || n.totalHaberes >= 0,
+        cumplido: n.estado !== 'borrador',
         detalle: 'Los parámetros base del período están confirmados.',
       },
       {
@@ -81,19 +83,19 @@ export class NominaMensualV2PasoCierreComponent {
       {
         id: 'movimientos',
         label: 'Movimientos aplicados',
-        cumplido: true,
+        cumplido: n.estado !== 'dotacion_generada',
         detalle: 'Recurrentes y manuales registrados.',
       },
       {
         id: 'calculo',
         label: 'Cálculo realizado',
-        cumplido: n.estado === 'calculada' || n.estado === 'validada' || n.estado === 'aprobada',
+        cumplido: (n.evidenciaCalculo?.calculoVigente ?? false) && !!n.evidenciaCalculo?.idCalculoPeriodo,
         detalle: 'El motor V1 generó el snapshot del período.',
       },
       {
         id: 'validacion',
         label: 'Validación aprobada',
-        cumplido: r.puedeCerrar && r.conIncidenciasCriticas === 0,
+        cumplido: n.estado === 'aprobada' && r.puedeCerrar && r.conIncidenciasCriticas === 0,
         detalle: `${r.conIncidenciasCriticas} críticas · ${r.conAdvertencias} advertencias.`,
       },
     ];
@@ -130,11 +132,7 @@ export class NominaMensualV2PasoCierreComponent {
   async cerrarNomina(): Promise<void> {
     const id = this.nominaPeriodoId();
     if (!id || !this.todoCumplido()) return;
-    const confirmacion = window.confirm(
-      '¿Confirmas el cierre de la nómina? Esta acción bloquea cambios y registra auditoría.',
-    );
-    if (!confirmacion) return;
-
+    this.confirmarCierreVisible.set(false);
     this.ejecutando.set(true);
     this.error.set(null);
     try {
@@ -148,6 +146,10 @@ export class NominaMensualV2PasoCierreComponent {
     } finally {
       this.ejecutando.set(false);
     }
+  }
+
+  solicitarCierre(): void {
+    if (this.todoCumplido()) this.confirmarCierreVisible.set(true);
   }
 
   async reabrirNomina(): Promise<void> {

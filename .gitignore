@@ -79,6 +79,10 @@ yarn-error.log
 !/docs/codex/modulos/nomina-mensual/README.md
 !/docs/codex/modulos/nomina-mensual/contrato-general.md
 !/docs/codex/modulos/nomina-mensual/arquitectura-administrador-generador.md
+!/docs/codex/modulos/nomina-mensual/auditorias/
+/docs/codex/modulos/nomina-mensual/auditorias/*
+!/docs/codex/modulos/nomina-mensual/auditorias/README.md
+!/docs/codex/modulos/nomina-mensual/auditorias/auditoria-admin-generador-nomina-2026-06.md
 !/docs/codex/modulos/nomina-mensual/nomina-mensual-confirmacion-flow.md
 !/docs/codex/modulos/nomina-mensual/nomina-v10-2-alcance-trabajadores-preparacion-conceptual.md
 !/docs/codex/modulos/nomina-mensual/nomina-v11-contrato-funcional-preparaciones-lotes-por-tipo.md
@@ -110,6 +114,7 @@ Thumbs.db
 
 src/app/supabase
 /tests/*
+!/tests/nominas-admin-generador.e2e.spec.ts
 !/tests/nomina-mensual.e2e.spec.ts
 !/tests/empleados-nomina-error-fixtures.spec.ts
 /test-results

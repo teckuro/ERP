@@ -2,11 +2,33 @@
   @if (kpis().items.length > 0) {
     <div class="adm-nom__summary" role="group" aria-label="Resumen operativo del administrador">
       @for (kpi of kpis().items; track kpi.id) {
-        <span class="adm-nom__metric" [class]="'adm-nom__metric--' + kpi.tone">
+        <button
+          type="button"
+          class="adm-nom__metric"
+          [class]="'adm-nom__metric adm-nom__metric--' + kpi.tone"
+          [class.is-active]="filtroRapido() === kpi.id"
+          (click)="aplicarFiltroRapido($any(kpi.id))"
+        >
           <span class="adm-nom__metric-value">{{ kpi.value }}</span>
           <span class="adm-nom__metric-label">{{ kpi.label }}</span>
-        </span>
+        </button>
       }
+      <button
+        type="button"
+        class="adm-nom__metric adm-nom__metric--neutral"
+        [class.is-active]="filtroRapido() === 'todas'"
+        (click)="aplicarFiltroRapido('todas')"
+      >Ver todas</button>
+    </div>
+  }
+
+  @if (cargando() && resumenes().length === 0) {
+    <div class="adm-nom__state" role="status">Cargando nóminas abiertas…</div>
+  }
+  @if (errorCarga(); as error) {
+    <div class="adm-nom__state adm-nom__state--error" role="alert">
+      <span>{{ error }}</span>
+      <button type="button" class="adm-nom__row-action" (click)="cargarResumenes()">Reintentar</button>
     </div>
   }
 
@@ -15,7 +37,7 @@
     <app-data-grid
       title=""
       [columns]="columnas"
-      [rows]="resumenes()"
+      [rows]="resumenesVisibles()"
       [filters]="filtros()"
       [filtersEnabled]="true"
       [filtersCollapsible]="false"
@@ -80,6 +102,10 @@
         </span>
       </ng-template>
 
+      <ng-template appDataGridCell="proximoPaso" let-fila>
+        <span class="adm-nom__next-step">{{ proximoPasoToLabel(fila.proximoPaso) }}</span>
+      </ng-template>
+
       <ng-template appDataGridCell="actualizada" let-fila>
         <span class="adm-nom__cell-muted">{{ formatearActualizada(fila.updatedAt) }}</span>
       </ng-template>
@@ -95,6 +121,18 @@
             <lucide-icon name="file-text" aria-hidden="true"></lucide-icon>
             Resumen
           </button>
+          @if (puedeEliminarBorrador(fila.estado)) {
+            <button type="button" class="adm-nom__row-action" (click)="solicitarAccion('eliminar', fila)">Eliminar</button>
+          }
+          @if (puedeReabrir(fila.estado)) {
+            <button type="button" class="adm-nom__row-action" (click)="solicitarAccion('reabrir', fila)">Reabrir</button>
+          }
+          @if (puedeAnular(fila.estado)) {
+            <button type="button" class="adm-nom__row-action" (click)="solicitarAccion('anular', fila)">Anular</button>
+          }
+          @if (tieneLiquidaciones(fila.estado) && fila.evidenciaCalculo?.idCalculoPeriodo) {
+            <button type="button" class="adm-nom__row-action" (click)="verLiquidaciones(fila)">Liquidaciones</button>
+          }
           <button
             type="button"
             class="adm-nom__row-action adm-nom__row-action--primary"
@@ -118,10 +156,46 @@
   />
 }
 
+@if (accionPendiente(); as accion) {
+  <div class="adm-nom__action-backdrop" role="presentation">
+    <section class="adm-nom__action-dialog" role="dialog" aria-modal="true" aria-labelledby="adm-action-title">
+      <header>
+        <p class="adm-nom__action-eyebrow">Acción administrativa</p>
+        <h2 id="adm-action-title">
+          {{ accion.tipo === 'eliminar' ? 'Eliminar borrador' : accion.tipo === 'reabrir' ? 'Reabrir nómina' : 'Anular nómina' }}
+        </h2>
+        <p>{{ accion.nomina.empresaNombre }} · {{ accion.nomina.periodo }}</p>
+      </header>
+      @if (accion.tipo !== 'eliminar') {
+        <label>
+          Motivo obligatorio
+          <textarea
+            rows="3"
+            [value]="motivoAccion()"
+            (input)="motivoAccion.set($any($event.target).value)"
+          ></textarea>
+        </label>
+      } @else {
+        <p>Solo se eliminará la cabecera en estado borrador. Esta operación no se puede deshacer.</p>
+      }
+      @if (errorAccion(); as error) {
+        <p class="adm-nom__action-error" role="alert">{{ error }}</p>
+      }
+      <footer>
+        <button type="button" class="adm-nom__row-action" (click)="cancelarAccion()" [disabled]="ejecutandoAccion()">Cancelar</button>
+        <button type="button" class="adm-nom__row-action adm-nom__row-action--primary" (click)="confirmarAccion()" [disabled]="ejecutandoAccion()">
+          {{ ejecutandoAccion() ? 'Procesando…' : 'Confirmar' }}
+        </button>
+      </footer>
+    </section>
+  </div>
+}
+
 @if (resumenSeleccionado(); as resumen) {
   <app-admin-nominas-modal-resumen-nomina
     [nomina]="nominaSeleccionada()"
     [resumen]="resumen"
+    (abrirGenerador)="abrirGenerador(nominaSeleccionada()!); cerrarResumen()"
     (cerrar)="cerrarResumen()"
   />
 }

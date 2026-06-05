@@ -1,6 +1,19 @@
 # Arquitectura Administrador + Generador — Nómina mensual
 
 > **Documento rector** creado en `NOM-REBUILD-NOMINA-MENSUAL-01` (2026-06-03).
+
+## Actualización 2026-06-05 - ciclo consistente y cálculo vigente
+
+`NOM-ADMIN-ABIERTAS-CICLO-CONSISTENTE-01` completa la coherencia operativa:
+
+- Las transiciones se validan en dominio y mediante `transicionar_nomina_periodo`.
+- `nomina_periodo` guarda el snapshot V1 vigente, versión y fechas de cálculo, validación y aprobación.
+- Cambiar dotación o movimientos invalida el cálculo y devuelve la nómina a revisión.
+- `nomina-periodo-calculo-adapter.service.ts` calcula solo los trabajadores de la nómina seleccionada.
+- El cierre exige estado aprobado, cálculo vigente y ausencia de bloqueos.
+- Dotación usa consulta SQL paginada y las liquidaciones se habilitan solo desde una nómina cerrada y trazable.
+
+Migración: `supabase/migrations/20260605120000_nomina_periodo_ciclo_consistente.sql`.
 >
 > **Sustituye** y absorbe: `NOM-ADMIN-GENERADOR-01` (plan v2.2 intermedio, nunca implementado), `NOM-GRILLA-BASE-01` (plan v2.1 intermedio), `NOM-MULTI-NOMINA-01` (propuesta abierta el 2026-06-03).
 

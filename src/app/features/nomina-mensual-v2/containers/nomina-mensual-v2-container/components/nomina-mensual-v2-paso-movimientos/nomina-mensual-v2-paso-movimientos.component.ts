@@ -31,6 +31,7 @@ import type {
   MovimientoTipo,
 } from '../../../../../nomina-mensual/models/movimiento-nomina.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
+import type { FilaTrabajadorNominaResumen } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 
 type TabMovimientos = 'recurrentes' | 'manuales' | 'omitidos';
 
@@ -64,11 +65,15 @@ export class NominaMensualV2PasoMovimientosComponent {
   readonly mensaje = signal<string | null>(null);
   readonly recurrentes = signal<MovimientoRecurrente[]>([]);
   readonly movimientos = signal<MovimientoNomina[]>([]);
+  readonly trabajadores = signal<FilaTrabajadorNominaResumen[]>([]);
+  readonly busquedaTrabajador = signal('');
+  readonly buscandoTrabajadores = signal(false);
   readonly borradorManual = signal<BorradorManual>({
     trabajadorId: '',
     tipo: 'haber-extra',
     categoria: 'haber',
   });
+  private secuenciaBusquedaTrabajador = 0;
 
   readonly movimientosAplicados = computed(() =>
     this.movimientos().filter((m) => m.estado === 'aplicado'),
@@ -94,12 +99,14 @@ export class NominaMensualV2PasoMovimientosComponent {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const [recurrentes, movimientos] = await Promise.all([
+      const [recurrentes, movimientos, dotacion] = await Promise.all([
         this.servicio.listarRecurrentes(),
         this.servicio.listarMovimientos(id),
+        this.servicio.filtrarDotacion(id, {}, { page: 1, pageSize: 50, total: 0 }),
       ]);
       this.recurrentes.set(recurrentes);
       this.movimientos.set(movimientos);
+      this.trabajadores.set(dotacion.filas);
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido';
       this.error.set(`No fue posible cargar los movimientos: ${mensaje}`);
@@ -187,6 +194,35 @@ export class NominaMensualV2PasoMovimientosComponent {
 
   actualizarTrabajadorManual(valor: string): void {
     this.borradorManual.update((b) => ({ ...b, trabajadorId: valor.trim() }));
+  }
+
+  async buscarTrabajadores(valor: string): Promise<void> {
+    const id = this.nominaPeriodoId();
+    if (!id) return;
+
+    const busqueda = valor.trim();
+    const secuencia = ++this.secuenciaBusquedaTrabajador;
+    this.busquedaTrabajador.set(valor);
+    this.buscandoTrabajadores.set(true);
+    try {
+      const pagina = await this.servicio.filtrarDotacion(
+        id,
+        busqueda ? { busqueda } : {},
+        { page: 1, pageSize: 50, total: 0 },
+      );
+      if (secuencia === this.secuenciaBusquedaTrabajador) {
+        this.trabajadores.set(pagina.filas);
+      }
+    } catch (error) {
+      if (secuencia === this.secuenciaBusquedaTrabajador) {
+        const mensaje = error instanceof Error ? error.message : 'Error desconocido';
+        this.error.set(`No fue posible buscar trabajadores: ${mensaje}`);
+      }
+    } finally {
+      if (secuencia === this.secuenciaBusquedaTrabajador) {
+        this.buscandoTrabajadores.set(false);
+      }
+    }
   }
 
   actualizarTipoManual(valor: MovimientoTipo): void {
