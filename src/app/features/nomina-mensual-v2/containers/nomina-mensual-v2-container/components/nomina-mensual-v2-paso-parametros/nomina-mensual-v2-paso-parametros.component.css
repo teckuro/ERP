@@ -1,125 +1,214 @@
-/* Paso Parámetros NOIA — CSS local del componente (L5 desacople, 2026-06).
-   Encapsulation.None para que los selectores se apliquen al template del
-   componente sin scope `_ngcontent` y se mantengan compatibles con el shell.
-   Origen: `nomina-mensual-v2-container.css` (bloque L2 2026-06). */
+/**
+ * Paso Parámetros NOIA — layout sobrio alineado al patrón Admin.
+ *
+ * Decisiones (2026-06-04):
+ * - Header in-page eliminado (eyebrow "Paso 1 - PARAMETROS" + título duplicado
+ *   con el shell). El shell ya muestra título, subtítulo, chip de paso y acción
+ *   primaria.
+ * - Aside lateral eliminado: los 3 bloques (Pendientes para preparar /
+ *   Oficiales pendientes / Ir a Parámetros) duplicaban los chips de la franja
+ *   superior y la acción primaria del shell.
+ * - Alert banner banner grande naranja → noticia inline fina de un renglón.
+ * - Stats como franja inline sobria con separadores, no como caja con borde.
+ *
+ * Encapsulation.None (heredado del módulo): selectores BEM-style con prefijo
+ * `nmv2-paso-parametros__` para evitar colisiones.
+ */
+
 .nmv2-paso-parametros {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
-  gap: 12px;
-  min-height: 0;
-}
-
-.nmv2-paso-parametros__head {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.nmv2-paso-parametros__eyebrow {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  margin: 0;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #475569;
-}
-
-.nmv2-paso-parametros__eyebrow-sep {
-  color: #cbd5e1;
-}
-
-.nmv2-paso-parametros__head-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.nmv2-paso-parametros__title {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: #0f172a;
-  line-height: 1.3;
-}
-
-.nmv2-paso-parametros__stats {
-  display: inline-flex;
-  align-items: stretch;
   gap: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
   background: #ffffff;
-  overflow: hidden;
 }
 
-.nmv2-paso-parametros__stat {
+/* Franja de resumen (inline sobria, idéntica a `.adm-nom__summary`) ------- */
+
+.nmv2-paso-parametros__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+  padding: 8px 16px;
+  font-size: 12px;
+  color: #647084;
+  background: #ffffff;
+  border-bottom: 1px solid #eef0eb;
+}
+
+.nmv2-paso-parametros__metric {
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
-  padding: 4px 10px;
-  font-size: 11px;
-  color: #475569;
-  border-right: 1px solid #e2e8f0;
+  padding-right: 18px;
+  border-right: 1px solid #eef0eb;
+  line-height: 1.2;
 }
 
-.nmv2-paso-parametros__stat:last-child {
-  border-right: 0;
-}
-
-.nmv2-paso-parametros__stat strong {
-  font-size: 13px;
-  font-weight: 700;
+.nmv2-paso-parametros__metric strong {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color: #0f172a;
 }
 
-.nmv2-paso-parametros__stat--block strong {
+.nmv2-paso-parametros__metric span {
+  font-size: 11px;
+  color: #647084;
+}
+
+.nmv2-paso-parametros__metric--block strong {
   color: #b91c1c;
 }
 
-.nmv2-paso-parametros__stat--warn strong {
+.nmv2-paso-parametros__metric--warn strong {
   color: #b45309;
 }
 
-.nmv2-paso-parametros__stat--ok strong {
+.nmv2-paso-parametros__metric--ok strong {
   color: #047857;
 }
 
+.nmv2-paso-parametros__metric-meta {
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin-left: auto;
+  padding-left: 12px;
+  border-left: 1px solid #eef0eb;
+}
+
+.nmv2-paso-parametros__metric-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1d4ed8;
+  cursor: pointer;
+}
+
+.nmv2-paso-parametros__metric-link:hover,
+.nmv2-paso-parametros__metric-link:focus-visible {
+  text-decoration: underline;
+  outline: none;
+}
+
+.nmv2-paso-parametros__metric-link lucide-icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* Body: una sola columna full-bleed (sin padding lateral; cada bloque
+   maneja su propio padding interno como en el patrón de listado) --------- */
+
 .nmv2-paso-parametros__body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 280px);
-  gap: 14px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   min-height: 0;
+  width: 100%;
 }
 
 .nmv2-paso-parametros__body--busy {
   opacity: 0.9;
 }
 
-.nmv2-paso-parametros__main {
+/* Notice inline full-bleed (reemplaza alert banner grande). Sin border-radius
+   ni bordes laterales para que se ancle al borde de la página igual que las
+   franjas del Admin. Borde inferior fino como separador. */
+
+.nmv2-paso-parametros__notice {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 16px;
+  border: 0;
+  border-bottom: 1px solid #fde68a;
+  background: #fffbeb;
+  color: #78350f;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.nmv2-paso-parametros__notice strong {
+  font-weight: 600;
+  color: inherit;
+}
+
+.nmv2-paso-parametros__notice lucide-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  margin-top: 1px;
+}
+
+.nmv2-paso-parametros__notice > span {
+  flex: 1 1 auto;
   min-width: 0;
 }
+
+.nmv2-paso-parametros__notice-link {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #b45309;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.nmv2-paso-parametros__notice-link:hover,
+.nmv2-paso-parametros__notice-link:focus-visible {
+  text-decoration: underline;
+  outline: none;
+}
+
+.nmv2-paso-parametros__notice--error {
+  border-bottom-color: #fecaca;
+  background: #fef2f2;
+  color: #7f1d1d;
+}
+
+.nmv2-paso-parametros__notice--error .nmv2-paso-parametros__notice-link {
+  color: #b91c1c;
+}
+
+.nmv2-paso-parametros__notice--revision {
+  border-bottom-color: #cbd5e1;
+  background: #f8fafc;
+  color: #334155;
+}
+
+.nmv2-paso-parametros__notice--revision .nmv2-paso-parametros__notice-link {
+  color: #1d4ed8;
+}
+
+/* Lista plana de áreas full-bleed: sin border-radius ni bordes laterales,
+   filas separadas por línea fina. Anclada al borde de la página igual que la
+   tabla del listado de empleados / Admin. ---------------------------------- */
 
 .nmv2-paso-parametros__list {
   list-style: none;
   margin: 0;
   padding: 0;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  border: 0;
+  border-radius: 0;
   background: #ffffff;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
 }
 
 .nmv2-paso-parametros__list > li + li {
@@ -131,8 +220,8 @@
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 12px;
+  padding: 10px 14px;
   border: 0;
   background: transparent;
   text-align: left;
@@ -244,13 +333,14 @@
   color: #1d4ed8;
 }
 
-/* Loading inline (sin tarjetas fantasma): filas placeholder grises. */
+/* Loading inline (placeholder filas grises) -------------------------------- */
+
 .nmv2-paso-parametros__list--loading .nmv2-paso-parametros__row--placeholder {
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr) auto;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
-  padding: 10px 12px;
+  padding: 10px 14px;
   cursor: default;
 }
 
@@ -280,94 +370,48 @@
   border-radius: 999px;
 }
 
-/* Sidebar reducido (sin donut, sin métricas duplicadas). */
-.nmv2-paso-parametros__side {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-}
+/* Responsive --------------------------------------------------------------- */
 
-.nmv2-paso-parametros__side-block {
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  background: #ffffff;
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.nmv2-paso-parametros__side-block header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.nmv2-paso-parametros__side-block header strong {
-  font-size: 12px;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.nmv2-paso-parametros__side-block header span {
-  font-size: 12px;
-  font-weight: 700;
-  color: #475569;
-}
-
-.nmv2-paso-parametros__side-block p {
-  margin: 0;
-  font-size: 11.5px;
-  color: #64748b;
-  line-height: 1.4;
-}
-
-.nmv2-paso-parametros__side-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  align-self: flex-start;
-  margin-top: 4px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  color: #1d4ed8;
-  cursor: pointer;
-}
-
-.nmv2-paso-parametros__side-link:hover,
-.nmv2-paso-parametros__side-link:focus-visible {
-  text-decoration: underline;
-  outline: none;
-}
-
-.nmv2-paso-parametros__side-link lucide-icon {
-  width: 12px;
-  height: 12px;
-}
-
-.nmv2-paso-parametros__side-block--block {
-  border-color: #fecaca;
-  background: #fef9f9;
-}
-
-.nmv2-paso-parametros__side-block--warn {
-  border-color: #fde68a;
-  background: #fffdf5;
-}
-
-@media (max-width: 960px) {
-  .nmv2-paso-parametros__body {
-    grid-template-columns: 1fr;
-  }
-
-  .nmv2-paso-parametros__head-row {
+@media (max-width: 640px) {
+  .nmv2-paso-parametros__summary {
     flex-direction: column;
     align-items: flex-start;
+    gap: 6px;
+  }
+
+  .nmv2-paso-parametros__metric {
+    padding-right: 0;
+    border-right: 0;
+  }
+
+  .nmv2-paso-parametros__metric-meta {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .nmv2-paso-parametros__row {
+    grid-template-columns: 28px minmax(0, 1fr);
+    grid-template-areas:
+      'icon copy'
+      'icon state';
+    row-gap: 4px;
+  }
+
+  .nmv2-paso-parametros__row-icon {
+    grid-area: icon;
+  }
+
+  .nmv2-paso-parametros__row-copy {
+    grid-area: copy;
+  }
+
+  .nmv2-paso-parametros__row-state {
+    grid-area: state;
+    justify-self: start;
+  }
+
+  .nmv2-paso-parametros__row-action {
+    display: none;
   }
 }

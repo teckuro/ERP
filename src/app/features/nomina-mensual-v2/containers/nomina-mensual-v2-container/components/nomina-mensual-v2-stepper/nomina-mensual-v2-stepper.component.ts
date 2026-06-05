@@ -19,12 +19,11 @@ import {
   tooltipPasoCongelado,
 } from '../../facade/nomina-mensual-v2-navegacion';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
-import { NominaMensualV2StepperTraceabilityComponent } from '../nomina-mensual-v2-stepper-traceability/nomina-mensual-v2-stepper-traceability.component';
 
 @Component({
   selector: 'app-nomina-mensual-v2-stepper',
   standalone: true,
-  imports: [LucideAngularModule, NominaMensualV2StepperTraceabilityComponent],
+  imports: [LucideAngularModule],
   templateUrl: './nomina-mensual-v2-stepper.component.html',
   styleUrl: './nomina-mensual-v2-stepper.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

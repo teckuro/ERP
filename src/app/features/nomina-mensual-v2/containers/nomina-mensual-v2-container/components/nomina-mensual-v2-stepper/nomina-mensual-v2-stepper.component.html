@@ -1,48 +1,43 @@
 <div class="nomina-workflow-header nmv2-stepper-card nomina-shell">
-  <div class="nomina-workflow-header__flow" aria-label="Avance del flujo">
-    <span class="nomina-workflow-header__label">Flujo</span>
-    <nav class="nmv2-stepper nomina-stepper nomina-stepper-compact" aria-label="Flujo de nomina mensual">
-      @for (vista of vistasStepper(); track vista.clave) {
-        <button
-          type="button"
-          class="step nomina-step"
-          [class]="claseEstadoPaso(estadoPaso(vista.clave))"
-          [class.active]="estadoPaso(vista.clave) === 'active'"
-          [class.completed]="estadoPaso(vista.clave) === 'completed'"
-          [class.nomina-step--advance-blocked]="pasoAvanceBloqueado(vista.clave)"
-          [class.nomina-step--frozen]="pasoCongelado(vista.clave)"
-          [disabled]="pasoAvanceBloqueado(vista.clave) || pasoCongelado(vista.clave)"
-          [attr.aria-disabled]="pasoAvanceBloqueado(vista.clave) || pasoCongelado(vista.clave) ? 'true' : null"
-          [attr.title]="tooltipPaso(vista.clave)"
-          (click)="seleccionarPaso(vista.clave)"
+  <nav class="nmv2-stepper nomina-stepper nomina-stepper-compact" aria-label="Flujo de nómina mensual">
+    @for (vista of vistasStepper(); track vista.clave) {
+      <button
+        type="button"
+        class="step nomina-step"
+        [class]="claseEstadoPaso(estadoPaso(vista.clave))"
+        [class.active]="estadoPaso(vista.clave) === 'active'"
+        [class.completed]="estadoPaso(vista.clave) === 'completed'"
+        [class.nomina-step--advance-blocked]="pasoAvanceBloqueado(vista.clave)"
+        [class.nomina-step--frozen]="pasoCongelado(vista.clave)"
+        [disabled]="pasoAvanceBloqueado(vista.clave) || pasoCongelado(vista.clave)"
+        [attr.aria-disabled]="pasoAvanceBloqueado(vista.clave) || pasoCongelado(vista.clave) ? 'true' : null"
+        [attr.title]="tooltipPaso(vista.clave)"
+        (click)="seleccionarPaso(vista.clave)"
+      >
+        <span class="step-index">
+          <span class="step-number">
+            <span>{{ vista.numero }}</span>
+          </span>
+        </span>
+        <span class="step-copy">
+          <strong>{{ vista.titulo }}</strong>
+          <small>{{ vista.accion }}</small>
+        </span>
+        <span
+          class="step-status step-status--icon-only"
+          [class.step-status--ready]="vista.estado === 'completo'"
+          [class.step-status--waiting]="vista.estado !== 'completo'"
+          [class.step-status--frozen]="pasoCongelado(vista.clave)"
         >
-          <span class="step-index">
-            <span class="step-number">
-              <span>{{ vista.numero }}</span>
-            </span>
-          </span>
-          <span class="step-copy">
-            <strong>{{ vista.titulo }}</strong>
-            <small>{{ vista.accion }}</small>
-          </span>
-          <span
-            class="step-status step-status--icon-only"
-            [class.step-status--ready]="vista.estado === 'completo'"
-            [class.step-status--waiting]="vista.estado !== 'completo'"
-            [class.step-status--frozen]="pasoCongelado(vista.clave)"
-          >
-            @if (pasoCongelado(vista.clave)) {
-              <lucide-icon name="lock" aria-label="Disponible al cerrar V11"></lucide-icon>
-            } @else if (vista.estado === 'completo') {
-              <lucide-icon name="check" aria-label="Listo"></lucide-icon>
-            } @else {
-              <lucide-icon name="clock-3" aria-label="No listo"></lucide-icon>
-            }
-          </span>
-        </button>
-      }
-    </nav>
-  </div>
-
-  <app-nomina-mensual-v2-stepper-traceability />
+          @if (pasoCongelado(vista.clave)) {
+            <lucide-icon name="lock" aria-label="Disponible al cerrar V11"></lucide-icon>
+          } @else if (vista.estado === 'completo') {
+            <lucide-icon name="check" aria-label="Listo"></lucide-icon>
+          } @else {
+            <lucide-icon name="clock-3" aria-label="No listo"></lucide-icon>
+          }
+        </span>
+      </button>
+    }
+  </nav>
 </div>

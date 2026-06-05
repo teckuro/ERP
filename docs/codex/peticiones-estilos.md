@@ -8,6 +8,104 @@
 > - [`archivo/peticiones-estilos-2026-05.md`](./archivo/peticiones-estilos-2026-05.md) — mayo 2026 y anteriores (288 entradas, rotadas el 2026-06-03 por DOCS-AUDIT-02 / L3).
 
 ---
+## 2026-06-04 - Generador V2: fix del filtro de mes del shell con nómina cargada
+
+**Bug reportado**: «el filtro de mes del shell en las nóminas te deja cambiar y si ya pasé el primer paso (ej. Parámetros) no carga con el mes correspondiente».
+
+**Causa raíz**: el generador opera sobre una nómina fijada por URL (`/remuneraciones/nominas/:id/generador`), pero el `PeriodoActivoService` es global y editable desde el shell. Cuando el usuario cambiaba el mes:
+- `periodoActivo.periodoYm()` apuntaba al nuevo mes.
+- La nómina cargada en memoria seguía siendo la del mes anterior.
+- Los pasos 2+ (Dotación, Movimientos, Cálculo, Validación, Cierre) consumían `nominaPeriodoId` (id viejo) → datos del periodo equivocado.
+
+**Fix** (lógica, no visual):
+
+- `nomina-mensual-v2-container.ts`: el effect de `periodoActivo.periodoYm()` ahora pasa por `onPeriodoActivoCambiado()`.
+- Si hay nómina cargada y su `periodo` difiere del nuevo del shell, se llama `redirigirAlNuevoPeriodo(nuevoPeriodo)`:
+  - Limpia `nominaCargada`, `ultimoNominaIdCargado` y `ultimoPeriodoInicializado` para evitar que los effects sincronicen el shell con la nómina vieja durante la navegación.
+  - Consulta `nominaPeriodoService.listarResumenes()` y busca la del nuevo periodo.
+  - Si existe → `router.navigate(['/remuneraciones/nominas', equivalente.id, 'generador'])`.
+  - Si no existe → vuelve al Admin (`/remuneraciones/nominas`).
+- Si no hay nómina cargada o el periodo coincide → flujo normal (`inicializarSesionPeriodo`).
+
+**Resultado**: el usuario puede cambiar el mes desde el shell estando en cualquier paso del generador. El sistema lo lleva a la nómina equivalente del nuevo periodo (mismo dominio mental: «ver mayo»), o al Admin si no existe. Los datos siempre quedan coherentes con la URL.
+
+**Otras pantallas verificadas** (mismo criterio del shell por URL):
+
+- **Admin (`/remuneraciones/nominas`)**: no depende del periodo del shell para listar; muestra todas las nóminas de la empresa. Sin cambios necesarios.
+- **Ficha empleado (`/empleados/:id`)**: ya reacciona correctamente al cambio de periodo del shell vía `cargarPerfilLaboral(empleadoId, periodoYm)` desde el facade. URL no depende del periodo. Sin cambios necesarios.
+
+**Archivos tocados**:
+
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container.ts` (nuevo método `onPeriodoActivoCambiado`, nuevo método `redirigirAlNuevoPeriodo`, effect ajustado).
+
+**Validaciones**: `npx ng build --configuration=development` OK (36.9s), `ReadLints` sin errores.
+
+---
+## 2026-06-04 - Generador V2: layout unificado al patrón listado (full-bleed)
+
+**Petición**: que el generador se vea **igual que el listado** (continuidad visual entre `/empleados` → `/remuneraciones/nominas` → `/remuneraciones/nominas/:id/generador`).
+
+**Cambios** (CSS local, sin tocar globales, sin nuevos componentes, sin paletas nuevas):
+
+- `.nmv2-stepper-card` (container V2): full-bleed. Sin `border`, sin `border-radius`; conserva sólo `border-bottom: 1px #e2e8f0` como separador con el cuerpo. Antes era una card flotante con esquinas redondeadas superiores.
+- `.nmv2-step-frame`: sin `padding`, sin `gap`; el contenido del paso gobierna su propio padding. Antes inyectaba 14px de padding y rompía la continuidad lateral.
+- `.nmv2-step-body`: `overflow:hidden`, fondo blanco (era gris). El scroll lo gestiona la lista interna del paso, no el body.
+- Paso Parámetros (`nmv2-paso-parametros`):
+  - `:host` = flex column, `flex:1 1 auto`, `height:100%`. Permite que la lista interna se estire al alto disponible.
+  - `gap: 0` (override de la regla global que daba 12px). Cada franja queda pegada a la siguiente y se separa con `border-bottom` fino.
+  - `.nmv2-paso-parametros__summary` = idéntico al `.adm-nom__summary`: padding `8px 16px`, fondo blanco, `border-bottom: 1px #eef0eb`.
+  - `.nmv2-paso-parametros__notice` = inline full-bleed (sin `border-radius`, sin bordes laterales; sólo `border-bottom` contextual amber / rojo / gris según `tipo`).
+  - `.nmv2-paso-parametros__list` = full-bleed (`border:0`, `border-radius:0`, `flex:1 1 auto`, `overflow:auto`). La tabla de áreas toca los bordes de la página igual que la tabla del listado de empleados.
+
+**Resultado visual**: stepper → resumen inline → notice opcional → lista plana, todos pegados con líneas finas separadoras, anclados al borde de la página. Mismo lenguaje que el listado.
+
+**Archivos tocados**:
+
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container.css` (`.nmv2-stepper-card`, `.nmv2-step-frame`, `.nmv2-step-body`, regla global `.nmv2-paso-*` gap diferenciado).
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-parametros/nomina-mensual-v2-paso-parametros.component.css` (host flex/height, summary inline, notice inline, lista full-bleed).
+
+**Validaciones**: `npx tsc --noEmit` limpio, `ReadLints` sin errores, dev server recompila `nomina-mensual-v2-container` (~0.7s) sin warnings.
+
+---
+## 2026-06-04 - Generador V2: rediseño del paso Parámetros + bug del Shell al volver
+
+Dos problemas atacados de raíz:
+
+### 1) Bug Shell: al salir del generador y volver, el header mostraba el paso visitado en la sesión anterior
+
+**Causa**: los `effect()` se registraban dentro de `ngOnInit` con `{ injector: this.injector }`. Eso funciona pero no garantiza limpieza idiomática en cada remount; además el `currentStep` quedaba con el valor del paso visitado en la sesión anterior antes de que `inicializarSesionPeriodo` resolviera la sesión real.
+
+**Fix**: en `nomina-mensual-v2-container.ts`:
+
+- Effects movidos al `constructor` (limpieza automática vía DestroyRef del componente).
+- En `ngOnInit`: reset defensivo de `currentStep` a `'parameters'`, `ultimoPeriodoInicializado = null`, `ultimoNominaIdCargado = null` antes de marcar el binding activo, y llamada sincrónica a `syncShellContext()`.
+- Se eliminó la dependencia `Injector` del componente (ya no se necesita).
+
+### 2) Generador "alineado a Admin" (criterio NOIA productivo)
+
+Replicamos el patrón canónico del listado: una sola identidad por página (la del Shell), información no duplicada, una sola columna de contenido, banners finos inline en vez de cards naranjas grandes.
+
+**Cambios**:
+
+- Eliminado `<app-page-frame tone="workspace">` del container V2: aportaba doble padding, gap y un `pf-body` extra. Ahora el HTML del container es `<section.nmv2-page>` directo, con flex column y full-height (mismo patrón que `.listado-page` de empleados y `.adm-nom__page` del Admin).
+- `<app-nomina-mensual-v2-stepper>` compactado: eliminada la eyebrow "Flujo" y la franja "Detalle del paso" lateral (`<app-nomina-mensual-v2-stepper-traceability>`). Los chips Responsable / Historial / Integridad duplicaban información del shell y no aportaban acción primaria — quedan disponibles desde el modal de trazabilidad si se requieren.
+- Paso Parámetros (`nomina-mensual-v2-paso-parametros`) rediseñado:
+  - Header in-page eliminado (eyebrow "PASO 1 · PARÁMETROS" + "Configuración requerida..." duplicaban el shell).
+  - Aside lateral eliminado (3 bloques duplicaban los 3 chips del header y la acción primaria del shell).
+  - Stats convertidos a franja inline sobria con separadores finos (mismo lenguaje visual que el resumen del Admin).
+  - Banner de alerta grande naranja → noticia inline fina de un renglón (`<p.nmv2-paso-parametros__notice>`).
+  - Lista de áreas conserva el patrón de filas planas (sin tarjetas), un solo borde alrededor.
+- `.nmv2-step-nav-hint` rebajada: sin fondo de color saturado por defecto; los tonos `--bloqueo` / `--revision` quedan como variantes finas con borde inferior contextual.
+
+**Archivos tocados**:
+
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container.{ts,html,css}` (constructor effects, sin `<app-page-frame>`, `.nmv2-page` toma alto directo).
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component.{ts,html}` (sin eyebrow "Flujo", sin `<app-nomina-mensual-v2-stepper-traceability>`).
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-parametros/nomina-mensual-v2-paso-parametros.component.{html,css}` (header in-page fuera, aside fuera, alert banner → notice inline fino, stats inline).
+
+**Validaciones**: `npx tsc --noEmit` limpio, `ReadLints` sin errores, dev server recompila `nomina-mensual-v2-container` en ~1.0s sin warnings. Contrastado con `docs/codex/diseno/noia-ui-guardrails.md` (regla anti-card, lenguaje operativo, una sola identidad por página) y con el patrón del listado de empleados.
+
+---
 ## 2026-06-04 - Admin de nóminas: revertimos al patrón canónico de listado (sin page-frame)
 
 **Problema reportado**: tras introducir `<app-page-frame tone="flush">` en `administrador-nominas-container`, la tabla seguía "separándose en 2" y "quitando los bordes-radios". Acumulamos varias capas de CSS intentando arreglar la cadena de alto sin éxito.

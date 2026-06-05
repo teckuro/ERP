@@ -1,85 +1,83 @@
-<app-page-frame tone="workspace">
-  <section class="nmv2-page nomina-shell" [attr.data-step]="currentStep()">
-    <app-nomina-mensual-v2-stepper
-      [pasoActual]="currentStep()"
-      [steps]="steps"
-      [avanceDesdePasoActualBloqueado]="parametrosPasoOcupado()"
-      (pasoSeleccionado)="intentarIrAPaso($event)"
-    />
+<section class="nmv2-page nomina-shell" [attr.data-step]="currentStep()" aria-label="Generador de nómina">
+  <app-nomina-mensual-v2-stepper
+    [pasoActual]="currentStep()"
+    [steps]="steps"
+    [avanceDesdePasoActualBloqueado]="parametrosPasoOcupado()"
+    (pasoSeleccionado)="intentarIrAPaso($event)"
+  />
 
-    @if (orquestador.ayudaAvance(); as ayudaAvance) {
-      <p
-        class="nmv2-step-nav-hint"
-        [class.nmv2-step-nav-hint--bloqueo]="orquestador.tonoAyudaAvance() === 'bloqueo'"
-        [class.nmv2-step-nav-hint--revision]="orquestador.tonoAyudaAvance() === 'revision'"
-      >{{ ayudaAvance }}</p>
-    }
+  @if (orquestador.ayudaAvance(); as ayudaAvance) {
+    <p
+      class="nmv2-step-nav-hint"
+      [class.nmv2-step-nav-hint--bloqueo]="orquestador.tonoAyudaAvance() === 'bloqueo'"
+      [class.nmv2-step-nav-hint--revision]="orquestador.tonoAyudaAvance() === 'revision'"
+    >{{ ayudaAvance }}</p>
+  }
 
-    <div class="nmv2-step-body">
-      <div class="nmv2-step-frame">
-        @switch (currentStep()) {
-          @case ('parameters') {
-            <app-nomina-mensual-v2-paso-parametros
-              (avanceSolicitado)="manejarAvanceDesdeParametros($event)"
-              (resumenActualizado)="syncShellContext()"
-            />
-          }
-          @case ('dotacion') {
-            <app-nomina-mensual-v2-paso-dotacion
-              [nominaPeriodoId]="nominaPeriodoId()"
-              (avanceSolicitado)="manejarAvanceDesdeAlcance()"
-              (volverParametros)="intentarIrAPaso('parameters')"
-            />
-          }
-          @case ('movements') {
-            <app-nomina-mensual-v2-paso-movimientos
-              [nominaPeriodoId]="nominaPeriodoId()"
-              (avanceSolicitado)="intentarIrAPaso('calculation')"
-              (volverDotacion)="intentarIrAPaso('dotacion')"
-            />
-          }
-          @case ('calculation') {
-            <app-nomina-mensual-v2-paso-calculo
-              [nominaPeriodoId]="nominaPeriodoId()"
-              (avanceSolicitado)="intentarIrAPaso('validation')"
-              (volverMovimientos)="intentarIrAPaso('movements')"
-            />
-          }
-          @case ('validation') {
-            <app-nomina-mensual-v2-paso-validacion
-              [nominaPeriodoId]="nominaPeriodoId()"
-              (aprobarSolicitado)="intentarIrAPaso('closure')"
-              (verEnDotacionSolicitado)="intentarIrAPaso('dotacion')"
-              (volverCalculo)="intentarIrAPaso('calculation')"
-            />
-          }
-          @case ('closure') {
-            <app-nomina-mensual-v2-paso-cierre
-              [nominaPeriodoId]="nominaPeriodoId()"
-              (volverValidacion)="intentarIrAPaso('validation')"
-            />
-          }
+  <div class="nmv2-step-body">
+    <div class="nmv2-step-frame">
+      @switch (currentStep()) {
+        @case ('parameters') {
+          <app-nomina-mensual-v2-paso-parametros
+            (avanceSolicitado)="manejarAvanceDesdeParametros($event)"
+            (resumenActualizado)="syncShellContext()"
+          />
         }
-      </div>
+        @case ('dotacion') {
+          <app-nomina-mensual-v2-paso-dotacion
+            [nominaPeriodoId]="nominaPeriodoId()"
+            (avanceSolicitado)="manejarAvanceDesdeAlcance()"
+            (volverParametros)="intentarIrAPaso('parameters')"
+          />
+        }
+        @case ('movements') {
+          <app-nomina-mensual-v2-paso-movimientos
+            [nominaPeriodoId]="nominaPeriodoId()"
+            (avanceSolicitado)="intentarIrAPaso('calculation')"
+            (volverDotacion)="intentarIrAPaso('dotacion')"
+          />
+        }
+        @case ('calculation') {
+          <app-nomina-mensual-v2-paso-calculo
+            [nominaPeriodoId]="nominaPeriodoId()"
+            (avanceSolicitado)="intentarIrAPaso('validation')"
+            (volverMovimientos)="intentarIrAPaso('movements')"
+          />
+        }
+        @case ('validation') {
+          <app-nomina-mensual-v2-paso-validacion
+            [nominaPeriodoId]="nominaPeriodoId()"
+            (aprobarSolicitado)="intentarIrAPaso('closure')"
+            (verEnDotacionSolicitado)="intentarIrAPaso('dotacion')"
+            (volverCalculo)="intentarIrAPaso('calculation')"
+          />
+        }
+        @case ('closure') {
+          <app-nomina-mensual-v2-paso-cierre
+            [nominaPeriodoId]="nominaPeriodoId()"
+            (volverValidacion)="intentarIrAPaso('validation')"
+          />
+        }
+      }
     </div>
+  </div>
 
-    <app-nomina-mensual-v2-overlays
-      (confirmarAvanceConRevision)="confirmarAvanceConRevision()"
-      (irAPendientesParametros)="irAPendientesParametros()"
-      (confirmarAvanceConAdvertenciaAlcance)="confirmarAvanceConAdvertenciaAlcance()"
-      (irAPendientesEmpleados)="irAPendientesEmpleados()"
-      (verEnGrillaEmpleados)="verEnGrillaEmpleados($event)"
-      (confirmarAvanceConAdvertenciaEmpleados)="confirmarAvanceConAdvertenciaEmpleados()"
-      (reintentarValidacionEmpleados)="reintentarValidacionEmpleados()"
-      (confirmarGuardarBaseYContinuar)="confirmarGuardarBaseYContinuar()"
-      (confirmarMantenerBaseYContinuar)="confirmarMantenerBaseYContinuar()"
-      (solicitarActualizarBase)="solicitarActualizarBase()"
-      (confirmarActualizarBaseYContinuar)="confirmarActualizarBaseYContinuar()"
-      (confirmarReingresoParametros)="confirmarReingresoParametros()"
-      (confirmarRecargaBaseParametros)="confirmarRecargaBaseParametros()"
-    />
+  <app-nomina-mensual-v2-overlays
+    (confirmarAvanceConRevision)="confirmarAvanceConRevision()"
+    (irAPendientesParametros)="irAPendientesParametros()"
+    (confirmarAvanceConAdvertenciaAlcance)="confirmarAvanceConAdvertenciaAlcance()"
+    (irAPendientesEmpleados)="irAPendientesEmpleados()"
+    (verEnGrillaEmpleados)="verEnGrillaEmpleados($event)"
+    (confirmarAvanceConAdvertenciaEmpleados)="confirmarAvanceConAdvertenciaEmpleados()"
+    (reintentarValidacionEmpleados)="reintentarValidacionEmpleados()"
+    (confirmarGuardarBaseYContinuar)="confirmarGuardarBaseYContinuar()"
+    (confirmarMantenerBaseYContinuar)="confirmarMantenerBaseYContinuar()"
+    (solicitarActualizarBase)="solicitarActualizarBase()"
+    (confirmarActualizarBaseYContinuar)="confirmarActualizarBaseYContinuar()"
+    (confirmarReingresoParametros)="confirmarReingresoParametros()"
+    (confirmarRecargaBaseParametros)="confirmarRecargaBaseParametros()"
+  />
 
-    <app-nomina-mensual-v2-trazabilidad-modal />
-    <app-nomina-mensual-v2-trazabilidad-drawer />
-  </section>
-</app-page-frame>
+  <app-nomina-mensual-v2-trazabilidad-modal />
+  <app-nomina-mensual-v2-trazabilidad-drawer />
+</section>

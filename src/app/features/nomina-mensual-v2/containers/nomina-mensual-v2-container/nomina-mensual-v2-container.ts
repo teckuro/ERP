@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Injector,
   OnDestroy,
   OnInit,
   ViewEncapsulation,
@@ -46,13 +45,11 @@ import { NominaParametrosBaseAccesoService } from '../../services/nomina-paramet
 import { NominaMensualV2OrquestadorPort } from './facade/nomina-mensual-v2-orquestador.port';
 import { NominaMensualV2TrazabilidadDrawerComponent } from './components/nomina-mensual-v2-trazabilidad-drawer/nomina-mensual-v2-trazabilidad-drawer.component';
 import { NominaMensualV2TrazabilidadModalComponent } from './components/nomina-mensual-v2-trazabilidad-modal/nomina-mensual-v2-trazabilidad-modal.component';
-import { PageFrameComponent } from '../../../../shared/components/ui/page-frame/page-frame.component';
 
 @Component({
   selector: 'app-nomina-mensual-v2-container',
   standalone: true,
   imports: [
-    PageFrameComponent,
     NominaMensualV2StepperComponent,
     NominaMensualV2PasoParametrosComponent,
     NominaMensualV2PasoDotacionComponent,
@@ -71,7 +68,6 @@ import { PageFrameComponent } from '../../../../shared/components/ui/page-frame/
   encapsulation: ViewEncapsulation.None,
 })
 export class NominaMensualV2Container implements OnInit, OnDestroy {
-  private readonly injector = inject(Injector);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly shellContext = inject(ShellPageContextService);
@@ -104,8 +100,33 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     return (paso?.parametrosLoading() ?? false) || (paso?.parametrosValidando() ?? false);
   });
 
+  constructor() {
+    // Effects en contexto de constructor (NO en ngOnInit) para garantizar
+    // limpieza automática al destruir el componente. Esto evita que, al volver
+    // a entrar al generador, el shell muestre el paso visitado en la sesión
+    // anterior: el currentStep se reinicia abajo, los effects nuevos arrancan
+    // limpios y syncShellContext se ejecuta sin estado residual.
+    effect(() => {
+      const periodo = this.periodoActivo.periodoYm();
+      void this.onPeriodoActivoCambiado(periodo);
+    });
+    effect(() => {
+      this.currentStep();
+      this.orquestador.estadoParametrosBase();
+      this.pasoParametros()?.parametrosLoading();
+      this.pasoParametros()?.parametrosValidando();
+      this.syncShellContext();
+    });
+  }
+
   ngOnInit(): void {
+    // Reinicio defensivo: si quedó residuo de una sesión anterior, lo limpiamos
+    // antes de marcar el binding activo y sincronizar el shell.
+    this.currentStep.set('parameters');
+    this.ultimoPeriodoInicializado = null;
+    this.ultimoNominaIdCargado = null;
     this.shellContext.setBindingActive(true);
+    this.syncShellContext();
     this.orquestador.vincularTrazabilidadService(this.trazabilidadService);
     this.route.paramMap.subscribe((params) => {
       const id = params.get('nominaPeriodoId');
@@ -115,17 +136,50 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
         void this.cargarNominaProductiva(id);
       }
     });
-    effect(() => {
-      const periodo = this.periodoActivo.periodoYm();
-      void this.inicializarSesionPeriodo(periodo);
-    }, { injector: this.injector });
-    effect(() => {
-      this.currentStep();
-      this.orquestador.estadoParametrosBase();
-      this.pasoParametros()?.parametrosLoading();
-      this.pasoParametros()?.parametrosValidando();
-      this.syncShellContext();
-    }, { injector: this.injector });
+  }
+
+  /**
+   * Reacciona al cambio del periodo activo del shell. Mientras estás dentro
+   * del generador, el periodo viene fijado por la nómina cargada (URL). Si el
+   * usuario cambia el mes desde el shell:
+   *
+   * 1. Si todavía no hay nómina cargada (carga inicial) → seguimos el flujo
+   *    normal `inicializarSesionPeriodo`.
+   * 2. Si hay nómina cargada y su periodo coincide con el nuevo → idem (caso
+   *    típico de `cargarNominaProductiva` sincronizando el shell).
+   * 3. Si hay nómina cargada y su periodo difiere del nuevo → buscamos en los
+   *    resúmenes de la empresa activa la nómina del nuevo periodo. Si existe,
+   *    navegamos a su generador (mantenemos al usuario en la misma fase del
+   *    flujo, pero con datos coherentes); si no existe, volvemos al Admin con
+   *    el nuevo periodo activo.
+   */
+  private async onPeriodoActivoCambiado(periodo: string): Promise<void> {
+    const nominaActual = this.nominaCargada();
+    if (nominaActual && nominaActual.periodo && nominaActual.periodo !== periodo) {
+      await this.redirigirAlNuevoPeriodo(periodo);
+      return;
+    }
+    await this.inicializarSesionPeriodo(periodo);
+  }
+
+  private async redirigirAlNuevoPeriodo(periodo: string): Promise<void> {
+    // Limpieza inmediata: el container se va a destruir o re-inicializar; sin
+    // esto, el effect que sincroniza el shell podría dispararse con la nómina
+    // vieja antes de que el router termine de navegar.
+    this.nominaCargada.set(null);
+    this.ultimoNominaIdCargado = null;
+    this.ultimoPeriodoInicializado = null;
+    try {
+      const resumenes = await this.nominaPeriodoService.listarResumenes();
+      const equivalente = resumenes.find((r) => r.periodo === periodo);
+      if (equivalente) {
+        await this.router.navigate(['/remuneraciones/nominas', equivalente.id, 'generador']);
+        return;
+      }
+    } catch (error) {
+      console.error('[Nómina V2] No fue posible localizar la nómina del nuevo periodo', error);
+    }
+    await this.router.navigate(['/remuneraciones/nominas']);
   }
 
   private async cargarNominaProductiva(nominaPeriodoId: string): Promise<void> {
