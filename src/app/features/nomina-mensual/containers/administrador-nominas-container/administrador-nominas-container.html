@@ -1,30 +1,4 @@
 <section class="adm-nom__page" aria-label="Administrador de nóminas">
-  @if (kpis().items.length > 0) {
-    <div class="adm-nom__summary" role="group" aria-label="Resumen operativo del administrador">
-      @for (kpi of kpis().items; track kpi.id) {
-        <button
-          type="button"
-          class="adm-nom__metric"
-          [class]="'adm-nom__metric adm-nom__metric--' + kpi.tone"
-          [class.is-active]="filtroRapido() === kpi.id"
-          (click)="aplicarFiltroRapido($any(kpi.id))"
-        >
-          <span class="adm-nom__metric-value">{{ kpi.value }}</span>
-          <span class="adm-nom__metric-label">{{ kpi.label }}</span>
-        </button>
-      }
-      <button
-        type="button"
-        class="adm-nom__metric adm-nom__metric--neutral"
-        [class.is-active]="filtroRapido() === 'todas'"
-        (click)="aplicarFiltroRapido('todas')"
-      >Ver todas</button>
-    </div>
-  }
-
-  @if (cargando() && resumenes().length === 0) {
-    <div class="adm-nom__state" role="status">Cargando nóminas abiertas…</div>
-  }
   @if (errorCarga(); as error) {
     <div class="adm-nom__state adm-nom__state--error" role="alert">
       <span>{{ error }}</span>
@@ -34,29 +8,30 @@
 
   <div class="adm-nom__grid-shell" aria-labelledby="adm-nom-grid-title">
     <h2 id="adm-nom-grid-title" class="sr-only">Listado de nóminas</h2>
-    <app-data-grid
-      title=""
-      [columns]="columnas"
-      [rows]="resumenesVisibles()"
-      [filters]="filtros()"
-      [filtersEnabled]="true"
-      [filtersCollapsible]="false"
-      filterChipsDisplay="whenFiltersHidden"
-      headerCountDisplay="text"
-      headerCountNoun="nóminas"
-      [headerShowActiveFiltersCount]="true"
-      [selectable]="false"
-      [trackBy]="trackResumen"
-      [persistenceKey]="persistenceKey"
-      toolbarLayout="operativa"
-      [gridHeight]="'100%'"
-      emptyTitle="Aún no hay nóminas"
-      emptyDescription="Crea la primera nómina del período para empezar."
-      emptyTitleWhenFiltered="Sin nóminas con esos filtros"
-      emptyDescriptionWhenFiltered="Ajusta o limpia los filtros para ampliar el resultado."
-      className="adm-nom__grid"
-      cardClassName="adm-nom__grid-card"
-    >
+    @if (!cargando() || resumenes().length > 0) {
+      <app-data-grid
+        title=""
+        [columns]="columnas"
+        [rows]="resumenesOrdenados()"
+        [filters]="filtros()"
+        [filtersEnabled]="true"
+        [filtersCollapsible]="false"
+        filterChipsDisplay="whenFiltersHidden"
+        headerCountDisplay="text"
+        headerCountNoun="nóminas"
+        [headerShowActiveFiltersCount]="true"
+        [selectable]="false"
+        [trackBy]="trackResumen"
+        [persistenceKey]="persistenceKey"
+        toolbarLayout="operativa"
+        [gridHeight]="'100%'"
+        emptyTitle="Aún no hay nóminas"
+        emptyDescription="Crea la primera nómina del período para empezar."
+        emptyTitleWhenFiltered="Sin nóminas con esos filtros"
+        emptyDescriptionWhenFiltered="Ajusta o limpia los filtros para ampliar el resultado."
+        className="adm-nom__grid"
+        cardClassName="adm-nom__grid-card"
+      >
       <ng-template appDataGridCell="periodo" let-fila>
         <span class="adm-nom__cell-periodo">{{ fila.periodo }}</span>
       </ng-template>
@@ -116,35 +91,75 @@
             type="button"
             class="adm-nom__row-action"
             (click)="abrirResumen(fila)"
+            title="Ver resumen"
             [attr.aria-label]="'Ver resumen de ' + fila.empresaNombre + ' ' + fila.periodo"
           >
-            <lucide-icon name="file-text" aria-hidden="true"></lucide-icon>
-            Resumen
+            <lucide-icon name="eye" aria-hidden="true"></lucide-icon>
           </button>
           @if (puedeEliminarBorrador(fila.estado)) {
-            <button type="button" class="adm-nom__row-action" (click)="solicitarAccion('eliminar', fila)">Eliminar</button>
+            <button
+              type="button"
+              class="adm-nom__row-action adm-nom__row-action--danger"
+              title="Eliminar borrador"
+              [attr.aria-label]="'Eliminar borrador de ' + fila.empresaNombre + ' ' + fila.periodo"
+              (click)="solicitarAccion('eliminar', fila)"
+            >
+              <lucide-icon name="trash-2" aria-hidden="true"></lucide-icon>
+            </button>
           }
           @if (puedeReabrir(fila.estado)) {
-            <button type="button" class="adm-nom__row-action" (click)="solicitarAccion('reabrir', fila)">Reabrir</button>
+            <button
+              type="button"
+              class="adm-nom__row-action"
+              title="Reabrir nómina"
+              [attr.aria-label]="'Reabrir nómina de ' + fila.empresaNombre + ' ' + fila.periodo"
+              (click)="solicitarAccion('reabrir', fila)"
+            >
+              <lucide-icon name="refresh-cw" aria-hidden="true"></lucide-icon>
+            </button>
           }
           @if (puedeAnular(fila.estado)) {
-            <button type="button" class="adm-nom__row-action" (click)="solicitarAccion('anular', fila)">Anular</button>
+            <button
+              type="button"
+              class="adm-nom__row-action adm-nom__row-action--danger"
+              title="Anular nómina"
+              [attr.aria-label]="'Anular nómina de ' + fila.empresaNombre + ' ' + fila.periodo"
+              (click)="solicitarAccion('anular', fila)"
+            >
+              <lucide-icon name="octagon-x" aria-hidden="true"></lucide-icon>
+            </button>
           }
           @if (tieneLiquidaciones(fila.estado) && fila.evidenciaCalculo?.idCalculoPeriodo) {
-            <button type="button" class="adm-nom__row-action" (click)="verLiquidaciones(fila)">Liquidaciones</button>
+            <button
+              type="button"
+              class="adm-nom__row-action"
+              title="Ver liquidaciones"
+              [attr.aria-label]="'Ver liquidaciones de ' + fila.empresaNombre + ' ' + fila.periodo"
+              (click)="verLiquidaciones(fila)"
+            >
+              <lucide-icon name="receipt" aria-hidden="true"></lucide-icon>
+            </button>
           }
           <button
             type="button"
             class="adm-nom__row-action adm-nom__row-action--primary"
             (click)="abrirGenerador(fila)"
+            title="Abrir generador"
             [attr.aria-label]="'Abrir generador de ' + fila.empresaNombre + ' ' + fila.periodo"
           >
-            Abrir
             <lucide-icon name="arrow-right" aria-hidden="true"></lucide-icon>
           </button>
         </div>
       </ng-template>
-    </app-data-grid>
+      </app-data-grid>
+    }
+    @if (cargando()) {
+      <app-workspace-loading
+        [fill]="true"
+        title="Cargando nóminas"
+        message="Estamos actualizando la bandeja de trabajo."
+      />
+    }
   </div>
 </section>
 

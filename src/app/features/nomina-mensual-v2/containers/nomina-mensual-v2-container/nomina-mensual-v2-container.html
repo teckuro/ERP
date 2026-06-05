@@ -2,6 +2,7 @@
   <app-nomina-mensual-v2-stepper
     [pasoActual]="currentStep()"
     [steps]="steps"
+    [nomina]="nominaCargada()"
     [avanceDesdePasoActualBloqueado]="parametrosPasoOcupado()"
     (pasoSeleccionado)="intentarIrAPaso($event)"
   />

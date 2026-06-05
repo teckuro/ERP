@@ -20,6 +20,15 @@ function filaMock(parcial: Partial<FilaTrabajadorNominaResumen> = {}): FilaTraba
   };
 }
 
+function filaBloqueada(): FilaTrabajadorNominaResumen {
+  return filaMock({
+    trabajadorId: 'tr-2',
+    estado: 'bloqueado',
+    totalIncidenciasCriticas: 2,
+    tieneDatosBancarios: false,
+  });
+}
+
 function configurarTestBed(servicio: Record<string, unknown>): void {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
@@ -113,5 +122,63 @@ describe('NominaMensualV2PasoDotacionComponent (DOT-DET-04)', () => {
     expect(document.activeElement).toBe(trigger);
 
     trigger.remove();
+  });
+
+  describe('avanzar() — comando único (AG-NAV-03)', () => {
+    it('confirma la dotación y retorna ok:true cuando puedeAvanzar', async () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoDotacionComponent);
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      const cmp = fixture.componentInstance;
+      cmp.vista.set({ filas: [filaMock()], total: 1 });
+
+      const resultado = await cmp.avanzar();
+
+      expect(resultado).toEqual({ ok: true });
+      expect(servicio['confirmarDotacion']).toHaveBeenCalledWith('np-1');
+    });
+
+    it('retorna ok:false con razón cuando hay trabajadores bloqueados', async () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoDotacionComponent);
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      const cmp = fixture.componentInstance;
+      cmp.vista.set({ filas: [filaBloqueada()], total: 1 });
+
+      const resultado = await cmp.avanzar();
+
+      expect(resultado.ok).toBe(false);
+      if (!resultado.ok) {
+        expect(resultado.razon).toMatch(/bloqueados/i);
+      }
+      expect(servicio['confirmarDotacion']).not.toHaveBeenCalled();
+    });
+
+    it('retorna ok:false mientras está confirmando', async () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoDotacionComponent);
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      const cmp = fixture.componentInstance;
+      cmp.vista.set({ filas: [filaMock()], total: 1 });
+      cmp.confirmando.set(true);
+
+      const resultado = await cmp.avanzar();
+
+      expect(resultado).toEqual({ ok: false, razon: 'Confirmación en curso.' });
+      expect(servicio['confirmarDotacion']).not.toHaveBeenCalled();
+    });
+
+    it('retorna ok:false mientras está cargando la dotación', async () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoDotacionComponent);
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      const cmp = fixture.componentInstance;
+      cmp.vista.set({ filas: [filaMock()], total: 1 });
+      cmp.loading.set(true);
+
+      const resultado = await cmp.avanzar();
+
+      expect(resultado).toEqual({ ok: false, razon: 'Cargando la dotación.' });
+    });
   });
 });

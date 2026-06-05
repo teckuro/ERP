@@ -24,6 +24,10 @@ import type {
   ResumenValidacionNomina,
 } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
+import type {
+  PasoNominaPort,
+  ResultadoAvancePaso,
+} from '../../facade/nomina-mensual-v2-navegacion';
 
 type FiltroSeveridad = 'todas' | 'critica' | 'advertencia';
 
@@ -35,7 +39,7 @@ type FiltroSeveridad = 'todas' | 'critica' | 'advertencia';
   styleUrl: './nomina-mensual-v2-paso-validacion.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NominaMensualV2PasoValidacionComponent {
+export class NominaMensualV2PasoValidacionComponent implements PasoNominaPort {
   private readonly servicio = inject(NominaPeriodoService);
 
   readonly nominaPeriodoId = input<string | null>(null);
@@ -122,6 +126,49 @@ export class NominaMensualV2PasoValidacionComponent {
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Error desconocido';
       this.error.set(`No fue posible aprobar la validación: ${msg}`);
+    } finally {
+      this.aprobando.set(false);
+    }
+  }
+
+  /**
+   * Comando único de avance (AG-NAV-03). Paso terminal: ejecuta la aprobación
+   * y, si es exitosa, deja al container navegar a cierre. No emite
+   * `aprobarSolicitado` (la navegación la decide el container).
+   */
+  async avanzar(): Promise<ResultadoAvancePaso> {
+    if (this.cargando()) {
+      return { ok: false, razon: 'Cargando la validación.' };
+    }
+    if (this.aprobando()) {
+      return { ok: false, razon: 'Aprobación en curso.' };
+    }
+    if (this.calculoNoVigente()) {
+      return {
+        ok: false,
+        razon: 'El cálculo no está vigente. Vuelve a procesarlo antes de aprobar.',
+      };
+    }
+    if (!this.puedeAprobar()) {
+      return {
+        ok: false,
+        razon: 'Aún hay incidencias críticas o la validación no está lista para aprobar.',
+      };
+    }
+    const id = this.nominaPeriodoId();
+    if (!id) {
+      return { ok: false, razon: 'No hay una nómina activa.' };
+    }
+    this.aprobando.set(true);
+    this.error.set(null);
+    try {
+      await this.servicio.validarYAprobarNomina(id);
+      await this.cargar(id);
+      return { ok: true };
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Error desconocido';
+      this.error.set(`No fue posible aprobar la validación: ${msg}`);
+      return { ok: false, razon: `No fue posible aprobar la validación: ${msg}` };
     } finally {
       this.aprobando.set(false);
     }

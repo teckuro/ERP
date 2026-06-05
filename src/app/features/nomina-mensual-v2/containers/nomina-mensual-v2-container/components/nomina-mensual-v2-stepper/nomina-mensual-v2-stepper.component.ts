@@ -11,6 +11,7 @@ import {
 import { LucideAngularModule } from 'lucide-angular';
 
 import type { PayrollStep, PayrollStepId, PayrollStepStatus } from '../../../../models/nomina-mensual-v2.models';
+import type { NominaPeriodo } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { construirVistasStepper } from '../../../../presenters/nomina-stepper-trazabilidad.presenter';
 import {
   esAvanceHaciaAdelante,
@@ -33,6 +34,13 @@ export class NominaMensualV2StepperComponent {
   readonly pasoActual = input.required<PayrollStepId>();
   readonly steps = input.required<PayrollStep[]>();
   readonly avanceDesdePasoActualBloqueado = input(false);
+  /**
+   * Nómina persistida del período activo. Cuando está disponible, el stepper
+   * deriva el estado de cada paso (`completed` / `active` / `pending`) desde
+   * `nomina.estado` y `evidenciaCalculo` (AG-NAV-02). Si es `null` (carga
+   * inicial o estado degradado) los pasos no-activos quedan `pending`.
+   */
+  readonly nomina = input<NominaPeriodo | null>(null);
 
   @Output() pasoSeleccionado = new EventEmitter<PayrollStepId>();
 
@@ -49,7 +57,7 @@ export class NominaMensualV2StepperComponent {
   );
 
   estadoPaso(stepId: PayrollStepId): PayrollStepStatus {
-    return obtenerEstadoPaso(stepId, this.pasoActual());
+    return obtenerEstadoPaso(stepId, this.pasoActual(), this.nomina());
   }
 
   claseEstadoPaso(estado: PayrollStepStatus): string {

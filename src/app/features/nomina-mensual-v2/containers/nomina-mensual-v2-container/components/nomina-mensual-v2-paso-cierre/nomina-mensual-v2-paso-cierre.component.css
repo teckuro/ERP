@@ -229,6 +229,14 @@
   flex: 1 1 100%;
 }
 
+.paso-cierre__hint {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.5;
+}
+
 .paso-cierre__btn {
   border: 1px solid #cbd5e1;
   background: #ffffff;
@@ -242,17 +250,6 @@
 .paso-cierre__btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-.paso-cierre__btn.is-primary {
-  background: #1d4ed8;
-  color: #ffffff;
-  border-color: #1d4ed8;
-}
-
-.paso-cierre__btn.is-primary:disabled {
-  background: #cbd5e1;
-  border-color: #cbd5e1;
 }
 
 .paso-cierre__btn.is-ghost {

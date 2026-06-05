@@ -22,6 +22,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { DataGridComponent } from '../../../../shared/components/ui/data-grid/data-grid.component';
 import { DataGridCellDirective } from '../../../../shared/components/ui/data-grid/data-grid.directives';
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
+import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
 import { NominaPeriodoService } from '../../services/nomina-periodo.service';
@@ -33,10 +34,10 @@ import {
   COLUMNAS_ADMIN_NOMINAS,
   PERSISTENCIA_GRILLA_ADMIN,
   crearFiltrosAdminNominas,
+  coincideVistaOperativa,
   ordenarResumenesOperativos,
 } from '../../presenters/admin-nominas.presenter';
 import {
-  calcularKpisAdminNominas,
   estadoNominaToBadge,
   tipoNominaToLabel,
   formatearActualizada,
@@ -51,7 +52,6 @@ import {
   tieneLiquidaciones,
 } from '../../rules/admin-nominas.rules';
 
-type FiltroRapidoAdmin = 'requiere-accion' | 'abiertas' | 'en-calculo' | 'pendientes-cierre' | 'con-criticas' | 'todas';
 type AccionAdministrativa = 'eliminar' | 'anular' | 'reabrir';
 
 interface AccionAdministrativaPendiente {
@@ -68,6 +68,7 @@ interface AccionAdministrativaPendiente {
     DataGridComponent,
     DataGridCellDirective,
     MessageBoxComponent,
+    WorkspaceLoadingComponent,
     AdminNominasModalNuevaNominaComponent,
     AdminNominasModalResumenNominaComponent,
   ],
@@ -86,7 +87,6 @@ export class AdministradorNominasContainer {
   readonly nominaSeleccionada = signal<NominaPeriodoResumen | null>(null);
   readonly cargando = signal(false);
   readonly errorCarga = signal<string | null>(null);
-  readonly filtroRapido = signal<FiltroRapidoAdmin>('requiere-accion');
   readonly accionPendiente = signal<AccionAdministrativaPendiente | null>(null);
   readonly motivoAccion = signal('');
   readonly ejecutandoAccion = signal(false);
@@ -96,22 +96,11 @@ export class AdministradorNominasContainer {
   readonly persistenceKey = PERSISTENCIA_GRILLA_ADMIN;
 
   readonly filtros = computed(() => crearFiltrosAdminNominas(this.resumenes()));
-  readonly kpis = computed(() => calcularKpisAdminNominas(this.resumenes()));
-  readonly resumenesVisibles = computed(() => {
-    const filtro = this.filtroRapido();
-    const filtrados = this.resumenes().filter((fila) => {
-      if (filtro === 'todas') return true;
-      if (filtro === 'requiere-accion' || filtro === 'abiertas') return fila.requiereAccion ?? true;
-      if (filtro === 'en-calculo') return fila.estado === 'calculada' || fila.estado === 'validada';
-      if (filtro === 'pendientes-cierre') return fila.estado === 'aprobada' || fila.estado === 'reabierta';
-      return fila.totalIncidenciasCriticas > 0;
-    });
-    return ordenarResumenesOperativos(filtrados);
-  });
+  readonly resumenesOrdenados = computed(() => ordenarResumenesOperativos(this.resumenes()));
 
   readonly subtitulo = computed(() => {
     const total = this.resumenes().length;
-    const abiertas = this.kpis().abiertas;
+    const abiertas = this.resumenes().filter((fila) => coincideVistaOperativa(fila, 'abiertas')).length;
     if (total === 0) {
       return 'Sin nóminas cargadas todavía.';
     }
@@ -208,10 +197,6 @@ export class AdministradorNominasContainer {
 
   abrirGenerador(fila: NominaPeriodoResumen): void {
     void this.router.navigate(['/remuneraciones/nominas', fila.id, 'generador']);
-  }
-
-  aplicarFiltroRapido(filtro: FiltroRapidoAdmin): void {
-    this.filtroRapido.set(filtro);
   }
 
   solicitarAccion(tipo: AccionAdministrativa, nomina: NominaPeriodoResumen): void {

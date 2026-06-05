@@ -94,4 +94,27 @@ describe('NominaMensualV2PasoMovimientosComponent (MOV-ID-03)', () => {
     expect(cmp.rutTrabajador('tr-3')).toBe('19.111.222-3');
     expect(cmp.nombreTrabajador('tr-1')).toBe('Carlos Soto');
   });
+
+  describe('avanzar() — comando único (AG-NAV-03)', () => {
+    it('retorna ok:true (paso navegacional)', async () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+      const cmp = fixture.componentInstance;
+
+      const resultado = await cmp.avanzar();
+
+      expect(resultado).toEqual({ ok: true });
+    });
+
+    it('retorna ok:false mientras se aplican recurrentes', async () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+      const cmp = fixture.componentInstance;
+      cmp.aplicando.set(true);
+
+      const resultado = await cmp.avanzar();
+
+      expect(resultado).toEqual({ ok: false, razon: 'Hay movimientos aplicándose.' });
+    });
+  });
 });

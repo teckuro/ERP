@@ -1,9 +1,21 @@
 import { TestBed } from '@angular/core/testing';
+import { importProvidersFrom } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
+import { LucideAngularModule } from 'lucide-angular';
+import {
+  ArrowRight,
+  Eye,
+  OctagonX,
+  Receipt,
+  RefreshCw,
+  Trash2,
+} from 'lucide-angular/src/icons';
 
 import type { NominaPeriodoResumen } from '../../models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../services/nomina-periodo.service';
+import { DataGridComponent } from '../../../../shared/components/ui/data-grid/data-grid.component';
 import { AdministradorNominasContainer } from './administrador-nominas-container';
 
 function resumenMock(overrides: Partial<NominaPeriodoResumen> = {}): NominaPeriodoResumen {
@@ -40,6 +52,14 @@ function configurar(opts: { servicio: ServicioMock; navigate?: ReturnType<typeof
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
     providers: [
+      importProvidersFrom(LucideAngularModule.pick({
+        ArrowRight,
+        Eye,
+        OctagonX,
+        Receipt,
+        RefreshCw,
+        Trash2,
+      })),
       { provide: Router, useValue: { navigate } },
       { provide: NominaPeriodoService, useValue: opts.servicio },
     ],
@@ -79,14 +99,19 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     expect(servicio.listarResumenes).toHaveBeenCalled();
   });
 
-  it('Test 34 — los KPIs reflejan la carga inicial del servicio', async () => {
+  it('Test 34 — expone la vista operativa inicial dentro de los filtros de la grilla', async () => {
     configurar({ servicio });
     const fixture = TestBed.createComponent(AdministradorNominasContainer);
     const cmp = fixture.componentInstance;
     await cmp.cargarResumenes();
-    const kpis = cmp.kpis();
-    expect(kpis.total).toBe(cmp.resumenes().length);
-    expect(kpis.items).toHaveLength(4);
+    const filtroVista = cmp.filtros().find((filtro) => filtro.id === 'vistaOperativa');
+    expect(filtroVista?.initialValue).toBe('requiere-accion');
+    expect(cmp.resumenesOrdenados()).toHaveLength(cmp.resumenes().length);
+
+    fixture.detectChanges();
+    const grid = fixture.debugElement.query(By.directive(DataGridComponent))
+      .componentInstance as DataGridComponent<NominaPeriodoResumen>;
+    expect(grid.draftFilterValues['vistaOperativa']).toBe('requiere-accion');
   });
 
   it('Test 35 — abrirNuevaNomina / cerrarNuevaNomina alternan el flag del modal', () => {

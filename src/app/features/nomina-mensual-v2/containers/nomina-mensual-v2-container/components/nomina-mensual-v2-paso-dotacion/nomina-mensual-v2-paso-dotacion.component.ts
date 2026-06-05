@@ -42,6 +42,10 @@ import {
 } from '../../../../presenters/nomina-dotacion-grid.presenter';
 import { puedeAvanzarDotacion } from '../../../../rules/nomina-dotacion.rules';
 import type { PreviewAccionMasivaTrabajadores } from '../../../../../nomina-mensual/models/movimiento-nomina.models';
+import type {
+  PasoNominaPort,
+  ResultadoAvancePaso,
+} from '../../facade/nomina-mensual-v2-navegacion';
 
 interface VistaDotacion {
   filas: FilaTrabajadorNominaResumen[];
@@ -56,7 +60,7 @@ interface VistaDotacion {
   styleUrl: './nomina-mensual-v2-paso-dotacion.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NominaMensualV2PasoDotacionComponent {
+export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
   private readonly servicio = inject(NominaPeriodoService);
   private readonly doc = inject(DOCUMENT);
 
@@ -279,6 +283,42 @@ export class NominaMensualV2PasoDotacionComponent {
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido';
       this.errorMensaje.set(`No fue posible confirmar la dotación: ${mensaje}`);
+    } finally {
+      this.confirmando.set(false);
+    }
+  }
+
+  /**
+   * Comando único de avance (AG-NAV-03). Paso terminal: confirma la dotación y
+   * pide al container navegar. No emite el output `avanceSolicitado` (eso lo
+   * decide el container con el resultado).
+   */
+  async avanzar(): Promise<ResultadoAvancePaso> {
+    if (this.loading()) {
+      return { ok: false, razon: 'Cargando la dotación.' };
+    }
+    if (this.confirmando()) {
+      return { ok: false, razon: 'Confirmación en curso.' };
+    }
+    if (!this.puedeAvanzar()) {
+      return {
+        ok: false,
+        razon: this.motivoBloqueo() ?? 'Hay incidencias por resolver en la dotación.',
+      };
+    }
+    const id = this.nominaPeriodoId();
+    if (!id) {
+      return { ok: false, razon: 'No hay una nómina activa.' };
+    }
+    this.confirmando.set(true);
+    this.errorMensaje.set(null);
+    try {
+      await this.servicio.confirmarDotacion(id);
+      return { ok: true };
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido';
+      this.errorMensaje.set(`No fue posible confirmar la dotación: ${mensaje}`);
+      return { ok: false, razon: `No fue posible confirmar la dotación: ${mensaje}` };
     } finally {
       this.confirmando.set(false);
     }

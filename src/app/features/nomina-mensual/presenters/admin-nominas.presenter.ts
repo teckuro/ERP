@@ -16,10 +16,21 @@ import type {
   NominaPeriodoResumen,
   TipoNomina,
 } from '../models/nomina-periodo.models';
-import { prioridadNomina } from '../rules/nomina-periodo-state.rules';
+import {
+  nominaRequiereAccion,
+  prioridadNomina,
+} from '../rules/nomina-periodo-state.rules';
 
 /** Clave de persistencia local de la grilla del Administrador. */
-export const PERSISTENCIA_GRILLA_ADMIN = 'admin-nominas-grid-v1';
+export const PERSISTENCIA_GRILLA_ADMIN = 'admin-nominas-grid-v2';
+
+export type VistaOperativaAdminNominas =
+  | 'requiere-accion'
+  | 'abiertas'
+  | 'en-calculo'
+  | 'pendientes-cierre'
+  | 'con-criticas'
+  | 'todas';
 
 /** Columnas declarativas de la grilla. */
 export const COLUMNAS_ADMIN_NOMINAS: DataGridColumn<NominaPeriodoResumen>[] = [
@@ -132,8 +143,8 @@ export const COLUMNAS_ADMIN_NOMINAS: DataGridColumn<NominaPeriodoResumen>[] = [
   {
     id: 'acciones',
     header: '',
-    width: '12rem',
-    minWidth: '11rem',
+    width: '9rem',
+    minWidth: '9rem',
     align: 'right',
     sortable: false,
     hideable: false,
@@ -189,6 +200,28 @@ export function crearFiltrosAdminNominas(
   const periodos = [...new Set(resumenes.map((r) => r.periodo))].sort().reverse();
   const tipos = [...new Set(resumenes.map((r) => r.tipo))];
   const estadosPresentes = [...new Set(resumenes.map((r) => r.estado))];
+  const contarVista = (vista: VistaOperativaAdminNominas): number =>
+    resumenes.filter((fila) => coincideVistaOperativa(fila, vista)).length;
+
+  const filtroVistaOperativa: DataGridFilter<NominaPeriodoResumen> = {
+    id: 'vistaOperativa',
+    label: 'Vista operativa',
+    field: 'estado',
+    type: 'select',
+    operator: 'equals',
+    initialValue: 'requiere-accion',
+    emptyLabel: 'Todas las nóminas',
+    options: [
+      { label: `Requieren acción (${contarVista('requiere-accion')})`, value: 'requiere-accion' },
+      { label: `Abiertas (${contarVista('abiertas')})`, value: 'abiertas' },
+      { label: `En cálculo (${contarVista('en-calculo')})`, value: 'en-calculo' },
+      { label: `Pendientes de cierre (${contarVista('pendientes-cierre')})`, value: 'pendientes-cierre' },
+      { label: `Con críticas (${contarVista('con-criticas')})`, value: 'con-criticas' },
+      { label: `Todas (${contarVista('todas')})`, value: 'todas' },
+    ],
+    predicate: (fila, value) =>
+      coincideVistaOperativa(fila, String(value ?? '') as VistaOperativaAdminNominas),
+  };
 
   const filtroBusqueda: DataGridFilter<NominaPeriodoResumen> = {
     id: 'busqueda',
@@ -207,7 +240,10 @@ export function crearFiltrosAdminNominas(
     },
   };
 
-  const filtros: DataGridFilter<NominaPeriodoResumen>[] = [filtroBusqueda];
+  const filtros: DataGridFilter<NominaPeriodoResumen>[] = [
+    filtroVistaOperativa,
+    filtroBusqueda,
+  ];
 
   if (periodos.length > 1) {
     filtros.push({
@@ -285,6 +321,7 @@ export function crearFiltrosAdminNominas(
  * por el data-grid.
  */
 export interface FiltroAdminNominasInput {
+  vistaOperativa?: VistaOperativaAdminNominas;
   busqueda?: string;
   periodo?: string;
   estado?: EstadoNomina;
@@ -297,6 +334,9 @@ export function filtrarResumenes(
   filtros: FiltroAdminNominasInput,
 ): NominaPeriodoResumen[] {
   return resumenes.filter((fila) => {
+    if (filtros.vistaOperativa && !coincideVistaOperativa(fila, filtros.vistaOperativa)) {
+      return false;
+    }
     if (filtros.periodo && fila.periodo !== filtros.periodo) return false;
     if (filtros.estado && fila.estado !== filtros.estado) return false;
     if (filtros.tipo && fila.tipo !== filtros.tipo) return false;
@@ -328,6 +368,28 @@ export function filtrarResumenes(
 
     return true;
   });
+}
+
+export function coincideVistaOperativa(
+  fila: NominaPeriodoResumen,
+  vista: VistaOperativaAdminNominas | '',
+): boolean {
+  if (!vista || vista === 'todas') return true;
+  if (vista === 'requiere-accion') {
+    return nominaRequiereAccion(fila.estado) && (fila.requiereAccion ?? true);
+  }
+  if (vista === 'abiertas') {
+    return fila.estado !== 'cerrada'
+      && fila.estado !== 'aprobada'
+      && fila.estado !== 'anulada';
+  }
+  if (vista === 'en-calculo') {
+    return fila.estado === 'calculada' || fila.estado === 'validada';
+  }
+  if (vista === 'pendientes-cierre') {
+    return fila.estado === 'aprobada' || fila.estado === 'reabierta';
+  }
+  return fila.totalIncidenciasCriticas > 0;
 }
 
 export function ordenarResumenesOperativos(

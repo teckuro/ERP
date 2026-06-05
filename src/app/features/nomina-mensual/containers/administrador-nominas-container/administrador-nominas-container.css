@@ -6,13 +6,12 @@
  *   .erp-shell-scroll                     (shell global)
  *     > app-administrador-nominas-container  (:host de este componente)
  *       > .adm-nom__page                    (flex column, full-height)
- *         > .adm-nom__summary  (opcional)   (KPIs sobrios, flex:0 0 auto)
  *         > .adm-nom__grid-shell            (flex:1 1 auto, hospeda al data-grid)
  *           > app-data-grid                 (gridHeight=100% activa display:flex)
  *             > app-card                    (estirada por data-grid)
  *
  * Layout (alto/ancho/padding) se gestiona aquí. El shell global aporta título
- * y acción primaria; aquí solo viven la franja de resumen y la grilla.
+ * y acción primaria; aquí vive la grilla operativa.
  *
  * NOTA: el header del page-frame queda fuera (frame ya no se usa: complicaba
  * la cadena flex con padding y gaps extra). Replicamos directamente el patrón
@@ -41,69 +40,6 @@
   height: 100%;
   overflow: hidden;
   background: #f6f7f4;
-}
-
-/* Franja de resumen operativo (chips inline sobrios) ---------------------- */
-
-.adm-nom__summary {
-  display: flex;
-  flex: 0 0 auto;
-  width: 100%;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: 18px;
-  padding: 8px 16px;
-  font-size: 12px;
-  color: #647084;
-  background: #ffffff;
-  border-bottom: 1px solid #eef0eb;
-}
-
-.adm-nom__metric {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  padding-right: 18px;
-  border-right: 1px solid #eef0eb;
-  line-height: 1.2;
-  border-top: 0;
-  border-bottom: 0;
-  border-left: 0;
-  background: transparent;
-  cursor: pointer;
-}
-
-.adm-nom__metric.is-active {
-  box-shadow: inset 0 -2px #2563eb;
-}
-
-.adm-nom__metric:last-child {
-  border-right: none;
-  padding-right: 0;
-}
-
-.adm-nom__metric-value {
-  font-size: 14px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: #0f172a;
-}
-
-.adm-nom__metric-label {
-  font-size: 11px;
-  color: #647084;
-}
-
-.adm-nom__metric--danger .adm-nom__metric-value {
-  color: #b91c1c;
-}
-
-.adm-nom__metric--warning .adm-nom__metric-value {
-  color: #b45309;
-}
-
-.adm-nom__metric--success .adm-nom__metric-value {
-  color: #047857;
 }
 
 /* Shell del grid (igual que .listado-content de empleados) ---------------- */
@@ -274,16 +210,17 @@
 .adm-nom__row-actions {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   justify-content: flex-end;
 }
 
 .adm-nom__row-action {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  font-size: 12px;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
   font-weight: 500;
   border-radius: 5px;
   border: 1px solid #e5e7eb;
@@ -299,8 +236,17 @@
 }
 
 .adm-nom__row-action lucide-icon {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
+}
+
+.adm-nom__row-action--danger {
+  color: #b91c1c;
+}
+
+.adm-nom__row-action--danger:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
 }
 
 .adm-nom__row-action--primary {

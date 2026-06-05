@@ -143,4 +143,82 @@ describe('NominaMensualV2PasoCierreComponent (CIE-ENUM-01)', () => {
     await cmp.reabrirNomina();
     expect(cmp.error()).toContain('motivo');
   });
+
+  describe('avanzar() — comando único (AG-NAV-03)', () => {
+    it('retorna ok:false cuando la nómina ya está cerrada', async () => {
+      configurarTestBed();
+      const fixture = TestBed.createComponent(NominaMensualV2PasoCierreComponent);
+      const cmp = fixture.componentInstance;
+      cmp.nomina.set(nominaMock({ estado: 'cerrada' }));
+
+      const resultado = await cmp.avanzar();
+
+      expect(resultado).toEqual({ ok: false, razon: 'La nómina ya está cerrada.' });
+      expect(cmp.confirmarCierreVisible()).toBe(false);
+    });
+
+    it('retorna ok:false si la checklist está incompleta', async () => {
+      configurarTestBed();
+      const fixture = TestBed.createComponent(NominaMensualV2PasoCierreComponent);
+      const cmp = fixture.componentInstance;
+      cmp.nomina.set(nominaMock({ estado: 'borrador', trabajadorIds: [] }));
+      cmp.resumen.set({
+        totalTrabajadores: 0,
+        listosParaCalculo: 0,
+        conIncidenciasCriticas: 0,
+        conAdvertencias: 0,
+        conMovimientosEspeciales: 0,
+        puedeCalcular: false,
+        puedeValidar: false,
+        puedeCerrar: false,
+        calculoVigente: false,
+        incidenciasCriticas: [],
+        advertencias: [],
+      });
+
+      const resultado = await cmp.avanzar();
+
+      expect(resultado.ok).toBe(false);
+      if (!resultado.ok) {
+        expect(resultado.razon).toMatch(/checklist/i);
+      }
+      expect(cmp.confirmarCierreVisible()).toBe(false);
+    });
+
+    it('abre el modal de confirmación y retorna ok:true cuando todoCumplido', async () => {
+      configurarTestBed();
+      const fixture = TestBed.createComponent(NominaMensualV2PasoCierreComponent);
+      const cmp = fixture.componentInstance;
+
+      cmp.nomina.set(
+        nominaMock({
+          estado: 'aprobada',
+          trabajadorIds: ['tr-1', 'tr-2'],
+          evidenciaCalculo: {
+            versionCalculo: 1,
+            calculoVigente: true,
+            idCalculoPeriodo: 42,
+          },
+        }),
+      );
+      cmp.resumen.set({
+        totalTrabajadores: 2,
+        listosParaCalculo: 2,
+        conIncidenciasCriticas: 0,
+        conAdvertencias: 0,
+        conMovimientosEspeciales: 0,
+        puedeCalcular: true,
+        puedeValidar: true,
+        puedeCerrar: true,
+        calculoVigente: true,
+        incidenciasCriticas: [],
+        advertencias: [],
+      });
+
+      const resultado = await cmp.avanzar();
+
+      expect(resultado).toEqual({ ok: true });
+      expect(cmp.confirmarCierreVisible()).toBe(true);
+    });
+  });
 });

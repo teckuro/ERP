@@ -91,4 +91,63 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
     expect(cmp.calculoNoVigente()).toBe(true);
     expect(cmp.versionCalculo()).toBe(3);
   });
+
+  describe('avanzar() — comando único (AG-NAV-03)', () => {
+    it('retorna ok:false si no hay resultado de cálculo', async () => {
+      const fixture = TestBed.createComponent(NominaMensualV2PasoCalculoComponent);
+      const cmp = fixture.componentInstance;
+      cmp.resultado.set(null);
+
+      const resultado = await cmp.avanzar();
+
+      expect(resultado).toEqual({
+        ok: false,
+        razon: 'Procesa el cálculo antes de continuar.',
+      });
+    });
+
+    it('retorna ok:false si el cálculo no está vigente', async () => {
+      const fixture = TestBed.createComponent(NominaMensualV2PasoCalculoComponent);
+      const cmp = fixture.componentInstance;
+      cmp.nomina.set(
+        nominaMock({ evidenciaCalculo: { versionCalculo: 2, calculoVigente: false } }),
+      );
+
+      const resultado = await cmp.avanzar();
+
+      expect(resultado.ok).toBe(false);
+      if (!resultado.ok) {
+        expect(resultado.razon).toMatch(/no está vigente/i);
+      }
+    });
+
+    it('retorna ok:true cuando hay resultado y el cálculo está vigente', async () => {
+      const fixture = TestBed.createComponent(NominaMensualV2PasoCalculoComponent);
+      const cmp = fixture.componentInstance;
+      cmp.nomina.set(
+        nominaMock({ evidenciaCalculo: { versionCalculo: 3, calculoVigente: true } }),
+      );
+      cmp.resultado.set({
+        periodo: '2026-06',
+        estado: 'calculada',
+        generadoEn: '2026-06-01T00:00:00Z',
+        resumen: {
+          totalTrabajadoresCalculados: 0,
+          totalLiquidoPreliminar: 0,
+          totalImponible: 0,
+          totalHaberes: 0,
+          totalDescuentos: 0,
+          totalPrevisional: 0,
+          totalImpuestoUnico: 0,
+        },
+        liquidaciones: [],
+        issues: [],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      const resultado = await cmp.avanzar();
+
+      expect(resultado).toEqual({ ok: true });
+    });
+  });
 });

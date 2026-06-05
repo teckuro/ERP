@@ -1015,6 +1015,7 @@ Esta sección consolida qué decisiones se aplicaron desde la publicación de la
 | L0–L7 del audit V2 (pasos 1–3) | Aplicado | Documentado en [`auditoria-nomina-v2-2026-06.md`](./auditoria-nomina-v2-2026-06.md). Atiende parcialmente PAR-COPY-02 (sin `snapshot`/`base`/IDs internos como protagonistas) en el alcance V2 actual. |
 | Limpieza CSS V2 (L5/L5.2) | Aplicado | `container.css` pasó de 7.676 a 3.414 líneas. Atiende parcialmente ARC-CSS-01 en el contenedor V2. Deuda L5.3 sigue abierta y opcional. |
 | Sub-lote P0 acotado (ADM-MOD-05, CIE-ENUM-01, DOT-DET-04, MOV-ID-03, CAL-INV-05, QA-FOC-01) | Aplicado (2026-06-05) | Diálogos locales del Administrador migrados a `app-message-box`; chip de Cierre consume `estadoNominaToLabel`; panel de detalle de Dotación y listas de Movimientos muestran nombre + RUT con fallback; banda persistente de cálculo no vigente en Cálculo, Validación y Cierre derivada de `evidenciaCalculo.calculoVigente`; reapertura del paso Cierre migrada a `app-message-box` con consecuencias explícitas (cubre incidentalmente parte de CIE-REO-04) y aside de Dotación con Escape + retorno de foco. Entrada de bitácora en [`docs/codex/peticiones-estilos.md`](../../../peticiones-estilos.md) (2026-06-05). Sin cambios en motor, dominio ni SQL. |
+| Lote estructural P0 (AG-NAV-03, AG-CTA-01, AG-NAV-02) | Aplicado (2026-06-05) | Cada paso 2–6 implementa el puerto `PasoNominaPort` con `avanzar(): Promise<ResultadoAvancePaso>`. El container delega el CTA del shell vía función pura `ejecutarAvancePaso` del facade; `closure` no navega tras `ok:true` (es terminal); `ok:false` publica `ayudaAvance`. Modo **híbrido acotado**: terminal en Dotación/Validación/Cierre, navegacional en Movimientos/Cálculo (mantienen botones operativos inline `Aplicar recurrentes`, `Calcular nómina`, `Agregar manual`). Labels CTA actualizados: `Aplicar movimientos`→`Continuar al cálculo`, `Procesar cálculo`→`Continuar a validación`. Footer de los 5 pasos pierde `is-primary` duplicado; en Cierre se sustituye por hint que indica que el cierre se dispara desde el shell. Stepper recibe `[nomina]`; `obtenerEstadoPaso(stepId, pasoActual, nomina)` deriva de `nomina.estado` + `evidenciaCalculo.calculoVigente` con caveats `reabierta` (closure→pending) y `anulada` (todos→pending). Tests: 22 nuevos en facade (matriz por estado + delegación pura) + 16 nuevos por paso. Entrada de bitácora en [`docs/codex/peticiones-estilos.md`](../../../peticiones-estilos.md) (2026-06-05). |
 
 #### Discrepancia con ARC-FRM-03
 
@@ -1022,15 +1023,12 @@ La auditoría recomienda envolver Admin y Generador en `app-page-frame` y consum
 
 ### Tabla B — Pendientes priorizados para el siguiente lote
 
-#### P0 críticos (10 hallazgos)
+#### P0 críticos (6 hallazgos restantes)
 
-> Los ítems ADM-MOD-05, CIE-ENUM-01, DOT-DET-04, MOV-ID-03, CAL-INV-05 y QA-FOC-01 pasaron a la Tabla A el 2026-06-05 (sub-lote P0 ejecutado). De CIE-REO-04 se cubrió incidentalmente la advertencia de consecuencias al migrar la reapertura a `app-message-box`; queda pendiente la persistencia explícita (invalidación de liquidaciones).
+> Los ítems ADM-MOD-05, CIE-ENUM-01, DOT-DET-04, MOV-ID-03, CAL-INV-05 y QA-FOC-01 pasaron a la Tabla A el 2026-06-05 (sub-lote P0 ejecutado). AG-CTA-01, AG-NAV-02 y AG-NAV-03 pasaron a la Tabla A el 2026-06-05 (lote estructural ejecutado, ver entrada en bitácora). De CIE-REO-04 se cubrió incidentalmente la advertencia visual; queda pendiente la persistencia explícita (invalidación de liquidaciones).
 
 | ID | Descripción corta | Origen |
 |----|-------------------|--------|
-| AG-CTA-01 | Footer de pasos 2–6 repite CTA primario que ya publica el shell. Eliminar duplicado. | §6.1 |
-| AG-NAV-02 | Stepper marca paso completo por posición visitada. Derivar de evidencia persistida. | §6.1 |
-| AG-NAV-03 | `nextStep()` global puede avanzar sin ejecutar la operación real del paso. Comando único de avance por paso con resultado tipado. | §6.1 |
 | PAR-CTA-03 | CTA del shell puede no representar la operación real del paso Parámetros. Resolver desde estado operativo completo. | §6.3 |
 | DOT-SEL-02 | "Seleccionar todos" actúa sobre la página visible. Distinguir página vs. universo filtrado. | §6.4 |
 | MOV-CON-01 | Tipo de movimiento como input libre. Búsqueda de concepto desde catálogo autorizado. | §6.5 |
@@ -1046,12 +1044,10 @@ La auditoría recomienda envolver Admin y Generador en `app-page-frame` y consum
 
 ### Próximo paso recomendado
 
-Cerrado el sub-lote barato (5 fases, 2026-06-05), el siguiente lote es estructural y aborda la **coherencia entre CTA del shell, stepper y comando de avance del paso**:
+Cerrado el lote estructural (AG-NAV-03 + AG-CTA-01 + AG-NAV-02, 2026-06-05), el contrato shell ↔ paso está reorganizado. Los próximos P0 son **acotados, sin interdependencia entre sí** y se pueden ejecutar en cualquier orden:
 
-1. **AG-CTA-01** — eliminar el CTA primario duplicado del footer en pasos 2–6; el shell publica el único primario.
-2. **AG-NAV-02** — derivar los estados del stepper desde evidencia persistida (no por posición visitada). Requiere mapear cada paso a una transición de `nomina_periodo.estado` o a una bandera por paso.
-3. **AG-NAV-03** — exponer un comando de avance único por paso, con resultado tipado, que el CTA del shell consume.
+1. **PAR-CTA-03** — alinear el CTA del shell en el paso Parámetros con el estado operativo completo (incluir variantes Guardar/Validar/Continuar según `EstadoBaseParametrosPeriodoView` + diferencias detectadas). Por su impacto en el primer paso del flujo y por compartir naturaleza con el contrato AG-NAV-03 recién aplicado, es el candidato natural a iniciar.
+2. **DOT-SEL-02** — distinguir "selección de la página" vs. "selección del universo filtrado" en Dotación. Toca presenter + componente; requiere un selector tipo `app-message-box` con confirmación de alcance.
+3. **VAL-APP-03** — abrir un `app-message-box` con versión del cálculo, totales, advertencias y responsable antes de aprobar la validación. Hereda directamente la infraestructura del lote estructural recién cerrado.
 
-Estos tres son interdependientes: AG-NAV-03 habilita AG-CTA-01 (el CTA del shell sabe qué disparar) y AG-NAV-02 (el stepper sabe qué consultar). Tampoco tocan motor ni SQL, pero sí reorganizan el contrato shell ↔ paso.
-
-Tras este lote estructural, los siguientes candidatos P0 son **PAR-CTA-03** (CTA real del paso Parámetros), **DOT-SEL-02** (alcance de la selección masiva) y **VAL-APP-03** (resumen del firmante al aprobar).
+Otros candidatos restantes (`MOV-CON-01`, `VAL-STA-02`, `CIE-REO-04` persistencia) implican dominio o catálogos y conviene tratarlos como fases dedicadas con SQL/RPC propios.

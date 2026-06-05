@@ -69,7 +69,7 @@ describe('admin-nominas.presenter — columnas y filtros declarativos', () => {
       'actualizada',
       'acciones',
     ]);
-    expect(PERSISTENCIA_GRILLA_ADMIN).toBe('admin-nominas-grid-v1');
+    expect(PERSISTENCIA_GRILLA_ADMIN).toBe('admin-nominas-grid-v2');
   });
 
   it('Test 2 — crearFiltrosAdminNominas genera filtros con IDs únicos y conserva el filtro búsqueda + observaciones', () => {
@@ -78,10 +78,12 @@ describe('admin-nominas.presenter — columnas y filtros declarativos', () => {
 
     expect(new Set(ids).size).toBe(filtros.length);
     expect(ids).toContain('busqueda');
+    expect(ids[0]).toBe('vistaOperativa');
     expect(ids).toContain('conIncidencias');
     expect(ids).toContain('periodo');
     expect(ids).toContain('estado');
     expect(ids).toContain('tipo');
+    expect(filtros[0]?.initialValue).toBe('requiere-accion');
   });
 });
 
@@ -121,5 +123,18 @@ describe('admin-nominas.presenter — filtrarResumenes', () => {
     });
     expect(filtradas).toHaveLength(1);
     expect(filtradas[0].id).toBe('r-4');
+  });
+
+  it('Test 8 — vista operativa concentra el resumen dentro de la grilla', () => {
+    expect(filtrarResumenes(muestraResumenes(), { vistaOperativa: 'abiertas' }))
+      .toHaveLength(3);
+    expect(filtrarResumenes(muestraResumenes(), { vistaOperativa: 'en-calculo' })
+      .map((fila) => fila.id)).toEqual(['r-4']);
+    expect(filtrarResumenes(muestraResumenes(), { vistaOperativa: 'con-criticas' })
+      .map((fila) => fila.id)).toEqual(['r-1']);
+    expect(filtrarResumenes(muestraResumenes(), { vistaOperativa: 'todas' }))
+      .toHaveLength(4);
+    expect(filtrarResumenes(muestraResumenes(), { vistaOperativa: 'requiere-accion' })
+      .some((fila) => fila.estado === 'cerrada')).toBe(false);
   });
 });

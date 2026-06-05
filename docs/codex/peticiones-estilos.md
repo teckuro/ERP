@@ -9,6 +9,80 @@
 
 ---
 
+## 2026-06-05 - Administrador de nóminas: loader, filtro operativo y acciones compactas
+
+Se elimina la franja independiente "Resumen operativo del administrador" y sus métricas pasan al primer filtro de `app-data-grid`, denominado `Vista operativa`. La vista inicial es `Requieren acción` y conserva las alternativas Abiertas, En cálculo, Pendientes de cierre, Con críticas y Todas, incluyendo sus cantidades.
+
+- La carga inicial y las recargas administrativas usan `app-workspace-loading` superpuesto a la grilla.
+- La columna de acciones muestra únicamente iconos de 30 px. Cada control mantiene `title` visible al pasar el cursor y `aria-label` contextual para tecnologías de asistencia.
+- El acceso al generador conserva el tratamiento primario; eliminar y anular usan tono de peligro.
+- La clave local de preferencias de la grilla cambia a `admin-nominas-grid-v2` para aplicar el nuevo filtro inicial sin configuraciones heredadas.
+- Alcance exclusivo de presentación y estado local del administrador: sin cambios en servicios, motor, SQL/RPC/RLS ni persistencia de nómina.
+
+---
+
+## 2026-06-05 - Lote estructural P0 AG-NAV-03 + AG-CTA-01 + AG-NAV-02
+
+Tres fases secuenciales para unificar el CTA del generador en el shell, derivar el stepper desde evidencia persistida y exponer un comando de avance tipado por paso. Es el lote estructural recomendado en §15 de [`auditoria-admin-generador-nomina-2026-06.md`](modulos/nomina-mensual/auditorias/auditoria-admin-generador-nomina-2026-06.md) tras cerrar el sub-lote P0 anterior (2026-06-05). Cero cambios en motor, dominio, SQL/RPC/RLS, estilos globales, `angular.json`, Tailwind, fuentes ni persistencia.
+
+### Decisiones de diseño fijadas
+
+- **Híbrido acotado**: el CTA del shell dispara la **operación terminal** sólo en Dotación (confirmar), Validación (aprobar) y Cierre (abrir modal de confirmación). En Movimientos y Cálculo el CTA es **solo navegacional**; los botones operativos `Calcular nómina`, `Aplicar recurrentes` y `Agregar movimiento manual` se mantienen inline porque son acciones repetibles.
+- **Labels del CTA** para los dos pasos navegacionales pasan a reflejar su carácter de avance: `Aplicar movimientos` → `Continuar al cálculo`; `Procesar cálculo` → `Continuar a validación`.
+- **Stepper desde evidencia**: `obtenerEstadoPaso(stepId, pasoActual, nomina)` usa `nomina.estado` + `evidenciaCalculo.calculoVigente` en lugar de posición visitada. `reabierta` regresa cierre a pending (cierre deshecho). `anulada` deshace toda la vigencia operativa: todos los pasos `pending`.
+- **Tests**: unidad del facade (matrix por estado del enum + delegación pura) + cada `avanzar()` por paso. Sin E2E nuevo.
+
+### Fase A — AG-NAV-03: comando único de avance por paso
+
+Cada componente de paso 2–6 expone `avanzar(): Promise<ResultadoAvancePaso>` implementando el puerto `PasoNominaPort`. El container reescribe `ejecutarAccionPrincipalPasoActual()` como async: para `parameters` mantiene la rama del orquestador (modales de acceso/diferencias); para el resto delega vía la función pura `ejecutarAvancePaso(pasoActual, paso)` del facade. Si el comando retorna `{ok:true}` y existe `siguientePaso`, navega; si `{ok:false}` publica `razon` en `ayudaAvance` con tono `bloqueo`. `closure` es terminal: no navega tras `ok:true` (el modal toma el control).
+
+- Archivos tocados (TS):
+  - [`facade/nomina-mensual-v2-navegacion.ts`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/facade/nomina-mensual-v2-navegacion.ts) (tipos `ResultadoAvancePaso`, `PasoNominaPort`, función pura `ejecutarAvancePaso`, labels actualizados).
+  - [`nomina-mensual-v2-container.ts`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container.ts) (5 `viewChild` nuevos por paso, helper `obtenerPasoActivoConComando`, `ejecutarAccionPrincipalPasoActual` async).
+  - [`nomina-mensual-v2-paso-dotacion.component.ts`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion/nomina-mensual-v2-paso-dotacion.component.ts) (`avanzar` terminal: confirma).
+  - [`nomina-mensual-v2-paso-movimientos.component.ts`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.ts) (`avanzar` navegacional con guard `aplicando`).
+  - [`nomina-mensual-v2-paso-calculo.component.ts`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-calculo/nomina-mensual-v2-paso-calculo.component.ts) (`avanzar` navegacional con guard de cálculo vigente).
+  - [`nomina-mensual-v2-paso-validacion.component.ts`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-validacion/nomina-mensual-v2-paso-validacion.component.ts) (`avanzar` terminal: aprueba).
+  - [`nomina-mensual-v2-paso-cierre.component.ts`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-cierre/nomina-mensual-v2-paso-cierre.component.ts) (`avanzar` terminal: abre modal vía `solicitarCierre`).
+- Tests añadidos: 4 (Dotación) + 2 (Movimientos) + 3 (Cálculo) + 4 (Validación, nuevo spec) + 3 (Cierre) + 5 (facade: labels nuevos + matriz de delegación) = 21.
+- Validación: `npx ng test --watch=false --include="**/nomina-mensual-v2/**/nomina-mensual-v2-paso-*.spec.ts" --include="**/nomina-mensual-v2-navegacion.spec.ts"` → 65/65 verdes.
+
+### Fase B — AG-CTA-01: eliminar primary duplicado del footer en pasos 2–6
+
+El `<button is-primary>` del `<footer>` de cada paso era duplicado del CTA del shell. Se elimina dejando sólo `is-ghost "Volver a X"`. En Cierre se sustituye el botón inline `Cerrar nómina` por un `paso-cierre__hint` que explica que el cierre se dispara desde el CTA del shell (que abre el modal de confirmación). El motivo opcional se mantiene como input pre-cierre. Los botones operativos no-navegacionales (`Calcular nómina`, `Aplicar recurrentes`, `Agregar movimiento manual`, `Excluir de la nómina`, `Confirmar exclusión` del preview masivo) NO se tocan: son acciones operativas, no avance.
+
+- Archivos tocados (HTML/CSS):
+  - 5 HTML de paso (líneas del footer): `dotacion`, `movimientos`, `calculo`, `validacion`, `cierre`.
+  - 2 CSS: se elimina `.paso-val__btn.is-primary` y `.paso-cierre__btn.is-primary` (huérfanos tras el cambio); se agrega `.paso-cierre__hint`. En Dotación / Movimientos / Cálculo los `*.is-primary` siguen vivos porque los usan acciones inline.
+- Validación: `npx ng build --configuration=development` → OK.
+
+### Fase C — AG-NAV-02: stepper desde evidencia persistida
+
+`obtenerEstadoPaso` cambia su signatura a `(stepId, pasoActual, nomina = null)`. Internamente usa `indiceUltimoPasoCompletado(nomina)` que mapea `nomina.estado` al índice del último paso completado: `borrador` → -1; `dotacion_generada` → 0; `en_revision` → 1; `calculada` → 2; `validada` → 3; `aprobada` → 4; `cerrada` → 5; `reabierta` → 4 (cierre deshecho); `anulada` → -1 (todos pierden vigencia). Excepción CAL-INV-05: el paso `calculation` exige adicionalmente `evidenciaCalculo.calculoVigente === true` para considerarse completed; si el snapshot dejó de ser vigente vuelve a pending aunque el estado de la nómina ya lo haya superado.
+
+El stepper recibe `[nomina]` como input nuevo y el container la inyecta con `nominaCargada()` (la nómina ya estaba cargada por el flujo del generador, no se introducen llamadas adicionales).
+
+- Archivos tocados:
+  - [`facade/nomina-mensual-v2-navegacion.ts`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/facade/nomina-mensual-v2-navegacion.ts) (`indiceUltimoPasoCompletado` + nueva signatura).
+  - [`nomina-mensual-v2-stepper.component.ts`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component.ts) (`input<NominaPeriodo | null>(null)`).
+  - [`nomina-mensual-v2-container.html`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container.html) (binding `[nomina]="nominaCargada()"`).
+  - Spec del facade ampliado: 10 tests nuevos (matriz `estado` × paso + caveats `null`, `reabierta`, `anulada`, `calculoNoVigente`).
+- Validación: 22/22 specs del facade verdes.
+
+### Validación cruzada
+
+- `npx ng build --configuration=development` → OK (944 kB chunk del generador, en línea con el anterior).
+- `npx ng test --watch=false --include="**/features/nomina-mensual{,-v2}/**/*.spec.ts"` → 978/980. Los 2 fallos (`nomina-msgbox-lab.rules.spec.ts`, `proceso-mensual-flow-nav.rules.spec.ts`) son pre-existentes y no fueron modificados por este lote — confirmados como tales en el sub-lote anterior.
+
+### Caveats explícitos
+
+- **Cálculo** y **Movimientos** mantienen sus botones operativos inline. El CTA del shell sólo navega cuando `puedeAvanzar()` es true (en Cálculo: además requiere `calculoVigente`).
+- **Cierre** es terminal: el CTA del shell abre el modal de confirmación, pero la navegación no ocurre porque no hay paso siguiente.
+- **Reapertura** (CIE-REO-04) ya cubrió la parte UI en el sub-lote anterior. La invalidación persistente de liquidaciones generadas queda pendiente y aparece en la próxima Tabla B.
+- Si la nómina llega al paso Cálculo con estado `calculada` pero `resultado()` aún vacío (sesión nueva), el CTA del shell queda en `ok:false` hasta que se recalcule. Es comportamiento esperado por el guard de Fase A (la sesión local del paso no carga el resultado persistido de cálculos previos; trabajar ese fallback queda pendiente como mejora UX no bloqueante).
+
+---
+
 ## 2026-06-05 - Sub-lote P0 Administrador + Generador (ADM-MOD-05 a QA-FOC-01)
 
 Ejecución secuencial de las 5 fases P0 acotadas del sub-lote recomendado en la §15 de [`auditoria-admin-generador-nomina-2026-06.md`](modulos/nomina-mensual/auditorias/auditoria-admin-generador-nomina-2026-06.md). Sólo HTML/CSS/TS de presentación. Cero cambios en motor, dominio, SQL/RPC/RLS, estilos globales, `angular.json`, Tailwind, fuentes ni persistencia.

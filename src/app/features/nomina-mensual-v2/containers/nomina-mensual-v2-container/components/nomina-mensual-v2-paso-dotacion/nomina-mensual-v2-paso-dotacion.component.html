@@ -261,12 +261,6 @@
       <button type="button" class="paso-dotacion__chip is-ghost" (click)="emitirVolver()">
         Volver a parámetros
       </button>
-      <button
-        type="button"
-        class="paso-dotacion__chip is-primary"
-        (click)="emitirAvance()"
-        [disabled]="!puedeAvanzar() || loading() || confirmando()"
-      >{{ confirmando() ? 'Confirmando…' : 'Confirmar dotación' }}</button>
     </div>
   </footer>
 </section>

@@ -36,7 +36,8 @@ Documento rector del módulo: [`../arquitectura-administrador-generador.md`](../
 | Filtro de mes con nómina fija | Aplicado | `peticiones-estilos.md` (entrada filtro mes generador) |
 | Rediseño visual full-bleed Admin + Generador | Aplicado (decisión opuesta a ARC-FRM-03) | `auditoria-admin-generador-nomina-2026-06.md` §15 |
 | Sub-lote P0 (ADM-MOD-05, CIE-ENUM-01, DOT-DET-04, MOV-ID-03, CAL-INV-05, QA-FOC-01) | Aplicado (2026-06-05) | `peticiones-estilos.md` (entrada sub-lote P0) · `auditoria-admin-generador-nomina-2026-06.md` §15 Tabla A |
-| P0 críticos restantes (10 ítems) | **Pendiente** | `auditoria-admin-generador-nomina-2026-06.md` §6 y §15 Tabla B |
+| Lote estructural (AG-NAV-03, AG-CTA-01, AG-NAV-02) | Aplicado (2026-06-05) | `peticiones-estilos.md` (entrada lote estructural) · `auditoria-admin-generador-nomina-2026-06.md` §15 Tabla A |
+| P0 críticos restantes (6 ítems: PAR-CTA-03, DOT-SEL-02, MOV-CON-01, VAL-STA-02, VAL-APP-03, CIE-REO-04) | **Pendiente** | `auditoria-admin-generador-nomina-2026-06.md` §6 y §15 Tabla B |
 | P1 escalabilidad | **Pendiente** | `auditoria-admin-generador-nomina-2026-06.md` §6 |
 | P2 visual NOIA y mantenibilidad | **Pendiente** | `auditoria-admin-generador-nomina-2026-06.md` §6.9 |
 | P3 retiro V1/V2 antiguo | **Pendiente** | `auditoria-admin-generador-nomina-2026-06.md` §10 |

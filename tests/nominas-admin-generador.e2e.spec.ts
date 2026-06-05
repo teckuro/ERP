@@ -26,14 +26,18 @@ test.describe('Administrador y generador de nóminas', () => {
   test('muestra la bandeja operativa y abre el generador existente', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'Administrador de nóminas' })).toBeVisible();
     await expect(page.getByRole('button', { name: /Nueva nómina/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Ver todas' })).toBeVisible();
+    await expect(page.getByLabel('Vista operativa')).toBeVisible();
+    await expect(page.getByLabel('Vista operativa')).toHaveValue('requiere-accion');
 
-    const abrir = page.getByRole('button', { name: /^Abrir$/ }).first();
+    const abrir = page.getByRole('button', { name: /^Abrir generador de / }).first();
     if ((await abrir.count()) === 0) {
-      await expect(page.getByText('Aún no hay nóminas')).toBeVisible();
+      await expect(
+        page.getByText(/Aún no hay nóminas|Sin nóminas con esos filtros/),
+      ).toBeVisible();
       return;
     }
 
+    await expect(abrir).toHaveAttribute('title', 'Abrir generador');
     await abrir.click();
     await page.waitForURL(/\/remuneraciones\/nominas\/[^/]+\/generador/, { timeout: 30_000 });
     await expect(page.getByLabel('Generador de nómina')).toBeVisible();

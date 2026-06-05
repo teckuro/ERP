@@ -34,12 +34,14 @@ import { NominaMensualV2PasoParametrosComponent } from './components/nomina-mens
 import { NominaMensualV2StepperComponent } from './components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component';
 import {
   ORDEN_PASOS_NOMINA,
+  ejecutarAvancePaso,
   esAvanceHaciaAdelante,
   esPasoCongelado,
   esRetrocesoAPaso,
   obtenerEtiquetaAccionPrincipal,
   obtenerSubtituloPaso,
   obtenerTituloPaso,
+  type PasoNominaPort,
 } from './facade/nomina-mensual-v2-navegacion';
 import { NominaMensualV2TrazabilidadService } from '../../services/nomina-mensual-v2-trazabilidad.service';
 import { NominaMensualV2SesionService } from '../../services/nomina-mensual-v2-sesion.service';
@@ -83,6 +85,11 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   private readonly pasoParametros = viewChild(NominaMensualV2PasoParametrosComponent);
   private readonly pasoAlcance = viewChild(NominaMensualV2PasoAlcanceComponent);
   private readonly pasoEmpleados = viewChild(NominaMensualV2PasoEmpleadosComponent);
+  private readonly pasoDotacion = viewChild(NominaMensualV2PasoDotacionComponent);
+  private readonly pasoMovimientos = viewChild(NominaMensualV2PasoMovimientosComponent);
+  private readonly pasoCalculo = viewChild(NominaMensualV2PasoCalculoComponent);
+  private readonly pasoValidacion = viewChild(NominaMensualV2PasoValidacionComponent);
+  private readonly pasoCierre = viewChild(NominaMensualV2PasoCierreComponent);
   private tokenInicializacionPeriodo = 0;
   private ultimoPeriodoInicializado: string | null = null;
   private ultimoNominaIdCargado: string | null = null;
@@ -112,7 +119,9 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     });
 
     bindShellPageContext(this.destroyRef, () => this.computeShellContext(), {
-      onPrimaryAction: () => this.ejecutarAccionPrincipalPasoActual(),
+      onPrimaryAction: () => {
+        void this.ejecutarAccionPrincipalPasoActual();
+      },
     });
   }
 
@@ -254,7 +263,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       return;
     }
     if (this.currentStep() === 'parameters' && esAvanceHaciaAdelante(this.currentStep(), destinoPaso)) {
-      this.ejecutarAccionPrincipalPasoActual();
+      void this.ejecutarAccionPrincipalPasoActual();
       return;
     }
     this.irAPaso(destinoPaso);
@@ -348,10 +357,25 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     this.pasoEmpleados()?.irAPendientesEmpleados();
   }
 
-  nextStep(): void {
-    const index = ORDEN_PASOS_NOMINA.indexOf(this.currentStep());
-    if (index < ORDEN_PASOS_NOMINA.length - 1) {
-      this.intentarIrAPaso(ORDEN_PASOS_NOMINA[index + 1]);
+  /**
+   * Devuelve la referencia tipada al paso activo que implementa
+   * {@link PasoNominaPort}. `null` si el paso no expone comando único
+   * (`parameters` se maneja por separado vía `orquestador.ejecutarAccionPrincipal`).
+   */
+  private obtenerPasoActivoConComando(): PasoNominaPort | null {
+    switch (this.currentStep()) {
+      case 'dotacion':
+        return this.pasoDotacion() ?? null;
+      case 'movements':
+        return this.pasoMovimientos() ?? null;
+      case 'calculation':
+        return this.pasoCalculo() ?? null;
+      case 'validation':
+        return this.pasoValidacion() ?? null;
+      case 'closure':
+        return this.pasoCierre() ?? null;
+      default:
+        return null;
     }
   }
 
@@ -395,7 +419,15 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     };
   }
 
-  ejecutarAccionPrincipalPasoActual(): void {
+  /**
+   * Handler del CTA del shell (AG-NAV-03). Para `parameters` mantiene el flujo
+   * existente vía orquestador (modales de acceso/diferencias). Para los pasos
+   * 2 a 6 delega en `ejecutarAvancePaso` (función pura del facade) que invoca
+   * `avanzar()` del paso activo. Si el comando responde `{ok:true}` y existe
+   * un paso siguiente, navega; si responde `{ok:false}` publica la razón en
+   * `ayudaAvance`. `closure` no navega (paso terminal).
+   */
+  async ejecutarAccionPrincipalPasoActual(): Promise<void> {
     const pasoActivo = this.currentStep();
     if (esPasoCongelado(pasoActivo)) return;
     if (pasoActivo === 'parameters') {
@@ -403,11 +435,16 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       this.orquestador.ejecutarAccionPrincipal();
       return;
     }
-    if (pasoActivo === 'dotacion') {
-      this.orquestador.ejecutarAccionPrincipal();
+    const paso = this.obtenerPasoActivoConComando();
+    const { resultado, siguientePaso } = await ejecutarAvancePaso(pasoActivo, paso);
+    if (!resultado.ok) {
+      this.orquestador.establecerAyudaAvance(resultado.razon, 'bloqueo');
       return;
     }
-    this.nextStep();
+    this.orquestador.establecerAyudaAvance(null);
+    if (siguientePaso) {
+      this.irAPaso(siguientePaso);
+    }
   }
 
   goLegacy(): void {

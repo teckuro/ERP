@@ -215,17 +215,6 @@
   cursor: not-allowed;
 }
 
-.paso-val__btn.is-primary {
-  background: #1d4ed8;
-  color: #ffffff;
-  border-color: #1d4ed8;
-}
-
-.paso-val__btn.is-primary:disabled {
-  background: #cbd5e1;
-  border-color: #cbd5e1;
-}
-
 .paso-val__btn.is-ghost {
   background: transparent;
   border-color: transparent;

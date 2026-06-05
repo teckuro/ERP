@@ -32,6 +32,10 @@ import type {
 } from '../../../../../nomina-mensual/models/movimiento-nomina.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
 import type { FilaTrabajadorNominaResumen } from '../../../../../nomina-mensual/models/nomina-periodo.models';
+import type {
+  PasoNominaPort,
+  ResultadoAvancePaso,
+} from '../../facade/nomina-mensual-v2-navegacion';
 
 type TabMovimientos = 'recurrentes' | 'manuales' | 'omitidos';
 
@@ -51,7 +55,7 @@ interface BorradorManual {
   styleUrl: './nomina-mensual-v2-paso-movimientos.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NominaMensualV2PasoMovimientosComponent {
+export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
   private readonly servicio = inject(NominaPeriodoService);
 
   readonly nominaPeriodoId = input<string | null>(null);
@@ -276,6 +280,19 @@ export class NominaMensualV2PasoMovimientosComponent {
 
   emitirAvance(): void {
     this.avanceSolicitado.emit();
+  }
+
+  /**
+   * Comando único de avance (AG-NAV-03). Paso navegacional: el cálculo valida
+   * que haya movimientos suficientes, por lo que aquí siempre se permite
+   * continuar. Las acciones operativas (`Aplicar recurrentes`, `Agregar
+   * movimiento manual`) permanecen como botones inline en el cuerpo del paso.
+   */
+  async avanzar(): Promise<ResultadoAvancePaso> {
+    if (this.aplicando()) {
+      return { ok: false, razon: 'Hay movimientos aplicándose.' };
+    }
+    return { ok: true };
   }
 
   emitirVolver(): void {

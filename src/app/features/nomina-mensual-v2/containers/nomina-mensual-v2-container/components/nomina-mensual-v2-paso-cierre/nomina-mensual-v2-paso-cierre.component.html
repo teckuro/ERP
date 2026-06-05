@@ -60,12 +60,10 @@
           placeholder="Ej.: cierre del período mayo, sin observaciones"
         />
       </label>
-      <button
-        type="button"
-        class="paso-cierre__btn is-primary"
-        (click)="solicitarCierre()"
-        [disabled]="!todoCumplido() || ejecutando()"
-      >{{ ejecutando() ? 'Cerrando…' : 'Cerrar nómina' }}</button>
+      <p class="paso-cierre__hint">
+        Para cerrar la nómina usa el botón principal del shell. La acción abrirá
+        una confirmación con el resumen de consecuencias.
+      </p>
     </section>
   } @else {
     <section class="paso-cierre__reopen">

@@ -116,11 +116,5 @@
     <button type="button" class="paso-val__btn is-ghost" (click)="emitirVolver()">
       Volver al cálculo
     </button>
-    <button
-      type="button"
-      class="paso-val__btn is-primary"
-      (click)="emitirAprobar()"
-      [disabled]="!puedeAprobar() || aprobando()"
-    >{{ aprobando() ? 'Aprobando…' : 'Aprobar para cierre' }}</button>
   </footer>
 </section>

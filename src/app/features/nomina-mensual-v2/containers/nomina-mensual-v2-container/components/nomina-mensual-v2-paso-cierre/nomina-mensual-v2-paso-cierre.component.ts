@@ -30,6 +30,10 @@ import type {
 } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
 import { estadoNominaToLabel } from '../../../../../nomina-mensual/presenters/admin-nominas.presenter';
+import type {
+  PasoNominaPort,
+  ResultadoAvancePaso,
+} from '../../facade/nomina-mensual-v2-navegacion';
 
 interface ChecklistItem {
   id: string;
@@ -46,7 +50,7 @@ interface ChecklistItem {
   styleUrl: './nomina-mensual-v2-paso-cierre.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NominaMensualV2PasoCierreComponent {
+export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   private readonly servicio = inject(NominaPeriodoService);
   private readonly router = inject(Router);
 
@@ -165,6 +169,29 @@ export class NominaMensualV2PasoCierreComponent {
 
   solicitarCierre(): void {
     if (this.todoCumplido()) this.confirmarCierreVisible.set(true);
+  }
+
+  /**
+   * Comando único de avance (AG-NAV-03). Paso terminal: abre el modal de
+   * confirmación del cierre. El cierre real ocurre cuando el usuario confirma
+   * dentro del modal (`cerrarNomina()`). El container NO navega tras
+   * `ok: true` porque cierre es el paso final del flujo.
+   */
+  async avanzar(): Promise<ResultadoAvancePaso> {
+    if (this.cerrada()) {
+      return { ok: false, razon: 'La nómina ya está cerrada.' };
+    }
+    if (this.ejecutando()) {
+      return { ok: false, razon: 'Cierre en curso.' };
+    }
+    if (this.cargando()) {
+      return { ok: false, razon: 'Cargando el resumen de cierre.' };
+    }
+    if (!this.todoCumplido()) {
+      return { ok: false, razon: 'Aún hay ítems pendientes en la checklist de cierre.' };
+    }
+    this.solicitarCierre();
+    return { ok: true };
   }
 
   abrirReaperturaModal(): void {

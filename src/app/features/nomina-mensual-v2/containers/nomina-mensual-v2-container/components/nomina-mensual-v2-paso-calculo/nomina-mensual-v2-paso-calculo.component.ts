@@ -34,6 +34,10 @@ import type {
 } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
 import { NominaPeriodoCalculoAdapterService } from '../../../../../nomina-mensual/services/nomina-periodo-calculo-adapter.service';
+import type {
+  PasoNominaPort,
+  ResultadoAvancePaso,
+} from '../../facade/nomina-mensual-v2-navegacion';
 
 @Component({
   selector: 'app-nomina-mensual-v2-paso-calculo',
@@ -43,7 +47,7 @@ import { NominaPeriodoCalculoAdapterService } from '../../../../../nomina-mensua
   styleUrl: './nomina-mensual-v2-paso-calculo.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NominaMensualV2PasoCalculoComponent {
+export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   private readonly calculoAdapter = inject(NominaPeriodoCalculoAdapterService);
   private readonly servicio = inject(NominaPeriodoService);
 
@@ -150,6 +154,27 @@ export class NominaMensualV2PasoCalculoComponent {
 
   emitirAvance(): void {
     if (this.puedeAvanzar()) this.avanceSolicitado.emit();
+  }
+
+  /**
+   * Comando único de avance (AG-NAV-03). Paso navegacional con guard: requiere
+   * un resultado de cálculo vigente. La acción operativa real (`Calcular
+   * nómina`) sigue siendo un botón inline en el cuerpo del paso.
+   */
+  async avanzar(): Promise<ResultadoAvancePaso> {
+    if (this.calculando()) {
+      return { ok: false, razon: 'Cálculo en curso.' };
+    }
+    if (this.calculoNoVigente()) {
+      return {
+        ok: false,
+        razon: 'El cálculo no está vigente. Vuelve a procesarlo antes de continuar.',
+      };
+    }
+    if (!this.puedeAvanzar()) {
+      return { ok: false, razon: 'Procesa el cálculo antes de continuar.' };
+    }
+    return { ok: true };
   }
 
   emitirVolver(): void {
