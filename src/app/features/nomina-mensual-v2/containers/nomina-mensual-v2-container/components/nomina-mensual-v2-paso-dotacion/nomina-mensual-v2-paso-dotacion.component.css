@@ -314,6 +314,12 @@
   border-radius: 6px;
   background: #f8fafc;
   padding: 12px;
+  outline: none;
+}
+
+.paso-dotacion__detalle:focus-visible {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
 }
 
 .paso-dotacion__detalle-head {
@@ -330,9 +336,23 @@
 }
 
 .paso-dotacion__detalle-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   margin: 0;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.paso-dotacion__detalle-meta strong {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.paso-dotacion__detalle-rut {
   font-size: 12px;
   color: #475569;
+  font-variant-numeric: tabular-nums;
 }
 
 .paso-dotacion__detalle-subtitle {

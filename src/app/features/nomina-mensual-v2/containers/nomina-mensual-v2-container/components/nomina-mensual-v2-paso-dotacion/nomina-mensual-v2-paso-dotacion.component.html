@@ -175,7 +175,13 @@
     </div>
 
     @if (trabajadorSeleccionado(); as tid) {
-      <aside class="paso-dotacion__detalle" aria-labelledby="paso-dotacion-detalle-title">
+      <aside
+        #detalleAside
+        class="paso-dotacion__detalle"
+        tabindex="-1"
+        aria-labelledby="paso-dotacion-detalle-title"
+        (keydown.escape)="cerrarDetalle()"
+      >
         <header class="paso-dotacion__detalle-head">
           <h3 id="paso-dotacion-detalle-title" class="paso-dotacion__detalle-title">
             Detalle del trabajador
@@ -187,9 +193,19 @@
         @if (detalleLoading()) {
           <p class="paso-dotacion__placeholder">Cargando…</p>
         } @else if (detalleTrabajador(); as det) {
-          <p class="paso-dotacion__detalle-meta">
-            Trabajador <strong>{{ det.trabajadorId }}</strong>
-          </p>
+          @if (detalleTrabajadorIdentidad(); as id) {
+            <p class="paso-dotacion__detalle-meta">
+              <strong>{{ id.nombre }}</strong>
+              <span class="paso-dotacion__detalle-rut">{{ id.rut }}</span>
+            </p>
+          } @else {
+            <p class="paso-dotacion__detalle-meta">
+              <strong>Trabajador sin identificar</strong>
+              <span class="paso-dotacion__detalle-rut" [attr.data-trabajador-id]="det.trabajadorId">
+                Identidad no disponible en la página actual
+              </span>
+            </p>
+          }
           <section>
             <h4 class="paso-dotacion__detalle-subtitle">Movimientos del período</h4>
             @if (det.movimientos.length === 0) {

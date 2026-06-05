@@ -1,5 +1,9 @@
 # NOM-ADMIN-GENERADOR-AUDIT-2026-06
 
+> **Estado:** Vigente. Roadmap P0–P3 propuesto, no ejecutado.  
+> **Última revisión de estado:** 2026-06-05 (ver §15).  
+> Índice: [`README.md`](./README.md). Documento rector relacionado: [`../arquitectura-administrador-generador.md`](../arquitectura-administrador-generador.md).
+
 ## Auditoría profunda del Administrador y Generador de Nómina
 
 Fecha: 2026-06-05  
@@ -991,3 +995,63 @@ No se aplicaron:
 
 Las recomendaciones P0-P3 deben ejecutarse como fases separadas, con pruebas y
 registro en `docs/codex/peticiones-estilos.md` cuando impliquen UI visible.
+
+---
+
+## 15. Estado de ejecución (post-publicación)
+
+Actualización: 2026-06-05.
+
+Esta sección consolida qué decisiones se aplicaron desde la publicación de la auditoría y qué hallazgos siguen pendientes. No reescribe el diagnóstico previo; solo lo complementa con la realidad actual del repo. Si una decisión se apartó del roadmap propuesto, queda anotada explícitamente.
+
+### Tabla A — Decisiones ya tomadas o parcialmente cubiertas
+
+| Frente | Estado | Detalle |
+|--------|--------|---------|
+| F3 Fusion + migración ciclo consistente | Aplicado | `nomina_periodo` guarda snapshot V1 vigente, versión y fechas; `transicionar_nomina_periodo` valida transiciones; cambiar dotación o movimientos invalida cálculo (sustento dominio para CAL-INV-05). Ver §3.4 de esta auditoría y [`../arquitectura-administrador-generador.md`](../arquitectura-administrador-generador.md). |
+| Shell residual al navegar | Aplicado | `ShellPageContextService` rediseñado con tokens de ownership; `LayoutShellComponent` coordina `NavigationStart`/`NavigationEnd`; helper `bindShellPageContext`. Cubre la dimensión "shell muestra otra pantalla" detrás de AG-CTX-04 sin resolverla por completo. |
+| Filtro de mes con nómina cargada | Aplicado | Container del Generador V2 redirige al generador del periodo nuevo si existe nómina; vuelve al Administrador si no. Resuelve la inconsistencia entre `PeriodoActivoService` y la nómina fijada por URL. |
+| Rediseño visual Admin + Generador (full-bleed) | Aplicado **con decisión opuesta a ARC-FRM-03** | El usuario optó por full-bleed sin envolver en `app-page-frame`. Ver "Discrepancia con ARC-FRM-03" abajo. |
+| L0–L7 del audit V2 (pasos 1–3) | Aplicado | Documentado en [`auditoria-nomina-v2-2026-06.md`](./auditoria-nomina-v2-2026-06.md). Atiende parcialmente PAR-COPY-02 (sin `snapshot`/`base`/IDs internos como protagonistas) en el alcance V2 actual. |
+| Limpieza CSS V2 (L5/L5.2) | Aplicado | `container.css` pasó de 7.676 a 3.414 líneas. Atiende parcialmente ARC-CSS-01 en el contenedor V2. Deuda L5.3 sigue abierta y opcional. |
+| Sub-lote P0 acotado (ADM-MOD-05, CIE-ENUM-01, DOT-DET-04, MOV-ID-03, CAL-INV-05, QA-FOC-01) | Aplicado (2026-06-05) | Diálogos locales del Administrador migrados a `app-message-box`; chip de Cierre consume `estadoNominaToLabel`; panel de detalle de Dotación y listas de Movimientos muestran nombre + RUT con fallback; banda persistente de cálculo no vigente en Cálculo, Validación y Cierre derivada de `evidenciaCalculo.calculoVigente`; reapertura del paso Cierre migrada a `app-message-box` con consecuencias explícitas (cubre incidentalmente parte de CIE-REO-04) y aside de Dotación con Escape + retorno de foco. Entrada de bitácora en [`docs/codex/peticiones-estilos.md`](../../../peticiones-estilos.md) (2026-06-05). Sin cambios en motor, dominio ni SQL. |
+
+#### Discrepancia con ARC-FRM-03
+
+La auditoría recomienda envolver Admin y Generador en `app-page-frame` y consumir tokens `--pf-*` (sección 6.9). En sesiones posteriores el usuario priorizó un layout full-bleed (sin frame compartido) para que la tabla del Administrador y los pasos del Generador ocuparan todo el espacio disponible. El path de regreso no se descarta: si una fase futura prioriza homogeneidad con el resto del ERP, ARC-FRM-03 se reactiva como tarea formal. Hasta entonces, el módulo conserva tokens `--nomina-*` y composición propia.
+
+### Tabla B — Pendientes priorizados para el siguiente lote
+
+#### P0 críticos (10 hallazgos)
+
+> Los ítems ADM-MOD-05, CIE-ENUM-01, DOT-DET-04, MOV-ID-03, CAL-INV-05 y QA-FOC-01 pasaron a la Tabla A el 2026-06-05 (sub-lote P0 ejecutado). De CIE-REO-04 se cubrió incidentalmente la advertencia de consecuencias al migrar la reapertura a `app-message-box`; queda pendiente la persistencia explícita (invalidación de liquidaciones).
+
+| ID | Descripción corta | Origen |
+|----|-------------------|--------|
+| AG-CTA-01 | Footer de pasos 2–6 repite CTA primario que ya publica el shell. Eliminar duplicado. | §6.1 |
+| AG-NAV-02 | Stepper marca paso completo por posición visitada. Derivar de evidencia persistida. | §6.1 |
+| AG-NAV-03 | `nextStep()` global puede avanzar sin ejecutar la operación real del paso. Comando único de avance por paso con resultado tipado. | §6.1 |
+| PAR-CTA-03 | CTA del shell puede no representar la operación real del paso Parámetros. Resolver desde estado operativo completo. | §6.3 |
+| DOT-SEL-02 | "Seleccionar todos" actúa sobre la página visible. Distinguir página vs. universo filtrado. | §6.4 |
+| MOV-CON-01 | Tipo de movimiento como input libre. Búsqueda de concepto desde catálogo autorizado. | §6.5 |
+| VAL-STA-02 | Sin estado de resolución (resuelta/justificada/aceptada) por incidencia. Workflow mínimo. | §6.7 |
+| VAL-APP-03 | Aprobar sin resumen final del firmante. `app-message-box` con versión, totales, advertencias y responsable. | §6.7 |
+| CIE-REO-04 | Reapertura: queda persistir el alcance explícito (impacto sobre liquidaciones generadas). La advertencia visible se entregó como colateral de QA-FOC-01 / Fase 5 del sub-lote 2026-06-05. | §6.8 |
+
+#### Bloques siguientes (no detallados aquí)
+
+- **P1** (escalabilidad y operación por excepción): `app-data-grid` en Dotación, segmentos, acciones masivas con preview, `app-search-select` remoto en Movimientos, comparación de cálculos, validación agrupada, deep links Validación → Dotación. Ver §6.4–§6.8 y §7.3–§7.5.
+- **P2** (consolidación visual NOIA): ARC-CSS-01 + ARC-TOK-02 (consolidación de tokens y CSS por paso), normalización de tabs/alerts/drawers, unificación de trazabilidad. Reabrir ARC-FRM-03 solo si se decide volver al frame común.
+- **P3** (retiro V1/V2 antiguo): mover `payrollSteps` fuera de `*.mock.ts`, retirar Alcance/Empleados/overlays del contenedor activo, hacer `nominaPeriodoId` la única fuente de rehidratación, preparar redirect controlado de `/proceso-mensual`.
+
+### Próximo paso recomendado
+
+Cerrado el sub-lote barato (5 fases, 2026-06-05), el siguiente lote es estructural y aborda la **coherencia entre CTA del shell, stepper y comando de avance del paso**:
+
+1. **AG-CTA-01** — eliminar el CTA primario duplicado del footer en pasos 2–6; el shell publica el único primario.
+2. **AG-NAV-02** — derivar los estados del stepper desde evidencia persistida (no por posición visitada). Requiere mapear cada paso a una transición de `nomina_periodo.estado` o a una bandera por paso.
+3. **AG-NAV-03** — exponer un comando de avance único por paso, con resultado tipado, que el CTA del shell consume.
+
+Estos tres son interdependientes: AG-NAV-03 habilita AG-CTA-01 (el CTA del shell sabe qué disparar) y AG-NAV-02 (el stepper sabe qué consultar). Tampoco tocan motor ni SQL, pero sí reorganizan el contrato shell ↔ paso.
+
+Tras este lote estructural, los siguientes candidatos P0 son **PAR-CTA-03** (CTA real del paso Parámetros), **DOT-SEL-02** (alcance de la selección masiva) y **VAL-APP-03** (resumen del firmante al aprobar).

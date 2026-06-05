@@ -1,20 +1,43 @@
-# Nómina mensual — Auditorías de nómina mensual
+# Auditorías — Nómina mensual
 
-Auditorías del módulo: Administrador + Generador, NOIA V2 (DOCS-AUDIT-02),
-cleanup de código muerto y cierre mensual post-reset.
+Índice de auditorías de `/remuneraciones/proceso-mensual` (V1), `/remuneraciones/nomina-mensual-v2` (V2) y el rediseño **Administrador + Generador** (rutas `/remuneraciones/nominas` y `/remuneraciones/nominas/:nominaPeriodoId/generador`).
 
-> Subcarpeta creada el 2026-06-03 (DOCS-AUDIT-02 / L5). Los enlaces internos del módulo se actualizaron automáticamente.
+Documento rector del módulo: [`../arquitectura-administrador-generador.md`](../arquitectura-administrador-generador.md).
 
-## Archivos
+## Inventario
 
-| Archivo | Tamaño |
-|---------|-------:|
-| [`auditoria-admin-generador-nomina-2026-06.md`](./auditoria-admin-generador-nomina-2026-06.md) | 47825 B |
-| [`auditoria-nomina-v2-2026-06.md`](./auditoria-nomina-v2-2026-06.md) | 34406 B |
-| [`cierre-mensual-audit-post-reset-01.md`](./cierre-mensual-audit-post-reset-01.md) | 23789 B |
-| [`nom-mensual-cleanup-audit-01.md`](./nom-mensual-cleanup-audit-01.md) | 3382 B |
+| Documento | Fecha | Alcance | Estado |
+|-----------|------:|---------|--------|
+| [`auditoria-admin-generador-nomina-2026-06.md`](./auditoria-admin-generador-nomina-2026-06.md) | 2026-06-05 | Administrador (`/remuneraciones/nominas`) + Generador (6 pasos: Parámetros, Dotación, Movimientos, Cálculo, Validación, Cierre) | **Vigente.** Roadmap P0–P3 propuesto, no ejecutado |
+| [`auditoria-nomina-v2-2026-06.md`](./auditoria-nomina-v2-2026-06.md) | 2026-06-02 | V2 shell + pasos 1–3 productivos + overlays + copy RRHH | **Cerrada.** L0–L7 completados (2026-06-03). L5.3 declarada como deuda opcional |
+| [`cierre-mensual-audit-post-reset-01.md`](./cierre-mensual-audit-post-reset-01.md) | 2026-05-18 | V1 `/remuneraciones/proceso-mensual` (post-reset visual) | **Superada (parcial).** La fase propuesta `NOM-CIERRE-MENSUAL-OPERATIVE-LAYOUT-01` no se ejecutó; el foco operativo se trasladó a Administrador + Generador |
+| [`nom-mensual-cleanup-audit-01.md`](./nom-mensual-cleanup-audit-01.md) | 2026-05-19 | Limpieza de código y CSS huérfanos en `features/nomina-mensual/` | **Implementada.** Documento histórico |
 
-## Volver
+## Orden de lectura sugerido
 
-- [`../README.md`](../README.md) — punto de entrada del módulo.
-- [`../../README.md`](../../README.md) — índice de módulos.
+1. **[`auditoria-admin-generador-nomina-2026-06.md`](./auditoria-admin-generador-nomina-2026-06.md)** — es la única auditoría vigente y define el roadmap actual del módulo. Empezar siempre por aquí.
+2. **[`../arquitectura-administrador-generador.md`](../arquitectura-administrador-generador.md)** — documento rector con la decisión vigente (Administrador + Generador, 6 pasos, ciclo consistente).
+3. **[`auditoria-nomina-v2-2026-06.md`](./auditoria-nomina-v2-2026-06.md)** — referencia del rediseño NOIA ya cerrado de los pasos 1–3 del Generador.
+4. Resto de auditorías solo como contexto histórico.
+
+## Política de auditorías
+
+- Una auditoría documenta un diagnóstico en un punto del tiempo. No se reescribe: se añade banner de estado y, si corresponde, una sección final con el contraste vs. la realidad implementada.
+- Cuando un roadmap se ejecuta en lotes, los lotes se documentan dentro del mismo archivo (sección "Estado") o en una entrada nueva en [`../../peticiones-estilos.md`](../../peticiones-estilos.md) si tienen impacto visual.
+- Cuando una auditoría queda superada por otra más reciente, la antigua mantiene su contenido pero se marca con banner `Superada (parcial)` o `Superada` y se enlaza la sucesora.
+- Las decisiones del usuario que se apartan del roadmap propuesto se anotan en la sección final de la auditoría correspondiente (p. ej. ARC-FRM-03 / `app-page-frame` en la 2026-06-05).
+
+## Estado de ejecución resumido (2026-06-05)
+
+| Frente | Estado | Referencia |
+|--------|--------|------------|
+| F3 Fusion + migración ciclo consistente | Aplicado | `arquitectura-administrador-generador.md` §1 |
+| Shell residual (tokens de ownership) | Aplicado | `peticiones-estilos.md` (entrada shell residual) |
+| Filtro de mes con nómina fija | Aplicado | `peticiones-estilos.md` (entrada filtro mes generador) |
+| Rediseño visual full-bleed Admin + Generador | Aplicado (decisión opuesta a ARC-FRM-03) | `auditoria-admin-generador-nomina-2026-06.md` §15 |
+| Sub-lote P0 (ADM-MOD-05, CIE-ENUM-01, DOT-DET-04, MOV-ID-03, CAL-INV-05, QA-FOC-01) | Aplicado (2026-06-05) | `peticiones-estilos.md` (entrada sub-lote P0) · `auditoria-admin-generador-nomina-2026-06.md` §15 Tabla A |
+| P0 críticos restantes (10 ítems) | **Pendiente** | `auditoria-admin-generador-nomina-2026-06.md` §6 y §15 Tabla B |
+| P1 escalabilidad | **Pendiente** | `auditoria-admin-generador-nomina-2026-06.md` §6 |
+| P2 visual NOIA y mantenibilidad | **Pendiente** | `auditoria-admin-generador-nomina-2026-06.md` §6.9 |
+| P3 retiro V1/V2 antiguo | **Pendiente** | `auditoria-admin-generador-nomina-2026-06.md` §10 |
+| L5.3 sweep CSS V2 | Deuda opcional | `auditoria-nomina-v2-2026-06.md` §7 |

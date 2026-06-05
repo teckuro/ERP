@@ -10,6 +10,13 @@
     </div>
   </header>
 
+  @if (calculoNoVigente()) {
+    <p class="paso-calc__alert is-warning" role="status">
+      El cálculo de la versión {{ versionCalculo() }} dejó de ser vigente por
+      cambios posteriores en dotación o movimientos. Recalcula para continuar.
+    </p>
+  }
+
   @if (cargando()) {
     <p class="paso-calc__placeholder">Cargando estado de la nómina…</p>
   }

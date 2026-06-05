@@ -13,10 +13,12 @@
  * iteración posterior (declarado en `peticiones-estilos.md`).
  */
 
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
+  ViewChild,
   computed,
   effect,
   inject,
@@ -56,6 +58,10 @@ interface VistaDotacion {
 })
 export class NominaMensualV2PasoDotacionComponent {
   private readonly servicio = inject(NominaPeriodoService);
+  private readonly doc = inject(DOCUMENT);
+
+  @ViewChild('detalleAside') private detalleAsideRef?: ElementRef<HTMLElement>;
+  private elementoOrigenDetalle: HTMLElement | null = null;
 
   readonly nominaPeriodoId = input<string | null>(null);
   readonly avanceSolicitado = output<void>();
@@ -69,6 +75,7 @@ export class NominaMensualV2PasoDotacionComponent {
   readonly seleccion = signal<Set<string>>(new Set());
   readonly trabajadorSeleccionado = signal<string | null>(null);
   readonly detalleTrabajador = signal<DetalleTrabajadorNomina | null>(null);
+  readonly detalleTrabajadorIdentidad = signal<{ nombre: string; rut: string } | null>(null);
   readonly detalleLoading = signal(false);
   readonly confirmando = signal(false);
   readonly pagina = signal(1);
@@ -226,7 +233,15 @@ export class NominaMensualV2PasoDotacionComponent {
   }
 
   async abrirDetalle(trabajadorId: string): Promise<void> {
+    this.elementoOrigenDetalle = this.doc.activeElement as HTMLElement | null;
     this.trabajadorSeleccionado.set(trabajadorId);
+    const fila = this.vista().filas.find((f) => f.trabajadorId === trabajadorId);
+    this.detalleTrabajadorIdentidad.set(
+      fila ? { nombre: fila.nombre, rut: fila.rut } : null,
+    );
+    // Tras el render del aside, mover el foco a su contenedor (tabindex=-1)
+    queueMicrotask(() => this.detalleAsideRef?.nativeElement?.focus());
+
     const id = this.nominaPeriodoId();
     if (!id) return;
     this.detalleLoading.set(true);
@@ -244,6 +259,12 @@ export class NominaMensualV2PasoDotacionComponent {
   cerrarDetalle(): void {
     this.trabajadorSeleccionado.set(null);
     this.detalleTrabajador.set(null);
+    this.detalleTrabajadorIdentidad.set(null);
+    const origen = this.elementoOrigenDetalle;
+    this.elementoOrigenDetalle = null;
+    if (origen && typeof origen.focus === 'function') {
+      queueMicrotask(() => origen.focus());
+    }
   }
 
   async emitirAvance(): Promise<void> {

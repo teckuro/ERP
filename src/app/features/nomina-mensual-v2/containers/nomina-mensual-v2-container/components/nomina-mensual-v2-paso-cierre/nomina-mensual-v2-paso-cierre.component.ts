@@ -29,6 +29,7 @@ import type {
   ResumenValidacionNomina,
 } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
+import { estadoNominaToLabel } from '../../../../../nomina-mensual/presenters/admin-nominas.presenter';
 
 interface ChecklistItem {
   id: string;
@@ -48,6 +49,8 @@ interface ChecklistItem {
 export class NominaMensualV2PasoCierreComponent {
   private readonly servicio = inject(NominaPeriodoService);
   private readonly router = inject(Router);
+
+  readonly estadoLabel = estadoNominaToLabel;
 
   readonly nominaPeriodoId = input<string | null>(null);
   readonly volverValidacion = output<void>();
@@ -104,6 +107,18 @@ export class NominaMensualV2PasoCierreComponent {
   readonly todoCumplido = computed(() => this.checklist().every((c) => c.cumplido));
   readonly cerrada = computed(() => this.nomina()?.estado === 'cerrada');
 
+  /**
+   * `true` cuando el snapshot persistido dejó de ser vigente por cambios
+   * posteriores. Replica el banner CAL-INV-05 introducido en el paso Cálculo
+   * para que la advertencia persista hasta que se recalcule.
+   */
+  readonly calculoNoVigente = computed(() => {
+    const ev = this.nomina()?.evidenciaCalculo;
+    return ev != null && ev.versionCalculo > 0 && ev.calculoVigente === false;
+  });
+
+  readonly versionCalculo = computed(() => this.nomina()?.evidenciaCalculo?.versionCalculo ?? 0);
+
   constructor() {
     effect(() => {
       const id = this.nominaPeriodoId();
@@ -152,7 +167,21 @@ export class NominaMensualV2PasoCierreComponent {
     if (this.todoCumplido()) this.confirmarCierreVisible.set(true);
   }
 
+  abrirReaperturaModal(): void {
+    this.motivoReapertura.set('');
+    this.error.set(null);
+    this.mostrarReabrir.set(true);
+  }
+
+  cancelarReapertura(): void {
+    if (this.ejecutando()) return;
+    this.mostrarReabrir.set(false);
+    this.motivoReapertura.set('');
+    this.error.set(null);
+  }
+
   async reabrirNomina(): Promise<void> {
+    if (this.ejecutando()) return;
     const id = this.nominaPeriodoId();
     const motivo = this.motivoReapertura().trim();
     if (!id || !motivo) {

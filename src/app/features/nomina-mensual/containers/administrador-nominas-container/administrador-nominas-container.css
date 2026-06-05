@@ -328,65 +328,45 @@
   border: 0;
 }
 
-.adm-nom__action-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 80;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 80px 16px 16px;
-  background: rgba(15, 23, 42, 0.42);
-}
+/* Bloque de motivo proyectado dentro del app-message-box (ADM-MOD-05) ----- */
 
-.adm-nom__action-dialog {
-  width: min(100%, 480px);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 18px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  box-shadow: 0 14px 32px -16px rgba(15, 23, 42, 0.3);
-}
-
-.adm-nom__action-dialog h2,
-.adm-nom__action-dialog p {
-  margin: 0;
-}
-
-.adm-nom__action-dialog header,
-.adm-nom__action-dialog label {
+.adm-nom__motivo {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin: 4px 0 0;
 }
 
-.adm-nom__action-dialog textarea {
+.adm-nom__motivo-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.adm-nom__motivo textarea {
   min-height: 84px;
   padding: 8px 10px;
   resize: vertical;
   border: 1px solid #d1d5db;
   border-radius: 6px;
   font: inherit;
+  color: inherit;
+  background: #fff;
 }
 
-.adm-nom__action-dialog footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+.adm-nom__motivo textarea:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+  border-color: #2563eb;
 }
 
-.adm-nom__action-eyebrow {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #6b7280;
+.adm-nom__motivo textarea:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
 }
 
-.adm-nom__action-error {
+.adm-nom__motivo-error {
+  margin: 6px 0 0;
   color: #b91c1c;
   font-size: 12px;
 }

@@ -21,6 +21,7 @@ import { LucideAngularModule } from 'lucide-angular';
 
 import { DataGridComponent } from '../../../../shared/components/ui/data-grid/data-grid.component';
 import { DataGridCellDirective } from '../../../../shared/components/ui/data-grid/data-grid.directives';
+import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
 import { NominaPeriodoService } from '../../services/nomina-periodo.service';
@@ -66,6 +67,7 @@ interface AccionAdministrativaPendiente {
     LucideAngularModule,
     DataGridComponent,
     DataGridCellDirective,
+    MessageBoxComponent,
     AdminNominasModalNuevaNominaComponent,
     AdminNominasModalResumenNominaComponent,
   ],
@@ -225,7 +227,29 @@ export class AdministradorNominasContainer {
     this.errorAccion.set(null);
   }
 
+  accionTituloModal(tipo: AccionAdministrativa): string {
+    if (tipo === 'eliminar') return 'Eliminar borrador';
+    if (tipo === 'reabrir') return 'Reabrir nómina';
+    return 'Anular nómina';
+  }
+
+  accionMessageBoxVariant(tipo: AccionAdministrativa): 'warning' | 'danger' {
+    return tipo === 'reabrir' ? 'warning' : 'danger';
+  }
+
+  accionRequiereMotivo(tipo: AccionAdministrativa): boolean {
+    return tipo !== 'eliminar';
+  }
+
+  accionDetalle(tipo: AccionAdministrativa): string {
+    if (tipo === 'eliminar') {
+      return 'Solo se eliminará la cabecera en estado borrador. Esta operación no se puede deshacer.';
+    }
+    return '';
+  }
+
   async confirmarAccion(): Promise<void> {
+    if (this.ejecutandoAccion()) return;
     const pendiente = this.accionPendiente();
     if (!pendiente) return;
     const motivo = this.motivoAccion().trim();

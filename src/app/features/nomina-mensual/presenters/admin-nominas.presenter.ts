@@ -143,7 +143,13 @@ export const COLUMNAS_ADMIN_NOMINAS: DataGridColumn<NominaPeriodoResumen>[] = [
   },
 ];
 
-const ETIQUETAS_ESTADO: Record<EstadoNomina, string> = {
+/**
+ * Etiqueta administrativa por estado de nómina (lenguaje RRHH).
+ *
+ * Fuente única para todos los chips y banners que exponen un `EstadoNomina`
+ * al usuario; previene enums crudos como `dotacion_generada` en la UI.
+ */
+export const ETIQUETAS_ESTADO_NOMINA: Record<EstadoNomina, string> = {
   borrador: 'Borrador',
   dotacion_generada: 'Dotación lista',
   en_revision: 'En revisión',
@@ -154,6 +160,15 @@ const ETIQUETAS_ESTADO: Record<EstadoNomina, string> = {
   reabierta: 'Reabierta',
   anulada: 'Anulada',
 };
+
+/**
+ * Traduce un `EstadoNomina` a etiqueta RRHH legible. Fallback al enum crudo
+ * si el estado es desconocido (caso defensivo de migraciones tardías).
+ */
+export function estadoNominaToLabel(estado: EstadoNomina | null | undefined): string {
+  if (!estado) return '';
+  return ETIQUETAS_ESTADO_NOMINA[estado] ?? String(estado);
+}
 
 const ETIQUETAS_TIPO: Record<TipoNomina, string> = {
   mensual: 'Mensual',
@@ -187,7 +202,7 @@ export function crearFiltrosAdminNominas(
       const termino = String(value ?? '').trim().toLowerCase();
       if (!termino) return true;
       const tokens = termino.split(/\s+/).filter(Boolean);
-      const texto = `${fila.empresaNombre} ${fila.periodo} ${ETIQUETAS_ESTADO[fila.estado]} ${ETIQUETAS_TIPO[fila.tipo]}`.toLowerCase();
+      const texto = `${fila.empresaNombre} ${fila.periodo} ${ETIQUETAS_ESTADO_NOMINA[fila.estado]} ${ETIQUETAS_TIPO[fila.tipo]}`.toLowerCase();
       return tokens.every((token) => texto.includes(token));
     },
   };
@@ -215,7 +230,7 @@ export function crearFiltrosAdminNominas(
       operator: 'equals',
       emptyLabel: 'Todos los estados',
       options: estadosPresentes.map((estado) => ({
-        label: ETIQUETAS_ESTADO[estado],
+        label: ETIQUETAS_ESTADO_NOMINA[estado],
         value: estado,
       })),
     });
@@ -305,7 +320,7 @@ export function filtrarResumenes(
     if (filtros.busqueda && filtros.busqueda.trim()) {
       const termino = filtros.busqueda.trim().toLowerCase();
       const tokens = termino.split(/\s+/).filter(Boolean);
-      const texto = `${fila.empresaNombre} ${fila.periodo} ${ETIQUETAS_ESTADO[fila.estado]} ${ETIQUETAS_TIPO[fila.tipo]}`.toLowerCase();
+      const texto = `${fila.empresaNombre} ${fila.periodo} ${ETIQUETAS_ESTADO_NOMINA[fila.estado]} ${ETIQUETAS_TIPO[fila.tipo]}`.toLowerCase();
       if (!tokens.every((token) => texto.includes(token))) {
         return false;
       }

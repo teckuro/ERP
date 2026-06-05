@@ -9,6 +9,77 @@
 
 ---
 
+## 2026-06-05 - Sub-lote P0 Administrador + Generador (ADM-MOD-05 a QA-FOC-01)
+
+Ejecución secuencial de las 5 fases P0 acotadas del sub-lote recomendado en la §15 de [`auditoria-admin-generador-nomina-2026-06.md`](modulos/nomina-mensual/auditorias/auditoria-admin-generador-nomina-2026-06.md). Sólo HTML/CSS/TS de presentación. Cero cambios en motor, dominio, SQL/RPC/RLS, estilos globales, `angular.json`, Tailwind, fuentes ni persistencia.
+
+### Fase 1 — ADM-MOD-05: diálogos del Administrador a `app-message-box`
+
+Los diálogos de Eliminar borrador / Reabrir / Anular dejan el `.adm-nom__action-dialog` local (sin focus trap, sin Escape, sin retorno de foco) y pasan a `app-message-box` `mode="modal"`. Eliminar abre con `variant="danger"` y consecuencia explícita; Reabrir abre con `variant="warning"`; Anular con `variant="danger"`. Los dos últimos exigen motivo proyectado como `<textarea>` en el slot del message-box. Mientras se ejecuta la acción, el modal queda no cerrable (`disableClose=true`).
+
+- Archivos tocados: [`administrador-nominas-container.ts`](../../src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.ts) (helpers `accionTituloModal`, `accionMessageBoxVariant`, `accionRequiereMotivo`, `accionDetalle`, guard de doble click), [`administrador-nominas-container.html`](../../src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.html), [`administrador-nominas-container.css`](../../src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.css) (se eliminan `.adm-nom__action-*`, se añade `.adm-nom__motivo*`), [`administrador-nominas-container.spec.ts`](../../src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.spec.ts) (5 tests nuevos: Test 40–44).
+- Validación: `npx ng test --watch=false --include="**/administrador-nominas-container.spec.ts"` → 12/12.
+
+### Fase 2 — CIE-ENUM-01: presenter de estado RRHH en el chip del paso Cierre
+
+El chip "Estado actual: `dotacion_generada`" dejaba ver el enum interno. Ahora consume `estadoNominaToLabel` exportado desde [`admin-nominas.presenter.ts`](../../src/app/features/nomina-mensual/presenters/admin-nominas.presenter.ts) (se renombró `ETIQUETAS_ESTADO` a `ETIQUETAS_ESTADO_NOMINA` y se expone el mapa + el helper). El paso Cierre muestra "Dotación lista", "Calculada", "Cerrada", etc.
+
+- Archivos tocados: [`admin-nominas.presenter.ts`](../../src/app/features/nomina-mensual/presenters/admin-nominas.presenter.ts) (export `ETIQUETAS_ESTADO_NOMINA` + `estadoNominaToLabel`), [`nomina-mensual-v2-paso-cierre.component.ts`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-cierre/nomina-mensual-v2-paso-cierre.component.ts), [`nomina-mensual-v2-paso-cierre.component.html`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-cierre/nomina-mensual-v2-paso-cierre.component.html), nuevo spec del componente.
+- Validación: `npx ng test --watch=false --include="**/nomina-mensual-v2-paso-cierre.component.spec.ts"` → 2/2.
+
+### Fase 3 — DOT-DET-04 + MOV-ID-03: identidad humana
+
+El panel de detalle de Dotación mostraba `Trabajador <id-crudo>`. Las listas de Movimientos manuales / omitidos también. Se sustituye por nombre + RUT en ambos casos, manteniendo el ID sólo en `[attr.data-trabajador-id]` para depuración.
+
+- **Dotación**: nuevo signal `detalleTrabajadorIdentidad` con `{ nombre, rut }` capturado de la fila visible al abrir el detalle. Si la fila no estaba paginada cuando se abrió el detalle, fallback explícito "Trabajador sin identificar · Identidad no disponible en la página actual".
+- **Movimientos**: cache acumulativo privado `identidadesTrabajador: Map<string, { nombre, rut }>` que se hidrata en `cargar()` y `buscarTrabajadores()`. Helpers públicos `nombreTrabajador(id)` y `rutTrabajador(id)` con fallback "Trabajador sin identificar".
+- Archivos tocados: [`nomina-mensual-v2-paso-dotacion.component.ts`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion/nomina-mensual-v2-paso-dotacion.component.ts), [`.html`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion/nomina-mensual-v2-paso-dotacion.component.html), [`.css`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion/nomina-mensual-v2-paso-dotacion.component.css) (estilos `.paso-dotacion__detalle-meta` + `.paso-dotacion__detalle-rut`); [`nomina-mensual-v2-paso-movimientos.component.ts`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.ts), [`.html`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.html). Nuevos specs en ambos componentes.
+- Validación: `npx ng test --watch=false --include="**/nomina-mensual-v2-paso-dotacion.component.spec.ts" --include="**/nomina-mensual-v2-paso-movimientos.component.spec.ts"` → 6/6.
+
+### Fase 4 — CAL-INV-05: banda persistente "cálculo no vigente"
+
+Cuando `evidenciaCalculo.versionCalculo > 0 && calculoVigente === false`, los pasos Cálculo, Validación y Cierre muestran una banda tono warning con el motivo administrativo y la acción recomendada (recalcular antes de continuar). En Cálculo y Cierre se incluye la versión persistida; en Validación se omite (el resumen no la trae).
+
+- Archivos tocados: [`paso-calculo.component.ts`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-calculo/nomina-mensual-v2-paso-calculo.component.ts) (`calculoNoVigente`, `versionCalculo`), [`.html`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-calculo/nomina-mensual-v2-paso-calculo.component.html), [`.css`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-calculo/nomina-mensual-v2-paso-calculo.component.css) (`.paso-calc__alert.is-warning`). Replicado en [`paso-validacion`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-validacion/) y [`paso-cierre`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-cierre/) con sus respectivos `is-warning`. Nuevo spec del paso Cálculo.
+- Caveat: depende de que `evidenciaCalculo.calculoVigente` se actualice por el flujo de cambios persistidos (migración `20260605120000_nomina_periodo_ciclo_consistente.sql` ya en BD productiva). Si en algún flujo el flag no se setea, la banda no aparecerá; no se tocó motor por estar fuera de alcance del lote.
+- Validación: `npx ng test --watch=false --include="**/nomina-mensual-v2-paso-calculo.component.spec.ts"` → 4/4.
+
+### Fase 5 — QA-FOC-01: foco y a11y en superficies restantes
+
+Dos puntos pendientes tras Fase 1:
+
+1. **Reapertura del paso Cierre** migrada de form inline a `app-message-box` `variant="danger"` con título "Reabrir nómina", consecuencias explícitas ("la versión cerrada quedará invalidada; si ya generaste liquidaciones para este cálculo, deberás revisarlas y regenerarlas") y motivo proyectado obligatorio. Cubre incidentalmente parte de **CIE-REO-04** (advertencia de consecuencias); el alcance no toca dominio: no invalida liquidaciones persistidas — sólo pide motivo y registra el evento ya existente.
+2. **Aside lateral de Dotación**: añadido `tabindex="-1"`, `(keydown.escape)="cerrarDetalle()"` y manejo de foco. `abrirDetalle` captura `document.activeElement` antes de cambiar el signal y, tras el render, mueve el foco al aside (`queueMicrotask`). `cerrarDetalle` restaura el foco al elemento origen. Estilo `:focus-visible` discreto.
+
+- Archivos tocados: [`paso-cierre.component.ts/.html/.css`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-cierre/), [`paso-dotacion.component.ts/.html/.css`](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion/). Specs ampliados en ambos.
+- Validación: `npx ng test --watch=false --include="**/nomina-mensual-v2-paso-cierre.component.spec.ts" --include="**/nomina-mensual-v2-paso-dotacion.component.spec.ts"` → 10/10.
+
+### Validaciones globales del sub-lote
+
+- `npx ng build --configuration=development` → verde.
+- `npx ng test --watch=false --include="**/features/nomina-mensual{,-v2}/**/*.spec.ts"` → 946 / 948 (los 2 fallos preexistentes son `nomina-msgbox-lab.rules.spec.ts` y `proceso-mensual-flow-nav.rules.spec.ts`, copy V1 fuera del alcance del lote; ya estaban rotos antes de iniciar la Fase 1).
+- Sin cambios en `src/styles.css`, `src/styles/*`, `angular.json`, Tailwind, PostCSS, fuentes, SQL/RPC/RLS, motor, `proceso-mensual.service.ts`, `nomina-periodo.service.ts`, modelos de dominio ni configuración.
+
+---
+
+## 2026-06-05 - Curaduría docs/codex - Auditorías de Nómina mensual
+
+Sin cambios de UI. Limpieza documental del directorio [`docs/codex/modulos/nomina-mensual/auditorias/`](modulos/nomina-mensual/auditorias/) para fijar el norte antes de ejecutar el roadmap P0 del rediseño Administrador + Generador.
+
+**Cambios**:
+
+- Nuevo [`README.md`](modulos/nomina-mensual/auditorias/README.md) índice de la carpeta: tabla de las 4 auditorías con estado (Vigente / Cerrada / Superada / Implementada), orden de lectura sugerido, política de auditorías y resumen del estado de ejecución por frente.
+- Banner de estado **Implementada** en [`nom-mensual-cleanup-audit-01.md`](modulos/nomina-mensual/auditorias/nom-mensual-cleanup-audit-01.md).
+- Banner de estado **Superada (parcial)** en [`cierre-mensual-audit-post-reset-01.md`](modulos/nomina-mensual/auditorias/cierre-mensual-audit-post-reset-01.md) + sección final §14 con tabla que mapea cada brecha del V1 a su hallazgo sucesor en la auditoría 2026-06-05.
+- Banner de estado **Cerrada** en [`auditoria-nomina-v2-2026-06.md`](modulos/nomina-mensual/auditorias/auditoria-nomina-v2-2026-06.md). Bloques `### Deuda opcional` (L5.3 + modal de empleados) y `### Continuidad` (los pasos 4–8 originales fueron absorbidos por el Administrador + Generador).
+- Banner de estado **Vigente** en [`auditoria-admin-generador-nomina-2026-06.md`](modulos/nomina-mensual/auditorias/auditoria-admin-generador-nomina-2026-06.md) y nueva sección §15 "Estado de ejecución (post-publicación)" con dos tablas: A — decisiones ya tomadas (F3 Fusion, shell residual, filtro de mes, rediseño full-bleed con la decisión opuesta a ARC-FRM-03 anotada explícitamente) y B — pendientes priorizados (15 P0 críticos + bloques P1/P2/P3). Incluye sub-lote recomendado para arrancar.
+
+**Cero cambios** en `src/`, motor, SQL, RPC, RLS, persistencia, estilos globales, `angular.json`, Tailwind, PostCSS, fuentes o configuración.
+
+**Salida esperada**: quien abra la carpeta `auditorias/` ahora entiende en 30 segundos qué está cerrado, qué quedó superado, qué decisión rectora rige y qué queda por ejecutar.
+
+---
+
 ## 2026-06-05 - Administrador y nóminas abiertas con acción operativa
 
 El Administrador deja de ser una grilla pasiva: los KPIs filtran la bandeja, la vista inicial muestra registros que requieren acción, cada fila informa el siguiente paso y los errores de carga ofrecen reintento. Las acciones por estado permiten eliminar borrador, anular, reabrir y navegar a liquidaciones únicamente desde una nómina cerrada con snapshot.

@@ -86,11 +86,42 @@ export class NominaMensualV2PasoMovimientosComponent {
   );
   readonly puedeAvanzar = computed(() => true); // no bloquea — el cálculo valida
 
+  /**
+   * Cache acumulativo de identidad humana (nombre + RUT) por `trabajadorId`,
+   * usado por los listados de movimientos. Crece con cada carga / búsqueda
+   * en el search-select de trabajadores. No es un signal reactivo a propósito:
+   * se trata como side-store de presentación y se sincroniza en `cargar()` y
+   * `buscarTrabajadores()`.
+   */
+  private readonly identidadesTrabajador = new Map<
+    string,
+    { nombre: string; rut: string }
+  >();
+
   constructor() {
     effect(() => {
       const id = this.nominaPeriodoId();
       if (id) void this.cargar();
     });
+  }
+
+  private sincronizarIdentidades(filas: FilaTrabajadorNominaResumen[]): void {
+    for (const fila of filas) {
+      this.identidadesTrabajador.set(fila.trabajadorId, {
+        nombre: fila.nombre,
+        rut: fila.rut,
+      });
+    }
+  }
+
+  /** Nombre humano del trabajador o fallback explícito si no está en cache. */
+  nombreTrabajador(trabajadorId: string): string {
+    return this.identidadesTrabajador.get(trabajadorId)?.nombre ?? 'Trabajador sin identificar';
+  }
+
+  /** RUT del trabajador o cadena vacía si no está en cache. */
+  rutTrabajador(trabajadorId: string): string {
+    return this.identidadesTrabajador.get(trabajadorId)?.rut ?? '';
   }
 
   async cargar(): Promise<void> {
@@ -107,6 +138,7 @@ export class NominaMensualV2PasoMovimientosComponent {
       this.recurrentes.set(recurrentes);
       this.movimientos.set(movimientos);
       this.trabajadores.set(dotacion.filas);
+      this.sincronizarIdentidades(dotacion.filas);
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido';
       this.error.set(`No fue posible cargar los movimientos: ${mensaje}`);
@@ -212,6 +244,7 @@ export class NominaMensualV2PasoMovimientosComponent {
       );
       if (secuencia === this.secuenciaBusquedaTrabajador) {
         this.trabajadores.set(pagina.filas);
+        this.sincronizarIdentidades(pagina.filas);
       }
     } catch (error) {
       if (secuencia === this.secuenciaBusquedaTrabajador) {

@@ -157,38 +157,36 @@
 }
 
 @if (accionPendiente(); as accion) {
-  <div class="adm-nom__action-backdrop" role="presentation">
-    <section class="adm-nom__action-dialog" role="dialog" aria-modal="true" aria-labelledby="adm-action-title">
-      <header>
-        <p class="adm-nom__action-eyebrow">Acción administrativa</p>
-        <h2 id="adm-action-title">
-          {{ accion.tipo === 'eliminar' ? 'Eliminar borrador' : accion.tipo === 'reabrir' ? 'Reabrir nómina' : 'Anular nómina' }}
-        </h2>
-        <p>{{ accion.nomina.empresaNombre }} · {{ accion.nomina.periodo }}</p>
-      </header>
-      @if (accion.tipo !== 'eliminar') {
-        <label>
-          Motivo obligatorio
-          <textarea
-            rows="3"
-            [value]="motivoAccion()"
-            (input)="motivoAccion.set($any($event.target).value)"
-          ></textarea>
-        </label>
-      } @else {
-        <p>Solo se eliminará la cabecera en estado borrador. Esta operación no se puede deshacer.</p>
-      }
-      @if (errorAccion(); as error) {
-        <p class="adm-nom__action-error" role="alert">{{ error }}</p>
-      }
-      <footer>
-        <button type="button" class="adm-nom__row-action" (click)="cancelarAccion()" [disabled]="ejecutandoAccion()">Cancelar</button>
-        <button type="button" class="adm-nom__row-action adm-nom__row-action--primary" (click)="confirmarAccion()" [disabled]="ejecutandoAccion()">
-          {{ ejecutandoAccion() ? 'Procesando…' : 'Confirmar' }}
-        </button>
-      </footer>
-    </section>
-  </div>
+  <app-message-box
+    mode="modal"
+    [variant]="accionMessageBoxVariant(accion.tipo)"
+    eyebrow="Acción administrativa"
+    [title]="accionTituloModal(accion.tipo)"
+    [message]="accion.nomina.empresaNombre + ' · ' + accion.nomina.periodo"
+    [detail]="accionDetalle(accion.tipo)"
+    [primaryLabel]="ejecutandoAccion() ? 'Procesando…' : 'Confirmar'"
+    secondaryLabel="Cancelar"
+    [dismissible]="!ejecutandoAccion()"
+    [disableClose]="ejecutandoAccion()"
+    (action)="confirmarAccion()"
+    (secondary)="cancelarAccion()"
+  >
+    @if (accionRequiereMotivo(accion.tipo)) {
+      <label class="adm-nom__motivo">
+        <span class="adm-nom__motivo-label">Motivo obligatorio</span>
+        <textarea
+          rows="3"
+          [value]="motivoAccion()"
+          (input)="motivoAccion.set($any($event.target).value)"
+          [disabled]="ejecutandoAccion()"
+          aria-required="true"
+        ></textarea>
+      </label>
+    }
+    @if (errorAccion(); as error) {
+      <p class="adm-nom__motivo-error" role="alert">{{ error }}</p>
+    }
+  </app-message-box>
 }
 
 @if (resumenSeleccionado(); as resumen) {

@@ -74,6 +74,18 @@ export class NominaMensualV2PasoCalculoComponent {
 
   readonly puedeAvanzar = computed(() => this.resultado() != null);
 
+  /**
+   * `true` cuando el snapshot persistido en `evidenciaCalculo` dejó de ser
+   * vigente por cambios posteriores (dotación/movimientos). Activa el banner
+   * de advertencia replicado en Validación y Cierre (CAL-INV-05).
+   */
+  readonly calculoNoVigente = computed(() => {
+    const ev = this.nomina()?.evidenciaCalculo;
+    return ev != null && ev.versionCalculo > 0 && ev.calculoVigente === false;
+  });
+
+  readonly versionCalculo = computed(() => this.nomina()?.evidenciaCalculo?.versionCalculo ?? 0);
+
   constructor() {
     effect(() => {
       const id = this.nominaPeriodoId();

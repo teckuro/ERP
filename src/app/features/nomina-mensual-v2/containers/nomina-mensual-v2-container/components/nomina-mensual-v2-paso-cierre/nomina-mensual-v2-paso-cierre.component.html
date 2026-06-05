@@ -10,10 +10,17 @@
     </div>
     @if (nomina(); as n) {
       <span class="paso-cierre__chip" [attr.data-estado]="n.estado">
-        Estado actual: {{ n.estado }}
+        Estado actual: {{ estadoLabel(n.estado) }}
       </span>
     }
   </header>
+
+  @if (calculoNoVigente()) {
+    <p class="paso-cierre__alert is-warning" role="status">
+      El cálculo de la versión {{ versionCalculo() }} dejó de ser vigente por
+      cambios posteriores. Vuelve al paso Cálculo y recalcula antes de cerrar.
+    </p>
+  }
 
   @if (cargando()) {
     <p class="paso-cierre__placeholder">Cargando checklist…</p>
@@ -62,28 +69,9 @@
     </section>
   } @else {
     <section class="paso-cierre__reopen">
-      <button type="button" class="paso-cierre__btn is-ghost" (click)="mostrarReabrir.set(!mostrarReabrir())">
-        {{ mostrarReabrir() ? 'Cancelar reapertura' : 'Reabrir nómina' }}
+      <button type="button" class="paso-cierre__btn is-ghost" (click)="abrirReaperturaModal()">
+        Reabrir nómina
       </button>
-      @if (mostrarReabrir()) {
-        <div class="paso-cierre__reopen-form">
-          <label class="paso-cierre__field paso-cierre__field--wide">
-            Motivo de reapertura (obligatorio)
-            <input
-              type="text"
-              [value]="motivoReapertura()"
-              (input)="motivoReapertura.set($any($event.target).value)"
-              placeholder="Indica por qué se reabre"
-            />
-          </label>
-          <button
-            type="button"
-            class="paso-cierre__btn is-primary"
-            (click)="reabrirNomina()"
-            [disabled]="!motivoReapertura().trim() || ejecutando()"
-          >Confirmar reapertura</button>
-        </div>
-      }
     </section>
   }
 
@@ -112,4 +100,35 @@
     (secondary)="confirmarCierreVisible.set(false)"
     (dismiss)="confirmarCierreVisible.set(false)"
   />
+}
+
+@if (mostrarReabrir()) {
+  <app-message-box
+    mode="modal"
+    variant="danger"
+    eyebrow="Reapertura"
+    title="Reabrir nómina"
+    message="La versión cerrada quedará invalidada. Si ya generaste liquidaciones para este cálculo, deberás revisarlas y regenerarlas."
+    [primaryLabel]="ejecutando() ? 'Reabriendo…' : 'Reabrir nómina'"
+    secondaryLabel="Cancelar"
+    [dismissible]="!ejecutando()"
+    [disableClose]="ejecutando()"
+    (action)="reabrirNomina()"
+    (secondary)="cancelarReapertura()"
+  >
+    <label class="paso-cierre__motivo">
+      <span class="paso-cierre__motivo-label">Motivo de reapertura (obligatorio)</span>
+      <textarea
+        rows="3"
+        [value]="motivoReapertura()"
+        (input)="motivoReapertura.set($any($event.target).value)"
+        [disabled]="ejecutando()"
+        aria-required="true"
+        placeholder="Indica por qué se reabre la nómina"
+      ></textarea>
+    </label>
+    @if (error(); as msg) {
+      <p class="paso-cierre__motivo-error" role="alert">{{ msg }}</p>
+    }
+  </app-message-box>
 }

@@ -13,6 +13,13 @@
     </button>
   </header>
 
+  @if (calculoNoVigente()) {
+    <p class="paso-val__alert is-warning" role="status">
+      El cálculo dejó de ser vigente por cambios posteriores. Vuelve al paso
+      Cálculo y recalcula antes de aprobar.
+    </p>
+  }
+
   @if (cargando()) {
     <p class="paso-val__placeholder">Cargando resumen…</p>
   }

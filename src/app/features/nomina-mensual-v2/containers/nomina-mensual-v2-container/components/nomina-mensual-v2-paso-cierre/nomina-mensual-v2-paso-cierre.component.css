@@ -103,6 +103,12 @@
   color: #1e3a8a;
 }
 
+.paso-cierre__alert.is-warning {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
 .paso-cierre__check {
   margin: 0;
   padding: 0;
@@ -150,8 +156,7 @@
 }
 
 .paso-cierre__form,
-.paso-cierre__reopen,
-.paso-cierre__reopen-form {
+.paso-cierre__reopen {
   display: flex;
   gap: 8px;
   align-items: flex-end;
@@ -160,6 +165,47 @@
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
+}
+
+.paso-cierre__motivo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.paso-cierre__motivo-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.paso-cierre__motivo textarea {
+  min-height: 84px;
+  padding: 8px 10px;
+  resize: vertical;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font: inherit;
+  color: inherit;
+  background: #fff;
+}
+
+.paso-cierre__motivo textarea:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+  border-color: #2563eb;
+}
+
+.paso-cierre__motivo textarea:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.paso-cierre__motivo-error {
+  margin: 6px 0 0;
+  color: #b91c1c;
+  font-size: 12px;
 }
 
 .paso-cierre__field {

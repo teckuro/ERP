@@ -69,6 +69,13 @@ export class NominaMensualV2PasoValidacionComponent {
     return !!r && r.conIncidenciasCriticas === 0 && r.puedeValidar === true;
   });
 
+  /**
+   * `true` cuando el resumen indica explícitamente que el cálculo dejó de
+   * ser vigente. Activa la misma banda warning que Cálculo y Cierre
+   * (CAL-INV-05).
+   */
+  readonly calculoNoVigente = computed(() => this.resumen()?.calculoVigente === false);
+
   constructor() {
     effect(() => {
       const id = this.nominaPeriodoId();

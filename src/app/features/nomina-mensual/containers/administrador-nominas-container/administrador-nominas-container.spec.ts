@@ -30,6 +30,9 @@ function resumenMock(overrides: Partial<NominaPeriodoResumen> = {}): NominaPerio
 interface ServicioMock {
   listarResumenes: ReturnType<typeof vi.fn>;
   obtenerResumenValidacionNomina: ReturnType<typeof vi.fn>;
+  eliminarBorrador?: ReturnType<typeof vi.fn>;
+  reabrirNomina?: ReturnType<typeof vi.fn>;
+  anularNomina?: ReturnType<typeof vi.fn>;
 }
 
 function configurar(opts: { servicio: ServicioMock; navigate?: ReturnType<typeof vi.fn> }) {
@@ -61,6 +64,9 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
         incidenciasCriticas: [],
         advertencias: [],
       }),
+      eliminarBorrador: vi.fn().mockResolvedValue(undefined),
+      reabrirNomina: vi.fn().mockResolvedValue(undefined),
+      anularNomina: vi.fn().mockResolvedValue(undefined),
     };
   });
 
@@ -146,5 +152,98 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     await cmp.cargarResumenes();
     expect(cmp.errorCarga()).toBe('boom');
     expect(cmp.resumenes()).toHaveLength(0);
+  });
+
+  it('Test 40 — solicitarAccion abre el diálogo y limpia motivo/error', () => {
+    configurar({ servicio });
+    const fixture = TestBed.createComponent(AdministradorNominasContainer);
+    const cmp = fixture.componentInstance;
+    const fila = resumenMock({ id: 'nom-x' });
+
+    cmp.motivoAccion.set('texto previo');
+    cmp.errorAccion.set('error previo');
+    cmp.solicitarAccion('reabrir', fila);
+
+    expect(cmp.accionPendiente()?.tipo).toBe('reabrir');
+    expect(cmp.accionPendiente()?.nomina.id).toBe('nom-x');
+    expect(cmp.motivoAccion()).toBe('');
+    expect(cmp.errorAccion()).toBeNull();
+  });
+
+  it('Test 41 — cancelarAccion limpia el estado y respeta ejecutandoAccion', () => {
+    configurar({ servicio });
+    const fixture = TestBed.createComponent(AdministradorNominasContainer);
+    const cmp = fixture.componentInstance;
+    const fila = resumenMock({ id: 'nom-y' });
+
+    cmp.solicitarAccion('anular', fila);
+    cmp.motivoAccion.set('motivo escrito');
+    cmp.cancelarAccion();
+
+    expect(cmp.accionPendiente()).toBeNull();
+    expect(cmp.motivoAccion()).toBe('');
+    expect(cmp.errorAccion()).toBeNull();
+
+    cmp.solicitarAccion('reabrir', fila);
+    cmp.ejecutandoAccion.set(true);
+    cmp.cancelarAccion();
+    expect(cmp.accionPendiente()).not.toBeNull();
+  });
+
+  it('Test 42 — confirmarAccion ejecuta el servicio y recarga (caso eliminar sin motivo)', async () => {
+    configurar({ servicio });
+    const fixture = TestBed.createComponent(AdministradorNominasContainer);
+    const cmp = fixture.componentInstance;
+    await cmp.cargarResumenes();
+    const fila = cmp.resumenes()[0]!;
+
+    cmp.solicitarAccion('eliminar', fila);
+    await cmp.confirmarAccion();
+
+    expect(servicio.eliminarBorrador).toHaveBeenCalledWith(fila.id);
+    expect(cmp.accionPendiente()).toBeNull();
+    expect(cmp.ejecutandoAccion()).toBe(false);
+  });
+
+  it('Test 43 — confirmarAccion exige motivo para reabrir/anular y muestra error', async () => {
+    configurar({ servicio });
+    const fixture = TestBed.createComponent(AdministradorNominasContainer);
+    const cmp = fixture.componentInstance;
+    await cmp.cargarResumenes();
+    const fila = cmp.resumenes()[0]!;
+
+    cmp.solicitarAccion('reabrir', fila);
+    cmp.motivoAccion.set('   ');
+    await cmp.confirmarAccion();
+
+    expect(cmp.errorAccion()).toBe('Debes indicar el motivo de la acción.');
+    expect(servicio.reabrirNomina).not.toHaveBeenCalled();
+    expect(cmp.accionPendiente()).not.toBeNull();
+
+    cmp.motivoAccion.set('Motivo válido');
+    await cmp.confirmarAccion();
+    expect(servicio.reabrirNomina).toHaveBeenCalledWith(fila.id, { motivo: 'Motivo válido' });
+  });
+
+  it('Test 44 — helpers de presentación del message-box son consistentes con el tipo de acción', () => {
+    configurar({ servicio });
+    const fixture = TestBed.createComponent(AdministradorNominasContainer);
+    const cmp = fixture.componentInstance;
+
+    expect(cmp.accionTituloModal('eliminar')).toBe('Eliminar borrador');
+    expect(cmp.accionTituloModal('reabrir')).toBe('Reabrir nómina');
+    expect(cmp.accionTituloModal('anular')).toBe('Anular nómina');
+
+    expect(cmp.accionMessageBoxVariant('eliminar')).toBe('danger');
+    expect(cmp.accionMessageBoxVariant('reabrir')).toBe('warning');
+    expect(cmp.accionMessageBoxVariant('anular')).toBe('danger');
+
+    expect(cmp.accionRequiereMotivo('eliminar')).toBe(false);
+    expect(cmp.accionRequiereMotivo('reabrir')).toBe(true);
+    expect(cmp.accionRequiereMotivo('anular')).toBe(true);
+
+    expect(cmp.accionDetalle('eliminar')).toContain('no se puede deshacer');
+    expect(cmp.accionDetalle('reabrir')).toBe('');
+    expect(cmp.accionDetalle('anular')).toBe('');
   });
 });

@@ -191,8 +191,12 @@
               <li class="paso-mov__list-item">
                 <div class="paso-mov__list-main">
                   <strong>{{ mov.tipo }}</strong>
-                  <span class="paso-mov__list-meta">
-                    Trabajador {{ mov.trabajadorId }} · {{ mov.categoria }}
+                  <span class="paso-mov__list-meta" [attr.data-trabajador-id]="mov.trabajadorId">
+                    {{ nombreTrabajador(mov.trabajadorId) }}
+                    @if (rutTrabajador(mov.trabajadorId); as rut) {
+                      · {{ rut }}
+                    }
+                    · {{ mov.categoria }}
                     @if (mov.monto != null) {
                       · ${{ mov.monto | number:'1.0-0' }}
                     }
@@ -233,8 +237,12 @@
               <li class="paso-mov__list-item">
                 <div class="paso-mov__list-main">
                   <strong>{{ mov.tipo }}</strong>
-                  <span class="paso-mov__list-meta">
-                    Trabajador {{ mov.trabajadorId }} · {{ mov.origen }}
+                  <span class="paso-mov__list-meta" [attr.data-trabajador-id]="mov.trabajadorId">
+                    {{ nombreTrabajador(mov.trabajadorId) }}
+                    @if (rutTrabajador(mov.trabajadorId); as rut) {
+                      · {{ rut }}
+                    }
+                    · {{ mov.origen }}
                   </span>
                 </div>
                 <button
