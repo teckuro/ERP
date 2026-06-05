@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { NavigationEnd, NavigationStart, Router, RouterOutlet } from '@angular/router';
 import { SidebarComponent } from './sidebar.component';
 import { HeaderComponent } from './header.component';
 import { ShellPageContextService } from './shell-page-context.service';
@@ -78,9 +77,20 @@ export class LayoutShellComponent {
   private readonly shellContext = inject(ShellPageContextService);
 
   constructor() {
+    // Fallback inicial (sin navegación previa, no hay dueño todavía).
     this.shellContext.applyRouteFallback(this.router.url);
-    this.router.events.pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd)).subscribe((e) => {
-      this.shellContext.applyRouteFallback(e.urlAfterRedirects);
+
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationStart) {
+        // Marcamos al dueño actual; si nadie nuevo reclama durante la
+        // navegación, el servicio lo liberará al cerrar la transición.
+        this.shellContext.beginNavigationTransition();
+      } else if (event instanceof NavigationEnd) {
+        // El servicio decide: si el container nuevo ya reclamó propiedad,
+        // respeta su contexto; si no, libera al stale y aplica el fallback
+        // de breadcrumbs de la ruta nueva.
+        this.shellContext.resolveNavigationTransition(event.urlAfterRedirects);
+      }
     });
   }
 }

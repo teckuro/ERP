@@ -8,6 +8,63 @@
 > - [`archivo/peticiones-estilos-2026-05.md`](./archivo/peticiones-estilos-2026-05.md) — mayo 2026 y anteriores (288 entradas, rotadas el 2026-06-03 por DOCS-AUDIT-02 / L3).
 
 ---
+## 2026-06-04 - Shell residual al navegar (fix global con tokens de propiedad)
+
+**Bug reportado**: «al seleccionar menús o botones que cambian a otra interfaz se queda el shell antiguo en la cabecera» (título, subtítulo, CTA o chips del container anterior persisten en el topbar tras la navegación).
+
+**Causa raíz**: race condition entre el destroy del container anterior (A) y el init del nuevo (B) en `<router-outlet>`. Con lazy loading, Angular puede crear B antes de destruir A:
+
+1. B se inicializa → `setBindingActive(true) + setContext(ctxB)`.
+2. NavigationEnd dispara → `applyRouteFallback(urlB)` no aplica (binding activo).
+3. A se destruye → `setBindingActive(false) + clearContext + applyRouteFallback(urlB)` borra ctxB y deja solo breadcrumbs fallback.
+
+Resultado observable: breadcrumbs nuevos pero título y acción primaria vacíos o del anterior. El bug afectaba tanto a los containers con patrón manual (`administrador-nominas-container`, `nomina-mensual-v2-container`) como a los que usaban `bindShellPageContext` (el helper llamaba `applyRouteFallback(router.url)` en destroy con la URL ya actualizada).
+
+**Solución**: sistema de tokens de propiedad en `ShellPageContextService` + coordinación con el router en `LayoutShellComponent`.
+
+- `ShellPageContextService` (`src/app/layout/shell-page-context.service.ts`):
+  - Nueva API basada en tokens: `claimOwnership()`, `setContextWithToken`, `patchContextWithToken`, `registerPrimaryActionHandlerWithToken`, `releaseOwnership`.
+  - `claimOwnership()` entrega un token monótono y desplaza al dueño anterior; el handler primario se invalida automáticamente.
+  - Operaciones con token: no-op silencioso si el token ya no es el dueño actual (el container A que se destruye después de B no puede pisar el contexto de B).
+  - Transición de navegación: `beginNavigationTransition()` (snapshot del dueño) y `resolveNavigationTransition(url)` (libera al stale si nadie nuevo reclamó + aplica fallback).
+  - API legacy (`setContext`, `patchContext`, `clearContext`, `setBindingActive`, `registerPrimaryActionHandler`) marcada `@deprecated` y mantenida funcional para tests/compatibilidad.
+- `bindShellPageContext` (`src/app/layout/shell-page-context.binding.ts`): reclama un token al crearse, escribe contexto con `setContextWithToken` dentro del effect, registra el handler con token. En destroy llama `releaseOwnership(token)` (sin `applyRouteFallback`, que ahora lo hace `LayoutShellComponent`).
+- `LayoutShellComponent` (`src/app/layout/layout-shell.component.ts`): suscripción a `NavigationStart` (begin) y `NavigationEnd` (resolve). El fallback inicial del constructor se mantiene para el primer load.
+- Containers con patrón manual migrados al helper:
+  - `administrador-nominas-container.ts`: `bindShellPageContext(destroyRef, () => computeShellContext(), { onPrimaryAction: abrirNuevaNomina })`.
+  - `nomina-mensual-v2-container.ts`: ídem; `syncShellContext()` se convierte en `computeShellContext()` puro y se elimina del template el `(resumenActualizado)="syncShellContext()"` (la reactividad la maneja el effect del helper que lee los signals de `pasoParametros()`).
+
+**Tests** (`src/app/layout/shell-page-context.service.spec.ts` nuevo + `shell-page-context.binding.spec.ts` ampliado):
+
+- Tokens monótonos invalidan handlers anteriores.
+- `setContextWithToken` con token obsoleto = no-op.
+- Race A → B → release de A es no-op, ctxB sobrevive.
+- `resolveNavigationTransition` libera al dueño stale y aplica fallback cuando nadie nuevo reclama.
+- Si B reclamó durante la navegación, su contexto sobrevive a `resolveNavigationTransition`.
+- API legacy directa sigue compilando y funcionando.
+
+**Resultado**: navegación entre cualquier par de pantallas (Admin nóminas → Generador → Empleados → Ficha → Parámetros, etc.) ya no arrastra el contenido del container anterior en la cabecera. El header se sincroniza con el container actual o, si la nueva pantalla no registra shell, muestra el fallback de breadcrumbs de la ruta sin estado residual.
+
+**Archivos tocados**:
+
+- `src/app/layout/shell-page-context.service.ts`
+- `src/app/layout/shell-page-context.binding.ts`
+- `src/app/layout/layout-shell.component.ts`
+- `src/app/layout/shell-page-context.service.spec.ts` (nuevo)
+- `src/app/layout/shell-page-context.binding.spec.ts` (ampliado)
+- `src/app/features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container.ts`
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container.ts`
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container.html` (quita `(resumenActualizado)`)
+- `docs/codex/diseno/bitacora-operativa-noia.md` (sección «Contrato del shell»)
+
+**Archivos NO tocados** (intencional):
+
+- Los 10 call-sites que ya usaban `bindShellPageContext` (cero churn en features estables; el helper ahora es seguro internamente).
+- Estilos globales / config / rutas / SQL / motor.
+
+**Validaciones**: `npx tsc --noEmit` OK, `npx ng test --include="src/app/layout/**/*.spec.ts" --watch=false` → 24 tests pasaron, `npx ng build --configuration=development` OK (30.7s). Hay 3 fallos de tests preexistentes en `nomina-msgbox-lab.rules.spec.ts`, `proceso-mensual-flow-nav.rules.spec.ts` y `form-empleado.spec.ts` que **no están relacionados con el shell ni se tocaron en este cambio**.
+
+---
 ## 2026-06-04 - Generador V2: fix del filtro de mes del shell con nómina cargada
 
 **Bug reportado**: «el filtro de mes del shell en las nóminas te deja cambiar y si ya pasé el primer paso (ej. Parámetros) no carga con el mes correspondiente».

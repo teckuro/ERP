@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   OnDestroy,
   OnInit,
   ViewEncapsulation,
@@ -12,7 +13,8 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { ShellPageContextService } from '../../../../layout/shell-page-context.service';
+import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
+import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { NominaPeriodoService } from '../../../nomina-mensual/services/nomina-periodo.service';
 import type { NominaPeriodo } from '../../../nomina-mensual/models/nomina-periodo.models';
@@ -70,7 +72,7 @@ import { NominaMensualV2TrazabilidadModalComponent } from './components/nomina-m
 export class NominaMensualV2Container implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
-  private readonly shellContext = inject(ShellPageContextService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly periodoActivo = inject(PeriodoActivoService);
   private readonly trazabilidadService = inject(NominaMensualV2TrazabilidadService);
   private readonly sesionService = inject(NominaMensualV2SesionService);
@@ -101,32 +103,25 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   });
 
   constructor() {
-    // Effects en contexto de constructor (NO en ngOnInit) para garantizar
-    // limpieza automática al destruir el componente. Esto evita que, al volver
-    // a entrar al generador, el shell muestre el paso visitado en la sesión
-    // anterior: el currentStep se reinicia abajo, los effects nuevos arrancan
-    // limpios y syncShellContext se ejecuta sin estado residual.
+    // Effect en constructor para que se limpie con DestroyRef al cerrar el
+    // container. Importante: `bindShellPageContext` ya crea su propio effect
+    // que reacciona a los signals leídos por `computeShellContext()`.
     effect(() => {
       const periodo = this.periodoActivo.periodoYm();
       void this.onPeriodoActivoCambiado(periodo);
     });
-    effect(() => {
-      this.currentStep();
-      this.orquestador.estadoParametrosBase();
-      this.pasoParametros()?.parametrosLoading();
-      this.pasoParametros()?.parametrosValidando();
-      this.syncShellContext();
+
+    bindShellPageContext(this.destroyRef, () => this.computeShellContext(), {
+      onPrimaryAction: () => this.ejecutarAccionPrincipalPasoActual(),
     });
   }
 
   ngOnInit(): void {
     // Reinicio defensivo: si quedó residuo de una sesión anterior, lo limpiamos
-    // antes de marcar el binding activo y sincronizar el shell.
+    // antes de que `bindShellPageContext` empiece a publicar contexto.
     this.currentStep.set('parameters');
     this.ultimoPeriodoInicializado = null;
     this.ultimoNominaIdCargado = null;
-    this.shellContext.setBindingActive(true);
-    this.syncShellContext();
     this.orquestador.vincularTrazabilidadService(this.trazabilidadService);
     this.route.paramMap.subscribe((params) => {
       const id = params.get('nominaPeriodoId');
@@ -209,7 +204,6 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       this.orquestador.pasoActual.set('parameters');
       this.orquestador.reiniciarPorCambioPeriodo(periodo);
     }
-    this.syncShellContext();
     try {
       const sesion = await this.sesionService.resolverEstadoSesion(periodo);
       if (token !== this.tokenInicializacionPeriodo) return;
@@ -234,13 +228,12 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     } finally {
       if (token !== this.tokenInicializacionPeriodo) return;
       await this.orquestador.recomputarTrazabilidad(false);
-      this.syncShellContext();
     }
   }
 
   ngOnDestroy(): void {
-    this.shellContext.setBindingActive(false);
-    this.shellContext.clearContext();
+    // El helper `bindShellPageContext` libera el contexto del shell vía
+    // DestroyRef, sin race con el container siguiente.
     this.orquestador.limpiarAccionPrincipal();
     this.ultimoPeriodoInicializado = null;
   }
@@ -362,7 +355,13 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     }
   }
 
-  syncShellContext(): void {
+  /**
+   * Builder puro del contexto del shell. Lo invoca el effect que registra
+   * `bindShellPageContext`; cualquier signal leído aquí dispara la próxima
+   * publicación. El handler primario va por la opción `onPrimaryAction` del
+   * helper (no se registra aquí).
+   */
+  private computeShellContext(): ShellPageContext {
     const paso = this.currentStep();
     const parametrosValidando = paso === 'parameters' && (this.pasoParametros()?.parametrosValidando() ?? false);
     const parametrosLoading = paso === 'parameters' && (this.pasoParametros()?.parametrosLoading() ?? false);
@@ -376,7 +375,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       : null;
     const currentIndex = ORDEN_PASOS_NOMINA.indexOf(paso);
 
-    this.shellContext.setContext({
+    return {
       breadcrumbs: [
         { label: 'Nómina', path: '/remuneraciones/proceso-mensual' },
         { label: paso === 'parameters' ? 'Parámetros' : this.pageTitle() },
@@ -393,11 +392,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
         loading: paso === 'parameters' ? parametrosValidando : false,
         actionId: `nomina-mensual-v2-${paso}`,
       },
-    });
-
-    this.shellContext.registerPrimaryActionHandler(() => {
-      this.ejecutarAccionPrincipalPasoActual();
-    });
+    };
   }
 
   ejecutarAccionPrincipalPasoActual(): void {
@@ -433,6 +428,5 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     }
     this.currentStep.set(destinoPaso);
     this.orquestador.pasoActual.set(destinoPaso);
-    this.syncShellContext();
   }
 }

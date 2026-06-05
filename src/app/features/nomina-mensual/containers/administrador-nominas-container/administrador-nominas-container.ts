@@ -10,11 +10,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Injector,
-  OnDestroy,
-  OnInit,
+  DestroyRef,
   computed,
-  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -24,7 +21,8 @@ import { LucideAngularModule } from 'lucide-angular';
 
 import { DataGridComponent } from '../../../../shared/components/ui/data-grid/data-grid.component';
 import { DataGridCellDirective } from '../../../../shared/components/ui/data-grid/data-grid.directives';
-import { ShellPageContextService } from '../../../../layout/shell-page-context.service';
+import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
+import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
 import { NominaPeriodoService } from '../../services/nomina-periodo.service';
 import type {
   NominaPeriodoResumen,
@@ -59,11 +57,10 @@ import { AdminNominasModalResumenNominaComponent } from './components/admin-nomi
   styleUrl: './administrador-nominas-container.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdministradorNominasContainer implements OnInit, OnDestroy {
+export class AdministradorNominasContainer {
   private readonly router = inject(Router);
   private readonly servicio = inject(NominaPeriodoService);
-  private readonly shellContext = inject(ShellPageContextService);
-  private readonly injector = inject(Injector);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly resumenes = signal<NominaPeriodoResumen[]>([]);
   readonly modalNuevaAbierto = signal(false);
@@ -88,27 +85,14 @@ export class AdministradorNominasContainer implements OnInit, OnDestroy {
   });
 
   constructor() {
+    bindShellPageContext(this.destroyRef, () => this.computeShellContext(), {
+      onPrimaryAction: () => this.abrirNuevaNomina(),
+    });
     void this.cargarResumenes();
   }
 
-  ngOnInit(): void {
-    this.shellContext.setBindingActive(true);
-    this.shellContext.registerPrimaryActionHandler(() => this.abrirNuevaNomina());
-    effect(
-      () => {
-        this.syncShellContext();
-      },
-      { injector: this.injector },
-    );
-  }
-
-  ngOnDestroy(): void {
-    this.shellContext.setBindingActive(false);
-    this.shellContext.clearContext();
-  }
-
-  private syncShellContext(): void {
-    this.shellContext.setContext({
+  private computeShellContext(): ShellPageContext {
+    return {
       breadcrumbs: [
         { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
         { label: 'Administrador de nóminas' },
@@ -121,7 +105,7 @@ export class AdministradorNominasContainer implements OnInit, OnDestroy {
         loading: false,
         actionId: 'admin-nominas-nueva',
       },
-    });
+    };
   }
 
   readonly trackResumen = (_index: number, fila: NominaPeriodoResumen): string => fila.id;

@@ -1,5 +1,4 @@
 import { DestroyRef, effect, inject, untracked } from '@angular/core';
-import { Router } from '@angular/router';
 
 import { resolveShellRouteBreadcrumbs } from './shell-route-context.config';
 import {
@@ -13,7 +12,13 @@ export type BindShellPageContextOptions = {
 };
 
 /**
- * Publica contexto de topbar mientras el host vive y restaura fallback de ruta al destruirse.
+ * Publica el contexto del topbar mientras el host vive. La sincronización con
+ * el router se centraliza en `LayoutShellComponent`, que recibe los eventos
+ * `NavigationStart`/`NavigationEnd` y gestiona el fallback de ruta. Aquí solo
+ * reclamamos un token de propiedad, escribimos contexto con ese token y lo
+ * liberamos al destruirse el host. El servicio ignora escrituras y
+ * liberaciones de tokens obsoletos, evitando la race entre destroy del
+ * container anterior e init del nuevo bajo `<router-outlet>`.
  */
 export function bindShellPageContext(
   destroyRef: DestroyRef,
@@ -21,24 +26,23 @@ export function bindShellPageContext(
   options?: BindShellPageContextOptions,
 ): void {
   const shellContext = inject(ShellPageContextService);
-  const router = inject(Router);
+
+  const token = shellContext.claimOwnership();
 
   if (options?.onPrimaryAction) {
-    shellContext.registerPrimaryActionHandler(options.onPrimaryAction);
+    shellContext.registerPrimaryActionHandlerWithToken(token, options.onPrimaryAction);
   }
-
-  shellContext.setBindingActive(true);
 
   effect(() => {
     const ctx = source();
-    untracked(() => shellContext.setContext(ctx));
+    untracked(() => shellContext.setContextWithToken(token, ctx));
   });
 
   destroyRef.onDestroy(() => {
-    shellContext.setBindingActive(false);
-    shellContext.registerPrimaryActionHandler(null);
-    shellContext.clearContext();
-    shellContext.applyRouteFallback(router.url ?? '/');
+    // `releaseOwnership` es no-op si otro container ya tomó la propiedad.
+    // El `LayoutShellComponent` se encarga del fallback de ruta cuando
+    // termina la navegación.
+    shellContext.releaseOwnership(token);
   });
 }
 

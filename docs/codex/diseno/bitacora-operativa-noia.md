@@ -517,6 +517,33 @@ Aplicar identidad global al marco comun: sidebar, header, breadcrumbs, titulos, 
 - Breadcrumb, chip de estado, periodo activo y CTA principal de pagina: **topbar** (52 px) via `ShellPageContextService`.
 - Las pantallas bajo `layout-shell` no repiten breadcrumb ni selector de periodo local; publican contexto con `bindShellPageContext` o heredan fallback de `shell-route-context.config.ts`.
 
+#### Contrato del shell (publicacion de contexto)
+
+Para evitar que el header arrastre titulo / subtitulo / CTA de la pantalla
+anterior al navegar (race condition entre destroy del container A e init del
+container B en `<router-outlet>`), el ERP usa un sistema de tokens de
+propiedad en `ShellPageContextService`:
+
+- **Toda pantalla operativa publica su contexto via `bindShellPageContext`**.
+  El helper reclama un token unico al crearse el host, escribe contexto con
+  ese token y libera al destruirse via `DestroyRef`. Si otro container ya
+  reclamo el shell, el release del anterior es no-op (no puede borrar el
+  contexto del nuevo dueno).
+- **`LayoutShellComponent` coordina la transicion** subscribiendo
+  `NavigationStart` (snapshot del dueno actual) y `NavigationEnd` (libera al
+  dueno stale si nadie nuevo reclamo, y aplica el fallback de breadcrumbs de
+  la ruta). Esto cubre las pantallas que no registran shell.
+- **API directa (`setContext`, `clearContext`, `setBindingActive`,
+  `registerPrimaryActionHandler`)**: queda marcada `@deprecated`. Sigue
+  funcionando para compatibilidad de tests pero NO se usa en codigo nuevo.
+  El churn esta limitado a `shell-page-context.service.ts` y su helper.
+
+Resumen operativo:
+
+1. Container nuevo → `bindShellPageContext(destroyRef, () => buildCtx(), { onPrimaryAction })`.
+2. El helper se ocupa de claim, sync reactivo via effect y release.
+3. Para limpiar / observar en tests, usar metodos `*WithToken`.
+
 No redisenar todos los modulos en una sola fase.
 
 ### NOM-BITACORA-PERIODO-UX-01
