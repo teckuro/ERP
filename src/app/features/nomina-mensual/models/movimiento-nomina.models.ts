@@ -124,6 +124,67 @@ export interface MovimientoNomina {
 }
 
 /**
+ * Movimiento aún no existente en BD. La columna `id` la genera la propia
+ * tabla (`default gen_random_uuid()`); el frontend nunca debe inventar un
+ * UUID ni mandar `id: ''`. Usar este tipo en todas las rutas de inserción.
+ */
+export type MovimientoNominaNuevo = Omit<MovimientoNomina, 'id' | 'createdAt' | 'updatedAt'>;
+
+/**
+ * Estado de una plantilla recurrente respecto a una nómina concreta.
+ *
+ * - `pendiente`: el recurrente aplica al trabajador pero aún NO se materializó
+ *   en `movimiento_nomina` para este período. Cargable.
+ * - `ya-cargado`: existe el `movimiento_nomina` correspondiente con
+ *   `estado='aplicado'` (o `'observado'`). No se vuelve a cargar.
+ * - `omitido-este-mes`: existe el `movimiento_nomina` con `estado='omitido'`.
+ *   El usuario decidió no aplicarlo este mes — la idempotencia respeta esa
+ *   decisión y NO lo reaplica.
+ */
+export type EstadoMovimientoConfiguradoEnNomina =
+  | 'pendiente'
+  | 'ya-cargado'
+  | 'omitido-este-mes';
+
+/**
+ * Vista derivada para la grilla "Movimientos configurados" del paso Movimientos.
+ *
+ * Una fila representa un par `(trabajador × plantilla recurrente)` aplicable a
+ * la nómina en curso. NO se persiste — se calcula on-the-fly cruzando los
+ * recurrentes activos con la dotación y los movimientos del período. El
+ * `filaId` se construye determinísticamente para soportar `trackBy` estable
+ * en la grilla y el set de filas expandidas del data-grid.
+ */
+export interface FilaMovimientoConfigurado {
+  /** Identidad estable de la fila: `${trabajadorId}::${recurrenteId}::${tipo}`. */
+  filaId: string;
+
+  trabajadorId: string;
+  trabajadorNombre: string;
+  rut: string;
+  cargo?: string;
+  centroCosto?: string;
+
+  recurrenteId: string;
+  concepto: MovimientoTipo;
+  categoria: MovimientoCategoria;
+  monto?: number;
+  cantidad?: number;
+  unidad?: MovimientoUnidad;
+  frecuencia: MovimientoFrecuencia;
+  vigenciaDesde: string;
+  vigenciaHasta?: string;
+  glosa?: string;
+
+  estadoEnNomina: EstadoMovimientoConfiguradoEnNomina;
+  /**
+   * Si la fila ya tiene un `movimiento_nomina` asociado (estados `ya-cargado`
+   * y `omitido-este-mes`), apunta a su id. En `pendiente` es `undefined`.
+   */
+  movimientoNominaId?: string;
+}
+
+/**
  * Criterio para aplicar un recurrente sobre un subconjunto de trabajadores.
  *
  * Discriminated union por `tipo`. Usado por `aplicarRecurrentePorCriterio()`

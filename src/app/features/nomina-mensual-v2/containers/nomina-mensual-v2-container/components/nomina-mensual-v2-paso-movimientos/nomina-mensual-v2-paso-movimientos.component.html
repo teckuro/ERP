@@ -4,8 +4,9 @@
       <p class="paso-mov__eyebrow">Paso 3 · Movimientos</p>
       <h2 id="paso-mov-title" class="paso-mov__title">Movimientos del período</h2>
       <p class="paso-mov__subtitle">
-        Aplica recurrentes activos, agrega manuales por excepción y omite lo que no corresponde
-        a este período. La aplicación de recurrentes es idempotente: no duplica ni reaplica omitidos.
+        Carga los movimientos que ya estaban configurados para los trabajadores, agrega manuales
+        por excepción y omite lo que no corresponde a este período. La carga es idempotente: no
+        duplica ni reaplica lo que se haya omitido antes.
       </p>
     </div>
     <div class="paso-mov__counters">
@@ -29,10 +30,10 @@
       type="button"
       role="tab"
       class="paso-mov__tab"
-      [class.is-active]="tabActivo() === 'recurrentes'"
-      [attr.aria-selected]="tabActivo() === 'recurrentes'"
-      (click)="cambiarTab('recurrentes')"
-    >Recurrentes ({{ recurrentes().length }})</button>
+      [class.is-active]="tabActivo() === 'configurados'"
+      [attr.aria-selected]="tabActivo() === 'configurados'"
+      (click)="cambiarTab('configurados')"
+    >Configurados ({{ statsConfigurados().total }})</button>
     <button
       type="button"
       role="tab"
@@ -63,45 +64,148 @@
   }
 
   @switch (tabActivo()) {
-    @case ('recurrentes') {
-      <div class="paso-mov__tab-body">
+    @case ('configurados') {
+      <div class="paso-mov__tab-body paso-mov__tab-body--grid">
         <div class="paso-mov__bar">
           <p class="paso-mov__bar-copy">
-            Se aplican los recurrentes activos según sus criterios. No reaplica movimientos
-            omitidos ni duplica los ya aplicados.
+            Estos son los movimientos que ya están configurados para los trabajadores de esta nómina.
+            Cárgalos para que entren al cálculo. Si ya cargaste alguno antes o lo omitiste, no se
+            vuelve a aplicar.
           </p>
           <button
             type="button"
             class="paso-mov__btn is-primary"
-            (click)="aplicarRecurrentes()"
-            [disabled]="aplicando() || !nominaPeriodoId()"
+            (click)="cargarMovimientosConfigurados()"
+            [disabled]="aplicando() || !nominaPeriodoId() || !hayPendientesPorCargar()"
+            [attr.title]="
+              hayPendientesPorCargar()
+                ? 'Carga ' + statsConfigurados().pendientes + ' movimientos pendientes a la nómina del mes. Idempotente: no duplica ni reaplica los omitidos.'
+                : 'No hay movimientos pendientes por cargar. Todo lo configurado ya está aplicado u omitido.'
+            "
           >
-            {{ aplicando() ? 'Aplicando…' : 'Aplicar recurrentes a la nómina' }}
+            @if (aplicando()) {
+              Cargando…
+            } @else if (hayPendientesPorCargar()) {
+              Cargar movimientos configurados
+              <span class="paso-mov__btn-badge">{{ statsConfigurados().pendientes }}</span>
+            } @else {
+              Sin pendientes por cargar
+            }
           </button>
         </div>
-        @if (recurrentes().length === 0) {
-          <p class="paso-mov__placeholder">No hay recurrentes activos en la empresa.</p>
-        } @else {
-          <ul class="paso-mov__list">
-            @for (rec of recurrentes(); track rec.id) {
-              <li class="paso-mov__list-item">
-                <div class="paso-mov__list-main">
-                  <strong>{{ rec.tipo }}</strong>
-                  <span class="paso-mov__list-meta">
-                    {{ rec.categoria }} · {{ rec.frecuencia }}
-                    @if (rec.monto != null) {
-                      · ${{ rec.monto | number:'1.0-0' }}
-                    }
-                  </span>
-                  @if (rec.glosa) {
-                    <small class="paso-mov__list-glosa">{{ rec.glosa }}</small>
-                  }
-                </div>
-                <span class="paso-mov__chip" [attr.data-estado]="rec.estado">{{ rec.estado }}</span>
-              </li>
+
+        <div class="paso-mov__stats">
+          <span class="paso-mov__stat-line">
+            <strong>{{ statsConfigurados().total }}</strong>
+            <small>configurados</small>
+          </span>
+          <span class="paso-mov__stat-line is-pendiente">
+            <strong>{{ statsConfigurados().pendientes }}</strong>
+            <small>pendientes de cargar</small>
+          </span>
+          <span class="paso-mov__stat-line is-cargado">
+            <strong>{{ statsConfigurados().yaCargados }}</strong>
+            <small>ya cargados</small>
+          </span>
+          <span class="paso-mov__stat-line is-omitido">
+            <strong>{{ statsConfigurados().omitidos }}</strong>
+            <small>omitidos este mes</small>
+          </span>
+        </div>
+
+        <app-data-grid
+          class="paso-mov__grid"
+          [columns]="columnasConfigurados"
+          [rows]="movimientosConfigurados()"
+          [filters]="filtrosConfigurados()"
+          [filtersEnabled]="true"
+          [filtersCollapsible]="false"
+          [filterChipsDisplay]="'always'"
+          [maxItems]="25"
+          [persistenceKey]="persistenciaConfigurados"
+          [expandableRows]="true"
+          [rowExpansionKey]="rowKeyConfigurado"
+          [trackBy]="trackByConfigurado"
+          [emptyTitle]="'No hay movimientos configurados para esta nómina'"
+          [emptyDescription]="'Si esperabas verlos aquí, revísalos en la ficha del trabajador o en Configuración.'"
+          headerCountNoun="movimientos configurados"
+          [headerCountDisplay]="'text'"
+          [headerShowActiveFiltersCount]="true"
+        >
+          <ng-template appDataGridCell="monto" let-fila="row">
+            @if (fila.monto != null) {
+              ${{ fila.monto | number:'1.0-0' }}
+            } @else if (fila.cantidad != null) {
+              {{ fila.cantidad }} {{ fila.unidad ?? '' }}
+            } @else {
+              —
             }
-          </ul>
-        }
+          </ng-template>
+
+          <ng-template appDataGridCell="vigencia" let-fila="row">
+            <span class="paso-mov__vigencia">
+              desde {{ fila.vigenciaDesde }}
+              @if (fila.vigenciaHasta) { · hasta {{ fila.vigenciaHasta }} }
+            </span>
+          </ng-template>
+
+          <ng-template appDataGridCell="estado" let-fila="row">
+            <span
+              class="paso-mov__estado-pill"
+              [attr.data-estado]="fila.estadoEnNomina"
+            >{{ etiquetaEstado(fila.estadoEnNomina) }}</span>
+          </ng-template>
+
+          <ng-template appDataGridCell="categoria" let-fila="row">
+            <span class="paso-mov__categoria">{{ fila.categoria }}</span>
+          </ng-template>
+
+          <ng-template appDataGridRowDetail let-fila let-collapse="collapse">
+            <div class="paso-mov__detalle">
+              <header class="paso-mov__detalle-head">
+                <div>
+                  <strong>{{ fila.trabajadorNombre }}</strong>
+                  <span class="paso-mov__detalle-meta">
+                    {{ fila.rut }}
+                    @if (fila.cargo) { · {{ fila.cargo }} }
+                    @if (fila.centroCosto) { · {{ fila.centroCosto }} }
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  class="paso-mov__btn is-ghost"
+                  (click)="collapse()"
+                  aria-label="Cerrar detalle"
+                >Cerrar</button>
+              </header>
+              <p class="paso-mov__detalle-copy">
+                Todos los movimientos configurados de este trabajador
+                ({{ movimientosConfiguradosDeTrabajador(fila.trabajadorId).length }}):
+              </p>
+              <ul class="paso-mov__detalle-list">
+                @for (m of movimientosConfiguradosDeTrabajador(fila.trabajadorId); track m.filaId) {
+                  <li class="paso-mov__detalle-item">
+                    <div class="paso-mov__detalle-item-main">
+                      <strong>{{ m.concepto }}</strong>
+                      <span class="paso-mov__detalle-item-meta">
+                        {{ m.categoria }} · {{ m.frecuencia }}
+                        @if (m.monto != null) { · ${{ m.monto | number:'1.0-0' }} }
+                        @else if (m.cantidad != null) { · {{ m.cantidad }} {{ m.unidad ?? '' }} }
+                      </span>
+                      @if (m.glosa) {
+                        <small class="paso-mov__detalle-item-glosa">{{ m.glosa }}</small>
+                      }
+                    </div>
+                    <span
+                      class="paso-mov__estado-pill"
+                      [attr.data-estado]="m.estadoEnNomina"
+                    >{{ etiquetaEstado(m.estadoEnNomina) }}</span>
+                  </li>
+                }
+              </ul>
+            </div>
+          </ng-template>
+        </app-data-grid>
       </div>
     }
     @case ('manuales') {

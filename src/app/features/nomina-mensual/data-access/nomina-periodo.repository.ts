@@ -21,8 +21,10 @@ import type {
   EstadoNomina,
   EventoAuditoriaNomina,
   IncidenciaNomina,
+  IncidenciaNominaNueva,
   NominaPeriodo,
   SegmentoNomina,
+  SegmentoNominaNuevo,
   EstadoTrabajadorNomina,
   FilaTrabajadorNominaResumen,
   FiltroRapidoDotacion,
@@ -30,6 +32,7 @@ import type {
 } from '../models/nomina-periodo.models';
 import type {
   MovimientoNomina,
+  MovimientoNominaNuevo,
   MovimientoRecurrente,
 } from '../models/movimiento-nomina.models';
 import type { PayrollStepId } from '../../nomina-mensual-v2/models/nomina-mensual-v2.models';
@@ -289,7 +292,10 @@ export class NominaPeriodoRepository {
     return data ? rowToSegmentoNomina(data) : null;
   }
 
-  async upsertSegmento(segmento: SegmentoNomina, idEmpresa: number): Promise<SegmentoNomina> {
+  async upsertSegmento(
+    segmento: SegmentoNomina | SegmentoNominaNuevo,
+    idEmpresa: number,
+  ): Promise<SegmentoNomina> {
     const insert = segmentoNominaToInsert(segmento, idEmpresa);
     const { data, error } = await this.supabase
       .from('segmento_nomina')
@@ -391,7 +397,7 @@ export class NominaPeriodoRepository {
   }
 
   async insertarMovimientos(
-    movimientos: ReadonlyArray<Omit<MovimientoNomina, 'createdAt' | 'updatedAt'>>,
+    movimientos: ReadonlyArray<MovimientoNominaNuevo>,
     idEmpresa: number,
   ): Promise<MovimientoNomina[]> {
     if (movimientos.length === 0) return [];
@@ -436,7 +442,7 @@ export class NominaPeriodoRepository {
 
   async reemplazarIncidencias(
     nominaPeriodoId: string,
-    incidencias: ReadonlyArray<IncidenciaNomina>,
+    incidencias: ReadonlyArray<IncidenciaNomina | IncidenciaNominaNueva>,
   ): Promise<void> {
     const { error: errDel } = await this.supabase
       .from('incidencia_nomina')

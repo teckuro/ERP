@@ -191,6 +191,9 @@ export interface SegmentoNomina {
   updatedAt: string;
 }
 
+/** Segmento aún no persistido. `id` lo genera la BD (`gen_random_uuid()`). */
+export type SegmentoNominaNuevo = Omit<SegmentoNomina, 'id' | 'createdAt' | 'updatedAt'>;
+
 export interface IncidenciaNomina {
   id: string;
   nominaPeriodoId: string;
@@ -204,6 +207,9 @@ export interface IncidenciaNomina {
 
   bloqueante: boolean;
 }
+
+/** Incidencia aún no persistida. `id` lo genera la BD. */
+export type IncidenciaNominaNueva = Omit<IncidenciaNomina, 'id'>;
 
 /**
  * Resumen pre-cálculo y pre-cierre.

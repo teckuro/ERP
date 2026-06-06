@@ -1,16 +1,19 @@
 :host {
-  display: block;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   width: 100%;
+  min-height: 0;
 }
 
 .paso-mov {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px 20px 20px;
+  gap: 14px;
+  padding: 14px 16px 16px;
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  min-height: 0;
 }
 
 .paso-mov__head {
@@ -141,8 +144,11 @@
 
 .paso-mov__tab-body {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .paso-mov__bar {
@@ -322,4 +328,191 @@
   gap: 12px;
   border-top: 1px solid #e2e8f0;
   padding-top: 12px;
+}
+
+/* ----------------------------------------------------------------- */
+/* Tab "Configurados" — grilla de movimientos pre-configurados.       */
+/* ----------------------------------------------------------------- */
+
+.paso-mov__tab-body--grid {
+  overflow: visible;
+}
+
+.paso-mov__btn-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  margin-left: 8px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.paso-mov__btn.is-primary:disabled .paso-mov__btn-badge {
+  background: rgba(15, 23, 42, 0.16);
+  color: #475569;
+}
+
+.paso-mov__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 4px 2px 0;
+}
+
+.paso-mov__stat-line {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.paso-mov__stat-line strong {
+  font-size: 15px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.paso-mov__stat-line small {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.paso-mov__stat-line.is-pendiente strong {
+  color: #1d4ed8;
+}
+
+.paso-mov__stat-line.is-cargado strong {
+  color: #047857;
+}
+
+.paso-mov__stat-line.is-omitido strong {
+  color: #b45309;
+}
+
+.paso-mov__grid {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.paso-mov__vigencia {
+  font-size: 12px;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.paso-mov__categoria {
+  text-transform: capitalize;
+}
+
+.paso-mov__estado-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid transparent;
+}
+
+.paso-mov__estado-pill[data-estado='pendiente'] {
+  background: #eff6ff;
+  color: #1e3a8a;
+  border-color: #bfdbfe;
+}
+
+.paso-mov__estado-pill[data-estado='ya-cargado'] {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.paso-mov__estado-pill[data-estado='omitido-este-mes'] {
+  background: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.paso-mov__detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border-left: 1px solid #1d4ed8;
+}
+
+.paso-mov__detalle-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.paso-mov__detalle-head strong {
+  display: block;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.paso-mov__detalle-meta {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.paso-mov__detalle-copy {
+  margin: 0;
+  font-size: 12px;
+  color: #475569;
+}
+
+.paso-mov__detalle-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.paso-mov__detalle-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+}
+
+.paso-mov__detalle-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.paso-mov__detalle-item-meta {
+  font-size: 12px;
+  color: #475569;
+}
+
+.paso-mov__detalle-item-glosa {
+  font-size: 11px;
+  color: #64748b;
 }

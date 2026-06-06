@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
   ensamblarNominaPeriodo,
+  incidenciaNominaToInsert,
+  movimientoNominaToInsert,
   rowToNominaPeriodoResumen,
+  segmentoNominaToInsert,
   type NominaPeriodoRow,
 } from './nomina-periodo.mapper';
 
@@ -140,5 +143,79 @@ describe('ensamblarNominaPeriodo', () => {
     });
     expect(nomina.maximoPasoCompletado).toBe('validation');
     expect(nomina.maximoPasoCompletadoAt).toBe('2026-06-05T10:00:00.000Z');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Guardrail: insert mappers para registros NUEVOS NUNCA deben mandar `id`.
+// La BD lo genera con `default gen_random_uuid()`. Si el frontend envía
+// `id: ''` (o `id: null`) postgrest-js dispara el NOT NULL constraint.
+// ---------------------------------------------------------------------------
+describe('mappers · contrato de inserción sin id explícito', () => {
+  it('movimientoNominaToInsert omite la clave `id` por completo', () => {
+    const insert = movimientoNominaToInsert(
+      {
+        nominaPeriodoId: 'nom-1',
+        trabajadorId: '42',
+        tipo: 'haber',
+        categoria: 'haber',
+        origen: 'manual',
+        estado: 'aplicado',
+      },
+      7,
+    );
+    expect(Object.prototype.hasOwnProperty.call(insert, 'id')).toBe(false);
+    expect(insert.id_nomina_periodo).toBe('nom-1');
+    expect(insert.id_persona).toBe(42);
+  });
+
+  it('segmentoNominaToInsert omite `id` cuando el segmento es nuevo', () => {
+    const insert = segmentoNominaToInsert(
+      {
+        nominaPeriodoId: 'nom-1',
+        nombre: 'Planta',
+        estado: 'borrador',
+        trabajadorIds: ['1', '2'],
+        totalTrabajadores: 2,
+        totalIncidenciasCriticas: 0,
+        totalAdvertencias: 0,
+        ordinal: 1,
+      },
+      7,
+    );
+    expect(Object.prototype.hasOwnProperty.call(insert, 'id')).toBe(false);
+    expect(insert.trabajador_ids).toEqual([1, 2]);
+  });
+
+  it('segmentoNominaToInsert mantiene `id` cuando el segmento ya existe (upsert update)', () => {
+    const insert = segmentoNominaToInsert(
+      {
+        id: 'seg-existente',
+        nominaPeriodoId: 'nom-1',
+        nombre: 'Planta',
+        estado: 'borrador',
+        trabajadorIds: [],
+        totalTrabajadores: 0,
+        totalIncidenciasCriticas: 0,
+        totalAdvertencias: 0,
+        ordinal: 1,
+        createdAt: '2026-06-04T00:00:00.000Z',
+        updatedAt: '2026-06-04T00:00:00.000Z',
+      },
+      7,
+    );
+    expect(insert.id).toBe('seg-existente');
+  });
+
+  it('incidenciaNominaToInsert omite `id` cuando la incidencia es nueva', () => {
+    const insert = incidenciaNominaToInsert({
+      nominaPeriodoId: 'nom-1',
+      severidad: 'critica',
+      tipo: 'falta_dato',
+      mensaje: 'Sin contrato vigente',
+      bloqueante: true,
+    });
+    expect(Object.prototype.hasOwnProperty.call(insert, 'id')).toBe(false);
+    expect(insert.severidad).toBe('critica');
   });
 });

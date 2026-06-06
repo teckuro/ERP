@@ -25,6 +25,7 @@ import {
 import { FormsModule } from '@angular/forms';
 
 import type {
+  FilaMovimientoConfigurado,
   MovimientoCategoria,
   MovimientoNomina,
   MovimientoRecurrente,
@@ -36,8 +37,21 @@ import type {
   PasoNominaPort,
   ResultadoAvancePaso,
 } from '../../facade/nomina-mensual-v2-navegacion';
+import {
+  DataGridCellDirective,
+  DataGridComponent,
+  DataGridRowDetailDirective,
+} from '../../../../../../shared/components/ui/data-grid';
+import {
+  calcularStatsMovimientosConfigurados,
+  COLUMNAS_CONFIGURADOS,
+  etiquetaEstadoConfigurado,
+  FILTROS_CONFIGURADOS,
+  PERSISTENCIA_GRILLA_CONFIGURADOS,
+  type StatsMovimientosConfigurados,
+} from '../../../../presenters/nomina-movimientos-configurados.presenter';
 
-type TabMovimientos = 'recurrentes' | 'manuales' | 'omitidos';
+type TabMovimientos = 'configurados' | 'manuales' | 'omitidos';
 
 interface BorradorManual {
   trabajadorId: string;
@@ -50,7 +64,13 @@ interface BorradorManual {
 @Component({
   selector: 'app-nomina-mensual-v2-paso-movimientos',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DataGridComponent,
+    DataGridCellDirective,
+    DataGridRowDetailDirective,
+  ],
   templateUrl: './nomina-mensual-v2-paso-movimientos.component.html',
   styleUrl: './nomina-mensual-v2-paso-movimientos.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -62,7 +82,7 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
   readonly avanceSolicitado = output<void>();
   readonly volverDotacion = output<void>();
 
-  readonly tabActivo = signal<TabMovimientos>('recurrentes');
+  readonly tabActivo = signal<TabMovimientos>('configurados');
   readonly loading = signal(false);
   readonly aplicando = signal(false);
   readonly error = signal<string | null>(null);
@@ -70,6 +90,7 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
   readonly recurrentes = signal<MovimientoRecurrente[]>([]);
   readonly movimientos = signal<MovimientoNomina[]>([]);
   readonly trabajadores = signal<FilaTrabajadorNominaResumen[]>([]);
+  readonly movimientosConfigurados = signal<FilaMovimientoConfigurado[]>([]);
   readonly busquedaTrabajador = signal('');
   readonly buscandoTrabajadores = signal(false);
   readonly borradorManual = signal<BorradorManual>({
@@ -88,6 +109,26 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
   readonly movimientosOmitidos = computed(() =>
     this.movimientos().filter((m) => m.estado === 'omitido'),
   );
+
+  // -- Tab Configurados (presenter declarativo) ------------------------------
+
+  readonly columnasConfigurados = COLUMNAS_CONFIGURADOS;
+  readonly filtrosConfigurados = computed(() =>
+    FILTROS_CONFIGURADOS(this.movimientosConfigurados()),
+  );
+  readonly persistenciaConfigurados = PERSISTENCIA_GRILLA_CONFIGURADOS;
+  readonly statsConfigurados = computed<StatsMovimientosConfigurados>(() =>
+    calcularStatsMovimientosConfigurados(this.movimientosConfigurados()),
+  );
+  /** Hay al menos una fila Pendiente → el CTA "Cargar" se habilita. */
+  readonly hayPendientesPorCargar = computed(() => this.statsConfigurados().pendientes > 0);
+  /** Identidad estable de fila para `expandableRows` del data-grid. */
+  readonly rowKeyConfigurado = (fila: FilaMovimientoConfigurado): string => fila.filaId;
+  /** TrackBy compatible con la firma `(index, row)` del data-grid. */
+  readonly trackByConfigurado = (_index: number, fila: FilaMovimientoConfigurado): string =>
+    fila.filaId;
+  /** Etiqueta humana del estado (delegado al presenter para mantener la fuente única). */
+  readonly etiquetaEstado = etiquetaEstadoConfigurado;
   /**
    * El paso de movimientos se considera "poblado correctamente" cuando existe
    * al menos un movimiento aplicado (recurrente o manual). Mientras la lista
@@ -140,14 +181,16 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const [recurrentes, movimientos, dotacion] = await Promise.all([
+      const [recurrentes, movimientos, dotacion, configurados] = await Promise.all([
         this.servicio.listarRecurrentes(),
         this.servicio.listarMovimientos(id),
         this.servicio.filtrarDotacion(id, {}, { page: 1, pageSize: 50, total: 0 }),
+        this.servicio.listarMovimientosConfigurados(id),
       ]);
       this.recurrentes.set(recurrentes);
       this.movimientos.set(movimientos);
       this.trabajadores.set(dotacion.filas);
+      this.movimientosConfigurados.set(configurados);
       this.sincronizarIdentidades(dotacion.filas);
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido';
@@ -157,12 +200,26 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
     }
   }
 
+  /**
+   * Devuelve todos los movimientos configurados de un trabajador (vigente y
+   * pendiente, ya cargado u omitido este mes). Se usa en el detalle expandible
+   * del data-grid para que el usuario vea la "ficha completa" del trabajador.
+   */
+  movimientosConfiguradosDeTrabajador(trabajadorId: string): FilaMovimientoConfigurado[] {
+    return this.movimientosConfigurados().filter((m) => m.trabajadorId === trabajadorId);
+  }
+
   cambiarTab(tab: TabMovimientos): void {
     this.tabActivo.set(tab);
     this.mensaje.set(null);
   }
 
-  async aplicarRecurrentes(): Promise<void> {
+  /**
+   * Carga a la nómina los movimientos configurados de los trabajadores que
+   * aún no se hayan materializado este mes. Respeta omitidos previos
+   * (idempotencia: una vez omitido, no se reaplica).
+   */
+  async cargarMovimientosConfigurados(): Promise<void> {
     const id = this.nominaPeriodoId();
     if (!id) return;
     this.aplicando.set(true);
@@ -170,13 +227,16 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
     this.mensaje.set(null);
     try {
       const aplicados = await this.servicio.aplicarRecurrentesANomina(id);
+      const nuevos = aplicados.filter((m) => m.estado === 'aplicado').length;
       this.mensaje.set(
-        `${aplicados.length} movimientos recurrentes aplicados (se respetan omitidos previos).`,
+        nuevos === 0
+          ? 'No había movimientos pendientes por cargar.'
+          : `Se cargaron ${nuevos} movimientos configurados a la nómina.`,
       );
       await this.cargar();
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido';
-      this.error.set(`No fue posible aplicar recurrentes: ${mensaje}`);
+      this.error.set(`No fue posible cargar los movimientos configurados: ${mensaje}`);
     } finally {
       this.aplicando.set(false);
     }
@@ -214,7 +274,6 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
     this.error.set(null);
     try {
       await this.servicio.agregarMovimientoManual({
-        id: '',
         nominaPeriodoId: id,
         trabajadorId: borrador.trabajadorId,
         tipo: borrador.tipo,
@@ -302,7 +361,7 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
     if (this.movimientosAplicados().length === 0) {
       return {
         ok: false,
-        razon: 'Aplica al menos un movimiento recurrente o agrega uno manual antes de continuar.',
+        razon: 'Carga al menos un movimiento configurado o agrega uno manual antes de continuar.',
       };
     }
     return { ok: true };

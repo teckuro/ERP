@@ -54,6 +54,21 @@ export interface DataGridCellContext<T> {
   index: number;
 }
 
+/**
+ * Contexto del template de detalle expandible (filas expandibles opt-in).
+ *
+ * Consumidores proyectan
+ * `<ng-template appDataGridRowDetail let-row let-i="index" let-collapse="collapse">…</ng-template>`
+ * para definir qué se muestra cuando una fila se expande.
+ */
+export interface DataGridRowDetailContext<T> {
+  $implicit: T;
+  row: T;
+  index: number;
+  /** Cierra esta fila expandida (útil para un botón "Cerrar" en el detalle). */
+  collapse: () => void;
+}
+
 export interface DataGridColumn<T = unknown> {
   id: string;
   header: string;

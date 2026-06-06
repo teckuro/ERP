@@ -38,12 +38,16 @@ import type {
   PaginacionGrilla,
   ResumenValidacionNomina,
   SegmentoNomina,
+  SegmentoNominaNuevo,
   TipoNomina,
 } from '../models/nomina-periodo.models';
 import type {
   AccionMasivaTrabajadores,
   CriterioAplicacionRecurrente,
+  EstadoMovimientoConfiguradoEnNomina,
+  FilaMovimientoConfigurado,
   MovimientoNomina,
+  MovimientoNominaNuevo,
   MovimientoRecurrente,
   PreviewAccionMasivaTrabajadores,
 } from '../models/movimiento-nomina.models';
@@ -52,7 +56,6 @@ import type {
   ResultadoAlcanceNomina,
 } from '../../nomina-mensual-v2/models/nomina-mensual-v2.models';
 import { EmpleadosService } from '../../empleados/services/empleados.service';
-import { crearSegmento } from '../models/nomina-periodo.models';
 import {
   estadoNominaBloqueaEdicion,
   exigirTransicionNomina,
@@ -173,14 +176,19 @@ export class NominaPeriodoService {
       );
       if (activos.length === 0) return creada;
 
-      await this.repo.upsertSegmento(crearSegmento({
-        id: '',
+      const trabajadorIds = activos.map((empleado) => String(empleado.id));
+      const segmentoNuevo: SegmentoNominaNuevo = {
         nominaPeriodoId: creada.id,
         nombre: 'Dotación general',
         tipo: 'planta',
         estado: 'lista',
-        trabajadorIds: activos.map((empleado) => String(empleado.id)),
-      }), idEmpresa);
+        trabajadorIds,
+        totalTrabajadores: trabajadorIds.length,
+        totalIncidenciasCriticas: 0,
+        totalAdvertencias: 0,
+        ordinal: 1,
+      };
+      await this.repo.upsertSegmento(segmentoNuevo, idEmpresa);
       await this.repo.actualizarTotales(creada.id, {
         totalTrabajadores: activos.length,
         totalSegmentos: 1,
@@ -427,17 +435,18 @@ export class NominaPeriodoService {
         idEmpresa,
       );
     } else {
-      await this.repo.upsertSegmento(
-        crearSegmento({
-          id: '',
-          nominaPeriodoId,
-          nombre: 'Dotación principal',
-          tipo: 'planta',
-          estado: 'borrador',
-          trabajadorIds: agregados,
-        }),
-        idEmpresa,
-      );
+      const segmentoNuevo: SegmentoNominaNuevo = {
+        nominaPeriodoId,
+        nombre: 'Dotación principal',
+        tipo: 'planta',
+        estado: 'borrador',
+        trabajadorIds: agregados,
+        totalTrabajadores: agregados.length,
+        totalIncidenciasCriticas: 0,
+        totalAdvertencias: 0,
+        ordinal: (nomina.segmentos.at(-1)?.ordinal ?? 0) + 1,
+      };
+      await this.repo.upsertSegmento(segmentoNuevo, idEmpresa);
     }
 
     const totalTrabajadores = new Set([
@@ -494,14 +503,17 @@ export class NominaPeriodoService {
   }
 
   async agregarMovimientoManual(
-    mov: Omit<MovimientoNomina, 'createdAt' | 'updatedAt' | 'origen'>,
+    mov: Omit<MovimientoNominaNuevo, 'origen'>,
   ): Promise<MovimientoNomina[]> {
     const idEmpresa = await this.resolverEmpresaActiva();
     if (idEmpresa == null) {
       throw new Error('No hay empresa activa para agregar movimiento.');
     }
     await this.exigirNominaEditable(mov.nominaPeriodoId);
-    const insertados = await this.repo.insertarMovimientos([{ ...mov, origen: 'manual' }], idEmpresa);
+    const insertados = await this.repo.insertarMovimientos(
+      [{ ...mov, origen: 'manual' }],
+      idEmpresa,
+    );
     await this.invalidarCalculoPorCambio(mov.nominaPeriodoId, 'Movimiento manual agregado.');
     return insertados;
   }
@@ -528,7 +540,7 @@ export class NominaPeriodoService {
       throw new Error(`La nómina ${nomina.estado} no admite cambios.`);
     }
 
-    const nuevosInsertar: Array<Omit<MovimientoNomina, 'createdAt' | 'updatedAt'>> = [];
+    const nuevosInsertar: MovimientoNominaNuevo[] = [];
 
     for (const recurrente of recurrentes) {
       const trabajadores = this.resolverTrabajadoresParaRecurrente(nomina, recurrente);
@@ -547,7 +559,6 @@ export class NominaPeriodoService {
         );
 
         nuevosInsertar.push({
-          id: '',
           nominaPeriodoId,
           trabajadorId,
           segmentoId: segmentoDelTrabajador?.id,
@@ -578,6 +589,90 @@ export class NominaPeriodoService {
       ),
       ...insertados,
     ];
+  }
+
+  /**
+   * Devuelve la vista derivada "Movimientos configurados" para la nómina.
+   *
+   * Cruza:
+   *  - Recurrentes activos de la empresa.
+   *  - Dotación de la nómina (intersección por scope del recurrente).
+   *  - Movimientos ya existentes en este período (para calcular el estado).
+   *
+   * Solo lectura — NO inserta nada. Es lo que el usuario ve ANTES de pulsar
+   * "Cargar movimientos configurados".
+   *
+   * Idempotencia preservada: si el recurrente ya se cargó (cualquier estado),
+   * la fila aparece con `estadoEnNomina` apropiado y mantiene la referencia
+   * al `movimiento_nomina` original. Esto evita "doble carga" desde la UI.
+   */
+  async listarMovimientosConfigurados(
+    nominaPeriodoId: string,
+  ): Promise<FilaMovimientoConfigurado[]> {
+    const idEmpresa = await this.resolverEmpresaActiva();
+    if (idEmpresa == null) return [];
+
+    const [nomina, recurrentes, movimientosExistentes, dotacion] = await Promise.all([
+      this.repo.obtenerNominaCompleta(nominaPeriodoId),
+      this.repo.listarRecurrentesActivos(idEmpresa),
+      this.repo.listarMovimientos(nominaPeriodoId),
+      this.repo.listarDotacionPaginada(
+        nominaPeriodoId,
+        {},
+        { page: 1, pageSize: 1000, total: 0 },
+      ),
+    ]);
+    if (!nomina) return [];
+
+    const identidades = new Map<string, FilaTrabajadorNominaResumen>();
+    for (const fila of dotacion.filas) {
+      identidades.set(fila.trabajadorId, fila);
+    }
+
+    const filas: FilaMovimientoConfigurado[] = [];
+    for (const recurrente of recurrentes) {
+      const trabajadores = this.resolverTrabajadoresParaRecurrente(nomina, recurrente);
+
+      for (const trabajadorId of trabajadores) {
+        const movimientoExistente = movimientosExistentes.find(
+          (m) =>
+            m.trabajadorId === trabajadorId &&
+            m.recurrenteId === recurrente.id &&
+            m.tipo === recurrente.tipo,
+        );
+
+        const estado: EstadoMovimientoConfiguradoEnNomina =
+          movimientoExistente == null
+            ? 'pendiente'
+            : movimientoExistente.estado === 'omitido'
+              ? 'omitido-este-mes'
+              : 'ya-cargado';
+
+        const identidad = identidades.get(trabajadorId);
+        filas.push({
+          filaId: `${trabajadorId}::${recurrente.id}::${recurrente.tipo}`,
+          trabajadorId,
+          trabajadorNombre: identidad?.nombre ?? 'Trabajador sin identificar',
+          rut: identidad?.rut ?? '',
+          cargo: identidad?.cargo,
+          centroCosto: identidad?.centroCosto,
+          recurrenteId: recurrente.id,
+          concepto: recurrente.tipo,
+          categoria: recurrente.categoria,
+          monto: recurrente.monto,
+          cantidad: recurrente.cantidad,
+          unidad: recurrente.unidad,
+          frecuencia: recurrente.frecuencia,
+          vigenciaDesde: recurrente.activoDesde,
+          vigenciaHasta: recurrente.activoHasta,
+          glosa: recurrente.glosa,
+          estadoEnNomina: estado,
+          movimientoNominaId: movimientoExistente?.id,
+        });
+      }
+    }
+
+    return filas;
   }
 
   // -------------------------------------------------------------------------
@@ -902,8 +997,7 @@ export class NominaPeriodoService {
       const totalTrabajadores = new Set(segmentos.flatMap((segmento) => segmento.trabajadorIds)).size;
       await this.repo.actualizarTotales(nominaPeriodoId, { totalTrabajadores });
     } else if (accion.tipo === 'agregar-movimiento') {
-      const movimientos = trabajadorIds.map((trabajadorId) => ({
-        id: '',
+      const movimientos: MovimientoNominaNuevo[] = trabajadorIds.map((trabajadorId) => ({
         nominaPeriodoId,
         trabajadorId,
         tipo: accion.movimiento.tipo ?? 'movimiento-masivo',
@@ -911,8 +1005,8 @@ export class NominaPeriodoService {
         monto: accion.movimiento.monto,
         cantidad: accion.movimiento.cantidad,
         unidad: accion.movimiento.unidad,
-        origen: 'manual' as const,
-        estado: 'aplicado' as const,
+        origen: 'manual',
+        estado: 'aplicado',
         glosa: accion.movimiento.glosa,
       }));
       await this.repo.insertarMovimientos(movimientos, idEmpresa);
@@ -947,7 +1041,7 @@ export class NominaPeriodoService {
     if (!recurrente) return [];
 
     const trabajadoresMatch = this.aplicarCriterio(nomina, criterio);
-    const nuevosInsertar: Array<Omit<MovimientoNomina, 'createdAt' | 'updatedAt'>> = [];
+    const nuevosInsertar: MovimientoNominaNuevo[] = [];
     const yaExistentes: MovimientoNomina[] = [];
 
     for (const trabajadorId of trabajadoresMatch) {
@@ -965,7 +1059,6 @@ export class NominaPeriodoService {
         s.trabajadorIds.includes(trabajadorId),
       );
       nuevosInsertar.push({
-        id: '',
         nominaPeriodoId,
         trabajadorId,
         segmentoId: segmentoDelTrabajador?.id,

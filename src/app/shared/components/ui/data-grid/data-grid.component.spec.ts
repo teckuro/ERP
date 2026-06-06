@@ -1,7 +1,9 @@
+import { Component, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import { DataGridComponent } from './data-grid.component';
+import { DataGridRowDetailDirective } from './data-grid.directives';
 import type { DataGridColumn } from './data-grid.types';
 
 interface TestRow {
@@ -64,5 +66,135 @@ describe('DataGridComponent toolbar operativa', () => {
 
     component.lastPage();
     expect(component.currentPage).toBe(3);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Filas expandibles (opt-in)
+// ---------------------------------------------------------------------------
+
+@Component({
+  standalone: true,
+  imports: [DataGridComponent, DataGridRowDetailDirective],
+  template: `
+    <app-data-grid
+      [columns]="columns"
+      [rows]="rows"
+      [expandableRows]="true"
+      [rowExpansionKey]="rowKeyFn"
+    >
+      <ng-template appDataGridRowDetail let-row let-i="index">
+        <div class="detalle-test" [attr.data-row-id]="row.id">
+          Detalle de {{ row.name }} (índice {{ i }})
+        </div>
+      </ng-template>
+    </app-data-grid>
+  `,
+})
+class HostExpandableComponent {
+  columns = columns;
+  rows = rows.slice(0, 5);
+  rowKeyFn = (row: TestRow) => row.id;
+  @ViewChild(DataGridComponent) grid!: DataGridComponent<TestRow>;
+}
+
+describe('DataGridComponent · filas expandibles', () => {
+  it('expansionEnabled es false cuando no se proyecta appDataGridRowDetail', () => {
+    const fixture = TestBed.createComponent(DataGridComponent<TestRow>);
+    const cmp = fixture.componentInstance;
+    cmp.columns = columns;
+    cmp.rows = rows.slice(0, 3);
+    cmp.expandableRows = true;
+    fixture.detectChanges();
+    expect(cmp.expansionEnabled).toBe(false);
+  });
+
+  it('expansionEnabled es true cuando se habilita el flag Y se proyecta el template', () => {
+    const fixture = TestBed.createComponent(HostExpandableComponent);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.grid.expansionEnabled).toBe(true);
+  });
+
+  it('toggleRowExpansion alterna estado y emite evento', () => {
+    const fixture = TestBed.createComponent(HostExpandableComponent);
+    fixture.detectChanges();
+    const grid = fixture.componentInstance.grid;
+    const eventos: Array<{ row: TestRow; expanded: boolean }> = [];
+    grid.rowExpandToggle.subscribe((evt) => eventos.push(evt));
+
+    const fila = fixture.componentInstance.rows[0];
+    expect(grid.isRowExpanded(fila)).toBe(false);
+
+    grid.toggleRowExpansion(fila);
+    expect(grid.isRowExpanded(fila)).toBe(true);
+    expect(eventos.at(-1)).toEqual({ row: fila, expanded: true });
+
+    grid.toggleRowExpansion(fila);
+    expect(grid.isRowExpanded(fila)).toBe(false);
+    expect(eventos.at(-1)).toEqual({ row: fila, expanded: false });
+  });
+
+  it('collapseRowExpansion no emite si la fila no estaba expandida', () => {
+    const fixture = TestBed.createComponent(HostExpandableComponent);
+    fixture.detectChanges();
+    const grid = fixture.componentInstance.grid;
+    const eventos: Array<{ row: TestRow; expanded: boolean }> = [];
+    grid.rowExpandToggle.subscribe((evt) => eventos.push(evt));
+
+    grid.collapseRowExpansion(fixture.componentInstance.rows[0]);
+    expect(eventos).toHaveLength(0);
+  });
+
+  it('collapseAllExpansions vacía el estado para todas las filas', () => {
+    const fixture = TestBed.createComponent(HostExpandableComponent);
+    fixture.detectChanges();
+    const grid = fixture.componentInstance.grid;
+    const filas = fixture.componentInstance.rows;
+
+    grid.toggleRowExpansion(filas[0]);
+    grid.toggleRowExpansion(filas[1]);
+    expect(grid.isRowExpanded(filas[0])).toBe(true);
+    expect(grid.isRowExpanded(filas[1])).toBe(true);
+
+    grid.collapseAllExpansions();
+    expect(grid.isRowExpanded(filas[0])).toBe(false);
+    expect(grid.isRowExpanded(filas[1])).toBe(false);
+  });
+
+  it('rowExpansionKey personalizada permite preservar expansión entre datasets', () => {
+    const fixture = TestBed.createComponent(HostExpandableComponent);
+    fixture.detectChanges();
+    const grid = fixture.componentInstance.grid;
+
+    grid.toggleRowExpansion(fixture.componentInstance.rows[2]);
+    expect(grid.isRowExpanded(fixture.componentInstance.rows[2])).toBe(true);
+
+    // Otro objeto con el mismo `id` se considera la misma fila gracias a rowExpansionKey: row.id.
+    const filaConMismoId: TestRow = { id: 3, name: 'Item 3 (otra ref)' };
+    expect(grid.isRowExpanded(filaConMismoId)).toBe(true);
+  });
+
+  it('rowDetailContext provee row, índice y closure collapse', () => {
+    const fixture = TestBed.createComponent(HostExpandableComponent);
+    fixture.detectChanges();
+    const grid = fixture.componentInstance.grid;
+    const fila = fixture.componentInstance.rows[0];
+
+    grid.toggleRowExpansion(fila);
+    expect(grid.isRowExpanded(fila)).toBe(true);
+
+    const ctx = grid.rowDetailContext(fila, 0);
+    expect(ctx.$implicit).toBe(fila);
+    expect(ctx.row).toBe(fila);
+    expect(ctx.index).toBe(0);
+
+    ctx.collapse();
+    expect(grid.isRowExpanded(fila)).toBe(false);
+  });
+
+  it('colspan del detalle considera numeración + chevron + columnas', () => {
+    const fixture = TestBed.createComponent(HostExpandableComponent);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.grid.rowDetailColspan).toBe(3);
   });
 });

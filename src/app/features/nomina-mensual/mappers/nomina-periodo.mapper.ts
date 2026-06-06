@@ -15,9 +15,11 @@ import type {
   EstadoNomina,
   EventoAuditoriaNomina,
   IncidenciaNomina,
+  IncidenciaNominaNueva,
   NominaPeriodo,
   NominaPeriodoResumen,
   SegmentoNomina,
+  SegmentoNominaNuevo,
   TipoNomina,
 } from '../models/nomina-periodo.models';
 import { parsePayrollStepId } from '../models/nomina-periodo.models';
@@ -31,6 +33,7 @@ import type {
   MovimientoCategoria,
   MovimientoFrecuencia,
   MovimientoNomina,
+  MovimientoNominaNuevo,
   MovimientoRecurrente,
   MovimientoUnidad,
   OrigenMovimientoNomina,
@@ -145,12 +148,23 @@ export function rowToSegmentoNomina(row: SegmentoNominaRow): SegmentoNomina {
   };
 }
 
+/**
+ * Mapea un segmento (nuevo o existente) al payload de inserción/upsert.
+ *
+ * - Si recibe un `SegmentoNomina` con `id` definido → lo incluye (upsert podrá
+ *   ACTUALIZAR esa fila).
+ * - Si recibe un `SegmentoNominaNuevo` → omite la clave `id` por completo y la
+ *   BD genera el UUID con `default gen_random_uuid()`. NUNCA se manda `id: ''`
+ *   ni `id: null`: postgrest-js no transforma `undefined` a "omitir columna"
+ *   en inserts batch, así que el frontend nunca debe inventar el UUID.
+ */
 export function segmentoNominaToInsert(
-  segmento: SegmentoNomina,
+  segmento: SegmentoNomina | SegmentoNominaNuevo,
   idEmpresa: number,
 ): SegmentoNominaInsert {
+  const idExistente = 'id' in segmento ? segmento.id : undefined;
   return {
-    id: segmento.id || undefined,
+    ...(idExistente ? { id: idExistente } : {}),
     id_nomina_periodo: segmento.nominaPeriodoId,
     id_empresa: idEmpresa,
     nombre: segmento.nombre,
@@ -244,12 +258,20 @@ export function rowToMovimientoNomina(row: MovimientoNominaRow): MovimientoNomin
   };
 }
 
+/**
+ * Mapea un movimiento NUEVO al payload de inserción.
+ *
+ * El tipo `MovimientoNominaNuevo` (sin `id`, `createdAt`, `updatedAt`) refleja
+ * que la PK la genera la BD (`default gen_random_uuid()`). Cualquier intento
+ * de mandar `id: ''` o `id: null` desde el frontend dispara el NOT NULL
+ * constraint en `movimiento_nomina.id`, así que la firma explícita previene
+ * ese pie de pistola en tiempo de compilación.
+ */
 export function movimientoNominaToInsert(
-  mov: Omit<MovimientoNomina, 'createdAt' | 'updatedAt'>,
+  mov: MovimientoNominaNuevo,
   idEmpresa: number,
 ): MovimientoNominaInsert {
   return {
-    id: mov.id || undefined,
     id_nomina_periodo: mov.nominaPeriodoId,
     id_empresa: idEmpresa,
     id_persona: Number(mov.trabajadorId),
@@ -285,9 +307,12 @@ export function rowToIncidenciaNomina(row: IncidenciaNominaRow): IncidenciaNomin
   };
 }
 
-export function incidenciaNominaToInsert(inc: IncidenciaNomina): IncidenciaNominaInsert {
+export function incidenciaNominaToInsert(
+  inc: IncidenciaNomina | IncidenciaNominaNueva,
+): IncidenciaNominaInsert {
+  const idExistente = 'id' in inc ? inc.id : undefined;
   return {
-    id: inc.id || undefined,
+    ...(idExistente ? { id: idExistente } : {}),
     id_nomina_periodo: inc.nominaPeriodoId,
     id_persona: inc.trabajadorId ? Number(inc.trabajadorId) : null,
     id_segmento_nomina: inc.segmentoId ?? null,

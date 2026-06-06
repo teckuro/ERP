@@ -1,16 +1,19 @@
 :host {
-  display: block;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   width: 100%;
+  min-height: 0;
 }
 
 .paso-dotacion {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px 20px 20px;
+  gap: 14px;
+  padding: 14px 16px 16px;
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  min-height: 0;
 }
 
 .paso-dotacion__head {
@@ -80,52 +83,62 @@
   cursor: not-allowed;
 }
 
+/* Franja KPI inline sobria (mismo patrón que `.nmv2-paso-parametros__summary`).
+   El color se aplica solo al número, no al fondo, para evitar la apariencia
+   de chip de color decorativo. Separadores finos entre métricas. */
 .paso-dotacion__stats {
   display: flex;
-  gap: 12px;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  padding: 6px 0;
+  border-top: 1px solid #eef0eb;
+  border-bottom: 1px solid #eef0eb;
+  background: #ffffff;
 }
 
 .paso-dotacion__stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 84px;
-  padding: 8px 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  background: #f8fafc;
-  color: #1e293b;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-right: 14px;
+  border-right: 1px solid #eef0eb;
+  line-height: 1.2;
+  color: #647084;
   font-variant-numeric: tabular-nums;
 }
 
+.paso-dotacion__stat:last-child {
+  border-right: 0;
+  padding-right: 0;
+}
+
 .paso-dotacion__stat strong {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
 }
 
 .paso-dotacion__stat small {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #64748b;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #647084;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
-.paso-dotacion__stat.is-listo {
-  border-color: #bbf7d0;
-  background: #f0fdf4;
+.paso-dotacion__stat.is-listo strong {
+  color: #047857;
 }
-.paso-dotacion__stat.is-advertencia {
-  border-color: #fde68a;
-  background: #fffbeb;
+.paso-dotacion__stat.is-advertencia strong {
+  color: #b45309;
 }
-.paso-dotacion__stat.is-critico {
-  border-color: #fecaca;
-  background: #fef2f2;
+.paso-dotacion__stat.is-critico strong {
+  color: #b91c1c;
 }
-.paso-dotacion__stat.is-bloqueado {
-  border-color: #cbd5e1;
-  background: #f1f5f9;
+.paso-dotacion__stat.is-bloqueado strong {
+  color: #475569;
 }
 
 .paso-dotacion__error {
@@ -140,6 +153,7 @@
 
 .paso-dotacion__grid-wrapper {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   min-height: 360px;
 }

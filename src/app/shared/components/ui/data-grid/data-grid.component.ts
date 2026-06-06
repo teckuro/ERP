@@ -21,6 +21,7 @@ import {
   ArrowLeft,
   ArrowUp,
   ArrowUpDown,
+  ChevronDown,
   ChevronsLeft,
   ChevronsRight,
   ChevronRight,
@@ -55,12 +56,21 @@ import type {
   DataGridFilterOperator,
   DataGridFilterValue,
   DataGridHeaderCountDisplay,
+  DataGridRowDetailContext,
   DataGridSortDirection,
   DataGridToolbarLayout,
 } from './data-grid.types';
 export * from './data-grid.types';
-export { DataGridCellDirective, DataGridPrimaryActionMenuDirective } from './data-grid.directives';
-import { DataGridCellDirective, DataGridPrimaryActionMenuDirective } from './data-grid.directives';
+export {
+  DataGridCellDirective,
+  DataGridPrimaryActionMenuDirective,
+  DataGridRowDetailDirective,
+} from './data-grid.directives';
+import {
+  DataGridCellDirective,
+  DataGridPrimaryActionMenuDirective,
+  DataGridRowDetailDirective,
+} from './data-grid.directives';
 
 interface DataGridNotice {
   variant: Exclude<MessageBoxVariant, 'loading'>;
@@ -135,6 +145,24 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   @Input() showExportAction = false;
   @Input() selectable = false;
   @Input() selectionLabel = 'registros';
+  /**
+   * Habilita filas expandibles. Cuando es true Y el consumidor proyecta un
+   * `<ng-template appDataGridRowDetail>` dentro del `<app-data-grid>`, cada
+   * fila gana un chevron al inicio que abre un panel de detalle inline.
+   *
+   * Opt-in: por defecto false → no afecta ninguna grilla existente. Si se
+   * activa sin proyectar el template, el chevron NO aparece (degradación
+   * silenciosa) para no mostrar un botón inerte.
+   */
+  @Input() expandableRows = false;
+  /**
+   * Función de identidad para trackear filas expandidas. Por defecto usa
+   * la referencia del objeto. Si tu dataset se regenera con cada fetch,
+   * provee `(row) => row.id` para preservar la expansión entre cargas.
+   */
+  @Input() rowExpansionKey: (row: T) => unknown = (row) => row;
+  @Input() expandRowLabel = 'Ver detalle';
+  @Input() collapseRowLabel = 'Ocultar detalle';
   @Input() persistenceKey = '';
   @Input() maxItems = 10;
   @Input() pageSizeOptions = [10, 25, 50, 100];
@@ -161,11 +189,14 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   @Output('export') readonly exportRows = new EventEmitter<DataGridExportEvent<T>>();
   @Output() readonly bulkAction = new EventEmitter<DataGridBulkActionEvent<T>>();
   @Output() readonly retry = new EventEmitter<void>();
+  @Output() readonly rowExpandToggle = new EventEmitter<{ row: T; expanded: boolean }>();
 
   readonly previousIcon = ArrowLeft;
   readonly nextIcon = ChevronRight;
   readonly firstPageIcon = ChevronsLeft;
   readonly lastPageIcon = ChevronsRight;
+  readonly expandIcon = ChevronRight;
+  readonly expandedIcon = ChevronDown;
   readonly downloadIcon = Download;
   readonly filterIcon = Filter;
   readonly plusIcon = Plus;
@@ -198,6 +229,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   private visibleColumnIds = new Set<string>();
   private selectedRowKeys = new Set<unknown>();
+  private expandedRowKeys = new Set<unknown>();
   private noticeTimeoutId = 0;
   private preferencesLoaded = false;
 
@@ -206,6 +238,9 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   @ContentChild(DataGridPrimaryActionMenuDirective)
   private readonly primaryActionMenu?: DataGridPrimaryActionMenuDirective;
+
+  @ContentChild(DataGridRowDetailDirective)
+  private readonly rowDetailDirective?: DataGridRowDetailDirective<T>;
 
   @HostListener('document:click', ['$event'])
   closePanelsOnOutsideClick(event: MouseEvent): void {
@@ -600,6 +635,80 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   clearSelection(): void {
     this.selectedRowKeys.clear();
+  }
+
+  // -------------------------------------------------------------------------
+  // Filas expandibles (opt-in vía @Input() expandableRows + appDataGridRowDetail)
+  // -------------------------------------------------------------------------
+
+  /**
+   * El feature está activo solo si el consumidor habilita el flag Y proyecta
+   * el template de detalle. Sin template no se renderiza el chevron — evita
+   * mostrar un botón inerte si alguien activa el flag por error.
+   */
+  get expansionEnabled(): boolean {
+    return this.expandableRows && !!this.rowDetailDirective;
+  }
+
+  get rowDetailTemplate(): TemplateRef<DataGridRowDetailContext<T>> | null {
+    return this.rowDetailDirective?.template ?? null;
+  }
+
+  /** Colspan total para la fila de detalle (numeración + chevron + selección + columnas). */
+  get rowDetailColspan(): number {
+    let span = 1;
+    if (this.expansionEnabled) span += 1;
+    if (this.selectable) span += 1;
+    span += this.visibleColumns.length;
+    return span;
+  }
+
+  isRowExpanded(row: T): boolean {
+    return this.expandedRowKeys.has(this.rowExpansionKey(row));
+  }
+
+  toggleRowExpansion(row: T, event?: Event): void {
+    event?.stopPropagation();
+    const key = this.rowExpansionKey(row);
+    if (this.expandedRowKeys.has(key)) {
+      this.expandedRowKeys.delete(key);
+      this.rowExpandToggle.emit({ row, expanded: false });
+    } else {
+      this.expandedRowKeys.add(key);
+      this.rowExpandToggle.emit({ row, expanded: true });
+    }
+  }
+
+  collapseRowExpansion(row: T): void {
+    const key = this.rowExpansionKey(row);
+    if (this.expandedRowKeys.delete(key)) {
+      this.rowExpandToggle.emit({ row, expanded: false });
+    }
+  }
+
+  collapseAllExpansions(): void {
+    this.expandedRowKeys.clear();
+  }
+
+  rowDetailContext(row: T, index: number): DataGridRowDetailContext<T> {
+    return {
+      $implicit: row,
+      row,
+      index,
+      collapse: () => this.collapseRowExpansion(row),
+    };
+  }
+
+  /**
+   * Elimina del set de expandidos cualquier clave cuya fila ya no esté en el
+   * dataset actual. Se invoca desde `pruneSelection()` (ngOnChanges → rows).
+   */
+  private pruneExpansion(): void {
+    if (this.expandedRowKeys.size === 0) return;
+    const keysVigentes = new Set(this.rows.map((row) => this.rowExpansionKey(row)));
+    for (const key of this.expandedRowKeys) {
+      if (!keysVigentes.has(key)) this.expandedRowKeys.delete(key);
+    }
   }
 
   clearNotice(): void {
@@ -1638,6 +1747,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   private pruneSelection(): void {
     const availableKeys = new Set(this.rows.map((row, index) => this.rowKey(row, index)));
     this.selectedRowKeys = new Set([...this.selectedRowKeys].filter((key) => availableKeys.has(key)));
+    this.pruneExpansion();
   }
 
   private persistPreferences(): void {

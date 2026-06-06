@@ -9,6 +9,204 @@
 
 ---
 
+## 2026-06-06 — Generador · Paso Movimientos · Tab "Configurados" con grilla expandible
+
+Refactor del tab que antes se llamaba "Recurrentes" en el paso Movimientos del Generador v2. Sustituye una lista plana técnica + un botón críptico (`Aplicar recurrentes a la nómina`) por una grilla operativa orientada a RRHH, que responde a "¿qué movimientos tiene cada trabajador ya configurados y qué pasa con ellos este mes?".
+
+### Motivación
+
+La etiqueta `Recurrentes` + el botón `Aplicar recurrentes a la nómina` no le decían nada al usuario de RRHH. No quedaba claro a quién afectaba la acción, qué iba a "aplicar" ni qué pasaba con los que ya habían sido omitidos antes. La grilla anterior tampoco mostraba a qué trabajadores apuntaba cada recurrente — solo se veía la regla.
+
+### Decisiones
+
+- **Renombre del tab**: `Recurrentes` → `Configurados`. Lenguaje RRHH; "recurrente" es vocabulario interno del motor.
+- **Vista derivada en el servicio**: nuevo `NominaPeriodoService.listarMovimientosConfigurados(nominaPeriodoId)`. Cruza los recurrentes activos × la dotación de la nómina × los movimientos del período. Una fila por par `(trabajador × concepto)`. NO persiste — es una proyección de solo lectura.
+- **Identidad de fila estable**: `filaId = "${trabajadorId}::${recurrenteId}::${tipo}"`. Aporta `trackBy` y clave del set de expandidos sin colisiones aunque cambien filtros o se recarguen los datos.
+- **Estado por fila** (lenguaje humano): `Pendiente de cargar`, `Ya cargado este mes`, `Omitido este mes`. La idempotencia de recurrentes queda visible: si una fila aparece como "Ya cargado" o "Omitido", la próxima carga NO la duplica ni la reaplica.
+- **Grilla con `app-data-grid`**: misma base que Dotación. Columnas: Trabajador, RUT, Concepto, Tipo, Monto/cantidad, Vigencia, Estado este mes. Filtros: Estado este mes, Tipo, Buscar (tokens sobre nombre + RUT + concepto, normalizando acentos). Persistencia local `nomina-v2-movimientos-configurados-grid-v1`.
+- **Filas expandibles**: cada fila se puede expandir con el chevron del `app-data-grid` (capacidad agregada el 2026-06-05). El detalle muestra TODOS los movimientos configurados del mismo trabajador, con su estado individual. Útil para revisar "la ficha" del trabajador sin abandonar la grilla.
+- **CTA principal sustituido**: `Aplicar recurrentes a la nómina` → `Cargar movimientos configurados`. Si hay pendientes, muestra un badge con la cantidad (`Cargar movimientos configurados [3]`). Si no hay pendientes, queda deshabilitado con el copy `Sin pendientes por cargar`. Tooltip explicativo en ambos estados.
+- **Mensajes resultado**: humanos. `"Se cargaron N movimientos configurados a la nómina."` cuando hay nuevos; `"No había movimientos pendientes por cargar."` cuando la carga fue no-op (todo ya estaba cargado u omitido).
+- **Stats sobrios**: línea con `total / pendientes / ya cargados / omitidos`, en variante "stat-line" (sin chips ni boxes grandes), siguiendo el patrón sobrio acordado el 2026-06-05.
+- **Detalle expandible**: cabecera con identidad del trabajador (nombre, RUT, cargo, centro de costo) + lista vertical de todos los conceptos configurados, cada uno con su estado individual y botón "Cerrar" que cierra solo esa fila (delegado por el `collapse` que provee `appDataGridRowDetail`).
+- **Pendiente conocido (no bloqueante)**: el filtrado por `activo_desde` / `activo_hasta` de los recurrentes contra el período de la nómina sigue pendiente. Hoy se listan todos los recurrentes con `estado='activo'`. Cuando se aborde, debería marcarse como `Fuera de vigencia (excluido)` en lugar de aparecer como `Pendiente`. Documentado para no perder rastro.
+
+### Archivos tocados
+
+- [src/app/features/nomina-mensual/models/movimiento-nomina.models.ts](../../src/app/features/nomina-mensual/models/movimiento-nomina.models.ts) — nuevos tipos `EstadoMovimientoConfiguradoEnNomina` y `FilaMovimientoConfigurado`.
+- [src/app/features/nomina-mensual/services/nomina-periodo.service.ts](../../src/app/features/nomina-mensual/services/nomina-periodo.service.ts) — nuevo método `listarMovimientosConfigurados`.
+- [src/app/features/nomina-mensual/services/nomina-periodo.service.spec.ts](../../src/app/features/nomina-mensual/services/nomina-periodo.service.spec.ts) — 4 tests nuevos cubriendo empresa nula, nómina inexistente, cruce dotación × recurrentes × estado, y fallback de identidad.
+- [src/app/features/nomina-mensual-v2/presenters/nomina-movimientos-configurados.presenter.ts](../../src/app/features/nomina-mensual-v2/presenters/nomina-movimientos-configurados.presenter.ts) — presenter nuevo: stats, etiquetas humanas, columnas, filtros, clave de persistencia.
+- [src/app/features/nomina-mensual-v2/presenters/nomina-movimientos-configurados.presenter.spec.ts](../../src/app/features/nomina-mensual-v2/presenters/nomina-movimientos-configurados.presenter.spec.ts) — 9 tests para stats, etiquetas, columnas y filtros (búsqueda con tokens y normalización de acentos).
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/) — `.component.ts`, `.html`, `.css` y `.spec.ts`: tab renombrado, integración con `app-data-grid`, CTA con tooltip, detalle expandible, 7 tests nuevos para la nueva tab.
+
+### Archivos NO tocados
+
+- Estilos globales, `angular.json`, `postcss.config.json`, `src/styles/**`, fuentes.
+- Repositorio Supabase, RPCs, migraciones, motor de cálculo, payloads de inserción — todo el cambio es de proyección/UI sobre datos ya existentes.
+- Tabs `Manuales` y `Omitidos este mes` — fuera de alcance de esta iteración, idénticos al patrón previo.
+- Componente `app-data-grid` — sin cambios; reusamos la capacidad de filas expandibles añadida el 2026-06-05.
+
+### Uso típico
+
+```html
+<app-data-grid
+  [columns]="columnasConfigurados"
+  [rows]="movimientosConfigurados()"
+  [filters]="filtrosConfigurados()"
+  [expandableRows]="true"
+  [rowExpansionKey]="rowKeyConfigurado"
+  [trackBy]="trackByConfigurado"
+  [persistenceKey]="persistenciaConfigurados"
+>
+  <ng-template appDataGridCell="estado" let-fila="row">
+    <span class="paso-mov__estado-pill" [attr.data-estado]="fila.estadoEnNomina">
+      {{ etiquetaEstado(fila.estadoEnNomina) }}
+    </span>
+  </ng-template>
+  <ng-template appDataGridRowDetail let-fila let-collapse="collapse">
+    <!-- Detalle: TODOS los conceptos configurados de este trabajador -->
+  </ng-template>
+</app-data-grid>
+```
+
+---
+
+## 2026-06-05 — `app-data-grid` · Filas expandibles opt-in (master-detail inline)
+
+Capacidad nueva en la grilla compartida del ERP: filas con detalle expandible inline, opt-in y retro-compatible. Pensada para vistas donde el usuario necesita "ver todo lo del item" sin abandonar la grilla — caso concreto que motivó el cambio: revisar los movimientos configurados de un trabajador en el paso Movimientos del Generador.
+
+### Decisiones
+
+- **Opt-in puro**: la grilla no muestra el chevron si el consumidor no lo pide explícitamente. Para activarla hacen falta DOS cosas: `[expandableRows]="true"` Y proyectar `<ng-template appDataGridRowDetail let-row>` dentro del `<app-data-grid>`. Si solo se activa el flag pero no se proyecta el template, el chevron NO aparece (degradación silenciosa) — evita botones inertes por error.
+- **Columna chevron al inicio**: ubicada entre la numeración (N°) y la selección, ancho fijo `2.25rem`. Botón cuadrado 24×24, fondo neutro en hover, sin sombra ni gradiente. Icono `chevron-right` colapsado / `chevron-down` expandido (Lucide).
+- **Fila de detalle**: `<tr class="data-grid-row-detail">` con `<td colspan="N">` cubriendo todas las columnas. Fondo `#fafbfc` (apenas más suave que la fila principal), padding `12px 16px 14px`, sin separador adicional. La fila padre expandida pierde su `border-bottom` para soldarse visualmente con el detalle (sensación de "lámina única").
+- **Estado preservado entre cargas**: input `rowExpansionKey: (row) => unknown` permite tracking estable por id de negocio cuando el dataset se regenera con cada fetch. Por defecto usa la referencia del objeto (válido para listas estáticas).
+- **Mobile**: en el layout de tarjetas, el chevron aparece como botón completo "Ver detalle" / "Ocultar detalle" en la cabecera de la `<article>`, alineado a la derecha del contador N°. El detalle se renderiza en un bloque `.data-grid-mobile-row-detail` con borde-top y fondo sutil.
+- **Limpieza automática**: cuando una fila sale del dataset (cambio de filtros, refresh), su entrada en el set de expandidos se purga en `pruneSelection()` para evitar fugas.
+- **API expuesta**: `expansionEnabled` (getter), `isRowExpanded()`, `toggleRowExpansion()`, `collapseRowExpansion()`, `collapseAllExpansions()`, `rowDetailContext()` y el evento `rowExpandToggle({ row, expanded })` (útil para lazy-loading del detalle).
+
+### Archivos tocados
+
+- [src/app/shared/components/ui/data-grid/data-grid.types.ts](../../src/app/shared/components/ui/data-grid/data-grid.types.ts) — nuevo `DataGridRowDetailContext<T>`.
+- [src/app/shared/components/ui/data-grid/data-grid.directives.ts](../../src/app/shared/components/ui/data-grid/data-grid.directives.ts) — nueva `DataGridRowDetailDirective` con selector `ng-template[appDataGridRowDetail]`.
+- [src/app/shared/components/ui/data-grid/data-grid.component.ts](../../src/app/shared/components/ui/data-grid/data-grid.component.ts) — inputs `expandableRows`, `rowExpansionKey`, `expandRowLabel`, `collapseRowLabel`; output `rowExpandToggle`; estado `expandedRowKeys`; métodos `isRowExpanded`, `toggleRowExpansion`, `collapseRowExpansion`, `collapseAllExpansions`, `rowDetailContext`; getter `expansionEnabled`, `rowDetailTemplate`, `rowDetailColspan`; integración `pruneExpansion` en el ciclo de prune.
+- [src/app/shared/components/ui/data-grid/data-grid.component.html](../../src/app/shared/components/ui/data-grid/data-grid.component.html) — `<col>`, `<th>`, `<td>` chevron y `<tr class="data-grid-row-detail">` con `colspan` dinámico; bloque mobile en la `<article>`.
+- [src/app/shared/components/ui/data-grid/data-grid.component.css](../../src/app/shared/components/ui/data-grid/data-grid.component.css) — `.data-grid-expand-col`, `.data-grid-expand-cell`, `.data-grid-expand-btn` (estado normal, hover, focus, expanded), `.data-grid-row-detail-cell`, `.data-grid-row-detail-body`, `.data-grid-row--expanded`, `.data-grid-mobile-card-head`, `.data-grid-mobile-row-detail`.
+- [src/app/shared/components/ui/data-grid/data-grid.component.spec.ts](../../src/app/shared/components/ui/data-grid/data-grid.component.spec.ts) — 8 tests nuevos en suite "filas expandibles".
+
+### Archivos NO tocados
+
+- Estilos globales, `angular.json`, `postcss.config.json`, `src/styles/**`, fuentes.
+- Consumidores actuales del `app-data-grid` (todos los Admin, Dotación, Empresas, Empleados, Parámetros, etc.) — el flag por defecto es `false` y el comportamiento es idéntico al previo.
+- Componente legado `src/app/shared/components/ui/data-grid.component.ts` (huérfano, sin consumidores) — sin cambios.
+
+### Uso típico
+
+```html
+<app-data-grid
+  [columns]="columnas"
+  [rows]="filas"
+  [expandableRows]="true"
+  [rowExpansionKey]="rowIdFn"
+  (rowExpandToggle)="onExpand($event)"
+>
+  <ng-template appDataGridRowDetail let-row let-collapse="collapse">
+    <h4>Detalle de {{ row.nombre }}</h4>
+    <p>…</p>
+    <button (click)="collapse()">Cerrar</button>
+  </ng-template>
+</app-data-grid>
+```
+
+---
+
+## 2026-06-05 — Generador V2 · Pestañas sin doble acoplamiento + KPI chips sofisticados
+
+Pulido visual de la cabecera del Generador y de la franja de métricas del paso Dotación, en respuesta al feedback "quitar doble acoplamiento de bordes y cuidado con los radios en el tabbar de pasos; los chips grandes deben pasar a otros más sofisticados".
+
+### Decisiones
+
+- **Stepper plano full-bleed**: el `nomina-workflow-header.nmv2-stepper-card` pasa de "card con `border: 1px` + `border-radius: 6px 6px 0 0` y bordes laterales" a una **banda plana full-bleed** con un único `border-bottom: 1px solid #e2e8f0`. Mismo patrón que el shell de Admin y la versión global del listado. Quitar los radios del top elimina la sensación de "tab card flotante" sobre el contenido y evita el conflicto visual con cualquier wrapper inferior.
+- **Pasos 2–6 sin borde de wrapper**: las secciones `.paso-dotacion / .paso-mov / .paso-calc / .paso-val / .paso-cierre` pierden `border: 1px` y `border-radius: 8px`. Quedan como **paneles blancos full-bleed** sobre el fondo de página, alineados al patrón del paso `parameters` (que ya era full-bleed). Esto resuelve el "doble acoplamiento" — antes se veían dos cards superpuestas (stepper + paso) con bordes y radios distintos. Padding interno se baja levemente (`16px 20px 20px` → `14px 16px 16px`) para densificar y emparejar con el listado del Admin.
+- **KPI chips de Dotación → franja inline sobria con separadores**: las antiguas "mini-cards" verticales con borde y fondo de color (`2 TRABAJADORES`, `2 LISTOS`, `0 CON ADVERTENCIA`, etc.) se reemplazan por una **franja horizontal sobria**, calcada del patrón `.nmv2-paso-parametros__summary`:
+  - Número a la izquierda en tipografía `tabular-nums`, label a la derecha en gris suave; alineados por baseline.
+  - Separadores `border-right: 1px solid #eef0eb` entre métricas (el último no lleva separador).
+  - La franja completa va envuelta entre `border-top` y `border-bottom` finos para servir de divisor entre la cabecera del paso y el cuerpo (la grilla).
+  - El color solo se aplica al **número**, no al fondo: `is-listo` (verde sobrio), `is-advertencia` (ámbar), `is-critico` (rojo), `is-bloqueado` (gris). Sin pintar la fila con tonos suaves, sin chips ovalados decorativos, sin badges.
+  - Sin caja, sin radio, sin sombra; tipografía reducida (14px número / 11.5px label) versus el chip anterior (18px / 11px). Más sofisticado y más operativo para RRHH.
+- **Sin tocar la grilla `app-data-grid`**: el data-grid productivo conserva su propio chip de "trabajadores", su toolbar y sus filtros — no se tocó su estilo. Sigue siendo el "campo de datos" delimitado dentro del panel.
+- **Sin cambios de HTML**: solo CSS local. La estructura `<div class="paso-dotacion__stats">` con `<span class="paso-dotacion__stat"><strong>…</strong><small>…</small></span>` queda igual; solo cambia el estilo aplicado.
+
+### Archivos tocados
+
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component.css](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component.css) — stepper full-bleed: `border: 0; border-bottom: 1px solid #e2e8f0; border-radius: 0`.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion/nomina-mensual-v2-paso-dotacion.component.css](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion/nomina-mensual-v2-paso-dotacion.component.css) — wrapper sin borde/radio; nueva franja KPI inline sobria con separadores.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.css](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.css) — wrapper sin borde/radio.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-calculo/nomina-mensual-v2-paso-calculo.component.css](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-calculo/nomina-mensual-v2-paso-calculo.component.css) — wrapper sin borde/radio.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-validacion/nomina-mensual-v2-paso-validacion.component.css](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-validacion/nomina-mensual-v2-paso-validacion.component.css) — wrapper sin borde/radio.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-cierre/nomina-mensual-v2-paso-cierre.component.css](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-cierre/nomina-mensual-v2-paso-cierre.component.css) — wrapper sin borde/radio.
+
+### Archivos NO tocados
+
+- Estilos globales, `angular.json`, `postcss.config.json`, `src/styles/**`, fuentes.
+- HTML de los pasos (sin cambios de markup).
+- TypeScript / lógica / contratos / servicios / SQL / RPC / motor.
+- `app-data-grid` productivo (mantiene su propio borde y card class).
+- Paso `parameters` (ya era full-bleed y ya seguía el patrón).
+- Componente Stepper TS y su `.html` (solo se ajustó CSS de la card padre).
+- Trazabilidad, overlays, modales, drawer.
+
+### Validaciones ejecutadas
+
+- `npx tsc --noEmit -p tsconfig.json` → sin errores.
+- `ReadLints` en los 6 CSS modificados → sin warnings.
+- Tamaños de CSS por componente: todos < 7kB (budget `anyComponentStyle` warning = 20kB / error = 24kB).
+
+---
+
+## 2026-06-05 — Pasos del Generador (2 al 6): ocupar el 100% del alto/ancho del contenido
+
+Ajuste de layout transversal de los 5 pasos restantes del Generador V2 (`dotacion`, `movements`, `calculation`, `validation`, `closure`). Hasta ahora cada paso se renderizaba como una "card" autodimensionada por su contenido, dejando espacio vacío bajo la grilla/lista/checklist en pantallas anchas. Tras el cambio, cada paso llena el alto y el ancho disponibles entre el stepper y el borde inferior del shell, igual que el paso `parameters` ya lo hacía.
+
+### Decisiones
+
+- **Sin cambios de identidad visual**: se conserva el wrapper con borde NOIA (`1px solid #e2e8f0`), radio `8px`, padding interno (`16px 20px 20px`) y la pieza de footer con borde superior fino y CTA estándar. No se quitan tarjetas ni se introducen gradientes/sombras/colores nuevos.
+- **Cadena flex extendida en el shell**: en `nomina-mensual-v2-container.css` se agregaron los selectores faltantes (`app-nomina-mensual-v2-paso-dotacion/movimientos/calculo/validacion/cierre` y `.paso-dotacion/.paso-mov/.paso-calc/.paso-val/.paso-cierre`) a la cadena `flex: 1 1 auto; min-height: 0; height: 100%;` que el paso `parameters` ya consumía. Mismo patrón que el de `.nmv2-paso-parametros` — sin reglas nuevas, solo se completa la lista.
+- **`:host` de cada paso se vuelve flex**: cada componente reemplaza `:host { display: block; width: 100% }` por `:host { display: flex; flex: 1 1 auto; flex-direction: column; width: 100%; min-height: 0 }`. Es la condición para que el host se estire dentro de `.nmv2-step-frame`.
+- **Zona principal de cada paso crece y hace scroll interno**: la región que naturalmente carga contenido variable se marca `flex: 1 1 auto; min-height: 0; overflow-y: auto`:
+  - `dotacion` → `.paso-dotacion__grid-wrapper` (envuelve al `app-data-grid` productivo, que ya tiene su propio scroll).
+  - `movimientos` → `.paso-mov__tab-body` (la tab activa).
+  - `calculo` → scroll a nivel `.paso-calc` (panels apilados verticales) con el footer "anclado" abajo (`margin-top: auto`).
+  - `validacion` → `.paso-val__list` (lista de incidencias) crece y el footer ancla abajo.
+  - `cierre` → scroll a nivel `.paso-cierre` (checklist + form de reapertura) con footer anclado abajo.
+- **Footer siempre visible cuando hay espacio**: en `calculo`, `validacion` y `cierre` se agregó `margin-top: auto` al `__footer`, manteniendo el patrón de "lista crece, footer queda abajo".
+
+### Archivos tocados
+
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container.css](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container.css) — extensión de la cadena flex `nmv2-step-frame > paso-*` y nueva regla para `.paso-*` (mov/calc/val/cierre/dotacion).
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion/nomina-mensual-v2-paso-dotacion.component.css](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion/nomina-mensual-v2-paso-dotacion.component.css) — `:host` flex; `.paso-dotacion` flex-fill + `min-height: 0`; `.paso-dotacion__grid-wrapper` con `flex: 1 1 auto`.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.css](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.css) — `:host` flex; `.paso-mov` flex-fill; `.paso-mov__tab-body` crece y scrollea.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-calculo/nomina-mensual-v2-paso-calculo.component.css](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-calculo/nomina-mensual-v2-paso-calculo.component.css) — `:host` flex; `.paso-calc` flex-fill con `overflow-y: auto`; footer con `margin-top: auto`.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-validacion/nomina-mensual-v2-paso-validacion.component.css](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-validacion/nomina-mensual-v2-paso-validacion.component.css) — `:host` flex; `.paso-val` flex-fill; `.paso-val__list` crece y scrollea; footer con `margin-top: auto`.
+- [src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-cierre/nomina-mensual-v2-paso-cierre.component.css](../../src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-cierre/nomina-mensual-v2-paso-cierre.component.css) — `:host` flex; `.paso-cierre` flex-fill con `overflow-y: auto`; footer con `margin-top: auto`.
+
+### Archivos NO tocados
+
+- Estilos globales, `angular.json`, `postcss.config.json`, `src/styles/**`, fuentes.
+- HTML de los pasos (no se renombraron clases ni se reestructuró markup).
+- TypeScript / lógica / contratos / servicios / SQL / RPC.
+- Paso `parameters` (ya estaba en la cadena flex desde la fase L5 2026-06).
+- Stepper, hint de avance, overlays, trazabilidad y modales.
+
+### Validaciones ejecutadas
+
+- `npx tsc --noEmit -p tsconfig.json` → sin errores.
+- ReadLints en los 6 archivos CSS modificados → sin warnings.
+- Inspección visual del bundle dev: el reconstrucción incremental no reportó cambios de output (CSS-only en componentes already-bundled).
+
+---
+
 ## 2026-06-05 — Dotación · "Agregar trabajadores" explícito + grilla migrada a `app-data-grid`
 
 Refactor del paso 2 (Dotación) del Generador V2: la grilla pasa a usar el `app-data-grid` productivo (mismo componente que el Administrador) y se introduce un picker explícito para seleccionar qué trabajadores entran a la nómina, eliminando la dependencia del auto-poblado opaco que hacía aparecer la grilla vacía cuando no había segmentos.

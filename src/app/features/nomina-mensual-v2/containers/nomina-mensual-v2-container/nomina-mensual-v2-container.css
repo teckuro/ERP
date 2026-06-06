@@ -2024,7 +2024,12 @@ textarea {
 
 .nmv2-step-frame > app-nomina-mensual-v2-paso-parametros,
 .nmv2-step-frame > app-nomina-mensual-v2-paso-alcance,
-.nmv2-step-frame > app-nomina-mensual-v2-paso-empleados {
+.nmv2-step-frame > app-nomina-mensual-v2-paso-empleados,
+.nmv2-step-frame > app-nomina-mensual-v2-paso-dotacion,
+.nmv2-step-frame > app-nomina-mensual-v2-paso-movimientos,
+.nmv2-step-frame > app-nomina-mensual-v2-paso-calculo,
+.nmv2-step-frame > app-nomina-mensual-v2-paso-validacion,
+.nmv2-step-frame > app-nomina-mensual-v2-paso-cierre {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -2040,6 +2045,25 @@ textarea {
   flex-direction: column;
   width: 100%;
   min-height: 0;
+}
+
+/* Pasos 2–6 del Generador (V2 fill 2026-06-05): el wrapper interno de cada
+   paso ocupa el 100% del alto/ancho del host inyectado por `<router-outlet>`
+   / `.nmv2-step-frame`. Sin esto, cada `.paso-*` quedaba dimensionado por su
+   contenido y dejaba espacio vacío bajo la grilla/listas, especialmente en
+   pantallas anchas. Patrón análogo al de `.nmv2-paso-parametros`.
+
+   El nombre de clase de cada paso se mantiene (`.paso-dotacion`, `.paso-mov`,
+   `.paso-calc`, `.paso-val`, `.paso-cierre`) — no se renombra para evitar
+   tocar HTML/CSS ya estables; el shell solo añade el comportamiento flex. */
+.nmv2-step-frame .paso-dotacion,
+.nmv2-step-frame .paso-mov,
+.nmv2-step-frame .paso-calc,
+.nmv2-step-frame .paso-val,
+.nmv2-step-frame .paso-cierre {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
 }
 
 /* Pasos full-bleed (alineados al patrón listado): franjas y listas tocan los

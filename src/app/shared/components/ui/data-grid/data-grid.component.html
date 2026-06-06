@@ -547,6 +547,9 @@
             >
               <colgroup>
                 <col class="data-grid-row-number-col" />
+                @if (expansionEnabled) {
+                  <col class="data-grid-expand-col" />
+                }
                 @if (selectable) {
                   <col class="data-grid-selection-col" />
                 }
@@ -562,6 +565,13 @@
                   >
                     N°
                   </th>
+                  @if (expansionEnabled) {
+                    <th
+                      scope="col"
+                      class="data-grid-expand-head w-9 border-b border-r border-neutral-200"
+                      aria-label="Detalle"
+                    ></th>
+                  }
                   @if (selectable) {
                     <th scope="col" class="data-grid-selection-head w-11 border-b border-r border-neutral-200">
                       <input
@@ -609,6 +619,11 @@
                       <td class="data-grid-row-number-cell data-grid-skel-num border-b border-r border-neutral-100">
                         <span class="data-grid-skeleton-line data-grid-skeleton-line--number"></span>
                       </td>
+                      @if (expansionEnabled) {
+                        <td class="data-grid-expand-cell w-9 border-b border-r border-neutral-100">
+                          <span class="data-grid-skeleton-box h-4 w-4 rounded"></span>
+                        </td>
+                      }
                       @if (selectable) {
                         <td class="data-grid-skel-select w-11 border-b border-r border-neutral-100">
                           <span class="data-grid-skeleton-box h-4 w-4 rounded"></span>
@@ -630,6 +645,7 @@
                       class="data-grid-row group transition-colors duration-150"
                       [class.hover:bg-neutral-50]="hoverRows"
                       [class.data-grid-row-selected]="isRowSelected(row)"
+                      [class.data-grid-row--expanded]="expansionEnabled && isRowExpanded(row)"
                     >
                       <td
                         class="data-grid-row-number-cell data-grid-body-num border-b border-r border-neutral-100 text-[0.72rem] font-semibold text-slate-500 transition-colors"
@@ -637,6 +653,26 @@
                       >
                         {{ absoluteIndex($index) + 1 }}
                       </td>
+                      @if (expansionEnabled) {
+                        <td
+                          class="data-grid-expand-cell w-9 border-b border-r border-neutral-100 transition-colors"
+                          [class.bg-blue-50]="isRowSelected(row)"
+                        >
+                          <button
+                            type="button"
+                            class="data-grid-expand-btn"
+                            [class.is-expanded]="isRowExpanded(row)"
+                            [attr.aria-label]="isRowExpanded(row) ? collapseRowLabel : expandRowLabel"
+                            [attr.aria-expanded]="isRowExpanded(row)"
+                            (click)="toggleRowExpansion(row, $event)"
+                          >
+                            <lucide-icon
+                              class="h-3.5 w-3.5"
+                              [img]="isRowExpanded(row) ? expandedIcon : expandIcon"
+                            ></lucide-icon>
+                          </button>
+                        </td>
+                      }
                       @if (selectable) {
                         <td
                           class="data-grid-selection-cell w-11 border-b border-r border-neutral-100 transition-colors"
@@ -673,6 +709,23 @@
                         </td>
                       }
                     </tr>
+                    @if (expansionEnabled && isRowExpanded(row) && rowDetailTemplate; as detailTpl) {
+                      <tr class="data-grid-row-detail" aria-label="Detalle de fila">
+                        <td
+                          class="data-grid-row-detail-cell border-b border-neutral-100"
+                          [attr.colspan]="rowDetailColspan"
+                        >
+                          <div class="data-grid-row-detail-body">
+                            <ng-container
+                              *ngTemplateOutlet="
+                                detailTpl;
+                                context: rowDetailContext(row, absoluteIndex($index))
+                              "
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    }
                   }
                 }
               </tbody>
@@ -692,8 +745,29 @@
                   <article
                     class="data-grid-mobile-card"
                     [class.data-grid-mobile-card--selected]="isRowSelected(row)"
+                    [class.data-grid-mobile-card--expanded]="expansionEnabled && isRowExpanded(row)"
                   >
-                    <span class="data-grid-mobile-counter">N° {{ absoluteIndex($index) + 1 }}</span>
+                    @if (expansionEnabled) {
+                      <div class="data-grid-mobile-card-head">
+                        <span class="data-grid-mobile-counter">N° {{ absoluteIndex($index) + 1 }}</span>
+                        <button
+                          type="button"
+                          class="data-grid-expand-btn data-grid-expand-btn--mobile"
+                          [class.is-expanded]="isRowExpanded(row)"
+                          [attr.aria-label]="isRowExpanded(row) ? collapseRowLabel : expandRowLabel"
+                          [attr.aria-expanded]="isRowExpanded(row)"
+                          (click)="toggleRowExpansion(row, $event)"
+                        >
+                          <lucide-icon
+                            class="h-3.5 w-3.5"
+                            [img]="isRowExpanded(row) ? expandedIcon : expandIcon"
+                          ></lucide-icon>
+                          <span>{{ isRowExpanded(row) ? collapseRowLabel : expandRowLabel }}</span>
+                        </button>
+                      </div>
+                    } @else {
+                      <span class="data-grid-mobile-counter">N° {{ absoluteIndex($index) + 1 }}</span>
+                    }
                     @if (selectable) {
                       <label class="data-grid-mobile-select">
                         <input
@@ -736,6 +810,16 @@
                             "
                           />
                         }
+                      </div>
+                    }
+                    @if (expansionEnabled && isRowExpanded(row) && rowDetailTemplate; as detailTpl) {
+                      <div class="data-grid-mobile-row-detail" role="region" aria-label="Detalle">
+                        <ng-container
+                          *ngTemplateOutlet="
+                            detailTpl;
+                            context: rowDetailContext(row, absoluteIndex($index))
+                          "
+                        />
                       </div>
                     }
                   </article>

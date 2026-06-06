@@ -582,10 +582,12 @@ describe('NominaPeriodoService', () => {
       await service.agregarTrabajadoresANomina('nom-1', ['30', '31']);
 
       expect(repo.upsertSegmento).toHaveBeenCalledTimes(1);
-      const segmentoCreado = repo.upsertSegmento.mock.calls[0][0] as SegmentoNomina;
-      expect(segmentoCreado.id).toBe('');
+      const segmentoCreado = repo.upsertSegmento.mock.calls[0][0] as Partial<SegmentoNomina>;
+      // Para registros nuevos NO se envía `id`: lo genera la BD con
+      // `default gen_random_uuid()`. Cualquier `id: ''` rompía el NOT NULL.
+      expect(segmentoCreado.id).toBeUndefined();
       expect(segmentoCreado.nombre).toBe('Dotación principal');
-      expect(segmentoCreado.trabajadorIds.sort()).toEqual(['30', '31']);
+      expect(segmentoCreado.trabajadorIds?.sort()).toEqual(['30', '31']);
       expect(repo.transicionarEstado).toHaveBeenCalledWith('nom-1', {
         estadoEsperado: 'borrador',
         estadoDestino: 'dotacion_generada',
@@ -653,6 +655,144 @@ describe('NominaPeriodoService', () => {
         },
       );
       expect(transicionesADotacion).toHaveLength(0);
+    });
+  });
+
+  describe('listarMovimientosConfigurados — vista derivada para el paso Movimientos', () => {
+    it('retorna [] cuando no hay empresa activa', async () => {
+      const service = configurar({ repo, empresaId: null });
+      const filas = await service.listarMovimientosConfigurados('nom-1');
+      expect(filas).toEqual([]);
+      expect(repo.listarRecurrentesActivos).not.toHaveBeenCalled();
+    });
+
+    it('retorna [] cuando la nómina no existe', async () => {
+      repo.obtenerNominaCompleta.mockResolvedValue(null);
+      const service = configurar({ repo });
+      const filas = await service.listarMovimientosConfigurados('nom-inexistente');
+      expect(filas).toEqual([]);
+    });
+
+    it('cruza recurrentes × dotación y clasifica el estado por trabajador', async () => {
+      // 2 trabajadores en la nómina, 1 recurrente activo "global" (sin scope).
+      repo.obtenerNominaCompleta.mockResolvedValue(nomina({ trabajadorIds: ['10', '11'] }));
+      repo.listarRecurrentesActivos.mockResolvedValue([
+        recurrente({ id: 'rec-1', tipo: 'BONO_FIJO' }),
+      ]);
+      // tr 10 ya tiene el movimiento aplicado; tr 11 no.
+      const movExistente: MovimientoNomina = {
+        id: 'mov-aplicado',
+        nominaPeriodoId: 'nom-1',
+        trabajadorId: '10',
+        tipo: 'BONO_FIJO',
+        categoria: 'haber',
+        origen: 'recurrente',
+        recurrenteId: 'rec-1',
+        estado: 'aplicado',
+        createdAt: '2026-06-01T00:00:00Z',
+        updatedAt: '2026-06-01T00:00:00Z',
+      };
+      repo.listarMovimientos.mockResolvedValue([movExistente]);
+      repo.listarDotacionPaginada.mockResolvedValue({
+        filas: [
+          {
+            trabajadorId: '10',
+            nombre: 'Carlos Soto',
+            rut: '17.222.333-4',
+            estado: 'listo',
+            totalIncidenciasCriticas: 0,
+            totalAdvertencias: 0,
+            totalMovimientos: 1,
+            tieneDatosBancarios: true,
+            tieneDatosPrevisionales: true,
+            cargo: 'Operario',
+          },
+          {
+            trabajadorId: '11',
+            nombre: 'María Rojas',
+            rut: '18.444.555-6',
+            estado: 'listo',
+            totalIncidenciasCriticas: 0,
+            totalAdvertencias: 0,
+            totalMovimientos: 0,
+            tieneDatosBancarios: true,
+            tieneDatosPrevisionales: true,
+          },
+        ],
+        total: 2,
+      });
+
+      const service = configurar({ repo });
+      const filas = await service.listarMovimientosConfigurados('nom-1');
+
+      expect(filas).toHaveLength(2);
+      const porTrabajador = new Map(filas.map((f) => [f.trabajadorId, f]));
+      expect(porTrabajador.get('10')?.estadoEnNomina).toBe('ya-cargado');
+      expect(porTrabajador.get('10')?.movimientoNominaId).toBe('mov-aplicado');
+      expect(porTrabajador.get('10')?.trabajadorNombre).toBe('Carlos Soto');
+      expect(porTrabajador.get('10')?.cargo).toBe('Operario');
+      expect(porTrabajador.get('11')?.estadoEnNomina).toBe('pendiente');
+      expect(porTrabajador.get('11')?.movimientoNominaId).toBeUndefined();
+
+      // filaId estable y único.
+      const ids = filas.map((f) => f.filaId);
+      expect(new Set(ids).size).toBe(2);
+      expect(ids[0]).toMatch(/^(10|11)::rec-1::BONO_FIJO$/);
+    });
+
+    it('clasifica como "omitido-este-mes" cuando el movimiento existe con estado omitido', async () => {
+      repo.obtenerNominaCompleta.mockResolvedValue(nomina({ trabajadorIds: ['10'] }));
+      repo.listarRecurrentesActivos.mockResolvedValue([
+        recurrente({ id: 'rec-1', tipo: 'DESC_PRESTAMO', categoria: 'descuento' }),
+      ]);
+      repo.listarMovimientos.mockResolvedValue([
+        {
+          id: 'mov-omit',
+          nominaPeriodoId: 'nom-1',
+          trabajadorId: '10',
+          tipo: 'DESC_PRESTAMO',
+          categoria: 'descuento',
+          origen: 'recurrente',
+          recurrenteId: 'rec-1',
+          estado: 'omitido',
+          createdAt: '2026-06-01T00:00:00Z',
+          updatedAt: '2026-06-01T00:00:00Z',
+        } satisfies MovimientoNomina,
+      ]);
+      repo.listarDotacionPaginada.mockResolvedValue({
+        filas: [
+          {
+            trabajadorId: '10',
+            nombre: 'Carlos Soto',
+            rut: '17.222.333-4',
+            estado: 'listo',
+            totalIncidenciasCriticas: 0,
+            totalAdvertencias: 0,
+            totalMovimientos: 0,
+            tieneDatosBancarios: true,
+            tieneDatosPrevisionales: true,
+          },
+        ],
+        total: 1,
+      });
+
+      const service = configurar({ repo });
+      const filas = await service.listarMovimientosConfigurados('nom-1');
+      expect(filas).toHaveLength(1);
+      expect(filas[0].estadoEnNomina).toBe('omitido-este-mes');
+      expect(filas[0].movimientoNominaId).toBe('mov-omit');
+    });
+
+    it('fallback de identidad cuando el trabajador no está en la dotación paginada', async () => {
+      repo.obtenerNominaCompleta.mockResolvedValue(nomina({ trabajadorIds: ['99'] }));
+      repo.listarRecurrentesActivos.mockResolvedValue([recurrente({ id: 'rec-1' })]);
+      repo.listarMovimientos.mockResolvedValue([]);
+      repo.listarDotacionPaginada.mockResolvedValue({ filas: [], total: 0 });
+      const service = configurar({ repo });
+      const filas = await service.listarMovimientosConfigurados('nom-1');
+      expect(filas).toHaveLength(1);
+      expect(filas[0].trabajadorNombre).toBe('Trabajador sin identificar');
+      expect(filas[0].rut).toBe('');
     });
   });
 });
