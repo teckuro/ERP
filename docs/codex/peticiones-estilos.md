@@ -9,6 +9,82 @@
 
 ---
 
+## 2026-06-10 — Nómina v2 · Bridge `haberdescuento_persona` → `movimiento_recurrente`
+
+Refactor estructural en BD. El tab "Configurados" del paso Movimientos no mostraba los haberes / descuentos persistentes que el usuario configura en la **ficha del trabajador** (tabla legacy `haberdescuento_persona`). Esta entrada documenta por qué pasaba y cómo se resolvió sin tocar la UI legacy.
+
+### Motivación
+
+Caso real reportado: trabajador `25.050.001-7` (Dependiente Activo Auditoria ERP, cargo "U1 auditoria") tiene un haber no imponible MOVILIZACION de **$20.000 mensual desde 2026-05-01** registrado en su ficha. Al entrar al paso Movimientos de la nómina v2, el tab "Configurados" salía vacío.
+
+Diagnóstico contra BD remota (script `scripts/diag-mov-configurados-trabajador.mjs`):
+
+| Tabla | Estado |
+|---|---|
+| `haberdescuento_persona` (LEGACY · ficha del trabajador) | 1 fila vigente con el haber |
+| `movimiento_recurrente` (que lee la nómina v2) | **vacía** |
+
+Las dos tablas cumplen el mismo rol semántico pero no estaban conectadas: la ficha del trabajador escribe en la primera (UI v6, sigue siendo la fuente de edición); la nómina v2 (rebuild jun 2026) lee solo la segunda.
+
+### Decisiones
+
+- **Bridge en BD, no en código de aplicación**: trigger `AFTER INSERT/UPDATE/DELETE` en `haberdescuento_persona` replica las filas a `movimiento_recurrente`. La ficha del trabajador NO se modifica; sigue siendo la única UI editable para los usuarios. La nómina v2 NO se modifica; sigue consumiendo solo `movimiento_recurrente`.
+- **Traza de origen**: columna `movimiento_recurrente.id_haberdescuento_origen` (UNIQUE parcial). Permite (a) backfill idempotente, (b) upsert atómico desde el trigger, (c) auditoría futura ("este recurrente proviene de la ficha legacy"). NULL para recurrentes "nativos" creados directamente desde una UI propia de la nómina v2 (a futuro).
+- **FK con `ON DELETE CASCADE`**: borrar el haber en la ficha legacy borra automáticamente la copia en MR. Sin huérfanos.
+- **Mapeo declarativo** (resumen, detalles en la migración):
+  - `id_persona` directo; `id_empresa` resuelto vía `contrato.id_empresa`.
+  - `tipo` (texto) = `concepto.codigo` (ej. `MOVILIZACION`). Estable y legible.
+  - `categoria` = `{HABER → haber, DESCUENTO → descuento, APORTE_EMPLEADOR → informativo}`.
+  - `monto` directo; si HD tiene `porcentaje` en lugar de `monto`, se mapea a `cantidad` con `unidad='porcentaje'`.
+  - `frecuencia` = `{MENSUAL → mensual, QUINCENAL → quincenal}`. Las filas con `OCASIONAL` / `UNICA` **no se migran**: no son recurrentes; pertenecen a `movimiento_nomina` del período concreto y no al catálogo persistente.
+  - `estado` (boolean) → `{true → activo, false → finalizado}`. Las inactivas también se reflejan; el usuario ve "Configurado pero pausado" en lugar de no verlas.
+- **Idempotente y repetible**: el backfill usa `WHERE NOT EXISTS … id_haberdescuento_origen = hd.id_asignacion`. Reaplicar la migración no duplica filas.
+- **`haberdescuento_persona` queda DEPRECATED** en su `COMMENT ON TABLE`: la nómina v2 NO debe leerla. Mantenida porque otros lectores legacy (liquidación SQL `fn_generar_liquidacion`, entre otros) todavía dependen de ella. Su eliminación queda fuera de alcance — requiere fase específica que migre los lectores.
+
+### Hallazgo lateral · RLS de `movimiento_recurrente`
+
+Durante el debug se descubrió que la policy `movimiento_recurrente_all` (migración F2) estaba acotada a `TO authenticated USING (id_empresa = current_user_empresa_id())`. El frontend Angular del ERP usa el `anon` publishable key (no JWT con `app_metadata.id_empresa`), así que la policy nunca aplicaba al rol del caller y RLS negaba por defecto. Síntomas:
+
+- INSERT directo en MR desde anon → `42501: new row violates row-level security policy`.
+- El trigger HD→MR no podía escribir tampoco.
+
+Solución: reemplazar la policy multi-empresa por policies abiertas por operación (`USING true` / `WITH CHECK true`), patrón uniforme con el resto del ERP (`empleados_alta_*` en `bd/base/v11/partes/08_seguridad_rls.sql`). El filtro multi-tenant se hace client-side en `NominaPeriodoService.resolverEmpresaActiva()`, igual que en empleados, contratos y parámetros. La RLS multi-empresa real queda pendiente de la fase de multi-tenant real (cuando Supabase Auth emita JWT con `app_metadata.id_empresa`).
+
+### Archivos tocados
+
+- `supabase/migrations/20260610200000_haberdescuento_persona_bridge_movimiento_recurrente.sql` — primer intento (función auxiliar `_fn_hd_to_mr_row` que terminó descartada por composición confusa).
+- `supabase/migrations/20260610200500_haberdescuento_bridge_fix_inline.sql` — drop de la función auxiliar; trigger y backfill reescritos con SQL inline.
+- `supabase/migrations/20260610210000_movimiento_recurrente_rls_anon_authenticated.sql` — abre RLS de MR para `anon` + `authenticated` y re-ejecuta el backfill (que en las migraciones anteriores fallaba silenciosamente por RLS).
+- `supabase/migrations/20260610220000_hd_mr_fk_cascade.sql` — cambia la FK `id_haberdescuento_origen` de `ON DELETE SET NULL` a `ON DELETE CASCADE` (descubierto en el test E2E del trigger: el SET NULL ocurría ANTES que el trigger AFTER DELETE y dejaba huérfanos).
+- `src/app/core/models/database.types.ts` — regenerado tras las DDL (`npx supabase gen types`). Incluye `id_haberdescuento_origen` y las relaciones nuevas.
+- `scripts/diag-mov-configurados-trabajador.mjs` — diagnóstico por RUT que replica el cruce del servicio.
+- `scripts/diag-hd-vs-mov-recurrente.mjs` — universo a migrar (distribución de tipos, periodicidades, porcentaje vs monto).
+- `scripts/diag-hd-bridge.mjs` — verifica que MR se pueble a partir de HD.
+- `scripts/test-trigger-hd-mr.mjs` — test E2E del trigger (INSERT → UPDATE → DELETE en HD; MR refleja los tres).
+- `scripts/diag-nominas-existentes.mjs` — listado de todas las nóminas y sus dotaciones.
+- `scripts/diag-mr-insert-directo.mjs` — INSERT directo desde anon, usado para diagnosticar el 42501 de RLS.
+- `scripts/cleanup-mr-huerfano.mjs` — limpia el huérfano que dejó el test antes del fix de CASCADE.
+
+### Archivos NO tocados
+
+- Código Angular: el servicio `NominaPeriodoService.listarMovimientosConfigurados()`, el componente `nomina-mensual-v2-paso-movimientos.component.ts` y el presenter `nomina-movimientos-configurados.presenter.ts` quedan idénticos. El bug se resolvió 100% en BD.
+- UI de la ficha del trabajador (legacy). Sigue editando `haberdescuento_persona` como siempre; el trigger se encarga del bridge.
+- `haberdescuento_persona` (estructura, contrato, columnas). Solo se actualizó su `COMMENT ON TABLE` con la nota de deprecación.
+- Estilos globales, fuentes, `angular.json`, motor de cálculo, liquidaciones productivas.
+
+### Validación
+
+- Test E2E del trigger (`scripts/test-trigger-hd-mr.mjs`): INSERT HD → MR creado con `id_haberdescuento_origen` correcto · UPDATE HD (monto $5.000 → $7.777) → MR refleja $7.777 · DELETE HD → MR borrado vía CASCADE.
+- Diagnóstico contra el caso real (`scripts/diag-mov-configurados-trabajador.mjs 25050001-7 2026-06`): ahora aparece `rec=c80f5b03… | empresa=1 | tipo=MOVILIZACION | estado=activo | desde=2026-05-01 | monto=20000 | freq=mensual`. La próxima nómina que se cree para empresa 1 y período 2026-05 / 2026-06 con esta persona en la dotación verá el haber como **Pendiente de cargar** en el tab "Configurados".
+
+### Pendientes documentados (fuera de alcance)
+
+- Migrar los lectores legacy de `haberdescuento_persona` (`fn_generar_liquidacion` y similares) a `movimiento_recurrente` para poder hacer `DROP TABLE` definitivo. Requiere fase específica.
+- UI propia de la nómina v2 para editar `movimiento_recurrente` directamente (sin pasar por la ficha legacy). Hoy se puede leer/usar, pero los conceptos nuevos siguen creándose desde la ficha del trabajador.
+- Filtrado por `activo_desde` / `activo_hasta` contra el período de la nómina en `listarMovimientosConfigurados()` (sigue pendiente del 2026-06-06).
+
+---
+
 ## 2026-06-10 — Administrador de nóminas · "Anular" se reemplaza por "Eliminar nómina" (hard-delete)
 
 Refactor del menú de acciones por fila en el Administrador de nóminas. Sustituye el doble botón "Eliminar borrador" + "Anular" por una única acción **Eliminar nómina** que ejecuta DELETE físico en BD (en cascada).
