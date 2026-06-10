@@ -9,6 +9,89 @@
 
 ---
 
+## 2026-06-10 — Administrador de nóminas · "Anular" se reemplaza por "Eliminar nómina" (hard-delete)
+
+Refactor del menú de acciones por fila en el Administrador de nóminas. Sustituye el doble botón "Eliminar borrador" + "Anular" por una única acción **Eliminar nómina** que ejecuta DELETE físico en BD (en cascada).
+
+### Motivación
+
+El usuario reportó dos problemas que en realidad eran la misma causa:
+
+1. *"Cada nómina debe ser distinta"*: el constraint `UNIQUE (id_empresa, periodo, tipo)` impedía rehacer la nómina del mes cuando una previa quedaba en estado `anulada`. Ese soft-delete bloqueaba el slot para siempre.
+2. *"En vez de anular sea eliminar en las acciones de las listas"*: el copy "Anular" daba a entender un soft-delete reversible, pero la fila quedaba zombie sin valor operativo.
+
+Solución: pasar a hard-delete. Al borrar físicamente la fila, las FKs declaradas `on delete cascade` purgan segmentos, movimientos, incidencias y eventos de auditoría asociados, y el slot único queda libre para recrear la nómina del mismo período.
+
+### Decisiones
+
+- **Una sola acción destructiva**: `Eliminar nómina` (icono `trash-2`, variante `danger`). Reemplaza al antiguo botón "Eliminar borrador" (solo borrador) y al antiguo "Anular nómina" (resto de estados). Un botón menos en cada fila.
+- **Alcance conservador por estado**: la acción aparece solo para estados **no productivos**: `borrador`, `dotacion_generada`, `en_revision`, `anulada`. Para `calculada`, `validada`, `aprobada`, `cerrada` y `reabierta` queda oculta — esos estados tienen cálculo o liquidaciones vigentes y requieren un flujo de reversa (reabrir → corregir) antes de poder eliminar. La regla vive en `puedeEliminar(estado)`.
+- **Sin motivo**: el dialog de confirmación no pide texto. El motivo histórico que registraba la anulación se borraba igual en cascada con los eventos de auditoría, así que el campo era teatro. Confirmación dura "Eliminar definitivamente" + copy claro sobre lo que se borra.
+- **Copy del confirm**: *"Se eliminará la nómina junto con sus segmentos, movimientos, incidencias y eventos de auditoría. Esta operación no se puede deshacer. Tras eliminar podrás crear una nueva nómina para esta empresa, período y tipo."* — explícito sobre la irreversibilidad y sobre el efecto positivo (liberar el slot único).
+- **El zombie `anulada` ahora se puede purgar**: el estado `anulada` queda disponible para "Eliminar" — así el usuario puede limpiar nóminas legacy soft-deleted que estaban bloqueando recrear el mismo período.
+- **`puedeReabrir(estado === 'cerrada')` intacto**: el flujo "reabrir + eliminar" sigue disponible para el caso extremo de borrar una nómina cerrada, pero ya no se puede saltar el paso de reabrir.
+
+### Archivos tocados
+
+- [src/app/features/nomina-mensual/rules/admin-nominas.rules.ts](../../src/app/features/nomina-mensual/rules/admin-nominas.rules.ts) — `puedeEliminar(estado)` nuevo (con `switch` exhaustivo); `puedeAnular` y `puedeEliminarBorrador` eliminados; `AccionAdminNomina` ya no incluye `anular` ni `eliminar-borrador`, solo `eliminar`.
+- [src/app/features/nomina-mensual/rules/admin-nominas.rules.spec.ts](../../src/app/features/nomina-mensual/rules/admin-nominas.rules.spec.ts) — suite reescrita: 8 tests cubren matriz de estados habilitados/bloqueados, presencia/ausencia de la acción `eliminar` y garantía de que `anular`/`eliminar-borrador` ya no existen.
+- [src/app/features/nomina-mensual/data-access/nomina-periodo.repository.ts](../../src/app/features/nomina-mensual/data-access/nomina-periodo.repository.ts) — `eliminarNomina(id)` nuevo (DELETE sin filtro de estado). `eliminarBorrador` se conserva marcado `@deprecated` por compatibilidad histórica.
+- [src/app/features/nomina-mensual/services/nomina-periodo.service.ts](../../src/app/features/nomina-mensual/services/nomina-periodo.service.ts) — `eliminarNomina(id)` nuevo. `anularNomina` eliminado del API público. `eliminarBorrador` queda como wrapper deprecated.
+- [src/app/features/nomina-mensual/services/nomina-periodo.service.spec.ts](../../src/app/features/nomina-mensual/services/nomina-periodo.service.spec.ts) — un test nuevo que verifica que `eliminarNomina` llama a `repo.eliminarNomina` sin pasar por el wrapper de borrador.
+- [src/app/features/nomina-mensual/containers/administrador-nominas-container/](../../src/app/features/nomina-mensual/containers/administrador-nominas-container/) — `.ts`, `.html` y `.spec.ts`: `AccionAdministrativa` reducido a `'eliminar' \| 'reabrir'`; un solo botón "Eliminar nómina" en la columna acciones; titulo/copy/handler del dialog adaptados; importación de iconos limpia (sin `OctagonX`).
+
+### Archivos NO tocados
+
+- Estilos globales, `angular.json`, `postcss.config.json`, `src/styles/**`, fuentes.
+- SQL / migraciones / RLS / RPC: el cambio se apoya en la cascada FK que ya existía. No hace falta migración nueva.
+- Motor de cálculo, liquidaciones productivas, novedades, movimientos variables, parámetros — todo fuera de alcance.
+- Tipos de `EstadoNomina` — el estado `anulada` se mantiene en el dominio para no romper persistencia histórica; solo cambia el flujo que lo genera (ya nadie lo crea desde la UI; las filas legacy se pueden purgar).
+
+### Riesgo aceptado
+
+- La auditoría detallada del DELETE no se conserva: `evento_auditoria_nomina` se borra en cascada con la fila padre. Si en el futuro se requiere un trail post-mortem fuera del árbol, hay que armar una tabla `auditoria_historial_nomina` separada (scope futuro, no incluido aquí).
+
+### Hotfix BD (mismo día, 2026-06-10 17:00 — bug en runtime)
+
+Tras subir el cambio el usuario reportó *"no se están eliminando las nóminas"*. Causa raíz: la política RLS `nomina_periodo_delete` de la migración F2 estaba acotada a `estado = 'borrador'`, y PostgREST devuelve `error=null` con 0 filas afectadas cuando RLS filtra silenciosamente. El cliente creía haber tenido éxito y la fila quedaba ahí.
+
+Solución:
+
+- **Migración nueva** `20260610170000_nomina_periodo_delete_policy_estados_eliminables.sql`: la policy de DELETE ahora acepta `borrador, dotacion_generada, en_revision, anulada` (espejo server-side de `puedeEliminar()`). El tenant scope por empresa NO se relaja. Aplicada al proyecto remoto vía `npx supabase db push`.
+- **Repo endurecido**: `eliminarNomina` ahora hace `.select('id')` tras el `.delete()` y lanza un error humano si vienen 0 filas (red de seguridad por si alguien intenta forzar el DELETE bypass-eando la UI y RLS filtra). 3 tests nuevos en `nomina-periodo.repository.spec.ts` cubren happy path, 0-rows-affected y error de supabase.
+
+### Hotfix BD 2 — Cascada completa al eliminar (2026-06-10 17:30 — bug en runtime)
+
+El usuario verificó la corrección anterior y reportó: *"hay un problema grande al eliminar nóminas, se quedan los datos internos de dichas nóminas, se deben eliminar todo lo relacionado interno y externo"*.
+
+Causa raíz: la cascada por FK desde `nomina_periodo(id)` solo cubre las tablas hijas directas (`segmento_nomina`, `movimiento_nomina`, `incidencia_nomina`, `evento_auditoria_nomina`). El snapshot de cálculo vive en `nomina_calculo_periodo` (con sus hijos `nomina_calculo_trabajador`, `nomina_calculo_concepto`, `nomina_calculo_issue`, `nomina_calculo_trazabilidad`, `nomina_calculo_parametro`), y la FK que los une es **saliente** desde `nomina_periodo` (`id_calculo_periodo_vigente` con `on delete set null`) — apunta hacia el cálculo, no al revés. Resultado: al borrar la fila padre, los snapshots quedaban huérfanos.
+
+Solución: RPC server-side atómico que purga todo en una transacción con validaciones explícitas.
+
+- **Migración nueva** `20260610180000_eliminar_nomina_completa_rpc.sql`: crea `public.eliminar_nomina_completa(p_nomina_id uuid)` como `security definer` (las RLS de los snapshots no incluyen DELETE para `authenticated`, así que la función oficial es el único camino y la autorización vive dentro). Pasos del RPC:
+  1. `current_user_empresa_id()` y `for update` de la cabecera.
+  2. **Tenant check**: la nómina debe pertenecer a la empresa del usuario.
+  3. **Estado eliminable**: `borrador | dotacion_generada | en_revision | anulada` — espejo server-side de `puedeEliminar()`.
+  4. **Bloqueo por liquidaciones**: si existe alguna `nomina_liquidacion_periodo` apuntando a un `nomina_calculo_periodo` con `(id_empresa, periodo)` de la nómina, aborta con mensaje humano. Datos productivos no se borran por accidente.
+  5. **Bloqueo por preparaciones**: si `nomina_preparacion` referencia los cálculos del período (FK `id_calculo_origen`), aborta.
+  6. `update reemplazado_por = null` en los cálculos del período (rompe self-FK para permitir el DELETE multi-fila).
+  7. `delete from nomina_calculo_periodo where id_empresa = ? and periodo = ?` — cascada limpia trabajador/concepto/issue/trazabilidad/parametro.
+  8. `delete from nomina_periodo where id = ?` — cascada limpia segmentos/movimientos/incidencias/eventos.
+  9. Retorna `jsonb` con conteos (`calculos_borrados`, `segmentos_borrados`, `movimientos_borrados`, `incidencias_borradas`) para diagnóstico.
+
+  GRANT EXECUTE al rol `authenticated`. Aplicada al proyecto remoto vía `npx supabase db push`.
+
+- **Repo simplificado**: `eliminarNomina(id)` ahora hace una sola llamada `supabase.rpc('eliminar_nomina_completa', { p_nomina_id: id })`. Los mensajes del RPC ya son legibles (estado no eliminable, liquidaciones existentes, preparaciones existentes, sin permisos), así que el repo los propaga **sin** anteponer el prefijo técnico `eliminarNomina:` — el modal del administrador muestra el texto directo.
+- **Tests reescritos** en `nomina-periodo.repository.spec.ts`: 4 escenarios sobre el nuevo contrato — happy path con respuesta `jsonb`, error de estado no eliminable, bloqueo por liquidaciones (verifica que NO se agrega prefijo `eliminarNomina:`), bloqueo por preparaciones.
+- **Tipos regenerados** (`npx supabase gen types`): el `database.types.ts` actualizado movió los args opcionales de `string | null` a `string | undefined`; ajustado `transicionarEstado` y `listarDotacionPaginada` para usar `?? undefined`. Sin cambio funcional (Supabase omite undefined al serializar y postgres usa `default null` igual).
+
+Riesgos contemplados:
+
+- Hay nóminas legacy `anulada` que vinieron de un cálculo previo (la transición `calculada → anulada` era válida en `transicionar_nomina_periodo`). Su snapshot quedaba huérfano hasta hoy. El RPC ahora las limpia correctamente.
+- El bloqueo por liquidaciones es DURA: si una nómina llegó a `cerrada`, se reabrió y se anuló, pero quedaron `nomina_liquidacion_periodo` vivos, NO se podrá eliminar hasta que las liquidaciones se purguen por su propio flujo. Mensaje explícito al usuario.
+
+---
+
 ## 2026-06-06 — Generador · Paso Movimientos · Tab "Configurados" con grilla expandible
 
 Refactor del tab que antes se llamaba "Recurrentes" en el paso Movimientos del Generador v2. Sustituye una lista plana técnica + un botón críptico (`Aplicar recurrentes a la nómina`) por una grilla operativa orientada a RRHH, que responde a "¿qué movimientos tiene cada trabajador ya configurados y qué pasa con ellos este mes?".

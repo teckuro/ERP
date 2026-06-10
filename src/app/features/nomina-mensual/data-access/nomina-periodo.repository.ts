@@ -187,12 +187,12 @@ export class NominaPeriodoRepository {
       p_nomina_id: id,
       p_estado_esperado: payload.estadoEsperado,
       p_estado_destino: payload.estadoDestino,
-      p_motivo: payload.motivo ?? null,
-      p_id_calculo_periodo: payload.idCalculoPeriodo ?? null,
-      p_total_trabajadores: payload.totalTrabajadores ?? null,
-      p_total_haberes: payload.totalHaberes ?? null,
-      p_total_descuentos: payload.totalDescuentos ?? null,
-      p_total_liquido: payload.totalLiquido ?? null,
+      p_motivo: payload.motivo ?? undefined,
+      p_id_calculo_periodo: payload.idCalculoPeriodo ?? undefined,
+      p_total_trabajadores: payload.totalTrabajadores ?? undefined,
+      p_total_haberes: payload.totalHaberes ?? undefined,
+      p_total_descuentos: payload.totalDescuentos ?? undefined,
+      p_total_liquido: payload.totalLiquido ?? undefined,
     });
     throwIfError(error, 'transicionarEstado');
     if (!data) {
@@ -258,6 +258,11 @@ export class NominaPeriodoRepository {
     throwIfError(error, 'actualizarTotales');
   }
 
+  /**
+   * @deprecated Mantenido por compatibilidad histórica. Usar `eliminarNomina`
+   * (sin restricción de estado) que cubre el caso de borrador como subconjunto.
+   * La guarda por estado vive ahora en `puedeEliminar()` (capa de reglas).
+   */
   async eliminarBorrador(id: string): Promise<void> {
     const { error } = await this.supabase
       .from('nomina_periodo')
@@ -265,6 +270,49 @@ export class NominaPeriodoRepository {
       .eq('id', id)
       .eq('estado', 'borrador');
     throwIfError(error, 'eliminarBorrador');
+  }
+
+  /**
+   * Hard-delete atómico de la nómina y de TODO lo derivado, vía RPC server-side
+   * `public.eliminar_nomina_completa(p_nomina_id)` (migración
+   * `20260610180000_eliminar_nomina_completa_rpc.sql`).
+   *
+   * El RPC purga, en una sola transacción y como `security definer`:
+   *   - Snapshots de cálculo del período: `nomina_calculo_periodo` y sus hijos
+   *     `nomina_calculo_trabajador`, `nomina_calculo_concepto`,
+   *     `nomina_calculo_issue`, `nomina_calculo_trazabilidad`,
+   *     `nomina_calculo_parametro`.
+   *   - La fila de `nomina_periodo` y, por `on delete cascade`,
+   *     `segmento_nomina`, `movimiento_nomina`, `incidencia_nomina` y
+   *     `evento_auditoria_nomina`.
+   *
+   * Guardas (todas server-side, dentro del RPC):
+   *   - Tenant scope: `id_empresa = current_user_empresa_id()`.
+   *   - Estado eliminable: espejo de `puedeEliminar()` en `admin-nominas.rules.ts`
+   *     (`borrador | dotacion_generada | en_revision | anulada`).
+   *   - Bloqueo si existen `nomina_liquidacion_periodo` o `nomina_preparacion`
+   *     referenciando los cálculos del período: los datos productivos NO se
+   *     borran por accidente.
+   *
+   * El RPC retorna un `jsonb` con conteos (`calculos_borrados`,
+   * `segmentos_borrados`, `movimientos_borrados`, `incidencias_borradas`),
+   * usado para diagnóstico — el repo lo descarta porque la capa de servicio
+   * solo necesita confirmación de éxito.
+   *
+   * Errores del RPC se reciben con código Postgres y mensaje legible (ver
+   * `using errcode` en la migración) y se reemiten al usuario tal cual.
+   */
+  async eliminarNomina(id: string): Promise<void> {
+    const { error } = await this.supabase.rpc('eliminar_nomina_completa', {
+      p_nomina_id: id,
+    });
+    if (error) {
+      // El RPC ya devuelve mensajes humanos (estado no eliminable, liquidaciones
+      // existentes, preparaciones existentes, sin permisos). No anteponemos el
+      // prefijo técnico "eliminarNomina:" para que el modal del administrador
+      // muestre el texto directo.
+      throw new Error(error.message);
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -324,11 +372,11 @@ export class NominaPeriodoRepository {
       p_nomina_id: nominaPeriodoId,
       p_page: paginacion.page,
       p_page_size: paginacion.pageSize,
-      p_busqueda: filtro.busqueda ?? null,
-      p_estado: filtro.estado ?? null,
-      p_segmento_id: filtro.segmentoId ?? null,
-      p_con_incidencias: filtro.conIncidencias ?? null,
-      p_con_movimientos: filtro.conMovimientos ?? null,
+      p_busqueda: filtro.busqueda ?? undefined,
+      p_estado: filtro.estado ?? undefined,
+      p_segmento_id: filtro.segmentoId ?? undefined,
+      p_con_incidencias: filtro.conIncidencias ?? undefined,
+      p_con_movimientos: filtro.conMovimientos ?? undefined,
     });
     throwIfError(error, 'listarDotacionPaginada');
     const rows = data ?? [];

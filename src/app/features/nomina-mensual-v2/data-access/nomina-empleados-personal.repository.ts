@@ -141,11 +141,19 @@ export class NominaEmpleadosPersonalRepository {
 
     const { data, error } = await this.supabase
       .from('contrato_centro_costo')
-      .select('id_contrato, centro_costo(nombre)')
+      .select('id_contrato, centro_costo!contrato_centro_costo_id_centro_costo_fkey(nombre)')
       .in('id_contrato', normalizedIds);
 
     if (error) {
-      throw new Error('No fue posible cargar los centros de costo de los trabajadores.');
+      // Propagamos el detalle de Supabase para que sea posible distinguir
+      // schema-cache stale (PGRST200), permisos (42501) o ambigüedad de FK
+      // (PGRST201) en lugar de mostrar un texto genérico.
+      const detalle = [error.code, error.message].filter(Boolean).join(' ').trim();
+      throw new Error(
+        detalle
+          ? `No fue posible cargar los centros de costo de los trabajadores: ${detalle}`
+          : 'No fue posible cargar los centros de costo de los trabajadores.',
+      );
     }
 
     const centros = new Map<number, string>();

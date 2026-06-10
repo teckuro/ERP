@@ -10,7 +10,6 @@ import {
   Eye,
   Lock,
   Minus,
-  OctagonX,
   Receipt,
   RefreshCw,
   Repeat,
@@ -49,9 +48,8 @@ function resumenMock(overrides: Partial<NominaPeriodoResumen> = {}): NominaPerio
 interface ServicioMock {
   listarResumenes: ReturnType<typeof vi.fn>;
   obtenerResumenValidacionNomina: ReturnType<typeof vi.fn>;
-  eliminarBorrador?: ReturnType<typeof vi.fn>;
+  eliminarNomina?: ReturnType<typeof vi.fn>;
   reabrirNomina?: ReturnType<typeof vi.fn>;
-  anularNomina?: ReturnType<typeof vi.fn>;
 }
 
 function configurar(opts: { servicio: ServicioMock; navigate?: ReturnType<typeof vi.fn> }) {
@@ -65,7 +63,6 @@ function configurar(opts: { servicio: ServicioMock; navigate?: ReturnType<typeof
         Eye,
         Lock,
         Minus,
-        OctagonX,
         Receipt,
         RefreshCw,
         Repeat,
@@ -98,9 +95,8 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
         incidenciasCriticas: [],
         advertencias: [],
       }),
-      eliminarBorrador: vi.fn().mockResolvedValue(undefined),
+      eliminarNomina: vi.fn().mockResolvedValue(undefined),
       reabrirNomina: vi.fn().mockResolvedValue(undefined),
-      anularNomina: vi.fn().mockResolvedValue(undefined),
     };
   });
 
@@ -215,7 +211,7 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     const cmp = fixture.componentInstance;
     const fila = resumenMock({ id: 'nom-y' });
 
-    cmp.solicitarAccion('anular', fila);
+    cmp.solicitarAccion('eliminar', fila);
     cmp.motivoAccion.set('motivo escrito');
     cmp.cancelarAccion();
 
@@ -229,7 +225,7 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     expect(cmp.accionPendiente()).not.toBeNull();
   });
 
-  it('Test 42 — confirmarAccion ejecuta el servicio y recarga (caso eliminar sin motivo)', async () => {
+  it('Test 42 — confirmarAccion eliminar invoca eliminarNomina (hard-delete, sin motivo)', async () => {
     configurar({ servicio });
     const fixture = TestBed.createComponent(AdministradorNominasContainer);
     const cmp = fixture.componentInstance;
@@ -239,12 +235,12 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     cmp.solicitarAccion('eliminar', fila);
     await cmp.confirmarAccion();
 
-    expect(servicio.eliminarBorrador).toHaveBeenCalledWith(fila.id);
+    expect(servicio.eliminarNomina).toHaveBeenCalledWith(fila.id);
     expect(cmp.accionPendiente()).toBeNull();
     expect(cmp.ejecutandoAccion()).toBe(false);
   });
 
-  it('Test 43 — confirmarAccion exige motivo para reabrir/anular y muestra error', async () => {
+  it('Test 43 — confirmarAccion exige motivo solo para reabrir', async () => {
     configurar({ servicio });
     const fixture = TestBed.createComponent(AdministradorNominasContainer);
     const cmp = fixture.componentInstance;
@@ -264,26 +260,37 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     expect(servicio.reabrirNomina).toHaveBeenCalledWith(fila.id, { motivo: 'Motivo válido' });
   });
 
+  it('Test 43b — eliminar NO exige motivo aunque el textarea quede vacío', async () => {
+    configurar({ servicio });
+    const fixture = TestBed.createComponent(AdministradorNominasContainer);
+    const cmp = fixture.componentInstance;
+    await cmp.cargarResumenes();
+    const fila = cmp.resumenes()[0]!;
+
+    cmp.solicitarAccion('eliminar', fila);
+    cmp.motivoAccion.set('   ');
+    await cmp.confirmarAccion();
+
+    expect(servicio.eliminarNomina).toHaveBeenCalledWith(fila.id);
+    expect(cmp.errorAccion()).toBeNull();
+  });
+
   it('Test 44 — helpers de presentación del message-box son consistentes con el tipo de acción', () => {
     configurar({ servicio });
     const fixture = TestBed.createComponent(AdministradorNominasContainer);
     const cmp = fixture.componentInstance;
 
-    expect(cmp.accionTituloModal('eliminar')).toBe('Eliminar borrador');
+    expect(cmp.accionTituloModal('eliminar')).toBe('Eliminar nómina');
     expect(cmp.accionTituloModal('reabrir')).toBe('Reabrir nómina');
-    expect(cmp.accionTituloModal('anular')).toBe('Anular nómina');
 
     expect(cmp.accionMessageBoxVariant('eliminar')).toBe('danger');
     expect(cmp.accionMessageBoxVariant('reabrir')).toBe('warning');
-    expect(cmp.accionMessageBoxVariant('anular')).toBe('danger');
 
     expect(cmp.accionRequiereMotivo('eliminar')).toBe(false);
     expect(cmp.accionRequiereMotivo('reabrir')).toBe(true);
-    expect(cmp.accionRequiereMotivo('anular')).toBe(true);
 
     expect(cmp.accionDetalle('eliminar')).toContain('no se puede deshacer');
     expect(cmp.accionDetalle('reabrir')).toBe('');
-    expect(cmp.accionDetalle('anular')).toBe('');
   });
 
   it('Test 45 — subtitulo refleja total + cuantas requieren accion y cuantas con criticas (NOIA)', async () => {

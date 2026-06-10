@@ -94,6 +94,7 @@ interface RepoMock {
   invalidarCalculo: ReturnType<typeof vi.fn>;
   actualizarTotales: ReturnType<typeof vi.fn>;
   eliminarBorrador: ReturnType<typeof vi.fn>;
+  eliminarNomina: ReturnType<typeof vi.fn>;
   actualizarUltimoPasoVisitado: ReturnType<typeof vi.fn>;
   actualizarMaximoPasoCompletado: ReturnType<typeof vi.fn>;
   listarSegmentos: ReturnType<typeof vi.fn>;
@@ -124,6 +125,7 @@ function repoMock(): RepoMock {
     invalidarCalculo: vi.fn().mockResolvedValue(undefined),
     actualizarTotales: vi.fn().mockResolvedValue(undefined),
     eliminarBorrador: vi.fn().mockResolvedValue(undefined),
+    eliminarNomina: vi.fn().mockResolvedValue(undefined),
     actualizarUltimoPasoVisitado: vi.fn().mockResolvedValue(undefined),
     actualizarMaximoPasoCompletado: vi.fn().mockResolvedValue(undefined),
     listarSegmentos: vi.fn().mockResolvedValue([]),
@@ -247,6 +249,13 @@ describe('NominaPeriodoService', () => {
       'nom-1',
       expect.objectContaining({ motivo: 'cierre regular' }),
     );
+  });
+
+  it('eliminarNomina delega en repo.eliminarNomina sin filtro de estado', async () => {
+    const service = configurar({ repo });
+    await service.eliminarNomina('nom-1');
+    expect(repo.eliminarNomina).toHaveBeenCalledWith('nom-1');
+    expect(repo.eliminarBorrador).not.toHaveBeenCalled();
   });
 
   it('reabrirNomina siempre registra evento (motivo obligatorio)', async () => {

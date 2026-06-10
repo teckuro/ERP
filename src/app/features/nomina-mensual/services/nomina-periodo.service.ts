@@ -305,13 +305,32 @@ export class NominaPeriodoService {
     await this.repo.invalidarCalculo(nominaPeriodoId);
   }
 
+  /**
+   * @deprecated Usar `eliminarNomina`. Conserva la guarda histórica de
+   * `estado='borrador'` solo a nivel del repositorio. Se mantiene para no
+   * romper consumidores externos hasta migración total.
+   */
   async eliminarBorrador(nominaPeriodoId: string): Promise<void> {
     await this.repo.eliminarBorrador(nominaPeriodoId);
   }
 
-  async anularNomina(nominaPeriodoId: string, motivo: string): Promise<void> {
-    const nomina = await this.exigirNomina(nominaPeriodoId);
-    await this.transicionar(nomina, 'anulada', motivo);
+  /**
+   * Elimina físicamente una nómina y, en cascada, todos sus datos (segmentos,
+   * movimientos, incidencias, eventos de auditoría).
+   *
+   * **No se puede deshacer**: la guarda de qué estados son eliminables vive en
+   * `puedeEliminar()` (reglas) — los estados productivos (`calculada`,
+   * `validada`, `aprobada`, `cerrada`, `reabierta`) NO deberían llegar aquí
+   * porque el botón de UI no aparece. Si alguien fuerza la llamada con un
+   * estado bloqueado, BD aceptará el DELETE igual: la única protección extra
+   * sería un trigger SQL o un check en RLS — fuera del scope de este cambio.
+   *
+   * Esta operación libera el slot `UNIQUE (empresa, periodo, tipo)` para que
+   * el usuario pueda rehacer la nómina del período sin colisionar con un
+   * registro zombie anulado.
+   */
+  async eliminarNomina(nominaPeriodoId: string): Promise<void> {
+    await this.repo.eliminarNomina(nominaPeriodoId);
   }
 
   async confirmarDotacion(nominaPeriodoId: string): Promise<void> {

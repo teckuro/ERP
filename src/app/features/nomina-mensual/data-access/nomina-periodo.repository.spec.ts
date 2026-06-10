@@ -171,6 +171,84 @@ describe('NominaPeriodoRepository', () => {
     expect(builder.eq).toHaveBeenCalledWith('id', 'seg-1');
   });
 
+  describe('eliminarNomina (hard-delete vía RPC eliminar_nomina_completa)', () => {
+    it('invoca el RPC con el id de la nómina y no toca la tabla directamente', async () => {
+      setSupabase(
+        () => makeBuilder({ data: null, error: null }),
+        {
+          data: {
+            ok: true,
+            nomina_id: 'nom-uuid-1',
+            empresa_id: 7,
+            periodo: '2026-06',
+            estado_previo: 'borrador',
+            calculos_borrados: 1,
+            segmentos_borrados: 2,
+            movimientos_borrados: 3,
+            incidencias_borradas: 0,
+          },
+          error: null,
+        },
+      );
+      await repo.eliminarNomina('nom-uuid-1');
+      expect(rpc).toHaveBeenCalledWith('eliminar_nomina_completa', {
+        p_nomina_id: 'nom-uuid-1',
+      });
+      expect(from).not.toHaveBeenCalledWith('nomina_periodo');
+    });
+
+    it('propaga el mensaje humano del RPC tal cual (estado no eliminable)', async () => {
+      setSupabase(
+        () => makeBuilder({ data: null, error: null }),
+        {
+          data: null,
+          error: {
+            message:
+              'No se puede eliminar una nómina en estado "calculada". Solo se permite eliminar borradores, nóminas con dotación generada, en revisión o anuladas. Reabre primero las cerradas para corregir.',
+          },
+        },
+      );
+      await expect(repo.eliminarNomina('nom-calc')).rejects.toThrow(
+        /No se puede eliminar una n[oó]mina en estado "calculada"/i,
+      );
+    });
+
+    it('propaga bloqueo por liquidaciones generadas sin agregar prefijo técnico', async () => {
+      setSupabase(
+        () => makeBuilder({ data: null, error: null }),
+        {
+          data: null,
+          error: {
+            message:
+              'No se puede eliminar: existen liquidaciones generadas para 7 2026-06. Anula primero las liquidaciones oficiales.',
+          },
+        },
+      );
+      await expect(repo.eliminarNomina('nom-with-liq')).rejects.toThrow(
+        /existen liquidaciones generadas/i,
+      );
+      await expect(repo.eliminarNomina('nom-with-liq')).rejects.not.toThrow(
+        /^eliminarNomina:/,
+      );
+    });
+
+    it('propaga bloqueo por preparaciones referenciando los cálculos', async () => {
+      setSupabase(
+        () => makeBuilder({ data: null, error: null }),
+        {
+          data: null,
+          error: {
+            message:
+              'No se puede eliminar: existen preparaciones de nómina referenciando los cálculos de 7 2026-06.',
+          },
+        },
+      );
+      await expect(repo.eliminarNomina('nom-with-prep')).rejects.toThrow(
+        /existen preparaciones de n[oó]mina/i,
+      );
+    });
+  });
+
   it('listarIncidencias filtra por id_nomina_periodo y resuelta_at null', async () => {
     const builder = makeBuilder({ data: [], error: null });
     setSupabase(() => builder);

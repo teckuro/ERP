@@ -119,12 +119,12 @@
           >
             <lucide-icon name="eye" aria-hidden="true"></lucide-icon>
           </button>
-          @if (puedeEliminarBorrador(fila.estado)) {
+          @if (puedeEliminar(fila.estado)) {
             <button
               type="button"
               class="adm-nom__row-action adm-nom__row-action--danger"
-              title="Eliminar borrador"
-              [attr.aria-label]="'Eliminar borrador de ' + fila.empresaNombre + ' ' + fila.periodo"
+              title="Eliminar nómina"
+              [attr.aria-label]="'Eliminar nómina de ' + fila.empresaNombre + ' ' + fila.periodo"
               (click)="solicitarAccion('eliminar', fila)"
             >
               <lucide-icon name="trash-2" aria-hidden="true"></lucide-icon>
@@ -139,17 +139,6 @@
               (click)="solicitarAccion('reabrir', fila)"
             >
               <lucide-icon name="refresh-cw" aria-hidden="true"></lucide-icon>
-            </button>
-          }
-          @if (puedeAnular(fila.estado)) {
-            <button
-              type="button"
-              class="adm-nom__row-action adm-nom__row-action--danger"
-              title="Anular nómina"
-              [attr.aria-label]="'Anular nómina de ' + fila.empresaNombre + ' ' + fila.periodo"
-              (click)="solicitarAccion('anular', fila)"
-            >
-              <lucide-icon name="octagon-x" aria-hidden="true"></lucide-icon>
             </button>
           }
           @if (tieneLiquidaciones(fila.estado) && fila.evidenciaCalculo?.idCalculoPeriodo) {
@@ -203,7 +192,7 @@
     [title]="accionTituloModal(accion.tipo)"
     [message]="accion.nomina.empresaNombre + ' · ' + accion.nomina.periodo"
     [detail]="accionDetalle(accion.tipo)"
-    [primaryLabel]="ejecutandoAccion() ? 'Procesando…' : 'Confirmar'"
+    [primaryLabel]="ejecutandoAccion() ? 'Procesando…' : (accion.tipo === 'eliminar' ? 'Eliminar definitivamente' : 'Confirmar')"
     secondaryLabel="Cancelar"
     [dismissible]="!ejecutandoAccion()"
     [disableClose]="ejecutandoAccion()"

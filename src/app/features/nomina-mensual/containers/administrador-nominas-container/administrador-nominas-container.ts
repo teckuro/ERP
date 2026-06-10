@@ -51,13 +51,12 @@ import {
 import { AdminNominasModalNuevaNominaComponent } from './components/admin-nominas-modal-nueva-nomina/admin-nominas-modal-nueva-nomina.component';
 import { AdminNominasModalResumenNominaComponent } from './components/admin-nominas-modal-resumen-nomina/admin-nominas-modal-resumen-nomina.component';
 import {
-  puedeAnular,
-  puedeEliminarBorrador,
+  puedeEliminar,
   puedeReabrir,
   tieneLiquidaciones,
 } from '../../rules/admin-nominas.rules';
 
-type AccionAdministrativa = 'eliminar' | 'anular' | 'reabrir';
+type AccionAdministrativa = 'eliminar' | 'reabrir';
 
 interface AccionAdministrativaPendiente {
   tipo: AccionAdministrativa;
@@ -160,9 +159,8 @@ export class AdministradorNominasContainer {
   desgloseIncidencias = desgloseIncidencias;
   etiquetaMaximoPasoCompletado = etiquetaMaximoPasoCompletado;
   mostrarEnCurso = mostrarEnCurso;
-  puedeEliminarBorrador = puedeEliminarBorrador;
+  puedeEliminar = puedeEliminar;
   puedeReabrir = puedeReabrir;
-  puedeAnular = puedeAnular;
   tieneLiquidaciones = tieneLiquidaciones;
 
   /**
@@ -247,9 +245,8 @@ export class AdministradorNominasContainer {
   }
 
   accionTituloModal(tipo: AccionAdministrativa): string {
-    if (tipo === 'eliminar') return 'Eliminar borrador';
     if (tipo === 'reabrir') return 'Reabrir nómina';
-    return 'Anular nómina';
+    return 'Eliminar nómina';
   }
 
   accionMessageBoxVariant(tipo: AccionAdministrativa): 'warning' | 'danger' {
@@ -257,12 +254,12 @@ export class AdministradorNominasContainer {
   }
 
   accionRequiereMotivo(tipo: AccionAdministrativa): boolean {
-    return tipo !== 'eliminar';
+    return tipo === 'reabrir';
   }
 
   accionDetalle(tipo: AccionAdministrativa): string {
     if (tipo === 'eliminar') {
-      return 'Solo se eliminará la cabecera en estado borrador. Esta operación no se puede deshacer.';
+      return 'Se eliminará la nómina junto con sus segmentos, movimientos, incidencias y eventos de auditoría. Esta operación no se puede deshacer. Tras eliminar podrás crear una nueva nómina para esta empresa, período y tipo.';
     }
     return '';
   }
@@ -272,7 +269,7 @@ export class AdministradorNominasContainer {
     const pendiente = this.accionPendiente();
     if (!pendiente) return;
     const motivo = this.motivoAccion().trim();
-    if (pendiente.tipo !== 'eliminar' && !motivo) {
+    if (pendiente.tipo === 'reabrir' && !motivo) {
       this.errorAccion.set('Debes indicar el motivo de la acción.');
       return;
     }
@@ -280,11 +277,9 @@ export class AdministradorNominasContainer {
     this.errorAccion.set(null);
     try {
       if (pendiente.tipo === 'eliminar') {
-        await this.servicio.eliminarBorrador(pendiente.nomina.id);
-      } else if (pendiente.tipo === 'reabrir') {
-        await this.servicio.reabrirNomina(pendiente.nomina.id, { motivo });
+        await this.servicio.eliminarNomina(pendiente.nomina.id);
       } else {
-        await this.servicio.anularNomina(pendiente.nomina.id, motivo);
+        await this.servicio.reabrirNomina(pendiente.nomina.id, { motivo });
       }
       this.accionPendiente.set(null);
       this.motivoAccion.set('');
