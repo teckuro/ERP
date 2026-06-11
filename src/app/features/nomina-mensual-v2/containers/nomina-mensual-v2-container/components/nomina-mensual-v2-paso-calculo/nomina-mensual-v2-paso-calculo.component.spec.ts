@@ -2,12 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 
 import type { NominaPeriodo } from '../../../../../nomina-mensual/models/nomina-periodo.models';
+import { crearNomina } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { NominaPeriodoCalculoAdapterService } from '../../../../../nomina-mensual/services/nomina-periodo-calculo-adapter.service';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
 import { NominaMensualV2PasoCalculoComponent } from './nomina-mensual-v2-paso-calculo.component';
 
 function nominaMock(parcial: Partial<NominaPeriodo> = {}): NominaPeriodo {
-  return {
+  return crearNomina({
     id: 'np-1',
     periodo: '2026-06',
     empresaId: '7',
@@ -24,7 +25,7 @@ function nominaMock(parcial: Partial<NominaPeriodo> = {}): NominaPeriodo {
     createdAt: '2026-06-01T00:00:00Z',
     updatedAt: '2026-06-01T00:00:00Z',
     ...parcial,
-  };
+  });
 }
 
 function configurarTestBed(): void {

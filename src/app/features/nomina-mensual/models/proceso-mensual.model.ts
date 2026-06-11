@@ -480,6 +480,7 @@ export interface BorradorPersistContext {
 
 export interface NominaCalculoPeriodoSnapshot {
   idCalculoPeriodo?: number;
+  nominaPeriodoId?: string | null;
   periodo: string;
   idEmpresa: number | null;
   estado: NominaCalculoSnapshotEstado;

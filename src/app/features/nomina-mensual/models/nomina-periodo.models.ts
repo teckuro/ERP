@@ -47,11 +47,43 @@ export type EstadoNomina =
   | 'calculada'
   | 'validada'
   | 'aprobada'
+  | 'liquidada'
   | 'cerrada'
   | 'reabierta'
   | 'anulada';
 
 export type TipoNomina = 'mensual' | 'quincenal' | 'semanal' | 'extraordinaria';
+
+export type NaturalezaNomina =
+  | 'liquidacion_legal'
+  | 'anticipo'
+  | 'pago_extraordinario'
+  | 'rectificacion';
+
+export interface IdentidadNominaMensual {
+  fechaInicio: string;
+  fechaFin: string;
+  naturaleza: 'liquidacion_legal';
+  codigoCiclo: string;
+}
+
+export function derivarIdentidadNominaMensual(periodo: string): IdentidadNominaMensual {
+  const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(periodo);
+  if (!match) {
+    throw new Error(`Periodo mensual invalido: ${periodo}.`);
+  }
+
+  const anio = Number(match[1]);
+  const mes = Number(match[2]);
+  const ultimoDia = new Date(Date.UTC(anio, mes, 0)).getUTCDate();
+
+  return {
+    fechaInicio: `${periodo}-01`,
+    fechaFin: `${periodo}-${String(ultimoDia).padStart(2, '0')}`,
+    naturaleza: 'liquidacion_legal',
+    codigoCiclo: `${periodo}-MES`,
+  };
+}
 
 export type PasoSiguienteNomina =
   | 'parametros'
@@ -86,6 +118,13 @@ export interface NominaPeriodoResumen {
 
   tipo: TipoNomina;
   estado: EstadoNomina;
+  fechaInicio: string;
+  fechaFin: string;
+  naturaleza: NaturalezaNomina;
+  codigoCiclo: string;
+  plantillaCicloId?: string;
+  nominaOrigenId?: string;
+  versionEstado: number;
 
   totalTrabajadores: number;
   totalSegmentos: number;
@@ -138,6 +177,13 @@ export interface NominaPeriodo {
 
   tipo: TipoNomina;
   estado: EstadoNomina;
+  fechaInicio: string;
+  fechaFin: string;
+  naturaleza: NaturalezaNomina;
+  codigoCiclo: string;
+  plantillaCicloId?: string;
+  nominaOrigenId?: string;
+  versionEstado: number;
 
   segmentos: SegmentoNomina[];
   movimientos: MovimientoNomina[];
@@ -321,6 +367,7 @@ export interface EventoAuditoriaNomina {
     | 'calculada'
     | 'validada'
     | 'aprobada'
+    | 'liquidada'
     | 'cerrada'
     | 'reabierta'
     | 'anulada';
@@ -340,13 +387,17 @@ export function crearNominaResumen(
   overrides: Partial<NominaPeriodoResumen> = {},
 ): NominaPeriodoResumen {
   const ahora = new Date().toISOString();
+  const periodo = overrides.periodo ?? '2026-06';
+  const identidad = derivarIdentidadNominaMensual(periodo);
   return {
     id: 'nom-mock-001',
-    periodo: '2026-06',
+    periodo,
     empresaId: 'emp-001',
     empresaNombre: 'Empresa de prueba',
     tipo: 'mensual',
     estado: 'dotacion_generada',
+    ...identidad,
+    versionEstado: 0,
     totalTrabajadores: 0,
     totalSegmentos: 0,
     totalHaberes: 0,
@@ -379,13 +430,17 @@ export function crearNominaResumen(
  */
 export function crearNomina(overrides: Partial<NominaPeriodo> = {}): NominaPeriodo {
   const ahora = new Date().toISOString();
+  const periodo = overrides.periodo ?? '2026-06';
+  const identidad = derivarIdentidadNominaMensual(periodo);
   return {
     id: 'nom-mock-001',
-    periodo: '2026-06',
+    periodo,
     empresaId: 'emp-001',
     empresaNombre: 'Empresa de prueba',
     tipo: 'mensual',
     estado: 'dotacion_generada',
+    ...identidad,
+    versionEstado: 0,
     segmentos: [],
     movimientos: [],
     incidencias: [],

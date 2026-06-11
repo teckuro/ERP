@@ -16,6 +16,7 @@ import type {
   EventoAuditoriaNomina,
   IncidenciaNomina,
   IncidenciaNominaNueva,
+  NaturalezaNomina,
   NominaPeriodo,
   NominaPeriodoResumen,
   SegmentoNomina,
@@ -75,6 +76,13 @@ export function rowToNominaPeriodoResumen(
     empresaNombre: row.empresa_nombre ?? empresaNombreFallback ?? '',
     tipo: row.tipo as TipoNomina,
     estado: row.estado as EstadoNomina,
+    fechaInicio: row.fecha_inicio,
+    fechaFin: row.fecha_fin,
+    naturaleza: row.naturaleza as NaturalezaNomina,
+    codigoCiclo: row.codigo_ciclo,
+    plantillaCicloId: row.plantilla_ciclo_id ?? undefined,
+    nominaOrigenId: row.nomina_origen_id ?? undefined,
+    versionEstado: row.version_estado,
     totalTrabajadores: row.total_trabajadores,
     totalSegmentos: row.total_segmentos,
     totalHaberes: Number(row.total_haberes ?? 0),
@@ -105,13 +113,31 @@ export function rowToNominaPeriodoResumen(
 }
 
 export function nominaPeriodoToInsert(
-  data: Pick<NominaPeriodo, 'empresaId' | 'empresaNombre' | 'periodo' | 'tipo'>,
+  data: Pick<
+    NominaPeriodo,
+    | 'empresaId'
+    | 'empresaNombre'
+    | 'periodo'
+    | 'tipo'
+    | 'fechaInicio'
+    | 'fechaFin'
+    | 'naturaleza'
+    | 'codigoCiclo'
+    | 'plantillaCicloId'
+    | 'nominaOrigenId'
+  >,
 ): NominaPeriodoInsert {
   return {
     id_empresa: Number(data.empresaId),
     empresa_nombre: data.empresaNombre || null,
     periodo: data.periodo,
     tipo: data.tipo,
+    fecha_inicio: data.fechaInicio,
+    fecha_fin: data.fechaFin,
+    naturaleza: data.naturaleza,
+    codigo_ciclo: data.codigoCiclo,
+    plantilla_ciclo_id: data.plantillaCicloId ?? null,
+    nomina_origen_id: data.nominaOrigenId ?? null,
     estado: 'borrador',
   };
 }
@@ -375,6 +401,13 @@ export function ensamblarNominaPeriodo(input: {
     empresaNombre: input.cabecera.empresa_nombre ?? '',
     tipo: input.cabecera.tipo as TipoNomina,
     estado: input.cabecera.estado as EstadoNomina,
+    fechaInicio: input.cabecera.fecha_inicio,
+    fechaFin: input.cabecera.fecha_fin,
+    naturaleza: input.cabecera.naturaleza as NaturalezaNomina,
+    codigoCiclo: input.cabecera.codigo_ciclo,
+    plantillaCicloId: input.cabecera.plantilla_ciclo_id ?? undefined,
+    nominaOrigenId: input.cabecera.nomina_origen_id ?? undefined,
+    versionEstado: input.cabecera.version_estado,
     segmentos,
     movimientos,
     incidencias,

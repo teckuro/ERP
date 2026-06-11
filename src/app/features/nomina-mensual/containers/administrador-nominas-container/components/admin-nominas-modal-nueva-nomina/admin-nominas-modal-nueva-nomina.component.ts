@@ -33,10 +33,11 @@ interface OpcionEmpresa {
 }
 
 const TIPOS_NOMINA: { id: TipoNomina; label: string; descripcion: string }[] = [
-  { id: 'mensual', label: 'Mensual', descripcion: 'Período mensual estándar.' },
-  { id: 'quincenal', label: 'Quincenal', descripcion: 'Dos liquidaciones por mes.' },
-  { id: 'semanal', label: 'Semanal', descripcion: 'Una liquidación por semana.' },
-  { id: 'extraordinaria', label: 'Extraordinaria', descripcion: 'Bonificación, finiquito masivo o ajuste fuera de calendario.' },
+  {
+    id: 'mensual',
+    label: 'Mensual',
+    descripcion: 'Liquidación legal del mes calendario. Otros ciclos se habilitarán en fases posteriores.',
+  },
 ];
 
 function periodoActual(): string {
@@ -99,7 +100,11 @@ export class AdminNominasModalNuevaNominaComponent {
   });
 
   readonly puedeCrear = computed(
-    () => !this.guardando() && this.periodoEsValido() && this.empresaId().length > 0,
+    () =>
+      !this.guardando()
+      && this.periodoEsValido()
+      && this.empresaId().length > 0
+      && this.tipo() === 'mensual',
   );
 
   constructor() {

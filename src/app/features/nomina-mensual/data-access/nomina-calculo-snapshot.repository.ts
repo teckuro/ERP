@@ -991,6 +991,7 @@ function mapParametroRow(row: NominaCalculoParametroRow): NominaCalculoParametro
 function mapPeriodoRow(row: NominaCalculoPeriodoRow): NominaCalculoPeriodoSnapshot {
   return {
     idCalculoPeriodo: row.id_calculo_periodo,
+    nominaPeriodoId: row.id_nomina_periodo ?? null,
     periodo: row.periodo,
     idEmpresa: row.id_empresa ?? null,
     estado: parseSnapshotEstado(row.estado),

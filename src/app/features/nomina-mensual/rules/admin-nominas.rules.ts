@@ -51,6 +51,7 @@ export function puedeEliminar(estado: EstadoNomina): boolean {
     case 'calculada':
     case 'validada':
     case 'aprobada':
+    case 'liquidada':
     case 'cerrada':
     case 'reabierta':
       return false;
@@ -68,7 +69,7 @@ export function puedeReabrir(estado: EstadoNomina): boolean {
 
 /** Una nómina cerrada puede tener liquidaciones generadas. */
 export function tieneLiquidaciones(estado: EstadoNomina): boolean {
-  return estado === 'cerrada';
+  return estado === 'liquidada' || estado === 'cerrada';
 }
 
 /**

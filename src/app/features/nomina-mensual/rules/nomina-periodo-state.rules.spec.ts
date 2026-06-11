@@ -16,7 +16,8 @@ describe('nomina-periodo-state.rules', () => {
       ['en_revision', 'calculada'],
       ['calculada', 'validada'],
       ['validada', 'aprobada'],
-      ['aprobada', 'cerrada'],
+      ['aprobada', 'liquidada'],
+      ['liquidada', 'cerrada'],
       ['cerrada', 'reabierta'],
     ] as const;
     for (const [origen, destino] of ciclo) {
@@ -29,7 +30,8 @@ describe('nomina-periodo-state.rules', () => {
     expect(puedeTransicionarNomina('anulada', 'borrador')).toBe(false);
   });
 
-  it('bloquea edición en cerrada y anulada', () => {
+  it('bloquea edición en liquidada, cerrada y anulada', () => {
+    expect(estadoNominaBloqueaEdicion('liquidada')).toBe(true);
     expect(estadoNominaBloqueaEdicion('cerrada')).toBe(true);
     expect(estadoNominaBloqueaEdicion('anulada')).toBe(true);
     expect(estadoNominaBloqueaEdicion('en_revision')).toBe(false);
@@ -37,6 +39,7 @@ describe('nomina-periodo-state.rules', () => {
 
   it('expone siguiente paso y requerimiento de acción', () => {
     expect(proximoPasoNomina('calculada')).toBe('validacion');
+    expect(proximoPasoNomina('liquidada')).toBe('cierre');
     expect(proximoPasoNomina('cerrada')).toBe('liquidaciones');
     expect(nominaRequiereAccion('reabierta')).toBe(true);
     expect(nominaRequiereAccion('cerrada')).toBe(false);

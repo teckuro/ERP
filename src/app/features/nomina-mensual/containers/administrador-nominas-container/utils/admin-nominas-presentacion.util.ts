@@ -55,6 +55,7 @@ const MAPA_ESTADO: Record<EstadoNomina, AdminBadgeView> = {
   calculada: { label: 'Calculada', variant: 'info' },
   validada: { label: 'Validada', variant: 'success' },
   aprobada: { label: 'Aprobada', variant: 'success' },
+  liquidada: { label: 'Liquidada', variant: 'success' },
   cerrada: { label: 'Cerrada', variant: 'success' },
   reabierta: { label: 'Reabierta', variant: 'warning' },
   anulada: { label: 'Anulada', variant: 'danger' },
@@ -252,7 +253,9 @@ export function calcularKpisAdminNominas(
   const total = resumenes.length;
   const abiertas = resumenes.filter((r) => esAbierta(r.estado)).length;
   const enCalculo = resumenes.filter((r) => r.estado === 'calculada' || r.estado === 'validada').length;
-  const pendientesCierre = resumenes.filter((r) => r.estado === 'aprobada' || r.estado === 'reabierta').length;
+  const pendientesCierre = resumenes.filter(
+    (r) => r.estado === 'aprobada' || r.estado === 'liquidada' || r.estado === 'reabierta',
+  ).length;
   const conCriticas = resumenes.filter((r) => r.totalIncidenciasCriticas > 0).length;
 
   const items: KpiAdminItem[] = [

@@ -41,6 +41,7 @@ import type {
   SegmentoNominaNuevo,
   TipoNomina,
 } from '../models/nomina-periodo.models';
+import { derivarIdentidadNominaMensual } from '../models/nomina-periodo.models';
 import type {
   AccionMasivaTrabajadores,
   CriterioAplicacionRecurrente,
@@ -157,6 +158,12 @@ export class NominaPeriodoService {
   // -------------------------------------------------------------------------
 
   async crearNominaPeriodo(payload: CrearNominaPayload): Promise<NominaPeriodoResumen> {
+    if (payload.tipo !== 'mensual') {
+      throw new Error(
+        'F01 permite crear solo nominas mensuales. Los otros ciclos se habilitaran en F03-F05.',
+      );
+    }
+
     const idEmpresa = await this.resolverEmpresaActiva();
     if (idEmpresa == null) {
       throw new Error('No hay empresa activa para crear la nómina.');
@@ -166,6 +173,7 @@ export class NominaPeriodoService {
       ?? empresaSnap?.nombre
       ?? empresaSnap?.razonSocial
       ?? '';
+    const identidad = derivarIdentidadNominaMensual(payload.periodo);
 
     try {
       const creada = await this.repo.crear({
@@ -173,6 +181,7 @@ export class NominaPeriodoService {
         empresaNombre,
         periodo: payload.periodo,
         tipo: payload.tipo,
+        ...identidad,
       });
       const activos = (await this.empleados.listar()).filter(
         (empleado) => empleado.estado === 'activo' && empleado.aptoParaRemuneraciones,
@@ -199,12 +208,13 @@ export class NominaPeriodoService {
       await this.repo.transicionarEstado(creada.id, {
         estadoEsperado: 'borrador',
         estadoDestino: 'dotacion_generada',
+        versionEstadoEsperada: creada.versionEstado,
       });
       return (await this.repo.obtenerCabecera(creada.id)) ?? creada;
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : String(error);
       if (/duplicate|unique|duplic/i.test(mensaje)) {
-        throw new Error('Ya existe una nómina ordinaria para esa empresa, período y tipo.');
+        throw new Error('Ya existe una nómina mensual legal para esa empresa y período.');
       }
       throw error;
     }
@@ -231,8 +241,13 @@ export class NominaPeriodoService {
   async cerrarNomina(nominaPeriodoId: string, payload: CerrarNominaPayload = {}): Promise<void> {
     const nomina = await this.exigirNomina(nominaPeriodoId);
     const validacion = await this.obtenerResumenValidacionNomina(nominaPeriodoId);
-    if (nomina.estado !== 'aprobada' || !validacion.puedeCerrar) {
-      throw new Error('La nómina debe estar aprobada, con cálculo vigente y sin bloqueos.');
+    if (
+      (nomina.estado !== 'aprobada' && nomina.estado !== 'liquidada')
+      || !validacion.puedeCerrar
+    ) {
+      throw new Error(
+        'La nómina debe estar aprobada o liquidada, con cálculo vigente y sin bloqueos.',
+      );
     }
     await this.transicionar(nomina, 'cerrada', payload.motivo);
   }
@@ -481,6 +496,7 @@ export class NominaPeriodoService {
       await this.repo.transicionarEstado(nominaPeriodoId, {
         estadoEsperado: 'borrador',
         estadoDestino: 'dotacion_generada',
+        versionEstadoEsperada: nomina.versionEstado,
       });
     } else {
       await this.invalidarCalculoPorCambio(
@@ -1596,6 +1612,7 @@ export class NominaPeriodoService {
     await this.repo.transicionarEstado(nomina.id, {
       estadoEsperado: nomina.estado,
       estadoDestino: destino,
+      versionEstadoEsperada: nomina.versionEstado,
       motivo,
       ...calculo,
     });
@@ -1621,7 +1638,13 @@ export class NominaPeriodoService {
   private async invalidarCalculoPorCambio(nominaPeriodoId: string, motivo: string): Promise<void> {
     const nomina = await this.exigirNomina(nominaPeriodoId);
     if (!nomina.evidenciaCalculo?.calculoVigente) return;
-    if (nomina.estado === 'calculada' || nomina.estado === 'validada' || nomina.estado === 'aprobada' || nomina.estado === 'reabierta') {
+    if (
+      nomina.estado === 'calculada'
+      || nomina.estado === 'validada'
+      || nomina.estado === 'aprobada'
+      || nomina.estado === 'liquidada'
+      || nomina.estado === 'reabierta'
+    ) {
       await this.transicionar(nomina, 'en_revision', motivo);
     }
     await this.repo.invalidarCalculo(nominaPeriodoId);

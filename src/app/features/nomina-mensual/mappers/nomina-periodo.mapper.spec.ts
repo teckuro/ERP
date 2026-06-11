@@ -16,6 +16,13 @@ const FILA_BASE: NominaPeriodoRow = {
   periodo: '2026-06',
   tipo: 'mensual',
   estado: 'en_revision',
+  fecha_inicio: '2026-06-01',
+  fecha_fin: '2026-06-30',
+  naturaleza: 'liquidacion_legal',
+  codigo_ciclo: '2026-06-MES',
+  plantilla_ciclo_id: 'plantilla-mes-1',
+  nomina_origen_id: null,
+  version_estado: 2,
   total_trabajadores: 12,
   total_segmentos: 1,
   total_haberes: 0,
@@ -40,6 +47,18 @@ const FILA_BASE: NominaPeriodoRow = {
 };
 
 describe('rowToNominaPeriodoResumen', () => {
+  it('mapea la identidad canonica y la version de estado', () => {
+    const resumen = rowToNominaPeriodoResumen({ ...FILA_BASE });
+    expect(resumen).toMatchObject({
+      fechaInicio: '2026-06-01',
+      fechaFin: '2026-06-30',
+      naturaleza: 'liquidacion_legal',
+      codigoCiclo: '2026-06-MES',
+      plantillaCicloId: 'plantilla-mes-1',
+      versionEstado: 2,
+    });
+  });
+
   it('mapea ultimoPasoVisitado a null cuando la BD trae null', () => {
     const resumen = rowToNominaPeriodoResumen({ ...FILA_BASE });
     expect(resumen.ultimoPasoVisitado).toBeNull();

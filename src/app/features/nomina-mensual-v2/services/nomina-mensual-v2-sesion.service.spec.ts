@@ -8,6 +8,7 @@ import { NominaParametrosBaseService } from './nomina-parametros-base.service';
 import { NominaParametrosResumenService } from './nomina-parametros-resumen.service';
 import { NominaMensualV2SesionService } from './nomina-mensual-v2-sesion.service';
 import type { NominaPeriodoResumen } from '../../nomina-mensual/models/nomina-periodo.models';
+import { crearNominaResumen } from '../../nomina-mensual/models/nomina-periodo.models';
 
 const ESTADO_BASE_VACIO = {
   estado: 'pendiente' as const,
@@ -44,7 +45,7 @@ function resumenParametrosMock() {
 }
 
 function cabeceraMock(overrides: Partial<NominaPeriodoResumen> = {}): NominaPeriodoResumen {
-  return {
+  return crearNominaResumen({
     id: 'nom-1',
     periodo: '2026-06',
     empresaId: '7',
@@ -65,7 +66,7 @@ function cabeceraMock(overrides: Partial<NominaPeriodoResumen> = {}): NominaPeri
     maximoPasoCompletado: null,
     maximoPasoCompletadoAt: null,
     ...overrides,
-  };
+  });
 }
 
 describe('NominaMensualV2SesionService - rehidratación de paso visitado', () => {

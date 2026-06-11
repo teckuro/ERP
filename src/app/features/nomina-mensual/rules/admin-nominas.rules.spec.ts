@@ -15,6 +15,7 @@ const TODOS_ESTADOS: EstadoNomina[] = [
   'calculada',
   'validada',
   'aprobada',
+  'liquidada',
   'cerrada',
   'reabierta',
   'anulada',
@@ -38,6 +39,7 @@ describe('admin-nominas.rules — guardas por estado', () => {
       'calculada',
       'validada',
       'aprobada',
+      'liquidada',
       'cerrada',
       'reabierta',
     ];
@@ -52,8 +54,9 @@ describe('admin-nominas.rules — guardas por estado', () => {
     }
   });
 
-  it('tieneLiquidaciones solo para nómina cerrada y trazable', () => {
+  it('tieneLiquidaciones para nómina liquidada o cerrada', () => {
     expect(tieneLiquidaciones('aprobada')).toBe(false);
+    expect(tieneLiquidaciones('liquidada')).toBe(true);
     expect(tieneLiquidaciones('cerrada')).toBe(true);
     expect(tieneLiquidaciones('reabierta')).toBe(false);
     expect(tieneLiquidaciones('borrador')).toBe(false);
@@ -92,8 +95,14 @@ describe('admin-nominas.rules — accionesDisponibles', () => {
     expect(acciones).not.toContain('ver-liquidaciones');
   });
 
-  it('calculada/validada/aprobada/reabierta NO ofrecen eliminar', () => {
-    for (const estado of ['calculada', 'validada', 'aprobada', 'reabierta'] as EstadoNomina[]) {
+  it('calculada/validada/aprobada/liquidada/reabierta NO ofrecen eliminar', () => {
+    for (const estado of [
+      'calculada',
+      'validada',
+      'aprobada',
+      'liquidada',
+      'reabierta',
+    ] as EstadoNomina[]) {
       expect(accionesDisponibles(estado)).not.toContain('eliminar');
     }
   });

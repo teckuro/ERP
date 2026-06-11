@@ -60,7 +60,7 @@ describe('proceso-mensual-flow-nav.rules', () => {
   });
 
   it('resolveNominaEstadoRrhh mapea frames visibles', () => {
-    expect(resolveNominaEstadoRrhh('lista_para_confirmar').etiqueta).toBe('Lista para confirmar');
+    expect(resolveNominaEstadoRrhh('lista_para_confirmar').etiqueta).toBe('Lista para aprobar');
     expect(resolveNominaEstadoRrhh('sin_generar').etiqueta).toBe('Sin generar');
   });
 

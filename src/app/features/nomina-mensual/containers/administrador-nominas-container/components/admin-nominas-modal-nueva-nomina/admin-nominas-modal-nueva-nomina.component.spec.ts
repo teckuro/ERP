@@ -5,10 +5,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EmpresaActivaService } from '../../../../../../core/services/empresa-activa.service';
 import { NominaPeriodoService } from '../../../../services/nomina-periodo.service';
 import type { NominaPeriodoResumen } from '../../../../models/nomina-periodo.models';
+import { crearNominaResumen } from '../../../../models/nomina-periodo.models';
 import { AdminNominasModalNuevaNominaComponent } from './admin-nominas-modal-nueva-nomina.component';
 
 function resumenMock(overrides: Partial<NominaPeriodoResumen> = {}): NominaPeriodoResumen {
-  return {
+  return crearNominaResumen({
     id: 'nom-creado',
     periodo: '2026-07',
     empresaId: '7',
@@ -25,7 +26,7 @@ function resumenMock(overrides: Partial<NominaPeriodoResumen> = {}): NominaPerio
     createdAt: '2026-07-01T00:00:00Z',
     updatedAt: '2026-07-01T00:00:00Z',
     ...overrides,
-  };
+  });
 }
 
 function configurar(opts: {
@@ -84,7 +85,6 @@ describe('AdminNominasModalNuevaNominaComponent (F3c — servicio productivo)', 
     const { servicio } = configurar();
     const cmp = crearComponente();
     cmp.setPeriodo('2026-07');
-    cmp.setTipo('extraordinaria');
 
     let emitido: NominaPeriodoResumen | null = null;
     cmp.creada.subscribe((r) => { emitido = r; });
@@ -92,10 +92,17 @@ describe('AdminNominasModalNuevaNominaComponent (F3c — servicio productivo)', 
     await cmp.confirmar();
 
     expect(servicio.crearNominaPeriodo).toHaveBeenCalledWith(
-      expect.objectContaining({ periodo: '2026-07', tipo: 'extraordinaria', empresaId: '7' }),
+      expect.objectContaining({ periodo: '2026-07', tipo: 'mensual', empresaId: '7' }),
     );
     expect(emitido).not.toBeNull();
     expect(emitido!.id).toBe('nom-creado');
+  });
+
+  it('expone solo el tipo mensual durante F01', () => {
+    const cmp = crearComponente();
+    expect(cmp.tiposNomina.map((tipo) => tipo.id)).toEqual(['mensual']);
+    cmp.setTipo('semanal');
+    expect(cmp.puedeCrear()).toBe(false);
   });
 
   it('Test 26 — cerrarModal emite (cerrar) cuando no está guardando', () => {

@@ -6,11 +6,12 @@ import type {
   EstadoNomina,
   NominaPeriodo,
 } from '../../../../../nomina-mensual/models/nomina-periodo.models';
+import { crearNomina } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
 import { NominaMensualV2PasoCierreComponent } from './nomina-mensual-v2-paso-cierre.component';
 
 function nominaMock(parcial: Partial<NominaPeriodo> = {}): NominaPeriodo {
-  return {
+  return crearNomina({
     id: 'np-1',
     periodo: '2026-06',
     empresaId: '7',
@@ -27,7 +28,7 @@ function nominaMock(parcial: Partial<NominaPeriodo> = {}): NominaPeriodo {
     createdAt: '2026-06-01T00:00:00Z',
     updatedAt: '2026-06-01T00:00:00Z',
     ...parcial,
-  };
+  });
 }
 
 function configurarTestBed(servicio?: Partial<Record<string, ReturnType<typeof vi.fn>>>): void {
@@ -65,6 +66,7 @@ describe('NominaMensualV2PasoCierreComponent (CIE-ENUM-01)', () => {
       ['calculada', 'Calculada'],
       ['validada', 'Validada'],
       ['aprobada', 'Aprobada'],
+      ['liquidada', 'Liquidada'],
       ['cerrada', 'Cerrada'],
       ['reabierta', 'Reabierta'],
       ['anulada', 'Anulada'],

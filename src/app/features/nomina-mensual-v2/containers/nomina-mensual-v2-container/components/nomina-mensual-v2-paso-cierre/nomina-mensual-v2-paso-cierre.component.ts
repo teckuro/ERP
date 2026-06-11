@@ -102,7 +102,10 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
       {
         id: 'validacion',
         label: 'Validación aprobada',
-        cumplido: n.estado === 'aprobada' && r.puedeCerrar && r.conIncidenciasCriticas === 0,
+        cumplido:
+          (n.estado === 'aprobada' || n.estado === 'liquidada')
+          && r.puedeCerrar
+          && r.conIncidenciasCriticas === 0,
         detalle: `${r.conIncidenciasCriticas} críticas · ${r.conAdvertencias} advertencias.`,
       },
     ];

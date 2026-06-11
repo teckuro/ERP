@@ -177,6 +177,7 @@ export const ETIQUETAS_ESTADO_NOMINA: Record<EstadoNomina, string> = {
   calculada: 'Calculada',
   validada: 'Validada',
   aprobada: 'Aprobada',
+  liquidada: 'Liquidada',
   cerrada: 'Cerrada',
   reabierta: 'Reabierta',
   anulada: 'Anulada',

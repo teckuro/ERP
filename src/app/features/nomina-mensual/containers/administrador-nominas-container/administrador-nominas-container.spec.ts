@@ -20,12 +20,13 @@ import {
 } from 'lucide-angular/src/icons';
 
 import type { NominaPeriodoResumen } from '../../models/nomina-periodo.models';
+import { crearNominaResumen } from '../../models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../services/nomina-periodo.service';
 import { DataGridComponent } from '../../../../shared/components/ui/data-grid/data-grid.component';
 import { AdministradorNominasContainer } from './administrador-nominas-container';
 
 function resumenMock(overrides: Partial<NominaPeriodoResumen> = {}): NominaPeriodoResumen {
-  return {
+  return crearNominaResumen({
     id: 'nom-1',
     periodo: '2026-06',
     empresaId: '7',
@@ -42,7 +43,7 @@ function resumenMock(overrides: Partial<NominaPeriodoResumen> = {}): NominaPerio
     createdAt: '2026-06-04T00:00:00Z',
     updatedAt: '2026-06-04T00:00:00Z',
     ...overrides,
-  };
+  });
 }
 
 interface ServicioMock {

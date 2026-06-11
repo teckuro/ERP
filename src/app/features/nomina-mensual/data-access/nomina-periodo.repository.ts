@@ -60,6 +60,12 @@ interface CrearNominaPayload {
   empresaNombre: string;
   periodo: string;
   tipo: NominaPeriodo['tipo'];
+  fechaInicio: string;
+  fechaFin: string;
+  naturaleza: NominaPeriodo['naturaleza'];
+  codigoCiclo: string;
+  plantillaCicloId?: string;
+  nominaOrigenId?: string;
 }
 
 interface GuardarTotalesPayload {
@@ -75,6 +81,7 @@ interface GuardarTotalesPayload {
 export interface TransicionNominaPayload {
   estadoEsperado: EstadoNomina;
   estadoDestino: EstadoNomina;
+  versionEstadoEsperada: number;
   motivo?: string;
   idCalculoPeriodo?: number;
   totalTrabajadores?: number;
@@ -193,6 +200,7 @@ export class NominaPeriodoRepository {
       p_total_haberes: payload.totalHaberes ?? undefined,
       p_total_descuentos: payload.totalDescuentos ?? undefined,
       p_total_liquido: payload.totalLiquido ?? undefined,
+      p_version_estado_esperada: payload.versionEstadoEsperada,
     });
     throwIfError(error, 'transicionarEstado');
     if (!data) {

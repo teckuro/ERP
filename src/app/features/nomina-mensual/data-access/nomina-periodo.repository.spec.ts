@@ -60,6 +60,13 @@ const FILA_NOMINA = {
   periodo: '2026-06',
   tipo: 'mensual',
   estado: 'borrador',
+  fecha_inicio: '2026-06-01',
+  fecha_fin: '2026-06-30',
+  naturaleza: 'liquidacion_legal',
+  codigo_ciclo: '2026-06-MES',
+  plantilla_ciclo_id: null,
+  nomina_origen_id: null,
+  version_estado: 0,
   total_trabajadores: 12,
   total_segmentos: 1,
   total_haberes: 0,
@@ -116,6 +123,10 @@ describe('NominaPeriodoRepository', () => {
       empresaNombre: 'Demo',
       periodo: '2026-06',
       tipo: 'mensual',
+      fechaInicio: '2026-06-01',
+      fechaFin: '2026-06-30',
+      naturaleza: 'liquidacion_legal',
+      codigoCiclo: '2026-06-MES',
     });
 
     expect(builder.insert).toHaveBeenCalledWith({
@@ -123,9 +134,33 @@ describe('NominaPeriodoRepository', () => {
       empresa_nombre: 'Demo',
       periodo: '2026-06',
       tipo: 'mensual',
+      fecha_inicio: '2026-06-01',
+      fecha_fin: '2026-06-30',
+      naturaleza: 'liquidacion_legal',
+      codigo_ciclo: '2026-06-MES',
+      plantilla_ciclo_id: null,
+      nomina_origen_id: null,
       estado: 'borrador',
     });
     expect(creado.id).toBe('nom-uuid-1');
+  });
+
+  it('transicionarEstado envia la version esperada a la RPC', async () => {
+    setSupabase(
+      () => makeBuilder({ data: null, error: null }),
+      { data: FILA_NOMINA, error: null },
+    );
+
+    await repo.transicionarEstado('nom-uuid-1', {
+      estadoEsperado: 'borrador',
+      estadoDestino: 'dotacion_generada',
+      versionEstadoEsperada: 4,
+    });
+
+    expect(rpc).toHaveBeenCalledWith(
+      'transicionar_nomina_periodo',
+      expect.objectContaining({ p_version_estado_esperada: 4 }),
+    );
   });
 
   it('actualizarEstado escribe closed_at cuando cierra', async () => {

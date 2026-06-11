@@ -11,6 +11,7 @@ import type {
   NominaPeriodoResumen,
   SegmentoNomina,
 } from '../models/nomina-periodo.models';
+import { crearNomina, crearNominaResumen } from '../models/nomina-periodo.models';
 import type {
   MovimientoNomina,
   MovimientoRecurrente,
@@ -19,7 +20,7 @@ import { NominaPeriodoService } from './nomina-periodo.service';
 import { EmpleadosService } from '../../empleados/services/empleados.service';
 
 function nomina(overrides: Partial<NominaPeriodo> = {}): NominaPeriodo {
-  return {
+  return crearNomina({
     id: 'nom-1',
     periodo: '2026-06',
     empresaId: '7',
@@ -36,7 +37,7 @@ function nomina(overrides: Partial<NominaPeriodo> = {}): NominaPeriodo {
     createdAt: '2026-06-04T00:00:00.000Z',
     updatedAt: '2026-06-04T00:00:00.000Z',
     ...overrides,
-  };
+  });
 }
 
 function segmento(overrides: Partial<SegmentoNomina> = {}): SegmentoNomina {
@@ -185,7 +186,7 @@ describe('NominaPeriodoService', () => {
   });
 
   it('listarResumenes retorna lista del repo cuando hay empresa activa', async () => {
-    const resumen: NominaPeriodoResumen = {
+    const resumen: NominaPeriodoResumen = crearNominaResumen({
       id: 'nom-1',
       periodo: '2026-06',
       empresaId: '7',
@@ -201,7 +202,7 @@ describe('NominaPeriodoService', () => {
       totalAdvertencias: 0,
       createdAt: '2026-06-04T00:00:00Z',
       updatedAt: '2026-06-04T00:00:00Z',
-    };
+    });
     repo.listarResumenes.mockResolvedValue([resumen]);
     const service = configurar({ repo });
     const lista = await service.listarResumenes();
@@ -221,8 +222,25 @@ describe('NominaPeriodoService', () => {
     const service = configurar({ repo });
     await service.crearNominaPeriodo({ periodo: '2026-06', tipo: 'mensual' });
     expect(repo.crear).toHaveBeenCalledWith(
-      expect.objectContaining({ periodo: '2026-06', tipo: 'mensual', empresaId: '7' }),
+      expect.objectContaining({
+        periodo: '2026-06',
+        tipo: 'mensual',
+        empresaId: '7',
+        fechaInicio: '2026-06-01',
+        fechaFin: '2026-06-30',
+        naturaleza: 'liquidacion_legal',
+        codigoCiclo: '2026-06-MES',
+      }),
     );
+  });
+
+  it('crearNominaPeriodo rechaza ciclos no mensuales durante F01', async () => {
+    const service = configurar({ repo });
+
+    await expect(
+      service.crearNominaPeriodo({ periodo: '2026-06', tipo: 'quincenal' }),
+    ).rejects.toThrow(/solo nominas mensuales/i);
+    expect(repo.crear).not.toHaveBeenCalled();
   });
 
   it('crearNominaPeriodo lanza error si no hay empresa activa', async () => {
@@ -884,6 +902,7 @@ describe('NominaPeriodoService', () => {
       expect(repo.transicionarEstado).toHaveBeenCalledWith('nom-1', {
         estadoEsperado: 'borrador',
         estadoDestino: 'dotacion_generada',
+        versionEstadoEsperada: 0,
       });
     });
 

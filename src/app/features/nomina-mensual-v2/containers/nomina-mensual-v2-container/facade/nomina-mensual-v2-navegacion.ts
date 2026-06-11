@@ -169,6 +169,8 @@ export function indiceUltimoPasoCompletadoPorEstado(estado: EstadoNomina | null)
       return 3;
     case 'aprobada':
       return 4;
+    case 'liquidada':
+      return 4;
     case 'cerrada':
       return 5;
     case 'reabierta':
@@ -202,6 +204,7 @@ export function indiceMaximoPasoAccesible(estado: EstadoNomina | null): number {
     case 'validada':
       return ORDEN_PASOS_NOMINA.indexOf('validation');
     case 'aprobada':
+    case 'liquidada':
     case 'cerrada':
     case 'reabierta':
       return ORDEN_PASOS_NOMINA.indexOf('closure');

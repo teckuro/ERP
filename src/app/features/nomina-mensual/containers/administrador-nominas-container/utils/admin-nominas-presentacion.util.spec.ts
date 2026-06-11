@@ -17,7 +17,7 @@ import {
 import type { PayrollStepId } from '../../../../nomina-mensual-v2/models/nomina-mensual-v2.models';
 
 describe('admin-nominas-presentacion.util — mapeos de badge', () => {
-  it('Test 16 — estadoNominaToBadge mapea los 9 estados a una variante visible', () => {
+  it('Test 16 — estadoNominaToBadge mapea los 10 estados a una variante visible', () => {
     const estados: EstadoNomina[] = [
       'borrador',
       'dotacion_generada',
@@ -25,6 +25,7 @@ describe('admin-nominas-presentacion.util — mapeos de badge', () => {
       'calculada',
       'validada',
       'aprobada',
+      'liquidada',
       'cerrada',
       'reabierta',
       'anulada',
@@ -36,6 +37,7 @@ describe('admin-nominas-presentacion.util — mapeos de badge', () => {
     }
     expect(estadoNominaToBadge('borrador').variant).toBe('neutral');
     expect(estadoNominaToBadge('cerrada').variant).toBe('success');
+    expect(estadoNominaToBadge('liquidada').label).toBe('Liquidada');
     expect(estadoNominaToBadge('anulada').variant).toBe('danger');
     expect(estadoNominaToBadge('reabierta').variant).toBe('warning');
   });

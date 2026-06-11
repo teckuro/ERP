@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { NominaPeriodo } from '../../../../nomina-mensual/models/nomina-periodo.models';
+import { crearNomina } from '../../../../nomina-mensual/models/nomina-periodo.models';
 import {
   ORDEN_PASOS_NOMINA,
   PASOS_CONGELADOS_V11,
@@ -25,7 +26,7 @@ function nominaConEstado(
   estado: NominaPeriodo['estado'],
   calculoVigente = true,
 ): NominaPeriodo {
-  return {
+  return crearNomina({
     id: 'np-1',
     periodo: '2026-06',
     empresaId: '7',
@@ -42,7 +43,7 @@ function nominaConEstado(
     createdAt: '2026-06-01T00:00:00Z',
     updatedAt: '2026-06-01T00:00:00Z',
     evidenciaCalculo: { versionCalculo: 1, calculoVigente },
-  };
+  });
 }
 
 describe('nomina-mensual-v2-navegacion (F3 fusion — 6 pasos)', () => {
@@ -156,6 +157,13 @@ describe('indiceUltimoPasoCompletado / obtenerEstadoPaso desde evidencia (AG-NAV
     expect(obtenerEstadoPaso('closure', 'closure', n)).toBe('active');
   });
 
+  it('estado liquidada: validation queda completed y closure pendiente', () => {
+    const n = nominaConEstado('liquidada', true);
+    expect(indiceUltimoPasoCompletado(n)).toBe(4);
+    expect(obtenerEstadoPaso('validation', 'closure', n)).toBe('completed');
+    expect(obtenerEstadoPaso('closure', 'parameters', n)).toBe('pending');
+  });
+
   it('estado cerrada: todos los pasos quedan completed', () => {
     const n = nominaConEstado('cerrada', true);
     expect(indiceUltimoPasoCompletado(n)).toBe(5);
@@ -201,6 +209,7 @@ describe('indiceUltimoPasoCompletadoPorEstado (variante para caller ligero)', ()
       'calculada',
       'validada',
       'aprobada',
+      'liquidada',
       'cerrada',
       'reabierta',
       'anulada',
@@ -232,9 +241,10 @@ describe('indiceMaximoPasoAccesible — restringe rehidratación a pasos alcanza
     expect(indiceMaximoPasoAccesible('validada')).toBe(ORDEN_PASOS_NOMINA.indexOf('validation'));
   });
 
-  it('aprobada/cerrada/reabierta permiten hasta closure', () => {
+  it('aprobada/liquidada/cerrada/reabierta permiten hasta closure', () => {
     const max = ORDEN_PASOS_NOMINA.indexOf('closure');
     expect(indiceMaximoPasoAccesible('aprobada')).toBe(max);
+    expect(indiceMaximoPasoAccesible('liquidada')).toBe(max);
     expect(indiceMaximoPasoAccesible('cerrada')).toBe(max);
     expect(indiceMaximoPasoAccesible('reabierta')).toBe(max);
   });

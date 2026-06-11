@@ -6,6 +6,7 @@ import { NominaCalculoSnapshotRepository } from './nomina-calculo-snapshot.repos
 
 const baseRow = {
   id_calculo_periodo: 1,
+  id_nomina_periodo: 'nomina-uuid-1',
   periodo: '2026-05',
   id_empresa: null,
   estado: 'preliminar',
@@ -393,6 +394,7 @@ describe('NominaCalculoSnapshotRepository', () => {
     expect(rpcPayload.p_observaciones[0]).toMatchObject({ trabajador_index: 0, mensaje: 'Informacion guardada.' });
     expect(rpcPayload.p_trazabilidad[0]).toMatchObject({ trabajador_index: 0, codigo: 'LIQUIDO_PRELIMINAR' });
     expect(guardado.snapshot.idCalculoPeriodo).toBe(2);
+    expect(guardado.snapshot.nominaPeriodoId).toBe('nomina-uuid-1');
     expect(guardado.snapshot.aprobacionOperativa).toBeNull();
     expect(guardado.reemplazoSnapshotAnterior).toBe(true);
   });

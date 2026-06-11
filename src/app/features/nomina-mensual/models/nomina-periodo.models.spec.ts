@@ -5,6 +5,7 @@ import {
   crearNomina,
   crearNominaResumen,
   crearSegmento,
+  derivarIdentidadNominaMensual,
   moverTrabajadorEntreSegmentos,
 } from './nomina-periodo.models';
 import type { MovimientoNomina } from './movimiento-nomina.models';
@@ -27,6 +28,19 @@ describe('nomina-periodo.models — helpers de creación y reglas de segmentos',
     expect(nomina.movimientos).toEqual([]);
     expect(nomina.incidencias).toEqual([]);
     expect(nomina.trabajadorIds).toEqual([]);
+  });
+
+  it('deriva rango mensual, ciclo y naturaleza incluso en ano bisiesto', () => {
+    expect(derivarIdentidadNominaMensual('2028-02')).toEqual({
+      fechaInicio: '2028-02-01',
+      fechaFin: '2028-02-29',
+      naturaleza: 'liquidacion_legal',
+      codigoCiclo: '2028-02-MES',
+    });
+  });
+
+  it('rechaza periodos mensuales invalidos', () => {
+    expect(() => derivarIdentidadNominaMensual('2026-13')).toThrow(/periodo mensual invalido/i);
   });
 
   it('Test 3 — crearSegmento retorna sub-grupo con ordinal explícito y total derivado', () => {

@@ -10,9 +10,18 @@ const TRANSICIONES: Record<EstadoNomina, readonly EstadoNomina[]> = {
   en_revision: ['calculada', 'anulada'],
   calculada: ['en_revision', 'validada', 'anulada'],
   validada: ['en_revision', 'aprobada', 'anulada'],
-  aprobada: ['en_revision', 'cerrada', 'anulada'],
+  aprobada: ['en_revision', 'liquidada', 'cerrada', 'anulada'],
+  liquidada: ['en_revision', 'cerrada', 'anulada'],
   cerrada: ['reabierta'],
-  reabierta: ['en_revision', 'calculada', 'validada', 'aprobada', 'cerrada', 'anulada'],
+  reabierta: [
+    'en_revision',
+    'calculada',
+    'validada',
+    'aprobada',
+    'liquidada',
+    'cerrada',
+    'anulada',
+  ],
   anulada: [],
 };
 
@@ -27,7 +36,7 @@ export function exigirTransicionNomina(origen: EstadoNomina, destino: EstadoNomi
 }
 
 export function estadoNominaBloqueaEdicion(estado: EstadoNomina): boolean {
-  return estado === 'cerrada' || estado === 'anulada';
+  return estado === 'liquidada' || estado === 'cerrada' || estado === 'anulada';
 }
 
 export function proximoPasoNomina(estado: EstadoNomina): PasoSiguienteNomina {
@@ -39,6 +48,7 @@ export function proximoPasoNomina(estado: EstadoNomina): PasoSiguienteNomina {
     case 'calculada': return 'validacion';
     case 'validada': return 'cierre';
     case 'aprobada': return 'cierre';
+    case 'liquidada': return 'cierre';
     case 'cerrada': return 'liquidaciones';
     case 'anulada': return 'sin_accion';
   }
@@ -50,7 +60,11 @@ export function nominaRequiereAccion(estado: EstadoNomina): boolean {
 
 export function prioridadNomina(resumen: NominaPeriodoResumen): number {
   if (resumen.totalIncidenciasCriticas > 0) return 0;
-  if (resumen.estado === 'aprobada' || resumen.estado === 'reabierta') return 1;
+  if (
+    resumen.estado === 'aprobada'
+    || resumen.estado === 'liquidada'
+    || resumen.estado === 'reabierta'
+  ) return 1;
   if (nominaRequiereAccion(resumen.estado)) return 2;
   return 3;
 }
