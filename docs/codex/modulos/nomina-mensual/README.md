@@ -1,6 +1,12 @@
 # Módulo Nómina mensual — punto de entrada
 
-> **Decisión rectora vigente (2026-06-03 — `NOM-REBUILD-NOMINA-MENSUAL-01`)**: Nómina mensual es **Administrador** + Nómina V2 es **Generador**. Stepper de 6 pasos: `Parámetros / Dotación / Movimientos / Cálculo / Validación / Cierre`. Naming definitivo: `Dotación` (paso) + `SegmentoNomina` (grupo). Documento rector: [`arquitectura-administrador-generador.md`](./arquitectura-administrador-generador.md). Fases F0+F1 implementadas; F2-F7 declaradas en el documento rector.
+> **Decisión rectora vigente (2026-06-11 — `NOM-ADMIN-GENERADOR-OPERATIVO-100`)**:
+> el único flujo visible es **Administrador + Generador**. El plan detallado para
+> completar creación, cálculo, consolidación, validación, liquidaciones internas,
+> cierre y rectificación vive en
+> [`roadmap-admin-generador-operativo-100.md`](./roadmap-admin-generador-operativo-100.md).
+> La arquitectura de origen se conserva en
+> [`arquitectura-administrador-generador.md`](./arquitectura-administrador-generador.md).
 
 ## Estructura de la documentación
 
@@ -20,14 +26,21 @@
 
 ### En la raíz del módulo
 
-- [`README.md`](./preparar-nomina/README.md) — este archivo (índice + bitácora histórica de H2 por ID).
+- [`README.md`](./README.md) — este archivo (índice + bitácora histórica de H2 por ID).
 - [`contrato-general.md`](./contrato-general.md) — contrato funcional canónico del módulo.
 - [`matriz-bloqueos-periodo.md`](./matriz-bloqueos-periodo.md) — matriz transversal de bloqueos por período.
+- [`arquitectura-administrador-generador.md`](./arquitectura-administrador-generador.md) — arquitectura base del Administrador y Generador.
+- [`roadmap-admin-generador-operativo-100.md`](./roadmap-admin-generador-operativo-100.md) — hoja de ruta vigente, dividida en 23 fases ejecutables.
 
 ### Segregación V1 / V2
 
-- **V1** = flujo histórico `/remuneraciones/proceso-mensual` (motor activo, productivo). La mayor parte de los documentos en `flow/`, `modales-periodo/`, `workspace/`, `motor-calculo/`, `prevalidaciones/` se refieren a V1.
-- **V2** = `/remuneraciones/nomina-mensual-v2` (pasos 1–3 productivos hasta V11). Auditoría NOIA y plan iterativo L0–L7 documentados en [`auditorias/auditoria-nomina-v2-2026-06.md`](./auditorias/auditoria-nomina-v2-2026-06.md) (DOCS-AUDIT-02 cerró 2026-06-03). El stack V11 (preparaciones por lotes) vive en [`v2/`](./v2/).
+- **Flujo histórico** = la antigua UI `/remuneraciones/proceso-mensual`, retirada
+  del menú y redirigida al Administrador. Sus documentos se conservan como
+  historia y como referencia del motor compartido que aún debe desacoplarse.
+- **Flujo canónico** = `/remuneraciones/nominas` y
+  `/remuneraciones/nominas/:nominaPeriodoId/generador`, con seis pasos. El
+  roadmap operativo vigente es
+  [`roadmap-admin-generador-operativo-100.md`](./roadmap-admin-generador-operativo-100.md).
 
 ## Estado
 
@@ -323,13 +336,11 @@ No agregar Previred, LRE, banco, contabilidad, PDF ni firma en esta etapa.
 
 **NOM-LIQ-ACTA-GUIADA-DESIGN-00 (2026-05-17):** contrato documental del flujo `Preparar nomina -> Liquidaciones oficiales`: cada accion critica debe tener contexto antes y evidencia despues. Ver [`../../diseno/nom-liq-acta-guiada-design-00.md`](../../diseno/nom-liq-acta-guiada-design-00.md).
 
-**NOM-PREPARAR-NOMINA-ACTA-ACCION-UX-01 (2026-05-17):** `Acta operativa del periodo` en Preparar nomina. Muestra contexto revisado, decision y evidencia local antes de Liquidaciones oficiales. Ver [`nom-preparar-nomina-acta-accion-ux-01.md`](nom-preparar-nomina-acta-accion-ux-01.md).
+**NOM-PREPARAR-NOMINA-ACTA-ACCION-UX-01 (2026-05-17):** `Acta operativa del periodo` en Preparar nomina. Muestra contexto revisado, decision y evidencia local antes de Liquidaciones oficiales. Ver [`nom-preparar-nomina-acta-accion-ux-01.md`](./workspace/nom-preparar-nomina-acta-accion-ux-01.md).
 
-**NOM-PREPARAR-NOMINA-ESTADOS-VISUALES-PREMIUM-UX-01 (2026-05-18):** estados visuales, anti-redundancia, acta compacta, bandeja por contexto. Ver [`nom-preparar-nomina-estados-visuales-premium-ux-01.md`](nom-preparar-nomina-estados-visuales-premium-ux-01.md).
+**NOM-PREPARAR-NOMINA-ESTADOS-VISUALES-PREMIUM-UX-01 (2026-05-18):** estados visuales, anti-redundancia, acta compacta, bandeja por contexto. Ver [`nom-preparar-nomina-estados-visuales-premium-ux-01.md`](./workspace/nom-preparar-nomina-estados-visuales-premium-ux-01.md).
 
-**NOM-PREPARAR-NOMINA-ESTADOS-VISUALES-PREMIUM-UX-01 (2026-05-18):** estados visuales, anti-redundancia, acta compacta, bandeja por contexto. Ver [`nom-preparar-nomina-estados-visuales-premium-ux-01.md`](nom-preparar-nomina-estados-visuales-premium-ux-01.md).
-
-**NOM-PREPARAR-NOMINA-ACTA-DISENO-ESTRUCTURADO-UX-01 (2026-05-18):** refinamiento visual del acta como pieza de cierre operativo, sin cambios de logica ni persistencia. Ver [`nom-preparar-nomina-acta-diseno-estructurado-ux-01.md`](nom-preparar-nomina-acta-diseno-estructurado-ux-01.md).
+**NOM-PREPARAR-NOMINA-ACTA-DISENO-ESTRUCTURADO-UX-01 (2026-05-18):** refinamiento visual del acta como pieza de cierre operativo, sin cambios de logica ni persistencia. Ver [`nom-preparar-nomina-acta-diseno-estructurado-ux-01.md`](./workspace/nom-preparar-nomina-acta-diseno-estructurado-ux-01.md).
 
 ## UX-COMERCIAL-01 V4 aplicado
 

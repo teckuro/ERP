@@ -79,6 +79,7 @@ yarn-error.log
 !/docs/codex/modulos/nomina-mensual/README.md
 !/docs/codex/modulos/nomina-mensual/contrato-general.md
 !/docs/codex/modulos/nomina-mensual/arquitectura-administrador-generador.md
+!/docs/codex/modulos/nomina-mensual/roadmap-admin-generador-operativo-100.md
 !/docs/codex/modulos/nomina-mensual/auditorias/
 /docs/codex/modulos/nomina-mensual/auditorias/*
 !/docs/codex/modulos/nomina-mensual/auditorias/README.md

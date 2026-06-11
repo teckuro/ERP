@@ -155,7 +155,17 @@ Parametros funciona como cierre normativo del periodo: muestra estado operativo,
 ## 8. Decisiones de producto vigentes
 
 
-- **Reconstrucción Admin + Generador (2026-06-03/04 — `NOM-REBUILD-NOMINA-MENSUAL-01`)**: `Nómina mensual` (`/remuneraciones/proceso-mensual`) sigue intacta como motor productivo V1; el flujo nuevo vive en `/remuneraciones/nominas` (Administrador) y `/remuneraciones/nominas/:nominaPeriodoId/generador` (Generador V2 reescrito a 6 pasos: `Parámetros / Dotación / Movimientos / Cálculo / Validación / Cierre`). Naming: `Dotación` (reemplaza Alcance+Empleados) y `SegmentoNomina` (grupo operativo, reemplaza Sub-base / Sub-nómina). Documento rector: [`modulos/nomina-mensual/arquitectura-administrador-generador.md`](./modulos/nomina-mensual/arquitectura-administrador-generador.md). Fases F0–F3 fusion implementadas: F0+F1 doc + modelos + adapter mock + tests (2026-06-03); F2 UI Administrador (2026-06-04); **F3 fusion (F3+F4+F5) BD real + Generador V2 renovado** (2026-06-04) con migración SQL `20260604180000_nomina_rebuild_admin_generador.sql` (6 tablas + RLS + triggers), `EmpresaActivaService`, `NominaPeriodoService` productivo y los 6 pasos del Generador funcionales. Sidebar V2 retirado: el acceso al Generador es desde el Administrador. Detalle de aplicación de migración: [`modulos/nomina-mensual/migracion-bd-nomina-rebuild.md`](./modulos/nomina-mensual/migracion-bd-nomina-rebuild.md). Pendiente: F6 (motor productivo nuevo) y F7 (limpieza V1). Resumen UI: ruta canónica `/remuneraciones/nominas`, item de menú nuevo "Administrador de nóminas" (`clipboard-list`), grilla `app-data-grid` con 9 columnas + 5 filtros, KPIs operativos, modal "Nueva nómina" persistente, modal "Resumen de nómina" y acción "Abrir generador" (2026-06-04). F3-F7 declaradas (Generador definitivo + Dotación escalable + Movimientos integrados + Cálculo + Limpieza).
+- **Administrador + Generador operativo (2026-06-11 — `NOM-ADMIN-GENERADOR-OPERATIVO-100`)**:
+  el flujo visible canónico vive en `/remuneraciones/nominas` y
+  `/remuneraciones/nominas/:nominaPeriodoId/generador`. La UI histórica de
+  `/remuneraciones/proceso-mensual` fue retirada y redirige al Administrador.
+  Persisten dependencias técnicas por `periodo` en cálculo y liquidaciones, que
+  deben migrarse a identidad por nómina. El roadmap vigente divide el trabajo
+  en 23 fases: dominio, migración aditiva, permisos, ciclos, preview, dotación,
+  movimientos, cálculo, anticipos, extraordinarias, consolidación mensual,
+  validación, aprobación, liquidaciones internas, cierre, rectificación,
+  integración UI, limpieza y certificación. Documento:
+  [`modulos/nomina-mensual/roadmap-admin-generador-operativo-100.md`](./modulos/nomina-mensual/roadmap-admin-generador-operativo-100.md).
 - Nómina mensual confirmada es la fuente oficial para generar liquidaciones: el flujo futuro visible debe ser generar nómina, revisar trabajadores, confirmar nómina y generar liquidaciones desde esa versión. Documento rector: [`modulos/nomina-mensual/flow/nomina-mensual-confirmacion-flow.md`](./modulos/nomina-mensual/flow/nomina-mensual-confirmacion-flow.md).
 - `Movimientos del mes` y `Asignaciones recurrentes` deben evolucionar a una experiencia unificada visible: `Movimientos de remuneración`.
 - La diferencia real es temporal:

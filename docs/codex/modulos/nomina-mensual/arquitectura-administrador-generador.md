@@ -2,6 +2,14 @@
 
 > **Documento rector** creado en `NOM-REBUILD-NOMINA-MENSUAL-01` (2026-06-03).
 
+> **Actualización rectora 2026-06-11:** este documento conserva la arquitectura
+> de origen y el historial F0-F7. La planificación vigente para completar el
+> flujo productivo está dividida en 23 fases en
+> [`roadmap-admin-generador-operativo-100.md`](./roadmap-admin-generador-operativo-100.md).
+> La UI histórica de `/remuneraciones/proceso-mensual` ya fue retirada; el motor
+> y contratos internos compartidos que aún dependen de `periodo` se consideran
+> compatibilidad técnica pendiente, no un segundo flujo visible.
+
 ## Actualización 2026-06-05 - ciclo consistente y cálculo vigente
 
 `NOM-ADMIN-ABIERTAS-CICLO-CONSISTENTE-01` completa la coherencia operativa:
