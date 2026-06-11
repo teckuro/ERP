@@ -9,6 +9,47 @@
 
 ---
 
+## 2026-06-11 — Nómina v2 · Movimientos · stepper denso + alertas en msgbox + modal sin escape
+
+Pulida de tres puntos de fricción reportados por el usuario.
+
+### Motivación
+
+Feedback textual: «mejoras al la pestaña de movimientos primero hagamos mas compacta de alto el nmv2-stepper nomina-stepper nomina-stepper-compact para tener mas espacio para la grillas , quitar paso-mov__alert is-info las alertas siempre deben estar en msgbox , en el modal e agregar por cada trabajador no debe venir la opcion de cambiar de trabajador».
+
+### Decisiones
+
+- **Stepper más denso**: el card del stepper reservaba `min-height: 66px` con `grid-template-rows: 20px / 46px` y cada step `46px` de alto. Se baja a `min-height: 50px`, filas `16px / 34px` y step `34px` con `padding 4px 24px 4px 7px`. Status pill sube de `top: 6px` a `4px`. En `nomina-stepper-compact .step`: padding `6px 8px 8px` → `4px 8px 5px`. Ganancia neta ~16 px verticales para la grilla. Sin cambios de tipografía ni de tamaños de circulitos numerados.
+- **Alertas como `app-message-box`**: las dos banners ad-hoc del paso (`paso-mov__alert is-error` y `paso-mov__alert is-info`) se eliminan. En su lugar se monta el componente compartido `app-message-box` con `mode="inline"`, `variant="danger"` para el error y `variant="info"` para el mensaje informativo, ambos `[dismissible]="true"` con handler local que limpia el signal. Esto alinea el paso con el resto de la v2 (`paso-parametros`, `paso-cierre`, overlays) donde la única fuente de feedback es msgbox. Se eliminan las reglas CSS `paso-mov__alert*` del componente.
+- **Modal sin "Cambiar trabajador"**: el botón ghost que permitía soltar la ficha del trabajador preseleccionado se retira. Cuando el modal se abre desde una fila, el trabajador queda inmovilizado (la fila clickeada determina la identidad). El método `cambiarTrabajadorEnModal()` queda sin consumidores y se elimina. CSS de `paso-mov__ficha-trabajador` pasa de `justify-content: space-between` a `flex-start` para acompañar.
+
+### Archivos tocados
+
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component.css` — densificación del card, label y step.
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container.css` — ajuste del padding del wrapper `nomina-stepper-compact .step`.
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.ts` — import de `MessageBoxComponent`, dos handlers `descartarError()` / `descartarMensaje()`, eliminación de `cambiarTrabajadorEnModal()`.
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.html` — banners migrados a `app-message-box`; botón "Cambiar trabajador" eliminado del modal.
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.css` — eliminación de las reglas `paso-mov__alert*`; `paso-mov__ficha-trabajador` con `justify-content: flex-start`.
+
+### Archivos NO tocados (guardrails)
+
+- Estilos globales (`src/styles*`), `angular.json`, `tailwind.config.*`, fuentes, tema.
+- Modelos, servicio (`NominaPeriodoService`), repositorio, presenter, mappers.
+- Otros pasos del v2 (`paso-dotacion`, `paso-parametros`, `paso-calculo`, `paso-validacion`, `paso-cierre`) y el componente `app-message-box` compartido.
+- Motor de cálculo, liquidaciones productivas, SQL/RPC/RLS.
+
+### Validación
+
+- `npx ng test --watch=false --include='**/paso-movimientos/**/*.spec.ts'` → **18/18**.
+- `npx ng test --watch=false --include='**/nomina-mensual-v2/**/*.spec.ts'` → **224/224** (regresión total v2).
+- `npx ng build --configuration=development` → OK.
+
+### Lo que se contrastó con `docs/codex`
+
+`noia-ui-manual.md` (densidad compacta, mensajería centralizada en msgbox, sin chips ad-hoc), `noia-antipatrones-ia.md` (no banners decorativos en cada componente), `noia-ui-review-checklist.md` (una sola fuente de feedback). El componente `app-message-box` ya es el contrato del repo para feedback inline/modal.
+
+---
+
 ## 2026-06-10 — Nómina v2 · Movimientos · toolbar bajo las stats (densificación del header)
 
 Seguimiento del pulido del día. Reposicionamiento de la toolbar global del paso Movimientos.

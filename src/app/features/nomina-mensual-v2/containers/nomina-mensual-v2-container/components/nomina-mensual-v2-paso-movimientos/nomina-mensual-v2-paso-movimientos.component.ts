@@ -42,6 +42,7 @@ import {
   DataGridComponent,
   DataGridRowDetailDirective,
 } from '../../../../../../shared/components/ui/data-grid';
+import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
 import {
   calcularStatsMovimientosPorTrabajador,
   COLUMNAS_MOVIMIENTOS_POR_TRABAJADOR,
@@ -76,6 +77,7 @@ const BORRADOR_MANUAL_INICIAL: BorradorManual = {
     DataGridComponent,
     DataGridCellDirective,
     DataGridRowDetailDirective,
+    MessageBoxComponent,
   ],
   templateUrl: './nomina-mensual-v2-paso-movimientos.component.html',
   styleUrl: './nomina-mensual-v2-paso-movimientos.component.css',
@@ -354,6 +356,16 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
     });
   }
 
+  // -- Banners (app-message-box) ---------------------------------------------
+
+  descartarError(): void {
+    this.error.set(null);
+  }
+
+  descartarMensaje(): void {
+    this.mensaje.set(null);
+  }
+
   // -- Modal manual ----------------------------------------------------------
 
   abrirModalManual(trabajadorIdPreseleccionado?: string): void {
@@ -375,17 +387,6 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
     this.modalManualAbierto.set(false);
     this.busquedaTrabajador.set('');
     this.trabajadorPreseleccionadoModal.set(null);
-  }
-
-  /**
-   * Permite al usuario "soltar" la ficha del trabajador fija dentro del modal
-   * y volver al buscador + select. Útil si abrió el modal con preselección
-   * pero quiere agregarle el movimiento a otra persona.
-   */
-  cambiarTrabajadorEnModal(): void {
-    this.trabajadorPreseleccionadoModal.set(null);
-    this.borradorManual.update((b) => ({ ...b, trabajadorId: '' }));
-    this.busquedaTrabajador.set('');
   }
 
   private resolverFichaTrabajador(trabajadorId: string): {

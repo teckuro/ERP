@@ -142,25 +142,6 @@
 /* Alertas / placeholders                                                     */
 /* -------------------------------------------------------------------------- */
 
-.paso-mov__alert {
-  margin: 0;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-}
-
-.paso-mov__alert.is-error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
-}
-
-.paso-mov__alert.is-info {
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  color: #1e3a8a;
-}
-
 .paso-mov__placeholder {
   margin: 0;
   padding: 18px;
@@ -660,11 +641,12 @@
 }
 
 /* Ficha del trabajador preseleccionado: bloque sólido con identidad clara,
-   sin convertirse en card decorativa. */
+   sin convertirse en card decorativa. Sin botón de escape: la fila clickeada
+   determina al trabajador del movimiento. */
 .paso-mov__ficha-trabajador {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 12px;
   padding: 10px 12px;
   border: 1px solid #e2e8f0;

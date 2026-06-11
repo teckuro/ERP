@@ -60,10 +60,24 @@
   </header>
 
   @if (error(); as msg) {
-    <p class="paso-mov__alert is-error" role="alert">{{ msg }}</p>
+    <app-message-box
+      mode="inline"
+      variant="danger"
+      [message]="msg"
+      [dismissible]="true"
+      dismissLabel="Cerrar"
+      (dismiss)="descartarError()"
+    ></app-message-box>
   }
   @if (mensaje(); as msg) {
-    <p class="paso-mov__alert is-info" role="status">{{ msg }}</p>
+    <app-message-box
+      mode="inline"
+      variant="info"
+      [message]="msg"
+      [dismissible]="true"
+      dismissLabel="Cerrar"
+      (dismiss)="descartarMensaje()"
+    ></app-message-box>
   }
 
   @if (loading()) {
@@ -359,11 +373,6 @@
                   }
                 </span>
               </div>
-              <button
-                type="button"
-                class="paso-mov__btn is-ghost is-small"
-                (click)="cambiarTrabajadorEnModal()"
-              >Cambiar trabajador</button>
             </div>
           } @else {
             <label class="paso-mov__field">
