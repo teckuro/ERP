@@ -20,16 +20,13 @@ import { NominaPeriodoService } from '../../../nomina-mensual/services/nomina-pe
 import type { NominaPeriodo } from '../../../nomina-mensual/models/nomina-periodo.models';
 import { payrollSteps } from '../../data/nomina-mensual-v2.mock';
 import type { PayrollStepId } from '../../models/nomina-mensual-v2.models';
-import type { TipoPendienteEmpleado } from '../../presenters/nomina-empleados-validacion.presenter';
 
 import { NominaMensualV2OverlaysComponent } from './components/nomina-mensual-v2-overlays/nomina-mensual-v2-overlays.component';
-import { NominaMensualV2PasoAlcanceComponent } from './components/nomina-mensual-v2-paso-alcance/nomina-mensual-v2-paso-alcance.component';
 import { NominaMensualV2PasoCalculoComponent } from './components/nomina-mensual-v2-paso-calculo/nomina-mensual-v2-paso-calculo.component';
 import { NominaMensualV2PasoCierreComponent } from './components/nomina-mensual-v2-paso-cierre/nomina-mensual-v2-paso-cierre.component';
 import { NominaMensualV2PasoDotacionComponent } from './components/nomina-mensual-v2-paso-dotacion/nomina-mensual-v2-paso-dotacion.component';
 import { NominaMensualV2PasoMovimientosComponent } from './components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component';
 import { NominaMensualV2PasoValidacionComponent } from './components/nomina-mensual-v2-paso-validacion/nomina-mensual-v2-paso-validacion.component';
-import { NominaMensualV2PasoEmpleadosComponent } from './components/nomina-mensual-v2-paso-empleados/nomina-mensual-v2-paso-empleados.component';
 import { NominaMensualV2PasoParametrosComponent } from './components/nomina-mensual-v2-paso-parametros/nomina-mensual-v2-paso-parametros.component';
 import { NominaMensualV2StepperComponent } from './components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component';
 import {
@@ -87,8 +84,6 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   private readonly accesoBaseService = inject(NominaParametrosBaseAccesoService);
 
   private readonly pasoParametros = viewChild(NominaMensualV2PasoParametrosComponent);
-  private readonly pasoAlcance = viewChild(NominaMensualV2PasoAlcanceComponent);
-  private readonly pasoEmpleados = viewChild(NominaMensualV2PasoEmpleadosComponent);
   private readonly pasoDotacion = viewChild(NominaMensualV2PasoDotacionComponent);
   private readonly pasoMovimientos = viewChild(NominaMensualV2PasoMovimientosComponent);
   private readonly pasoCalculo = viewChild(NominaMensualV2PasoCalculoComponent);
@@ -474,18 +469,6 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     }
   }
 
-  manejarAvanceDesdeAlcance(): void {
-    this.irAPaso('movements');
-  }
-
-  irAPasoAlcance(): void {
-    this.irAPaso('dotacion');
-  }
-
-  manejarAvanceDesdeEmpleados(): void {
-    this.irAPaso('movements');
-  }
-
   confirmarAvanceConRevision(): void {
     this.pasoParametros()?.confirmarAvanceConRevision();
   }
@@ -525,26 +508,6 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
 
   cerrarModalRevisarParametros(): void {
     this.orquestador.modalRevisarParametros.set(null);
-  }
-
-  confirmarAvanceConAdvertenciaAlcance(): void {
-    this.pasoAlcance()?.confirmarAvanceConAdvertencia();
-  }
-
-  confirmarAvanceConAdvertenciaEmpleados(): void {
-    this.pasoEmpleados()?.confirmarAvanceConAdvertencia();
-  }
-
-  verEnGrillaEmpleados(tipo: TipoPendienteEmpleado): void {
-    this.pasoEmpleados()?.aplicarFiltroChecklistEmpleados(tipo);
-  }
-
-  reintentarValidacionEmpleados(): void {
-    this.pasoEmpleados()?.ejecutarAccionPrincipal();
-  }
-
-  irAPendientesEmpleados(): void {
-    this.pasoEmpleados()?.irAPendientesEmpleados();
   }
 
   /**

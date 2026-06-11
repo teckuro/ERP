@@ -154,6 +154,10 @@ export type EstadoMovimientoConfiguradoEnNomina =
  * recurrentes activos con la dotación y los movimientos del período. El
  * `filaId` se construye determinísticamente para soportar `trackBy` estable
  * en la grilla y el set de filas expandidas del data-grid.
+ *
+ * @deprecated Reemplazado por la vista por trabajador `FilaTrabajadorMovimientos`
+ * + `ItemMovimientoTrabajador`. Conservado por compatibilidad temporal hasta
+ * eliminar `listarMovimientosConfigurados`.
  */
 export interface FilaMovimientoConfigurado {
   /** Identidad estable de la fila: `${trabajadorId}::${recurrenteId}::${tipo}`. */
@@ -182,6 +186,104 @@ export interface FilaMovimientoConfigurado {
    * y `omitido-este-mes`), apunta a su id. En `pendiente` es `undefined`.
    */
   movimientoNominaId?: string;
+}
+
+// -----------------------------------------------------------------------------
+// Vista unificada del paso Movimientos (fila = trabajador)
+// -----------------------------------------------------------------------------
+
+/**
+ * Origen lógico de un item del paso Movimientos.
+ * - `configurado`: viene de un `MovimientoRecurrente` vigente cruzado con la
+ *   dotación. Puede estar pendiente, aplicado u omitido este mes.
+ * - `manual`: lo agregó el usuario manualmente este período. No tiene
+ *   `recurrenteId`. No proviene del catálogo permanente.
+ */
+export type OrigenMovimientoTrabajador = 'configurado' | 'manual';
+
+/**
+ * Estado del item respecto a la nómina actual. Resume los 5 estados de
+ * `MovimientoNomina` a los 3 que el usuario realmente debe ver:
+ * - `pendiente`: configurado pero aún NO materializado en `movimiento_nomina`.
+ * - `aplicado`: existe el `movimiento_nomina` con `estado='aplicado'` u
+ *   `'observado'`. Entra al cálculo.
+ * - `omitido`: existe el `movimiento_nomina` con `estado='omitido'`. NO entra
+ *   al cálculo, no se reaplica automáticamente.
+ */
+export type EstadoItemMovimiento = 'pendiente' | 'aplicado' | 'omitido';
+
+/**
+ * Item individual del expandible de un trabajador en la grilla de Movimientos.
+ *
+ * Es la representación plana de un movimiento (configurado o manual) listo
+ * para mostrar y operar fila a fila desde el detalle del trabajador.
+ */
+export interface ItemMovimientoTrabajador {
+  /** Identidad estable del item (`trackBy`):
+   *  - Configurado pendiente: `cfg::${trabajadorId}::${recurrenteId}::${tipo}`.
+   *  - Materializado: `mov::${movimientoNominaId}`.
+   */
+  itemId: string;
+
+  origen: OrigenMovimientoTrabajador;
+  estado: EstadoItemMovimiento;
+
+  /** Texto del concepto (codigo del catálogo legacy o etiqueta libre del manual). */
+  concepto: MovimientoTipo;
+  categoria: MovimientoCategoria;
+
+  monto?: number;
+  cantidad?: number;
+  unidad?: MovimientoUnidad;
+
+  /** Solo presente en items con origen `configurado`. */
+  frecuencia?: MovimientoFrecuencia;
+  vigenciaDesde?: string;
+  vigenciaHasta?: string;
+
+  glosa?: string;
+
+  /** Referencia a la regla recurrente que originó el item (solo `configurado`). */
+  recurrenteId?: string;
+  /** Referencia al `movimiento_nomina`. `undefined` si el item está `pendiente`. */
+  movimientoNominaId?: string;
+}
+
+/**
+ * Fila principal de la grilla de Movimientos: agrega por trabajador los items
+ * del período y precalcula los contadores que la UI muestra antes de expandir.
+ *
+ * Reglas de agregación (estables, ver tests):
+ * - `totalHaberes` / `totalDescuentos`: suman SOLO items con `estado='aplicado'`
+ *   y `monto != null`. Refleja "lo que ya entró al cálculo", no estimaciones.
+ * - `cuentaAusencias` / `cuentaInformativos`: cuentan items con
+ *   `estado != 'omitido'` (incluye pendientes y aplicados).
+ * - Contadores por estado (`cuentaPendientes`, `cuentaAplicados`,
+ *   `cuentaOmitidos`) cuentan TODOS los items del trabajador sin importar
+ *   categoría — son la base de los badges y las acciones masivas.
+ * - `cuentaManualesAplicados`: items con `origen='manual'` y
+ *   `estado='aplicado'`. Útil para mostrar trazabilidad del trabajo manual.
+ *
+ * `items` viene ordenado: pendientes primero, luego aplicados, luego omitidos.
+ */
+export interface FilaTrabajadorMovimientos {
+  trabajadorId: string;
+  nombre: string;
+  rut: string;
+  cargo?: string;
+  centroCosto?: string;
+
+  totalHaberes: number;
+  totalDescuentos: number;
+  cuentaAusencias: number;
+  cuentaInformativos: number;
+
+  cuentaPendientes: number;
+  cuentaAplicados: number;
+  cuentaOmitidos: number;
+  cuentaManualesAplicados: number;
+
+  items: ItemMovimientoTrabajador[];
 }
 
 /**

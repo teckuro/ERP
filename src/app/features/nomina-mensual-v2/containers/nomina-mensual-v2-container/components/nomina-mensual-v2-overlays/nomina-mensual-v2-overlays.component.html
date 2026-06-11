@@ -90,48 +90,6 @@
   ></app-message-box>
 }
 
-@if (orquestador.modalAvanceAlcance(); as modalAlcance) {
-  @switch (modalAlcance.tipo) {
-    @case ('bloqueo') {
-      <app-message-box
-        variant="blocked"
-        mode="modal"
-        width="md"
-        [title]="modalAlcance.titulo"
-        [message]="modalAlcance.mensaje"
-        primaryLabel="Entendido"
-        secondaryLabel="Revisar alcance"
-        (action)="cerrarModalAvanceAlcance()"
-        (secondary)="cerrarModalAvanceAlcance()"
-      ></app-message-box>
-    }
-    @case ('revision') {
-      <app-message-box
-        variant="decision"
-        mode="modal"
-        width="md"
-        title="Hay observaciones en el alcance"
-        message="Puedes continuar o volver al paso Alcance para revisarlas."
-        primaryLabel="Continuar"
-        secondaryLabel="Volver"
-        (action)="confirmarAvanceConAdvertenciaAlcance.emit()"
-        (secondary)="cerrarModalAvanceAlcance()"
-      ></app-message-box>
-    }
-  }
-}
-
-@if (orquestador.modalAvanceEmpleados(); as modalEmpleados) {
-  <app-nomina-mensual-v2-empleados-resumen-pendientes
-    [modal]="modalEmpleados"
-    (cerrar)="cerrarModalAvanceEmpleados()"
-    (verEnGrilla)="verEnGrillaEmpleados.emit($event)"
-    (verPendientesEnGrilla)="irAPendientesEmpleados.emit()"
-    (continuar)="confirmarAvanceConAdvertenciaEmpleados.emit()"
-    (reintentarValidacion)="reintentarValidacionEmpleados.emit()"
-  />
-}
-
 @if (orquestador.modalAvanceParametros(); as modalAvance) {
   @switch (modalAvance.tipo) {
     @case ('bloqueo') {

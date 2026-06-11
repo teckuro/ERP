@@ -44,8 +44,11 @@ import type {
 import type {
   AccionMasivaTrabajadores,
   CriterioAplicacionRecurrente,
+  EstadoItemMovimiento,
   EstadoMovimientoConfiguradoEnNomina,
   FilaMovimientoConfigurado,
+  FilaTrabajadorMovimientos,
+  ItemMovimientoTrabajador,
   MovimientoNomina,
   MovimientoNominaNuevo,
   MovimientoRecurrente,
@@ -538,6 +541,24 @@ export class NominaPeriodoService {
   }
 
   /**
+   * Hard-delete de un movimiento manual aplicado u omitido. Solo admite items
+   * con `origen='manual'`; los recurrentes no se eliminan físicamente (se
+   * omiten o se desactiva el recurrente en la ficha).
+   */
+  async eliminarMovimientoManual(movimientoId: string): Promise<void> {
+    const movimiento = await this.buscarMovimiento(movimientoId);
+    if (movimiento.origen !== 'manual') {
+      throw new Error('Solo los movimientos manuales se pueden eliminar.');
+    }
+    await this.exigirNominaEditable(movimiento.nominaPeriodoId);
+    await this.repo.eliminarMovimiento(movimientoId);
+    await this.invalidarCalculoPorCambio(
+      movimiento.nominaPeriodoId,
+      'Movimiento manual eliminado.',
+    );
+  }
+
+  /**
    * Aplica recurrentes activos a una nómina.
    *
    * Reglas de oro:
@@ -692,6 +713,340 @@ export class NominaPeriodoService {
     }
 
     return filas;
+  }
+
+  /**
+   * Vista unificada del paso Movimientos: una fila por trabajador (toda la
+   * dotación) con un sub-detalle de items (configurados + manuales) listo para
+   * renderizar en `app-data-grid` con `expandableRows`.
+   *
+   * Alineada con el principio rector "trabajo por excepción": el usuario ve
+   * el resumen del trabajador y solo expande cuando necesita detalle.
+   *
+   * Agregaciones (estables, ver specs):
+   *  - `totalHaberes` / `totalDescuentos`: suma de `monto` de items con
+   *    `estado='aplicado'`. Refleja lo que entra al cálculo; los pendientes
+   *    NO contribuyen.
+   *  - `cuentaAusencias` / `cuentaInformativos`: count de items en esa
+   *    categoría con `estado != 'omitido'`.
+   *  - Contadores por estado: totalizan todos los items del trabajador.
+   *  - Trabajadores de la dotación sin items aparecen con todo en cero para
+   *    permitir alta de manuales sin filtros previos.
+   *
+   * Orden de items dentro de cada trabajador: pendientes → aplicados →
+   * omitidos. Dentro de cada grupo, configurados antes que manuales.
+   */
+  async listarMovimientosPorTrabajador(
+    nominaPeriodoId: string,
+  ): Promise<FilaTrabajadorMovimientos[]> {
+    const idEmpresa = await this.resolverEmpresaActiva();
+    if (idEmpresa == null) return [];
+
+    const [nomina, recurrentes, movimientosExistentes, dotacion] = await Promise.all([
+      this.repo.obtenerNominaCompleta(nominaPeriodoId),
+      this.repo.listarRecurrentesActivos(idEmpresa),
+      this.repo.listarMovimientos(nominaPeriodoId),
+      this.repo.listarDotacionPaginada(
+        nominaPeriodoId,
+        {},
+        { page: 1, pageSize: 1000, total: 0 },
+      ),
+    ]);
+    if (!nomina) return [];
+
+    const identidades = new Map<string, FilaTrabajadorNominaResumen>();
+    for (const fila of dotacion.filas) {
+      identidades.set(fila.trabajadorId, fila);
+    }
+
+    // 1) Pre-cargar items por trabajador a partir de recurrentes (configurados).
+    const itemsPorTrabajador = new Map<string, ItemMovimientoTrabajador[]>();
+    for (const trabajadorId of nomina.trabajadorIds) {
+      itemsPorTrabajador.set(trabajadorId, []);
+    }
+
+    for (const recurrente of recurrentes) {
+      const trabajadores = this.resolverTrabajadoresParaRecurrente(nomina, recurrente);
+      for (const trabajadorId of trabajadores) {
+        const movimientoExistente = movimientosExistentes.find(
+          (m) =>
+            m.trabajadorId === trabajadorId &&
+            m.recurrenteId === recurrente.id &&
+            m.tipo === recurrente.tipo,
+        );
+
+        const estado: EstadoItemMovimiento =
+          movimientoExistente == null
+            ? 'pendiente'
+            : movimientoExistente.estado === 'omitido'
+              ? 'omitido'
+              : 'aplicado';
+
+        const itemId =
+          movimientoExistente == null
+            ? `cfg::${trabajadorId}::${recurrente.id}::${recurrente.tipo}`
+            : `mov::${movimientoExistente.id}`;
+
+        const item: ItemMovimientoTrabajador = {
+          itemId,
+          origen: 'configurado',
+          estado,
+          concepto: recurrente.tipo,
+          categoria: recurrente.categoria,
+          monto: recurrente.monto,
+          cantidad: recurrente.cantidad,
+          unidad: recurrente.unidad,
+          frecuencia: recurrente.frecuencia,
+          vigenciaDesde: recurrente.activoDesde,
+          vigenciaHasta: recurrente.activoHasta,
+          glosa: recurrente.glosa,
+          recurrenteId: recurrente.id,
+          movimientoNominaId: movimientoExistente?.id,
+        };
+
+        const bucket = itemsPorTrabajador.get(trabajadorId) ?? [];
+        bucket.push(item);
+        itemsPorTrabajador.set(trabajadorId, bucket);
+      }
+    }
+
+    // 2) Añadir items manuales (no tienen recurrenteId).
+    for (const movimiento of movimientosExistentes) {
+      if (movimiento.origen !== 'manual') continue;
+      const estado: EstadoItemMovimiento =
+        movimiento.estado === 'omitido' ? 'omitido' : 'aplicado';
+
+      const item: ItemMovimientoTrabajador = {
+        itemId: `mov::${movimiento.id}`,
+        origen: 'manual',
+        estado,
+        concepto: movimiento.tipo,
+        categoria: movimiento.categoria,
+        monto: movimiento.monto,
+        cantidad: movimiento.cantidad,
+        unidad: movimiento.unidad,
+        glosa: movimiento.glosa,
+        movimientoNominaId: movimiento.id,
+      };
+
+      const bucket = itemsPorTrabajador.get(movimiento.trabajadorId) ?? [];
+      bucket.push(item);
+      itemsPorTrabajador.set(movimiento.trabajadorId, bucket);
+    }
+
+    // 3) Construir filas por trabajador con agregaciones.
+    const filas: FilaTrabajadorMovimientos[] = [];
+    for (const trabajadorId of nomina.trabajadorIds) {
+      const items = itemsPorTrabajador.get(trabajadorId) ?? [];
+      const identidad = identidades.get(trabajadorId);
+      filas.push(
+        this.armarFilaTrabajadorMovimientos(trabajadorId, identidad, items),
+      );
+    }
+
+    return filas;
+  }
+
+  private armarFilaTrabajadorMovimientos(
+    trabajadorId: string,
+    identidad: FilaTrabajadorNominaResumen | undefined,
+    items: ItemMovimientoTrabajador[],
+  ): FilaTrabajadorMovimientos {
+    let totalHaberes = 0;
+    let totalDescuentos = 0;
+    let cuentaAusencias = 0;
+    let cuentaInformativos = 0;
+    let cuentaPendientes = 0;
+    let cuentaAplicados = 0;
+    let cuentaOmitidos = 0;
+    let cuentaManualesAplicados = 0;
+
+    for (const item of items) {
+      if (item.estado === 'pendiente') cuentaPendientes += 1;
+      else if (item.estado === 'aplicado') cuentaAplicados += 1;
+      else if (item.estado === 'omitido') cuentaOmitidos += 1;
+
+      if (item.origen === 'manual' && item.estado === 'aplicado') {
+        cuentaManualesAplicados += 1;
+      }
+
+      if (item.estado === 'aplicado' && typeof item.monto === 'number') {
+        if (item.categoria === 'haber') totalHaberes += item.monto;
+        else if (item.categoria === 'descuento') totalDescuentos += item.monto;
+      }
+
+      if (item.estado !== 'omitido') {
+        if (item.categoria === 'ausencia') cuentaAusencias += 1;
+        else if (item.categoria === 'informativo') cuentaInformativos += 1;
+      }
+    }
+
+    const ordenEstado = (estado: EstadoItemMovimiento): number =>
+      estado === 'pendiente' ? 0 : estado === 'aplicado' ? 1 : 2;
+    const ordenOrigen = (origen: ItemMovimientoTrabajador['origen']): number =>
+      origen === 'configurado' ? 0 : 1;
+
+    const ordenados = [...items].sort((a, b) => {
+      const dEstado = ordenEstado(a.estado) - ordenEstado(b.estado);
+      if (dEstado !== 0) return dEstado;
+      return ordenOrigen(a.origen) - ordenOrigen(b.origen);
+    });
+
+    return {
+      trabajadorId,
+      nombre: identidad?.nombre ?? 'Trabajador sin identificar',
+      rut: identidad?.rut ?? '',
+      cargo: identidad?.cargo,
+      centroCosto: identidad?.centroCosto,
+      totalHaberes,
+      totalDescuentos,
+      cuentaAusencias,
+      cuentaInformativos,
+      cuentaPendientes,
+      cuentaAplicados,
+      cuentaOmitidos,
+      cuentaManualesAplicados,
+      items: ordenados,
+    };
+  }
+
+  /**
+   * Aplica TODOS los recurrentes pendientes de UN trabajador específico a la
+   * nómina. Idempotente: respeta omitidos y no duplica. Es `aplicarRecurrentes
+   * ANomina` acotado a un solo `trabajadorId`. Útil para la acción masiva
+   * "Cargar N pendientes" de la fila del trabajador.
+   */
+  async aplicarRecurrentesDeTrabajador(
+    nominaPeriodoId: string,
+    trabajadorId: string,
+  ): Promise<MovimientoNomina[]> {
+    const idEmpresa = await this.resolverEmpresaActiva();
+    if (idEmpresa == null) return [];
+
+    const [nomina, recurrentes, movimientosExistentes] = await Promise.all([
+      this.repo.obtenerNominaCompleta(nominaPeriodoId),
+      this.repo.listarRecurrentesActivos(idEmpresa),
+      this.repo.listarMovimientos(nominaPeriodoId),
+    ]);
+    if (!nomina) return [];
+    if (estadoNominaBloqueaEdicion(nomina.estado)) {
+      throw new Error(`La nómina ${nomina.estado} no admite cambios.`);
+    }
+
+    const nuevosInsertar: MovimientoNominaNuevo[] = [];
+    for (const recurrente of recurrentes) {
+      const trabajadores = this.resolverTrabajadoresParaRecurrente(nomina, recurrente);
+      if (!trabajadores.includes(trabajadorId)) continue;
+
+      const yaExiste = movimientosExistentes.find(
+        (m) =>
+          m.trabajadorId === trabajadorId &&
+          m.recurrenteId === recurrente.id &&
+          m.tipo === recurrente.tipo,
+      );
+      if (yaExiste) continue;
+
+      const segmentoDelTrabajador = nomina.segmentos.find((s) =>
+        s.trabajadorIds.includes(trabajadorId),
+      );
+
+      nuevosInsertar.push({
+        nominaPeriodoId,
+        trabajadorId,
+        segmentoId: segmentoDelTrabajador?.id,
+        tipo: recurrente.tipo,
+        categoria: recurrente.categoria,
+        monto: recurrente.monto,
+        cantidad: recurrente.cantidad,
+        unidad: recurrente.unidad,
+        origen: 'recurrente',
+        recurrenteId: recurrente.id,
+        estado: 'aplicado',
+        glosa: recurrente.glosa,
+      });
+    }
+
+    if (nuevosInsertar.length === 0) return [];
+
+    const insertados = await this.repo.insertarMovimientos(nuevosInsertar, idEmpresa);
+    await this.invalidarCalculoPorCambio(
+      nominaPeriodoId,
+      `Recurrentes aplicados al trabajador ${trabajadorId}.`,
+    );
+    return insertados;
+  }
+
+  /**
+   * Aplica UN recurrente individual (pendiente) a un trabajador. Útil para la
+   * acción por fila del item pendiente. Idempotente: si ya existe el
+   * `movimiento_nomina` con esa clave, no duplica.
+   */
+  async aplicarRecurrenteIndividual(
+    nominaPeriodoId: string,
+    trabajadorId: string,
+    recurrenteId: string,
+  ): Promise<MovimientoNomina | null> {
+    const idEmpresa = await this.resolverEmpresaActiva();
+    if (idEmpresa == null) return null;
+
+    const [nomina, recurrentes, movimientosExistentes] = await Promise.all([
+      this.repo.obtenerNominaCompleta(nominaPeriodoId),
+      this.repo.listarRecurrentesActivos(idEmpresa),
+      this.repo.listarMovimientos(nominaPeriodoId),
+    ]);
+    if (!nomina) return null;
+    if (estadoNominaBloqueaEdicion(nomina.estado)) {
+      throw new Error(`La nómina ${nomina.estado} no admite cambios.`);
+    }
+
+    const recurrente = recurrentes.find((r) => r.id === recurrenteId);
+    if (!recurrente) {
+      throw new Error('Recurrente no encontrado o ya no está activo.');
+    }
+
+    const trabajadores = this.resolverTrabajadoresParaRecurrente(nomina, recurrente);
+    if (!trabajadores.includes(trabajadorId)) {
+      throw new Error('El recurrente no aplica a este trabajador.');
+    }
+
+    const yaExiste = movimientosExistentes.find(
+      (m) =>
+        m.trabajadorId === trabajadorId &&
+        m.recurrenteId === recurrente.id &&
+        m.tipo === recurrente.tipo,
+    );
+    if (yaExiste) return yaExiste;
+
+    const segmentoDelTrabajador = nomina.segmentos.find((s) =>
+      s.trabajadorIds.includes(trabajadorId),
+    );
+
+    const [insertado] = await this.repo.insertarMovimientos(
+      [
+        {
+          nominaPeriodoId,
+          trabajadorId,
+          segmentoId: segmentoDelTrabajador?.id,
+          tipo: recurrente.tipo,
+          categoria: recurrente.categoria,
+          monto: recurrente.monto,
+          cantidad: recurrente.cantidad,
+          unidad: recurrente.unidad,
+          origen: 'recurrente',
+          recurrenteId: recurrente.id,
+          estado: 'aplicado',
+          glosa: recurrente.glosa,
+        },
+      ],
+      idEmpresa,
+    );
+
+    await this.invalidarCalculoPorCambio(
+      nominaPeriodoId,
+      `Recurrente ${recurrente.tipo} aplicado a ${trabajadorId}.`,
+    );
+
+    return insertado ?? null;
   }
 
   // -------------------------------------------------------------------------

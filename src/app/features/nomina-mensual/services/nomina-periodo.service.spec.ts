@@ -107,6 +107,7 @@ interface RepoMock {
   obtenerMovimiento: ReturnType<typeof vi.fn>;
   insertarMovimientos: ReturnType<typeof vi.fn>;
   actualizarEstadoMovimiento: ReturnType<typeof vi.fn>;
+  eliminarMovimiento: ReturnType<typeof vi.fn>;
   listarIncidencias: ReturnType<typeof vi.fn>;
   reemplazarIncidencias: ReturnType<typeof vi.fn>;
   listarEventosAuditoria: ReturnType<typeof vi.fn>;
@@ -138,6 +139,7 @@ function repoMock(): RepoMock {
     obtenerMovimiento: vi.fn().mockResolvedValue(null),
     insertarMovimientos: vi.fn().mockResolvedValue([]),
     actualizarEstadoMovimiento: vi.fn().mockResolvedValue(undefined),
+    eliminarMovimiento: vi.fn().mockResolvedValue(undefined),
     listarIncidencias: vi.fn().mockResolvedValue([]),
     reemplazarIncidencias: vi.fn().mockResolvedValue(undefined),
     listarEventosAuditoria: vi.fn().mockResolvedValue([]),
@@ -351,6 +353,288 @@ describe('NominaPeriodoService', () => {
     const service = configurar({ repo });
     await service.aplicarRecurrentesANomina('nom-1');
     expect(repo.insertarMovimientos).not.toHaveBeenCalled();
+  });
+
+  describe('listarMovimientosPorTrabajador (vista unificada)', () => {
+    function dotacionMock(idTrabajadores: string[]) {
+      return {
+        filas: idTrabajadores.map((id) => ({
+          trabajadorId: id,
+          nombre: `Trabajador ${id}`,
+          rut: `${id}-K`,
+          cargo: 'cargo',
+          centroCosto: 'CC',
+          estado: 'listo' as const,
+          totalIncidenciasCriticas: 0,
+          totalAdvertencias: 0,
+          totalMovimientos: 0,
+          tieneDatosBancarios: true,
+          tieneDatosPrevisionales: true,
+        })),
+        total: idTrabajadores.length,
+      };
+    }
+
+    it('trabajador con 2 configurados pendientes + 1 manual aplicado: subtotal solo del manual', async () => {
+      const movManual: MovimientoNomina = {
+        id: 'mov-manual',
+        nominaPeriodoId: 'nom-1',
+        trabajadorId: '10',
+        tipo: 'BONO_AD_HOC',
+        categoria: 'haber',
+        monto: 7000,
+        origen: 'manual',
+        estado: 'aplicado',
+        createdAt: '2026-06-04T00:00:00Z',
+        updatedAt: '2026-06-04T00:00:00Z',
+      };
+      repo.obtenerNominaCompleta.mockResolvedValue(
+        nomina({ trabajadorIds: ['10'], movimientos: [movManual] }),
+      );
+      repo.listarRecurrentesActivos.mockResolvedValue([
+        recurrente({ id: 'rec-1', tipo: 'BONO_A', monto: 1000 }),
+        recurrente({ id: 'rec-2', tipo: 'BONO_B', monto: 2000 }),
+      ]);
+      repo.listarMovimientos.mockResolvedValue([movManual]);
+      repo.listarDotacionPaginada.mockResolvedValue(dotacionMock(['10']));
+
+      const service = configurar({ repo });
+      const filas = await service.listarMovimientosPorTrabajador('nom-1');
+
+      expect(filas).toHaveLength(1);
+      const fila = filas[0];
+      expect(fila.cuentaPendientes).toBe(2);
+      expect(fila.cuentaAplicados).toBe(1);
+      expect(fila.cuentaOmitidos).toBe(0);
+      expect(fila.cuentaManualesAplicados).toBe(1);
+      expect(fila.totalHaberes).toBe(7000);
+      expect(fila.items).toHaveLength(3);
+      // Pendientes primero
+      expect(fila.items[0].estado).toBe('pendiente');
+      expect(fila.items[1].estado).toBe('pendiente');
+      expect(fila.items[2].estado).toBe('aplicado');
+    });
+
+    it('trabajador con configurado aplicado + omitido: subtotal solo del aplicado', async () => {
+      const movAplicado: MovimientoNomina = {
+        id: 'mov-1',
+        nominaPeriodoId: 'nom-1',
+        trabajadorId: '10',
+        tipo: 'BONO_A',
+        categoria: 'haber',
+        monto: 1000,
+        origen: 'recurrente',
+        recurrenteId: 'rec-1',
+        estado: 'aplicado',
+        createdAt: '2026-06-04T00:00:00Z',
+        updatedAt: '2026-06-04T00:00:00Z',
+      };
+      const movOmitido: MovimientoNomina = {
+        ...movAplicado,
+        id: 'mov-2',
+        tipo: 'BONO_B',
+        recurrenteId: 'rec-2',
+        monto: 5000,
+        estado: 'omitido',
+      };
+      repo.obtenerNominaCompleta.mockResolvedValue(
+        nomina({ trabajadorIds: ['10'], movimientos: [movAplicado, movOmitido] }),
+      );
+      repo.listarRecurrentesActivos.mockResolvedValue([
+        recurrente({ id: 'rec-1', tipo: 'BONO_A', monto: 1000 }),
+        recurrente({ id: 'rec-2', tipo: 'BONO_B', monto: 5000 }),
+      ]);
+      repo.listarMovimientos.mockResolvedValue([movAplicado, movOmitido]);
+      repo.listarDotacionPaginada.mockResolvedValue(dotacionMock(['10']));
+
+      const service = configurar({ repo });
+      const filas = await service.listarMovimientosPorTrabajador('nom-1');
+
+      expect(filas).toHaveLength(1);
+      expect(filas[0].totalHaberes).toBe(1000);
+      expect(filas[0].cuentaAplicados).toBe(1);
+      expect(filas[0].cuentaOmitidos).toBe(1);
+      expect(filas[0].cuentaPendientes).toBe(0);
+    });
+
+    it('trabajador con 1 ausencia y 1 informativo: contadores correctos, $ en cero', async () => {
+      repo.obtenerNominaCompleta.mockResolvedValue(nomina({ trabajadorIds: ['10'] }));
+      repo.listarRecurrentesActivos.mockResolvedValue([
+        recurrente({ id: 'rec-1', tipo: 'AUS', categoria: 'ausencia', monto: undefined, cantidad: 1, unidad: 'dias' }),
+        recurrente({ id: 'rec-2', tipo: 'INF', categoria: 'informativo', monto: undefined }),
+      ]);
+      repo.listarMovimientos.mockResolvedValue([]);
+      repo.listarDotacionPaginada.mockResolvedValue(dotacionMock(['10']));
+
+      const service = configurar({ repo });
+      const filas = await service.listarMovimientosPorTrabajador('nom-1');
+
+      const fila = filas[0];
+      expect(fila.cuentaAusencias).toBe(1);
+      expect(fila.cuentaInformativos).toBe(1);
+      expect(fila.totalHaberes).toBe(0);
+      expect(fila.totalDescuentos).toBe(0);
+      expect(fila.cuentaPendientes).toBe(2);
+    });
+
+    it('trabajador sin movimientos pero en dotación: aparece con todo en cero', async () => {
+      repo.obtenerNominaCompleta.mockResolvedValue(nomina({ trabajadorIds: ['10'] }));
+      repo.listarRecurrentesActivos.mockResolvedValue([]);
+      repo.listarMovimientos.mockResolvedValue([]);
+      repo.listarDotacionPaginada.mockResolvedValue(dotacionMock(['10']));
+
+      const service = configurar({ repo });
+      const filas = await service.listarMovimientosPorTrabajador('nom-1');
+
+      expect(filas).toHaveLength(1);
+      expect(filas[0].items).toEqual([]);
+      expect(filas[0].cuentaPendientes).toBe(0);
+      expect(filas[0].cuentaAplicados).toBe(0);
+      expect(filas[0].totalHaberes).toBe(0);
+    });
+
+    it('orden de items: pendientes → aplicados → omitidos; configurados antes que manuales', async () => {
+      const movAplicado: MovimientoNomina = {
+        id: 'mov-cfg-aplicado',
+        nominaPeriodoId: 'nom-1',
+        trabajadorId: '10',
+        tipo: 'BONO_A',
+        categoria: 'haber',
+        monto: 1000,
+        origen: 'recurrente',
+        recurrenteId: 'rec-1',
+        estado: 'aplicado',
+        createdAt: '2026-06-04T00:00:00Z',
+        updatedAt: '2026-06-04T00:00:00Z',
+      };
+      const movManualAplicado: MovimientoNomina = {
+        ...movAplicado,
+        id: 'mov-manual-aplicado',
+        tipo: 'BONO_MANUAL',
+        recurrenteId: undefined,
+        origen: 'manual',
+      };
+      const movManualOmitido: MovimientoNomina = {
+        ...movManualAplicado,
+        id: 'mov-manual-omitido',
+        estado: 'omitido',
+      };
+      repo.obtenerNominaCompleta.mockResolvedValue(
+        nomina({ trabajadorIds: ['10'], movimientos: [movAplicado, movManualAplicado, movManualOmitido] }),
+      );
+      repo.listarRecurrentesActivos.mockResolvedValue([
+        recurrente({ id: 'rec-1', tipo: 'BONO_A' }),
+        recurrente({ id: 'rec-2', tipo: 'BONO_PENDIENTE' }),
+      ]);
+      repo.listarMovimientos.mockResolvedValue([movAplicado, movManualAplicado, movManualOmitido]);
+      repo.listarDotacionPaginada.mockResolvedValue(dotacionMock(['10']));
+
+      const service = configurar({ repo });
+      const filas = await service.listarMovimientosPorTrabajador('nom-1');
+      const items = filas[0].items;
+
+      // 1 pendiente (cfg) → 2 aplicados (cfg, manual) → 1 omitido (manual)
+      expect(items.map((i) => i.estado)).toEqual(['pendiente', 'aplicado', 'aplicado', 'omitido']);
+      // Dentro de aplicados, configurado va antes que manual
+      expect(items[1].origen).toBe('configurado');
+      expect(items[2].origen).toBe('manual');
+    });
+  });
+
+  describe('aplicarRecurrentesDeTrabajador (acción masiva por fila)', () => {
+    it('inserta solo los recurrentes pendientes del trabajador objetivo', async () => {
+      repo.obtenerNominaCompleta.mockResolvedValue(
+        nomina({ trabajadorIds: ['10', '11'] }),
+      );
+      repo.listarRecurrentesActivos.mockResolvedValue([
+        recurrente({ id: 'rec-1', tipo: 'BONO_A' }),
+        recurrente({ id: 'rec-2', tipo: 'BONO_B' }),
+      ]);
+      repo.listarMovimientos.mockResolvedValue([]);
+      repo.insertarMovimientos.mockResolvedValue([]);
+
+      const service = configurar({ repo });
+      await service.aplicarRecurrentesDeTrabajador('nom-1', '10');
+
+      const llamada = repo.insertarMovimientos.mock.calls[0]?.[0] ?? [];
+      expect(llamada).toHaveLength(2);
+      expect(llamada.every((m: { trabajadorId: string }) => m.trabajadorId === '10')).toBe(true);
+    });
+
+    it('respeta idempotencia para items ya cargados u omitidos del trabajador', async () => {
+      const movCargado: MovimientoNomina = {
+        id: 'mov-1',
+        nominaPeriodoId: 'nom-1',
+        trabajadorId: '10',
+        tipo: 'BONO_A',
+        categoria: 'haber',
+        origen: 'recurrente',
+        recurrenteId: 'rec-1',
+        estado: 'aplicado',
+        createdAt: 'x',
+        updatedAt: 'x',
+      };
+      repo.obtenerNominaCompleta.mockResolvedValue(
+        nomina({ trabajadorIds: ['10'], movimientos: [movCargado] }),
+      );
+      repo.listarRecurrentesActivos.mockResolvedValue([
+        recurrente({ id: 'rec-1', tipo: 'BONO_A' }),
+        recurrente({ id: 'rec-2', tipo: 'BONO_B' }),
+      ]);
+      repo.listarMovimientos.mockResolvedValue([movCargado]);
+      repo.insertarMovimientos.mockResolvedValue([]);
+
+      const service = configurar({ repo });
+      await service.aplicarRecurrentesDeTrabajador('nom-1', '10');
+
+      const llamada = repo.insertarMovimientos.mock.calls[0]?.[0] ?? [];
+      expect(llamada).toHaveLength(1);
+      expect(llamada[0].recurrenteId).toBe('rec-2');
+    });
+  });
+
+  describe('eliminarMovimientoManual', () => {
+    it('elimina movimiento manual e invalida cálculo', async () => {
+      const movManual: MovimientoNomina = {
+        id: 'mov-manual',
+        nominaPeriodoId: 'nom-1',
+        trabajadorId: '10',
+        tipo: 'BONO',
+        categoria: 'haber',
+        origen: 'manual',
+        estado: 'aplicado',
+        createdAt: 'x',
+        updatedAt: 'x',
+      };
+      repo.obtenerMovimiento.mockResolvedValue(movManual);
+      repo.obtenerNominaCompleta.mockResolvedValue(nomina());
+
+      const service = configurar({ repo });
+      await service.eliminarMovimientoManual('mov-manual');
+
+      expect(repo.eliminarMovimiento).toHaveBeenCalledWith('mov-manual');
+    });
+
+    it('rechaza eliminar movimientos recurrentes', async () => {
+      const movRec: MovimientoNomina = {
+        id: 'mov-rec',
+        nominaPeriodoId: 'nom-1',
+        trabajadorId: '10',
+        tipo: 'BONO',
+        categoria: 'haber',
+        origen: 'recurrente',
+        recurrenteId: 'rec-1',
+        estado: 'aplicado',
+        createdAt: 'x',
+        updatedAt: 'x',
+      };
+      repo.obtenerMovimiento.mockResolvedValue(movRec);
+
+      const service = configurar({ repo });
+      await expect(service.eliminarMovimientoManual('mov-rec')).rejects.toThrow(
+        /manuales/i,
+      );
+    });
   });
 
   it('obtenerResumenValidacionNomina bloquea cierre con incidencia bloqueante', async () => {

@@ -3,8 +3,6 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Output, ViewEncapsula
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
 import type { MessageBoxSection } from '../../../../../../shared/components/ui/feedback/message-box/message-box.types';
 import type { DiferenciaParametroBase } from '../../../../models/nomina-parametros-base.models';
-import type { TipoPendienteEmpleado } from '../../../../presenters/nomina-empleados-validacion.presenter';
-import { NominaMensualV2EmpleadosResumenPendientesComponent } from '../nomina-mensual-v2-empleados-resumen-pendientes/nomina-mensual-v2-empleados-resumen-pendientes.component';
 import { NominaMensualV2ModalAccesoBaseParametrosComponent } from '../nomina-mensual-v2-modal-acceso-base-parametros/nomina-mensual-v2-modal-acceso-base-parametros.component';
 import { NominaParametrosBaseAccesoService } from '../../../../services/nomina-parametros-base-acceso.service';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
@@ -30,7 +28,6 @@ const SECCIONES_MSG_BOX_REVISION_PARAMETROS: MessageBoxSection[] = [
   standalone: true,
   imports: [
     MessageBoxComponent,
-    NominaMensualV2EmpleadosResumenPendientesComponent,
     NominaMensualV2ModalAccesoBaseParametrosComponent,
   ],
   templateUrl: './nomina-mensual-v2-overlays.component.html',
@@ -61,11 +58,6 @@ export class NominaMensualV2OverlaysComponent {
   @Output() cerrarModal = new EventEmitter<void>();
   @Output() confirmarAvanceConRevision = new EventEmitter<void>();
   @Output() irAPendientesParametros = new EventEmitter<void>();
-  @Output() verEnGrillaEmpleados = new EventEmitter<TipoPendienteEmpleado>();
-  @Output() confirmarAvanceConAdvertenciaAlcance = new EventEmitter<void>();
-  @Output() irAPendientesEmpleados = new EventEmitter<void>();
-  @Output() confirmarAvanceConAdvertenciaEmpleados = new EventEmitter<void>();
-  @Output() reintentarValidacionEmpleados = new EventEmitter<void>();
   @Output() confirmarGuardarBaseYContinuar = new EventEmitter<void>();
   @Output() confirmarMantenerBaseYContinuar = new EventEmitter<void>();
   @Output() solicitarActualizarBase = new EventEmitter<void>();
@@ -104,16 +96,6 @@ export class NominaMensualV2OverlaysComponent {
 
   cerrarModalAvanceParametros(): void {
     this.orquestador.modalAvanceParametros.set(null);
-    this.cerrarModal.emit();
-  }
-
-  cerrarModalAvanceAlcance(): void {
-    this.orquestador.modalAvanceAlcance.set(null);
-    this.cerrarModal.emit();
-  }
-
-  cerrarModalAvanceEmpleados(): void {
-    this.orquestador.modalAvanceEmpleados.set(null);
     this.cerrarModal.emit();
   }
 

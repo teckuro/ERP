@@ -4,53 +4,60 @@
       <p class="paso-mov__eyebrow">Paso 3 · Movimientos</p>
       <h2 id="paso-mov-title" class="paso-mov__title">Movimientos del período</h2>
       <p class="paso-mov__subtitle">
-        Carga los movimientos que ya estaban configurados para los trabajadores, agrega manuales
-        por excepción y omite lo que no corresponde a este período. La carga es idempotente: no
-        duplica ni reaplica lo que se haya omitido antes.
+        Una fila por trabajador. Carga lo configurado, agrega manuales por excepción
+        y omite lo que no aplica este mes.
       </p>
     </div>
-    <div class="paso-mov__counters">
-      <span class="paso-mov__stat">
-        <strong>{{ movimientosAplicados().length }}</strong>
-        <small>aplicados</small>
-      </span>
-      <span class="paso-mov__stat">
-        <strong>{{ movimientosManuales().length }}</strong>
-        <small>manuales</small>
-      </span>
-      <span class="paso-mov__stat">
-        <strong>{{ movimientosOmitidos().length }}</strong>
-        <small>omitidos</small>
-      </span>
+    <div class="paso-mov__head-aside">
+      <dl class="paso-mov__stats" role="status" aria-label="Resumen de movimientos">
+        <div class="paso-mov__stat">
+          <dt>Trabajadores con movimientos</dt>
+          <dd>{{ statsGlobales().trabajadoresConMovimientos }}</dd>
+        </div>
+        <div class="paso-mov__stat" [class.is-warning]="statsGlobales().trabajadoresConPendientes > 0">
+          <dt>Con pendientes</dt>
+          <dd>{{ statsGlobales().trabajadoresConPendientes }}</dd>
+        </div>
+        <div class="paso-mov__stat is-positive">
+          <dt>Haberes aplicados</dt>
+          <dd>${{ statsGlobales().totalHaberes | number:'1.0-0' }}</dd>
+        </div>
+        <div class="paso-mov__stat is-negative">
+          <dt>Descuentos aplicados</dt>
+          <dd>${{ statsGlobales().totalDescuentos | number:'1.0-0' }}</dd>
+        </div>
+      </dl>
+      <div class="paso-mov__toolbar">
+        <button
+          type="button"
+          class="paso-mov__btn is-primary"
+          (click)="cargarPendientesGlobales()"
+          [disabled]="aplicando() || !nominaPeriodoId() || !hayPendientesGlobales()"
+          [attr.title]="
+            hayPendientesGlobales()
+              ? 'Carga ' + statsGlobales().totalPendientes + ' movimientos pendientes a la nómina. Idempotente: no duplica ni reaplica los omitidos.'
+              : 'Sin movimientos pendientes por cargar.'
+          "
+        >
+          @if (aplicando()) {
+            Cargando…
+          } @else if (hayPendientesGlobales()) {
+            Cargar todos los pendientes
+            <span class="paso-mov__btn-badge">{{ statsGlobales().totalPendientes }}</span>
+          } @else {
+            Sin pendientes por cargar
+          }
+        </button>
+        <button
+          type="button"
+          class="paso-mov__btn is-secondary"
+          (click)="abrirModalManual()"
+          [disabled]="!nominaPeriodoId() || aplicando()"
+          title="Agrega un movimiento manual a cualquier trabajador (haber extra, descuento, ausencia, informativo)"
+        >Agregar movimiento manual</button>
+      </div>
     </div>
   </header>
-
-  <nav class="paso-mov__tabs" role="tablist">
-    <button
-      type="button"
-      role="tab"
-      class="paso-mov__tab"
-      [class.is-active]="tabActivo() === 'configurados'"
-      [attr.aria-selected]="tabActivo() === 'configurados'"
-      (click)="cambiarTab('configurados')"
-    >Configurados ({{ statsConfigurados().total }})</button>
-    <button
-      type="button"
-      role="tab"
-      class="paso-mov__tab"
-      [class.is-active]="tabActivo() === 'manuales'"
-      [attr.aria-selected]="tabActivo() === 'manuales'"
-      (click)="cambiarTab('manuales')"
-    >Manuales ({{ movimientosManuales().length }})</button>
-    <button
-      type="button"
-      role="tab"
-      class="paso-mov__tab"
-      [class.is-active]="tabActivo() === 'omitidos'"
-      [attr.aria-selected]="tabActivo() === 'omitidos'"
-      (click)="cambiarTab('omitidos')"
-    >Omitidos este mes ({{ movimientosOmitidos().length }})</button>
-  </nav>
 
   @if (error(); as msg) {
     <p class="paso-mov__alert is-error" role="alert">{{ msg }}</p>
@@ -61,157 +68,304 @@
 
   @if (loading()) {
     <p class="paso-mov__placeholder">Cargando movimientos…</p>
-  }
+  } @else if (filasTrabajadores().length === 0) {
+    <p class="paso-mov__placeholder">
+      Aún no hay trabajadores con movimientos visibles. Define la dotación o agrega un manual.
+    </p>
+  } @else {
+    <app-data-grid
+      class="paso-mov__grid"
+      [columns]="columnasGrilla"
+      [rows]="filasTrabajadores()"
+      [filters]="filtrosGrilla()"
+      [filtersEnabled]="true"
+      [filtersCollapsible]="false"
+      [filterChipsDisplay]="'always'"
+      [maxItems]="25"
+      [persistenceKey]="persistenciaGrilla"
+      [expandableRows]="true"
+      [rowExpansionKey]="rowKeyTrabajador"
+      [trackBy]="trackByTrabajador"
+      [emptyTitle]="'Sin trabajadores que coincidan con el filtro'"
+      [emptyDescription]="'Ajusta los filtros para ver más trabajadores con movimientos.'"
+      headerCountNoun="trabajadores"
+      [headerCountDisplay]="'text'"
+      [headerShowActiveFiltersCount]="true"
+    >
+      <ng-template appDataGridCell="trabajador" let-fila="row">
+        <div class="paso-mov__cell-trabajador">
+          <div class="paso-mov__cell-trabajador-line">
+            <strong class="paso-mov__cell-trabajador-nombre">{{ fila.nombre }}</strong>
+            @if (fila.cuentaPendientes > 0) {
+              <span
+                class="paso-mov__chip-pendiente"
+                [attr.title]="fila.cuentaPendientes + ' movimientos configurados aún no se han cargado a la nómina'"
+              >
+                {{ fila.cuentaPendientes }} pendiente@if (fila.cuentaPendientes !== 1) {s}
+              </span>
+            }
+          </div>
+          <span class="paso-mov__cell-trabajador-meta">
+            <span class="paso-mov__cell-rut">{{ fila.rut }}</span>
+            @if (fila.cargo) {
+              <span aria-hidden="true">·</span>
+              <span>{{ fila.cargo }}</span>
+            }
+          </span>
+        </div>
+      </ng-template>
 
-  @switch (tabActivo()) {
-    @case ('configurados') {
-      <div class="paso-mov__tab-body paso-mov__tab-body--grid">
-        <div class="paso-mov__bar">
-          <p class="paso-mov__bar-copy">
-            Estos son los movimientos que ya están configurados para los trabajadores de esta nómina.
-            Cárgalos para que entren al cálculo. Si ya cargaste alguno antes o lo omitiste, no se
-            vuelve a aplicar.
-          </p>
+      <ng-template appDataGridCell="haberes" let-fila="row">
+        @if (fila.totalHaberes > 0) {
+          <span class="paso-mov__cell-monto is-positive">${{ fila.totalHaberes | number:'1.0-0' }}</span>
+        } @else {
+          <span class="paso-mov__cell-monto is-empty" aria-label="Sin haberes">—</span>
+        }
+      </ng-template>
+
+      <ng-template appDataGridCell="descuentos" let-fila="row">
+        @if (fila.totalDescuentos > 0) {
+          <span class="paso-mov__cell-monto is-negative">${{ fila.totalDescuentos | number:'1.0-0' }}</span>
+        } @else {
+          <span class="paso-mov__cell-monto is-empty" aria-label="Sin descuentos">—</span>
+        }
+      </ng-template>
+
+      <ng-template appDataGridCell="ausencias" let-fila="row">
+        @if (fila.cuentaAusencias > 0) {
+          <span class="paso-mov__cell-count">{{ fila.cuentaAusencias }}</span>
+        } @else {
+          <span class="paso-mov__cell-count is-empty" aria-label="Sin ausencias">—</span>
+        }
+      </ng-template>
+
+      <ng-template appDataGridCell="informativos" let-fila="row">
+        @if (fila.cuentaInformativos > 0) {
+          <span class="paso-mov__cell-count">{{ fila.cuentaInformativos }}</span>
+        } @else {
+          <span class="paso-mov__cell-count is-empty" aria-label="Sin informativos">—</span>
+        }
+      </ng-template>
+
+      <ng-template appDataGridCell="acciones" let-fila="row">
+        <div class="paso-mov__acciones-fila">
+          @if (fila.cuentaPendientes > 0) {
+            <button
+              type="button"
+              class="paso-mov__btn is-primary is-small"
+              (click)="cargarPendientesDeTrabajador(fila.trabajadorId)"
+              [disabled]="estaCargandoTrabajador(fila.trabajadorId)"
+              [attr.title]="'Cargar ' + fila.cuentaPendientes + ' movimientos pendientes de ' + fila.nombre + ' a la nómina'"
+            >
+              @if (estaCargandoTrabajador(fila.trabajadorId)) {
+                Cargando…
+              } @else {
+                Cargar {{ fila.cuentaPendientes }}
+              }
+            </button>
+          }
           <button
             type="button"
-            class="paso-mov__btn is-primary"
-            (click)="cargarMovimientosConfigurados()"
-            [disabled]="aplicando() || !nominaPeriodoId() || !hayPendientesPorCargar()"
-            [attr.title]="
-              hayPendientesPorCargar()
-                ? 'Carga ' + statsConfigurados().pendientes + ' movimientos pendientes a la nómina del mes. Idempotente: no duplica ni reaplica los omitidos.'
-                : 'No hay movimientos pendientes por cargar. Todo lo configurado ya está aplicado u omitido.'
-            "
+            class="paso-mov__btn is-ghost is-small paso-mov__btn-agregar"
+            (click)="abrirModalManual(fila.trabajadorId)"
+            [attr.title]="'Agregar un movimiento manual (bono, descuento, ausencia…) a ' + fila.nombre"
           >
-            @if (aplicando()) {
-              Cargando…
-            } @else if (hayPendientesPorCargar()) {
-              Cargar movimientos configurados
-              <span class="paso-mov__btn-badge">{{ statsConfigurados().pendientes }}</span>
-            } @else {
-              Sin pendientes por cargar
-            }
+            <span aria-hidden="true" class="paso-mov__icono-mas">+</span>
+            <span>Agregar</span>
           </button>
         </div>
+      </ng-template>
 
-        <div class="paso-mov__stats">
-          <span class="paso-mov__stat-line">
-            <strong>{{ statsConfigurados().total }}</strong>
-            <small>configurados</small>
-          </span>
-          <span class="paso-mov__stat-line is-pendiente">
-            <strong>{{ statsConfigurados().pendientes }}</strong>
-            <small>pendientes de cargar</small>
-          </span>
-          <span class="paso-mov__stat-line is-cargado">
-            <strong>{{ statsConfigurados().yaCargados }}</strong>
-            <small>ya cargados</small>
-          </span>
-          <span class="paso-mov__stat-line is-omitido">
-            <strong>{{ statsConfigurados().omitidos }}</strong>
-            <small>omitidos este mes</small>
-          </span>
-        </div>
-
-        <app-data-grid
-          class="paso-mov__grid"
-          [columns]="columnasConfigurados"
-          [rows]="movimientosConfigurados()"
-          [filters]="filtrosConfigurados()"
-          [filtersEnabled]="true"
-          [filtersCollapsible]="false"
-          [filterChipsDisplay]="'always'"
-          [maxItems]="25"
-          [persistenceKey]="persistenciaConfigurados"
-          [expandableRows]="true"
-          [rowExpansionKey]="rowKeyConfigurado"
-          [trackBy]="trackByConfigurado"
-          [emptyTitle]="'No hay movimientos configurados para esta nómina'"
-          [emptyDescription]="'Si esperabas verlos aquí, revísalos en la ficha del trabajador o en Configuración.'"
-          headerCountNoun="movimientos configurados"
-          [headerCountDisplay]="'text'"
-          [headerShowActiveFiltersCount]="true"
-        >
-          <ng-template appDataGridCell="monto" let-fila="row">
-            @if (fila.monto != null) {
-              ${{ fila.monto | number:'1.0-0' }}
-            } @else if (fila.cantidad != null) {
-              {{ fila.cantidad }} {{ fila.unidad ?? '' }}
-            } @else {
-              —
-            }
-          </ng-template>
-
-          <ng-template appDataGridCell="vigencia" let-fila="row">
-            <span class="paso-mov__vigencia">
-              desde {{ fila.vigenciaDesde }}
-              @if (fila.vigenciaHasta) { · hasta {{ fila.vigenciaHasta }} }
-            </span>
-          </ng-template>
-
-          <ng-template appDataGridCell="estado" let-fila="row">
-            <span
-              class="paso-mov__estado-pill"
-              [attr.data-estado]="fila.estadoEnNomina"
-            >{{ etiquetaEstado(fila.estadoEnNomina) }}</span>
-          </ng-template>
-
-          <ng-template appDataGridCell="categoria" let-fila="row">
-            <span class="paso-mov__categoria">{{ fila.categoria }}</span>
-          </ng-template>
-
-          <ng-template appDataGridRowDetail let-fila let-collapse="collapse">
-            <div class="paso-mov__detalle">
-              <header class="paso-mov__detalle-head">
-                <div>
-                  <strong>{{ fila.trabajadorNombre }}</strong>
-                  <span class="paso-mov__detalle-meta">
-                    {{ fila.rut }}
-                    @if (fila.cargo) { · {{ fila.cargo }} }
-                    @if (fila.centroCosto) { · {{ fila.centroCosto }} }
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  class="paso-mov__btn is-ghost"
-                  (click)="collapse()"
-                  aria-label="Cerrar detalle"
-                >Cerrar</button>
-              </header>
-              <p class="paso-mov__detalle-copy">
-                Todos los movimientos configurados de este trabajador
-                ({{ movimientosConfiguradosDeTrabajador(fila.trabajadorId).length }}):
-              </p>
-              <ul class="paso-mov__detalle-list">
-                @for (m of movimientosConfiguradosDeTrabajador(fila.trabajadorId); track m.filaId) {
-                  <li class="paso-mov__detalle-item">
-                    <div class="paso-mov__detalle-item-main">
-                      <strong>{{ m.concepto }}</strong>
-                      <span class="paso-mov__detalle-item-meta">
-                        {{ m.categoria }} · {{ m.frecuencia }}
-                        @if (m.monto != null) { · ${{ m.monto | number:'1.0-0' }} }
-                        @else if (m.cantidad != null) { · {{ m.cantidad }} {{ m.unidad ?? '' }} }
+      <ng-template appDataGridRowDetail let-fila let-collapse="collapse">
+        <div class="paso-mov__detalle">
+          <header class="paso-mov__detalle-head">
+            <div class="paso-mov__detalle-head-info">
+              <strong class="paso-mov__detalle-head-nombre">{{ fila.nombre }}</strong>
+              <span class="paso-mov__detalle-meta">
+                <span class="paso-mov__cell-rut">{{ fila.rut }}</span>
+                @if (fila.cargo) {
+                  <span aria-hidden="true">·</span>
+                  <span>{{ fila.cargo }}</span>
+                }
+                @if (fila.centroCosto) {
+                  <span aria-hidden="true">·</span>
+                  <span>{{ fila.centroCosto }}</span>
+                }
+              </span>
+            </div>
+            <div class="paso-mov__detalle-head-actions">
+              <button
+                type="button"
+                class="paso-mov__btn is-ghost is-small paso-mov__btn-agregar"
+                (click)="abrirModalManual(fila.trabajadorId)"
+                [attr.title]="'Agregar un movimiento manual a ' + fila.nombre"
+              >
+                <span aria-hidden="true" class="paso-mov__icono-mas">+</span>
+                <span>Agregar movimiento</span>
+              </button>
+              <button
+                type="button"
+                class="paso-mov__btn is-ghost is-small"
+                (click)="collapse()"
+                aria-label="Cerrar detalle"
+              >Cerrar</button>
+            </div>
+          </header>
+          @if (fila.items.length === 0) {
+            <p class="paso-mov__detalle-empty">
+              Este trabajador no tiene movimientos configurados ni manuales. Usa
+              <strong>Agregar movimiento</strong> para registrar uno.
+            </p>
+          } @else {
+            <ul class="paso-mov__detalle-list">
+              @for (item of fila.items; track trackByItem($index, item)) {
+                <li class="paso-mov__detalle-item" [attr.data-estado]="item.estado">
+                  <div class="paso-mov__detalle-item-main">
+                    <div class="paso-mov__detalle-item-line">
+                      <strong class="paso-mov__detalle-item-concepto">{{ item.concepto }}</strong>
+                      <span class="paso-mov__chip-origen" [attr.data-origen]="item.origen">
+                        {{ etiquetaOrigenItem(item.origen) }}
                       </span>
-                      @if (m.glosa) {
-                        <small class="paso-mov__detalle-item-glosa">{{ m.glosa }}</small>
+                    </div>
+                    <div class="paso-mov__detalle-item-meta">
+                      <span class="paso-mov__detalle-item-categoria">{{ item.categoria }}</span>
+                      @if (item.monto != null) {
+                        <span aria-hidden="true">·</span>
+                        <span
+                          class="paso-mov__detalle-item-valor"
+                          [class.is-positive]="item.categoria === 'haber'"
+                          [class.is-negative]="item.categoria === 'descuento'"
+                        >${{ item.monto | number:'1.0-0' }}</span>
+                      } @else if (item.cantidad != null) {
+                        <span aria-hidden="true">·</span>
+                        <span class="paso-mov__detalle-item-valor">
+                          {{ item.cantidad }} {{ item.unidad ?? '' }}
+                        </span>
+                      }
+                      @if (item.frecuencia) {
+                        <span aria-hidden="true">·</span>
+                        <span>{{ item.frecuencia }}</span>
+                      }
+                      @if (item.vigenciaDesde) {
+                        <span aria-hidden="true">·</span>
+                        <span>
+                          vigente desde {{ item.vigenciaDesde }}@if (item.vigenciaHasta) { hasta {{ item.vigenciaHasta }} }
+                        </span>
                       }
                     </div>
-                    <span
-                      class="paso-mov__estado-pill"
-                      [attr.data-estado]="m.estadoEnNomina"
-                    >{{ etiquetaEstado(m.estadoEnNomina) }}</span>
-                  </li>
-                }
-              </ul>
+                    @if (item.glosa) {
+                      <small class="paso-mov__detalle-item-glosa">{{ item.glosa }}</small>
+                    }
+                  </div>
+                  <div class="paso-mov__detalle-item-actions">
+                    <span class="paso-mov__estado-pill" [attr.data-estado]="item.estado">
+                      {{ etiquetaEstadoItem(item.estado) }}
+                    </span>
+                    @if (item.estado === 'pendiente') {
+                      <button
+                        type="button"
+                        class="paso-mov__link"
+                        (click)="cargarItem(item, fila.trabajadorId)"
+                        [disabled]="estaCargandoItem(item)"
+                      >Cargar a la nómina</button>
+                    } @else if (item.estado === 'aplicado') {
+                      <button
+                        type="button"
+                        class="paso-mov__link"
+                        (click)="omitirItem(item)"
+                        [disabled]="estaCargandoItem(item)"
+                      >Omitir este mes</button>
+                      @if (itemAdmiteEliminacion(item)) {
+                        <button
+                          type="button"
+                          class="paso-mov__link is-danger"
+                          (click)="eliminarItemManual(item)"
+                          [disabled]="estaCargandoItem(item)"
+                        >Eliminar</button>
+                      }
+                    } @else if (item.estado === 'omitido') {
+                      <button
+                        type="button"
+                        class="paso-mov__link"
+                        (click)="reaplicarItem(item)"
+                        [disabled]="estaCargandoItem(item)"
+                      >Reaplicar</button>
+                      @if (itemAdmiteEliminacion(item)) {
+                        <button
+                          type="button"
+                          class="paso-mov__link is-danger"
+                          (click)="eliminarItemManual(item)"
+                          [disabled]="estaCargandoItem(item)"
+                        >Eliminar</button>
+                      }
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </ng-template>
+    </app-data-grid>
+  }
+
+  @if (modalManualAbierto()) {
+    <div
+      class="paso-mov__modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="paso-mov-modal-title"
+      (click)="cerrarModalManual()"
+    >
+      <div class="paso-mov__modal" (click)="$event.stopPropagation()">
+        <header class="paso-mov__modal-head">
+          <div>
+            <h3 id="paso-mov-modal-title" class="paso-mov__modal-title">
+              @if (trabajadorPreseleccionadoModal(); as t) {
+                Agregar movimiento manual a {{ t.nombre }}
+              } @else {
+                Agregar movimiento manual
+              }
+            </h3>
+            <p class="paso-mov__modal-subtitle">
+              Bonos extra, descuentos puntuales, ausencias e informativos del mes.
+            </p>
+          </div>
+          <button
+            type="button"
+            class="paso-mov__btn is-ghost is-small"
+            aria-label="Cerrar"
+            (click)="cerrarModalManual()"
+          >Cerrar</button>
+        </header>
+        <form
+          class="paso-mov__modal-body"
+          (submit)="$event.preventDefault(); crearMovimientoManual()"
+        >
+          @if (trabajadorPreseleccionadoModal(); as t) {
+            <div class="paso-mov__ficha-trabajador" role="group" aria-label="Trabajador seleccionado">
+              <div class="paso-mov__ficha-trabajador-info">
+                <span class="paso-mov__ficha-trabajador-eyebrow">Trabajador</span>
+                <strong class="paso-mov__ficha-trabajador-nombre">{{ t.nombre }}</strong>
+                <span class="paso-mov__ficha-trabajador-meta">
+                  <span class="paso-mov__cell-rut">{{ t.rut }}</span>
+                  @if (t.cargo) {
+                    <span aria-hidden="true">·</span>
+                    <span>{{ t.cargo }}</span>
+                  }
+                  @if (t.centroCosto) {
+                    <span aria-hidden="true">·</span>
+                    <span>{{ t.centroCosto }}</span>
+                  }
+                </span>
+              </div>
+              <button
+                type="button"
+                class="paso-mov__btn is-ghost is-small"
+                (click)="cambiarTrabajadorEnModal()"
+              >Cambiar trabajador</button>
             </div>
-          </ng-template>
-        </app-data-grid>
-      </div>
-    }
-    @case ('manuales') {
-      <div class="paso-mov__tab-body">
-        <form class="paso-mov__form" (submit)="$event.preventDefault(); crearMovimientoManual()">
-          <div class="paso-mov__form-row">
+          } @else {
             <label class="paso-mov__field">
               Buscar trabajador
               <input
@@ -229,7 +383,7 @@
                 required
               >
                 <option value="">
-                  {{ buscandoTrabajadores() ? 'Buscando...' : 'Selecciona un trabajador' }}
+                  {{ buscandoTrabajadores() ? 'Buscando…' : 'Selecciona un trabajador' }}
                 </option>
                 @for (trabajador of trabajadores(); track trabajador.trabajadorId) {
                   <option [value]="trabajador.trabajadorId">
@@ -238,8 +392,10 @@
                 }
               </select>
             </label>
+          }
+          <div class="paso-mov__modal-row">
             <label class="paso-mov__field">
-              Tipo
+              Tipo / Concepto
               <input
                 type="text"
                 [value]="borradorManual().tipo"
@@ -270,96 +426,32 @@
                 step="1"
               />
             </label>
-            <label class="paso-mov__field paso-mov__field--wide">
-              Glosa
-              <input
-                type="text"
-                [value]="borradorManual().glosa ?? ''"
-                (input)="actualizarGlosaManual($any($event.target).value)"
-                placeholder="Justificación operativa"
-              />
-            </label>
+          </div>
+          <label class="paso-mov__field">
+            Glosa
+            <input
+              type="text"
+              [value]="borradorManual().glosa ?? ''"
+              (input)="actualizarGlosaManual($any($event.target).value)"
+              placeholder="Justificación operativa"
+            />
+          </label>
+          <footer class="paso-mov__modal-actions">
+            <button
+              type="button"
+              class="paso-mov__btn is-ghost"
+              (click)="cerrarModalManual()"
+              [disabled]="aplicando()"
+            >Cancelar</button>
             <button
               type="submit"
               class="paso-mov__btn is-primary"
               [disabled]="aplicando() || !borradorManual().trabajadorId"
             >Agregar movimiento</button>
-          </div>
+          </footer>
         </form>
-
-        @if (movimientosManuales().length === 0) {
-          <p class="paso-mov__placeholder">Aún no hay movimientos manuales.</p>
-        } @else {
-          <ul class="paso-mov__list">
-            @for (mov of movimientosManuales(); track mov.id) {
-              <li class="paso-mov__list-item">
-                <div class="paso-mov__list-main">
-                  <strong>{{ mov.tipo }}</strong>
-                  <span class="paso-mov__list-meta" [attr.data-trabajador-id]="mov.trabajadorId">
-                    {{ nombreTrabajador(mov.trabajadorId) }}
-                    @if (rutTrabajador(mov.trabajadorId); as rut) {
-                      · {{ rut }}
-                    }
-                    · {{ mov.categoria }}
-                    @if (mov.monto != null) {
-                      · ${{ mov.monto | number:'1.0-0' }}
-                    }
-                  </span>
-                  @if (mov.glosa) {
-                    <small class="paso-mov__list-glosa">{{ mov.glosa }}</small>
-                  }
-                </div>
-                <div class="paso-mov__list-actions">
-                  <span class="paso-mov__chip" [attr.data-estado]="mov.estado">{{ mov.estado }}</span>
-                  @if (mov.estado !== 'omitido') {
-                    <button
-                      type="button"
-                      class="paso-mov__link"
-                      (click)="omitirMovimiento(mov.id)"
-                    >Omitir</button>
-                  } @else {
-                    <button
-                      type="button"
-                      class="paso-mov__link"
-                      (click)="aplicarMovimientoIndividual(mov.id)"
-                    >Reaplicar</button>
-                  }
-                </div>
-              </li>
-            }
-          </ul>
-        }
       </div>
-    }
-    @case ('omitidos') {
-      <div class="paso-mov__tab-body">
-        @if (movimientosOmitidos().length === 0) {
-          <p class="paso-mov__placeholder">No hay movimientos omitidos en este período.</p>
-        } @else {
-          <ul class="paso-mov__list">
-            @for (mov of movimientosOmitidos(); track mov.id) {
-              <li class="paso-mov__list-item">
-                <div class="paso-mov__list-main">
-                  <strong>{{ mov.tipo }}</strong>
-                  <span class="paso-mov__list-meta" [attr.data-trabajador-id]="mov.trabajadorId">
-                    {{ nombreTrabajador(mov.trabajadorId) }}
-                    @if (rutTrabajador(mov.trabajadorId); as rut) {
-                      · {{ rut }}
-                    }
-                    · {{ mov.origen }}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  class="paso-mov__link"
-                  (click)="aplicarMovimientoIndividual(mov.id)"
-                >Reaplicar</button>
-              </li>
-            }
-          </ul>
-        }
-      </div>
-    }
+    </div>
   }
 
   <footer class="paso-mov__footer">

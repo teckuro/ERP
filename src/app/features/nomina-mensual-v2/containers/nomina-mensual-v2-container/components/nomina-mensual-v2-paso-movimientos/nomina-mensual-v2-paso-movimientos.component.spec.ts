@@ -1,12 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 
-import type { FilaMovimientoConfigurado } from '../../../../../nomina-mensual/models/movimiento-nomina.models';
+import type {
+  FilaTrabajadorMovimientos,
+  ItemMovimientoTrabajador,
+} from '../../../../../nomina-mensual/models/movimiento-nomina.models';
 import type { FilaTrabajadorNominaResumen } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
 import { NominaMensualV2PasoMovimientosComponent } from './nomina-mensual-v2-paso-movimientos.component';
 
-function filaMock(parcial: Partial<FilaTrabajadorNominaResumen> = {}): FilaTrabajadorNominaResumen {
+function dotacionMock(parcial: Partial<FilaTrabajadorNominaResumen> = {}): FilaTrabajadorNominaResumen {
   return {
     trabajadorId: 'tr-1',
     nombre: 'Carlos Soto',
@@ -21,21 +24,35 @@ function filaMock(parcial: Partial<FilaTrabajadorNominaResumen> = {}): FilaTraba
   };
 }
 
-function configuradoMock(
-  parcial: Partial<FilaMovimientoConfigurado> = {},
-): FilaMovimientoConfigurado {
+function itemMock(parcial: Partial<ItemMovimientoTrabajador> = {}): ItemMovimientoTrabajador {
   return {
-    filaId: 'tr-1::rec-1::HABER_FIJO',
-    trabajadorId: 'tr-1',
-    trabajadorNombre: 'Carlos Soto',
-    rut: '17.222.333-4',
-    recurrenteId: 'rec-1',
-    concepto: 'HABER_FIJO',
+    itemId: 'cfg::tr-1::rec-1::BONO',
+    origen: 'configurado',
+    estado: 'pendiente',
+    concepto: 'BONO',
     categoria: 'haber',
-    monto: 120000,
-    frecuencia: 'mensual',
-    vigenciaDesde: '2026-01-01',
-    estadoEnNomina: 'pendiente',
+    monto: 1000,
+    recurrenteId: 'rec-1',
+    ...parcial,
+  };
+}
+
+function filaMock(parcial: Partial<FilaTrabajadorMovimientos> = {}): FilaTrabajadorMovimientos {
+  return {
+    trabajadorId: 'tr-1',
+    nombre: 'Carlos Soto',
+    rut: '17.222.333-4',
+    cargo: 'Operario',
+    centroCosto: 'CC',
+    totalHaberes: 0,
+    totalDescuentos: 0,
+    cuentaAusencias: 0,
+    cuentaInformativos: 0,
+    cuentaPendientes: 0,
+    cuentaAplicados: 0,
+    cuentaOmitidos: 0,
+    cuentaManualesAplicados: 0,
+    items: [],
     ...parcial,
   };
 }
@@ -47,29 +64,36 @@ function configurarTestBed(servicio: Record<string, unknown>): void {
   });
 }
 
-describe('NominaMensualV2PasoMovimientosComponent (MOV-ID-03)', () => {
+describe('NominaMensualV2PasoMovimientosComponent (UI unificada)', () => {
   let servicio: Record<string, unknown>;
 
   beforeEach(() => {
     servicio = {
-      listarRecurrentes: vi.fn().mockResolvedValue([]),
-      listarMovimientos: vi.fn().mockResolvedValue([]),
+      listarMovimientosPorTrabajador: vi.fn().mockResolvedValue([]),
       filtrarDotacion: vi.fn().mockResolvedValue({
         filas: [
-          filaMock({ trabajadorId: 'tr-1', nombre: 'Carlos Soto', rut: '17.222.333-4' }),
-          filaMock({ trabajadorId: 'tr-2', nombre: 'María Rojas', rut: '18.444.555-6' }),
+          dotacionMock({ trabajadorId: 'tr-1', nombre: 'Carlos Soto', rut: '17.222.333-4' }),
+          dotacionMock({ trabajadorId: 'tr-2', nombre: 'María Rojas', rut: '18.444.555-6' }),
         ],
         total: 2,
       }),
-      listarMovimientosConfigurados: vi.fn().mockResolvedValue([]),
       aplicarRecurrentesANomina: vi.fn().mockResolvedValue([]),
+      aplicarRecurrentesDeTrabajador: vi.fn().mockResolvedValue([]),
+      aplicarRecurrenteIndividual: vi.fn().mockResolvedValue(null),
       omitirMovimiento: vi.fn().mockResolvedValue(undefined),
       aplicarMovimiento: vi.fn().mockResolvedValue(undefined),
+      eliminarMovimientoManual: vi.fn().mockResolvedValue(undefined),
       agregarMovimientoManual: vi.fn().mockResolvedValue(undefined),
     };
   });
 
-  it('hidrata el cache de identidades al cargar la dotación', async () => {
+  it('cargar() hidrata filasTrabajadores desde listarMovimientosPorTrabajador', async () => {
+    const filas = [
+      filaMock({ trabajadorId: 'tr-1', cuentaPendientes: 2, items: [itemMock()] }),
+      filaMock({ trabajadorId: 'tr-2', nombre: 'María Rojas', totalHaberes: 5000, cuentaAplicados: 1 }),
+    ];
+    (servicio['listarMovimientosPorTrabajador'] as ReturnType<typeof vi.fn>).mockResolvedValue(filas);
+
     configurarTestBed(servicio);
     const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
     fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
@@ -77,261 +101,229 @@ describe('NominaMensualV2PasoMovimientosComponent (MOV-ID-03)', () => {
 
     await cmp.cargar();
 
-    expect(cmp.nombreTrabajador('tr-1')).toBe('Carlos Soto');
-    expect(cmp.rutTrabajador('tr-1')).toBe('17.222.333-4');
-    expect(cmp.nombreTrabajador('tr-2')).toBe('María Rojas');
-    expect(cmp.rutTrabajador('tr-2')).toBe('18.444.555-6');
+    expect(servicio['listarMovimientosPorTrabajador']).toHaveBeenCalledWith('np-1');
+    expect(cmp.filasTrabajadores()).toEqual(filas);
+    expect(cmp.statsGlobales().trabajadoresConPendientes).toBe(1);
+    expect(cmp.statsGlobales().totalHaberes).toBe(5000);
   });
 
-  it('fallback explícito cuando el trabajador no está en cache', () => {
+  it('CTA "Cargar todos los pendientes" deshabilitado cuando no hay pendientes', async () => {
+    (servicio['listarMovimientosPorTrabajador'] as ReturnType<typeof vi.fn>).mockResolvedValue([
+      filaMock({ cuentaAplicados: 1 }),
+    ]);
     configurarTestBed(servicio);
     const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+    fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
     const cmp = fixture.componentInstance;
+    await cmp.cargar();
 
-    expect(cmp.nombreTrabajador('tr-no-cargado')).toBe('Trabajador sin identificar');
-    expect(cmp.rutTrabajador('tr-no-cargado')).toBe('');
+    expect(cmp.hayPendientesGlobales()).toBe(false);
+    expect(cmp.statsGlobales().totalPendientes).toBe(0);
   });
 
-  it('buscarTrabajadores mergea identidades nuevas al cache', async () => {
-    (servicio['filtrarDotacion'] as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      filas: [filaMock({ trabajadorId: 'tr-1' })],
-      total: 1,
-    });
+  it('cargarPendientesGlobales delega en aplicarRecurrentesANomina y compone mensaje humano', async () => {
+    (servicio['aplicarRecurrentesANomina'] as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: 'a', estado: 'aplicado' },
+      { id: 'b', estado: 'aplicado' },
+    ]);
     configurarTestBed(servicio);
     const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
     fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
     const cmp = fixture.componentInstance;
 
-    await cmp.cargar();
+    await cmp.cargarPendientesGlobales();
 
-    (servicio['filtrarDotacion'] as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      filas: [filaMock({ trabajadorId: 'tr-3', nombre: 'Luis Vera', rut: '19.111.222-3' })],
-      total: 1,
-    });
-
-    await cmp.buscarTrabajadores('Luis');
-
-    expect(cmp.nombreTrabajador('tr-3')).toBe('Luis Vera');
-    expect(cmp.rutTrabajador('tr-3')).toBe('19.111.222-3');
-    expect(cmp.nombreTrabajador('tr-1')).toBe('Carlos Soto');
+    expect(servicio['aplicarRecurrentesANomina']).toHaveBeenCalledWith('np-1');
+    expect(cmp.mensaje()).toMatch(/Se cargaron 2 movimientos/);
+    expect(cmp.error()).toBeNull();
   });
 
-  describe('avanzar() — comando único (AG-NAV-03)', () => {
-    it('retorna ok:false sin movimientos aplicados (criterio Generador secuencial puro)', async () => {
+  it('cargarPendientesGlobales muestra "sin pendientes" cuando no aplica nada', async () => {
+    (servicio['aplicarRecurrentesANomina'] as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    configurarTestBed(servicio);
+    const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+    fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+    const cmp = fixture.componentInstance;
+
+    await cmp.cargarPendientesGlobales();
+    expect(cmp.mensaje()).toBe('No había pendientes por cargar.');
+  });
+
+  it('cargarPendientesDeTrabajador llama al servicio con el trabajadorId correcto', async () => {
+    (servicio['aplicarRecurrentesDeTrabajador'] as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: 'a', estado: 'aplicado' },
+    ]);
+    configurarTestBed(servicio);
+    const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+    fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+    const cmp = fixture.componentInstance;
+
+    await cmp.cargarPendientesDeTrabajador('tr-77');
+
+    expect(servicio['aplicarRecurrentesDeTrabajador']).toHaveBeenCalledWith('np-1', 'tr-77');
+    expect(cmp.mensaje()).toMatch(/Se cargaron 1 movimientos al trabajador/);
+  });
+
+  describe('acciones por item', () => {
+    it('cargarItem llama aplicarRecurrenteIndividual con (nominaId, trabajadorId, recurrenteId)', async () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      const cmp = fixture.componentInstance;
+      const item = itemMock({ estado: 'pendiente', recurrenteId: 'rec-9' });
+
+      await cmp.cargarItem(item, 'tr-3');
+
+      expect(servicio['aplicarRecurrenteIndividual']).toHaveBeenCalledWith('np-1', 'tr-3', 'rec-9');
+    });
+
+    it('cargarItem ignora items que no están pendientes', async () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      const cmp = fixture.componentInstance;
+      const item = itemMock({ estado: 'aplicado', movimientoNominaId: 'mov-1' });
+
+      await cmp.cargarItem(item, 'tr-1');
+      expect(servicio['aplicarRecurrenteIndividual']).not.toHaveBeenCalled();
+    });
+
+    it('omitirItem llama omitirMovimiento con el movimientoNominaId', async () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+      const cmp = fixture.componentInstance;
+      await cmp.omitirItem(itemMock({ estado: 'aplicado', movimientoNominaId: 'mov-1' }));
+      expect(servicio['omitirMovimiento']).toHaveBeenCalledWith('mov-1');
+    });
+
+    it('reaplicarItem llama aplicarMovimiento', async () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+      const cmp = fixture.componentInstance;
+      await cmp.reaplicarItem(itemMock({ estado: 'omitido', movimientoNominaId: 'mov-2' }));
+      expect(servicio['aplicarMovimiento']).toHaveBeenCalledWith('mov-2');
+    });
+
+    it('eliminarItemManual solo opera con items manuales', async () => {
       configurarTestBed(servicio);
       const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
       const cmp = fixture.componentInstance;
 
-      const resultado = await cmp.avanzar();
+      await cmp.eliminarItemManual(
+        itemMock({ origen: 'manual', estado: 'aplicado', movimientoNominaId: 'mov-3' }),
+      );
+      expect(servicio['eliminarMovimientoManual']).toHaveBeenCalledWith('mov-3');
 
-      expect(resultado.ok).toBe(false);
-      if (!resultado.ok) {
-        expect(resultado.razon).toBeTruthy();
-      }
+      (servicio['eliminarMovimientoManual'] as ReturnType<typeof vi.fn>).mockClear();
+
+      await cmp.eliminarItemManual(
+        itemMock({ origen: 'configurado', estado: 'aplicado', movimientoNominaId: 'mov-4' }),
+      );
+      expect(servicio['eliminarMovimientoManual']).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('modal manual', () => {
+    it('abrirModalManual marca el flag y preselecciona trabajador opcional', () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+      const cmp = fixture.componentInstance;
+
+      cmp.abrirModalManual('tr-99');
+      expect(cmp.modalManualAbierto()).toBe(true);
+      expect(cmp.borradorManual().trabajadorId).toBe('tr-99');
+
+      cmp.cerrarModalManual();
+      expect(cmp.modalManualAbierto()).toBe(false);
     });
 
-    it('retorna ok:false mientras se aplican recurrentes', async () => {
+    it('crearMovimientoManual recarga al servicio agregar + cargar y cierra el modal', async () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      const cmp = fixture.componentInstance;
+      cmp.abrirModalManual('tr-1');
+      cmp.actualizarTipoManual('BONO');
+      cmp.actualizarMontoManual(5000);
+
+      await cmp.crearMovimientoManual();
+
+      expect(servicio['agregarMovimientoManual']).toHaveBeenCalledWith(
+        expect.objectContaining({
+          nominaPeriodoId: 'np-1',
+          trabajadorId: 'tr-1',
+          tipo: 'BONO',
+          categoria: 'haber',
+          monto: 5000,
+          estado: 'aplicado',
+        }),
+      );
+      expect(cmp.modalManualAbierto()).toBe(false);
+      expect(cmp.mensaje()).toMatch(/manual/);
+    });
+
+    it('crearMovimientoManual no llama al servicio si no hay trabajadorId', async () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      const cmp = fixture.componentInstance;
+      cmp.abrirModalManual();
+
+      await cmp.crearMovimientoManual();
+      expect(servicio['agregarMovimientoManual']).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('puedeContinuar() / avanzar()', () => {
+    it('retorna ok:false sin movimientos aplicados', () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+      const r = fixture.componentInstance.puedeContinuar();
+      expect(r.ok).toBe(false);
+    });
+
+    it('retorna ok:true cuando hay al menos una fila con aplicados', async () => {
+      (servicio['listarMovimientosPorTrabajador'] as ReturnType<typeof vi.fn>).mockResolvedValue([
+        filaMock({ cuentaAplicados: 1 }),
+      ]);
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      const cmp = fixture.componentInstance;
+      await cmp.cargar();
+      expect(cmp.puedeContinuar()).toEqual({ ok: true });
+    });
+
+    it('avanzar() devuelve el mismo resultado que puedeContinuar()', async () => {
       configurarTestBed(servicio);
       const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
       const cmp = fixture.componentInstance;
       cmp.aplicando.set(true);
 
-      const resultado = await cmp.avanzar();
-
-      expect(resultado).toEqual({ ok: false, razon: 'Hay movimientos aplicándose.' });
-    });
-
-    it('retorna ok:true cuando hay al menos un movimiento aplicado', async () => {
-      configurarTestBed(servicio);
-      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
-      const cmp = fixture.componentInstance;
-      cmp.movimientos.set([
-        {
-          id: 'mov-1',
-          nominaPeriodoId: 'np-1',
-          trabajadorId: 'tr-1',
-          tipo: 'manual',
-          estado: 'aplicado',
-        } as never,
-      ]);
-      const resultado = await cmp.avanzar();
-      expect(resultado).toEqual({ ok: true });
+      const r = await cmp.avanzar();
+      expect(r).toEqual({ ok: false, razon: 'Hay movimientos aplicándose.' });
     });
   });
 
-  describe('Tab "Configurados" — vista derivada de recurrentes vs nómina', () => {
-    it('cargar() hidrata movimientosConfigurados desde el servicio', async () => {
-      const filas = [
-        configuradoMock({
-          filaId: 'tr-1::rec-1::HABER_FIJO',
-          estadoEnNomina: 'pendiente',
-        }),
-        configuradoMock({
-          filaId: 'tr-2::rec-1::HABER_FIJO',
-          trabajadorId: 'tr-2',
-          trabajadorNombre: 'María Rojas',
-          rut: '18.444.555-6',
-          estadoEnNomina: 'ya-cargado',
-          movimientoNominaId: 'mov-x',
-        }),
-        configuradoMock({
-          filaId: 'tr-3::rec-1::HABER_FIJO',
-          trabajadorId: 'tr-3',
-          trabajadorNombre: 'Luis Vera',
-          rut: '19.111.222-3',
-          estadoEnNomina: 'omitido-este-mes',
-          movimientoNominaId: 'mov-y',
-        }),
-      ];
-      (servicio['listarMovimientosConfigurados'] as ReturnType<typeof vi.fn>).mockResolvedValue(filas);
-
+  describe('cache de identidades (compat con specs previos)', () => {
+    it('hidrata cache al cargar', async () => {
       configurarTestBed(servicio);
       const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
       fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
       const cmp = fixture.componentInstance;
 
       await cmp.cargar();
-
-      expect(cmp.movimientosConfigurados()).toEqual(filas);
-      expect(cmp.statsConfigurados()).toEqual({
-        total: 3,
-        pendientes: 1,
-        yaCargados: 1,
-        omitidos: 1,
-      });
-      expect(cmp.hayPendientesPorCargar()).toBe(true);
+      expect(cmp.nombreTrabajador('tr-1')).toBe('Carlos Soto');
+      expect(cmp.rutTrabajador('tr-2')).toBe('18.444.555-6');
     });
 
-    it('hayPendientesPorCargar es false cuando todas las filas están cargadas u omitidas', async () => {
-      (servicio['listarMovimientosConfigurados'] as ReturnType<typeof vi.fn>).mockResolvedValue([
-        configuradoMock({ estadoEnNomina: 'ya-cargado', movimientoNominaId: 'm-1' }),
-        configuradoMock({
-          filaId: 'tr-2::rec-1::HABER_FIJO',
-          trabajadorId: 'tr-2',
-          estadoEnNomina: 'omitido-este-mes',
-          movimientoNominaId: 'm-2',
-        }),
-      ]);
-
-      configurarTestBed(servicio);
-      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
-      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
-      const cmp = fixture.componentInstance;
-      await cmp.cargar();
-
-      expect(cmp.hayPendientesPorCargar()).toBe(false);
-      expect(cmp.statsConfigurados().pendientes).toBe(0);
-    });
-
-    it('movimientosConfiguradosDeTrabajador agrupa por trabajador', async () => {
-      (servicio['listarMovimientosConfigurados'] as ReturnType<typeof vi.fn>).mockResolvedValue([
-        configuradoMock({ filaId: 'tr-1::rec-1::A', concepto: 'A' }),
-        configuradoMock({ filaId: 'tr-1::rec-2::B', concepto: 'B' }),
-        configuradoMock({
-          filaId: 'tr-2::rec-1::A',
-          trabajadorId: 'tr-2',
-          trabajadorNombre: 'María Rojas',
-          concepto: 'A',
-        }),
-      ]);
-      configurarTestBed(servicio);
-      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
-      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
-      const cmp = fixture.componentInstance;
-      await cmp.cargar();
-
-      const tr1 = cmp.movimientosConfiguradosDeTrabajador('tr-1');
-      const tr2 = cmp.movimientosConfiguradosDeTrabajador('tr-2');
-      const trX = cmp.movimientosConfiguradosDeTrabajador('tr-x');
-
-      expect(tr1).toHaveLength(2);
-      expect(tr1.map((m) => m.concepto).sort()).toEqual(['A', 'B']);
-      expect(tr2).toHaveLength(1);
-      expect(trX).toHaveLength(0);
-    });
-
-    it('rowKeyConfigurado devuelve el filaId estable (apta para expandedRowKeys)', () => {
+    it('fallback explícito cuando el trabajador no está en cache', () => {
       configurarTestBed(servicio);
       const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
       const cmp = fixture.componentInstance;
-      const fila = configuradoMock({ filaId: 'tr-9::rec-9::TIPO_X' });
-      expect(cmp.rowKeyConfigurado(fila)).toBe('tr-9::rec-9::TIPO_X');
-      expect(cmp.trackByConfigurado(0, fila)).toBe('tr-9::rec-9::TIPO_X');
-    });
 
-    it('cargarMovimientosConfigurados delega en aplicarRecurrentesANomina y mensaje humano', async () => {
-      (servicio['aplicarRecurrentesANomina'] as ReturnType<typeof vi.fn>).mockResolvedValue([
-        { id: 'mov-1', estado: 'aplicado' },
-        { id: 'mov-2', estado: 'aplicado' },
-      ]);
-      configurarTestBed(servicio);
-      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
-      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
-      const cmp = fixture.componentInstance;
-
-      await cmp.cargarMovimientosConfigurados();
-
-      expect(servicio['aplicarRecurrentesANomina']).toHaveBeenCalledWith('np-1');
-      expect(cmp.mensaje()).toMatch(/Se cargaron 2 movimientos configurados/);
-      expect(cmp.error()).toBeNull();
-    });
-
-    it('cargarMovimientosConfigurados muestra mensaje "sin pendientes" cuando no se carga nada nuevo', async () => {
-      (servicio['aplicarRecurrentesANomina'] as ReturnType<typeof vi.fn>).mockResolvedValue([]);
-      configurarTestBed(servicio);
-      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
-      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
-      const cmp = fixture.componentInstance;
-
-      await cmp.cargarMovimientosConfigurados();
-
-      expect(cmp.mensaje()).toBe('No había movimientos pendientes por cargar.');
-    });
-
-    it('cargarMovimientosConfigurados captura errores y los expone con copy humano', async () => {
-      (servicio['aplicarRecurrentesANomina'] as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error('boom'),
-      );
-      configurarTestBed(servicio);
-      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
-      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
-      const cmp = fixture.componentInstance;
-
-      await cmp.cargarMovimientosConfigurados();
-
-      expect(cmp.error()).toBe('No fue posible cargar los movimientos configurados: boom');
-    });
-
-    it('arranca con tabActivo === "configurados"', () => {
-      configurarTestBed(servicio);
-      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
-      expect(fixture.componentInstance.tabActivo()).toBe('configurados');
-    });
-  });
-
-  describe('puedeContinuar() — validación pura', () => {
-    it('retorna ok:false sin movimientos aplicados', () => {
-      configurarTestBed(servicio);
-      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
-      const cmp = fixture.componentInstance;
-      const r = cmp.puedeContinuar();
-      expect(r.ok).toBe(false);
-    });
-
-    it('retorna ok:true cuando hay al menos un movimiento aplicado', () => {
-      configurarTestBed(servicio);
-      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
-      const cmp = fixture.componentInstance;
-      cmp.movimientos.set([
-        {
-          id: 'mov-1',
-          nominaPeriodoId: 'np-1',
-          trabajadorId: 'tr-1',
-          tipo: 'manual',
-          estado: 'aplicado',
-        } as never,
-      ]);
-      expect(cmp.puedeContinuar()).toEqual({ ok: true });
+      expect(cmp.nombreTrabajador('tr-no-cargado')).toBe('Trabajador sin identificar');
+      expect(cmp.rutTrabajador('tr-no-cargado')).toBe('');
     });
   });
 });

@@ -474,6 +474,19 @@ export class NominaPeriodoRepository {
     throwIfError(error, 'actualizarEstadoMovimiento');
   }
 
+  /**
+   * Hard-delete físico de un `movimiento_nomina`. La policy DELETE está
+   * abierta a anon + authenticated (fase RLS uniforme del 2026-06-10). El
+   * caller debe garantizar que el movimiento es manual antes de invocar.
+   */
+  async eliminarMovimiento(id: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('movimiento_nomina')
+      .delete()
+      .eq('id', id);
+    throwIfError(error, 'eliminarMovimiento');
+  }
+
   // -------------------------------------------------------------------------
   // incidencia_nomina
   // -------------------------------------------------------------------------

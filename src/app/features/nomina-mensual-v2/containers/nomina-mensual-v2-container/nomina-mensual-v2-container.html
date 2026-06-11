@@ -27,7 +27,7 @@
         @case ('dotacion') {
           <app-nomina-mensual-v2-paso-dotacion
             [nominaPeriodoId]="nominaPeriodoId()"
-            (avanceSolicitado)="manejarAvanceDesdeAlcance()"
+            (avanceSolicitado)="intentarIrAPaso('movements')"
             (volverParametros)="intentarIrAPaso('parameters')"
           />
         }
@@ -66,11 +66,6 @@
   <app-nomina-mensual-v2-overlays
     (confirmarAvanceConRevision)="confirmarAvanceConRevision()"
     (irAPendientesParametros)="irAPendientesParametros()"
-    (confirmarAvanceConAdvertenciaAlcance)="confirmarAvanceConAdvertenciaAlcance()"
-    (irAPendientesEmpleados)="irAPendientesEmpleados()"
-    (verEnGrillaEmpleados)="verEnGrillaEmpleados($event)"
-    (confirmarAvanceConAdvertenciaEmpleados)="confirmarAvanceConAdvertenciaEmpleados()"
-    (reintentarValidacionEmpleados)="reintentarValidacionEmpleados()"
     (confirmarGuardarBaseYContinuar)="confirmarGuardarBaseYContinuar()"
     (confirmarMantenerBaseYContinuar)="confirmarMantenerBaseYContinuar()"
     (solicitarActualizarBase)="solicitarActualizarBase()"

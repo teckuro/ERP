@@ -32,17 +32,17 @@ import type {
   SeccionResumenPendientesEmpleados,
 } from '../../../presenters/nomina-empleados-validacion.presenter';
 
+/**
+ * Tipo conservado por compatibilidad con
+ * `nomina-mensual-v2-empleados-resumen-pendientes.component`, que sigue en
+ * el árbol del módulo aunque la UI activa ya no lo cuelga (no se importa
+ * desde ningún paso vivo). Eliminar cuando el componente se retire.
+ */
 export type ModalResumenPendientesEmpleadosPort = {
   resultado: ResultadoValidacionEmpleados;
   secciones: SeccionResumenPendientesEmpleados[];
   origen: 'checklist' | 'validacion';
 };
-
-export type ModalAvanceAlcancePort =
-  | { tipo: 'bloqueo'; titulo: string; mensaje: string }
-  | { tipo: 'revision'; titulo: string; mensaje: string };
-
-export type ModalAvanceEmpleadosPort = ModalResumenPendientesEmpleadosPort;
 
 export type ModalPrepararNominaPort = {
   preview: VistaPreviaParametrosBase;
@@ -87,8 +87,6 @@ export class NominaMensualV2OrquestadorPort {
   readonly ayudaAvance = signal<string | null>(null);
   readonly tonoAyudaAvance = signal<AyudaAvanceTono>(null);
   readonly modalAvanceParametros = signal<ModalAvanceParametrosPort | null>(null);
-  readonly modalAvanceAlcance = signal<ModalAvanceAlcancePort | null>(null);
-  readonly modalAvanceEmpleados = signal<ModalAvanceEmpleadosPort | null>(null);
   readonly modalPrepararNomina = signal<ModalPrepararNominaPort | null>(null);
   readonly modalDiferenciasParametrosBase = signal<ModalDiferenciasParametrosBasePort | null>(null);
   readonly modalActualizarParametrosBase = signal<ModalActualizarParametrosBasePort | null>(null);
@@ -167,8 +165,6 @@ export class NominaMensualV2OrquestadorPort {
 
   limpiarModalesAvance(): void {
     this.modalAvanceParametros.set(null);
-    this.modalAvanceAlcance.set(null);
-    this.modalAvanceEmpleados.set(null);
     this.modalPrepararNomina.set(null);
     this.modalDiferenciasParametrosBase.set(null);
     this.modalActualizarParametrosBase.set(null);

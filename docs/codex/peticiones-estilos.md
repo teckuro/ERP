@@ -9,6 +9,176 @@
 
 ---
 
+## 2026-06-10 — Nómina v2 · Movimientos · toolbar bajo las stats (densificación del header)
+
+Seguimiento del pulido del día. Reposicionamiento de la toolbar global del paso Movimientos.
+
+### Motivación
+
+Feedback del usuario (textual): «mejor posiciones de los botones dejalo debajo de la sección Trabajador con movimientos y así tenemos más espacio para la tabla».
+
+La toolbar ocupaba una fila completa entre el header y la grilla. La columna derecha del header (stats) tenía espacio vertical libre debajo: aprovecharlo permite ganar ~40 px de alto para la grilla y mantener la lectura "qué pasa" → "qué hago" en una sola columna.
+
+### Decisión
+
+- Nuevo wrapper `paso-mov__head-aside` dentro de `header.paso-mov__head` que agrupa, en columna y alineado al borde derecho, la `<dl class="paso-mov__stats">` arriba y la `<div class="paso-mov__toolbar">` abajo.
+- La toolbar deja de ser un hermano del header. Las alertas (`error()` / `mensaje()`) permanecen entre header y grilla.
+- CSS: `paso-mov__head-aside` con `display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex: 0 0 auto;`. `paso-mov__toolbar` ahora con `justify-content: flex-end` y `gap: 8px` para alinearse al borde derecho dentro del aside.
+- En mobile (`flex-wrap` del header) el aside cae completo bajo el copy, conservando el orden stats → acciones.
+
+### Archivos tocados
+
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.html` — nuevo wrapper `paso-mov__head-aside` envolviendo stats + toolbar; toolbar movida dentro del header.
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.css` — nueva regla `.paso-mov__head-aside`; `.paso-mov__toolbar` gana `justify-content: flex-end`.
+
+### Archivos NO tocados (guardrails)
+
+- TS del componente: sin cambios (signals, handlers y firmas intactos).
+- Modelos, servicio, repositorio, presenter.
+- Estilos globales (`src/styles*`), `angular.json`, fuentes, tema.
+- Otros pasos del v2 y resto del módulo.
+
+### Validación
+
+- `npx ng test --watch=false --include='**/paso-movimientos/**/*.spec.ts'` → **18/18**.
+- `npx ng build --configuration=development` → OK.
+
+### Lo que se contrastó con `docs/codex`
+
+`noia-ui-manual.md` (densidad, una acción principal por zona), `noia-ui-review-checklist.md` (reducir ruido visual, usar bien el espacio). Sin cambios cromáticos, sin cards y sin nuevas dependencias.
+
+---
+
+## 2026-06-10 — Nómina v2 · Movimientos · pulido visual y "Agregar" con ficha en contexto
+
+Continuación inmediata del refactor del día. Pasada de pulido visual sobre el paso Movimientos y rediseño del flujo de alta manual desde una fila concreta.
+
+### Motivación
+
+Feedback del usuario (textual): «mejor pulido visual de información y + manual no se entiende, tampoco se genera directo la edición para esa fila con el trabajador en concreto».
+
+Los problemas concretos:
+
+- El chip `+ Manual` en la columna de acciones era críptico (texto inconsistente con el CTA global "Agregar movimiento manual").
+- Al abrirse desde una fila, el modal forzaba al usuario a re-buscar al mismo trabajador del que venía clickeando — la preselección quedaba "escondida" dentro del `<select>` sin feedback.
+- Las stats del header se veían como chips grandes (`paso-mov__stat-line`) con un punto cromático fuerte, alejándose de la densidad NOIA.
+- El detalle expandible no diferenciaba visualmente haberes/descuentos en los montos individuales.
+
+### Decisiones
+
+- **Botón fila → "+ Agregar"**: el chip se renombra y se acompaña de un mini-disco azul con `+` que comunica la acción (no decora). `title` largo y humano: "Agregar un movimiento manual (bono, descuento, ausencia…) a {Nombre}".
+- **Ficha del trabajador en el modal**: nuevo signal `trabajadorPreseleccionadoModal`. Cuando el modal se abre desde una fila (o desde la acción del detalle expandible), aparece arriba un bloque sólido con `Trabajador` + Nombre + RUT + Cargo + Centro de costo, y un secundario "Cambiar trabajador" que vuelve al buscador + select. El título del modal se vuelve contextual: "Agregar movimiento manual a {Nombre}".
+- **Acción "+ Agregar" también en el detalle expandible**: ahora el header del expandible ofrece la misma acción contextual junto al "Cerrar", evitando que el usuario tenga que colapsar para volver a la columna de acciones.
+- **Header del paso**: las stats se reemplazan por una `<dl>` semántica con separadores verticales sutiles (`border-left`) sin chips ni cards. Tipografía tabular, label en eyebrow uppercase, valor 17px. Variantes `is-warning`, `is-positive`, `is-negative` solo aplican color al valor.
+- **Subtítulo del paso**: se acorta y deja de citar la regla técnica de idempotencia (ya está en el `title` del CTA primario).
+- **Subtítulo del modal**: una línea humana ("Bonos extra, descuentos puntuales, ausencias e informativos del mes.") que explica qué cabe ahí, evitando el uso técnico del campo "Tipo / Concepto".
+- **Pulido de celdas grilla**:
+  - Chip de pendientes inline al nombre (no debajo del cargo), tipografía más compacta y `lowercase`.
+  - Montos en columnas Haberes/Descuentos toman color contextual: verde para haberes, rojo para descuentos. Vacío (`—`) en gris muy claro.
+  - RUT en `font-variant-numeric: tabular-nums`, alineación más estable.
+- **Pulido del detalle**:
+  - `chip-origen` con tonos distintos según `origen` (`recurrente` → azul, `manual` → púrpura) para identificar a simple vista quién creó el item.
+  - Items omitidos: concepto en `line-through` y gris (refuerza el estado "fuera de la nómina este mes").
+  - Valor del item con color contextual (verde haber / rojo descuento) para que el ojo siga el flujo.
+  - Glosa en cursiva, jerarquía clara con el meta.
+
+### Archivos tocados
+
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.ts` — nuevo signal `trabajadorPreseleccionadoModal`, métodos `resolverFichaTrabajador()` (con fallback) y `cambiarTrabajadorEnModal()`; `abrirModalManual()` resuelve la ficha cuando hay preselección; `cerrarModalManual()` limpia el signal.
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.html` — header con `<dl>`, botón "+ Agregar" con icono, ficha del trabajador en el modal, acción contextual en el detalle expandible, chips/origen con `data-origen`, montos con color por categoría.
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.css` — reescrita la sección de stats; nuevos `paso-mov__btn-agregar`, `paso-mov__icono-mas`, `paso-mov__ficha-trabajador*`, variantes `is-positive` / `is-negative` para montos y valores, tono por origen en `paso-mov__chip-origen[data-origen=...]`, line-through en concepto de items omitidos.
+
+### Archivos NO tocados (guardrails)
+
+- Modelos, servicio, repositorio y presenter: el rediseño es **puramente visual** + un signal local de presentación. Sin cambios en agregaciones, idempotencia, ni firmas de servicio.
+- `angular.json`, `tailwind.config.*`, estilos globales, fuentes, tema.
+- Resto de pasos del v2 (`paso-dotacion`, `paso-parametros`, …), motor de cálculo, liquidaciones productivas, SQL/RPC/RLS, ficha legacy v6.
+
+### Validación
+
+- `npx ng test --watch=false --include='**/paso-movimientos/**/*.spec.ts'` → **18/18** (los specs verifican signals/métodos, no texto HTML; la nueva ficha no rompe contratos).
+- `npx ng build --configuration=development` → OK (Angular compila los templates sin warnings).
+
+### Lo que se contrastó con `docs/codex`
+
+`noia-ui-manual.md` (densidad compacta, sin cards decorativas, paleta del sistema), `noia-antipatrones-ia.md` (no chips grandes, no gradientes, no barras laterales fuertes), `noia-ui-review-checklist.md` (acción principal clara, lenguaje RRHH, identidad NOIA, no SaaS). Patrón `app-data-grid` con `expandableRows` reutilizado tal cual (no se tocó el componente compartido).
+
+---
+
+## 2026-06-10 — Nómina v2 · Movimientos unificados (fila = trabajador) + cierre del container
+
+Refactor estructural del paso Movimientos del generador v2. Eliminados los tres tabs ("Configurados", "Manuales", "Omitidos") en favor de una sola grilla `app-data-grid` por trabajador con detalle expandible. El formulario manual sale del cuerpo del paso y pasa a un modal modal-backdrop simple.
+
+### Motivación
+
+Heredado: los tres tabs partían el mismo dato (`movimiento_nomina` + `movimiento_recurrente`) según el atributo `estado` / `origen`. El usuario tenía que cambiar de tab para entender el estado real de un trabajador y la UI no obedecía el principio rector "trabajo por excepción · el usuario NO revisa todos los trabajadores".
+
+Pidiendo del usuario (textual): «mejor que diga visualizar o Cargar movimiento configurado de los trabajadores y poner quizás no sé una cuadrícula con cada trabajador y que lo pueda visualizar el usuario».
+
+Aprobado en la sesión: **fila = trabajador, conceptos como sub-detalles expandibles**, resumen por categoría ($ haberes + $ descuentos + cantidad de ausencias + cantidad de informativos).
+
+### Decisiones
+
+- **Modelo de fila**: `FilaTrabajadorMovimientos` (resumen por trabajador) + `ItemMovimientoTrabajador` (detalle plano). Define [`src/app/features/nomina-mensual/models/movimiento-nomina.models.ts`](../../src/app/features/nomina-mensual/models/movimiento-nomina.models.ts).
+- **Agregaciones estables** (ver specs):
+  - `totalHaberes` / `totalDescuentos`: suma `monto` de items con `estado='aplicado'`. Refleja lo que entró al cálculo; pendientes y omitidos no contribuyen.
+  - `cuentaAusencias` / `cuentaInformativos`: count de items en esa categoría con `estado != 'omitido'`.
+  - Contadores por estado (`cuentaPendientes`, `cuentaAplicados`, `cuentaOmitidos`) cuentan todos los items del trabajador.
+- **Servicio**: nuevo método `NominaPeriodoService.listarMovimientosPorTrabajador()` cruza recurrentes + dotación + movimientos del período. Incluye trabajadores sin items (count en cero) para permitir alta de manuales sin filtros. `listarMovimientosConfigurados` queda como deprecated interno hasta retirar últimos consumidores.
+- **Acciones**:
+  - Global: "Cargar todos los pendientes" (acción primaria, idempotente, badge con N).
+  - Por fila: "Cargar N" del trabajador (acción masiva por trabajador) + "+ Manual" (ghost).
+  - Por item (dentro del expandible): "Cargar a la nómina" (pendiente), "Omitir este mes" (aplicado), "Reaplicar" (omitido), "Eliminar" (solo manuales).
+- **Persistencia de grilla**: nueva clave `nomina-v2-movimientos-por-trabajador-grid-v1`.
+- **Modal manual**: se extrae del cuerpo del paso a un modal `aria-modal` con backdrop. Mantiene una sola identidad visual en el paso.
+- **Lenguaje RRHH (NOIA)**: "Pendiente de cargar", "Aplicado este mes", "Omitido este mes", "Configurado en ficha", "Manual del período".
+- **Hard-delete consistente**: el botón "Eliminar" de un manual aplicado/omitido invoca el nuevo `eliminarMovimientoManual` (refusa items recurrentes), alineado con la decisión global de hard-delete del 2026-06-10.
+
+### Cierre del container v2
+
+`paso-alcance` y `paso-empleados` ya no estaban en el `@switch` del container desde refactors previos, pero quedaban como deuda muerta: ViewChilds, handlers, archivos completos y outputs en el `overlays` que nadie disparaba. En esta fase:
+
+- Eliminados los archivos del módulo (`paso-alcance/*` y `paso-empleados/*`).
+- Eliminados del container `TS`: imports, `viewChild`, handlers `manejarAvanceDesdeAlcance`, `irAPasoAlcance`, `manejarAvanceDesdeEmpleados`, `confirmarAvanceConAdvertenciaAlcance`, `confirmarAvanceConAdvertenciaEmpleados`, `verEnGrillaEmpleados`, `reintentarValidacionEmpleados`, `irAPendientesEmpleados`.
+- Eliminados del container `HTML`: bindings rotos a esos handlers en `app-nomina-mensual-v2-overlays`.
+- Eliminados del overlays `TS`: 5 outputs huérfanos, 2 métodos `cerrarModalAvance{Alcance,Empleados}`, import `NominaMensualV2EmpleadosResumenPendientesComponent` (sin uso vivo) y dependencia con `TipoPendienteEmpleado`.
+- Eliminados del overlays `HTML`: bloques `@if (modalAvanceAlcance() …)` y `@if (modalAvanceEmpleados() …)`.
+- Eliminados del orquestador port: signals `modalAvanceAlcance` / `modalAvanceEmpleados`, tipo `ModalAvanceAlcancePort`. El tipo `ModalResumenPendientesEmpleadosPort` queda anotado como "compat" porque `nomina-mensual-v2-empleados-resumen-pendientes.component.ts` aún lo importa aunque nadie lo monte.
+
+### Archivos tocados
+
+- `src/app/features/nomina-mensual/models/movimiento-nomina.models.ts` — nuevos tipos `FilaTrabajadorMovimientos`, `ItemMovimientoTrabajador`, `EstadoItemMovimiento`, `OrigenMovimientoTrabajador`; deprecation de `FilaMovimientoConfigurado`.
+- `src/app/features/nomina-mensual/services/nomina-periodo.service.ts` (+ `.spec.ts`) — `listarMovimientosPorTrabajador`, `aplicarRecurrentesDeTrabajador`, `aplicarRecurrenteIndividual`, `eliminarMovimientoManual`.
+- `src/app/features/nomina-mensual/data-access/nomina-periodo.repository.ts` — `eliminarMovimiento(id)` (hard-delete físico de `movimiento_nomina`).
+- `src/app/features/nomina-mensual-v2/presenters/nomina-movimientos-por-trabajador.presenter.ts` (+ `.spec.ts`) — presenter declarativo (columnas + filtros + stats + etiquetas humanas).
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/` — `component.ts` + `.html` + `.css` + `.spec.ts` (refactor completo, eliminación de tabs).
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container.{ts,html}` — limpieza de imports / viewChilds / handlers muertos.
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-overlays/nomina-mensual-v2-overlays.{ts,html}` — limpieza de outputs y modales muertos.
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/facade/nomina-mensual-v2-orquestador.port.ts` — eliminación de signals/tipos muertos.
+
+### Archivos eliminados
+
+- `src/app/features/nomina-mensual-v2/presenters/nomina-movimientos-configurados.presenter.{ts,spec.ts}`.
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-alcance/*` (4 archivos).
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-empleados/*` (3 archivos).
+
+### Archivos NO tocados (guardrails)
+
+- `angular.json`, `postcss.config.*`, `tailwind.config.*`, `src/styles*.css`, `src/styles/`, fuentes, tema.
+- Motor de cálculo, liquidaciones productivas, SQL/RPC/RLS (el bridge HD→MR cierra en migraciones previas y no se altera).
+- Ficha del trabajador legacy v6 (sigue editando `haberdescuento_persona`).
+- Componentes `paso-parametros`, `paso-dotacion`, `paso-calculo`, `paso-validacion`, `paso-cierre`.
+- Routing global, guards, menú.
+
+### Validación
+
+- `npx ng test --watch=false --include='**/nomina-mensual-v2/**/*.spec.ts'` → **224/224** (incluye 21 del presenter y 18 del componente).
+- `npx ng test --watch=false --include='**/nomina-mensual/services/nomina-periodo.service.spec.ts'` → **48/48** (incluye 8 nuevos para `listarMovimientosPorTrabajador`, `aplicarRecurrentesDeTrabajador`, `eliminarMovimientoManual`).
+- `npx ng build --configuration=development` → OK sin warnings de budget. Lazy chunk `nomina-mensual-v2-container` 794 kB.
+- Suite global del paquete `nomina-mensual` reporta 2 fallos pre-existentes (`nomina-msgbox-lab.rules.spec.ts` y `proceso-mensual-flow-nav.rules.spec.ts`) por drift de etiquetas en módulos no tocados en esta fase.
+
+---
+
 ## 2026-06-10 — Nómina v2 · Bridge `haberdescuento_persona` → `movimiento_recurrente`
 
 Refactor estructural en BD. El tab "Configurados" del paso Movimientos no mostraba los haberes / descuentos persistentes que el usuario configura en la **ficha del trabajador** (tabla legacy `haberdescuento_persona`). Esta entrada documenta por qué pasaba y cómo se resolvió sin tocar la UI legacy.
