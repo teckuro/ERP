@@ -27,16 +27,9 @@ export const SHELL_NAV_SECTIONS: ShellNavSection[] = [
       { path: '/', label: 'Resumen', icon: 'layout-dashboard', exact: true },
       { path: '/empleados', label: 'Empleados', icon: 'users' },
       {
-        path: '/remuneraciones/proceso-mensual',
-        label: 'Nómina mensual',
-        icon: 'file-text',
-        badgeKey: 'periodoMes',
-      },
-      {
         path: '/remuneraciones/nominas',
         label: 'Administrador de nóminas',
         icon: 'clipboard-list',
-        badgeKey: 'periodoMes',
       },
       { path: '/remuneraciones/liquidaciones', label: 'Liquidaciones', icon: 'file-check-2' },
       { path: '/parametros', label: 'Parámetros', icon: 'settings' },

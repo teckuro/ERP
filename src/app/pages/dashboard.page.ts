@@ -27,7 +27,7 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
           <strong>Periodo {{ periodoActivo.etiqueta() }}</strong>
           <span>Siguiente acción: verificar el período y generar la nómina mensual</span>
         </div>
-        <a routerLink="/remuneraciones/proceso-mensual">Ir a nómina mensual</a>
+        <a routerLink="/remuneraciones/nominas">Ir al administrador de nóminas</a>
       </section>
 
       <section>
@@ -42,9 +42,9 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
             </div>
 
             <div class="dashboard-quick-links">
-              <a routerLink="/remuneraciones/proceso-mensual" class="dashboard-tile">
+              <a routerLink="/remuneraciones/nominas" class="dashboard-tile">
                 <span>
-                  <strong>Nómina mensual</strong>
+                  <strong>Administrador de nóminas</strong>
                   <small>Verifique trabajadores, parámetros y movimientos del período antes de confirmar.</small>
                 </span>
                 <lucide-icon class="h-4 w-4 shrink-0 text-gray-400" name="arrow-up-right"></lucide-icon>
@@ -130,7 +130,7 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
             <div>
               <h2 class="text-sm font-semibold text-gray-900">Actividad del dashboard</h2>
               <p class="mt-1 text-sm text-gray-600">
-                Esta vista no inventa montos, vencimientos ni eventos. La trazabilidad detallada queda en Nómina mensual
+                Esta vista no inventa montos, vencimientos ni eventos. La trazabilidad detallada queda en el Administrador de nóminas
                 y Liquidaciones oficiales.
               </p>
             </div>
@@ -307,13 +307,13 @@ export class DashboardPage {
       () => ({
         breadcrumbs: [{ label: 'Resumen' }],
         primaryAction: {
-          label: 'Ir a nómina mensual',
-          actionId: 'ruta:/remuneraciones/proceso-mensual',
+          label: 'Ir al administrador de nóminas',
+          actionId: 'ruta:/remuneraciones/nominas',
         },
       }),
       {
         onPrimaryAction: () => {
-          void this.router.navigateByUrl('/remuneraciones/proceso-mensual');
+          void this.router.navigateByUrl('/remuneraciones/nominas');
         },
       },
     );

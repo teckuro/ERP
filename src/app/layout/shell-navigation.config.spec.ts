@@ -9,7 +9,6 @@ describe('shell-navigation.config', () => {
     expect(principal?.items.map((i) => i.path)).toEqual([
       '/',
       '/empleados',
-      '/remuneraciones/proceso-mensual',
       '/remuneraciones/nominas',
       '/remuneraciones/liquidaciones',
       '/parametros',
@@ -22,5 +21,13 @@ describe('shell-navigation.config', () => {
     const labels = SHELL_NAV_SECTIONS.flatMap((s) => s.items.map((i) => i.label));
     expect(labels.filter((l) => l === 'Trabajadores')).toHaveLength(0);
     expect(labels).toContain('Empleados');
+  });
+
+  it('no muestra chip de periodo en el Administrador de nóminas', () => {
+    const administrador = SHELL_NAV_SECTIONS
+      .flatMap((seccion) => seccion.items)
+      .find((item) => item.path === '/remuneraciones/nominas');
+
+    expect(administrador?.badgeKey).toBeUndefined();
   });
 });

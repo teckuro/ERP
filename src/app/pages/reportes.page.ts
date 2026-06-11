@@ -73,8 +73,8 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
             </div>
           </app-card-header>
           <app-card-content className="space-y-3 p-4">
-            <a routerLink="/remuneraciones/proceso-mensual" class="report-tile">
-              <strong>Nómina mensual</strong>
+            <a routerLink="/remuneraciones/nominas" class="report-tile">
+              <strong>Administrador de nóminas</strong>
               <span>Estado del periodo, bloqueos, advertencias y trazabilidad operativa.</span>
             </a>
             <a routerLink="/remuneraciones/liquidaciones" class="report-tile">

@@ -34,7 +34,7 @@ export const routes: Routes = [
       {
         path: 'proceso-remuneraciones',
         pathMatch: 'full',
-        redirectTo: '/remuneraciones/proceso-mensual',
+        redirectTo: '/remuneraciones/nominas',
       },
       {
         path: 'liquidaciones/:id',
@@ -54,7 +54,7 @@ export const routes: Routes = [
           {
             path: '',
             pathMatch: 'full',
-            redirectTo: 'proceso-mensual',
+            redirectTo: 'nominas',
           },
           {
             path: 'conceptos',
@@ -83,8 +83,8 @@ export const routes: Routes = [
           },
           {
             path: 'proceso-mensual',
-            loadComponent: () =>
-              import('./pages/proceso-remuneraciones.page').then((m) => m.ProcesoRemuneracionesPage),
+            pathMatch: 'full',
+            redirectTo: 'nominas',
           },
           {
             path: 'nomina-mensual-v2',
@@ -104,11 +104,6 @@ export const routes: Routes = [
               import(
                 './features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container'
               ).then((m) => m.NominaMensualV2Container),
-          },
-          {
-            path: 'msgbox-lab',
-            loadComponent: () =>
-              import('./pages/nomina-msgbox-lab.page').then((m) => m.NominaMsgboxLabPage),
           },
           {
             path: 'liquidaciones',

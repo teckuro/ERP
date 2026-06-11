@@ -32,8 +32,6 @@
     "test:gate:parametros:e2e": "npm run test:e2e:parametros",
     "test:gate:parametros:flujos": "npm run test:e2e:parametros:flujos",
     "verify:empleados-qa": "node scripts/verify-empleados-qa-post-e2e.mjs",
-    "test:e2e:nomina-flow": "playwright test tests/nomina-mensual-flow-unificado.spec.ts --workers=1",
-    "test:e2e:nomina-flujo-completo": "playwright test tests/nomina-mensual-flujo-completo.spec.ts --workers=1",
     "lint:nomina-rules": "node scripts/check-nomina-rules.mjs",
     "lint:texto": "node scripts/check-text-hygiene.mjs",
     "lint:texto:update-baseline": "node scripts/check-text-hygiene.mjs --update-baseline",

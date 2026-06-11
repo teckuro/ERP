@@ -134,7 +134,7 @@ export class AdministradorNominasContainer {
   private computeShellContext(): ShellPageContext {
     return {
       breadcrumbs: [
-        { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+        { label: 'Remuneraciones', path: '/remuneraciones/nominas' },
         { label: 'Administrador de nóminas' },
       ],
       pageTitle: 'Administrador de nóminas',

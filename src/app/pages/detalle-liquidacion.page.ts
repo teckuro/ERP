@@ -43,13 +43,13 @@ import { PeriodoActivoService } from '../core/services/periodo-activo.service';
                   <lucide-icon icon class="h-4 w-4" name="list-checks"></lucide-icon>
                   Volver a liquidaciones oficiales
                 </app-button>
-                <app-button variant="outline" routerLink="/remuneraciones/proceso-mensual">
+                <app-button variant="outline" routerLink="/remuneraciones/nominas">
                   <lucide-icon icon class="h-4 w-4" name="calculator"></lucide-icon>
-                  Nómina mensual
+                  Administrador de nóminas
                 </app-button>
               </div>
               <div class="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-xs leading-5 text-gray-600">
-                La trazabilidad del período se consulta en Nómina mensual y en el detalle interno cuando existe
+                La trazabilidad del período se consulta en el Administrador de nóminas y en el detalle interno cuando existe
                 una liquidacion real del periodo.
               </div>
             </div>

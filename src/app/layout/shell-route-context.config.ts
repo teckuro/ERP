@@ -14,49 +14,42 @@ export const SHELL_ROUTE_CONTEXT_ENTRIES: readonly ShellRouteContextEntry[] = [
   {
     match: '/remuneraciones/nominas',
     breadcrumbs: [
-      { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+      { label: 'Remuneraciones', path: '/remuneraciones/nominas' },
       { label: 'Administrador de nóminas' },
-    ],
-  },
-  {
-    match: '/remuneraciones/proceso-mensual',
-    breadcrumbs: [
-      { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
-      { label: 'Nómina mensual' },
     ],
   },
   {
     match: '/remuneraciones/novedades-mensuales',
     breadcrumbs: [
-      { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+      { label: 'Remuneraciones', path: '/remuneraciones/nominas' },
       { label: 'Movimientos' },
     ],
   },
   {
     match: '/remuneraciones/haberes-descuentos',
     breadcrumbs: [
-      { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+      { label: 'Remuneraciones', path: '/remuneraciones/nominas' },
       { label: 'Recurrentes' },
     ],
   },
   {
     match: '/remuneraciones/conceptos',
     breadcrumbs: [
-      { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+      { label: 'Remuneraciones', path: '/remuneraciones/nominas' },
       { label: 'Conceptos' },
     ],
   },
   {
     match: '/remuneraciones/liquidaciones',
     breadcrumbs: [
-      { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+      { label: 'Remuneraciones', path: '/remuneraciones/nominas' },
       { label: 'Liquidaciones' },
     ],
   },
   {
     match: '/remuneraciones/movimientos-variables',
     breadcrumbs: [
-      { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+      { label: 'Remuneraciones', path: '/remuneraciones/nominas' },
       { label: 'Movimientos' },
     ],
   },
@@ -82,7 +75,7 @@ export function resolveShellRouteBreadcrumbs(url: string): ShellBreadcrumbItem[]
 
   if (/^\/remuneraciones\/nominas\/[^/]+\/generador$/.test(normalized)) {
     return [
-      { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+      { label: 'Remuneraciones', path: '/remuneraciones/nominas' },
       { label: 'Administrador de nóminas', path: '/remuneraciones/nominas' },
       { label: 'Generador' },
     ];

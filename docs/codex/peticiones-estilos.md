@@ -9,6 +9,22 @@
 
 ---
 
+## 2026-06-11 — Retiro de Nómina mensual legacy y chip de período del Administrador
+
+- Se elimina del sidebar la entrada `Nómina mensual`; `Administrador de nóminas` queda como acceso canónico.
+- Se retira el chip de mes del ítem `Administrador de nóminas`.
+- `/remuneraciones`, `/remuneraciones/proceso-mensual` y `/proceso-remuneraciones` redirigen a `/remuneraciones/nominas`.
+- Se eliminan la página, contenedor, laboratorio MsgBox y E2E exclusivos de la UI legacy.
+- Dashboard, reportes, liquidaciones y breadcrumbs dejan de enlazar a la pantalla retirada.
+- Se conservan modelos, servicios y reglas compartidos que todavía usa el Generador V2 y liquidaciones.
+
+### Validación
+
+- `npx tsc -p tsconfig.app.json --noEmit` — OK.
+- `npx tsc -p tsconfig.spec.json --noEmit` — OK.
+- Specs de navegación y contexto del shell — 5/5.
+- `npx ng build --configuration development` — OK.
+
 ## 2026-06-11 — Nómina v2 · Movimientos · stepper denso + alertas en msgbox + modal sin escape
 
 Pulida de tres puntos de fricción reportados por el usuario.
