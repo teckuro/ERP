@@ -4,11 +4,156 @@
 
 > **Actualización rectora 2026-06-11:** este documento conserva la arquitectura
 > de origen y el historial F0-F7. La planificación vigente para completar el
-> flujo productivo está dividida en 23 fases en
+> flujo productivo está dividida en 25 fases ejecutables (F01–F21 más F15b y
+> F18a/b/c/d) en
 > [`roadmap-admin-generador-operativo-100.md`](./roadmap-admin-generador-operativo-100.md).
 > La UI histórica de `/remuneraciones/proceso-mensual` ya fue retirada; el motor
 > y contratos internos compartidos que aún dependen de `periodo` se consideran
 > compatibilidad técnica pendiente, no un segundo flujo visible.
+>
+> **F01 cerrada (2026-06-11):** los cimientos canónicos del contrato y la
+> persistencia se aplicaron a Supabase PROD (`mjrckxodzrfkyqjkyjkn`) en commits
+> `a77a572` (BD) y `2cc42be` (Angular), con 1027/1027 tests verdes. Detalle del
+> modelo extendido en la sección "Modelo de datos extendido (NOM-ADMIN-OPS-F01)"
+> más abajo.
+>
+> **F02 cerrada (2026-06-11):** los cimientos de auditoría base y el aislamiento
+> multi-tenant se aplicaron a Supabase PROD vía
+> `supabase/migrations/20260611220000_nomina_f02_auditoria_y_rls_cimientos.sql`,
+> con regresión 1027/1027 tests verdes y smoke postflight OK
+> (`bd/scripts/validar-nomina-f02-cimientos.sql`). Detalle en la sección
+> "Cimientos de auditoría y RLS (NOM-ADMIN-OPS-F02)" más abajo.
+
+## Modelo de datos extendido (NOM-ADMIN-OPS-F01)
+
+> Aplicado en commit `a77a572` el 2026-06-11. Sustenta la fase F01 del
+> [roadmap operativo](./roadmap-admin-generador-operativo-100.md). Migraciones:
+> `supabase/migrations/20260611210000_nomina_f01_cimientos_canonicos.sql`,
+> `20260611211500_nomina_f01_lint_snapshot_temporal.sql`,
+> `20260611212500_nomina_f01_lint_snapshot_nombre_runtime.sql`.
+
+### Cambios en `nomina_periodo`
+
+| Campo | Tipo | Propósito |
+|---|---|---|
+| `fecha_inicio`, `fecha_fin`, `fecha_pago` | `date` | Rango inclusivo y fecha de pago canónica. La mensual cubre el período legal completo; anticipos y extraordinarias pueden cubrir subrangos. |
+| `naturaleza` | `text` | Rol contable de la nómina: `liquidacion_legal`, `anticipo`, `pago_extraordinario`, `rectificacion`. Separa la frecuencia visible (`tipo`) del rol contable. |
+| `version_calculo` | `integer` | Versión vigente del cálculo, creciente por intento exitoso. |
+| `ciclo_id` | `uuid` | Identificador del corte temporal dentro de un período legal (p. ej. anticipo 1). |
+| `plantilla_ciclo_id` | `uuid` | Referencia a la plantilla que congeló fechas y regla de anticipo en la creación. |
+| `nomina_origen_id` | `uuid` | Vínculo a la nómina cerrada que rectifica esta entrada (solo para `naturaleza='rectificacion'`). |
+
+Los rangos son inclusivos y la intersección contractual se evalúa como:
+
+```text
+inicioContrato <= fechaFinNomina
+AND
+(finContrato IS NULL OR finContrato >= fechaInicioNomina)
+```
+
+### Tablas nuevas
+
+- **`nomina_plantilla_ciclo`**: configuración reutilizable por empresa para
+  proponer fechas y regla de anticipo (porcentaje o monto fijo, excluyentes).
+  Versionada por `(id_empresa, codigo, version)`. Solo una versión activa por
+  `codigo` (índice parcial `ux_nomina_plantilla_ciclo_activa`).
+- **`nomina_consolidacion`**: vínculo explícito entre nómina origen (anticipo
+  o extraordinaria) y mensual consolidadora. No se infiere relación productiva
+  por compartir mes calendario.
+
+### Reglas de duplicidad y solapamiento
+
+- Una mensual ordinaria activa por empresa y período legal (índice único
+  parcial).
+- Múltiples anticipos dentro del período, identificados por `ciclo_id`.
+- Múltiples extraordinarias, cada una con identidad propia.
+- Una rectificación apunta siempre a la nómina cerrada original
+  (`nomina_origen_id`), no a una rectificación previa. El acumulado se calcula
+  sumando todas las diferencias contra el original.
+- No se permite cambiar rango, tipo o naturaleza después del primer cálculo
+  sin invalidación explícita.
+
+### Backfill y seed
+
+- Backfill automático aplicado a `nomina_periodo`: `fecha_inicio`/`fecha_fin`
+  derivados del `periodo` (primer y último día del mes), `naturaleza` =
+  `liquidacion_legal` para mensuales existentes. Registros ambiguos (sin
+  evidencia inequívoca) quedan disponibles para lectura sin asociación
+  inventada.
+- Seed mínimo: por cada empresa existente, plantilla `MES` activa (mensual,
+  liquidación legal, sin porcentaje ni monto). Habilita F03 (plantillas) sin
+  configuración manual previa.
+- Snapshot temporal: las migraciones `..._lint_snapshot_temporal.sql` y
+  `..._lint_snapshot_nombre_runtime.sql` agregan vistas y nombres de runtime
+  para satisfacer reglas de lint sin romper consultas en producción.
+
+### Compatibilidad
+
+- No se eliminan columnas legacy en F01. Las consultas que aún leen por
+  `periodo` siguen funcionando; los nuevos campos arrancan con defaults
+  seguros y constraints estrictos solo aplican a registros nuevos.
+- `database.types.ts` regenerado contra Supabase PROD; los modelos Angular se
+  derivan de la BD y consumen los nuevos campos en commits `2cc42be`.
+
+## Cimientos de auditoría y RLS (NOM-ADMIN-OPS-F02)
+
+> Aplicado el 2026-06-11 a Supabase PROD (`mjrckxodzrfkyqjkyjkn`). Sustenta la
+> fase F02 del [roadmap operativo](./roadmap-admin-generador-operativo-100.md).
+> Migración: `supabase/migrations/20260611220000_nomina_f02_auditoria_y_rls_cimientos.sql`.
+> Smoke postflight: `bd/scripts/validar-nomina-f02-cimientos.sql`.
+
+### Helpers de identidad
+
+| Función | Propósito |
+|---|---|
+| `public.current_user_id()` | Wrapper estable sobre `auth.uid()`. Retorna `NULL` si no hay sesión. Facilita testeo y reutilización desde SQL/RPC. |
+| `public.current_user_empresa_id()` | Resuelve `id_empresa` desde el JWT (`app_metadata.id_empresa` o `user_metadata.id_empresa`). **Sin fallback a partir de F02:** una sesión sin `id_empresa` retorna `NULL` y RLS bloquea cualquier acceso. |
+
+El endurecimiento del helper retira el fallback laxo heredado del rebuild
+(devolver la primera empresa). En multi-tenant real, ese fallback rompe
+aislamiento; en PROD actual (una empresa con `id_empresa` en JWT) no afecta
+operación.
+
+### RLS por empresa para tablas nuevas de F01
+
+F01 dejó `nomina_plantilla_ciclo` y `nomina_consolidacion` con RLS habilitada
+pero **sin políticas** (gap silencioso: con RLS enabled y cero policies,
+solo `service_role` puede leer/escribir). F02 cierra el gap con cuatro
+políticas por tabla:
+
+- `SELECT`/`INSERT`/`UPDATE`: cerradas por `id_empresa = current_user_empresa_id()`.
+- `DELETE` restringido por estado:
+  - `nomina_plantilla_ciclo`: solo si `activo = false` (no se borran plantillas activas).
+  - `nomina_consolidacion`: solo si `estado = 'pendiente'` (las aplicadas o anuladas conservan evidencia).
+
+### Auditoría base reutilizable
+
+| Cambio | Detalle |
+|---|---|
+| Columnas nuevas en `evento_auditoria_nomina` | `estado_previo`, `estado_nuevo`, `version_estado_esperada`, `version_estado_resultante`. Todas `text`/`integer` y nullable; aditivo. El histórico previo no se rellena: vive con NULL en esas columnas. |
+| Función `registrar_evento_auditoria_nomina(...)` | `SECURITY DEFINER`. Recibe `p_id_nomina_periodo`, `p_accion`, `p_motivo`, `p_estado_previo`, `p_estado_nuevo`, `p_version_estado_esperada`, `p_version_estado_resultante`, `p_payload`. El actor (`id_usuario`) se resuelve en servidor desde `current_user_id()`: el cliente no puede falsificarlo. Pensada para uso desde toda RPC futura (F05, F06, F07, F09, F11, F12, F13, F16). |
+| Trigger `tg_audit_nomina_periodo` actualizado | Consume `current_user_id()` y pobla las columnas estructuradas (`estado_previo`, `estado_nuevo`, `version_estado_esperada`, `version_estado_resultante`) además de `accion` y `id_usuario`. Mantiene compatibilidad con eventos previos. |
+
+### Restricciones honradas
+
+- F02 no introduce permisos finos por comando crítico (validación, aprobación,
+  liquidación, cierre, rectificación, anulación). Eso es alcance de **F15b**,
+  que se inserta una vez existen las RPC en F05 y siguientes.
+- F02 no toca motor de cálculo, liquidaciones productivas, ficha legacy ni
+  estilos globales. El código Angular productivo no cambia; solo se regeneran
+  los tipos.
+
+### Modo de adopción
+
+Las nuevas RPC que se construyan en F05 en adelante deben:
+
+1. Resolver el actor con `current_user_id()` (no recibirlo por parámetro).
+2. Confiar en RLS para aislar `id_empresa` (no replicar el filtro en la
+   función salvo razón fundada).
+3. Registrar cada transición de estado con `registrar_evento_auditoria_nomina(...)`
+   pasando `estado_previo`, `estado_nuevo`, `version_estado_esperada`,
+   `version_estado_resultante` y, opcionalmente, `payload` con el contexto
+   específico (p. ej. fingerprint de snapshot, huella del cálculo).
 
 ## Actualización 2026-06-05 - ciclo consistente y cálculo vigente
 

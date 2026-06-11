@@ -6,6 +6,8 @@
 >
 > Fecha base: **2026-06-11**
 >
+> Versión documental: **v2 (refactor 2026-06-11): F00+F01+F02 fusionadas en F01; F10+F11 fusionadas en F09; F03 partida en F02 cimientos + F15b permisos finos; F20 partida en F18a/b/c/d; F22 partida en F19/F20/F21; anexos A–G añadidos.**
+>
 > Tipo: producto + dominio + datos + seguridad + cálculo + UX + calidad
 >
 > Alcance de este documento: **solo planificación documental**. No aplica por sí
@@ -91,7 +93,9 @@ anterior.
 ## 4. Decisiones de producto cerradas
 
 Estas decisiones no deben volver a abrirse durante una fase técnica salvo que
-aparezca una incompatibilidad legal o contable demostrable.
+aparezca una incompatibilidad legal o contable demostrable. Si una decisión
+necesita reabrirse, debe seguirse el mecanismo descrito en el
+[Anexo G](#anexo-g--mecanismo-de-reapertura-de-decisiones-cerradas).
 
 | Tema | Decisión |
 |---|---|
@@ -109,6 +113,10 @@ aparezca una incompatibilidad legal o contable demostrable.
 | Corrección posterior | Se crea una rectificación diferencial vinculada. |
 | Inmutabilidad | La nómina cerrada y sus liquidaciones publicadas no se editan. |
 | Empresa | La empresa activa de la sesión es la fuente única inicial. |
+
+Las decisiones de producto que aún siguen abiertas se listan en el
+[Anexo F](#anexo-f--políticas-de-producto-pendientes) y deben cerrarse antes de
+iniciar la fase que las requiere.
 
 ## 5. Alcance funcional objetivo
 
@@ -226,7 +234,9 @@ La relación entre nóminas se almacenará explícitamente:
 - rectificación -> nómina cerrada rectificada.
 
 No se inferirá una relación productiva únicamente porque las nóminas tengan el
-mismo mes.
+mismo mes. La política de elección de mensual consolidadora cuando hay
+candidatas múltiples se define en
+[Anexo F.1](#f1-elección-de-mensual-consolidadora).
 
 ## 8. Estados y transiciones objetivo
 
@@ -368,124 +378,151 @@ que una acción afecte un universo distinto al mostrado.
 8. Actualizar este roadmap y `estado-fases` al cerrar cada fase.
 9. No retirar compatibilidad hasta tener equivalencia demostrada.
 10. Mantener copy RRHH; IDs, enums y nombres de tabla no deben llegar a UI.
+11. Toda activación gradual de tipo de nómina debe pasar por el flag tenant
+    correspondiente del [Anexo B](#anexo-b--estrategia-de-habilitación-gradual).
+12. Toda fase debe declarar esfuerzo categórico
+    ([Anexo D](#anexo-d--esfuerzo-categórico-por-fase)) y, cuando aplique,
+    métrica técnica objetivo ([Anexo E](#anexo-e--métricas-técnicas-objetivo)).
 
 ## 12. Secuencia y dependencias
 
-```text
-F00
- -> F01
- -> F02
- -> F03
- -> F04
- -> F05
- -> F06
- -> F07
- -> F08
- -> F09
- -> F10
- -> F11
- -> F12
- -> F13
- -> F14
- -> F15
- -> F16
- -> F17
- -> F18
- -> F19
- -> F20
- -> F21
- -> F22
+```mermaid
+flowchart TD
+  F01["F01 Cimientos contrato y persistencia"]
+  F02["F02 Cimientos auditoria y RLS"]
+  F03["F03 Plantillas de ciclos"]
+  F04["F04 Preview de creacion"]
+  F05["F05 Creacion transaccional"]
+  F06["F06 Parametros snapshot"]
+  F07["F07 Dotacion escalable"]
+  F08["F08 Catalogo y movimientos"]
+  F09["F09 Motor y snapshots por nomina"]
+  F10["F10 Anticipos semanales/quincenales"]
+  F11["F11 Nomina extraordinaria"]
+  F12["F12 Consolidacion mensual"]
+  F13["F13 Incidencias y validacion"]
+  F14["F14 Aprobacion versionada"]
+  F15["F15 Liquidaciones internas"]
+  F15b["F15b Permisos finos por comando"]
+  F16["F16 Cierre inmutable"]
+  F17["F17 Rectificacion diferencial"]
+  F18a["F18a UX Administrador"]
+  F18b["F18b UX Generador"]
+  F18c["F18c UX Liquidaciones"]
+  F18d["F18d UX Rectificacion"]
+  F19["F19 Retiro de compatibilidad"]
+  F20["F20 Certificacion E2E"]
+  F21["F21 Despliegue y rollback"]
+
+  F01 --> F02
+  F02 --> F03
+  F02 --> F06
+  F02 --> F07
+  F03 --> F04
+  F04 --> F05
+  F05 --> F06
+  F05 --> F07
+  F06 --> F08
+  F07 --> F08
+  F08 --> F09
+  F09 --> F10
+  F09 --> F11
+  F10 --> F12
+  F11 --> F12
+  F12 --> F13
+  F13 --> F15b
+  F15b --> F14
+  F14 --> F15
+  F15 --> F16
+  F16 --> F17
+  F09 --> F18b
+  F15 --> F18c
+  F17 --> F18d
+  F05 --> F18a
+  F18a --> F19
+  F18b --> F19
+  F18c --> F19
+  F18d --> F19
+  F19 --> F20
+  F20 --> F21
 ```
 
-F03 puede desarrollarse en paralelo con F04-F05 después de estabilizar F02,
-pero debe estar cerrado antes de habilitar aprobación, liquidación o cierre.
+Notas de paralelismo:
 
-F08 y F09 pueden avanzar en paralelo después de F07, siempre que ambos respeten
-el contrato de invalidación definido en F01-F02.
+- F06 y F07 pueden avanzar en paralelo después de F02; ambos son insumos de
+  F08 y F09.
+- F10 y F11 pueden avanzar en paralelo después de F09, siempre que respeten el
+  contrato de invalidación definido en F01.
+- Las cuatro sub-fases F18a/b/c/d pueden ejecutarse en paralelo siempre que su
+  dependencia funcional esté cerrada.
+- F15b se inserta entre F13 y F14 porque protege la transición a `aprobada` y
+  el resto de comandos críticos, una vez que las RPC ya están escritas.
 
 ## 13. Fases detalladas
 
 ---
 
-### F00 — Línea base verificable
-
-**ID:** `NOM-ADMIN-OPS-F00`
-
-**Objetivo**
-
-Obtener una fotografía reproducible del flujo antes de cambiar contratos
-productivos.
-
-**Dependencias**
-
-- Ninguna.
-
-**Alcance**
-
-- Inventariar rutas canónicas y redirects.
-- Registrar migraciones locales y remotas aplicadas.
-- Identificar tablas, vistas, triggers, RPC y políticas RLS de nómina.
-- Mapear servicios que todavía consultan por `periodo`.
-- Listar imports runtime desde `*.mock.ts`.
-- Registrar suites unitarias, integración y E2E existentes.
-- Medir estado de build y errores preexistentes.
-- Identificar datos históricos que podrían ser ambiguos al vincular por nómina.
-
-**Entregables**
-
-- Auditoría técnica fechada.
-- Matriz `acción -> servicio -> RPC/tabla -> prueba`.
-- Listado de deuda preexistente.
-- Dataset de prueba controlado y no productivo.
-
-**Pruebas**
-
-- `tsc` de aplicación y specs.
-- Suite específica de Administrador/Generador.
-- Build de desarrollo y productivo.
-- E2E no destructivo actual.
-- Consulta de migraciones aplicadas.
-
-**Criterio de cierre**
-
-La misma línea base puede repetirse y distingue claramente fallos previos de
-regresiones futuras.
-
-**Fuera de fase**
-
-- Cambios de dominio.
-- Reparaciones funcionales.
-- Nuevas migraciones.
-
-**Commit esperado**
-
-`docs(nomina): registrar linea base operativa admin generador`
-
----
-
-### F01 — Contrato canónico de nómina
+### F01 — Cimientos del contrato y persistencia
 
 **ID:** `NOM-ADMIN-OPS-F01`
 
 **Objetivo**
 
-Definir en modelos y reglas puras la identidad, rangos, naturaleza,
-consolidación, versionado e invariantes de cada nómina.
+Fijar la identidad canónica de una nómina, definir el contrato puro
+(`tipo`, `naturaleza`, rango, ciclo, versión, vínculos) y persistirlo en base
+de datos mediante una migración aditiva con backfill seguro y seed mínimo. Esta
+fase fusiona la antigua F00 (línea base), F01 (contrato canónico en modelos
+puros) y F02 (persistencia aditiva), porque los modelos TypeScript se derivan
+directamente de `database.types.ts` y mantenerlas separadas era ceremonia.
 
 **Dependencias**
 
-- F00 cerrada.
+- Ninguna.
 
-**Alcance**
+**Alcance — Diagnóstico (timebox ≤ 1 día)**
 
-- Extender el modelo de `NominaPeriodo`.
+- Inventariar rutas canónicas y redirects.
+- Listar migraciones aplicadas (local y remoto).
+- Identificar tablas, vistas, triggers, RPC y políticas RLS de nómina.
+- Mapear servicios que consultan por `periodo`.
+- Listar imports runtime desde `*.mock.ts`.
+- Registrar suites unitarias, integración y E2E vigentes.
+- Medir estado de build y errores preexistentes.
+
+**Alcance — Contrato puro**
+
+- Extender el modelo de `NominaPeriodo` con rango, naturaleza, ciclo y versión.
 - Separar `tipo` y `naturaleza`.
 - Definir rango inclusivo y período legal.
-- Definir vínculo de consolidación y rectificación.
-- Formalizar estados `liquidada` y cierre inmutable.
-- Definir motivos de invalidación de cálculo.
-- Definir reglas de duplicidad y solapamiento.
-- Reemplazar supuestos implícitos de una nómina por mes en reglas puras.
+- Definir vínculo de consolidación (anticipo/extraordinaria -> mensual) y de
+  rectificación (rectificación -> cerrada).
+- Formalizar estado `liquidada` y cierre inmutable.
+- Definir motivos de invalidación de cálculo (parámetros, dotación,
+  movimientos, consolidaciones).
+- Definir reglas de duplicidad y solapamiento por `tipo` y `naturaleza`.
+- Eliminar supuestos implícitos de una nómina por mes en reglas puras.
+
+**Alcance — Persistencia aditiva**
+
+- Migración SQL que agrega columnas (`fecha_inicio`, `fecha_fin`, `fecha_pago`,
+  `naturaleza`, `version_calculo`, `ciclo_id`, `nomina_origen_id`,
+  `plantilla_ciclo_id`).
+- Tablas nuevas: `nomina_plantilla_ciclo`, `nomina_consolidacion`.
+- Agregar `nomina_periodo_id` a snapshots de cálculo y liquidaciones.
+- Crear índices únicos parciales y checks (una mensual ordinaria por empresa y
+  período legal; múltiples anticipos por ciclo; cada rectificación apunta a
+  cerrada).
+- Incorporar control optimista en comandos críticos (`version_estado`).
+- Backfill automático solo cuando empresa + período + evidencia produzcan una
+  asociación única.
+- Marcar registros ambiguos como históricos pendientes de asociación.
+- Mantener lecturas compatibles durante la transición (no eliminar columnas
+  legacy en esta fase).
+
+**Alcance — Seed**
+
+- Insertar plantilla `MES` por empresa para que F03 ya disponga de una
+  referencia mínima.
 
 **Reglas mínimas**
 
@@ -493,78 +530,35 @@ consolidación, versionado e invariantes de cada nómina.
 - Múltiples anticipos dentro del período, identificados por ciclo.
 - Múltiples extraordinarias, cada una con identidad propia.
 - Una rectificación puede tener otras rectificaciones posteriores, pero cada
-  una debe apuntar a la versión cerrada que corrige.
+  una debe apuntar a la versión cerrada original (ver
+  [Anexo F.4](#f4-encadenamiento-de-rectificaciones)).
 - No se permite cambiar rango, tipo o naturaleza después del primer cálculo
   sin invalidación explícita.
 
-**Pruebas**
-
-- Matriz completa de transiciones.
-- Rangos válidos e inválidos.
-- Solapamientos por tipo.
-- Creación de rectificación.
-- Inmutabilidad de cerradas.
-- Invalidación por cada mutación relevante.
-
-**Criterio de cierre**
-
-El dominio puede decidir sin consultar UI si una operación es válida y qué
-evidencia invalida.
-
-**Fuera de fase**
-
-- Persistencia SQL.
-- Cálculo real.
-- Cambios visuales.
-
-**Commit esperado**
-
-`feat(nomina): definir contrato canonico por nomina`
-
----
-
-### F02 — Persistencia aditiva y backfill
-
-**ID:** `NOM-ADMIN-OPS-F02`
-
-**Objetivo**
-
-Persistir el contrato canónico sin perder ni reinterpretar silenciosamente
-datos existentes.
-
-**Dependencias**
-
-- F01 cerrada.
-
-**Alcance**
-
-- Agregar rango, naturaleza, ciclo y versión donde corresponda.
-- Crear relaciones explícitas entre nóminas.
-- Agregar `nominaPeriodoId` a cálculos y liquidaciones.
-- Crear índices únicos parciales y checks.
-- Incorporar control optimista en comandos críticos.
-- Backfill automático solo cuando empresa + período + evidencia produzcan una
-  asociación única.
-- Marcar registros ambiguos como históricos pendientes de asociación.
-- Mantener lecturas compatibles durante la transición.
-
 **Migración**
 
-Se ejecutará en tres pasos:
+Se ejecuta en tres pasos dentro de la misma fase:
 
 1. columnas y tablas nuevas, inicialmente compatibles;
 2. backfill y reporte de ambigüedades;
 3. constraints estrictos para registros nuevos.
 
-No se eliminarán columnas legacy en esta fase.
+No se eliminan columnas legacy en esta fase.
 
-**Verificaciones**
+**Pruebas**
 
-- Conteos antes y después.
+- Matriz completa de transiciones de estado.
+- Rangos válidos e inválidos.
+- Solapamientos por tipo.
+- Creación de rectificación.
+- Inmutabilidad de cerradas.
+- Invalidación por cada mutación relevante.
+- Conteos antes/después de backfill.
 - Registros huérfanos.
 - Duplicados por índice objetivo.
 - Planes de consulta de Admin, cálculo y liquidaciones.
 - RLS de empresa en cada objeto nuevo.
+- Build dev + suite v2 + suite nomina-mensual sin regresión.
 
 **Reversión**
 
@@ -574,71 +568,89 @@ No se eliminarán columnas legacy en esta fase.
 
 **Criterio de cierre**
 
-Toda nómina nueva puede persistir su identidad completa y los datos históricos
-siguen disponibles sin asociaciones inventadas.
+Toda nómina nueva puede persistir su identidad completa, los datos históricos
+siguen disponibles sin asociaciones inventadas, y el dominio puede decidir sin
+consultar UI si una operación es válida y qué evidencia invalida cálculo.
+
+**Esfuerzo**
+
+L (ver [Anexo D](#anexo-d--esfuerzo-categórico-por-fase)).
+
+**Fuera de fase**
+
+- Cálculo real.
+- Cambios visuales.
+- Permisos finos por comando (van en F02 / F15b).
 
 **Commit esperado**
 
-`feat(db): agregar identidad canonica y vinculos de nomina`
+`feat(nomina): cimientos canonicos de contrato y persistencia`
 
 ---
 
-### F03 — Permisos y auditoría de servidor
+### F02 — Cimientos de auditoría y RLS multi-tenant
 
-**ID:** `NOM-ADMIN-OPS-F03`
+**ID:** `NOM-ADMIN-OPS-F02`
 
 **Objetivo**
 
-Proteger cada operación crítica con permisos específicos y evidencia
-auditable.
+Formalizar la auditoría base y el aislamiento multi-tenant que protegen toda
+operación posterior, sin entrar todavía en permisos por comando crítico (eso
+va en F15b, cuando las RPC ya existen).
 
 **Dependencias**
 
-- F02 cerrada.
+- F01 cerrada.
 
 **Alcance**
 
-- Persistir asignación de permisos por usuario y empresa o integrar el
-  mecanismo de roles vigente si ya existe uno equivalente.
-- Resolver permisos efectivos mediante función SQL estable.
-- Proteger RPC de validación, aprobación, liquidación, cierre, rectificación y
-  anulación.
-- Registrar actor, fecha, estado previo, estado nuevo, versión esperada,
-  versión resultante y motivo.
-- Exponer permisos efectivos al frontend.
-- Definir mensajes humanos para autorización insuficiente.
+- Helpers SQL: `current_user_empresa_id()`, `current_user_id()` y verificación
+  de pertenencia a empresa.
+- Políticas RLS por empresa sobre las tablas nuevas y existentes de nómina.
+- Tabla `nomina_auditoria` (si no existe) o extensión de la existente con
+  `actor_id`, `fecha`, `estado_previo`, `estado_nuevo`, `version_esperada`,
+  `version_resultante`, `motivo`.
+- Función auxiliar `registrar_evento_auditoria_nomina(...)` reutilizable desde
+  cada RPC.
+- Bloqueo explícito de `usuarioId` enviado por el cliente como fuente de
+  verdad: la auditoría usa `auth.uid()`.
 
 **Reglas**
 
-- Los permisos son acumulables.
-- Tener acceso a la empresa no implica permiso de cierre.
-- La autorización se evalúa en servidor en cada comando.
-- La auditoría no acepta un `usuarioId` enviado por el cliente como fuente de
-  verdad; usa `auth.uid()`.
+- Tener acceso a la empresa no implica permiso de operación sobre nómina.
+- Toda RPC debe poder registrar auditoría sin acoplarse al cliente.
+- La RLS de empresa es independiente de los permisos finos por comando.
 
 **Pruebas**
 
-- Matriz permiso/acción.
-- Usuario sin rol.
-- Usuario de otra empresa.
-- Permisos acumulados.
+- Usuario de otra empresa intentando leer.
 - Intento de alterar actor desde cliente.
-- Auditoría ante éxito, conflicto optimista y rechazo.
+- Registro de auditoría ante éxito, conflicto optimista y rechazo.
+- Verificación de RLS por cada tabla nueva creada en F01.
 
 **Criterio de cierre**
 
-Ninguna acción crítica puede ejecutarse mediante llamada directa a Supabase sin
-el permiso requerido.
+Ninguna lectura ni escritura puede cruzar empresas, y existe un mecanismo
+único, estable y probado para registrar auditoría desde cualquier RPC futura.
+
+**Esfuerzo**
+
+S.
+
+**Fuera de fase**
+
+- Asignación de permisos por usuario (eso va en F15b).
+- Protección por comando crítico.
 
 **Commit esperado**
 
-`feat(nomina): aplicar permisos y auditoria de servidor`
+`feat(nomina): cimientos de auditoria y rls multi-tenant`
 
 ---
 
-### F04 — Plantillas de ciclos por empresa
+### F03 — Plantillas de ciclos por empresa
 
-**ID:** `NOM-ADMIN-OPS-F04`
+**ID:** `NOM-ADMIN-OPS-F03`
 
 **Objetivo**
 
@@ -646,7 +658,8 @@ Configurar calendarios repetibles para reducir errores al crear nóminas.
 
 **Dependencias**
 
-- F02 cerrada.
+- F01 cerrada (`nomina_plantilla_ciclo` ya existe con seed mínimo).
+- F02 cerrada (RLS por empresa).
 
 **Alcance**
 
@@ -678,15 +691,19 @@ Configurar calendarios repetibles para reducir errores al crear nóminas.
 El sistema puede proponer ciclos válidos para todo un año y cada propuesta
 explica sus fechas y regla de anticipo.
 
+**Esfuerzo**
+
+M.
+
 **Commit esperado**
 
 `feat(nomina): incorporar plantillas de ciclos`
 
 ---
 
-### F05 — Preview automático de creación
+### F04 — Preview automático de creación
 
-**ID:** `NOM-ADMIN-OPS-F05`
+**ID:** `NOM-ADMIN-OPS-F04`
 
 **Objetivo**
 
@@ -694,7 +711,8 @@ Mostrar exactamente qué se creará antes de persistir una nómina.
 
 **Dependencias**
 
-- F01, F02 y F04 cerradas.
+- F01 y F03 cerradas.
+- F02 cerrada (RLS de empresa garantiza preview filtrado).
 
 **Alcance**
 
@@ -703,7 +721,7 @@ Mostrar exactamente qué se creará antes de persistir una nómina.
 - Separar incluidos y excluidos.
 - Informar motivos de exclusión.
 - Detectar conflictos de calendario y duplicidad.
-- Calcular propuesta de anticipo cuando corresponda.
+- Calcular propuesta de anticipo cuando corresponda (si el `tipo` lo amerita).
 - Emitir `fingerprint` del universo evaluado.
 
 **Motivos mínimos de exclusión**
@@ -737,15 +755,23 @@ Mostrar exactamente qué se creará antes de persistir una nómina.
 El usuario conoce el universo y los conflictos antes de crear; confirmar un
 preview obsoleto es rechazado.
 
+**Esfuerzo**
+
+M.
+
+**Métrica técnica objetivo**
+
+Ver [Anexo E.1](#e1-preview-y-listados).
+
 **Commit esperado**
 
 `feat(nomina): agregar preview de creacion y dotacion`
 
 ---
 
-### F06 — Creación transaccional
+### F05 — Creación transaccional
 
-**ID:** `NOM-ADMIN-OPS-F06`
+**ID:** `NOM-ADMIN-OPS-F05`
 
 **Objetivo**
 
@@ -754,7 +780,7 @@ operación idempotente.
 
 **Dependencias**
 
-- F03 y F05 cerradas.
+- F02 y F04 cerradas.
 
 **Alcance**
 
@@ -788,15 +814,19 @@ operación idempotente.
 No existe cabecera sin dotación inicial ni dotación sin cabecera por un fallo
 parcial de creación.
 
+**Esfuerzo**
+
+M.
+
 **Commit esperado**
 
 `feat(nomina): crear nomina y dotacion en transaccion`
 
 ---
 
-### F07 — Parámetros por rango y snapshot
+### F06 — Parámetros por rango y snapshot
 
-**ID:** `NOM-ADMIN-OPS-F07`
+**ID:** `NOM-ADMIN-OPS-F06`
 
 **Objetivo**
 
@@ -805,7 +835,7 @@ evidencia usada por el cálculo.
 
 **Dependencias**
 
-- F02 y F06 cerradas.
+- F02 y F05 cerradas.
 
 **Alcance**
 
@@ -838,15 +868,19 @@ evidencia usada por el cálculo.
 Cada cálculo puede demostrar exactamente qué parámetros normativos y de empresa
 utilizó.
 
+**Esfuerzo**
+
+M.
+
 **Commit esperado**
 
 `feat(nomina): resolver parametros por rango y snapshot`
 
 ---
 
-### F08 — Dotación escalable
+### F07 — Dotación escalable
 
-**ID:** `NOM-ADMIN-OPS-F08`
+**ID:** `NOM-ADMIN-OPS-F07`
 
 **Objetivo**
 
@@ -855,7 +889,7 @@ cliente.
 
 **Dependencias**
 
-- F06 cerrada.
+- F05 cerrada.
 
 **Alcance**
 
@@ -890,15 +924,23 @@ cliente.
 Las acciones masivas afectan exactamente el universo confirmado y la UI no
 depende de cargar todos los trabajadores.
 
+**Esfuerzo**
+
+L.
+
+**Métrica técnica objetivo**
+
+Ver [Anexo E.1](#e1-preview-y-listados).
+
 **Commit esperado**
 
 `feat(nomina): escalar dotacion y acciones masivas`
 
 ---
 
-### F09 — Catálogo y movimientos consistentes
+### F08 — Catálogo y movimientos consistentes
 
-**ID:** `NOM-ADMIN-OPS-F09`
+**ID:** `NOM-ADMIN-OPS-F08`
 
 **Objetivo**
 
@@ -907,8 +949,9 @@ de cálculo, vigencia y consolidación conocidas.
 
 **Dependencias**
 
-- F07 cerrada.
+- F06 cerrada.
 - Catálogo de conceptos operativo.
+- Inventario legacy ejecutado según [Anexo C](#anexo-c--inventario-de-tipos-legacy-movimientotipo).
 
 **Alcance**
 
@@ -936,11 +979,17 @@ de cálculo, vigencia y consolidación conocidas.
 - Importación duplicada.
 - Recurrente omitido.
 - Todos los criterios de segmentación.
+- Historial con string legacy bloquea importación nueva pero no edición de
+  histórico.
 
 **Criterio de cierre**
 
 No se puede introducir al cálculo un tipo arbitrario o un concepto sin reglas
 vigentes.
+
+**Esfuerzo**
+
+L.
 
 **Commit esperado**
 
@@ -948,19 +997,22 @@ vigentes.
 
 ---
 
-### F10 — Contrato del motor por nómina
+### F09 — Contrato del motor y snapshots por nómina
 
-**ID:** `NOM-ADMIN-OPS-F10`
+**ID:** `NOM-ADMIN-OPS-F09`
 
 **Objetivo**
 
-Desacoplar la ejecución del cálculo de la clave `YYYY-MM`.
+Desacoplar la ejecución del cálculo de la clave `YYYY-MM` y persistir
+resultados versionados, recuperables y vinculados a la nómina. Esta fase
+fusiona las antiguas F10 (contrato del motor) y F11 (snapshot y
+rehidratación), porque son el input y el output del mismo refactor.
 
 **Dependencias**
 
-- F07, F08 y F09 cerradas.
+- F06, F07 y F08 cerradas.
 
-**Alcance**
+**Alcance — Input**
 
 - Construir `NominaCalculoContext`.
 - Resolver todo input mediante `nominaPeriodoId`.
@@ -969,11 +1021,31 @@ Desacoplar la ejecución del cálculo de la clave `YYYY-MM`.
 - Normalizar errores del motor.
 - Registrar huella de entrada para detectar cambios.
 
+**Alcance — Output**
+
+- Crear versión de cálculo por intento exitoso.
+- Persistir cabecera, detalle por trabajador y conceptos.
+- Marcar una única versión vigente.
+- Rehidratar resumen y detalle al recargar.
+- Mostrar diferencias respecto de la versión anterior.
+- Registrar quién calculó y con qué huella.
+- Invalidar sin borrar versiones históricas, según los motivos definidos en
+  F01.
+
 **Compatibilidad**
 
 El motor matemático existente puede reutilizarse, pero no decidirá qué nómina,
 dotación o movimientos cargar. Esa responsabilidad será del orquestador por
 nómina.
+
+**Reglas**
+
+- Un cálculo fallido no desplaza la versión vigente anterior.
+- Invalidar no elimina evidencia.
+- La UI no obliga a recalcular si existe una versión vigente compatible.
+- El cierre referencia una versión concreta.
+- Comparación obligatoria contra fixture "golden" del motor actual antes de
+  desactivar el adaptador.
 
 **Pruebas**
 
@@ -983,49 +1055,6 @@ nómina.
 - Error de parámetros.
 - Error individual por trabajador.
 - Comparación contra fixture conocido del motor actual.
-
-**Criterio de cierre**
-
-El cálculo de una nómina no lee ni sobrescribe datos de otra nómina del mismo
-mes.
-
-**Commit esperado**
-
-`refactor(nomina): ejecutar motor con contexto por nomina`
-
----
-
-### F11 — Snapshot y rehidratación por nómina
-
-**ID:** `NOM-ADMIN-OPS-F11`
-
-**Objetivo**
-
-Persistir resultados versionados, recuperables y vinculados a la nómina.
-
-**Dependencias**
-
-- F02 y F10 cerradas.
-
-**Alcance**
-
-- Crear versión de cálculo por intento exitoso.
-- Persistir cabecera, detalle por trabajador y conceptos.
-- Marcar una única versión vigente.
-- Rehidratar resumen y detalle al recargar.
-- Mostrar diferencias respecto de la versión anterior.
-- Registrar quién calculó y con qué huella.
-- Invalidar sin borrar versiones históricas.
-
-**Reglas**
-
-- Un cálculo fallido no desplaza la versión vigente anterior.
-- Invalidar no elimina evidencia.
-- La UI no obliga a recalcular si existe una versión vigente compatible.
-- El cierre referencia una versión concreta.
-
-**Pruebas**
-
 - Recarga del navegador.
 - Dos cálculos consecutivos.
 - Fallo durante persistencia.
@@ -1035,18 +1064,27 @@ Persistir resultados versionados, recuperables y vinculados a la nómina.
 
 **Criterio de cierre**
 
-Una nómina calculada puede reabrirse en UI y mostrar el mismo resultado sin
-ejecutar nuevamente el motor.
+El cálculo de una nómina no lee ni sobrescribe datos de otra nómina del mismo
+mes, y una nómina calculada puede reabrirse en UI mostrando el mismo resultado
+sin reejecutar el motor.
+
+**Esfuerzo**
+
+XL.
+
+**Métrica técnica objetivo**
+
+Ver [Anexo E.2](#e2-motor-y-rehidratación).
 
 **Commit esperado**
 
-`feat(nomina): versionar y rehidratar calculos por nomina`
+`refactor(nomina): contrato del motor y snapshots por nomina`
 
 ---
 
-### F12 — Anticipos semanales y quincenales
+### F10 — Anticipos semanales y quincenales
 
-**ID:** `NOM-ADMIN-OPS-F12`
+**ID:** `NOM-ADMIN-OPS-F10`
 
 **Objetivo**
 
@@ -1055,7 +1093,9 @@ descontar en la mensual.
 
 **Dependencias**
 
-- F04, F09, F10 y F11 cerradas.
+- F03, F08 y F09 cerradas.
+- Feature flag `nomina.anticipos.enabled`
+  ([Anexo B.1](#b1-flags-disponibles)).
 
 **Alcance**
 
@@ -1074,6 +1114,7 @@ descontar en la mensual.
 - Un anticipo anulado no se consolida.
 - No se puede consolidar dos veces el mismo pago.
 - Ajustes sobre la regla propuesta quedan auditados.
+- Política de huérfanos definida en [Anexo F.2](#f2-anticipos-huérfanos).
 
 **Pruebas**
 
@@ -1090,15 +1131,19 @@ descontar en la mensual.
 El anticipo produce una salida interna trazable y un único descuento futuro
 identificable en la mensual.
 
+**Esfuerzo**
+
+L.
+
 **Commit esperado**
 
 `feat(nomina): operar anticipos semanales y quincenales`
 
 ---
 
-### F13 — Nómina extraordinaria
+### F11 — Nómina extraordinaria
 
-**ID:** `NOM-ADMIN-OPS-F13`
+**ID:** `NOM-ADMIN-OPS-F11`
 
 **Objetivo**
 
@@ -1107,7 +1152,9 @@ explícitos.
 
 **Dependencias**
 
-- F09, F10 y F11 cerradas.
+- F08 y F09 cerradas.
+- Feature flag `nomina.extraordinaria.enabled`
+  ([Anexo B.1](#b1-flags-disponibles)).
 
 **Alcance**
 
@@ -1115,7 +1162,8 @@ explícitos.
 - Calcular pago interno.
 - Registrar bases imponibles y tributables que deben consolidarse.
 - Registrar descuentos y montos previamente pagados.
-- Vincular una mensual consolidadora.
+- Vincular una mensual consolidadora según
+  [Anexo F.1](#f1-elección-de-mensual-consolidadora).
 - Bloquear conceptos sin política de consolidación.
 
 **Reglas**
@@ -1140,15 +1188,19 @@ explícitos.
 Para cada extraordinaria es posible explicar qué se pagó y qué efecto exacto
 queda pendiente para la mensual.
 
+**Esfuerzo**
+
+L.
+
 **Commit esperado**
 
 `feat(nomina): operar pagos extraordinarios consolidables`
 
 ---
 
-### F14 — Consolidación mensual
+### F12 — Consolidación mensual
 
-**ID:** `NOM-ADMIN-OPS-F14`
+**ID:** `NOM-ADMIN-OPS-F12`
 
 **Objetivo**
 
@@ -1157,7 +1209,7 @@ duplicar bases ni pagos.
 
 **Dependencias**
 
-- F12 y F13 cerradas.
+- F10 y F11 cerradas.
 
 **Alcance**
 
@@ -1168,6 +1220,8 @@ duplicar bases ni pagos.
 - Mostrar conciliación por nómina origen y trabajador.
 - Persistir estado de consolidación.
 - Bloquear aprobación ante diferencias.
+- Aplicar política de ventana temporal y huérfanos del
+  [Anexo F.2](#f2-anticipos-huérfanos) y [Anexo F.3](#f3-ventana-temporal-de-consolidación).
 
 **Cuadraturas mínimas**
 
@@ -1186,11 +1240,17 @@ duplicar bases ni pagos.
 - Origen anulado.
 - Consolidación parcial.
 - Reintento y concurrencia.
+- Mensual consolidadora elegida automáticamente vs elegida explícitamente por
+  usuario.
 
 **Criterio de cierre**
 
 La mensual explica por trabajador los pagos previos y no puede aprobarse con
 una conciliación incompleta.
+
+**Esfuerzo**
+
+XL.
 
 **Commit esperado**
 
@@ -1198,9 +1258,9 @@ una conciliación incompleta.
 
 ---
 
-### F15 — Incidencias y validación
+### F13 — Incidencias y validación
 
-**ID:** `NOM-ADMIN-OPS-F15`
+**ID:** `NOM-ADMIN-OPS-F13`
 
 **Objetivo**
 
@@ -1209,7 +1269,7 @@ lista informativa.
 
 **Dependencias**
 
-- F03, F11 y F14 cerradas.
+- F02, F09 y F12 cerradas.
 
 **Alcance**
 
@@ -1243,15 +1303,79 @@ lista informativa.
 Toda incidencia que habilita la aprobación tiene una decisión válida,
 versionada y atribuible.
 
+**Esfuerzo**
+
+M.
+
 **Commit esperado**
 
 `feat(nomina): persistir validacion e incidencias`
 
 ---
 
-### F16 — Aprobación versionada
+### F15b — Permisos finos por comando crítico
 
-**ID:** `NOM-ADMIN-OPS-F16`
+**ID:** `NOM-ADMIN-OPS-F15b`
+
+> Numerada como F15b porque se inserta entre F13 y F14 para proteger
+> aprobación, liquidación, cierre, rectificación y anulación, una vez que sus
+> RPC ya están escritas en F09–F13 y antes de habilitarlas en producción.
+
+**Objetivo**
+
+Proteger cada operación crítica con permisos específicos del catálogo del
+capítulo 9, ejecutados en servidor con evidencia auditable.
+
+**Dependencias**
+
+- F02 cerrada (cimientos de auditoría + RLS).
+- F13 cerrada (incidencias persistidas).
+
+**Alcance**
+
+- Persistir asignación de permisos por usuario y empresa o integrar el
+  mecanismo de roles vigente si ya existe uno equivalente.
+- Resolver permisos efectivos mediante función SQL estable.
+- Proteger RPC de validación, aprobación, liquidación, cierre, rectificación y
+  anulación.
+- Exponer permisos efectivos al frontend.
+- Definir mensajes humanos para autorización insuficiente.
+
+**Reglas**
+
+- Los permisos son acumulables.
+- Tener acceso a la empresa no implica permiso de cierre.
+- La autorización se evalúa en servidor en cada comando.
+- La auditoría no acepta un `usuarioId` enviado por el cliente como fuente de
+  verdad; usa `auth.uid()`.
+
+**Pruebas**
+
+- Matriz permiso/acción.
+- Usuario sin rol.
+- Usuario de otra empresa.
+- Permisos acumulados.
+- Intento de alterar actor desde cliente.
+- Auditoría ante éxito, conflicto optimista y rechazo.
+
+**Criterio de cierre**
+
+Ninguna acción crítica puede ejecutarse mediante llamada directa a Supabase sin
+el permiso requerido.
+
+**Esfuerzo**
+
+S.
+
+**Commit esperado**
+
+`feat(nomina): aplicar permisos finos por comando critico`
+
+---
+
+### F14 — Aprobación versionada
+
+**ID:** `NOM-ADMIN-OPS-F14`
 
 **Objetivo**
 
@@ -1259,7 +1383,7 @@ Registrar una aprobación explícita sobre una versión exacta del cálculo.
 
 **Dependencias**
 
-- F03 y F15 cerradas.
+- F13 y F15b cerradas.
 
 **Alcance**
 
@@ -1267,7 +1391,7 @@ Registrar una aprobación explícita sobre una versión exacta del cálculo.
 - Mostrar resumen de alcance y montos.
 - Confirmar mediante `app-message-box`.
 - Registrar versión aprobada.
-- Exigir permiso `nomina.aprobar`.
+- Exigir permiso `nomina.aprobar` (F15b).
 - Invalidar aprobación ante cambios.
 
 **Reglas**
@@ -1290,15 +1414,19 @@ Registrar una aprobación explícita sobre una versión exacta del cálculo.
 
 Existe una evidencia inequívoca de quién aprobó qué versión y con qué totales.
 
+**Esfuerzo**
+
+S.
+
 **Commit esperado**
 
 `feat(nomina): separar y versionar aprobacion`
 
 ---
 
-### F17 — Liquidaciones internas por nómina
+### F15 — Liquidaciones internas por nómina
 
-**ID:** `NOM-ADMIN-OPS-F17`
+**ID:** `NOM-ADMIN-OPS-F15`
 
 **Objetivo**
 
@@ -1307,7 +1435,7 @@ aprobada.
 
 **Dependencias**
 
-- F02, F11 y F16 cerradas.
+- F01, F09 y F14 cerradas.
 
 **Alcance**
 
@@ -1324,7 +1452,9 @@ aprobada.
 - No generar desde cálculo no aprobado.
 - Una liquidación identifica nómina, cálculo y trabajador.
 - Regenerar antes del cierre conserva historial o reemplaza mediante versión,
-  nunca mediante actualización silenciosa.
+  nunca mediante actualización silenciosa. Semántica concreta: cada
+  regeneración crea una nueva versión de liquidación; la anterior queda
+  marcada como `superada`, no eliminada.
 
 **Pruebas**
 
@@ -1334,11 +1464,16 @@ aprobada.
 - Trabajador sin datos requeridos.
 - Permisos.
 - Rehidratación y consulta histórica.
+- Liquidación `superada` consultable.
 
 **Criterio de cierre**
 
 Cada liquidación interna puede rastrearse hasta una nómina y versión de cálculo
-específicas.
+específicas, y la regeneración nunca destruye evidencia.
+
+**Esfuerzo**
+
+M.
 
 **Commit esperado**
 
@@ -1346,9 +1481,9 @@ específicas.
 
 ---
 
-### F18 — Cierre inmutable
+### F16 — Cierre inmutable
 
-**ID:** `NOM-ADMIN-OPS-F18`
+**ID:** `NOM-ADMIN-OPS-F16`
 
 **Objetivo**
 
@@ -1356,7 +1491,7 @@ Congelar el expediente completo y convertirlo en fuente interna oficial.
 
 **Dependencias**
 
-- F03 y F17 cerradas.
+- F15 y F15b cerradas.
 
 **Alcance**
 
@@ -1393,15 +1528,19 @@ Congelar el expediente completo y convertirlo en fuente interna oficial.
 Una nómina cerrada no cambia y todo su expediente puede reconstruirse desde
 datos persistidos.
 
+**Esfuerzo**
+
+M.
+
 **Commit esperado**
 
 `feat(nomina): cerrar y congelar expediente`
 
 ---
 
-### F19 — Rectificación diferencial
+### F17 — Rectificación diferencial
 
-**ID:** `NOM-ADMIN-OPS-F19`
+**ID:** `NOM-ADMIN-OPS-F17`
 
 **Objetivo**
 
@@ -1409,7 +1548,9 @@ Corregir una nómina cerrada sin modificarla ni reemplazar su evidencia.
 
 **Dependencias**
 
-- F18 cerrada.
+- F16 cerrada.
+- Feature flag `nomina.rectificacion.enabled`
+  ([Anexo B.1](#b1-flags-disponibles)).
 
 **Alcance**
 
@@ -1418,7 +1559,8 @@ Corregir una nómina cerrada sin modificarla ni reemplazar su evidencia.
 - Copiar únicamente contexto necesario.
 - Calcular diferencias por concepto.
 - Generar liquidación diferencial.
-- Vincular cadena de rectificaciones.
+- Vincular cadena de rectificaciones según
+  [Anexo F.4](#f4-encadenamiento-de-rectificaciones).
 - Mostrar acumulado original + diferencias.
 
 **Reglas**
@@ -1436,7 +1578,8 @@ Corregir una nómina cerrada sin modificarla ni reemplazar su evidencia.
 - Descuento incorrecto.
 - Cambio previsional retroactivo.
 - Diferencia positiva, negativa y cero.
-- Segunda rectificación.
+- Segunda rectificación apunta al cerrado original, no a la primera
+  rectificación.
 - Trabajador no presente en el original.
 
 **Criterio de cierre**
@@ -1444,42 +1587,38 @@ Corregir una nómina cerrada sin modificarla ni reemplazar su evidencia.
 El sistema puede demostrar resultado original, cada ajuste y resultado
 acumulado sin sobrescribir historia.
 
+**Esfuerzo**
+
+L.
+
 **Commit esperado**
 
 `feat(nomina): incorporar rectificacion diferencial`
 
 ---
 
-### F20 — Integración UX del ciclo completo
+### F18a — UX Administrador
 
-**ID:** `NOM-ADMIN-OPS-F20`
+**ID:** `NOM-ADMIN-OPS-F18a`
 
 **Objetivo**
 
-Presentar todos los contratos productivos como un flujo RRHH coherente,
-compacto y guiado.
+Cerrar la experiencia del Administrador para los flujos productivos definidos
+en F05–F16.
 
 **Dependencias**
 
-- F05-F19 cerradas en backend o disponibles tras feature gate.
+- F05 cerrada.
+- Cada acción específica del Administrador se habilita a medida que su fase de
+  backend cierra.
 
-**Alcance Administrador**
+**Alcance**
 
 - Crear mediante preview.
 - Filtros por tipo, estado, rango y acción requerida.
 - Acciones permitidas por estado y permiso.
 - Indicadores mutuamente excluyentes.
-- Acceso a liquidaciones, auditoría y rectificación.
-
-**Alcance Generador**
-
-- Rehidratación completa.
-- Siguiente acción única.
-- Contexto fijo de empresa, rango, tipo, estado y versión.
-- Deep links entre incidencias y origen.
-- Estados de carga, vacío, error y conflicto.
-- Consecuencias visibles antes de invalidar.
-- Cierre y evidencia sin controles editables posteriores.
+- Acceso a liquidaciones, auditoría y rectificación desde la lista.
 
 **Reglas NOIA**
 
@@ -1494,25 +1633,175 @@ compacto y guiado.
 
 - Specs de presenters y rules.
 - Componentes por estado.
-- Accesibilidad.
-- Screenshots por paso.
-- E2E de reanudación.
-- Matriz de permisos visible.
+- Accesibilidad básica (teclado y foco).
+- Screenshots por estado.
 
 **Criterio de cierre**
 
-Un usuario puede completar el ciclo sin conocer tablas, versiones técnicas ni
-rutas internas, y siempre entiende qué falta y qué acción sigue.
+Un usuario puede entrar al Administrador y entender qué nómina existe, qué
+estado tiene y qué acción se espera.
+
+**Esfuerzo**
+
+M.
 
 **Commit esperado**
 
-`feat(nomina): integrar experiencia operativa completa`
+`feat(nomina-ui): pulir administrador de nominas`
 
 ---
 
-### F21 — Retiro de compatibilidad y mocks runtime
+### F18b — UX Generador
 
-**ID:** `NOM-ADMIN-OPS-F21`
+**ID:** `NOM-ADMIN-OPS-F18b`
+
+**Objetivo**
+
+Consolidar el Generador como flujo guiado, rehidratable y sin contradicciones
+entre pasos.
+
+**Dependencias**
+
+- F09 cerrada.
+- Idealmente F13 y F14 cerradas para incidencias y aprobación.
+
+**Alcance**
+
+- Rehidratación completa al recargar.
+- Siguiente acción única por paso.
+- Contexto fijo de empresa, rango, tipo, estado y versión.
+- Deep links entre incidencias y origen.
+- Estados de carga, vacío, error y conflicto.
+- Consecuencias visibles antes de invalidar.
+
+**Reglas NOIA**
+
+- Una acción primaria por zona.
+- Stepper compacto, sin doble borde.
+- Alertas vía `app-message-box`.
+- Modal sin escape arbitrario.
+- Responsive validado en 1440, 1280, 1024 y 768 px.
+
+**Pruebas**
+
+- Specs de presenters y rules.
+- Componentes por estado.
+- Reanudación E2E (cierre de navegador y vuelta).
+- Accesibilidad.
+
+**Criterio de cierre**
+
+Un usuario puede salir y volver sin perder estado y siempre sabe qué falta.
+
+**Esfuerzo**
+
+L.
+
+**Commit esperado**
+
+`feat(nomina-ui): pulir generador y rehidratacion`
+
+---
+
+### F18c — UX Liquidaciones internas
+
+**ID:** `NOM-ADMIN-OPS-F18c`
+
+**Objetivo**
+
+Presentar liquidaciones internas como evidencia consultable y, mientras la
+nómina no está cerrada, como artefacto regenerable controlado.
+
+**Dependencias**
+
+- F15 cerrada.
+
+**Alcance**
+
+- Listar liquidaciones por nómina.
+- Mostrar resumen, totales y trabajadores sin liquidación.
+- Regenerar antes del cierre con confirmación.
+- Marcar versiones `superadas` sin destruirlas.
+- Acceso al detalle por trabajador con versión visible.
+- Acta de cierre cuando la nómina está cerrada.
+
+**Reglas NOIA**
+
+- Sin controles editables después del cierre.
+- Lista filtrable, no card decorativa.
+- Diferencias entre versiones visibles cuando corresponda.
+
+**Pruebas**
+
+- Estados pre-cierre y post-cierre.
+- Acceso desde Administrador y desde Generador.
+- Permiso insuficiente.
+
+**Criterio de cierre**
+
+El usuario distingue liquidación vigente, superada y congelada por cierre.
+
+**Esfuerzo**
+
+M.
+
+**Commit esperado**
+
+`feat(nomina-ui): vista de liquidaciones internas`
+
+---
+
+### F18d — UX Rectificación
+
+**ID:** `NOM-ADMIN-OPS-F18d`
+
+**Objetivo**
+
+Permitir crear y consultar rectificaciones diferenciales sin tocar la nómina
+original.
+
+**Dependencias**
+
+- F17 cerrada.
+
+**Alcance**
+
+- Crear rectificación desde nómina cerrada.
+- Seleccionar trabajadores y motivo.
+- Comparativa original vs ajuste con resultado acumulado.
+- Vista de cadena de rectificaciones cuando hay más de una.
+- Acción primaria diferenciada de "consultar original".
+
+**Reglas NOIA**
+
+- No mutar visualmente al original (vista solo lectura clara).
+- MessageBox crítico al confirmar creación.
+- Acumulado humano en términos RRHH, no técnicos.
+
+**Pruebas**
+
+- Crear primera rectificación.
+- Crear segunda rectificación apuntando al original.
+- Diferencia cero.
+- Trabajador no presente en el original.
+
+**Criterio de cierre**
+
+Un usuario puede explicar a partir de la UI qué cambió, cuánto y por qué.
+
+**Esfuerzo**
+
+M.
+
+**Commit esperado**
+
+`feat(nomina-ui): rectificacion diferencial`
+
+---
+
+### F19 — Retiro de compatibilidad y mocks runtime
+
+**ID:** `NOM-ADMIN-OPS-F19`
 
 **Objetivo**
 
@@ -1520,8 +1809,8 @@ Eliminar dependencias heredadas una vez demostrada la equivalencia funcional.
 
 **Dependencias**
 
-- F20 cerrada.
-- E2E completo verde.
+- F18a–F18d cerradas.
+- Adopción confirmada según [Anexo B.2](#b2-criterios-de-activación-y-retiro).
 
 **Alcance**
 
@@ -1539,6 +1828,8 @@ Eliminar dependencias heredadas una vez demostrada la equivalencia funcional.
 - Comparación de resultados contra fixtures.
 - Redirect legacy conservado durante la ventana acordada.
 - Eliminación SQL en migración separada y posterior, no implícita.
+- Inventario [Anexo C](#anexo-c--inventario-de-tipos-legacy-movimientotipo)
+  cerrado.
 
 **Pruebas**
 
@@ -1553,24 +1844,28 @@ Eliminar dependencias heredadas una vez demostrada la equivalencia funcional.
 El flujo productivo depende solo de contratos por nómina y los restos legacy
 son fixtures, redirects controlados o historia documental explícita.
 
+**Esfuerzo**
+
+S.
+
 **Commit esperado**
 
 `refactor(nomina): retirar compatibilidad mensual legacy`
 
 ---
 
-### F22 — Certificación y despliegue
+### F20 — Certificación E2E
 
-**ID:** `NOM-ADMIN-OPS-F22`
+**ID:** `NOM-ADMIN-OPS-F20`
 
 **Objetivo**
 
-Demostrar que el ciclo es operable y recuperable antes de declararlo listo para
-producción.
+Demostrar que el ciclo es operable y recuperable antes de declarar el flujo
+listo para producción.
 
 **Dependencias**
 
-- F00-F21 cerradas.
+- F19 cerrada.
 
 **Matriz E2E obligatoria**
 
@@ -1601,47 +1896,99 @@ producción.
 - Smoke contra entorno objetivo.
 - Verificación de migraciones y conteos.
 
-**Despliegue**
+**Criterio de cierre**
+
+Todos los escenarios críticos están verdes, no existen diferencias no
+explicadas en consolidación y el equipo puede diagnosticar fallos con
+auditoría completa.
+
+**Esfuerzo**
+
+M.
+
+**Commit esperado**
+
+`test(nomina): certificar flujo operativo completo`
+
+---
+
+### F21 — Despliegue, observación y rollback
+
+**ID:** `NOM-ADMIN-OPS-F21`
+
+**Objetivo**
+
+Activar el flujo nuevo en producción de manera controlada, con observabilidad
+y un camino de reversa documentado.
+
+**Dependencias**
+
+- F20 cerrada.
+
+**Plan de despliegue**
 
 1. Aplicar migraciones aditivas.
 2. Verificar backfill.
 3. Desplegar lectura dual compatible.
 4. Habilitar escritura por nómina.
 5. Ejecutar smoke controlado.
-6. Habilitar tipos adicionales gradualmente.
-7. Observar errores y auditoría.
-8. Retirar compatibilidad solo después del gate.
+6. Habilitar tipos adicionales gradualmente mediante los flags del
+   [Anexo B.1](#b1-flags-disponibles).
+7. Observar errores y auditoría durante una ventana acordada.
+8. Retirar compatibilidad solo después del gate de
+   [Anexo B.2](#b2-criterios-de-activación-y-retiro).
+
+**Plan de rollback**
+
+- Revertir lectura de aplicación a contratos anteriores.
+- Apagar flags por tenant afectado.
+- Conservar columnas y tablas nuevas (no destructivo).
+- Documentar incidente en `docs/codex/`.
 
 **Criterio de cierre**
 
-Todos los escenarios críticos están verdes, no existen diferencias no
-explicadas en consolidación y el equipo puede diagnosticar y revertir una
-activación sin modificar datos manualmente.
+El equipo puede demostrar tres pilotos completos sin diferencias no
+explicadas, y existe un procedimiento claro y probado de rollback sin tocar
+datos manualmente.
+
+**Esfuerzo**
+
+S.
 
 **Commit esperado**
 
-`test(nomina): certificar flujo operativo completo`
+`chore(nomina): activar y observar flujo en produccion`
+
+---
 
 ## 14. Matriz de aceptación global
 
-| Capacidad | Evidencia mínima |
-|---|---|
-| Crear | Preview vigente + RPC idempotente + auditoría. |
-| Parámetros | Snapshot por nómina y versión. |
-| Dotación | Consulta y selección en servidor. |
-| Movimientos | Conceptos de catálogo e idempotencia. |
-| Calcular | Contexto por `nominaPeriodoId`. |
-| Rehidratar | Resultado vigente visible tras recarga. |
-| Anticipos | Pago interno + descuento mensual único. |
-| Extraordinarias | Pago propio + bases/pagos consolidables. |
-| Validar | Bloqueantes resueltos y warnings justificados. |
-| Aprobar | Actor y versión exacta. |
-| Liquidar | Liquidaciones por nómina y cálculo. |
-| Cerrar | Expediente congelado e inmutable. |
-| Rectificar | Diferencias vinculadas sin alterar origen. |
-| Seguridad | RPC/RLS por empresa y permiso. |
-| Escala | Operación por excepción con 1.000+ trabajadores. |
-| Calidad | Unitarios, integración, E2E, build y smoke verdes. |
+| Capacidad | Evidencia mínima | Fase | Esfuerzo |
+|---|---|---|---|
+| Crear | Preview vigente + RPC idempotente + auditoría. | F04+F05 | M+M |
+| Parámetros | Snapshot por nómina y versión. | F06 | M |
+| Dotación | Consulta y selección en servidor. | F07 | L |
+| Movimientos | Conceptos de catálogo e idempotencia. | F08 | L |
+| Calcular | Contexto por `nominaPeriodoId`. | F09 | XL |
+| Rehidratar | Resultado vigente visible tras recarga. | F09 | (incluido) |
+| Anticipos | Pago interno + descuento mensual único. | F10 | L |
+| Extraordinarias | Pago propio + bases/pagos consolidables. | F11 | L |
+| Consolidar | Conciliación por trabajador sin duplicar. | F12 | XL |
+| Validar | Bloqueantes resueltos y warnings justificados. | F13 | M |
+| Aprobar | Actor y versión exacta. | F14 | S |
+| Liquidar | Liquidaciones por nómina y cálculo. | F15 | M |
+| Permisos finos | RPC protegidas por comando. | F15b | S |
+| Cerrar | Expediente congelado e inmutable. | F16 | M |
+| Rectificar | Diferencias vinculadas sin alterar origen. | F17 | L |
+| UX completo | Admin + Generador + Liquidaciones + Rectificación. | F18a/b/c/d | M+L+M+M |
+| Retiro legacy | Sin mocks runtime ni adaptadores por período. | F19 | S |
+| Seguridad | RPC/RLS por empresa y permiso. | F02+F15b | S+S |
+| Escala | Operación por excepción con 1.000+ trabajadores. | F07 | (incluido) |
+| Calidad | Unitarios, integración, E2E, build y smoke verdes. | F20 | M |
+| Despliegue | Activación gradual con flags y rollback probado. | F21 | S |
+
+Referencia completa de esfuerzo en [Anexo D](#anexo-d--esfuerzo-categórico-por-fase).
+Referencia completa de métricas en [Anexo E](#anexo-e--métricas-técnicas-objetivo).
 
 ## 15. Riesgos transversales
 
@@ -1652,11 +1999,15 @@ activación sin modificar datos manualmente.
 | Duplicar bases imponibles | Política por concepto y cuadratura por trabajador. |
 | Aprobar una versión obsoleta | Control optimista y huella de cálculo. |
 | Acción masiva sobre universo distinto | Fingerprint de filtro y preview obligatorio. |
-| Permisos solo visuales | Validación obligatoria en RPC/RLS. |
+| Permisos solo visuales | Validación obligatoria en RPC/RLS (F15b). |
 | Cerrar con liquidaciones incompletas | Checklist persistido y transacción de cierre. |
 | Corregir destruyendo historia | Rectificación diferencial; cierre inmutable. |
-| Retirar compatibilidad demasiado pronto | Gate F21 posterior a E2E y observación. |
+| Retirar compatibilidad demasiado pronto | Gate F19 posterior a F18 y observación. |
 | Documentación nuevamente obsoleta | Actualización obligatoria al cierre de cada fase. |
+| Decisiones de producto sin política cerrada | [Anexo F](#anexo-f--políticas-de-producto-pendientes) debe cerrarse antes de iniciar la fase que la requiere; no se codifica sobre supuestos. |
+| Habilitación sin feature flag | [Anexo B](#anexo-b--estrategia-de-habilitación-gradual) impone que anticipos, extraordinaria y rectificación se activen por tenant; producción no recibe un tipo nuevo sin gate. |
+| Migración del catálogo de movimientos sin inventario | [Anexo C](#anexo-c--inventario-de-tipos-legacy-movimientotipo) debe cerrarse antes de F08; F08 no comienza si quedan strings no mapeados. |
+| Drift del motor matemático respecto del histórico | F09 incluye comparación obligatoria contra fixture "golden" antes de retirar adaptador. |
 
 ## 16. Convención de cierre de fase
 
@@ -1670,7 +2021,8 @@ con:
 - pruebas ejecutadas y resultados;
 - restricciones respetadas;
 - deuda detectada;
-- siguiente fase habilitada.
+- siguiente fase habilitada;
+- esfuerzo real vs categórico declarado (cuando difiera, registrar motivo).
 
 La fase no se considera cerrada solo porque compile. Debe cumplir su criterio
 de cierre, pruebas y actualización documental.
@@ -1678,6 +2030,215 @@ de cierre, pruebas y actualización documental.
 ## 17. Próximo paso autorizado
 
 El siguiente paso, después de aprobar este documento, es ejecutar únicamente
-`NOM-ADMIN-OPS-F00`. F00 no modifica contratos productivos: confirma la línea
-base y prepara la evidencia necesaria para comenzar F01 sin depender de
-suposiciones.
+`NOM-ADMIN-OPS-F01`. F01 entrega los cimientos del contrato y la persistencia:
+diagnóstico timeboxed, modelos derivados de BD, migración aditiva con backfill
+seguro y seed mínimo de plantilla MES. F01 prepara la base para que F02
+formalice auditoría y RLS, y para que F03 incorpore plantillas configurables.
+
+El plan operativo del Bloque 1 SQL queda alineado a F01 y se ejecuta solo
+después de cerrar este refactor documental.
+
+---
+
+## Anexo A — Glosario
+
+| Término | Definición |
+|---|---|
+| `nominaPeriodoId` | Identificador único de una nómina operativa. Reemplaza a `YYYY-MM` como clave canónica. |
+| `tipo` | Frecuencia visible de la nómina: mensual, semanal, quincenal, extraordinaria. |
+| `naturaleza` | Rol contable de la nómina: liquidación legal, anticipo, pago extraordinario, rectificación. |
+| `ciclo` | Identificador del corte temporal dentro de un período legal (p. ej. anticipo 1 de mayo). |
+| `plantilla` | Configuración reutilizable de un tipo de nómina por empresa (fechas, regla de anticipo). |
+| `fingerprint` | Hash determinista del universo evaluado (preview o filtro masivo) que evita confirmar contra un estado obsoleto. |
+| `huella de cálculo` | Hash determinista del input completo del motor para una versión. Permite detectar drift. |
+| `snapshot` | Copia inmutable del input o resultado de un paso (parámetros, cálculo) asociada a una versión. |
+| `versión vigente` | Única versión de cálculo o de liquidación marcada como activa en una nómina en un instante dado. |
+| `consolidación pendiente` | Vínculo declarado entre nómina origen y mensual consolidadora aún no aplicado. |
+| `mensual consolidadora` | Nómina mensual ordinaria que absorbe los efectos de anticipos y extraordinarias del mismo período legal. |
+| `diferencial` | Resultado de una rectificación: diferencias persistidas respecto del cerrado, no copia mutable. |
+| `feature gate` | Decisión binaria por tenant que habilita o no un tipo de nómina o un flujo nuevo. |
+| `superada` | Estado de una liquidación reemplazada por una regeneración antes del cierre; no se elimina. |
+| `golden fixture` | Resultado de cálculo histórico verificado a mano que sirve como referencia inmutable para detectar drift del motor. |
+
+## Anexo B — Estrategia de habilitación gradual
+
+### B.1 Flags disponibles
+
+| Flag | Habilita | Fase backend |
+|---|---|---|
+| `nomina.anticipos.enabled` | Crear, calcular y consolidar anticipos semanales y quincenales. | F10 |
+| `nomina.extraordinaria.enabled` | Crear, calcular y consolidar nóminas extraordinarias. | F11 |
+| `nomina.rectificacion.enabled` | Crear y procesar rectificaciones diferenciales. | F17 |
+
+Los flags son por tenant y resueltos en servidor. La UI consulta el estado del
+flag al cargar el Administrador y oculta o muestra el tipo correspondiente. La
+ausencia de un flag no produce un error; produce ausencia silenciosa de la
+opción.
+
+### B.2 Criterios de activación y retiro
+
+- Activar un flag exige: F18 de la superficie correspondiente cerrada,
+  documentación del tenant en `docs/codex/`, smoke piloto contra una nómina
+  real cerrada con éxito.
+- Retirar legacy (F19) exige: al menos tres tenants con cierre mensual
+  completo bajo el flujo nuevo y dos ciclos de anticipo más una extraordinaria
+  procesados.
+- Apagar un flag está siempre permitido en respuesta a un incidente, sin
+  necesidad de reabrir decisiones de producto.
+
+## Anexo C — Inventario de tipos legacy `MovimientoTipo`
+
+### C.1 Plan de conteo
+
+Antes de F08:
+
+1. Consultar `SELECT DISTINCT tipo, count(*) FROM movimiento_nomina GROUP BY 1`
+   en cada tenant productivo.
+2. Registrar el listado en `docs/codex/temas/movimientos-legacy.md` (anexo
+   técnico, creado por F08).
+3. Identificar duplicados por mayúsculas, acentos y espacios.
+
+### C.2 Estrategia de mapeo
+
+| Origen | Destino | Acción |
+|---|---|---|
+| String mapea 1:1 a concepto vigente del catálogo | Concepto del catálogo | Mapeo determinista. |
+| String duplica por formato (mayúsculas/acentos) | Concepto canónico | Normalización + mapeo. |
+| String sin concepto equivalente | `Otro` (concepto neutro de catálogo) | Mapeo a fallback explícito. |
+| String que el negocio define como obsoleto | Bloquear nuevas entradas | Solo lectura histórica. |
+
+### C.3 Política para históricos no mapeables
+
+- Un movimiento histórico nunca se reescribe con un concepto inventado.
+- Si su string no mapea a ningún concepto, se marca `mapeo_pendiente = true` y
+  queda fuera de la importación nueva.
+- F08 no comienza hasta que el inventario está cerrado y existe respuesta para
+  cada string distinto.
+
+## Anexo D — Esfuerzo categórico por fase
+
+| Fase | Esfuerzo |
+|---|---|
+| F01 | L |
+| F02 | S |
+| F03 | M |
+| F04 | M |
+| F05 | M |
+| F06 | M |
+| F07 | L |
+| F08 | L |
+| F09 | XL |
+| F10 | L |
+| F11 | L |
+| F12 | XL |
+| F13 | M |
+| F14 | S |
+| F15 | M |
+| F15b | S |
+| F16 | M |
+| F17 | L |
+| F18a | M |
+| F18b | L |
+| F18c | M |
+| F18d | M |
+| F19 | S |
+| F20 | M |
+| F21 | S |
+
+Convención: XS ≤ 0,5 d; S ≤ 1 d; M ≤ 3 d; L ≤ 1 sem; XL > 1 sem. Estimaciones
+en jornadas efectivas de desarrollo, sin contar revisiones ni despliegue.
+
+## Anexo E — Métricas técnicas objetivo
+
+### E.1 Preview y listados
+
+| Métrica | Objetivo | Fase |
+|---|---|---|
+| Latencia p95 preview con 1.000 trabajadores | < 1.500 ms | F04 |
+| Latencia p95 listado paginado de dotación (50 filas) | < 800 ms | F07 |
+| Latencia p95 conteos agregados | < 500 ms | F07 |
+| Payload máximo de una página de dotación | < 250 KB | F07 |
+
+### E.2 Motor y rehidratación
+
+| Métrica | Objetivo | Fase |
+|---|---|---|
+| Latencia p95 cálculo de 1.000 trabajadores | < 30 s | F09 |
+| Latencia p95 rehidratación de cálculo persistido | < 1.500 ms | F09 |
+| Drift respecto de `golden fixture` | 0 (cero diferencia) | F09 |
+| Latencia p95 consulta de versión histórica | < 1.000 ms | F09 |
+
+Estas métricas se miden contra el ambiente de pruebas dimensionado al volumen
+objetivo acordado. Cualquier degradación sostenida durante F21 (ventana de
+observación) reabre la fase de origen como deuda priorizada.
+
+## Anexo F — Políticas de producto pendientes
+
+Estas decisiones aún no están cerradas en la sección 4. Cada una debe cerrarse
+antes de iniciar la fase técnica que la requiere.
+
+### F.1 Elección de mensual consolidadora
+
+- **Pregunta abierta**: cuando hay dos mensuales candidatas activas para
+  consolidar un anticipo o una extraordinaria del mismo período legal, ¿la
+  elección es automática o pedida al usuario?
+- **Recomendación inicial**: si solo una mensual está en estado distinto a
+  cerrada/anulada, se asigna automáticamente. Si hay dos mensuales válidas,
+  el sistema pide selección explícita al crear el anticipo o la
+  extraordinaria, y registra el actor.
+- **Cierre obligatorio**: antes de iniciar F11 y F12.
+
+### F.2 Anticipos huérfanos
+
+- **Pregunta abierta**: cuando la mensual que consolidaba un anticipo se
+  anula, ¿el anticipo queda huérfano? ¿Es reasignable?
+- **Recomendación inicial**: el anticipo queda en estado
+  `consolidacion_huerfana`, no se reabre automáticamente. El usuario con
+  permiso `nomina.operar` puede reasignar a otra mensual del mismo período
+  legal mediante UI dedicada. La auditoría registra origen y destino.
+- **Cierre obligatorio**: antes de iniciar F12.
+
+### F.3 Ventana temporal de consolidación
+
+- **Pregunta abierta**: ¿se permite consolidar un anticipo de marzo en mayo
+  si abril fue anulada?
+- **Recomendación inicial**: la consolidación está acotada al mismo período
+  legal del anticipo (mes calendario). Cruzar períodos legales exige una
+  rectificación, no una consolidación tardía.
+- **Cierre obligatorio**: antes de iniciar F12.
+
+### F.4 Encadenamiento de rectificaciones
+
+- **Pregunta abierta**: cuando hay una segunda rectificación, ¿apunta a la
+  original cerrada o a la primera rectificación?
+- **Decisión recomendada y adoptada en este roadmap**: cada nueva
+  rectificación apunta a la **nómina cerrada original**, no a la previa. El
+  acumulado se calcula como `original + suma de diferencias de cada
+  rectificación`. Esto evita cadenas con propagación de errores y permite
+  consultar el efecto neto sin recorrer el grafo.
+- **Cierre obligatorio**: antes de iniciar F17. Si la realidad legal exige
+  cadenas reales, debe abrirse RFC ([Anexo G](#anexo-g--mecanismo-de-reapertura-de-decisiones-cerradas)).
+
+## Anexo G — Mecanismo de reapertura de decisiones cerradas
+
+Las decisiones cerradas en la sección 4 y en los anexos pueden reabrirse
+siguiendo este flujo:
+
+1. Crear archivo `docs/codex/rfc/NOM-RFC-####.md` con plantilla mínima:
+   - Decisión que se reabre.
+   - Motivo demostrable (legal, contable, regulatorio o de producto).
+   - Impacto en fases ya cerradas.
+   - Impacto en fases pendientes.
+   - Propuesta de nueva decisión.
+   - Aprobadores requeridos.
+2. Vincular el RFC desde la decisión afectada en este roadmap.
+3. La RFC se discute fuera de la fase en curso; ninguna fase técnica se
+   detiene a la espera del RFC salvo que la fase dependa directamente de la
+   decisión reabierta.
+4. Al aprobarse el RFC, este roadmap se actualiza con un commit dedicado
+   (`docs(nomina): aplicar RFC NOM-RFC-####`) y se versiona el archivo (línea
+   de "Versión documental" al inicio).
+5. RFCs rechazados quedan archivados como evidencia histórica.
+
+Sin este flujo, ninguna decisión cerrada puede ser sobreescrita por una fase
+técnica.

@@ -1156,29 +1156,41 @@ export type Database = {
         Row: {
           accion: string
           created_at: string
+          estado_nuevo: string | null
+          estado_previo: string | null
           id: string
           id_nomina_periodo: string
           id_usuario: string | null
           motivo: string | null
           payload: Json | null
+          version_estado_esperada: number | null
+          version_estado_resultante: number | null
         }
         Insert: {
           accion: string
           created_at?: string
+          estado_nuevo?: string | null
+          estado_previo?: string | null
           id?: string
           id_nomina_periodo: string
           id_usuario?: string | null
           motivo?: string | null
           payload?: Json | null
+          version_estado_esperada?: number | null
+          version_estado_resultante?: number | null
         }
         Update: {
           accion?: string
           created_at?: string
+          estado_nuevo?: string | null
+          estado_previo?: string | null
           id?: string
           id_nomina_periodo?: string
           id_usuario?: string | null
           motivo?: string | null
           payload?: Json | null
+          version_estado_esperada?: number | null
+          version_estado_resultante?: number | null
         }
         Relationships: [
           {
@@ -6100,6 +6112,7 @@ export type Database = {
         }
       }
       current_user_empresa_id: { Args: never; Returns: number }
+      current_user_id: { Args: never; Returns: string }
       dblink_dteconfiguracion: { Args: never; Returns: string }
       definir_alcance_nomina_preparacion: {
         Args: {
@@ -6512,6 +6525,19 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      registrar_evento_auditoria_nomina: {
+        Args: {
+          p_accion: string
+          p_estado_nuevo?: string
+          p_estado_previo?: string
+          p_id_nomina_periodo: string
+          p_motivo?: string
+          p_payload?: Json
+          p_version_estado_esperada?: number
+          p_version_estado_resultante?: number
+        }
+        Returns: string
       }
       transicionar_nomina_periodo: {
         Args: {
