@@ -35,9 +35,19 @@ function liquidacionMock(parcial: Partial<LiquidacionCalculada> = {}): Liquidaci
     ],
     haberesNoImponibles: [],
     descuentosLegales: [
-      { codigo: 'AFP', descripcion: 'Cotizacion AFP trabajador', monto: 121168, origen: 'afp_vigencia' },
+      {
+        codigo: 'AFP',
+        descripcion: 'Cotizacion AFP trabajador',
+        monto: 121168,
+        origen: 'afp_vigencia',
+      },
       { codigo: 'SALUD', descripcion: 'Cotizacion salud Fonasa', monto: 74141, origen: 'salud' },
-      { codigo: 'AFC', descripcion: 'Seguro de cesantia trabajador', monto: 6355, origen: 'afc_parametro' },
+      {
+        codigo: 'AFC',
+        descripcion: 'Seguro de cesantia trabajador',
+        monto: 6355,
+        origen: 'afc_parametro',
+      },
     ],
     descuentosVoluntarios: [],
     baseImponiblePrevisional: 1059157,
@@ -64,7 +74,11 @@ function liquidacionMock(parcial: Partial<LiquidacionCalculada> = {}): Liquidaci
 describe('presentarFilaCalculo', () => {
   it('mapea identidad y totales desde la liquidación', () => {
     const liq = liquidacionMock();
-    const fila = presentarFilaCalculo(liq, { afp: 'Cuprum', salud: 'Fonasa', tipoContrato: 'Indefinido' });
+    const fila = presentarFilaCalculo(liq, {
+      afp: 'Cuprum',
+      salud: 'Fonasa',
+      tipoContrato: 'Indefinido',
+    });
 
     expect(fila.trabajadorId).toBe('2');
     expect(fila.idPersona).toBe(2);
@@ -97,10 +111,24 @@ describe('presentarFilaCalculo', () => {
     const fila = presentarFilaCalculo(
       liquidacionMock({
         haberesImponibles: [
-          { codigo: 'SUELDO_BASE', descripcion: 'Sueldo base', monto: 900000, origen: 'contrato', imponible: true, tributable: true },
+          {
+            codigo: 'SUELDO_BASE',
+            descripcion: 'Sueldo base',
+            monto: 900000,
+            origen: 'contrato',
+            imponible: true,
+            tributable: true,
+          },
         ],
         haberesNoImponibles: [
-          { codigo: 'COLACION', descripcion: 'Colacion', monto: 20000, origen: 'haber_recurrente', imponible: false, tributable: false },
+          {
+            codigo: 'COLACION',
+            descripcion: 'Colacion',
+            monto: 20000,
+            origen: 'haber_recurrente',
+            imponible: false,
+            tributable: false,
+          },
         ],
       }),
     );

@@ -33,9 +33,7 @@ export const ORDEN_PASOS_NOMINA: PayrollStepId[] = [
  *    esté en estado vigente; las acciones operativas (`Aplicar recurrentes`,
  *    `Calcular nómina`) permanecen como botones inline.
  */
-export type ResultadoAvancePaso =
-  | { ok: true }
-  | { ok: false; razon: string };
+export type ResultadoAvancePaso = { ok: true } | { ok: false; razon: string };
 
 /**
  * Contrato que cada paso del generador debe cumplir para que el CTA del shell
@@ -92,7 +90,7 @@ export async function ejecutarAvancePaso(
     return { resultado, siguientePaso: null };
   }
   const indice = ORDEN_PASOS_NOMINA.indexOf(pasoActual);
-  const siguientePaso = indice >= 0 ? ORDEN_PASOS_NOMINA[indice + 1] ?? null : null;
+  const siguientePaso = indice >= 0 ? (ORDEN_PASOS_NOMINA[indice + 1] ?? null) : null;
   return { resultado, siguientePaso };
 }
 
@@ -317,7 +315,10 @@ export function obtenerEstadoPaso(
   return 'completed';
 }
 
-export function esAvanceHaciaAdelante(pasoActual: PayrollStepId, destinoPaso: PayrollStepId): boolean {
+export function esAvanceHaciaAdelante(
+  pasoActual: PayrollStepId,
+  destinoPaso: PayrollStepId,
+): boolean {
   return ORDEN_PASOS_NOMINA.indexOf(destinoPaso) > ORDEN_PASOS_NOMINA.indexOf(pasoActual);
 }
 

@@ -162,9 +162,7 @@ export function presentarFilaCalculo(
   ctx: ContextoFilaCalculo = {},
 ): FilaCalculoTrabajador {
   const sueldoBase =
-    ctx.sueldoBase ??
-    liq.haberesImponibles.find((h) => h.codigo === 'SUELDO_BASE')?.monto ??
-    0;
+    ctx.sueldoBase ?? liq.haberesImponibles.find((h) => h.codigo === 'SUELDO_BASE')?.monto ?? 0;
 
   const haberes: LineaDesgloseCalculo[] = [
     ...liq.haberesImponibles.map((linea) => mapearLineaHaber(linea, true)),
@@ -296,9 +294,7 @@ function round4(v: number): number {
 // Etiquetas humanas (lenguaje RRHH NOIA)
 // -----------------------------------------------------------------------------
 
-export function presentarEstadoChip(
-  estado: MotorCalculoEstadoTrabajador,
-): EstadoCalculoChip {
+export function presentarEstadoChip(estado: MotorCalculoEstadoTrabajador): EstadoCalculoChip {
   switch (estado) {
     case 'calculado_preliminar':
       return { variant: 'ok', label: 'Calculado' };
@@ -313,9 +309,7 @@ export function presentarEstadoChip(
   }
 }
 
-export function etiquetaImponibilidad(
-  etiqueta: LineaDesgloseCalculo['etiqueta'],
-): string | null {
+export function etiquetaImponibilidad(etiqueta: LineaDesgloseCalculo['etiqueta']): string | null {
   switch (etiqueta) {
     case 'imponible':
       return 'Imponible';
