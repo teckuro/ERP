@@ -43,6 +43,12 @@ import type {
 } from '../models/nomina-periodo.models';
 import { derivarIdentidadNominaMensual } from '../models/nomina-periodo.models';
 import type {
+  ConfirmarCreacionRequest,
+  ConfirmarCreacionResultado,
+  NominaCreatePreview,
+  NominaCreatePreviewRequest,
+} from '../models/nomina-creacion-preview.models';
+import type {
   AccionMasivaTrabajadores,
   CriterioAplicacionRecurrente,
   EstadoItemMovimiento,
@@ -157,60 +163,59 @@ export class NominaPeriodoService {
   // CRUD cabecera
   // -------------------------------------------------------------------------
 
+  /**
+   * Previsualiza la creación de una nómina mensual antes de confirmar (F04).
+   * Devuelve incluidos/excluidos/conflictos y un `fingerprint` determinista
+   * que F05 valida antes de persistir. No escribe.
+   */
+  async previsualizarCreacion(
+    request: NominaCreatePreviewRequest,
+  ): Promise<NominaCreatePreview> {
+    return this.repo.previsualizarCreacion(request);
+  }
+
+  /**
+   * Confirma la creación atómica de cabecera + dotación + auditoría (F05).
+   * La BD valida el `fingerprint` emitido por F04 y aplica idempotencia
+   * (si ya existe una nómina no anulada para empresa+período, la retorna
+   * sin crear duplicado).
+   */
+  async confirmarCreacion(
+    request: ConfirmarCreacionRequest,
+  ): Promise<ConfirmarCreacionResultado> {
+    return this.repo.confirmarCreacion(request);
+  }
+
+  /**
+   * Crea una nómina mensual desde la UI clásica del modal (compatibilidad).
+   * Tras F05, este método delega en `confirmar_creacion_nomina` mediante un
+   * preview implícito: previsualiza, valida que no haya conflictos y
+   * confirma con el `fingerprint` vigente. Toda la dotación y la auditoría
+   * se persisten server-side en una sola transacción.
+   */
   async crearNominaPeriodo(payload: CrearNominaPayload): Promise<NominaPeriodoResumen> {
     if (payload.tipo !== 'mensual') {
-      throw new Error(
-        'F01 permite crear solo nominas mensuales. Los otros ciclos se habilitaran en F03-F05.',
-      );
+      throw new Error('Solo se admiten nóminas mensuales en este flujo.');
     }
 
     const idEmpresa = await this.resolverEmpresaActiva();
     if (idEmpresa == null) {
       throw new Error('No hay empresa activa para crear la nómina.');
     }
-    const empresaSnap = this.empresaActiva.empresa();
-    const empresaNombre = payload.empresaNombre
-      ?? empresaSnap?.nombre
-      ?? empresaSnap?.razonSocial
-      ?? '';
-    const identidad = derivarIdentidadNominaMensual(payload.periodo);
 
     try {
-      const creada = await this.repo.crear({
-        empresaId: payload.empresaId ?? String(idEmpresa),
-        empresaNombre,
+      const preview = await this.repo.previsualizarCreacion({
         periodo: payload.periodo,
         tipo: payload.tipo,
-        ...identidad,
       });
-      const activos = (await this.empleados.listar()).filter(
-        (empleado) => empleado.estado === 'activo' && empleado.aptoParaRemuneraciones,
-      );
-      if (activos.length === 0) return creada;
-
-      const trabajadorIds = activos.map((empleado) => String(empleado.id));
-      const segmentoNuevo: SegmentoNominaNuevo = {
-        nominaPeriodoId: creada.id,
-        nombre: 'Dotación general',
-        tipo: 'planta',
-        estado: 'lista',
-        trabajadorIds,
-        totalTrabajadores: trabajadorIds.length,
-        totalIncidenciasCriticas: 0,
-        totalAdvertencias: 0,
-        ordinal: 1,
-      };
-      await this.repo.upsertSegmento(segmentoNuevo, idEmpresa);
-      await this.repo.actualizarTotales(creada.id, {
-        totalTrabajadores: activos.length,
-        totalSegmentos: 1,
+      const resultado = await this.repo.confirmarCreacion({
+        periodo: payload.periodo,
+        tipo: payload.tipo,
+        fingerprint: preview.fingerprint,
       });
-      await this.repo.transicionarEstado(creada.id, {
-        estadoEsperado: 'borrador',
-        estadoDestino: 'dotacion_generada',
-        versionEstadoEsperada: creada.versionEstado,
-      });
-      return (await this.repo.obtenerCabecera(creada.id)) ?? creada;
+      const cabecera = await this.repo.obtenerCabecera(resultado.idNominaPeriodo);
+      if (cabecera) return cabecera;
+      throw new Error('crearNominaPeriodo: BD no retornó la cabecera creada.');
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : String(error);
       if (/duplicate|unique|duplic/i.test(mensaje)) {

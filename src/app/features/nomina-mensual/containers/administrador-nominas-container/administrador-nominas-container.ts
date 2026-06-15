@@ -27,7 +27,10 @@ import { bindShellPageContext } from '../../../../layout/shell-page-context.bind
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { NominaPeriodoService } from '../../services/nomina-periodo.service';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { resolverUsuarioResponsableActual } from '../../../../core/auth/auth-user-label';
 import type {
+  EventoAuditoriaNomina,
   NominaPeriodoResumen,
   ResumenValidacionNomina,
 } from '../../models/nomina-periodo.models';
@@ -41,16 +44,18 @@ import { nominaRequiereAccion } from '../../rules/nomina-periodo-state.rules';
 import {
   desgloseIncidencias,
   estadoNominaToBadge,
-  etiquetaMaximoPasoCompletado,
   formatearActualizada,
   formatearActualizadaCompleta,
-  mostrarEnCurso,
   proximoPasoToIcon,
   proximoPasoToLabel,
-  tipoNominaToLabel,
+  tooltipAvanceFila,
 } from './utils/admin-nominas-presentacion.util';
-import { AdminNominasModalNuevaNominaComponent } from './components/admin-nominas-modal-nueva-nomina/admin-nominas-modal-nueva-nomina.component';
+import {
+  AdminNominasModalNuevaNominaComponent,
+  type NominaCreadaEvento,
+} from './components/admin-nominas-modal-nueva-nomina/admin-nominas-modal-nueva-nomina.component';
 import { AdminNominasModalResumenNominaComponent } from './components/admin-nominas-modal-resumen-nomina/admin-nominas-modal-resumen-nomina.component';
+import { AdminNominasModalHistorialNominaComponent } from './components/admin-nominas-modal-historial-nomina/admin-nominas-modal-historial-nomina.component';
 import {
   puedeEliminar,
   puedeReabrir,
@@ -76,6 +81,7 @@ interface AccionAdministrativaPendiente {
     WorkspaceLoadingComponent,
     AdminNominasModalNuevaNominaComponent,
     AdminNominasModalResumenNominaComponent,
+    AdminNominasModalHistorialNominaComponent,
   ],
   templateUrl: './administrador-nominas-container.html',
   styleUrl: './administrador-nominas-container.css',
@@ -84,6 +90,7 @@ interface AccionAdministrativaPendiente {
 export class AdministradorNominasContainer {
   private readonly router = inject(Router);
   private readonly servicio = inject(NominaPeriodoService);
+  private readonly authService = inject(AuthService);
   readonly periodoActivo = inject(PeriodoActivoService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -97,6 +104,26 @@ export class AdministradorNominasContainer {
   readonly motivoAccion = signal('');
   readonly ejecutandoAccion = signal(false);
   readonly errorAccion = signal<string | null>(null);
+
+  readonly historialNomina = signal<NominaPeriodoResumen | null>(null);
+  readonly historialEventos = signal<EventoAuditoriaNomina[]>([]);
+  readonly historialLoading = signal(false);
+  readonly historialError = signal<string | null>(null);
+
+  /**
+   * Resolver de etiquetas de usuario para el historial. Hoy resolvemos sólo
+   * al usuario actual (auth metadata); para otros usuarios se mostrará
+   * "Usuario no informado". Esto evita expandir el `select` del repository en
+   * el piloto F17 y mantiene el comportamiento sobrio del manual NOIA.
+   */
+  readonly resolverUsuarioHistorial = (usuarioId: string | undefined): string | null => {
+    if (!usuarioId) return null;
+    const responsable = resolverUsuarioResponsableActual(this.authService.currentUser());
+    if (responsable.id && responsable.id === usuarioId) {
+      return responsable.nombre;
+    }
+    return null;
+  };
 
   readonly columnas = COLUMNAS_ADMIN_NOMINAS;
   readonly persistenceKey = PERSISTENCIA_GRILLA_ADMIN;
@@ -149,14 +176,12 @@ export class AdministradorNominasContainer {
   readonly trackResumen = (_index: number, fila: NominaPeriodoResumen): string => fila.id;
 
   estadoNominaToBadge = estadoNominaToBadge;
-  tipoNominaToLabel = tipoNominaToLabel;
   formatearActualizada = formatearActualizada;
   formatearActualizadaCompleta = formatearActualizadaCompleta;
   proximoPasoToLabel = proximoPasoToLabel;
   proximoPasoToIcon = proximoPasoToIcon;
   desgloseIncidencias = desgloseIncidencias;
-  etiquetaMaximoPasoCompletado = etiquetaMaximoPasoCompletado;
-  mostrarEnCurso = mostrarEnCurso;
+  tooltipAvanceFila = tooltipAvanceFila;
   puedeEliminar = puedeEliminar;
   puedeReabrir = puedeReabrir;
   tieneLiquidaciones = tieneLiquidaciones;
@@ -194,10 +219,20 @@ export class AdministradorNominasContainer {
     this.modalNuevaAbierto.set(false);
   }
 
-  onNominaCreada(resumen: NominaPeriodoResumen): void {
-    this.resumenes.update((lista) => [resumen, ...lista]);
+  onNominaCreada(evento: NominaCreadaEvento): void {
+    // Si la nómina ya existía (idempotencia F05), evitamos duplicar en la
+    // lista; si es nueva, la insertamos arriba para que el usuario la vea.
+    this.resumenes.update((lista) => {
+      const sinDuplicado = lista.filter((r) => r.id !== evento.resumen.id);
+      return [evento.resumen, ...sinDuplicado];
+    });
     this.modalNuevaAbierto.set(false);
-    this.abrirGenerador(resumen);
+    this.abrirGenerador(evento.resumen, {
+      from: 'create',
+      siguientePaso: evento.siguientePaso,
+      totalIniciales: evento.totalTrabajadoresIniciales,
+      reutilizada: evento.reutilizada,
+    });
   }
 
   async abrirResumen(fila: NominaPeriodoResumen): Promise<void> {
@@ -225,8 +260,58 @@ export class AdministradorNominasContainer {
     this.nominaSeleccionada.set(null);
   }
 
-  abrirGenerador(fila: NominaPeriodoResumen): void {
-    void this.router.navigate(['/remuneraciones/nominas', fila.id, 'generador']);
+  async abrirHistorial(fila: NominaPeriodoResumen): Promise<void> {
+    this.historialNomina.set(fila);
+    this.historialEventos.set([]);
+    this.historialError.set(null);
+    this.historialLoading.set(true);
+    try {
+      const eventos = await this.servicio.listarEventosAuditoria(fila.id);
+      // Si el usuario cerró el modal o abrió otra fila mientras cargábamos,
+      // evitamos pisar el estado: solo aplicamos si seguimos en la misma.
+      if (this.historialNomina()?.id === fila.id) {
+        this.historialEventos.set(eventos);
+      }
+    } catch (err) {
+      if (this.historialNomina()?.id === fila.id) {
+        const mensaje = err instanceof Error ? err.message : 'No fue posible cargar el historial.';
+        this.historialError.set(mensaje);
+      }
+    } finally {
+      if (this.historialNomina()?.id === fila.id) {
+        this.historialLoading.set(false);
+      }
+    }
+  }
+
+  cerrarHistorial(): void {
+    this.historialNomina.set(null);
+    this.historialEventos.set([]);
+    this.historialLoading.set(false);
+    this.historialError.set(null);
+  }
+
+  abrirGenerador(
+    fila: NominaPeriodoResumen,
+    contexto?: {
+      from?: 'create';
+      siguientePaso?: 'parameters' | 'dotacion';
+      totalIniciales?: number;
+      reutilizada?: boolean;
+    },
+  ): void {
+    const queryParams = contexto
+      ? {
+          from: contexto.from ?? null,
+          paso: contexto.siguientePaso ?? null,
+          dotacion: contexto.totalIniciales ?? null,
+          reutilizada: contexto.reutilizada ? '1' : null,
+        }
+      : undefined;
+    void this.router.navigate(['/remuneraciones/nominas', fila.id, 'generador'], {
+      queryParams,
+      queryParamsHandling: queryParams ? '' : 'preserve',
+    });
   }
 
   solicitarAccion(tipo: AccionAdministrativa, nomina: NominaPeriodoResumen): void {

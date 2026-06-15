@@ -13,7 +13,7 @@
   >
     <header class="adm-nom-resumen__head">
       <div class="adm-nom-resumen__head-copy">
-        <p class="adm-nom-resumen__eyebrow">Resumen de validación</p>
+        <p class="adm-nom-resumen__eyebrow">Resumen</p>
         <h2 id="adm-nom-resumen-title" class="adm-nom-resumen__title">
           @if (contextoVista(); as c) {
             {{ c.empresa }} · {{ c.periodo }}
@@ -23,7 +23,6 @@
         </h2>
         @if (contextoVista(); as c) {
           <div class="adm-nom-resumen__chips">
-            <span class="adm-nom-resumen__chip adm-nom-resumen__chip--neutral">{{ c.tipo }}</span>
             <span class="adm-nom-resumen__chip" [class]="'adm-nom-resumen__chip--' + c.badge.variant">
               <span class="adm-nom-resumen__chip-dot" aria-hidden="true"></span>
               {{ c.badge.label }}
@@ -54,39 +53,21 @@
         </ul>
       </section>
 
-      <section class="adm-nom-resumen__section" aria-labelledby="adm-nom-resumen-guardias">
-        <h3 id="adm-nom-resumen-guardias" class="adm-nom-resumen__section-title">Guardias</h3>
-        <div class="adm-nom-resumen__guardias">
-          <div
-            class="adm-nom-resumen__guardia"
-            [class.adm-nom-resumen__guardia--ok]="resumen().puedeCalcular"
-            [class.adm-nom-resumen__guardia--bloqueada]="!resumen().puedeCalcular"
-          >
-            <lucide-icon
-              [name]="resumen().puedeCalcular ? 'circle-check' : 'circle-alert'"
-              aria-hidden="true"
-            ></lucide-icon>
-            <span>
-              <strong>{{ resumen().puedeCalcular ? 'Puede calcular' : 'Bloqueada para cálculo' }}</strong>
-              <small>{{ resumen().puedeCalcular ? 'No hay incidencias críticas bloqueantes.' : 'Resuelve las incidencias críticas antes del cálculo.' }}</small>
-            </span>
-          </div>
-          <div
-            class="adm-nom-resumen__guardia"
-            [class.adm-nom-resumen__guardia--ok]="resumen().puedeCerrar"
-            [class.adm-nom-resumen__guardia--bloqueada]="!resumen().puedeCerrar"
-          >
-            <lucide-icon
-              [name]="resumen().puedeCerrar ? 'circle-check' : 'circle-alert'"
-              aria-hidden="true"
-            ></lucide-icon>
-            <span>
-              <strong>{{ resumen().puedeCerrar ? 'Puede cerrar' : 'Bloqueada para cierre' }}</strong>
-              <small>{{ resumen().puedeCerrar ? 'Lista para aprobar y cerrar.' : 'Hay incidencias bloqueantes que impiden el cierre.' }}</small>
-            </span>
-          </div>
-        </div>
-        <p class="adm-nom-resumen__mensaje">{{ mensajeGuardia() }}</p>
+      <section class="adm-nom-resumen__section" aria-labelledby="adm-nom-resumen-situacion">
+        <h3 id="adm-nom-resumen-situacion" class="adm-nom-resumen__section-title">Situación</h3>
+        @let s = situacion();
+        <p
+          class="adm-nom-resumen__situacion"
+          [class.adm-nom-resumen__situacion--ok]="s.tono === 'ok'"
+          [class.adm-nom-resumen__situacion--pendiente]="s.tono === 'pendiente'"
+          [class.adm-nom-resumen__situacion--bloqueada]="s.tono === 'bloqueada'"
+        >
+          <lucide-icon
+            [name]="s.tono === 'bloqueada' ? 'circle-alert' : (s.tono === 'pendiente' ? 'clock' : 'circle-check')"
+            aria-hidden="true"
+          ></lucide-icon>
+          <span>{{ s.texto }}</span>
+        </p>
       </section>
 
       @if (resumen().incidenciasCriticas.length > 0) {
@@ -132,12 +113,16 @@
     </div>
 
     <footer class="adm-nom-resumen__foot">
-      <button type="button" class="adm-nom-resumen__btn" (click)="cerrarModal()">Cerrar</button>
-      @if (nomina()?.requiereAccion) {
-        <button type="button" class="adm-nom-resumen__btn" (click)="abrirAccionRecomendada()">
-          Continuar en el generador
-        </button>
-      }
+      <button
+        type="button"
+        class="adm-nom-resumen__btn adm-nom-resumen__btn--ghost"
+        (click)="cerrarModal()"
+      >Cerrar</button>
+      <button
+        type="button"
+        class="adm-nom-resumen__btn adm-nom-resumen__btn--primary"
+        (click)="abrirAccionRecomendada()"
+      >Continuar en el generador</button>
     </footer>
   </div>
 </div>

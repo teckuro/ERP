@@ -9,6 +9,58 @@
 
 ---
 
+## 2026-06-15 — Preview + creación transaccional y bandeja simplificada (NOIA-ADM-NOM-F04-05-01, NOIA-ADM-NOM-BANDEJA-02, NOIA-ADM-NOM-RESUMEN-02)
+
+Cierre de F04 + F05 con su tracción en UX del Administrador y el Generador V2.
+
+- Wizard 2 pasos en "Nueva nómina": configuración (período/empresa/tipo) →
+  vista previa (franja de totales, tabs Incluidos/Excluidos/Conflictos,
+  `app-message-box` solo si hay bloqueantes). CTA primario único por paso
+  ("Ver vista previa" → "Confirmar y abrir generador").
+- Grilla del Administrador reordenada a 7 columnas operativas
+  (`Período · Empresa · Estado · Siguiente acción · Trabajadores · Actualizada · Acciones`).
+  Las incidencias críticas/advertencias pasan a chip inline dentro de
+  "Siguiente acción"; el subtexto "Avance: X" duplicado se traslada al `title`
+  de la fila.
+- Modal resumen sin chip de tipo (siempre mensual en piloto), guardias
+  fusionadas en una "Situación" única con tono `ok | pendiente | bloqueada`
+  y CTA primario único "Continuar en el generador".
+- Handoff al Generador V2: banner contextual sobrio bajo el stepper
+  ("Nómina creada · N trabajadores en dotación inicial." o el equivalente
+  reutilizada), con borde inferior fino y fondo apagado. Se descarta al
+  primer cambio de paso.
+
+Archivos: `admin-nominas-modal-nueva-nomina.*`,
+`administrador-nominas-container.html/ts/css`,
+`admin-nominas-modal-resumen-nomina.*`, `admin-nominas.presenter.ts`,
+`utils/admin-nominas-presentacion.util.ts`, `nomina-mensual-v2-container.*`.
+
+---
+
+## 2026-06-15 — Historial administrativo en bandeja (NOIA-ADM-NOM-HISTORIAL-01)
+
+Trazabilidad administrativa accesible desde cada nómina sin abrir el
+Generador (alineado al roadmap §F17).
+
+- Nueva acción en la fila (`adm-nom__row-actions`) **antes** de "Abrir
+  generador": icono Lucide `history`, `aria-label`/`title` operativo
+  "Ver historial administrativo de {empresa} {período}".
+- Modal local `admin-nominas-modal-historial-nomina` basado en
+  `app-message-box` (modo modal, eyebrow "Bitácora", título "Historial
+  administrativo", contexto "{empresa} · {período}"). Timeline cronológica
+  desc con acción humana, usuario resuelto y motivo (cuando existe). Empty
+  state operativo y CTA único "Cerrar".
+- Presenter `admin-nominas-auditoria.presenter.ts` mapea cada `accion` del
+  enum BD a su etiqueta humana (`creada` → "Nómina creada", `reabierta` →
+  "Nómina reabierta", etc.). Usuario actual resuelto vía
+  `resolverUsuarioResponsableActual`; otros usuarios se etiquetan como
+  "Usuario no informado" sin bloquear la fase.
+
+Sin cambios globales. Reutiliza el patrón visual del modal de trazabilidad
+del Generador V2 para mantener identidad NOIA.
+
+---
+
 ## 2026-06-15 — Flujo crear nómina en Administrador (NOIA-ADM-NOM-CREAR-01)
 
 Refactor del modal "Nueva nómina" y subtítulo del shell para reducir

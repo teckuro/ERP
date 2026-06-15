@@ -42,18 +42,21 @@ export type VistaOperativaAdminNominas =
   | 'con-criticas'
   | 'todas';
 
-/** Columnas declarativas de la grilla. */
+/**
+ * Columnas declarativas de la grilla.
+ *
+ * Orden y jerarquía simplificados en F04/F05 (NOIA-ADM-NOM-BANDEJA-02):
+ * `Período · Empresa · Estado · Siguiente acción · Trabajadores · Actualizada · Acciones`.
+ *
+ * Las columnas `Tipo`, `Segmentos` e `Incidencias` se quitaron de la
+ * grilla principal para reducir ruido:
+ *   - `tipo`: siempre mensual en el piloto (se mantendrá filtro lateral si
+ *     hay más tipos en BD).
+ *   - `segmentos`: dato técnico interno, no operativo para RRHH.
+ *   - `incidencias`: las críticas suben al chip de "Siguiente acción" y
+ *     todos los conteos quedan visibles en el modal de resumen.
+ */
 export const COLUMNAS_ADMIN_NOMINAS: DataGridColumn<NominaPeriodoResumen>[] = [
-  {
-    id: 'proximoPaso',
-    header: 'Siguiente acción',
-    field: 'proximoPaso',
-    type: 'text',
-    width: '9rem',
-    minWidth: '8rem',
-    priorityResponsive: 'secondary',
-    filterable: false,
-  },
   {
     id: 'periodo',
     header: 'Período',
@@ -76,16 +79,26 @@ export const COLUMNAS_ADMIN_NOMINAS: DataGridColumn<NominaPeriodoResumen>[] = [
     filterable: false,
   },
   {
-    id: 'tipo',
-    header: 'Tipo',
-    field: 'tipo',
+    id: 'estado',
+    header: 'Estado',
+    field: 'estado',
     type: 'text',
-    width: '7rem',
-    minWidth: '6rem',
+    width: '9rem',
+    minWidth: '8rem',
     align: 'center',
     headerClass: 'text-center',
     cellClass: 'text-center',
-    priorityResponsive: 'tertiary',
+    priorityResponsive: 'primary',
+    filterable: false,
+  },
+  {
+    id: 'proximoPaso',
+    header: 'Siguiente acción',
+    field: 'proximoPaso',
+    type: 'text',
+    width: '11rem',
+    minWidth: '10rem',
+    priorityResponsive: 'primary',
     filterable: false,
   },
   {
@@ -102,45 +115,6 @@ export const COLUMNAS_ADMIN_NOMINAS: DataGridColumn<NominaPeriodoResumen>[] = [
     filterable: false,
   },
   {
-    id: 'segmentos',
-    header: 'Segmentos',
-    field: 'totalSegmentos',
-    type: 'number',
-    width: '6rem',
-    minWidth: '5.5rem',
-    align: 'right',
-    headerClass: 'text-right',
-    cellClass: 'text-right',
-    priorityResponsive: 'tertiary',
-    filterable: false,
-  },
-  {
-    id: 'incidencias',
-    header: 'Incidencias',
-    field: 'totalIncidenciasCriticas',
-    type: 'number',
-    width: '8rem',
-    minWidth: '7rem',
-    align: 'center',
-    headerClass: 'text-center',
-    cellClass: 'text-center',
-    priorityResponsive: 'secondary',
-    filterable: false,
-  },
-  {
-    id: 'estado',
-    header: 'Estado',
-    field: 'estado',
-    type: 'text',
-    width: '9rem',
-    minWidth: '8rem',
-    align: 'center',
-    headerClass: 'text-center',
-    cellClass: 'text-center',
-    priorityResponsive: 'primary',
-    filterable: false,
-  },
-  {
     id: 'actualizada',
     header: 'Actualizada',
     field: 'updatedAt',
@@ -153,8 +127,8 @@ export const COLUMNAS_ADMIN_NOMINAS: DataGridColumn<NominaPeriodoResumen>[] = [
   {
     id: 'acciones',
     header: 'Acciones',
-    width: '10rem',
-    minWidth: '9.5rem',
+    width: '11rem',
+    minWidth: '10.5rem',
     align: 'center',
     sortable: false,
     hideable: false,
@@ -280,6 +254,8 @@ export function crearFiltrosAdminNominas(
     });
   }
 
+  // Filtro "Tipo" solo si la BD muestra más de un tipo. En el piloto mensual
+  // no aparece para no inflar la barra de filtros con una opción única.
   if (tipos.length > 1) {
     filtros.push({
       id: 'tipo',

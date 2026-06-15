@@ -55,17 +55,14 @@ function muestraResumenes(): NominaPeriodoResumen[] {
 }
 
 describe('admin-nominas.presenter — columnas y filtros declarativos', () => {
-  it('Test 1 — COLUMNAS_ADMIN_NOMINAS expone 10 columnas en el orden esperado y "Acciones" tiene header visible', () => {
-    expect(COLUMNAS_ADMIN_NOMINAS).toHaveLength(10);
+  it('Test 1 — COLUMNAS_ADMIN_NOMINAS expone 7 columnas en el orden esperado (NOIA-ADM-NOM-BANDEJA-02)', () => {
+    expect(COLUMNAS_ADMIN_NOMINAS).toHaveLength(7);
     expect(COLUMNAS_ADMIN_NOMINAS.map((c) => c.id)).toEqual([
-      'proximoPaso',
       'periodo',
       'empresa',
-      'tipo',
-      'trabajadores',
-      'segmentos',
-      'incidencias',
       'estado',
+      'proximoPaso',
+      'trabajadores',
       'actualizada',
       'acciones',
     ]);

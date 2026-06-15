@@ -156,6 +156,22 @@ export function mostrarEnCurso(fila: NominaPeriodoResumen): boolean {
 }
 
 /**
+ * Tooltip de la fila completa: combina avance máximo y resumen de
+ * incidencias. Devuelve cadena vacía si no hay nada relevante para evitar
+ * tooltips vacíos. NOIA-ADM-NOM-BANDEJA-02.
+ */
+export function tooltipAvanceFila(fila: NominaPeriodoResumen): string {
+  const partes: string[] = [];
+  if (mostrarEnCurso(fila)) {
+    const avance = etiquetaMaximoPasoCompletado(fila.maximoPasoCompletado);
+    if (avance) partes.push(`Avance: ${avance}`);
+  }
+  const desglose = desgloseIncidencias(fila);
+  if (desglose) partes.push(desglose);
+  return partes.join(' · ');
+}
+
+/**
  * Resumen humano de incidencias para tooltips, sin exponer enums.
  *
  * Devuelve cadena vacía si la fila no tiene ni críticas ni avisos, para no

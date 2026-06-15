@@ -99,6 +99,17 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   readonly nominaCargada = signal<NominaPeriodo | null>(null);
 
   /**
+   * Banner contextual mostrado tras crear/reabrir una nómina desde el
+   * Administrador. Se completa con `?from=create&paso=...&dotacion=...` en la
+   * URL y se descarta al primer cambio de paso para no ensuciar la sesión.
+   */
+  readonly bannerHandoff = signal<{
+    mensaje: string;
+    tono: 'info' | 'success';
+  } | null>(null);
+  private pasoForzadoCreacion: PayrollStepId | null = null;
+
+  /**
    * Marca que la rehidratación del último paso visitado para la nómina actual
    * ya se aplicó (o se intentó). Mientras es `false`, el effect de guardado
    * NO escribe, evitando pisar el paso visitado con `parameters` justo
@@ -246,10 +257,11 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     try {
       const periodo = this.periodoActivo.periodoYm();
       const sesion = await this.sesionService.resolverEstadoSesion(periodo, nominaPeriodoId);
-      // Si hay `pasoVisitadoSugerido` válido se prefiere por sobre el
-      // `pasoInicial` derivado del estado de parámetros (que es solo el
-      // arranque por defecto). De lo contrario aplicamos el `pasoInicial`.
-      const pasoTarget = sesion.pasoVisitadoSugerido ?? sesion.pasoInicial;
+      // Si el handoff desde el Administrador (F05) trae paso explícito, lo
+      // respetamos: el usuario acaba de crear y debe aterrizar ahí, no en el
+      // paso visitado de una sesión previa.
+      const pasoForzado = this.pasoForzadoCreacion;
+      const pasoTarget = pasoForzado ?? sesion.pasoVisitadoSugerido ?? sesion.pasoInicial;
       if (pasoTarget !== this.currentStep()) {
         this.currentStep.set(pasoTarget);
         this.orquestador.pasoActual.set(pasoTarget);
@@ -285,6 +297,56 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
         void this.cargarNominaProductiva(id);
       }
     });
+
+    // Handoff desde Administrador: el RPC F05 nos dice el siguiente paso y
+    // cuántos trabajadores quedaron en la dotación inicial. La rehidratación
+    // estándar respetará `pasoForzadoCreacion` para no pisar este destino.
+    this.route.queryParamMap.subscribe((qp) => {
+      const from = qp.get('from');
+      if (from !== 'create') {
+        this.pasoForzadoCreacion = null;
+        return;
+      }
+      const paso = qp.get('paso');
+      const dotacion = Number(qp.get('dotacion') ?? '0');
+      const reutilizada = qp.get('reutilizada') === '1';
+      if (paso === 'parameters' || paso === 'dotacion') {
+        this.pasoForzadoCreacion = paso;
+        this.currentStep.set(paso);
+        this.orquestador.pasoActual.set(paso);
+      }
+      this.bannerHandoff.set(this.componerBannerHandoff(dotacion, reutilizada));
+    });
+  }
+
+  private componerBannerHandoff(
+    dotacion: number,
+    reutilizada: boolean,
+  ): { mensaje: string; tono: 'info' | 'success' } {
+    if (reutilizada) {
+      const cuerpo = dotacion === 1
+        ? '1 trabajador en dotación'
+        : `${dotacion} trabajadores en dotación`;
+      return {
+        mensaje: `Continuamos con la nómina existente · ${cuerpo}.`,
+        tono: 'info',
+      };
+    }
+    const cuerpo = dotacion === 1
+      ? '1 trabajador en dotación inicial'
+      : `${dotacion} trabajadores en dotación inicial`;
+    return {
+      mensaje: `Nómina creada · ${cuerpo}.`,
+      tono: 'success',
+    };
+  }
+
+  /**
+   * Limpia el banner contextual del handoff. Se invoca al cambiar de paso
+   * para que no acompañe al usuario más allá del aterrizaje inicial.
+   */
+  cerrarBannerHandoff(): void {
+    this.bannerHandoff.set(null);
   }
 
   /**
@@ -671,6 +733,10 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     this.orquestador.limpiarModalesAvance();
     if (destinoPaso !== 'parameters' && destinoPaso !== 'dotacion') {
       this.orquestador.establecerAyudaAvance(null);
+    }
+    if (this.bannerHandoff() && destinoPaso !== this.currentStep()) {
+      this.bannerHandoff.set(null);
+      this.pasoForzadoCreacion = null;
     }
     this.currentStep.set(destinoPaso);
     this.orquestador.pasoActual.set(destinoPaso);

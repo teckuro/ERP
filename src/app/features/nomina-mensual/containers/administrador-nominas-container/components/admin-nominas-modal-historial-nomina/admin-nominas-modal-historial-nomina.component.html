@@ -1,0 +1,55 @@
+<app-message-box
+  variant="info"
+  mode="modal"
+  width="lg"
+  eyebrow="Bitácora"
+  title="Historial administrativo"
+  [message]="contexto()"
+  (dismiss)="cerrarModal()"
+>
+  <div class="adm-nom-historial">
+    @if (cargando()) {
+      <div class="adm-nom-historial__empty">
+        <lucide-icon name="loader-circle" aria-hidden="true"></lucide-icon>
+        <strong>Cargando historial</strong>
+        <span>Consultando los movimientos registrados para esta nómina.</span>
+      </div>
+    } @else if (error()) {
+      <div class="adm-nom-historial__empty adm-nom-historial__empty--attention">
+        <lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon>
+        <strong>No fue posible cargar el historial</strong>
+        <span>{{ error() }}</span>
+      </div>
+    } @else if (filas().length === 0) {
+      <div class="adm-nom-historial__empty">
+        <lucide-icon name="history" aria-hidden="true"></lucide-icon>
+        <strong>Sin eventos registrados</strong>
+        <span>Los movimientos aparecerán al crear o cambiar el estado de la nómina.</span>
+      </div>
+    } @else {
+      <ol class="adm-nom-historial__timeline">
+        @for (fila of filas(); track trackFila($index, fila)) {
+          <li class="adm-nom-historial__item">
+            <span class="adm-nom-historial__marker" aria-hidden="true"></span>
+            <div class="adm-nom-historial__body">
+              <strong>{{ fila.accion }}</strong>
+              <span>{{ fila.usuario }}</span>
+              @if (fila.motivo) {
+                <p class="adm-nom-historial__motivo">{{ fila.motivo }}</p>
+              }
+              <em [title]="fila.fechaLarga">{{ fila.fechaCorta }}</em>
+            </div>
+          </li>
+        }
+      </ol>
+    }
+
+    <div class="adm-nom-historial__footer">
+      <button
+        type="button"
+        class="adm-nom-historial__btn adm-nom-historial__btn--primary"
+        (click)="cerrarModal()"
+      >Cerrar</button>
+    </div>
+  </div>
+</app-message-box>

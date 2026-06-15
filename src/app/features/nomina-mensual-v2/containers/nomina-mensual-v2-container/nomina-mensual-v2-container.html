@@ -9,6 +9,24 @@
     (volverPasoAnterior)="intentarIrAPaso($event)"
   />
 
+  @if (bannerHandoff(); as banner) {
+    <div
+      class="nmv2-banner-handoff"
+      [class.nmv2-banner-handoff--success]="banner.tono === 'success'"
+      [class.nmv2-banner-handoff--info]="banner.tono === 'info'"
+      role="status"
+      aria-live="polite"
+    >
+      <span class="nmv2-banner-handoff__texto">{{ banner.mensaje }}</span>
+      <button
+        type="button"
+        class="nmv2-banner-handoff__cerrar"
+        (click)="cerrarBannerHandoff()"
+        aria-label="Descartar mensaje"
+      >&times;</button>
+    </div>
+  }
+
   @if (orquestador.ayudaAvance(); as ayudaAvance) {
     <p
       class="nmv2-step-nav-hint"

@@ -55,30 +55,33 @@ function resumenBloqueado(): ResumenValidacionNomina {
 }
 
 describe('AdminNominasModalResumenNominaComponent', () => {
-  it('Test 28 — métricas reflejan los totales del ResumenValidacionNomina', () => {
+  it('Test 28 — métricas reduce a 3 entradas (trabajadores, críticas, advertencias) para evitar duplicidad con la grilla', () => {
     const fixture = TestBed.createComponent(AdminNominasModalResumenNominaComponent);
     fixture.componentRef.setInput('resumen', resumenOk());
     const metricas = fixture.componentInstance.metricas();
-    expect(metricas).toHaveLength(5);
+    expect(metricas).toHaveLength(3);
+    expect(metricas.map((m) => m.id)).toEqual(['total', 'criticas', 'advertencias']);
     expect(metricas.find((m) => m.id === 'total')?.value).toBe(24);
-    expect(metricas.find((m) => m.id === 'listos')?.value).toBe(22);
     expect(metricas.find((m) => m.id === 'advertencias')?.value).toBe(2);
   });
 
-  it('Test 29 — mensajeGuardia es positivo cuando puedeCalcular Y puedeCerrar', () => {
+  it('Test 29 — situacion es tono "ok" cuando puedeCalcular Y puedeCerrar', () => {
     const fixture = TestBed.createComponent(AdminNominasModalResumenNominaComponent);
     fixture.componentRef.setInput('resumen', resumenOk());
-    expect(fixture.componentInstance.mensajeGuardia()).toContain('habilitada para avanzar');
+    const situacion = fixture.componentInstance.situacion();
+    expect(situacion.tono).toBe('ok');
+    expect(situacion.texto.toLowerCase()).toContain('lista');
   });
 
-  it('Test 30 — mensajeGuardia bloquea cuando hay críticas y puedeCalcular es false', () => {
+  it('Test 30 — situacion es "bloqueada" cuando hay críticas y puedeCalcular es false', () => {
     const fixture = TestBed.createComponent(AdminNominasModalResumenNominaComponent);
     fixture.componentRef.setInput('resumen', resumenBloqueado());
-    const mensaje = fixture.componentInstance.mensajeGuardia();
-    expect(mensaje.toLowerCase()).toContain('crítica');
+    const situacion = fixture.componentInstance.situacion();
+    expect(situacion.tono).toBe('bloqueada');
+    expect(situacion.texto.toLowerCase()).toContain('crítica');
   });
 
-  it('Test 31 — contextoVista expone empresa, periodo y badge cuando se entrega nomina', () => {
+  it('Test 31 — contextoVista expone empresa, periodo y badge sin chip de tipo (siempre mensual en piloto)', () => {
     const fixture = TestBed.createComponent(AdminNominasModalResumenNominaComponent);
     fixture.componentRef.setInput('resumen', resumenOk());
     fixture.componentRef.setInput(
@@ -94,8 +97,8 @@ describe('AdminNominasModalResumenNominaComponent', () => {
     expect(contexto).not.toBeNull();
     expect(contexto!.empresa).toBe('Constructora Andes Ltda.');
     expect(contexto!.periodo).toBe('2026-06');
-    expect(contexto!.tipo).toBe('Mensual');
     expect(contexto!.badge.variant).toBe('info');
+    expect((contexto as unknown as Record<string, unknown>)['tipo']).toBeUndefined();
   });
 
   it('Test 32 — cerrarModal emite (cerrar)', () => {

@@ -31,6 +31,16 @@ import type {
   PaginacionGrilla,
 } from '../models/nomina-periodo.models';
 import type {
+  ConfirmarCreacionRequest,
+  ConfirmarCreacionResultado,
+  NominaCreatePreview,
+  NominaCreatePreviewRequest,
+} from '../models/nomina-creacion-preview.models';
+import {
+  mapConfirmarCreacionResultado,
+  mapNominaCreatePreview,
+} from '../mappers/nomina-creacion-preview.mapper';
+import type {
   MovimientoNomina,
   MovimientoNominaNuevo,
   MovimientoRecurrente,
@@ -176,6 +186,38 @@ export class NominaPeriodoRepository {
       throw new Error('crearNominaPeriodo: BD no retornó la fila creada');
     }
     return rowToNominaPeriodoResumen(data);
+  }
+
+  /**
+   * Llama a la RPC F04 `previsualizar_creacion_nomina`. Solo lectura; no escribe.
+   * La empresa se resuelve en BD desde el JWT (`current_user_empresa_id()`).
+   */
+  async previsualizarCreacion(
+    request: NominaCreatePreviewRequest,
+  ): Promise<NominaCreatePreview> {
+    const { data, error } = await this.supabase.rpc('previsualizar_creacion_nomina', {
+      p_periodo: request.periodo,
+      p_tipo: request.tipo,
+    });
+    throwIfError(error, 'previsualizarCreacion');
+    return mapNominaCreatePreview(data);
+  }
+
+  /**
+   * Llama a la RPC F05 `confirmar_creacion_nomina`. Crea cabecera, dotación
+   * inicial y auditoría en una sola transacción server-side. Valida el
+   * `fingerprint` emitido por F04: si difiere, BD rechaza con 40001.
+   */
+  async confirmarCreacion(
+    request: ConfirmarCreacionRequest,
+  ): Promise<ConfirmarCreacionResultado> {
+    const { data, error } = await this.supabase.rpc('confirmar_creacion_nomina', {
+      p_periodo: request.periodo,
+      p_tipo: request.tipo,
+      p_fingerprint: request.fingerprint,
+    });
+    throwIfError(error, 'confirmarCreacion');
+    return mapConfirmarCreacionResultado(data);
   }
 
   async actualizarEstado(id: string, estado: NominaPeriodo['estado']): Promise<void> {

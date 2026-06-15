@@ -114,6 +114,8 @@ interface RepoMock {
   listarEventosAuditoria: ReturnType<typeof vi.fn>;
   registrarEventoAuditoria: ReturnType<typeof vi.fn>;
   listarDotacionPaginada: ReturnType<typeof vi.fn>;
+  previsualizarCreacion: ReturnType<typeof vi.fn>;
+  confirmarCreacion: ReturnType<typeof vi.fn>;
 }
 
 function repoMock(): RepoMock {
@@ -146,6 +148,35 @@ function repoMock(): RepoMock {
     listarEventosAuditoria: vi.fn().mockResolvedValue([]),
     registrarEventoAuditoria: vi.fn(),
     listarDotacionPaginada: vi.fn().mockResolvedValue({ filas: [], total: 0 }),
+    previsualizarCreacion: vi.fn().mockResolvedValue({
+      periodo: '2026-06',
+      tipo: 'mensual',
+      naturaleza: 'liquidacion_legal',
+      idEmpresa: 7,
+      empresaNombre: 'Demo',
+      codigoCiclo: '2026-06-MES',
+      fechaInicio: '2026-06-01',
+      fechaFin: '2026-06-30',
+      plantillaCicloId: 'pl-1',
+      incluidos: [],
+      excluidos: [],
+      conflictos: [],
+      totales: { incluidos: 0, excluidos: 0, conflictos: 0 },
+      puedeCrear: true,
+      fingerprint: 'fp-1',
+      generadoEn: '2026-06-15T00:00:00Z',
+    }),
+    confirmarCreacion: vi.fn().mockResolvedValue({
+      idNominaPeriodo: 'nom-1',
+      estado: 'borrador',
+      versionEstado: 0,
+      codigoCiclo: '2026-06-MES',
+      fechaInicio: '2026-06-01',
+      fechaFin: '2026-06-30',
+      totalTrabajadores: 0,
+      siguientePaso: 'dotacion',
+      reutilizada: false,
+    }),
   };
 }
 
@@ -217,30 +248,49 @@ describe('NominaPeriodoService', () => {
     expect(repo.listarResumenes).not.toHaveBeenCalled();
   });
 
-  it('crearNominaPeriodo delega en repo.crear con empresa activa', async () => {
-    repo.crear.mockResolvedValue({ id: 'nom-1' });
+  it('crearNominaPeriodo delega en preview + confirm RPCs (F05) y devuelve la cabecera', async () => {
+    const cabecera = crearNominaResumen({
+      id: 'nom-1',
+      periodo: '2026-06',
+      empresaId: '7',
+      empresaNombre: 'Demo',
+      tipo: 'mensual',
+      estado: 'dotacion_generada',
+      totalTrabajadores: 0,
+      totalSegmentos: 0,
+      totalHaberes: 0,
+      totalDescuentos: 0,
+      totalLiquido: 0,
+      totalIncidenciasCriticas: 0,
+      totalAdvertencias: 0,
+      createdAt: '2026-06-04T00:00:00Z',
+      updatedAt: '2026-06-04T00:00:00Z',
+    });
+    repo.obtenerCabecera.mockResolvedValue(cabecera);
     const service = configurar({ repo });
-    await service.crearNominaPeriodo({ periodo: '2026-06', tipo: 'mensual' });
-    expect(repo.crear).toHaveBeenCalledWith(
-      expect.objectContaining({
-        periodo: '2026-06',
-        tipo: 'mensual',
-        empresaId: '7',
-        fechaInicio: '2026-06-01',
-        fechaFin: '2026-06-30',
-        naturaleza: 'liquidacion_legal',
-        codigoCiclo: '2026-06-MES',
-      }),
-    );
+    const resultado = await service.crearNominaPeriodo({ periodo: '2026-06', tipo: 'mensual' });
+
+    expect(repo.previsualizarCreacion).toHaveBeenCalledWith({
+      periodo: '2026-06',
+      tipo: 'mensual',
+    });
+    expect(repo.confirmarCreacion).toHaveBeenCalledWith({
+      periodo: '2026-06',
+      tipo: 'mensual',
+      fingerprint: 'fp-1',
+    });
+    expect(resultado).toEqual(cabecera);
+    expect(repo.crear).not.toHaveBeenCalled();
   });
 
-  it('crearNominaPeriodo rechaza ciclos no mensuales durante F01', async () => {
+  it('crearNominaPeriodo rechaza ciclos no mensuales', async () => {
     const service = configurar({ repo });
 
     await expect(
       service.crearNominaPeriodo({ periodo: '2026-06', tipo: 'quincenal' }),
-    ).rejects.toThrow(/solo nominas mensuales/i);
-    expect(repo.crear).not.toHaveBeenCalled();
+    ).rejects.toThrow(/mensuales/i);
+    expect(repo.previsualizarCreacion).not.toHaveBeenCalled();
+    expect(repo.confirmarCreacion).not.toHaveBeenCalled();
   });
 
   it('crearNominaPeriodo lanza error si no hay empresa activa', async () => {
@@ -248,6 +298,32 @@ describe('NominaPeriodoService', () => {
     await expect(
       service.crearNominaPeriodo({ periodo: '2026-06', tipo: 'mensual' }),
     ).rejects.toThrow(/empresa activa/i);
+  });
+
+  it('previsualizarCreacion delega en el repositorio', async () => {
+    const service = configurar({ repo });
+    const preview = await service.previsualizarCreacion({ periodo: '2026-06', tipo: 'mensual' });
+    expect(repo.previsualizarCreacion).toHaveBeenCalledWith({
+      periodo: '2026-06',
+      tipo: 'mensual',
+    });
+    expect(preview.fingerprint).toBe('fp-1');
+  });
+
+  it('confirmarCreacion delega en el repositorio y devuelve el resultado', async () => {
+    const service = configurar({ repo });
+    const resultado = await service.confirmarCreacion({
+      periodo: '2026-06',
+      tipo: 'mensual',
+      fingerprint: 'fp-1',
+    });
+    expect(repo.confirmarCreacion).toHaveBeenCalledWith({
+      periodo: '2026-06',
+      tipo: 'mensual',
+      fingerprint: 'fp-1',
+    });
+    expect(resultado.idNominaPeriodo).toBe('nom-1');
+    expect(resultado.siguientePaso).toBe('dotacion');
   });
 
   it('cerrarNomina actualiza estado y registra evento si hay motivo', async () => {

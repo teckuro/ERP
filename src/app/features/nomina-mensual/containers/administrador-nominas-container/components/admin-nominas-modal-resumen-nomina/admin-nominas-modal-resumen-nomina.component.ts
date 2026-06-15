@@ -22,7 +22,7 @@ import type {
   NominaPeriodoResumen,
   ResumenValidacionNomina,
 } from '../../../../models/nomina-periodo.models';
-import { estadoNominaToBadge, tipoNominaToLabel } from '../../utils/admin-nominas-presentacion.util';
+import { estadoNominaToBadge } from '../../utils/admin-nominas-presentacion.util';
 
 interface MetricaResumenView {
   id: string;
@@ -47,35 +47,50 @@ export class AdminNominasModalResumenNominaComponent {
 
   readonly metricas = computed<MetricaResumenView[]>(() => {
     const r = this.resumen();
+    // Resumen NOIA: 3 métricas máximo. El total de trabajadores y los conteos
+    // de críticas/advertencias evitan repetir lo que la grilla ya muestra.
     return [
       { id: 'total', label: 'Trabajadores', value: r.totalTrabajadores },
-      { id: 'listos', label: 'Listos para cálculo', value: r.listosParaCalculo },
       { id: 'criticas', label: 'Con críticas', value: r.conIncidenciasCriticas },
       { id: 'advertencias', label: 'Con advertencias', value: r.conAdvertencias },
-      { id: 'movimientos', label: 'Con movimientos especiales', value: r.conMovimientosEspeciales },
     ];
   });
 
   readonly contextoVista = computed(() => {
     const n = this.nomina();
     if (!n) return null;
+    // El tipo siempre es mensual en el piloto: omitimos el chip "Mensual"
+    // para no saturar la cabecera con información redundante.
     return {
       empresa: n.empresaNombre,
       periodo: n.periodo,
-      tipo: tipoNominaToLabel(n.tipo),
       badge: estadoNominaToBadge(n.estado),
     };
   });
 
-  readonly mensajeGuardia = computed(() => {
+  /**
+   * Mensaje único de "Situación" que sustituye las dos guardias paralelas.
+   * Resume en una línea el estado operativo: lista, falta cálculo, o tiene
+   * bloqueantes. NOIA-ADM-NOM-RESUMEN-02.
+   */
+  readonly situacion = computed<{ tono: 'ok' | 'pendiente' | 'bloqueada'; texto: string }>(() => {
     const r = this.resumen();
-    if (r.puedeCalcular && r.puedeCerrar) {
-      return 'La nómina está habilitada para avanzar al cálculo y al cierre.';
-    }
     if (!r.puedeCalcular) {
-      return 'Hay incidencias críticas bloqueantes. Resuélvelas antes de calcular.';
+      return {
+        tono: 'bloqueada',
+        texto: 'Hay incidencias críticas bloqueantes. Resuélvelas antes de calcular.',
+      };
     }
-    return 'Hay incidencias críticas bloqueantes pendientes de revisión.';
+    if (!r.puedeCerrar) {
+      return {
+        tono: 'pendiente',
+        texto: 'Lista para calcular. Falta el resultado para habilitar el cierre.',
+      };
+    }
+    return {
+      tono: 'ok',
+      texto: 'Lista para calcular y cerrar.',
+    };
   });
 
   cerrarModal(): void {

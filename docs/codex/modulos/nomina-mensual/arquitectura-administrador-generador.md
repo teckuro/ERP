@@ -282,6 +282,87 @@ para que el cliente envíe `id_empresa` en el JWT.
 `current_user_empresa_id() resuelve a: <n>` + `INSERT como authenticated
 aceptado por RLS`. El smoke termina con `ROLLBACK` para no persistir la fila.
 
+## Creación con preview y confirmación transaccional (NOM-ADMIN-OPS-F04-F05)
+
+> Implementada el 2026-06-15. Reemplaza el flujo de creación cliente-side por
+> dos RPC alineadas al contrato del roadmap §F04 y §F05.
+
+### F04 — `previsualizar_creacion_nomina`
+
+`SECURITY INVOKER`, resuelve `id_empresa` desde JWT y valida `tipo='mensual'`
+(piloto). Resuelve `fecha_inicio/fin/codigo_ciclo` desde la plantilla `MES`
+activa de F03 y clasifica al universo de trabajadores con `persona` +
+`contrato`:
+
+- `incluidos`: persona activa, apta para remuneraciones, contrato activo que
+  intersecta el período.
+- `excluidos`: motivos canónicos `persona_inactiva`, `ficha_no_apta`,
+  `sin_contrato_vigente`, `contrato_no_activo`, con `motivoHumano` operativo.
+- `conflictos`: existe otra nómina no anulada para `(empresa, período)`
+  (`duplicidad_nomina`).
+
+Devuelve totales, `puedeCrear` y un `fingerprint` MD5 determinista del
+universo y parámetros evaluados. Smoke: `bd/scripts/validar-nomina-f04-preview-creacion.sql`.
+
+### F05 — `confirmar_creacion_nomina`
+
+`SECURITY INVOKER`. Validaciones en orden:
+
+1. **Idempotencia**: si ya existe una nómina no anulada de
+   `liquidacion_legal` para `(empresa, período)`, la RPC devuelve sus datos y
+   marca `reutilizada=true` sin escribir nada nuevo.
+2. **Fingerprint vigente**: re-ejecuta el preview de F04 internamente y
+   compara el `fingerprint` recibido. Si difiere, rechaza con error `40001`
+   ("El universo cambió. Vuelve a generar la vista previa.").
+3. **Transacción**: inserta `nomina_periodo`, crea segmento "Dotación
+   general" con los `incluidos`, recalcula totales y transiciona el estado a
+   `dotacion_generada` con `transicionar_nomina_periodo` (los triggers de F02
+   registran los eventos de auditoría).
+
+Devuelve `idNominaPeriodo`, `estado`, `versionEstado`, `siguientePaso`
+(`parameters` o `dotacion`) y `reutilizada`. Smoke:
+`bd/scripts/validar-nomina-f05-creacion-transaccional.sql`.
+
+### Capa Angular
+
+- `models/nomina-creacion-preview.models.ts` + `mappers/nomina-creacion-preview.mapper.ts`
+  con defensa runtime.
+- `data-access/nomina-periodo.repository.ts` añade `previsualizarCreacion` y
+  `confirmarCreacion`.
+- `services/nomina-periodo.service.ts` orquesta el flujo: `crearNominaPeriodo`
+  pasa a ser un wrapper que invoca preview + confirm; ya no se popula la
+  dotación desde el cliente.
+- `admin-nominas-modal-nueva-nomina` es un wizard de 2 pasos
+  (`configuración → vista previa`) con tabs incluidos/excluidos/conflictos y
+  alerta NOIA para bloqueantes. El error `40001` se interpreta como "vuelve a
+  configurar".
+
+### Handoff Administrador → Generador V2
+
+Al cerrar F05, el Administrador navega al Generador con query params
+`?from=create&paso=...&dotacion=...&reutilizada=...`. El container V2:
+
+- respeta el `paso` recibido en la rehidratación (`pasoForzadoCreacion`);
+- publica un banner contextual de una sola línea bajo el stepper con la
+  dotación inicial (estilo NOIA, sin gradientes ni sombras);
+- descarta el banner al primer cambio de paso para no ensuciar la sesión.
+
+### Bandeja, modal resumen e historial (UX Administrador)
+
+- Grilla reducida a `Período · Empresa · Estado · Siguiente acción ·
+  Trabajadores · Actualizada · Acciones`. Las incidencias críticas/advertencias
+  pasan a chip inline dentro de "Siguiente acción"; el "Avance: X" duplicado
+  ahora vive en el `title` de la fila.
+- Modal resumen: sin chip de tipo (siempre mensual en piloto), guardias
+  fusionadas en una "Situación" única (`ok | pendiente | bloqueada`) y CTA
+  primario único "Continuar en el generador".
+- Historial administrativo: nuevo modal local
+  `admin-nominas-modal-historial-nomina` (icono `history` en cada fila) que
+  consume `listarEventosAuditoria` y muestra una timeline cronológica con
+  acción humana, usuario resuelto y motivo. El presenter
+  `admin-nominas-auditoria.presenter.ts` mapea cada `accion` a su etiqueta
+  RRHH.
+
 ## Actualización 2026-06-05 - ciclo consistente y cálculo vigente
 
 `NOM-ADMIN-ABIERTAS-CICLO-CONSISTENTE-01` completa la coherencia operativa:

@@ -167,6 +167,13 @@
   text-overflow: ellipsis;
 }
 
+.adm-nom__chip--inline {
+  margin-top: 2px;
+  font-size: 11px;
+  padding: 1px 6px;
+  align-self: flex-start;
+}
+
 .adm-nom__state {
   display: flex;
   align-items: center;

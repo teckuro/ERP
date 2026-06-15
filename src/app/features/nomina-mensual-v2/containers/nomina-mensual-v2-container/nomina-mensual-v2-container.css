@@ -2222,6 +2222,62 @@ textarea {
   border-bottom-color: #fde68a;
 }
 
+/* Banner contextual del handoff Administrador → Generador (F05).
+   Aparece bajo el stepper, una sola línea. Sin gradientes ni sombras: solo
+   borde inferior y fondo apagado, igual que `.nmv2-step-nav-hint`. */
+.nmv2-banner-handoff {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 16px;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+.nmv2-banner-handoff--success {
+  color: #065f46;
+  background: #ecfdf5;
+  border-bottom-color: #a7f3d0;
+}
+
+.nmv2-banner-handoff--info {
+  color: #1e40af;
+  background: #eff6ff;
+  border-bottom-color: #bfdbfe;
+}
+
+.nmv2-banner-handoff__texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nmv2-banner-handoff__cerrar {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  opacity: 0.7;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.nmv2-banner-handoff__cerrar:hover {
+  opacity: 1;
+  background: rgba(15, 23, 42, 0.06);
+}
+
 /* Empleados V1: grilla del sistema (app-data-grid) */
 .nmv2-employees-layout {
   align-items: stretch;
