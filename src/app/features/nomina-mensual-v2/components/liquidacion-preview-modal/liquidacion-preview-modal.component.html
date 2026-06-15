@@ -1,0 +1,242 @@
+<div
+  class="liq-preview__backdrop"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="liq-preview-title"
+  (click)="cerrarPorBackdrop()"
+>
+  <div class="liq-preview__modal" (click)="detenerPropagacion($event)">
+    <header class="liq-preview__chrome">
+      <div class="liq-preview__chrome-copy">
+        <p class="liq-preview__chrome-eyebrow">Previsualización</p>
+        <h2 id="liq-preview-title" class="liq-preview__chrome-title">
+          Liquidación de remuneraciones
+        </h2>
+        <p class="liq-preview__chrome-subtitle">
+          Vista previa del documento que se entregará al trabajador. Aún no es oficial; el PDF
+          final se genera al cerrar la nómina.
+        </p>
+      </div>
+      <div class="liq-preview__chrome-actions">
+        <button
+          type="button"
+          class="liq-preview__btn is-ghost"
+          (click)="emitirImprimir()"
+          title="Abre el diálogo de impresión del navegador con la vista de la liquidación"
+        >Imprimir</button>
+        <button
+          type="button"
+          class="liq-preview__btn is-ghost"
+          (click)="emitirCerrar()"
+          aria-label="Cerrar previsualización"
+        >Cerrar</button>
+      </div>
+    </header>
+
+    <article class="liq-preview__sheet" role="document" aria-label="Liquidación de remuneraciones">
+      <header class="liq-preview__doc-head">
+        <div class="liq-preview__doc-empresa">
+          <p class="liq-preview__doc-empresa-label">Empleador</p>
+          <p class="liq-preview__doc-empresa-nombre">{{ empresa().razonSocial }}</p>
+          @if (empresa().rut) {
+            <p class="liq-preview__doc-empresa-meta">RUT {{ empresa().rut }}</p>
+          }
+          @if (empresa().direccion) {
+            <p class="liq-preview__doc-empresa-meta">{{ empresa().direccion }}</p>
+          }
+        </div>
+        <div class="liq-preview__doc-periodo">
+          <p class="liq-preview__doc-periodo-label">Período</p>
+          <p class="liq-preview__doc-periodo-valor">{{ periodoHumano() }}</p>
+          @if (nomina().fechaPago) {
+            <p class="liq-preview__doc-empresa-meta">Pago: {{ nomina().fechaPago }}</p>
+          }
+        </div>
+      </header>
+
+      <section class="liq-preview__doc-trabajador" aria-label="Identificación del trabajador">
+        <dl class="liq-preview__doc-trabajador-dl">
+          <div>
+            <dt>Trabajador</dt>
+            <dd>{{ liquidacion().nombreCompleto || liquidacion().rut }}</dd>
+          </div>
+          <div>
+            <dt>RUT</dt>
+            <dd>{{ liquidacion().rut }}</dd>
+          </div>
+          @if (trabajadorMeta()?.cargo) {
+            <div>
+              <dt>Cargo</dt>
+              <dd>{{ trabajadorMeta()?.cargo }}</dd>
+            </div>
+          }
+          @if (trabajadorMeta()?.tipoContrato) {
+            <div>
+              <dt>Tipo de contrato</dt>
+              <dd>{{ trabajadorMeta()?.tipoContrato }}</dd>
+            </div>
+          }
+          @if (trabajadorMeta()?.afp) {
+            <div>
+              <dt>AFP</dt>
+              <dd>{{ trabajadorMeta()?.afp }}</dd>
+            </div>
+          }
+          @if (trabajadorMeta()?.salud) {
+            <div>
+              <dt>Salud</dt>
+              <dd>{{ trabajadorMeta()?.salud }}</dd>
+            </div>
+          }
+          @if (trabajadorMeta()?.sueldoBase != null) {
+            <div>
+              <dt>Sueldo base</dt>
+              <dd>${{ trabajadorMeta()?.sueldoBase | number:'1.0-0' }}</dd>
+            </div>
+          }
+          @if (trabajadorMeta()?.diasTrabajados != null) {
+            <div>
+              <dt>Días trabajados</dt>
+              <dd>{{ trabajadorMeta()?.diasTrabajados }}</dd>
+            </div>
+          }
+        </dl>
+      </section>
+
+      <section class="liq-preview__doc-bloque" aria-label="Haberes">
+        <h3 class="liq-preview__doc-bloque-title">Haberes</h3>
+        @if (liquidacion().haberesImponibles.length > 0) {
+          <table class="liq-preview__doc-tabla">
+            <caption>Imponibles</caption>
+            <tbody>
+              @for (h of liquidacion().haberesImponibles; track h.codigo) {
+                <tr>
+                  <th scope="row">{{ h.descripcion }}</th>
+                  <td>${{ h.monto | number:'1.0-0' }}</td>
+                </tr>
+              }
+              <tr class="liq-preview__doc-tabla-subtotal">
+                <th scope="row">Subtotal imponibles</th>
+                <td>${{ subtotalHaberesImponibles() | number:'1.0-0' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        }
+        @if (liquidacion().haberesNoImponibles.length > 0) {
+          <table class="liq-preview__doc-tabla">
+            <caption>No imponibles</caption>
+            <tbody>
+              @for (h of liquidacion().haberesNoImponibles; track h.codigo) {
+                <tr>
+                  <th scope="row">{{ h.descripcion }}</th>
+                  <td>${{ h.monto | number:'1.0-0' }}</td>
+                </tr>
+              }
+              <tr class="liq-preview__doc-tabla-subtotal">
+                <th scope="row">Subtotal no imponibles</th>
+                <td>${{ subtotalHaberesNoImponibles() | number:'1.0-0' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        }
+        <p class="liq-preview__doc-total-bloque">
+          <span>Total haberes</span>
+          <strong>${{ liquidacion().totalHaberes | number:'1.0-0' }}</strong>
+        </p>
+      </section>
+
+      <section class="liq-preview__doc-bloque" aria-label="Descuentos">
+        <h3 class="liq-preview__doc-bloque-title">Descuentos</h3>
+        @if (liquidacion().descuentosLegales.length > 0) {
+          <table class="liq-preview__doc-tabla">
+            <caption>Legales</caption>
+            <tbody>
+              @for (d of liquidacion().descuentosLegales; track d.codigo) {
+                <tr>
+                  <th scope="row">{{ d.descripcion }}</th>
+                  <td>${{ d.monto | number:'1.0-0' }}</td>
+                </tr>
+              }
+              <tr class="liq-preview__doc-tabla-subtotal">
+                <th scope="row">Subtotal legales</th>
+                <td>${{ subtotalDescuentosLegales() | number:'1.0-0' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        }
+        @if (liquidacion().descuentosVoluntarios.length > 0) {
+          <table class="liq-preview__doc-tabla">
+            <caption>Voluntarios</caption>
+            <tbody>
+              @for (d of liquidacion().descuentosVoluntarios; track d.codigo) {
+                <tr>
+                  <th scope="row">{{ d.descripcion }}</th>
+                  <td>${{ d.monto | number:'1.0-0' }}</td>
+                </tr>
+              }
+              <tr class="liq-preview__doc-tabla-subtotal">
+                <th scope="row">Subtotal voluntarios</th>
+                <td>${{ subtotalDescuentosVoluntarios() | number:'1.0-0' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        }
+        <p class="liq-preview__doc-total-bloque">
+          <span>Total descuentos</span>
+          <strong>${{ liquidacion().totalDescuentos | number:'1.0-0' }}</strong>
+        </p>
+      </section>
+
+      <section class="liq-preview__doc-bloque liq-preview__doc-bloque--bases" aria-label="Bases legales">
+        <h3 class="liq-preview__doc-bloque-title">Bases legales</h3>
+        <dl class="liq-preview__doc-bases">
+          <div>
+            <dt>Imponible previsional</dt>
+            <dd>${{ liquidacion().baseImponiblePrevisional | number:'1.0-0' }}</dd>
+          </div>
+          <div>
+            <dt>Tributable</dt>
+            <dd>${{ liquidacion().baseTributable | number:'1.0-0' }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="liq-preview__doc-bloque liq-preview__doc-bloque--informativo" aria-label="Aportes del empleador">
+        <h3 class="liq-preview__doc-bloque-title">Aportes del empleador</h3>
+        <p class="liq-preview__doc-bloque-nota">Informativo. No afecta al líquido del trabajador.</p>
+        <dl class="liq-preview__doc-bases">
+          <div>
+            <dt>SIS</dt>
+            <dd>${{ liquidacion().cotizacionSis | number:'1.0-0' }}</dd>
+          </div>
+          <div>
+            <dt>SANNA</dt>
+            <dd>${{ liquidacion().cotizacionSanna | number:'1.0-0' }}</dd>
+          </div>
+          <div>
+            <dt>Mutual (Ley 16.744)</dt>
+            <dd>${{ liquidacion().cotizacionLey16744 | number:'1.0-0' }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <footer class="liq-preview__doc-footer">
+        <div class="liq-preview__doc-liquido">
+          <p class="liq-preview__doc-liquido-label">Líquido a pagar</p>
+          <p class="liq-preview__doc-liquido-monto">${{ liquidacion().liquidoAPago | number:'1.0-0' }}</p>
+          <p class="liq-preview__doc-liquido-palabras">{{ liquidoEnPalabras() }}</p>
+        </div>
+        <div class="liq-preview__doc-firmas">
+          <div class="liq-preview__doc-firma">
+            <span class="liq-preview__doc-firma-linea" aria-hidden="true"></span>
+            <span class="liq-preview__doc-firma-label">Firma del trabajador</span>
+          </div>
+          <div class="liq-preview__doc-firma">
+            <span class="liq-preview__doc-firma-linea" aria-hidden="true"></span>
+            <span class="liq-preview__doc-firma-label">Firma empleador</span>
+          </div>
+        </div>
+      </footer>
+    </article>
+  </div>
+</div>

@@ -97,6 +97,19 @@ export async function ejecutarAvancePaso(
 }
 
 /**
+ * Devuelve el paso inmediatamente anterior en `ORDEN_PASOS_NOMINA`, o
+ * `null` si el paso activo es el primero (no hay retroceso posible). Lo
+ * usa el stepper para el botón "Volver al paso anterior" y mantener un
+ * único punto de retroceso fuera del cuerpo de cada paso.
+ */
+export function pasoAnteriorDe(pasoActual: PayrollStepId | null): PayrollStepId | null {
+  if (!pasoActual) return null;
+  const indice = ORDEN_PASOS_NOMINA.indexOf(pasoActual);
+  if (indice <= 0) return null;
+  return ORDEN_PASOS_NOMINA[indice - 1] ?? null;
+}
+
+/**
  * Consulta pura de "completitud" del paso activo. Devuelve `{ok:true}` si el
  * paso considera que puede avanzar (es decir, su contenido está poblado
  * correctamente según el criterio UI del paso). Si el paso no expone comando

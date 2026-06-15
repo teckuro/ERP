@@ -43,6 +43,7 @@ import {
   DataGridRowDetailDirective,
 } from '../../../../../../shared/components/ui/data-grid';
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
+import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import {
   calcularStatsMovimientosPorTrabajador,
   COLUMNAS_MOVIMIENTOS_POR_TRABAJADOR,
@@ -78,6 +79,7 @@ const BORRADOR_MANUAL_INICIAL: BorradorManual = {
     DataGridCellDirective,
     DataGridRowDetailDirective,
     MessageBoxComponent,
+    WorkspaceLoadingComponent,
   ],
   templateUrl: './nomina-mensual-v2-paso-movimientos.component.html',
   styleUrl: './nomina-mensual-v2-paso-movimientos.component.css',

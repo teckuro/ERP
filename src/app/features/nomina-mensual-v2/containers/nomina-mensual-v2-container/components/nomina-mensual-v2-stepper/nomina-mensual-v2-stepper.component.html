@@ -44,4 +44,33 @@
       </button>
     }
   </nav>
+
+  <aside class="nmv2-stepper__side" aria-label="Acciones del flujo">
+    @if (pasoAnterior(); as anterior) {
+      <app-tooltip
+        preferredPlacement="bottom"
+        [text]="etiquetaPasoAnterior() ?? ''"
+      >
+        <button
+          type="button"
+          class="nmv2-stepper__back"
+          (click)="emitirVolverPasoAnterior()"
+          [attr.aria-label]="etiquetaPasoAnterior()"
+        >
+          <lucide-icon name="arrow-left" aria-hidden="true"></lucide-icon>
+        </button>
+      </app-tooltip>
+    }
+
+    <app-tooltip
+      preferredPlacement="bottom"
+      [text]="tooltipUsuario() ?? ''"
+    >
+      <span
+        class="nmv2-stepper__user"
+        role="img"
+        [attr.aria-label]="ariaLabelUsuario()"
+      >{{ inicialesUsuario() }}</span>
+    </app-tooltip>
+  </aside>
 </div>

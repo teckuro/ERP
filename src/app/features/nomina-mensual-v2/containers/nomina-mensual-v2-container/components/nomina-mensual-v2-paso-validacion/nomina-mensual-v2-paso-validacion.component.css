@@ -7,6 +7,7 @@
 }
 
 .paso-val {
+  position: relative;
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -200,16 +201,6 @@
   text-decoration: underline;
 }
 
-.paso-val__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: auto;
-  border-top: 1px solid #e2e8f0;
-  padding-top: 12px;
-}
-
 .paso-val__btn {
   border: 1px solid #cbd5e1;
   background: #ffffff;
@@ -229,4 +220,26 @@
   background: transparent;
   border-color: transparent;
   color: #475569;
+}
+
+.paso-val__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  min-height: 16px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 12px;
+  color: #475569;
+}
+
+.paso-val__footer-hint.is-danger {
+  color: #b91c1c;
+}
+
+.paso-val__footer-hint.is-warning {
+  color: #b45309;
 }

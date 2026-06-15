@@ -9,6 +9,386 @@
 
 ---
 
+## 2026-06-15 — Stepper Generador V2 con tooltip del sistema (NOIA-STEPPER-USUARIO-03)
+
+Refinamiento de `NOIA-STEPPER-USUARIO-02`. El botón "Volver al paso anterior"
+y el avatar de usuario del aside del stepper exponían su etiqueta vía
+`[attr.title]` (tooltip nativo del navegador, sin estilos del sistema). Se
+reemplazaron por el componente `app-tooltip` (`shared/components/ui/tooltip`)
+para alinearse con el resto de acciones del ERP (banda de período, page-actions,
+parámetros) y mantener tipografía, fondo y posicionamiento consistentes.
+
+Cambios visuales:
+
+- Tooltip blanco con borde neutro y flecha (no popover negro del SO).
+- Posicionamiento `bottom` con flip automático vía `floating-ui`.
+- `aria-label` y semántica `role="img"` del avatar se mantienen para tecnologías
+  asistivas; el `title` nativo ya no se emite.
+
+Archivos:
+
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component.{ts,html}`
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component.spec.ts`
+
+Validación: `npx ng test` del spec del stepper (11/11 pasos verdes).
+
+---
+
+## 2026-06-15 — Carga visible por paso + grilla full-height patrón Dotación (NOIA-PASOS-CARGA-03)
+
+Cada paso del Generador V2 ahora muestra un componente de carga claro hasta
+que la página termina de cargar, y la grilla principal aprovecha todo el alto
+disponible del shell. La pieza clave fue replicar el patrón de Dotación
+(wrapper flex 1 + `[gridHeight]="'100%'"` + `className`/`cardClassName`) en
+Movimientos y Cálculo, donde antes la grilla se quedaba en su altura natural y
+dejaba espacio vacío bajo la tabla. Sin tocar motor, persistencia, RLS ni
+estilos globales.
+
+### Decisión visual
+
+- **Patrón Dotación replicado** en `paso-mov` y `paso-calc`:
+  - Wrapper `.paso-X__grid-wrapper` con `display: flex; flex: 1 1 auto;
+    flex-direction: column; min-height: 360px` que toma todo el alto sobrante
+    del paso.
+  - `app-data-grid` con `[gridHeight]="'100%'"` para expandirse dentro del
+    wrapper.
+  - `className="paso-X__data-grid"` (flex column, `flex: 1 1 auto`,
+    `min-height: 0`) y `cardClassName="paso-X__data-grid-card"` (radius 6px,
+    borde `#e2e8f0`) para que la card interna del data-grid también ocupe
+    100%.
+  - Resultado: la grilla termina pegada a la franja inferior, sin espacio
+    muerto.
+- **Carga delegada al data-grid** en `paso-mov` y `paso-calc`:
+  - `[loading]="loading()"` / `[loading]="cargando()"` con
+    `loadingLabel="Cargando movimientos…"` / `"Procesando cálculo…"`.
+  - Mismo overlay nativo del data-grid que ya usa Dotación. Mantiene el
+    header del paso visible mientras carga la grilla.
+  - Se eliminaron los `<p class="paso-X__placeholder">Cargando…</p>` que solo
+    daban una línea de texto sin spinner ni overlay.
+- **`app-workspace-loading [fill]="true"`** en pasos sin data-grid:
+  - **Cálculo (primera vez)**: cuando `cargando() && !resultado()`, no hay
+    grilla que cargar; se monta el overlay tipo workspace que cubre el paso
+    completo con spinner y mensaje "Estamos generando líquidos, descuentos y
+    aportes del período."
+  - **Validación**: `cargando()` → overlay con "Cargando resumen de
+    validación. Estamos recopilando incidencias críticas y advertencias del
+    período."
+  - **Cierre**: `cargando()` → overlay con "Cargando checklist de cierre.
+    Estamos verificando los pasos previos antes de habilitar el cierre
+    operativo."
+- **`position: relative` en `.paso-X`**: requisito para que
+  `app-workspace-loading [fill]="true"` cubra el área del paso (no de la
+  ventana). Sin esto, el overlay se anclaba al `<body>`.
+- **Empty states del data-grid**: ahora separamos
+  `emptyTitle`/`emptyDescription` (dotación vacía) de
+  `emptyTitleWhenFiltered`/`emptyDescriptionWhenFiltered` (filtros sin
+  resultado) en `paso-mov`. El placeholder externo "Aún no hay trabajadores
+  con movimientos visibles…" desapareció: el data-grid lo emite con su empty
+  state nativo y se muestra dentro del card, con la altura completa.
+
+### Justificación NOIA
+
+- **Reutilizar antes de inventar**: la solución es exactamente la misma que
+  ya usa Dotación. No se introducen componentes nuevos: `app-workspace-loading`
+  ya existía en `src/app/shared/components/ui/feedback/`.
+- **Estado visible sin sorpresas**: nunca quedan pantallas en blanco. Si el
+  paso aún no terminó de cargar, hay spinner + texto explicativo. Si los
+  datos están vacíos, el data-grid muestra el empty state del sistema.
+- **Densidad y aprovechamiento del espacio**: la franja inferior ahora marca
+  el límite real de la tabla. Antes la grilla quedaba pegada al header y el
+  resto del shell era espacio en blanco.
+- **Lenguaje administrativo**: títulos y mensajes de carga en español
+  operativo, sin nombres técnicos del motor.
+
+### Archivos modificados
+
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.{html,css}`
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-calculo/nomina-mensual-v2-paso-calculo.component.{ts,html,css}`
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-validacion/nomina-mensual-v2-paso-validacion.component.{ts,html,css}`
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-cierre/nomina-mensual-v2-paso-cierre.component.{ts,html,css}`
+
+### Archivos NO tocados
+
+- `angular.json`, `postcss.config.json`, `src/styles.css`, `src/styles/*`,
+  `tailwind.config.*` (sin cambios globales).
+- Servicios, repositorios, motor, mappers, RLS, SQL, RPC.
+- `WorkspaceLoadingComponent` y `DataGridComponent` (solo se consumen como
+  ya los usa Dotación / Empresas / Empleados).
+
+### Validaciones
+
+- `npx ng build --configuration development`: bundle OK, sin warnings de
+  budget CSS.
+- `npx ng test --watch=false` sobre stepper + 5 pasos: **80 tests verdes**.
+- ReadLints sobre `nomina-mensual-v2-container/**`: limpio.
+
+---
+
+## 2026-06-15 — Footer unificado del Generador V2 + botón Volver solo-ícono (NOIA-STEPPER-USUARIO-02)
+
+Refinamiento de `NOIA-STEPPER-USUARIO-01`. El botón "Volver al paso anterior"
+del stepper queda solo-ícono circular (tooltip nativo del navegador), y todos
+los pasos del Generador V2 cierran con una franja inferior idéntica
+(`.paso-X__footer`: línea separadora superior + slot opcional de hint). La
+grilla / lista principal de cada paso se empuja hasta el borde inferior
+gracias a `margin-top: auto` en el footer, lo que aprovecha mejor el alto
+disponible del shell. Sin tocar motor, persistencia, RLS ni estilos globales.
+
+### Decisión visual
+
+- **Botón Volver** (`.nmv2-stepper__back`): círculo 30×30 px, mismo tamaño
+  que el avatar para alineación perfecta. Solo `lucide-icon arrow-left`,
+  texto del paso anterior expuesto vía `title` (tooltip nativo del
+  navegador) y `aria-label`. Se eliminaron `.nmv2-stepper__back-label` y el
+  placeholder. Hover suave (`#f1f5f9` + `#94a3b8`), focus `outline #1e3a8a`.
+- **Footer estándar por paso** (`.paso-dotacion__footer`,
+  `.paso-mov__footer`, `.paso-calc__footer`, `.paso-val__footer`,
+  `.paso-cierre__footer`): mismo patrón visual —
+  `margin-top: auto`, `min-height: 16px`, `padding-top: 10px`,
+  `border-top: 1px solid #e2e8f0`, `font-size: 12px`, `color: #475569`. La
+  línea fina actúa de separador entre el contenido del paso y el borde
+  inferior del shell.
+- **Slot opcional de hint** (`aria-live="polite"`):
+  - Dotación: motivo de bloqueo o "Aún no hay trabajadores".
+  - Movimientos: "Quedan N movimientos pendientes por cargar" en ámbar.
+  - Cálculo: "Cálculo generado el dd-MM-yyyy HH:mm · versión N".
+  - Validación: "Resuelve los N bloqueos…" / "N advertencias activas…" /
+    "Sin incidencias pendientes" con tono semántico (rojo / ámbar / neutro).
+  - Cierre: queda con el botón ghost "Volver al administrador de nóminas"
+    (escape del flujo, no es retroceso de paso).
+- **Tabla al fondo**: `flex: 1 1 auto` en `.paso-X__grid`/`.paso-X__list` ya
+  existía; sumado al `margin-top: auto` del footer, la grilla absorbe todo
+  el alto disponible y la línea queda pegada al borde inferior del shell sin
+  espacio muerto.
+
+### Justificación NOIA
+
+- **Anti-card / densidad**: ningún paso quedó con espacio vacío entre la
+  grilla y el borde de la página. El cuerpo del paso se siente "completo"
+  y la línea cierra visualmente la zona operativa sin introducir cards
+  decorativas.
+- **Tooltip nativo del sistema**: el botón solo-ícono usa el `title` HTML
+  nativo, sin librería de tooltips ni CSS custom. Más liviano y predecible
+  en accesibilidad (`aria-label` se mantiene para SR).
+- **Lenguaje administrativo en hints**: "Quedan N pendientes por cargar",
+  "Cálculo generado el dd-MM-yyyy", "Resuelve los N bloqueos". Sin texto
+  técnico, sin IDs internos, sin referencias a tablas/RPC.
+- **Sin gradientes / sombras / cards**: solo línea fina `#e2e8f0` y color
+  semántico cuando aplica (rojo `#b91c1c`, ámbar `#b45309`).
+
+### Archivos modificados
+
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component.{html,css,spec.ts}`
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion/nomina-mensual-v2-paso-dotacion.component.css`
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.{html,css}`
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-calculo/nomina-mensual-v2-paso-calculo.component.{html,css}`
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-validacion/nomina-mensual-v2-paso-validacion.component.{html,css}`
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-cierre/nomina-mensual-v2-paso-cierre.component.css`
+
+### Archivos NO tocados
+
+- `angular.json`, `postcss.config.json`, `src/styles.css`, `src/styles/*`,
+  `tailwind.config.*` (sin cambios globales).
+- Servicios, repositorios, motor, mappers, RLS, SQL, RPC.
+- `AuthService` (solo consumo).
+
+### Validaciones
+
+- `npx ng build --configuration development`: bundle OK, sin warnings de
+  budget CSS.
+- `npx ng test --watch=false` sobre stepper + 5 pasos (Dotación,
+  Movimientos, Cálculo, Validación, Cierre): **80 tests verdes**.
+- Spec del stepper actualizado: el botón ahora se valida como solo-ícono
+  (no debe contener `textContent` visible, sí debe tener `lucide-icon` y
+  `title="Volver a Movimientos"`).
+- ReadLints sobre `nomina-mensual-v2-container/**`: limpio.
+
+---
+
+## 2026-06-15 — Stepper Generador V2 con aside (usuario activo + Volver al paso anterior) (NOIA-STEPPER-USUARIO-01)
+
+Barra superior del Generador V2 (`/remuneraciones/nominas/:id/generador`) ahora
+tiene un aside derecho con dos elementos: botón `Volver a [paso N-1]` (mueve
+el retroceso desde el footer de cada paso al stepper, único punto de retroceso
+del flujo) y avatar circular con las iniciales del usuario activo (registro
+visible de quién está trabajando la nómina). La línea separadora inferior del
+stepper se mantiene. Sin tocar motor, persistencia, RLS ni estilos globales.
+
+### Decisión visual
+
+- **Slot derecho** (`.nmv2-stepper__side`): `display: flex; gap: 10px`,
+  `border-left: 1px solid #e2e8f0` (línea vertical que separa el flujo de los
+  controles). En viewports < 1100px ese borde se vuelve `border-top` y los
+  controles se acomodan justo debajo del stepper.
+- **Botón "Volver a [paso N-1]"** (`.nmv2-stepper__back`): outline neutro
+  (`#cbd5e1`), texto `#1e293b`, ícono lucide `arrow-left` 14px, hover suave
+  (`#f1f5f9` + `#94a3b8`), focus `outline #1e3a8a`. La etiqueta se calcula con
+  `obtenerEtiquetaBrevePaso(pasoAnterior)`. En el primer paso (Parámetros) no
+  hay paso anterior: el botón no se renderiza y queda un placeholder de 0px
+  para no saltar el avatar al cambiar de paso.
+- **Avatar usuario** (`.nmv2-stepper__user`): círculo 30×30 px, azul NOIA
+  `#1e3a8a`, texto blanco, 11px bold, iniciales de 2 caracteres derivadas de
+  `user.user_metadata.full_name` (`Catalina Rojas` → `CR`) o del local-part
+  del email (`jp@empresa.cl` → `JP`). Tooltip con `Nombre · correo` o solo
+  correo si no hay nombre. `role="img"` + `aria-label` accesible. Cuando no
+  hay sesión (carga inicial, test sin AuthService) muestra `·` y omite el
+  tooltip.
+- **Línea separadora inferior**: se mantiene la regla existente del header
+  (`border-bottom: 1px solid #e2e8f0`); no se introduce sombra ni acento.
+- **Footer de los pasos**: se eliminó el botón `Volver a [paso N-1]` de
+  Dotación, Movimientos, Cálculo, Validación y Cierre (en este último se
+  conserva `Volver al administrador de nóminas`, que es un escape del flujo,
+  no un retroceso de paso). El paso Dotación conserva su footer porque ahí
+  vive el `motivoBloqueo` / `hint` operativo.
+
+### Justificación NOIA
+
+- **Anti-card / regla operativa**: el retroceso ahora ocurre en la
+  herramienta de navegación (stepper) y no como acción anidada en el cuerpo
+  del paso. El stepper recupera el rol de única superficie de navegación.
+- **Registro humano sin texto técnico**: el avatar comunica "estoy yo
+  trabajando esto" sin nombre extenso ni IDs; el tooltip ofrece detalle bajo
+  demanda. Cumple `noia-ui-guardrails.md` (lenguaje administrativo, densidad
+  compacta, ninguna fuente nueva).
+- **Sin gradientes ni sombras**: solo un círculo plano azul NOIA del manual y
+  un botón outline ya presente en el repo.
+- **Una acción principal por zona**: el slot derecho concentra el retroceso
+  + identidad; el cuerpo del paso queda libre para su acción principal
+  (Calcular, Aprobar, etc.).
+
+### Archivos modificados
+
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component.{ts,html,css}`
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component.spec.ts`
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/facade/nomina-mensual-v2-navegacion.ts` (`pasoAnteriorDe(...)`)
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container.html` (cableo `(volverPasoAnterior)`)
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-dotacion/nomina-mensual-v2-paso-dotacion.component.{html,css}`
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component.{html,css}`
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-calculo/nomina-mensual-v2-paso-calculo.component.{html,css}`
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-validacion/nomina-mensual-v2-paso-validacion.component.{html,css}`
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-cierre/nomina-mensual-v2-paso-cierre.component.html`
+
+### Archivos NO tocados
+
+- `angular.json`, `postcss.config.json`, `src/styles.css`, `src/styles/*`,
+  `tailwind.config.*` (sin cambios globales).
+- Servicios, repositorios, motor de cálculo, mappers, RLS, SQL, RPC.
+- `AuthService` (solo consumo).
+- Footer de Cierre conserva `Volver al administrador de nóminas`.
+- Outputs `volver*` de cada paso (`@Output()` se mantienen para no romper
+  contratos; simplemente no hay UI que los emita).
+
+### Validaciones
+
+- `npx ng test --watch=false` sobre stepper y pasos tocados: **101 tests
+  verdes** (49 + 52, sin regresiones).
+- ReadLints sobre `nomina-mensual-v2-container/**`: limpio.
+- Nuevos casos en `nomina-mensual-v2-stepper.component.spec.ts`: el botón no
+  aparece en `parameters`; etiqueta correcta para `calculation` → "Volver a
+  Movimientos"; emisión de `volverPasoAnterior` con `dotacion` cuando el paso
+  activo es `movements`; iniciales `CR` y `JP`; placeholder `·` cuando no hay
+  sesión.
+
+---
+
+## 2026-06-15 — Paso "Cálculo" rediseñado con desglose y preview tipo PDF (NOIA-CALC-DESGLOSE-01)
+
+Paso 4 del Generador V2 (`/remuneraciones/nominas/:id/generador`, segmento
+`Cálculo`) rediseñado para que RRHH pueda revisar el cálculo del período por
+trabajador, expandir el desglose ejecutivo inline y abrir una previsualización
+tipo PDF de la liquidación. Reemplaza las 6 cards horizontales y el "Top 5 de
+líquidos" por una grilla unificada estilo Movimientos. Sin tocar motor,
+servicios, RLS ni estilos globales.
+
+### Decisión visual
+
+- **Header**: dos columnas — copy (eyebrow `Paso 4 · Cálculo`, título,
+  subtítulo operativo) + aside con `<dl class="paso-calc__stats">` (Trabajadores
+  calculados, Haberes, Descuentos, Líquido total) y un solo botón en
+  `.paso-calc__toolbar`: `Calcular nómina` / `Recalcular` / `Calculando…`.
+  Las mini-stats `Con advertencias` y `Con bloqueos` aparecen solo cuando
+  hay casos (no rellenan espacio).
+- **Pre-validación**: línea de chips compacta (`N en dotación · N listos · N
+  críticos · N advertencias`). Se vuelve rojiza cuando `puedeCalcular=false`,
+  reemplazando la card grande anterior.
+- **Avisos**: `app-message-box` (`variant="warning"` para "cálculo no
+  vigente", `danger` para errores del motor, `info` para confirmaciones).
+  Se eliminaron los `<p class="paso-calc__alert is-...">`.
+- **Grilla principal**: `app-data-grid` con `expandableRows=true`,
+  `rowExpansionKey` por `trabajadorId`, filtros (estado del cálculo + AFP),
+  `headerCountNoun="trabajadores"` y orden por líquido descendente. 8
+  columnas: Trabajador (nombre/RUT/tipo contrato), AFP, Salud, Haberes,
+  Descuentos, **Líquido** (negrita azul NOIA), Estado (chip), Acción
+  (ícono ojo). Si no hay nombre de AFP/Salud en la liquidación se muestra
+  `—` (placeholder; el container puede inyectarlos vía `presentarFilaCalculo`
+  cuando conecte el catálogo).
+- **Estado por fila**: chip `Calculado` (verde suave), `Con advertencias`
+  (ámbar), `Con bloqueos` (rojo suave). Sin sombras ni gradientes.
+- **Detalle expandible inline**: 4 bloques en grid responsive
+  (`auto-fit minmax(280px, 1fr)`):
+  - **Haberes** con chip por línea (`Imponible` / `No imponible` /
+    `No tributable`) y total al pie.
+  - **Descuentos legales** con tasa visible (`× 11,44%`, `× 7,00%`,
+    `× 0,60%`, `× X,XX%` para impuesto único).
+  - **Descuentos voluntarios** (solo si los hay).
+  - **Bases legales**: Imponible previsional y Tributable.
+  - **Aportes del empleador** (SIS, SANNA, Mutual) con nota
+    `Informativo. No afecta al líquido del trabajador.`
+  - Footer del detalle con `Líquido a pago` destacado en azul NOIA.
+- **Previsualización tipo PDF**: nuevo componente standalone
+  `app-liquidacion-preview-modal`. Al hacer click en el ícono `eye` o en
+  el link `Ver previsualización (PDF)` del detalle, se abre un modal con
+  layout imprimible: cabecera empresa, identificación trabajador, tablas
+  de haberes/descuentos con subtotales, bases legales, aportes del
+  empleador (informativo) y `Líquido a pagar` en pesos y en palabras +
+  espacio para firmas. Cierre por backdrop, botón `Cerrar` o `Esc`. Botón
+  `Imprimir` dispara `window.print()` con un `@media print` que oculta el
+  chrome del modal.
+
+### Lenguaje visible
+
+- Estados: `Calculado` / `Con advertencias` / `Con bloqueos`.
+- Etiquetas: `Imponible`, `No imponible`, `Tributable`, `No tributable`.
+- Aportes del empleador rotulados como `Informativo` para evitar confusión.
+- Footer del detalle: `Líquido a pago` (no "monto neto" ni términos
+  contables ambiguos).
+
+### Archivos tocados
+
+- `src/app/features/nomina-mensual-v2/presenters/paso-calculo-fila.presenter.ts`
+  (nuevo) + spec con 13 tests (mapeo, tasas, etiquetas, estados, stats,
+  filtros, columnas).
+- `src/app/features/nomina-mensual-v2/components/liquidacion-preview-modal/`
+  (nuevo): `.ts`, `.html`, `.css`, `liquidacion-en-palabras.ts` y spec
+  con 8 tests (cabecera, subtotales, palabras, Escape/backdrop, aportes
+  informativos).
+- `src/app/features/nomina-mensual-v2/containers/nomina-mensual-v2-container/components/nomina-mensual-v2-paso-calculo/`:
+  `.ts`, `.html`, `.css` reescritos; `.spec.ts` ampliado con 8 tests
+  nuevos (header, orden por líquido, inferencia AFP/Salud, stats,
+  apertura/cierre del preview, estado vacío, render de la grilla,
+  texto del CTA).
+
+### Archivos NO tocados
+
+- Motor V1 (`proceso-mensual-motor.rules.ts`), adapter
+  (`nomina-periodo-calculo-adapter.service.ts`), servicios (`proceso-mensual.service.ts`,
+  `nomina-periodo.service.ts`), modelos del dominio.
+- Otros pasos del Generador (Alcance, Parámetros, Dotación, Movimientos,
+  Validación, Cierre) ni el container.
+- Estilos globales (`src/styles/*`, `angular.json`, `tailwind.config.*`,
+  `postcss.config.*`).
+- Migraciones SQL, RLS, persistencia.
+
+### Validación
+
+- `npx ng test --watch=false --include="**/paso-calculo-fila.presenter.spec.ts" --include="**/liquidacion-preview-modal*.spec.ts" --include="**/nomina-mensual-v2-paso-calculo.component.spec.ts"` → **3 archivos · 38 tests OK**.
+- `ReadLints` sobre `src/app/features/nomina-mensual-v2` → sin errores.
+- Smoke manual queda pendiente: recargar paso 4 sobre `2026-05`, validar
+  los 3 trabajadores con líquidos `901.782 / 863.849 / 857.494`,
+  expandir uno, abrir preview y validar la maqueta.
+
+---
+
 ## 2026-06-11 — Empresas alineadas al patrón shell (NOIA-EMPRESAS-SHELL-01)
 
 Pantallas `/empresas` (listado) y `/empresas/:id|nueva` (ficha) rediseñadas

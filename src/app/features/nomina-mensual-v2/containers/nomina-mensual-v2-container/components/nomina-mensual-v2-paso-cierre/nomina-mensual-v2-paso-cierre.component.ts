@@ -23,6 +23,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/message-box.component';
+import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 
 import type {
   NominaPeriodo,
@@ -45,7 +46,7 @@ interface ChecklistItem {
 @Component({
   selector: 'app-nomina-mensual-v2-paso-cierre',
   standalone: true,
-  imports: [CommonModule, FormsModule, MessageBoxComponent],
+  imports: [CommonModule, FormsModule, MessageBoxComponent, WorkspaceLoadingComponent],
   templateUrl: './nomina-mensual-v2-paso-cierre.component.html',
   styleUrl: './nomina-mensual-v2-paso-cierre.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

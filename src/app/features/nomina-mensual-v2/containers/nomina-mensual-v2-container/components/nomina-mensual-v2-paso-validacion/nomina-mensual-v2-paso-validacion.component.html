@@ -1,4 +1,12 @@
 <section class="paso-val" aria-labelledby="paso-val-title">
+  @if (cargando()) {
+    <app-workspace-loading
+      [fill]="true"
+      title="Cargando resumen de validación"
+      message="Estamos recopilando incidencias críticas y advertencias del período."
+    />
+  }
+
   <header class="paso-val__head">
     <div class="paso-val__copy">
       <p class="paso-val__eyebrow">Paso 5 · Validación</p>
@@ -18,10 +26,6 @@
       El cálculo dejó de ser vigente por cambios posteriores. Vuelve al paso
       Cálculo y recalcula antes de aprobar.
     </p>
-  }
-
-  @if (cargando()) {
-    <p class="paso-val__placeholder">Cargando resumen…</p>
   }
 
   @if (error(); as msg) {
@@ -112,9 +116,19 @@
     }
   }
 
-  <footer class="paso-val__footer">
-    <button type="button" class="paso-val__btn is-ghost" (click)="emitirVolver()">
-      Volver al cálculo
-    </button>
+  <footer class="paso-val__footer" aria-live="polite">
+    @if (resumen(); as r) {
+      @if (r.conIncidenciasCriticas > 0) {
+        <span class="paso-val__footer-hint is-danger">
+          Resuelve los {{ r.conIncidenciasCriticas }} bloqueos antes de aprobar.
+        </span>
+      } @else if (r.conAdvertencias > 0) {
+        <span class="paso-val__footer-hint is-warning">
+          {{ r.conAdvertencias }} advertencias activas, revisa antes de aprobar.
+        </span>
+      } @else {
+        <span class="paso-val__footer-hint">Sin incidencias pendientes.</span>
+      }
+    }
   </footer>
 </section>

@@ -24,6 +24,7 @@ import type {
   ResumenValidacionNomina,
 } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
+import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import type {
   PasoNominaPort,
   ResultadoAvancePaso,
@@ -34,7 +35,7 @@ type FiltroSeveridad = 'todas' | 'critica' | 'advertencia';
 @Component({
   selector: 'app-nomina-mensual-v2-paso-validacion',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, WorkspaceLoadingComponent],
   templateUrl: './nomina-mensual-v2-paso-validacion.component.html',
   styleUrl: './nomina-mensual-v2-paso-validacion.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

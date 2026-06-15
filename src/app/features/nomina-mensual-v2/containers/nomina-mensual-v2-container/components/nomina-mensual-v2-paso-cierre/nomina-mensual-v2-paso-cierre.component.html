@@ -1,4 +1,12 @@
 <section class="paso-cierre" aria-labelledby="paso-cierre-title">
+  @if (cargando()) {
+    <app-workspace-loading
+      [fill]="true"
+      title="Cargando checklist de cierre"
+      message="Estamos verificando los pasos previos antes de habilitar el cierre operativo."
+    />
+  }
+
   <header class="paso-cierre__head">
     <div class="paso-cierre__copy">
       <p class="paso-cierre__eyebrow">Paso 6 · Cierre</p>
@@ -20,10 +28,6 @@
       El cálculo de la versión {{ versionCalculo() }} dejó de ser vigente por
       cambios posteriores. Vuelve al paso Cálculo y recalcula antes de cerrar.
     </p>
-  }
-
-  @if (cargando()) {
-    <p class="paso-cierre__placeholder">Cargando checklist…</p>
   }
 
   @if (error(); as msg) {
@@ -74,9 +78,6 @@
   }
 
   <footer class="paso-cierre__footer">
-    <button type="button" class="paso-cierre__btn is-ghost" (click)="emitirVolver()">
-      Volver a validación
-    </button>
     <button type="button" class="paso-cierre__btn" (click)="volverAdministrador()">
       Volver al administrador de nóminas
     </button>

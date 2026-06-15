@@ -6,6 +6,7 @@
     [avanceDesdePasoActualBloqueado]="parametrosPasoOcupado()"
     [indiceMaximoAccesible]="indiceMaximoAccesibleEfectivo()"
     (pasoSeleccionado)="intentarIrAPaso($event)"
+    (volverPasoAnterior)="intentarIrAPaso($event)"
   />
 
   @if (orquestador.ayudaAvance(); as ayudaAvance) {

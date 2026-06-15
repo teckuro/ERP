@@ -1,4 +1,12 @@
 <section class="paso-mov" aria-labelledby="paso-mov-title">
+  @if (loading() && filasTrabajadores().length === 0) {
+    <app-workspace-loading
+      [fill]="true"
+      title="Cargando movimientos"
+      message="Estamos preparando la grilla del período."
+    />
+  }
+
   <header class="paso-mov__head">
     <div class="paso-mov__copy">
       <p class="paso-mov__eyebrow">Paso 3 · Movimientos</p>
@@ -80,15 +88,8 @@
     ></app-message-box>
   }
 
-  @if (loading()) {
-    <p class="paso-mov__placeholder">Cargando movimientos…</p>
-  } @else if (filasTrabajadores().length === 0) {
-    <p class="paso-mov__placeholder">
-      Aún no hay trabajadores con movimientos visibles. Define la dotación o agrega un manual.
-    </p>
-  } @else {
+  <div class="paso-mov__grid-wrapper">
     <app-data-grid
-      class="paso-mov__grid"
       [columns]="columnasGrilla"
       [rows]="filasTrabajadores()"
       [filters]="filtrosGrilla()"
@@ -100,8 +101,15 @@
       [expandableRows]="true"
       [rowExpansionKey]="rowKeyTrabajador"
       [trackBy]="trackByTrabajador"
-      [emptyTitle]="'Sin trabajadores que coincidan con el filtro'"
-      [emptyDescription]="'Ajusta los filtros para ver más trabajadores con movimientos.'"
+      [loading]="loading()"
+      loadingLabel="Cargando movimientos…"
+      [gridHeight]="'100%'"
+      className="paso-mov__data-grid"
+      cardClassName="paso-mov__data-grid-card"
+      emptyTitle="Aún no hay trabajadores con movimientos visibles"
+      emptyDescription="Define la dotación o agrega un manual."
+      emptyTitleWhenFiltered="Sin trabajadores que coincidan con el filtro"
+      emptyDescriptionWhenFiltered="Ajusta los filtros para ver más trabajadores con movimientos."
       headerCountNoun="trabajadores"
       [headerCountDisplay]="'text'"
       [headerShowActiveFiltersCount]="true"
@@ -321,7 +329,7 @@
         </div>
       </ng-template>
     </app-data-grid>
-  }
+  </div>
 
   @if (modalManualAbierto()) {
     <div
@@ -463,9 +471,11 @@
     </div>
   }
 
-  <footer class="paso-mov__footer">
-    <button type="button" class="paso-mov__btn is-ghost" (click)="emitirVolver()">
-      Volver a dotación
-    </button>
+  <footer class="paso-mov__footer" aria-live="polite">
+    @if (hayPendientesGlobales()) {
+      <span class="paso-mov__footer-hint">
+        Quedan {{ statsGlobales().totalPendientes }} movimientos pendientes por cargar.
+      </span>
+    }
   </footer>
 </section>

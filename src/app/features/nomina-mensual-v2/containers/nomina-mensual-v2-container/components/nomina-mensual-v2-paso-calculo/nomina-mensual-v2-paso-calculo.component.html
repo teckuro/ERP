@@ -1,20 +1,78 @@
 <section class="paso-calc" aria-labelledby="paso-calc-title">
+  @if (cargando() && !resultado()) {
+    <app-workspace-loading
+      [fill]="true"
+      title="Procesando cálculo"
+      message="Estamos generando líquidos, descuentos y aportes del período."
+    />
+  }
+
   <header class="paso-calc__head">
     <div class="paso-calc__copy">
       <p class="paso-calc__eyebrow">Paso 4 · Cálculo</p>
       <h2 id="paso-calc-title" class="paso-calc__title">Cálculo de la nómina</h2>
       <p class="paso-calc__subtitle">
-        El cálculo es ejecutado por el motor productivo del proceso mensual y genera el snapshot
-        del período. Si hay incidencias bloqueantes la ejecución se detiene.
+        Procesa el período y revisa el líquido de cada trabajador. Expande una fila para
+        ver el desglose ejecutivo o abre la previsualización para validar la liquidación
+        antes de pasar a validación.
       </p>
+    </div>
+    <div class="paso-calc__head-aside">
+      <dl class="paso-calc__stats" role="status" aria-label="Resumen del cálculo">
+        <div class="paso-calc__stat">
+          <dt>Trabajadores calculados</dt>
+          <dd>{{ statsCabecera().trabajadoresCalculados }}</dd>
+        </div>
+        <div class="paso-calc__stat is-positive">
+          <dt>Haberes</dt>
+          <dd>${{ statsCabecera().totalHaberes | number:'1.0-0' }}</dd>
+        </div>
+        <div class="paso-calc__stat is-negative">
+          <dt>Descuentos</dt>
+          <dd>${{ statsCabecera().totalDescuentos | number:'1.0-0' }}</dd>
+        </div>
+        <div class="paso-calc__stat is-strong">
+          <dt>Líquido total</dt>
+          <dd>${{ statsCabecera().totalLiquido | number:'1.0-0' }}</dd>
+        </div>
+        @if (statsCabecera().conAdvertencias > 0) {
+          <div class="paso-calc__stat is-warning">
+            <dt>Con advertencias</dt>
+            <dd>{{ statsCabecera().conAdvertencias }}</dd>
+          </div>
+        }
+        @if (statsCabecera().conBloqueos > 0) {
+          <div class="paso-calc__stat is-danger">
+            <dt>Con bloqueos</dt>
+            <dd>{{ statsCabecera().conBloqueos }}</dd>
+          </div>
+        }
+      </dl>
+      <div class="paso-calc__toolbar">
+        <button
+          type="button"
+          class="paso-calc__btn is-primary"
+          (click)="calcular()"
+          [disabled]="!puedeCalcular()"
+          [attr.title]="
+            puedeCalcular()
+              ? (resultado() ? 'Vuelve a procesar el cálculo con los datos actuales.' : 'Procesa el cálculo del período.')
+              : 'Resuelve los bloqueos de pre-validación para poder calcular.'
+          "
+        >
+          {{ textoCtaCalculo() }}
+        </button>
+      </div>
     </div>
   </header>
 
   @if (calculoNoVigente()) {
-    <p class="paso-calc__alert is-warning" role="status">
-      El cálculo de la versión {{ versionCalculo() }} dejó de ser vigente por
-      cambios posteriores en dotación o movimientos. Recalcula para continuar.
-    </p>
+    <app-message-box
+      mode="inline"
+      variant="warning"
+      [title]="'Cálculo no vigente'"
+      [message]="'El cálculo de la versión ' + versionCalculo() + ' dejó de ser vigente por cambios posteriores en dotación o movimientos. Recalcula para continuar.'"
+    ></app-message-box>
   }
 
   @if (cargando()) {
@@ -22,89 +80,333 @@
   }
 
   @if (error(); as msg) {
-    <p class="paso-calc__alert is-error" role="alert">{{ msg }}</p>
+    <app-message-box
+      mode="inline"
+      variant="danger"
+      [message]="msg"
+      [dismissible]="true"
+      dismissLabel="Cerrar"
+      (dismiss)="error.set(null)"
+    ></app-message-box>
   }
   @if (mensaje(); as msg) {
-    <p class="paso-calc__alert is-info" role="status">{{ msg }}</p>
+    <app-message-box
+      mode="inline"
+      variant="info"
+      [message]="msg"
+      [dismissible]="true"
+      dismissLabel="Cerrar"
+      (dismiss)="mensaje.set(null)"
+    ></app-message-box>
   }
 
   @if (preValidacion(); as valid) {
-    <section class="paso-calc__panel">
-      <h3 class="paso-calc__panel-title">Pre-validación</h3>
-      <ul class="paso-calc__list-inline">
-        <li><strong>{{ valid.totalTrabajadores }}</strong> en dotación</li>
-        <li><strong>{{ valid.listosParaCalculo }}</strong> listos para calcular</li>
-        <li><strong>{{ valid.conIncidenciasCriticas }}</strong> con incidencias críticas</li>
-        <li><strong>{{ valid.conAdvertencias }}</strong> con advertencias</li>
-      </ul>
-      @if (!valid.puedeCalcular) {
-        <p class="paso-calc__alert is-error">
-          Hay incidencias bloqueantes. Resuelve los críticos en dotación antes de calcular.
-        </p>
-      }
-    </section>
-  }
-
-  <div class="paso-calc__cta">
-    <button
-      type="button"
-      class="paso-calc__btn is-primary"
-      (click)="calcular()"
-      [disabled]="!puedeCalcular()"
+    <div
+      class="paso-calc__prevalid"
+      [class.is-danger]="!valid.puedeCalcular"
+      role="status"
     >
-      {{ calculando() ? 'Calculando…' : (resultado() ? 'Recalcular' : 'Calcular nómina') }}
-    </button>
-  </div>
-
-  @if (resultado(); as res) {
-    <section class="paso-calc__panel">
-      <h3 class="paso-calc__panel-title">Resumen del snapshot</h3>
-      <ul class="paso-calc__metrics">
-        <li>
-          <strong>{{ res.resumen.totalTrabajadoresCalculados }}</strong>
-          <small>trabajadores calculados</small>
-        </li>
-        <li>
-          <strong>{{ res.resumen.totalBloqueados }}</strong>
-          <small>bloqueados</small>
-        </li>
-        <li>
-          <strong>{{ res.resumen.totalConAdvertencias }}</strong>
-          <small>con advertencias</small>
-        </li>
-        <li>
-          <strong>${{ res.resumen.totalHaberes | number:'1.0-0' }}</strong>
-          <small>haberes totales</small>
-        </li>
-        <li>
-          <strong>${{ res.resumen.totalDescuentos | number:'1.0-0' }}</strong>
-          <small>descuentos totales</small>
-        </li>
-        <li>
-          <strong>${{ res.resumen.totalLiquidoPreliminar | number:'1.0-0' }}</strong>
-          <small>líquido preliminar</small>
-        </li>
-      </ul>
-
-      <h4 class="paso-calc__panel-subtitle">Top 5 líquidos del período</h4>
-      @if (topLiquidaciones().length === 0) {
-        <p class="paso-calc__placeholder">Sin liquidaciones en el snapshot.</p>
-      } @else {
-        <ul class="paso-calc__list">
-          @for (liq of topLiquidaciones(); track liq.rut) {
-            <li>
-              <strong>{{ liq.nombreCompleto || liq.rut }}</strong>
-              <span>${{ liq.liquidoAPago | number:'1.0-0' }}</span>
-            </li>
-          }
-        </ul>
+      <span class="paso-calc__prevalid-chip">
+        <strong>{{ valid.totalTrabajadores }}</strong> en dotación
+      </span>
+      <span class="paso-calc__prevalid-chip is-positive">
+        <strong>{{ valid.listosParaCalculo }}</strong> listos
+      </span>
+      <span
+        class="paso-calc__prevalid-chip"
+        [class.is-danger]="valid.conIncidenciasCriticas > 0"
+      >
+        <strong>{{ valid.conIncidenciasCriticas }}</strong> críticos
+      </span>
+      <span
+        class="paso-calc__prevalid-chip"
+        [class.is-warning]="valid.conAdvertencias > 0"
+      >
+        <strong>{{ valid.conAdvertencias }}</strong> advertencias
+      </span>
+      @if (!valid.puedeCalcular) {
+        <span class="paso-calc__prevalid-help">
+          Resuelve los críticos en dotación antes de calcular.
+        </span>
       }
-    </section>
+    </div>
   }
 
-  <footer class="paso-calc__footer">
-    <button type="button" class="paso-calc__btn is-ghost" (click)="emitirVolver()">
-      Volver a movimientos
-    </button>
+  @if (!resultado() && !cargando()) {
+    <div class="paso-calc__vacio" role="status">
+      <p class="paso-calc__vacio-title">Aún no has procesado el cálculo</p>
+      <p class="paso-calc__vacio-desc">
+        Cuando estés listo, presiona <strong>Calcular nómina</strong> en la cabecera
+        para procesar el período y ver el desglose por trabajador.
+      </p>
+    </div>
+  } @else if (resultado()) {
+    <div class="paso-calc__grid-wrapper">
+    <app-data-grid
+      [columns]="columnas"
+      [rows]="filasGrilla()"
+      [filters]="filtrosGrilla()"
+      [filtersEnabled]="true"
+      [filtersCollapsible]="false"
+      [filterChipsDisplay]="'always'"
+      [maxItems]="25"
+      [persistenceKey]="persistenceKey"
+      [expandableRows]="true"
+      [rowExpansionKey]="rowKeyTrabajador"
+      [loading]="cargando()"
+      loadingLabel="Procesando cálculo…"
+      [gridHeight]="'100%'"
+      className="paso-calc__data-grid"
+      cardClassName="paso-calc__data-grid-card"
+      emptyTitle="Sin trabajadores con cálculo"
+      emptyDescription="Ajusta los filtros o vuelve a recalcular el período."
+      headerCountNoun="trabajadores"
+      [headerCountDisplay]="'text'"
+      [headerShowActiveFiltersCount]="true"
+    >
+      <ng-template appDataGridCell="trabajador" let-fila="row">
+        <div class="paso-calc__cell-trabajador">
+          <strong class="paso-calc__cell-trabajador-nombre">{{ fila.nombre }}</strong>
+          <span class="paso-calc__cell-trabajador-meta">
+            <span class="paso-calc__cell-rut">{{ fila.rut }}</span>
+            @if (fila.tipoContrato) {
+              <span aria-hidden="true">·</span>
+              <span>{{ fila.tipoContrato }}</span>
+            }
+          </span>
+        </div>
+      </ng-template>
+
+      <ng-template appDataGridCell="afp" let-fila="row">
+        @if (fila.afp) {
+          <span class="paso-calc__cell-meta">{{ fila.afp }}</span>
+        } @else {
+          <span class="paso-calc__cell-meta is-empty" aria-label="Sin AFP informada">—</span>
+        }
+      </ng-template>
+
+      <ng-template appDataGridCell="salud" let-fila="row">
+        @if (fila.salud) {
+          <span class="paso-calc__cell-meta">{{ fila.salud }}</span>
+        } @else {
+          <span class="paso-calc__cell-meta is-empty" aria-label="Sin salud informada">—</span>
+        }
+      </ng-template>
+
+      <ng-template appDataGridCell="haberes" let-fila="row">
+        <span class="paso-calc__cell-monto is-positive">${{ fila.totalHaberes | number:'1.0-0' }}</span>
+      </ng-template>
+
+      <ng-template appDataGridCell="descuentos" let-fila="row">
+        <span class="paso-calc__cell-monto is-negative">${{ fila.totalDescuentos | number:'1.0-0' }}</span>
+      </ng-template>
+
+      <ng-template appDataGridCell="liquido" let-fila="row">
+        <span class="paso-calc__cell-monto is-strong">${{ fila.liquidoAPago | number:'1.0-0' }}</span>
+      </ng-template>
+
+      <ng-template appDataGridCell="estado" let-fila="row">
+        <span class="paso-calc__estado-pill" [attr.data-variant]="fila.estado.variant">
+          {{ fila.estado.label }}
+        </span>
+      </ng-template>
+
+      <ng-template appDataGridCell="acciones" let-fila="row">
+        <button
+          type="button"
+          class="paso-calc__btn-icono"
+          (click)="abrirPreview(fila)"
+          [attr.aria-label]="'Ver previsualización de la liquidación de ' + fila.nombre"
+          title="Ver previsualización de la liquidación"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </ng-template>
+
+      <ng-template appDataGridRowDetail let-fila let-collapse="collapse">
+        <div class="paso-calc__detalle">
+          <header class="paso-calc__detalle-head">
+            <div class="paso-calc__detalle-head-info">
+              <strong class="paso-calc__detalle-head-nombre">{{ fila.nombre }}</strong>
+              <span class="paso-calc__detalle-meta">
+                <span class="paso-calc__cell-rut">{{ fila.rut }}</span>
+                @if (fila.tipoContrato) {
+                  <span aria-hidden="true">·</span>
+                  <span>{{ fila.tipoContrato }}</span>
+                }
+                @if (fila.afp) {
+                  <span aria-hidden="true">·</span>
+                  <span>AFP {{ fila.afp }}</span>
+                }
+                @if (fila.salud) {
+                  <span aria-hidden="true">·</span>
+                  <span>{{ fila.salud }}</span>
+                }
+              </span>
+            </div>
+            <div class="paso-calc__detalle-head-actions">
+              <button
+                type="button"
+                class="paso-calc__link"
+                (click)="abrirPreview(fila)"
+              >Ver previsualización (PDF)</button>
+              <button
+                type="button"
+                class="paso-calc__btn is-ghost is-small"
+                (click)="collapse()"
+                aria-label="Cerrar detalle"
+              >Cerrar</button>
+            </div>
+          </header>
+
+          <div class="paso-calc__detalle-grid">
+            <section class="paso-calc__detalle-bloque" aria-label="Haberes">
+              <h4 class="paso-calc__detalle-bloque-title">Haberes</h4>
+              <ul class="paso-calc__detalle-list">
+                @for (linea of fila.haberes; track linea.codigo) {
+                  <li class="paso-calc__detalle-item">
+                    <span class="paso-calc__detalle-item-concepto">{{ linea.descripcion }}</span>
+                    @if (etiquetaImponibilidad(linea.etiqueta); as etiqueta) {
+                      <span class="paso-calc__chip-imp" [attr.data-tipo]="linea.etiqueta">{{ etiqueta }}</span>
+                    }
+                    <span class="paso-calc__detalle-item-valor is-positive">
+                      ${{ linea.monto | number:'1.0-0' }}
+                    </span>
+                  </li>
+                }
+              </ul>
+              <p class="paso-calc__detalle-total">
+                <span>Total haberes</span>
+                <strong class="is-positive">${{ fila.totalHaberes | number:'1.0-0' }}</strong>
+              </p>
+            </section>
+
+            <section class="paso-calc__detalle-bloque" aria-label="Descuentos legales">
+              <h4 class="paso-calc__detalle-bloque-title">Descuentos legales</h4>
+              @if (fila.descuentosLegales.length === 0) {
+                <p class="paso-calc__detalle-empty">Sin descuentos legales este período.</p>
+              } @else {
+                <ul class="paso-calc__detalle-list">
+                  @for (linea of fila.descuentosLegales; track linea.codigo) {
+                    <li class="paso-calc__detalle-item">
+                      <span class="paso-calc__detalle-item-concepto">{{ linea.descripcion }}</span>
+                      @if (linea.tasa != null && linea.base != null) {
+                        <span class="paso-calc__detalle-formula">
+                          × {{ (linea.tasa * 100) | number:'1.2-2' }}%
+                        </span>
+                      }
+                      <span class="paso-calc__detalle-item-valor is-negative">
+                        ${{ linea.monto | number:'1.0-0' }}
+                      </span>
+                    </li>
+                  }
+                </ul>
+              }
+            </section>
+
+            @if (fila.descuentosVoluntarios.length > 0) {
+              <section class="paso-calc__detalle-bloque" aria-label="Descuentos voluntarios">
+                <h4 class="paso-calc__detalle-bloque-title">Descuentos voluntarios</h4>
+                <ul class="paso-calc__detalle-list">
+                  @for (linea of fila.descuentosVoluntarios; track linea.codigo) {
+                    <li class="paso-calc__detalle-item">
+                      <span class="paso-calc__detalle-item-concepto">{{ linea.descripcion }}</span>
+                      <span class="paso-calc__detalle-item-valor is-negative">
+                        ${{ linea.monto | number:'1.0-0' }}
+                      </span>
+                    </li>
+                  }
+                </ul>
+              </section>
+            }
+
+            <section class="paso-calc__detalle-bloque paso-calc__detalle-bloque--bases" aria-label="Bases legales">
+              <h4 class="paso-calc__detalle-bloque-title">Bases legales</h4>
+              <dl class="paso-calc__detalle-bases">
+                <div>
+                  <dt>Imponible previsional</dt>
+                  <dd>${{ fila.bases.baseImponiblePrevisional | number:'1.0-0' }}</dd>
+                </div>
+                <div>
+                  <dt>Tributable</dt>
+                  <dd>${{ fila.bases.baseTributable | number:'1.0-0' }}</dd>
+                </div>
+              </dl>
+            </section>
+
+            <section
+              class="paso-calc__detalle-bloque paso-calc__detalle-bloque--empleador"
+              aria-label="Aportes del empleador"
+            >
+              <h4 class="paso-calc__detalle-bloque-title">Aportes del empleador</h4>
+              <p class="paso-calc__detalle-empleador-nota">
+                Informativo. No afecta al líquido del trabajador.
+              </p>
+              <dl class="paso-calc__detalle-bases">
+                <div>
+                  <dt>SIS</dt>
+                  <dd>${{ fila.cargosEmpleador.sis | number:'1.0-0' }}</dd>
+                </div>
+                <div>
+                  <dt>SANNA</dt>
+                  <dd>${{ fila.cargosEmpleador.sanna | number:'1.0-0' }}</dd>
+                </div>
+                <div>
+                  <dt>Mutual</dt>
+                  <dd>${{ fila.cargosEmpleador.ley16744 | number:'1.0-0' }}</dd>
+                </div>
+              </dl>
+            </section>
+          </div>
+
+          <footer class="paso-calc__detalle-footer">
+            <span class="paso-calc__detalle-footer-label">Líquido a pago</span>
+            <strong class="paso-calc__detalle-footer-monto">
+              ${{ fila.liquidoAPago | number:'1.0-0' }}
+            </strong>
+          </footer>
+        </div>
+      </ng-template>
+    </app-data-grid>
+    </div>
+  }
+
+  <footer class="paso-calc__footer" aria-live="polite">
+    @if (resultado(); as r) {
+      <span class="paso-calc__footer-hint">
+        Cálculo generado el {{ r.generadoEn | date:'dd-MM-yyyy HH:mm' }}
+        @if (versionCalculo() > 0) {
+          · versión {{ versionCalculo() }}
+        }
+      </span>
+    }
   </footer>
+
+  @if (filaPreview(); as fila) {
+    @if (liquidacionPreview(); as liq) {
+      <app-liquidacion-preview-modal
+        [liquidacion]="liq"
+        [empresa]="{
+          razonSocial: nomina()?.empresaNombre || 'Empleador',
+          rut: null,
+          direccion: null
+        }"
+        [nomina]="{
+          periodo: nomina()?.periodo || liq.periodo,
+          fechaPago: nomina()?.fechaPago || null
+        }"
+        [trabajadorMeta]="{
+          afp: fila.afp,
+          salud: fila.salud,
+          tipoContrato: fila.tipoContrato,
+          sueldoBase: fila.sueldoBase
+        }"
+        (cerrar)="cerrarPreview()"
+        (imprimirSolicitado)="imprimirPreview()"
+      ></app-liquidacion-preview-modal>
+    }
+  }
 </section>

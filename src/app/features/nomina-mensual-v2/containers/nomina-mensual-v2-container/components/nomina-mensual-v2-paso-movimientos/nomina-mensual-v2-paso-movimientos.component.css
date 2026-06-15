@@ -7,6 +7,7 @@
 }
 
 .paso-mov {
+  position: relative;
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -261,11 +262,48 @@
 /* Grilla unificada                                                           */
 /* -------------------------------------------------------------------------- */
 
-.paso-mov__grid {
+/* Patrón Dotación: el wrapper toma todo el alto sobrante y el data-grid
+   se expande dentro vía `[gridHeight]="'100%'"`. Sin esto la grilla
+   quedaba en su altura natural y dejaba espacio vacío bajo la tabla. */
+.paso-mov__grid-wrapper {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
+  min-height: 360px;
+}
+
+.paso-mov__data-grid {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
   min-height: 0;
+}
+
+.paso-mov__data-grid-card {
+  border-radius: 6px;
+  border-color: #e2e8f0;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Footer                                                                     */
+/* -------------------------------------------------------------------------- */
+
+.paso-mov__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  min-height: 16px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 12px;
+  color: #475569;
+}
+
+.paso-mov__footer-hint {
+  color: #b45309;
 }
 
 .paso-mov__cell-trabajador {
@@ -717,15 +755,3 @@
   background: #ffffff;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Footer                                                                     */
-/* -------------------------------------------------------------------------- */
-
-.paso-mov__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  border-top: 1px solid #e2e8f0;
-  padding-top: 12px;
-}
