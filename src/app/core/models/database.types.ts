@@ -3373,10 +3373,14 @@ export type Database = {
           codigo: string
           configuracion: Json
           created_at: string
+          descripcion: string | null
           id: string
           id_empresa: number
           naturaleza: string
           nombre: string
+          politica_fin_semana: string
+          regla_anticipo: Json | null
+          regla_fecha_pago: Json
           tipo: string
           updated_at: string
           version: number
@@ -3386,10 +3390,14 @@ export type Database = {
           codigo: string
           configuracion?: Json
           created_at?: string
+          descripcion?: string | null
           id?: string
           id_empresa: number
           naturaleza: string
           nombre: string
+          politica_fin_semana?: string
+          regla_anticipo?: Json | null
+          regla_fecha_pago: Json
           tipo: string
           updated_at?: string
           version?: number
@@ -3399,10 +3407,14 @@ export type Database = {
           codigo?: string
           configuracion?: Json
           created_at?: string
+          descripcion?: string | null
           id?: string
           id_empresa?: number
           naturaleza?: string
           nombre?: string
+          politica_fin_semana?: string
+          regla_anticipo?: Json | null
+          regla_fecha_pago?: Json
           tipo?: string
           updated_at?: string
           version?: number
@@ -6111,6 +6123,18 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      crear_version_plantilla: {
+        Args: {
+          p_activar?: boolean
+          p_descripcion?: string
+          p_nombre?: string
+          p_plantilla_id: string
+          p_politica_fin_semana?: string
+          p_regla_anticipo?: Json
+          p_regla_fecha_pago?: Json
+        }
+        Returns: string
+      }
       current_user_empresa_id: { Args: never; Returns: number }
       current_user_id: { Args: never; Returns: string }
       dblink_dteconfiguracion: { Args: never; Returns: string }
@@ -6165,6 +6189,10 @@ export type Database = {
       }
       empleado_historial_tabla_seccion: {
         Args: { p_tabla: string }
+        Returns: string
+      }
+      fn_aplicar_politica_fds: {
+        Args: { p_fecha: string; p_politica: string }
         Returns: string
       }
       fn_aprobar_prenomina_periodo: {
@@ -6236,9 +6264,21 @@ export type Database = {
         }
         Returns: number
       }
+      fn_calcular_fecha_pago: {
+        Args: {
+          p_fecha_inicio_corte: string
+          p_politica_fds: string
+          p_regla: Json
+        }
+        Returns: string
+      }
       fn_calcular_impuesto_unico: {
         Args: { p_base: number; p_fecha: string }
         Returns: number
+      }
+      fn_dia_habil_n: {
+        Args: { p_fecha_ref: string; p_n: number }
+        Returns: string
       }
       fn_formato_decimales: {
         Args: { p_decimales?: number; p_valor: number }
@@ -6328,6 +6368,8 @@ export type Database = {
           valor_plan: number
         }[]
       }
+      fn_ultimo_dia_corrido: { Args: { p_fecha_ref: string }; Returns: string }
+      fn_ultimo_dia_habil: { Args: { p_fecha_ref: string }; Returns: string }
       fn_validar_liquidacion: {
         Args: { p_id_liquidacion: number }
         Returns: {
@@ -6467,6 +6509,19 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      previsualizar_cortes_plantilla: {
+        Args: { p_anio: number; p_cantidad?: number; p_plantilla_id: string }
+        Returns: {
+          ajuste_fds: string
+          codigo_ciclo: string
+          fecha_fin: string
+          fecha_inicio: string
+          fecha_pago_calendario: string
+          fecha_pago_propuesta: string
+          notas: string
+          numero_corte: number
+        }[]
       }
       reabrir_nomina_operativa: {
         Args: {

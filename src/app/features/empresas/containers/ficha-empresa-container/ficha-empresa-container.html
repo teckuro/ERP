@@ -1,36 +1,30 @@
-<section class="emp-page" aria-label="Ficha de empresa">
-  <header class="emp-head">
-    <p class="emp-lead">
-      @if (esNueva()) {
-        Registra los datos mínimos de la empresa. La mutual se configura aquí cuando corresponda.
-      } @else {
-        Revisa y actualiza los datos operativos de la empresa seleccionada.
-      }
-    </p>
-    <div class="emp-head-actions">
-      <app-button variant="outline" size="md" (click)="volver()">
-        <lucide-icon icon class="w-4 h-4" [img]="backIcon"></lucide-icon>
-        Volver
-      </app-button>
-      <app-button variant="primary" size="md" [disabled]="guardando() || cargando()" (click)="guardar()">
-        <lucide-icon icon class="w-4 h-4" [img]="saveIcon"></lucide-icon>
-        {{ guardando() ? 'Guardando…' : 'Guardar' }}
-      </app-button>
-    </div>
-  </header>
-
+<section class="emp-ficha__page" aria-label="Ficha de empresa">
   @if (mensajeError(); as error) {
-    <app-message-box variant="error" [message]="error"></app-message-box>
+    <app-message-box
+      variant="error"
+      [message]="error"
+    ></app-message-box>
+  }
+  @if (mensajeValidacion(); as warning) {
+    <app-message-box
+      variant="warning"
+      title="Revisa los datos antes de guardar"
+      [message]="warning"
+    ></app-message-box>
   }
   @if (mensajeExito(); as ok) {
-    <app-message-box variant="success" [message]="ok"></app-message-box>
-  }
-  @if (validacion()?.errores?.length) {
-    <app-message-box variant="warning" [message]="validacion()!.errores.join(' ')"></app-message-box>
+    <app-message-box
+      variant="success"
+      [message]="ok"
+    ></app-message-box>
   }
 
   @if (cargando()) {
-    <p class="emp-section-lead">Cargando ficha…</p>
+    <app-workspace-loading
+      [fill]="false"
+      title="Cargando ficha"
+      message="Estamos leyendo los datos de la empresa."
+    />
   } @else {
     <app-empresa-form
       [model]="model()"

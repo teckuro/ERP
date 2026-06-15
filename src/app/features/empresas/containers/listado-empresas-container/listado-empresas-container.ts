@@ -1,16 +1,38 @@
+/**
+ * Listado de empresas.
+ *
+ * Pantalla operativa (uso interno: configuración del producto, no de cara al
+ * cliente final). Adopta el patrón consolidado del repo: el shell publica
+ * título + breadcrumb + CTA principal mediante `bindShellPageContext`, y la
+ * grilla se concentra en datos + acciones de fila.
+ *
+ * Alineada con `administrador-plantillas-container` (F03) y
+ * `administrador-nominas`.
+ */
+
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
-import { Plus, RefreshCw } from 'lucide-angular/src/icons';
 
 import {
   DataGridCellDirective,
   DataGridComponent,
 } from '../../../../shared/components/ui/data-grid';
-import { ButtonComponent } from '../../../../shared/components/ui/primitives/button.component';
-import { EmpresasService } from '../../services/empresas.service';
+import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
+import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
+import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
+import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
 import type { EmpresaListadoFila } from '../../models/empresa.model';
+import { EmpresasService } from '../../services/empresas.service';
 import {
   EMPRESA_GRID_COLUMNS,
   EMPRESA_GRID_FILTERS,
@@ -25,7 +47,8 @@ import {
     LucideAngularModule,
     DataGridComponent,
     DataGridCellDirective,
-    ButtonComponent,
+    MessageBoxComponent,
+    WorkspaceLoadingComponent,
   ],
   templateUrl: './listado-empresas-container.html',
   styleUrl: './listado-empresas-container.css',
@@ -34,9 +57,7 @@ import {
 export class ListadoEmpresasContainer implements OnInit {
   private readonly empresasService = inject(EmpresasService);
   private readonly router = inject(Router);
-
-  readonly refreshIcon = RefreshCw;
-  readonly plusIcon = Plus;
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly filas = signal<EmpresaListadoFila[]>([]);
   readonly cargando = signal(false);
@@ -46,8 +67,36 @@ export class ListadoEmpresasContainer implements OnInit {
   readonly filters = EMPRESA_GRID_FILTERS;
   readonly persistenceKey = EMPRESA_GRID_PERSISTENCE_KEY;
 
+  readonly subtitulo = computed(() => {
+    const total = this.filas().length;
+    if (total === 0) {
+      return 'Aún no hay empresas registradas en el sistema.';
+    }
+    return `${total} empresa${total === 1 ? '' : 's'} registrada${total === 1 ? '' : 's'}.`;
+  });
+
+  constructor() {
+    bindShellPageContext(this.destroyRef, () => this.computeShellContext(), {
+      onPrimaryAction: () => this.irNuevaEmpresa(),
+    });
+  }
+
   ngOnInit(): void {
     void this.cargar();
+  }
+
+  private computeShellContext(): ShellPageContext {
+    return {
+      breadcrumbs: [{ label: 'Empresas' }],
+      pageTitle: 'Empresas',
+      pageSubtitle: this.subtitulo(),
+      primaryAction: {
+        label: 'Nueva empresa',
+        disabled: this.cargando(),
+        loading: false,
+        actionId: 'empresas-nueva',
+      },
+    };
   }
 
   async cargar(): Promise<void> {
@@ -56,7 +105,9 @@ export class ListadoEmpresasContainer implements OnInit {
     try {
       this.filas.set(await this.empresasService.listar());
     } catch (error) {
-      this.mensajeError.set(error instanceof Error ? error.message : 'No se pudo cargar el listado de empresas.');
+      this.mensajeError.set(
+        error instanceof Error ? error.message : 'No se pudo cargar el listado de empresas.',
+      );
     } finally {
       this.cargando.set(false);
     }

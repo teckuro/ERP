@@ -9,6 +9,146 @@
 
 ---
 
+## 2026-06-11 — Empresas alineadas al patrón shell (NOIA-EMPRESAS-SHELL-01)
+
+Pantallas `/empresas` (listado) y `/empresas/:id|nueva` (ficha) rediseñadas
+para hablar el mismo lenguaje visual que el resto del ERP: el shell publica
+título + breadcrumb + CTA principal vía `bindShellPageContext` y la pantalla
+se concentra en datos y acción. Sin tocar BD, servicios, validaciones ni
+contratos del formulario.
+
+### Decisión visual
+
+- **Listado**: se retira el header local (lead largo + dos botones). El shell
+  recibe `pageTitle="Empresas"`, subtítulo dinámico (`N empresas registradas`
+  / `Aún no hay empresas registradas`) y CTA primaria `Nueva empresa`
+  (`actionId="empresas-nueva"`). La toolbar de `app-data-grid` queda con
+  `Refrescar` y `Exportar` como acciones operativas secundarias.
+- **Grid**: `toolbarLayout="operativa"`, `filterChipsDisplay="whenFiltersHidden"`,
+  `headerCountNoun="empresas"`. La fila vacía sin filtros ofrece copy operativo
+  (`Sin empresas registradas` + `Crea la primera empresa para configurar
+  contratos y mutual empleador.`).
+- **Estado mutual por fila**: chip `Sí` con tono `success` suave + dot;
+  `No` neutro. Sin verdes/azules saturados.
+- **Acción por fila**: botón ícono `pencil` (28×28, paleta neutra) que reemplaza
+  el link azul `Revisar datos`.
+- **Carga**: `app-workspace-loading` (`fill=true`) cuando la grilla aún no
+  tiene filas; mientras se refresca con filas presentes, el indicador queda en
+  la toolbar del grid.
+- **Errores**: `app-message-box` con `variant="error"` y `primaryLabel="Reintentar"`
+  reemplaza el `<p class="emp-field-error" role="alert">` suelto.
+
+### Ficha
+
+- Header local eliminado. El shell publica:
+  - `pageTitle` = `Nueva empresa` en alta o la razón social en edición;
+  - `pageSubtitle` = copy contextual en alta (`Registra los datos mínimos…`)
+    o `RUT 12.345.678-9` en edición;
+  - breadcrumb dinámico (`Empresas / Nueva empresa` o `Empresas / [razón social]`);
+  - CTA `Guardar` con `loading`/`disabled` enlazados al estado real.
+- Errores agrupados: tres `app-message-box` (`error` para fallos de servidor,
+  `warning` para `validacion()!.errores.join(' · ')`, `success` para confirmar
+  guardado). El mensaje de éxito se descarta al editar de nuevo.
+- Cargando ficha: `app-workspace-loading` reemplaza el `<p>` huérfano.
+- `EmpresaFormComponent` no se modifica (estructura, `formControlName`,
+  validaciones y mappers intactos). Solo cambia la paleta del shared CSS.
+
+### Paleta y CSS
+
+- `src/app/features/empresas/styles/empresas.shared.css` reescrito: se retiraron
+  reglas del header local (`.emp-page`, `.emp-head`, `.emp-lead`,
+  `.emp-head-actions`, `.emp-grid-wrap`, `.emp-link-btn`, `.emp-chip*`) y se
+  reemplazó `--emp-blue: #2563eb` por `--emp-primary: #1e3a8a` (primary NOIA
+  del shell). `--emp-primary-soft: #eef2ff` reemplaza `#eff6ff`. El focus de
+  inputs usa `rgba(30, 58, 138, 0.2)`.
+- Los chips de la grilla viven en el CSS local de `listado-empresas-container`
+  (`emp-list__chip*`) con la misma escala que `adm-plant__chip*`.
+
+### Archivos tocados
+
+- `src/app/features/empresas/containers/listado-empresas-container/{ts,html,css}`
+- `src/app/features/empresas/containers/ficha-empresa-container/{ts,html,css}`
+- `src/app/features/empresas/styles/empresas.shared.css`
+- `src/app/layout/sidebar.component.spec.ts` (deuda pre-existente: registrar
+  `CalendarDays` en el `pick` por F03 y actualizar la aserción del label a
+  `Administrador de nóminas`; no es del alcance Empresas pero se arregló para
+  desbloquear la suite)
+
+### Archivos NO tocados
+
+- `src/app/features/empresas/components/empresa-form/**` (estructura del form
+  y `formControlName`).
+- `src/app/features/empresas/services/**`, `data-access/**`, `mappers/**`,
+  `rules/**`, `models/**`, `empresas.routes.ts`.
+- `src/app/layout/shell-route-context.config.ts` (los breadcrumbs de Empresas
+  ya estaban registrados).
+- `angular.json`, `postcss.config.*`, `src/styles*.css`, fuentes, tema.
+
+### Validaciones
+
+- `npx tsc -p tsconfig.app.json --noEmit` → OK.
+- `npx ng test --watch=false --include='src/app/features/empresas/**/*.spec.ts'
+   --include='src/app/layout/**/*.spec.ts'` → 30/30 verdes.
+- `npx ng build --configuration=development` → OK sin warnings de budget.
+
+---
+
+## 2026-06-11 — Plantillas de ciclos (NOM-ADMIN-OPS-F03)
+
+Nueva pantalla `/remuneraciones/plantillas-ciclos` para administrar plantillas
+de calendario por empresa (mensual, quincenal, semanal, anticipos). Se agrega
+también el ítem `Plantillas de ciclos` al sidebar (grupo Gestión, icono
+`calendar-days`).
+
+### Decisión visual
+
+- Patrón heredado del Administrador de nóminas: `bindShellPageContext` para
+  publicar breadcrumbs/título/CTA desde el shell + `app-data-grid` con
+  `toolbarLayout="operativa"` + `app-message-box` para confirmaciones.
+- Sin `<app-page-frame>` (mantiene la coherencia con `administrador-nominas`,
+  pendiente de migración global a frame).
+- Cero cards decorativas. Una sola grilla operativa al 100 % del ancho.
+- Acciones por fila con iconos sobrios (`calendar-days`, `pencil`, `pause`,
+  `play`, `trash-2`).
+- Dos modales locales con CSS local prefijo `adm-plantillas-modal__` y
+  `adm-plantillas-preview__`:
+  - **Editor**: form con secciones "Fecha de pago", "Si cae en fin de semana"
+    y "Anticipo" (condicional). Radios con chip estilo "opción activa" cuando
+    seleccionado.
+  - **Vista previa**: año seleccionable + tabla con `Pago propuesto`,
+    `Calendario` (cuando hubo ajuste) y chip ámbar `Adelantado/Atrasado`.
+
+### Copy operativo (NOIA)
+
+- Eyebrow `Crear plantilla` / `Nueva versión` según modo.
+- Tooltip "Editar (crear nueva versión)" deja explícito el versionado.
+- Empty state: "Aún no hay plantillas — Crea la primera plantilla de ciclo
+  desde la acción principal." Tras filtrar: "Sin resultados con los filtros
+  actuales — Cambia o limpia los filtros."
+- Ajuste de fin de semana descrito en lenguaje RRHH: "Adelantar al viernes
+  anterior", "Atrasar al lunes siguiente", "Mantener fecha calendario".
+- Anticipo descrito como "50 % del líquido proyectado" o "$X fijo".
+
+### Archivos visuales tocados
+
+- Nuevos: `administrador-plantillas-container.{ts,html,css}` y dos modales con
+  sus tres archivos cada uno.
+- Modificados: `app.routes.ts`, `shell-navigation.config.ts`,
+  `shell-route-context.config.ts` (fallback de breadcrumbs).
+- **No** se tocaron `angular.json`, `postcss.config.*`, `tailwind.config.*`,
+  `src/styles*.css`, `src/styles/*`, fuentes ni tema.
+
+### Validación
+
+- `npx ng test --watch=false` con specs F03 (modelos, mapper, repository,
+  service, presenter, container) — 56/56.
+- Regresión completa `features/nomina-mensual/** + features/nomina-mensual-v2/**
+  + layout/shell-*` — 1102/1102.
+- `npx ng build --configuration=development` — OK (lazy chunk
+  `administrador-plantillas-container` generado).
+- Smoke SQL `bd/scripts/validar-nomina-f03-plantillas-ciclos.sql` contra PROD
+  — verde.
+
 ## 2026-06-11 — Retiro de Nómina mensual legacy y chip de período del Administrador
 
 - Se elimina del sidebar la entrada `Nómina mensual`; `Administrador de nóminas` queda como acceso canónico.

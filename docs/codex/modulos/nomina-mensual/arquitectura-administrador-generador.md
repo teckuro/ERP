@@ -155,6 +155,133 @@ Las nuevas RPC que se construyan en F05 en adelante deben:
    `version_estado_resultante` y, opcionalmente, `payload` con el contexto
    específico (p. ej. fingerprint de snapshot, huella del cálculo).
 
+## Plantillas de ciclos (NOM-ADMIN-OPS-F03)
+
+> Aplicado el 2026-06-11 a Supabase PROD (`mjrckxodzrfkyqjkyjkn`). Sustenta la
+> fase F03 del [roadmap operativo](./roadmap-admin-generador-operativo-100.md).
+> Migración: `supabase/migrations/20260611230000_nomina_f03_plantillas_ciclos.sql`.
+> Smoke postflight: `bd/scripts/validar-nomina-f03-plantillas-ciclos.sql`.
+
+### Extensión de `nomina_plantilla_ciclo`
+
+| Columna | Tipo | Nota |
+|---|---|---|
+| `regla_fecha_pago` | `jsonb` NOT NULL | Objeto `{ tipo, ... }`. Tipos soportados: `dia_fijo` (con `dia`), `dia_habil_n` (con `n_habil`), `ultimo_dia_habil`, `ultimo_dia_corrido`, `siguiente_mes_dia_fijo` (con `dia`). |
+| `politica_fin_semana` | `text` NOT NULL (default `adelantar`) | `adelantar` (viernes anterior), `atrasar` (lunes siguiente) o `mantener`. |
+| `regla_anticipo` | `jsonb` NULL | Solo para `naturaleza='anticipo'`: `{ modo: 'porcentaje' \| 'monto_fijo', valor }`. XOR con no-anticipos vía constraint. |
+| `descripcion` | `text` NULL | Texto humano. Aparece como subtítulo en la grilla. |
+
+### Helpers SQL y RPC
+
+| Símbolo | Rol |
+|---|---|
+| `fn_ultimo_dia_corrido(date)` | Último día calendario del mes. |
+| `fn_ultimo_dia_habil(date)` | Último lun-vie del mes (sin feriados oficiales). |
+| `fn_dia_habil_n(date, n)` | N-ésimo lun-vie del mes. |
+| `fn_aplicar_politica_fds(date, text)` | Ajusta fechas que caen en sábado o domingo según política. |
+| `fn_calcular_fecha_pago(jsonb, date, text)` | Combina los anteriores; resuelve la fecha de pago propuesta. |
+| `previsualizar_cortes_plantilla(uuid, integer, integer)` | `SECURITY INVOKER`. Proyecta cortes para mensual (liquidación legal + anticipo + pago extraordinario), quincenal y semanal. Extraordinaria retorna vacío. No escribe. |
+| `crear_version_plantilla(uuid, text, jsonb, text, jsonb, text, boolean)` | `SECURITY INVOKER`. Crea la siguiente versión copiando lo no especificado; si `p_activar=true` (default), desactiva la versión anterior. Retorna `uuid` (id de la nueva fila). |
+
+> **Día hábil = lun-vie sin calendario de feriados.** Es una heurística
+> conservadora. Cuando se integre un calendario oficial (CL), `fn_ultimo_dia_habil`
+> y `fn_dia_habil_n` se podrán reemplazar en una migración aditiva sin tocar la
+> RPC ni la UI.
+
+### Reglas de versionado
+
+- El **código** (`codigo`) y la **identidad de empresa** (`id_empresa`) no
+  cambian entre versiones. La versión nueva se inserta con `version = max + 1`.
+- Solo puede existir una versión `activo=true` por `(id_empresa, codigo)`
+  (índice único parcial `ux_nomina_plantilla_ciclo_activa`).
+- `crear_version_plantilla(..., p_activar=true)` desactiva la versión anterior
+  dentro de la misma transacción.
+- Las nóminas existentes no se ven afectadas por una nueva versión: la
+  relación es por `plantilla_ciclo_id` puntual (F01).
+
+### Capa Angular
+
+| Pieza | Ubicación |
+|---|---|
+| Modelos | `src/app/features/nomina-mensual/models/nomina-plantilla-ciclo.models.ts` |
+| Mapper BD ↔ TS | `src/app/features/nomina-mensual/mappers/nomina-plantilla-ciclo.mapper.ts` |
+| Repository | `src/app/features/nomina-mensual/data-access/nomina-plantilla-ciclo.repository.ts` |
+| Service | `src/app/features/nomina-mensual/services/nomina-plantilla-ciclo.service.ts` |
+| Presenter de la grilla | `src/app/features/nomina-mensual/presenters/admin-plantillas.presenter.ts` |
+| Container | `src/app/features/nomina-mensual/containers/administrador-plantillas-container/` |
+| Modal editor | `…/components/admin-plantillas-modal-editor/` |
+| Modal preview | `…/components/admin-plantillas-modal-preview/` |
+| Ruta | `/remuneraciones/plantillas-ciclos` |
+| Menú lateral | Sección **Gestión** → "Plantillas de ciclos" (`calendar-days`) |
+
+### Restricciones honradas
+
+- Sin tocar motor de cálculo, liquidaciones productivas, ficha legacy ni
+  estilos globales.
+- Sin dependencias nuevas. Patrón visual heredado del Administrador de
+  nóminas (`bindShellPageContext` + `app-data-grid` + `app-message-box`).
+- Las plantillas activas no pueden eliminarse: la política `DELETE` de RLS
+  (vigente desde F02) exige `activo = false`.
+
+### Lo que F03 no entrega todavía
+
+- No integra todavía el preview en el modal de **Nueva nómina** (eso lo hace
+  F04 — Preview automático de creación).
+- No expone "duplicar plantilla" como atajo. El equivalente operativo es
+  crear una nueva plantilla con otro código.
+- No implementa calendario oficial de feriados (heurística lun-vie). Deuda
+  para una fase propia o anexo.
+
+## Aprovisionamiento del JWT (NOM-ADMIN-OPS-F03b)
+
+> Aplicado el 2026-06-11. Corrección post-F02 que desbloquea el INSERT real en
+> `nomina_plantilla_ciclo` (y cualquier tabla con policy
+> `id_empresa = current_user_empresa_id()`).
+> Migración: `supabase/migrations/20260611240000_nomina_f03b_seed_id_empresa_jwt.sql`.
+> Smoke E2E: `bd/scripts/validar-nomina-f03b-rls-insert.sql`.
+
+### Por qué fue necesario
+
+F02 endureció `public.current_user_empresa_id()` para leer **solo** del JWT
+(`auth.jwt() -> app_metadata` o `user_metadata` con clave `id_empresa`).
+La policy F02 de `nomina_plantilla_ciclo` exige `id_empresa = current_user_empresa_id()`
+en `WITH CHECK` (INSERT) y `USING` (SELECT/UPDATE/DELETE).
+
+El usuario `prueba@erp.cl` tenía `raw_app_meta_data = {"role":"admin",...}` sin
+`id_empresa`. La función resolvía a `NULL` y toda comparación
+`id_empresa = NULL` devuelve falso → INSERT rechazado en runtime (la grid
+también se mostraba vacía aunque la BD tuviera plantillas).
+
+### Qué hace F03b
+
+1. **Backfill puntual**, idempotente: si `count(empresa) = 1` y el usuario
+   no trae `id_empresa` ni en `raw_app_meta_data` ni en `raw_user_meta_data`,
+   se setea `raw_app_meta_data.id_empresa` = id de esa empresa.
+2. **Trigger BEFORE INSERT** sobre `auth.users`
+   (`tg_auth_users_seed_id_empresa` → `public.tg_seed_id_empresa_jwt()`,
+   `SECURITY DEFINER`, `search_path public, auth`). Aplica la misma regla a
+   usuarios nuevos mientras exista una sola empresa. Cuando haya
+   multi-empresa real, el trigger queda inerte y el aprovisionamiento debe
+   formalizarse en el flujo de invitación.
+
+No toca `current_user_empresa_id()` ni las policies RLS.
+
+### Refresco del JWT
+
+Los cambios en `raw_app_meta_data` se reflejan en el JWT cuando se emite un
+token nuevo (signOut + signIn o refresh natural). Tras aplicar F03b, los
+usuarios con sesión activa deben **cerrar sesión y volver a entrar** una vez
+para que el cliente envíe `id_empresa` en el JWT.
+
+### Cómo verificarlo
+
+`bd/scripts/validar-nomina-f03b-rls-insert.sql` simula la sesión del usuario
+(`set_config('request.jwt.claims', ...)`, `role authenticated`), llama a
+`current_user_empresa_id()` (debe devolver el id de empresa) e intenta un
+`INSERT` real en `nomina_plantilla_ciclo`. Reporta por `NOTICE`:
+`current_user_empresa_id() resuelve a: <n>` + `INSERT como authenticated
+aceptado por RLS`. El smoke termina con `ROLLBACK` para no persistir la fila.
+
 ## Actualización 2026-06-05 - ciclo consistente y cálculo vigente
 
 `NOM-ADMIN-ABIERTAS-CICLO-CONSISTENTE-01` completa la coherencia operativa:

@@ -41,6 +41,11 @@ export const SHELL_NAV_SECTIONS: ShellNavSection[] = [
       { path: '/remuneraciones/novedades-mensuales', label: 'Movimientos', icon: 'calendar-plus' },
       { path: '/remuneraciones/haberes-descuentos', label: 'Recurrentes', icon: 'repeat' },
       { path: '/remuneraciones/conceptos', label: 'Conceptos', icon: 'tags', exact: true },
+      {
+        path: '/remuneraciones/plantillas-ciclos',
+        label: 'Plantillas de ciclos',
+        icon: 'calendar-days',
+      },
     ],
   },
   {

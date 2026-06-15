@@ -1,0 +1,190 @@
+<section class="adm-plant__page" aria-label="Plantillas de ciclos">
+  @if (errorServicio(); as error) {
+    <div class="adm-plant__state adm-plant__state--error" role="alert">
+      <span>{{ error }}</span>
+      <button type="button" class="adm-plant__row-action" (click)="reintentar()">Reintentar</button>
+    </div>
+  }
+  @if (errorAccion(); as error) {
+    <div class="adm-plant__state adm-plant__state--error" role="alert">
+      <span>{{ error }}</span>
+    </div>
+  }
+
+  <div class="adm-plant__grid-shell" aria-labelledby="adm-plant-grid-title">
+    <h2 id="adm-plant-grid-title" class="sr-only">Listado de plantillas</h2>
+    @if (!cargandoServicio() || plantillas().length > 0) {
+      <app-data-grid
+        title=""
+        [columns]="columnas"
+        [rows]="plantillasOrdenadas()"
+        [filters]="filtros()"
+        [filtersEnabled]="true"
+        [filtersCollapsible]="false"
+        filterChipsDisplay="whenFiltersHidden"
+        headerCountDisplay="text"
+        headerCountNoun="plantillas"
+        [headerShowActiveFiltersCount]="true"
+        [selectable]="false"
+        [trackBy]="trackPlantilla"
+        [persistenceKey]="persistenceKey"
+        toolbarLayout="operativa"
+        [gridHeight]="'100%'"
+        emptyTitle="Aún no hay plantillas"
+        emptyDescription="Crea la primera plantilla de ciclo desde la acción principal."
+        emptyTitleWhenFiltered="Sin resultados con los filtros actuales"
+        emptyDescriptionWhenFiltered="Cambia o limpia los filtros para ampliar la búsqueda."
+        className="adm-plant__grid"
+        cardClassName="adm-plant__grid-card"
+      >
+        <ng-template appDataGridCell="codigo" let-fila>
+          <span class="adm-plant__cell-codigo">{{ fila.codigo }}</span>
+          @if (fila.descripcion) {
+            <small class="adm-plant__cell-desc" [title]="fila.descripcion">{{ fila.descripcion }}</small>
+          }
+        </ng-template>
+
+        <ng-template appDataGridCell="nombre" let-fila>
+          <div class="adm-plant__cell-nombre">{{ fila.nombre }}</div>
+        </ng-template>
+
+        <ng-template appDataGridCell="tipo" let-fila>
+          <span class="adm-plant__chip adm-plant__chip--neutral">{{ tipoLabel(fila.tipo) }}</span>
+        </ng-template>
+
+        <ng-template appDataGridCell="naturaleza" let-fila>
+          <span
+            class="adm-plant__chip"
+            [class.adm-plant__chip--info]="fila.naturaleza === 'anticipo'"
+            [class.adm-plant__chip--neutral]="fila.naturaleza !== 'anticipo'"
+          >
+            {{ naturalezaLabel(fila.naturaleza) }}
+          </span>
+        </ng-template>
+
+        <ng-template appDataGridCell="reglaFechaPago" let-fila>
+          <span class="adm-plant__cell-regla">{{ reglaFechaPagoLabel(fila.reglaFechaPago) }}</span>
+        </ng-template>
+
+        <ng-template appDataGridCell="politicaFinSemana" let-fila>
+          <span class="adm-plant__cell-fds">{{ politicaFdsLabel(fila.politicaFinSemana) }}</span>
+        </ng-template>
+
+        <ng-template appDataGridCell="version" let-fila>
+          <span class="adm-plant__cell-num">v{{ fila.version }}</span>
+        </ng-template>
+
+        <ng-template appDataGridCell="activo" let-fila>
+          <span
+            class="adm-plant__chip"
+            [class.adm-plant__chip--success]="fila.activo"
+            [class.adm-plant__chip--muted]="!fila.activo"
+          >
+            <span class="adm-plant__chip-dot" aria-hidden="true"></span>
+            {{ estadoLabel(fila.activo) }}
+          </span>
+        </ng-template>
+
+        <ng-template appDataGridCell="acciones" let-fila>
+          <div class="adm-plant__row-actions" (click)="$event.stopPropagation()">
+            <button
+              type="button"
+              class="adm-plant__row-action"
+              (click)="abrirPreview(fila)"
+              [title]="'Vista previa de ' + fila.nombre"
+              [attr.aria-label]="'Vista previa de ' + fila.nombre"
+            >
+              <lucide-icon name="calendar-days" aria-hidden="true"></lucide-icon>
+            </button>
+            @if (fila.activo) {
+              <button
+                type="button"
+                class="adm-plant__row-action"
+                (click)="abrirEditar(fila)"
+                title="Editar (crear nueva versión)"
+                [attr.aria-label]="'Editar ' + fila.nombre"
+              >
+                <lucide-icon name="pencil" aria-hidden="true"></lucide-icon>
+              </button>
+              <button
+                type="button"
+                class="adm-plant__row-action"
+                (click)="alternarActivo(fila)"
+                [disabled]="ejecutandoAccion()"
+                title="Desactivar plantilla"
+                [attr.aria-label]="'Desactivar ' + fila.nombre"
+              >
+                <lucide-icon name="pause" aria-hidden="true"></lucide-icon>
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="adm-plant__row-action"
+                (click)="alternarActivo(fila)"
+                [disabled]="ejecutandoAccion()"
+                title="Reactivar plantilla"
+                [attr.aria-label]="'Reactivar ' + fila.nombre"
+              >
+                <lucide-icon name="play" aria-hidden="true"></lucide-icon>
+              </button>
+              <button
+                type="button"
+                class="adm-plant__row-action adm-plant__row-action--danger"
+                (click)="solicitarEliminar(fila)"
+                [disabled]="ejecutandoAccion()"
+                title="Eliminar plantilla inactiva"
+                [attr.aria-label]="'Eliminar ' + fila.nombre"
+              >
+                <lucide-icon name="trash-2" aria-hidden="true"></lucide-icon>
+              </button>
+            }
+          </div>
+        </ng-template>
+      </app-data-grid>
+    }
+    @if (cargandoServicio()) {
+      <app-workspace-loading
+        [fill]="true"
+        title="Cargando plantillas"
+        message="Estamos consultando las plantillas de la empresa activa."
+      />
+    }
+  </div>
+</section>
+
+@if (modoEditor(); as modo) {
+  <app-admin-plantillas-modal-editor
+    [modo]="modo"
+    [plantillaBase]="plantillaEnEdicion()"
+    (guardada)="onPlantillaGuardada($event)"
+    (cerrar)="cerrarEditor()"
+  />
+}
+
+@if (plantillaPreview(); as plantilla) {
+  <app-admin-plantillas-modal-preview
+    [plantilla]="plantilla"
+    (cerrar)="cerrarPreview()"
+  />
+}
+
+@if (eliminarPendiente(); as accion) {
+  <app-message-box
+    mode="modal"
+    variant="danger"
+    eyebrow="Eliminar plantilla"
+    title="¿Eliminar definitivamente?"
+    [message]="accion.plantilla.codigo + ' · v' + accion.plantilla.version"
+    detail="Esta plantilla quedará fuera del repositorio. Las nóminas que ya la usaron no se ven afectadas."
+    [primaryLabel]="ejecutandoAccion() ? 'Eliminando…' : 'Eliminar'"
+    secondaryLabel="Cancelar"
+    [dismissible]="!ejecutandoAccion()"
+    [disableClose]="ejecutandoAccion()"
+    (action)="confirmarEliminar()"
+    (secondary)="cancelarEliminar()"
+  >
+    @if (errorAccion(); as error) {
+      <p class="adm-plant__error-modal" role="alert">{{ error }}</p>
+    }
+  </app-message-box>
+}

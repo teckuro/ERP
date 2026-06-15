@@ -4,6 +4,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import {
   BarChart3,
   Building2,
+  CalendarDays,
   CalendarPlus,
   ClipboardList,
   FileCheck2,
@@ -32,6 +33,7 @@ describe('SidebarComponent', () => {
         LucideAngularModule.pick({
           BarChart3,
           Building2,
+          CalendarDays,
           CalendarPlus,
           ClipboardList,
           FileCheck2,
@@ -80,7 +82,7 @@ describe('SidebarComponent', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Principal');
     expect(text).toContain('Gestión');
-    expect(text).toContain('Nómina mensual');
+    expect(text).toContain('Administrador de nóminas');
     expect(text).not.toContain('Trabajadores');
   });
 

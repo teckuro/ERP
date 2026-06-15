@@ -106,6 +106,13 @@ export const routes: Routes = [
               ).then((m) => m.NominaMensualV2Container),
           },
           {
+            path: 'plantillas-ciclos',
+            loadComponent: () =>
+              import(
+                './features/nomina-mensual/containers/administrador-plantillas-container/administrador-plantillas-container'
+              ).then((m) => m.AdministradorPlantillasContainer),
+          },
+          {
             path: 'liquidaciones',
             loadComponent: () => import('./pages/liquidaciones.page').then((m) => m.LiquidacionesPage),
           },

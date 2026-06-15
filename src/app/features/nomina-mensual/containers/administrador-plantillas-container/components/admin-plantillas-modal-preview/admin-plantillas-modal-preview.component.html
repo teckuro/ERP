@@ -1,0 +1,125 @@
+<div
+  class="adm-plantillas-preview__backdrop"
+  role="presentation"
+  (click)="onBackdrop($event)"
+  (keydown)="onEscape($event)"
+  tabindex="-1"
+>
+  <div
+    class="adm-plantillas-preview"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="adm-plantillas-preview-title"
+  >
+    <header class="adm-plantillas-preview__head">
+      <div>
+        <p class="adm-plantillas-preview__eyebrow">Vista previa</p>
+        <h2 id="adm-plantillas-preview-title" class="adm-plantillas-preview__title">
+          {{ plantilla().nombre }}
+        </h2>
+        <p class="adm-plantillas-preview__subtitle">
+          <span>{{ reglaTexto() }}.</span>
+          <span>{{ politicaTexto() }}.</span>
+          @if (anticipoTexto()) {
+            <span>Anticipo: {{ anticipoTexto() }}.</span>
+          }
+        </p>
+      </div>
+      <button
+        type="button"
+        class="adm-plantillas-preview__close"
+        (click)="cerrarModal()"
+        aria-label="Cerrar"
+      >
+        <lucide-icon name="x" aria-hidden="true"></lucide-icon>
+      </button>
+    </header>
+
+    <div class="adm-plantillas-preview__toolbar">
+      <label class="adm-plantillas-preview__field">
+        <span class="adm-plantillas-preview__label">Año a proyectar</span>
+        <input
+          type="number"
+          class="adm-plantillas-preview__input"
+          [value]="anio()"
+          (change)="setAnio($any($event.target).value)"
+          min="2000"
+          max="2100"
+          step="1"
+        />
+      </label>
+      @if (hayCortes()) {
+        <div class="adm-plantillas-preview__meta">
+          {{ cortes().length }} corte{{ cortes().length === 1 ? '' : 's' }} proyectado{{ cortes().length === 1 ? '' : 's' }}
+          @if (cortesAjustados() > 0) {
+            · {{ cortesAjustados() }} con ajuste de fin de semana
+          }
+        </div>
+      }
+    </div>
+
+    <div class="adm-plantillas-preview__body">
+      @if (error()) {
+        <div class="adm-plantillas-preview__error" role="alert">{{ error() }}</div>
+      } @else if (cargando()) {
+        <div class="adm-plantillas-preview__loading">Calculando cortes…</div>
+      } @else if (!hayCortes()) {
+        <div class="adm-plantillas-preview__empty">
+          Esta plantilla no proyecta cortes para el año seleccionado.
+        </div>
+      } @else {
+        <div class="adm-plantillas-preview__table-wrap">
+          <table class="adm-plantillas-preview__table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Código del ciclo</th>
+                <th>Desde</th>
+                <th>Hasta</th>
+                <th>Pago propuesto</th>
+                <th>Ajuste</th>
+                <th>Notas</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (corte of cortes(); track corte.codigoCiclo) {
+                <tr>
+                  <td>{{ corte.numeroCorte }}</td>
+                  <td class="adm-plantillas-preview__cell-codigo">{{ corte.codigoCiclo }}</td>
+                  <td>{{ formatearFecha(corte.fechaInicio) }}</td>
+                  <td>{{ formatearFecha(corte.fechaFin) }}</td>
+                  <td>
+                    <strong>{{ formatearFecha(corte.fechaPagoPropuesta) }}</strong>
+                    @if (corte.ajusteFds && corte.fechaPagoCalendario !== corte.fechaPagoPropuesta) {
+                      <small class="adm-plantillas-preview__cal">
+                        (calendario: {{ formatearFecha(corte.fechaPagoCalendario) }})
+                      </small>
+                    }
+                  </td>
+                  <td>
+                    @if (corte.ajusteFds) {
+                      <span class="adm-plantillas-preview__chip adm-plantillas-preview__chip--warning">
+                        {{ corte.ajusteFds === 'adelantar' ? 'Adelantado' : corte.ajusteFds === 'atrasar' ? 'Atrasado' : 'Mantenido' }}
+                      </span>
+                    } @else {
+                      <span class="adm-plantillas-preview__muted">—</span>
+                    }
+                  </td>
+                  <td>
+                    <span class="adm-plantillas-preview__muted">{{ corte.notas ?? '' }}</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+    <footer class="adm-plantillas-preview__foot">
+      <button type="button" class="adm-plantillas-preview__btn" (click)="cerrarModal()">
+        Cerrar
+      </button>
+    </footer>
+  </div>
+</div>
