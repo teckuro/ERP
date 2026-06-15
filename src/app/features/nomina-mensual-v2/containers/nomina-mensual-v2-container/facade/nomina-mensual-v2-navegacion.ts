@@ -156,7 +156,22 @@ export type AyudaAvanceTono = 'bloqueo' | 'revision' | null;
  */
 export function indiceUltimoPasoCompletado(nomina: NominaPeriodo | null): number {
   if (!nomina) return -1;
-  return indiceUltimoPasoCompletadoPorEstado(nomina.estado);
+  if (nomina.estado === 'anulada') return -1;
+
+  const porEstado = indiceUltimoPasoCompletadoPorEstado(nomina.estado);
+  const indicePersistido =
+    nomina.maximoPasoCompletado != null
+      ? ORDEN_PASOS_NOMINA.indexOf(nomina.maximoPasoCompletado)
+      : -1;
+  const porPersistido = indicePersistido >= 0 ? indicePersistido : -1;
+  const merged = Math.max(porEstado, porPersistido);
+
+  // Reabierta: el cierre vuelve a pendiente aunque exista un máximo histórico.
+  if (nomina.estado === 'reabierta') {
+    return Math.min(merged, porEstado);
+  }
+
+  return merged;
 }
 
 /**

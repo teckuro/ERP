@@ -37,10 +37,7 @@
       </ng-template>
 
       <ng-template appDataGridCell="empresa" let-fila>
-        <div class="adm-nom__cell-empresa">
-          <span class="adm-nom__cell-empresa-nombre">{{ fila.empresaNombre }}</span>
-          <span class="adm-nom__cell-empresa-id">{{ fila.empresaId }}</span>
-        </div>
+        <span class="adm-nom__cell-empresa-nombre">{{ fila.empresaNombre }}</span>
       </ng-template>
 
       <ng-template appDataGridCell="tipo" let-fila>
@@ -179,6 +176,7 @@
 @if (modalNuevaAbierto()) {
   <app-admin-nominas-modal-nueva-nomina
     [empresasDisponibles]="resumenes()"
+    [periodoInicial]="periodoActivo.periodoYm()"
     (creada)="onNominaCreada($event)"
     (cerrar)="cerrarNuevaNomina()"
   />

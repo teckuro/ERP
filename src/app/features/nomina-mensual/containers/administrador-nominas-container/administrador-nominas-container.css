@@ -99,25 +99,13 @@
   color: #0f172a;
 }
 
-.adm-nom__cell-empresa {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-}
-
 .adm-nom__cell-empresa-nombre {
+  display: block;
   font-weight: 500;
   color: #0f172a;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.adm-nom__cell-empresa-id {
-  font-size: 11px;
-  color: #6b7280;
-  font-variant-numeric: tabular-nums;
 }
 
 .adm-nom__cell-num {

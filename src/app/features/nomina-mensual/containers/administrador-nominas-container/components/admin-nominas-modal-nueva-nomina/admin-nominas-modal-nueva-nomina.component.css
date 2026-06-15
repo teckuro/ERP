@@ -40,6 +40,53 @@
   margin: 0 0 4px;
 }
 
+.adm-nom-modal__contexto {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--erp-border, #e5e7eb);
+  border-radius: 6px;
+  background: var(--erp-bg-subtle, #f8fafc);
+}
+
+.adm-nom-modal__contexto--tipo {
+  margin-top: -4px;
+}
+
+.adm-nom-modal__contexto-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--erp-text-muted, #6b7280);
+}
+
+.adm-nom-modal__contexto-valor {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--erp-text-strong, #0f172a);
+}
+
+.adm-nom-modal__contexto-hint {
+  font-size: 11px;
+  color: var(--erp-text-muted, #6b7280);
+  line-height: 1.4;
+}
+
+.adm-nom-modal__resumen {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #dbeafe;
+  border-radius: 6px;
+  background: #eff6ff;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #1e3a8a;
+}
+
+.adm-nom-modal__resumen strong {
+  font-weight: 600;
+}
+
 .adm-nom-modal__title {
   margin: 0 0 4px;
   font-size: 17px;
@@ -124,56 +171,6 @@
   color: #b91c1c;
 }
 
-.adm-nom-modal__tipos {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.adm-nom-modal__tipo {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 10px 12px;
-  border: 1px solid var(--erp-border, #e5e7eb);
-  border-radius: 6px;
-  cursor: pointer;
-  background: #fff;
-  transition: background 120ms ease, border-color 120ms ease;
-}
-
-.adm-nom-modal__tipo:hover {
-  background: var(--erp-bg-subtle, #f8fafc);
-}
-
-.adm-nom-modal__tipo input {
-  margin-top: 3px;
-  accent-color: #1d4ed8;
-}
-
-.adm-nom-modal__tipo-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.adm-nom-modal__tipo-copy strong {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--erp-text-strong, #0f172a);
-}
-
-.adm-nom-modal__tipo-copy small {
-  font-size: 11px;
-  color: var(--erp-text-muted, #6b7280);
-  line-height: 1.4;
-}
-
-.adm-nom-modal__tipo--activo {
-  border-color: #1d4ed8;
-  background: rgba(29, 78, 216, 0.06);
-}
-
 .adm-nom-modal__foot {
   display: flex;
   justify-content: flex-end;
@@ -232,10 +229,4 @@
   font-size: 12px;
   color: #991b1b;
   line-height: 1.4;
-}
-
-@media (max-width: 480px) {
-  .adm-nom-modal__tipos {
-    grid-template-columns: 1fr;
-  }
 }

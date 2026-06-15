@@ -183,6 +183,34 @@ describe('indiceUltimoPasoCompletado / obtenerEstadoPaso desde evidencia (AG-NAV
     expect(obtenerEstadoPaso('closure', 'parameters', n)).toBe('pending');
   });
 
+  it('maximoPasoCompletado eleva el índice cuando el estado aún no refleja el avance UI', () => {
+    const n = crearNomina({
+      ...nominaConEstado('en_revision'),
+      maximoPasoCompletado: 'movements',
+    });
+    expect(indiceUltimoPasoCompletado(n)).toBe(2);
+    expect(obtenerEstadoPaso('movements', 'calculation', n)).toBe('completed');
+    expect(obtenerEstadoPaso('calculation', 'calculation', n)).toBe('active');
+  });
+
+  it('borrador + maximoPasoCompletado parameters marca Parámetros como completed', () => {
+    const n = crearNomina({
+      ...nominaConEstado('borrador'),
+      maximoPasoCompletado: 'parameters',
+    });
+    expect(indiceUltimoPasoCompletado(n)).toBe(0);
+    expect(obtenerEstadoPaso('parameters', 'dotacion', n)).toBe('completed');
+  });
+
+  it('reabierta no revive closure aunque maximoPasoCompletado histórico sea closure', () => {
+    const n = crearNomina({
+      ...nominaConEstado('reabierta', true),
+      maximoPasoCompletado: 'closure',
+    });
+    expect(indiceUltimoPasoCompletado(n)).toBe(4);
+    expect(obtenerEstadoPaso('closure', 'parameters', n)).toBe('pending');
+  });
+
   it('estado anulada: ningún paso queda completed', () => {
     const n = nominaConEstado('anulada', true);
     expect(indiceUltimoPasoCompletado(n)).toBe(-1);

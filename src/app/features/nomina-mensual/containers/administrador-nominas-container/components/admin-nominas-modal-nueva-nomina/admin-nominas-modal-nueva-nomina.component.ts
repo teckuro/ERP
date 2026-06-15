@@ -15,6 +15,7 @@ import {
   Component,
   ViewEncapsulation,
   computed,
+  effect,
   inject,
   input,
   output,
@@ -36,7 +37,7 @@ const TIPOS_NOMINA: { id: TipoNomina; label: string; descripcion: string }[] = [
   {
     id: 'mensual',
     label: 'Mensual',
-    descripcion: 'Liquidación legal del mes calendario. Otros ciclos se habilitarán en fases posteriores.',
+    descripcion: 'Liquidación legal del mes calendario.',
   },
 ];
 
@@ -45,6 +46,13 @@ function periodoActual(): string {
   const anio = hoy.getFullYear();
   const mes = (hoy.getMonth() + 1).toString().padStart(2, '0');
   return `${anio}-${mes}`;
+}
+
+function etiquetaPeriodoLegible(periodo: string): string {
+  const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(periodo);
+  if (!match) return periodo;
+  const fecha = new Date(Number(match[1]), Number(match[2]) - 1, 1);
+  return fecha.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' });
 }
 
 @Component({
@@ -61,6 +69,8 @@ export class AdminNominasModalNuevaNominaComponent {
   private readonly empresaActiva = inject(EmpresaActivaService);
 
   readonly empresasDisponibles = input<readonly NominaPeriodoResumen[]>([]);
+  /** Período sugerido desde el shell (selector global), si está disponible. */
+  readonly periodoInicial = input<string | null>(null);
   readonly creada = output<NominaPeriodoResumen>();
   readonly cerrar = output<void>();
 
@@ -99,6 +109,12 @@ export class AdminNominasModalNuevaNominaComponent {
     return this.empresas().find((e) => e.id === id)?.nombre ?? '';
   });
 
+  readonly multiplesEmpresas = computed(() => this.empresas().length > 1);
+
+  readonly empresaContexto = computed(() => this.empresaSeleccionadaNombre());
+
+  readonly etiquetaPeriodo = computed(() => etiquetaPeriodoLegible(this.periodo()));
+
   readonly puedeCrear = computed(
     () =>
       !this.guardando()
@@ -108,6 +124,13 @@ export class AdminNominasModalNuevaNominaComponent {
   );
 
   constructor() {
+    effect(() => {
+      const inicial = this.periodoInicial();
+      if (inicial && /^\d{4}-(0[1-9]|1[0-2])$/.test(inicial)) {
+        this.periodo.set(inicial);
+      }
+    }, { allowSignalWrites: true });
+
     const primera = this.empresas()[0];
     if (primera) {
       this.empresaId.set(primera.id);

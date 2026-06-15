@@ -1628,7 +1628,18 @@ export class NominaPeriodoService {
       totalLiquido: number;
     },
   ): Promise<void> {
-    const nomina = await this.exigirNomina(nominaPeriodoId);
+    let nomina = await this.exigirNomina(nominaPeriodoId);
+
+    // Recálculo idempotente: si la nómina ya estaba calculada o validada,
+    // primero la devolvemos a "en_revision" y luego transitamos a "calculada"
+    // para reflejar el nuevo snapshot. Sin esta pre-transición, recalcular
+    // sobre una nómina ya `calculada` (incluido el caso post-reapertura)
+    // disparaba "Transición no permitida: calculada → calculada".
+    if (nomina.estado === 'calculada' || nomina.estado === 'validada') {
+      await this.transicionar(nomina, 'en_revision', 'Recálculo solicitado.');
+      nomina = await this.exigirNomina(nominaPeriodoId);
+    }
+
     if (nomina.estado !== 'en_revision' && nomina.estado !== 'reabierta') {
       throw new Error('La nómina debe estar en revisión antes de calcular.');
     }

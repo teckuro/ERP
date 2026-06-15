@@ -25,6 +25,7 @@ import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/m
 import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
+import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { NominaPeriodoService } from '../../services/nomina-periodo.service';
 import type {
   NominaPeriodoResumen,
@@ -83,6 +84,7 @@ interface AccionAdministrativaPendiente {
 export class AdministradorNominasContainer {
   private readonly router = inject(Router);
   private readonly servicio = inject(NominaPeriodoService);
+  readonly periodoActivo = inject(PeriodoActivoService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly resumenes = signal<NominaPeriodoResumen[]>([]);
@@ -103,25 +105,21 @@ export class AdministradorNominasContainer {
   readonly resumenesOrdenados = computed(() => ordenarResumenesOperativos(this.resumenes()));
 
   readonly subtitulo = computed(() => {
-    const total = this.resumenes().length;
-    if (total === 0) {
-      return 'Sin nóminas cargadas todavía.';
+    const resumenes = this.resumenes();
+    if (resumenes.length === 0) {
+      return 'Crea la primera nómina para iniciar el proceso del período.';
     }
-    const requierenAccion = this.resumenes().filter(
+    const requierenAccion = resumenes.filter(
       (fila) => nominaRequiereAccion(fila.estado) && (fila.requiereAccion ?? true),
     ).length;
-    const conCriticas = this.resumenes().filter(
-      (fila) => fila.totalIncidenciasCriticas > 0,
-    ).length;
-    const base = `${total} ${total === 1 ? 'nómina' : 'nóminas'} en seguimiento`;
-    const partes: string[] = [base];
-    if (requierenAccion > 0) {
-      partes.push(`${requierenAccion} requiere${requierenAccion === 1 ? '' : 'n'} acción`);
-    }
+    const conCriticas = resumenes.filter((fila) => fila.totalIncidenciasCriticas > 0).length;
     if (conCriticas > 0) {
-      partes.push(`${conCriticas} con críticas`);
+      return `${conCriticas} nómina${conCriticas === 1 ? '' : 's'} con incidencias críticas pendientes.`;
     }
-    return `${partes.join(' · ')}.`;
+    if (requierenAccion > 0) {
+      return `${requierenAccion} nómina${requierenAccion === 1 ? '' : 's'} requiere${requierenAccion === 1 ? '' : 'n'} seguimiento en el generador.`;
+    }
+    return 'Revisa el avance de cada nómina y continúa en el generador cuando corresponda.';
   });
 
   constructor() {

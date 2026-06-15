@@ -13,9 +13,10 @@
   >
     <header class="adm-nom-modal__head">
       <div>
-        <p class="adm-nom-modal__eyebrow">Crear nómina</p>
         <h2 id="adm-nom-modal-nueva-title" class="adm-nom-modal__title">Nueva nómina</h2>
-        <p class="adm-nom-modal__subtitle">Define el período y la empresa. F01 habilita exclusivamente la nómina mensual.</p>
+        <p class="adm-nom-modal__subtitle">
+          Indica el período a procesar. La fecha de pago y el cierre se configuran en el generador.
+        </p>
       </div>
       <button
         type="button"
@@ -39,53 +40,50 @@
           required
         />
         @if (!periodoEsValido()) {
-          <small class="adm-nom-modal__hint adm-nom-modal__hint--error">Indica un período válido (formato AAAA-MM).</small>
-        } @else {
-          <small class="adm-nom-modal__hint">Cualquier mes del calendario. El cierre y la fecha de pago se definen en el Generador.</small>
+          <small class="adm-nom-modal__hint adm-nom-modal__hint--error">
+            Indica un período válido (formato AAAA-MM).
+          </small>
         }
       </div>
 
-      <div class="adm-nom-modal__field">
-        <label for="adm-nom-modal-empresa" class="adm-nom-modal__label">Empresa</label>
-        <select
-          id="adm-nom-modal-empresa"
-          class="adm-nom-modal__input"
-          [value]="empresaId()"
-          (change)="setEmpresa($any($event.target).value)"
-          required
-        >
-          @if (empresas().length === 0) {
-            <option value="" disabled>No hay empresas disponibles</option>
-          }
-          @for (empresa of empresas(); track empresa.id) {
-            <option [value]="empresa.id">{{ empresa.nombre }}</option>
-          }
-        </select>
-      </div>
-
-      <div class="adm-nom-modal__field">
-        <span class="adm-nom-modal__label">Tipo de nómina</span>
-        <div class="adm-nom-modal__tipos" role="radiogroup" aria-label="Tipo de nómina">
-          @for (opcion of tiposNomina; track opcion.id) {
-            <label
-              class="adm-nom-modal__tipo"
-              [class.adm-nom-modal__tipo--activo]="tipo() === opcion.id"
-            >
-              <input
-                type="radio"
-                name="adm-nom-modal-tipo"
-                [value]="opcion.id"
-                [checked]="tipo() === opcion.id"
-                (change)="setTipo(opcion.id)"
-              />
-              <span class="adm-nom-modal__tipo-copy">
-                <strong>{{ opcion.label }}</strong>
-                <small>{{ opcion.descripcion }}</small>
-              </span>
-            </label>
-          }
+      @if (multiplesEmpresas()) {
+        <div class="adm-nom-modal__field">
+          <label for="adm-nom-modal-empresa" class="adm-nom-modal__label">Empresa</label>
+          <select
+            id="adm-nom-modal-empresa"
+            class="adm-nom-modal__input"
+            [value]="empresaId()"
+            (change)="setEmpresa($any($event.target).value)"
+            required
+          >
+            @if (empresas().length === 0) {
+              <option value="" disabled>No hay empresas disponibles</option>
+            }
+            @for (empresa of empresas(); track empresa.id) {
+              <option [value]="empresa.id">{{ empresa.nombre }}</option>
+            }
+          </select>
         </div>
-      </div>
+      } @else if (empresaContexto()) {
+        <p class="adm-nom-modal__contexto">
+          <span class="adm-nom-modal__contexto-label">Empresa</span>
+          <span class="adm-nom-modal__contexto-valor">{{ empresaContexto() }}</span>
+        </p>
+      }
+
+      <p class="adm-nom-modal__contexto adm-nom-modal__contexto--tipo">
+        <span class="adm-nom-modal__contexto-label">Tipo</span>
+        <span class="adm-nom-modal__contexto-valor">Mensual</span>
+        <span class="adm-nom-modal__contexto-hint">Liquidación legal del mes calendario.</span>
+      </p>
+
+      @if (periodoEsValido() && empresaContexto()) {
+        <p class="adm-nom-modal__resumen" aria-live="polite">
+          Se creará la nómina mensual de
+          <strong>{{ empresaContexto() }}</strong>
+          para <strong>{{ etiquetaPeriodo() }}</strong>.
+        </p>
+      }
 
       @if (error()) {
         <div class="adm-nom-modal__error" role="alert">{{ error() }}</div>
@@ -105,7 +103,7 @@
           class="adm-nom-modal__btn adm-nom-modal__btn--primary"
           [disabled]="!puedeCrear()"
         >
-          {{ guardando() ? 'Creando…' : 'Crear nómina' }}
+          {{ guardando() ? 'Creando…' : 'Crear y abrir generador' }}
         </button>
       </footer>
     </form>

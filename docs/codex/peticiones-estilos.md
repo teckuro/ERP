@@ -9,6 +9,82 @@
 
 ---
 
+## 2026-06-15 — Flujo crear nómina en Administrador (NOIA-ADM-NOM-CREAR-01)
+
+Refactor del modal "Nueva nómina" y subtítulo del shell para reducir
+duplicidad y ordenar el flujo:
+
+- Un solo título (sin eyebrow redundante "Crear nómina").
+- Copy operativo sin referencias a fases técnicas (F01).
+- Orden: Período → Empresa (solo si hay varias) → Tipo fijo "Mensual".
+- Resumen de confirmación antes del CTA ("Se creará la nómina mensual de…").
+- CTA explícito: "Crear y abrir generador" (alinea con navegación post-creación).
+- Período inicial sincronizado con `PeriodoActivoService` del shell.
+- Grilla: columna Empresa sin ID interno visible.
+- Subtítulo del shell: deja de repetir el conteo de la grilla; prioriza
+  incidencias críticas y nóminas que requieren seguimiento.
+
+Archivos: `admin-nominas-modal-nueva-nomina.*`, `administrador-nominas-container.*`.
+
+---
+
+## 2026-06-15 — Stepper marca paso OK al avanzar desde shell (NOM-FIX-STEPPER-OK-01)
+
+El stepper (`nomina-workflow-header nmv2-stepper-card`) no mostraba el ícono
+de listo al usar el CTA del shell. Causas:
+
+1. `obtenerEstadoPaso` solo derivaba completitud desde `nomina.estado`, sin
+   leer `maximoPasoCompletado` (persistido al avanzar).
+2. Al avanzar con el shell, el paso terminal se completaba en BD pero el
+   container no persistía explícitamente el paso ni refrescaba `nominaCargada`.
+
+Cambios:
+
+- `indiceUltimoPasoCompletado` combina estado + `maximoPasoCompletado`
+  (con tope en `reabierta` para no revivir Cierre).
+- `ejecutarAccionPrincipalPasoActual` y avance desde Parámetros llaman
+  `marcarPasoCompletadoYRefrescarNomina` antes de navegar.
+
+Archivos: `nomina-mensual-v2-navegacion.ts`, `nomina-mensual-v2-container.ts`,
+spec de navegación.
+
+---
+
+## 2026-06-15 — Recálculo idempotente del Generador V2 (NOM-FIX-RECALCULO-01)
+
+El CTA "Recalcular" del paso Cálculo dejaba de funcionar después del primer
+cálculo. Causa: `NominaPeriodoService.registrarCalculo` solo aceptaba estados
+`en_revision` y `reabierta` como origen, por lo que un segundo intento desde
+`calculada` fallaba con `Transición no permitida: calculada → calculada`. El
+mismo bloqueo aparecía tras "Reabrir nómina" + un primer cálculo.
+
+Cambio:
+
+- `registrarCalculo` ahora hace una pre-transición automática a `en_revision`
+  cuando la nómina está en `calculada` o `validada`, registrando motivo
+  "Recálculo solicitado." en el evento de auditoría. Desde ahí se ejecuta la
+  transición normal a `calculada` con los totales nuevos.
+- Estados terminales o aún no aptos (`aprobada`, `liquidada`, `cerrada`,
+  `anulada`, `borrador`, `dotacion_generada`) siguen rechazados con el mensaje
+  original ("La nómina debe estar en revisión antes de calcular"). Para esos
+  hay que pasar por reapertura/anulación explícita.
+- `reabierta → calculada` sigue siendo directa, sin pasos intermedios.
+
+Sin cambios visuales. El CTA conserva su rotulado dinámico
+("Calcular nómina" / "Recalcular" / "Calculando…").
+
+Archivos:
+
+- `src/app/features/nomina-mensual/services/nomina-periodo.service.ts`
+- `src/app/features/nomina-mensual/services/nomina-periodo.service.spec.ts`
+  (3 specs nuevos: recálculo desde `calculada`, cálculo directo desde
+  `reabierta`, rechazo desde `aprobada`).
+
+Validación: `npx ng test` del spec del servicio (52/52 verdes) +
+adapter de cálculo y paso-calculo (18/18 verdes).
+
+---
+
 ## 2026-06-15 — Stepper Generador V2 con tooltip del sistema (NOIA-STEPPER-USUARIO-03)
 
 Refinamiento de `NOIA-STEPPER-USUARIO-02`. El botón "Volver al paso anterior"

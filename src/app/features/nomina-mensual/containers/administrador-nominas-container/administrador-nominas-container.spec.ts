@@ -294,7 +294,7 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     expect(cmp.accionDetalle('reabrir')).toBe('');
   });
 
-  it('Test 45 — subtitulo refleja total + cuantas requieren accion y cuantas con criticas (NOIA)', async () => {
+  it('Test 45 — subtitulo prioriza incidencias críticas sin repetir el conteo de la grilla (NOIA)', async () => {
     servicio.listarResumenes.mockReset().mockResolvedValue([
       resumenMock({ id: 'a', estado: 'borrador', totalIncidenciasCriticas: 0, totalAdvertencias: 0 }),
       resumenMock({ id: 'b', estado: 'dotacion_generada', totalIncidenciasCriticas: 2 }),
@@ -305,20 +305,17 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     const cmp = fixture.componentInstance;
     await cmp.cargarResumenes();
 
-    const sub = cmp.subtitulo();
-    expect(sub).toContain('3 nóminas en seguimiento');
-    expect(sub).toContain('1 con críticas');
-    expect(sub).toMatch(/requieren? acción/);
+    expect(cmp.subtitulo()).toBe('1 nómina con incidencias críticas pendientes.');
   });
 
-  it('Test 46 — subtitulo sin nominas en sistema usa copy de bandeja vacia', async () => {
+  it('Test 46 — subtitulo sin nominas en sistema orienta a crear la primera', async () => {
     servicio.listarResumenes.mockReset().mockResolvedValue([]);
     configurar({ servicio });
     const fixture = TestBed.createComponent(AdministradorNominasContainer);
     const cmp = fixture.componentInstance;
     await cmp.cargarResumenes();
 
-    expect(cmp.subtitulo()).toBe('Sin nóminas cargadas todavía.');
+    expect(cmp.subtitulo()).toBe('Crea la primera nómina para iniciar el proceso del período.');
   });
 
   it('Test 47 — esFilaPrioritaria marca filas con criticas o que requieren accion', () => {

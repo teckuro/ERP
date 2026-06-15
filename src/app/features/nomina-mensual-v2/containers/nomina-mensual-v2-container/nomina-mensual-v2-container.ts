@@ -455,7 +455,12 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   }
 
   manejarAvanceDesdeParametros(destinoPaso: PayrollStepId): void {
-    void this.persistirCabeceraTrasParametros();
+    void this.persistirAvanceDesdeParametros(destinoPaso);
+  }
+
+  private async persistirAvanceDesdeParametros(destinoPaso: PayrollStepId): Promise<void> {
+    await this.persistirCabeceraTrasParametros();
+    await this.marcarPasoCompletadoYRefrescarNomina('parameters');
     this.irAPaso(destinoPaso);
   }
 
@@ -607,8 +612,47 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       return;
     }
     this.orquestador.establecerAyudaAvance(null);
+    await this.marcarPasoCompletadoYRefrescarNomina(pasoActivo);
     if (siguientePaso) {
       this.irAPaso(siguientePaso);
+    }
+  }
+
+  /**
+   * Persiste el paso recién completado (monótono) y refresca la cabecera de la
+   * nómina para que el stepper derive `completed` desde `estado` +
+   * `maximoPasoCompletado` sin esperar un reload manual.
+   */
+  private async marcarPasoCompletadoYRefrescarNomina(paso: PayrollStepId): Promise<void> {
+    const id = this.nominaPeriodoId();
+    if (!id) return;
+    await this.nominaPeriodoService.registrarPasoCompletado(id, paso);
+    await this.refrescarNominaCargada(id, paso);
+  }
+
+  private async refrescarNominaCargada(
+    nominaPeriodoId: string,
+    pasoCompletadoFallback?: PayrollStepId,
+  ): Promise<void> {
+    try {
+      const nomina = await this.nominaPeriodoService.obtenerNomina(nominaPeriodoId);
+      if (nomina) {
+        this.nominaCargada.set(nomina);
+        return;
+      }
+    } catch (error) {
+      console.warn('[Nómina V2] No fue posible refrescar cabecera tras avance', error);
+    }
+
+    if (!pasoCompletadoFallback) return;
+    const actual = this.nominaCargada();
+    if (!actual) return;
+    const idxNuevo = ORDEN_PASOS_NOMINA.indexOf(pasoCompletadoFallback);
+    const idxActual = actual.maximoPasoCompletado
+      ? ORDEN_PASOS_NOMINA.indexOf(actual.maximoPasoCompletado)
+      : -1;
+    if (idxNuevo > idxActual) {
+      this.nominaCargada.set({ ...actual, maximoPasoCompletado: pasoCompletadoFallback });
     }
   }
 

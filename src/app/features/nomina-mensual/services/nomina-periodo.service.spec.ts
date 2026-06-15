@@ -300,6 +300,65 @@ describe('NominaPeriodoService', () => {
     );
   });
 
+  it('registrarCalculo permite recalcular sobre estado "calculada" (re-bajando a "en_revision" primero)', async () => {
+    repo.obtenerNominaCompleta
+      .mockResolvedValueOnce(nomina({ estado: 'calculada' }))
+      .mockResolvedValueOnce(nomina({ estado: 'en_revision' }));
+    const service = configurar({ repo });
+
+    await service.registrarCalculo('nom-1', {
+      idCalculoPeriodo: 88,
+      totalTrabajadores: 2,
+      totalHaberes: 200,
+      totalDescuentos: 50,
+      totalLiquido: 150,
+    });
+
+    expect(repo.transicionarEstado).toHaveBeenNthCalledWith(
+      1,
+      'nom-1',
+      expect.objectContaining({ estadoEsperado: 'calculada', estadoDestino: 'en_revision' }),
+    );
+    expect(repo.transicionarEstado).toHaveBeenNthCalledWith(
+      2,
+      'nom-1',
+      expect.objectContaining({ estadoEsperado: 'en_revision', estadoDestino: 'calculada' }),
+    );
+  });
+
+  it('registrarCalculo permite calcular directo desde "reabierta" sin pasos intermedios', async () => {
+    repo.obtenerNominaCompleta.mockResolvedValueOnce(nomina({ estado: 'reabierta' }));
+    const service = configurar({ repo });
+
+    await service.registrarCalculo('nom-1', {
+      idCalculoPeriodo: 99,
+      totalTrabajadores: 1,
+      totalHaberes: 100,
+      totalDescuentos: 20,
+      totalLiquido: 80,
+    });
+
+    expect(repo.transicionarEstado).toHaveBeenCalledTimes(1);
+    expect(repo.transicionarEstado).toHaveBeenCalledWith(
+      'nom-1',
+      expect.objectContaining({ estadoEsperado: 'reabierta', estadoDestino: 'calculada' }),
+    );
+  });
+
+  it('registrarCalculo rechaza estados no editables (ej. "aprobada") con error claro', async () => {
+    repo.obtenerNominaCompleta.mockResolvedValueOnce(nomina({ estado: 'aprobada' }));
+    const service = configurar({ repo });
+
+    await expect(
+      service.registrarCalculo('nom-1', {
+        totalTrabajadores: 1,
+        totalHaberes: 0,
+        totalDescuentos: 0,
+        totalLiquido: 0,
+      }),
+    ).rejects.toThrow(/en revisión antes de calcular/);
+  });
+
   it('omitirMovimiento marca el movimiento como omitido', async () => {
     repo.obtenerMovimiento.mockResolvedValue({
       id: 'mov-1',
