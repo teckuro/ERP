@@ -6039,6 +6039,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      confirmar_creacion_nomina: {
+        Args: { p_fingerprint: string; p_periodo: string; p_tipo: string }
+        Returns: Json
+      }
       confirmar_nomina_preparacion: {
         Args: { p_id_preparacion_nomina: number; p_metadata?: Json }
         Returns: {
@@ -6510,14 +6514,6 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      confirmar_creacion_nomina: {
-        Args: { p_periodo: string; p_tipo: string; p_fingerprint: string }
-        Returns: Json
-      }
-      previsualizar_creacion_nomina: {
-        Args: { p_periodo: string; p_tipo?: string }
-        Returns: Json
-      }
       previsualizar_cortes_plantilla: {
         Args: { p_anio: number; p_cantidad?: number; p_plantilla_id: string }
         Returns: {
@@ -6530,6 +6526,10 @@ export type Database = {
           notas: string
           numero_corte: number
         }[]
+      }
+      previsualizar_creacion_nomina: {
+        Args: { p_periodo: string; p_tipo?: string }
+        Returns: Json
       }
       reabrir_nomina_operativa: {
         Args: {
