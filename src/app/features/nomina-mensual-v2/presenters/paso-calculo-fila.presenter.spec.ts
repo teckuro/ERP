@@ -250,18 +250,35 @@ describe('COLUMNAS_GRILLA_CALCULO', () => {
 });
 
 describe('construirFiltrosCalculo', () => {
-  it('expone filtros por estado y por AFP con las AFP detectadas en las filas', () => {
+  it('expone filtros por trabajador y por estado', () => {
     const filas = [
       presentarFilaCalculo(liquidacionMock(), { afp: 'Cuprum' }),
-      presentarFilaCalculo(liquidacionMock({ idPersona: 5 }), { afp: 'Modelo' }),
-      presentarFilaCalculo(liquidacionMock({ idPersona: 6 }), { afp: 'Cuprum' }),
+      presentarFilaCalculo(
+        liquidacionMock({ idPersona: 5, nombreCompleto: 'Juan Modelo', rut: '12.345.678-9' }),
+        { afp: 'Modelo' },
+      ),
+      presentarFilaCalculo(
+        liquidacionMock({ idPersona: 6, estado: 'con_advertencias' }),
+        { afp: 'Cuprum' },
+      ),
     ];
     const filtros = construirFiltrosCalculo(filas);
-    expect(filtros.map((f) => f.id)).toEqual(['estado', 'afp']);
-    const opcionesAfp = filtros[1].options as Array<{ label: string; value: string }>;
-    const valoresAfp = opcionesAfp.map((o) => o.value);
-    expect(valoresAfp).toContain('Cuprum');
-    expect(valoresAfp).toContain('Modelo');
-    expect(valoresAfp).toContain('');
+    expect(filtros.map((f) => f.id)).toEqual(['busqueda', 'estado']);
+
+    const busqueda = filtros[0];
+    expect(busqueda.predicate?.(filas[1], 'juan modelo')).toBe(true);
+    expect(busqueda.predicate?.(filas[1], '999')).toBe(false);
+    expect(busqueda.predicate?.(filas[1], '12.345')).toBe(true);
+
+    const estado = filtros[1];
+    expect(estado.options?.map((o) => (typeof o === 'string' ? o : o.value))).toEqual([
+      'ok',
+      'aviso',
+      'bloqueo',
+    ]);
+    expect(estado.predicate?.(filas[0], '')).toBe(true);
+    expect(estado.predicate?.(filas[0], 'ok')).toBe(true);
+    expect(estado.predicate?.(filas[2], 'aviso')).toBe(true);
+    expect(estado.predicate?.(filas[2], 'ok')).toBe(false);
   });
 });

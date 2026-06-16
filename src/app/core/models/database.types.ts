@@ -5437,6 +5437,27 @@ export type Database = {
         }
         Relationships: []
       }
+      usuario_preferencia_ui: {
+        Row: {
+          actualizado_en: string
+          clave: string
+          id_usuario: string
+          valor: Json
+        }
+        Insert: {
+          actualizado_en?: string
+          clave: string
+          id_usuario: string
+          valor?: Json
+        }
+        Update: {
+          actualizado_en?: string
+          clave?: string
+          id_usuario?: string
+          valor?: Json
+        }
+        Relationships: []
+      }
       vacacion_movimiento: {
         Row: {
           dias: number
@@ -5829,6 +5850,10 @@ export type Database = {
       }
     }
     Functions: {
+      _validar_clave_preferencia_ui: {
+        Args: { p_clave: string }
+        Returns: string
+      }
       actualizar_maximo_paso_completado_nomina: {
         Args: { p_nomina_id: string; p_paso: string }
         Returns: {
@@ -6468,6 +6493,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      guardar_preferencia_ui: {
+        Args: { p_clave: string; p_valor?: Json }
+        Returns: undefined
+      }
       listar_dotacion_nomina: {
         Args: {
           p_busqueda?: string
@@ -6513,6 +6542,11 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      obtener_preferencia_ui: { Args: { p_clave: string }; Returns: Json }
+      preferencia_ui_establecida: {
+        Args: { p_clave: string }
+        Returns: boolean
       }
       previsualizar_cortes_plantilla: {
         Args: { p_anio: number; p_cantidad?: number; p_plantilla_id: string }

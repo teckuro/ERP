@@ -146,56 +146,18 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Pre-validación inline                                                      */
+/* Bloqueo pre-cálculo (solo si hay críticos; sin duplicar resumen de cabecera) */
 /* -------------------------------------------------------------------------- */
 
-.paso-calc__prevalid {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 14px;
+.paso-calc__bloqueo {
+  margin: 0;
   padding: 8px 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-}
-
-.paso-calc__prevalid.is-danger {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #b91c1c;
   background: #fef2f2;
-  border-color: #fecaca;
-}
-
-.paso-calc__prevalid-chip {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  font-size: 12px;
-  color: #475569;
-}
-
-.paso-calc__prevalid-chip strong {
-  font-size: 14px;
-  font-weight: 600;
-  color: #0f172a;
-  font-variant-numeric: tabular-nums;
-}
-
-.paso-calc__prevalid-chip.is-positive strong {
-  color: #047857;
-}
-
-.paso-calc__prevalid-chip.is-warning strong {
-  color: #92400e;
-}
-
-.paso-calc__prevalid-chip.is-danger strong {
-  color: #b91c1c;
-}
-
-.paso-calc__prevalid-help {
-  font-size: 12px;
-  color: #b91c1c;
-  margin-left: 4px;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
 }
 
 /* -------------------------------------------------------------------------- */

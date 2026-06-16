@@ -2,8 +2,11 @@ import type {
   EntradaMensualMotor,
   GuardarSnapshotPreliminarResult,
   LineaLiquidacionCalculada,
+  LiquidacionCalculada,
+  MotorCalculoEstadoPeriodo,
   MotorCalculoIssue,
   MotorCalculoPeriodoResultado,
+  MotorCalculoTrazabilidad,
   NominaCalculoConceptoSnapshot,
   NominaCalculoIssueSnapshot,
   NominaCalculoParametroSnapshot,
@@ -11,6 +14,7 @@ import type {
   NominaCalculoSnapshotOrigen,
   NominaCalculoTrabajadorSnapshot,
   NominaCalculoTrazabilidadSnapshot,
+  NominaSnapshotCompletoView,
 } from '../models/proceso-mensual.model';
 import type { ParametroGeneral } from '../../parametros-generales/models/parametro-general.model';
 
@@ -309,4 +313,166 @@ function stableStringify(value: unknown): string {
 
 function sum(values: number[]): number {
   return Math.round(values.reduce((acc, v) => acc + (Number.isFinite(v) ? v : 0), 0) * 100) / 100;
+}
+
+/**
+ * Reconstruye el resultado del motor V1 desde un snapshot completo persistido
+ * en BD. Inverso aproximado de `mapResultadoMotorToSnapshotPayload`: conserva
+ * líneas, totales, issues y trazabilidad para rehidratar el paso Cálculo del
+ * Generador sin recalcular.
+ */
+export function mapSnapshotCompletoToMotorCalculoPeriodo(
+  completo: NominaSnapshotCompletoView,
+): MotorCalculoPeriodoResultado {
+  const cabecera = completo.cabecera;
+  const liquidaciones = completo.trabajadores.map((trabajador) =>
+    mapTrabajadorSnapshotToLiquidacion(trabajador, cabecera.periodo),
+  );
+  const estadoPeriodo: MotorCalculoEstadoPeriodo =
+    cabecera.totalBloqueados > 0 || liquidaciones.some((l) => l.estado === 'con_bloqueos')
+      ? 'con_bloqueos'
+      : 'calculado_preliminar';
+
+  return {
+    periodo: cabecera.periodo,
+    estado: estadoPeriodo,
+    generadoEn: cabecera.fechaGeneracion,
+    resumen: {
+      totalTrabajadoresCalculados: cabecera.totalTrabajadores,
+      totalBloqueados: cabecera.totalBloqueados,
+      totalConAdvertencias: cabecera.totalAdvertencias,
+      totalHaberes: cabecera.totalHaberes,
+      totalDescuentos: cabecera.totalDescuentos,
+      totalLiquidoPreliminar: cabecera.totalLiquido,
+    },
+    liquidaciones,
+    issues: cabecera.issues.map(mapIssueSnapshotToMotor),
+  };
+}
+
+function mapTrabajadorSnapshotToLiquidacion(
+  trabajador: NominaCalculoTrabajadorSnapshot,
+  periodo: string,
+): LiquidacionCalculada {
+  const haberesImponibles: LineaLiquidacionCalculada[] = [];
+  const haberesNoImponibles: LineaLiquidacionCalculada[] = [];
+  const descuentosLegales: LineaLiquidacionCalculada[] = [];
+  const descuentosVoluntarios: LineaLiquidacionCalculada[] = [];
+
+  let legalAcumulado = 0;
+  const legalObjetivo = trabajador.totalDescuentosLegales;
+
+  for (const concepto of trabajador.conceptos) {
+    if (concepto.tipo === 'cotizacion') continue;
+    const linea = mapConceptoSnapshotToLinea(concepto);
+    if (concepto.tipo === 'haber') {
+      if (concepto.imponible) haberesImponibles.push(linea);
+      else haberesNoImponibles.push(linea);
+      continue;
+    }
+    if (concepto.tipo === 'impuesto') {
+      descuentosLegales.push(linea);
+      legalAcumulado += concepto.monto;
+      continue;
+    }
+    if (concepto.tipo === 'descuento') {
+      if (legalAcumulado + concepto.monto <= legalObjetivo + 0.01) {
+        descuentosLegales.push(linea);
+        legalAcumulado += concepto.monto;
+      } else {
+        descuentosVoluntarios.push(linea);
+      }
+    }
+  }
+
+  return {
+    periodo,
+    idPersona: trabajador.idPersona,
+    rut: trabajador.rut,
+    nombreCompleto: trabajador.nombreCompletoSnapshot,
+    haberesImponibles,
+    haberesNoImponibles,
+    descuentosLegales,
+    descuentosVoluntarios,
+    baseImponiblePrevisional: trabajador.baseImponiblePrevisional,
+    baseTributable: trabajador.baseTributable,
+    gratificacionLegal: sumarMontosPorCodigo(haberesImponibles, 'GRATIFICACION_ART_50', 'GRATIFICACION_RECURRENTE'),
+    asignacionFamiliar: sumarMontosPorCodigo(haberesNoImponibles, 'ASIGNACION_FAMILIAR'),
+    cotizacionAfp: trabajador.cotizacionAfp,
+    cotizacionSalud: trabajador.cotizacionSalud,
+    cotizacionAfc: trabajador.cotizacionAfc,
+    cotizacionSis: trabajador.cotizacionSis,
+    cotizacionSanna: trabajador.cotizacionSanna,
+    cotizacionLey16744: trabajador.cotizacionLey16744Empleador,
+    impuestoUnico: trabajador.impuestoUnico,
+    totalHaberes: trabajador.totalHaberesImponibles + trabajador.totalHaberesNoImponibles,
+    totalDescuentos:
+      trabajador.totalDescuentosLegales + trabajador.totalDescuentosVoluntarios,
+    liquidoAPago: trabajador.liquidoPreliminar,
+    issues: trabajador.issues.map(mapIssueSnapshotToMotor),
+    trazabilidad: trabajador.trazabilidad.map(mapTrazabilidadSnapshotToMotor),
+    estado: trabajador.estado,
+  };
+}
+
+function mapConceptoSnapshotToLinea(concepto: NominaCalculoConceptoSnapshot): LineaLiquidacionCalculada {
+  return {
+    codigo: codigoConceptoSnapshot(concepto),
+    descripcion: concepto.nombreConceptoSnapshot,
+    monto: concepto.monto,
+    origen: concepto.origen,
+    imponible: concepto.imponible,
+    tributable: concepto.tributable,
+  };
+}
+
+function codigoConceptoSnapshot(concepto: NominaCalculoConceptoSnapshot): string {
+  const raw = concepto.trazabilidadJson?.['codigo'];
+  if (typeof raw === 'string' && raw.trim()) return raw.trim();
+  if (concepto.tipo === 'impuesto') return 'IMPUESTO_UNICO';
+  return concepto.nombreConceptoSnapshot.trim().replace(/\s+/g, '_').toUpperCase();
+}
+
+function mapIssueSnapshotToMotor(issue: NominaCalculoIssueSnapshot): MotorCalculoIssue {
+  return {
+    codigo: issue.codigo,
+    severidad: issue.severidad,
+    mensaje: issue.mensaje,
+    origen: issue.origen,
+    entidadId: issue.entidadId ?? null,
+    campo: issue.campo ?? null,
+  };
+}
+
+function mapTrazabilidadSnapshotToMotor(
+  traza: NominaCalculoTrazabilidadSnapshot,
+): MotorCalculoTrazabilidad {
+  return {
+    codigo: traza.codigo,
+    origen: traza.origen,
+    tabla: traza.tablaFuente,
+    campo: traza.campoFuente,
+    valorEntrada: normalizeTrazaValor(traza.valorEntrada),
+    formula: traza.formula,
+    valorResultado: normalizeTrazaValor(traza.valorResultado),
+    vigenciaInicio: traza.vigenciaInicio,
+    vigenciaFin: traza.vigenciaFin,
+    observacion: traza.observacion,
+  };
+}
+
+function normalizeTrazaValor(
+  value: NominaCalculoTrazabilidadSnapshot['valorEntrada'],
+): number | string | null {
+  if (typeof value === 'number' || typeof value === 'string') return value;
+  if (value == null) return null;
+  return JSON.stringify(value);
+}
+
+function sumarMontosPorCodigo(
+  lineas: readonly LineaLiquidacionCalculada[],
+  ...codigos: string[]
+): number {
+  const set = new Set(codigos);
+  return sum(lineas.filter((linea) => set.has(linea.codigo)).map((linea) => linea.monto));
 }

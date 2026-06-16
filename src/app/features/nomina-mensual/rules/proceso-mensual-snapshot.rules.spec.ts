@@ -4,6 +4,7 @@ import {
   buildSnapshotHashInput,
   calcularSnapshotHash,
   mapResultadoMotorToSnapshotPayload,
+  mapSnapshotCompletoToMotorCalculoPeriodo,
   validarResultadoSnapshotPreliminar,
 } from './proceso-mensual-snapshot.rules';
 
@@ -184,5 +185,43 @@ describe('proceso-mensual-snapshot.rules', () => {
   it('no genera PDF Previred ni LRE en el payload', () => {
     const hashInput = JSON.stringify(buildSnapshotHashInput(mapResultadoMotorToSnapshotPayload({ resultado: resultado(), fechaGeneracion: 'now' })));
     expect(hashInput).not.toMatch(/pdf|previred|lre|contabil/i);
+  });
+
+  it('rehidrata MotorCalculoPeriodoResultado desde snapshot guardado', () => {
+    const snapshot = mapResultadoMotorToSnapshotPayload({
+      resultado: resultado(),
+      fechaGeneracion: '2026-05-05T10:00:00.000Z',
+    });
+    const rehidratado = mapSnapshotCompletoToMotorCalculoPeriodo({
+      cabecera: {
+        ...snapshot,
+        trabajadores: snapshot.trabajadores,
+        issues: snapshot.issues,
+        trazabilidad: snapshot.trazabilidad,
+      },
+      trabajadores: snapshot.trabajadores,
+      conceptos: snapshot.trabajadores.flatMap((t) => t.conceptos),
+      observaciones: [
+        ...snapshot.issues,
+        ...snapshot.trabajadores.flatMap((t) => t.issues),
+      ],
+      trazabilidad: snapshot.trabajadores.flatMap((t) => t.trazabilidad),
+      aprobacionOperativa: null,
+      cierreOperativo: null,
+      resumen: {
+        totalConceptos: snapshot.trabajadores.reduce((acc, t) => acc + t.conceptos.length, 0),
+        totalObservaciones: snapshot.trabajadores.reduce((acc, t) => acc + t.issues.length, 0),
+        totalTrazas: snapshot.trabajadores.reduce((acc, t) => acc + t.trazabilidad.length, 0),
+        totalTrabajadoresSinDetalle: 0,
+        esActivoVigente: true,
+        fueReemplazado: false,
+      },
+    });
+
+    expect(rehidratado.liquidaciones).toHaveLength(1);
+    expect(rehidratado.liquidaciones[0].liquidoAPago).toBe(720000);
+    expect(rehidratado.liquidaciones[0].descuentosLegales.some((d) => d.codigo === 'AFP')).toBe(true);
+    expect(rehidratado.resumen.totalLiquidoPreliminar).toBe(720000);
+    expect(rehidratado.liquidaciones[0].trazabilidad.some((t) => t.codigo === 'LIQUIDO_PRELIMINAR')).toBe(true);
   });
 });

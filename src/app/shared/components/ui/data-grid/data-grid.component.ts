@@ -49,6 +49,7 @@ import type {
   DataGridColumnType,
   DataGridDateRangeValue,
   DataGridExportEvent,
+  DataGridExpandHint,
   DataGridExportScope,
   DataGridFilter,
   DataGridFilterChipsDisplay,
@@ -161,6 +162,13 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
    * provee `(row) => row.id` para preservar la expansión entre cargas.
    */
   @Input() rowExpansionKey: (row: T) => unknown = (row) => row;
+  /**
+   * Ancla el chevron dentro de la columna indicada (sin columna Detalle dedicada).
+   * Si el id no existe en columnas visibles, degrada al modo columna dedicada.
+   */
+  @Input() expandAnchorColumnId: string | null = null;
+  /** Callout informativo en el chevron de la primera fila visible. */
+  @Input() expandHint: DataGridExpandHint | null = null;
   @Input() expandRowLabel = 'Ver detalle';
   @Input() collapseRowLabel = 'Ocultar detalle';
   @Input() persistenceKey = '';
@@ -190,6 +198,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   @Output() readonly bulkAction = new EventEmitter<DataGridBulkActionEvent<T>>();
   @Output() readonly retry = new EventEmitter<void>();
   @Output() readonly rowExpandToggle = new EventEmitter<{ row: T; expanded: boolean }>();
+  @Output() readonly expandHintDismiss = new EventEmitter<void>();
 
   readonly previousIcon = ArrowLeft;
   readonly nextIcon = ChevronRight;
@@ -654,13 +663,50 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     return this.rowDetailDirective?.template ?? null;
   }
 
+  /** Columna donde se incrusta el chevron cuando `expandAnchorColumnId` es válido. */
+  get expandAnchorColumnResolved(): string | null {
+    if (!this.expansionEnabled || !this.expandAnchorColumnId?.trim()) {
+      return null;
+    }
+    const id = this.expandAnchorColumnId.trim();
+    return this.visibleColumns.some((column) => column.id === id) ? id : null;
+  }
+
+  /** Chevron en columna propia (modo legacy). */
+  get expandColumnDedicated(): boolean {
+    return this.expansionEnabled && !this.expandAnchorColumnResolved;
+  }
+
+  /** Chevron inline en columna ancla. */
+  get expandColumnMerged(): boolean {
+    return !!this.expandAnchorColumnResolved;
+  }
+
+  isExpandAnchorColumn(columnId: string): boolean {
+    return this.expandColumnMerged && this.expandAnchorColumnResolved === columnId;
+  }
+
   /** Colspan total para la fila de detalle (numeración + chevron + selección + columnas). */
   get rowDetailColspan(): number {
     let span = 1;
-    if (this.expansionEnabled) span += 1;
+    if (this.expandColumnDedicated) span += 1;
     if (this.selectable) span += 1;
     span += this.visibleColumns.length;
     return span;
+  }
+
+  shouldShowExpandHint(rowIndex: number): boolean {
+    return !!this.expandHint?.visible && rowIndex === 0;
+  }
+
+  expandHintDismissLabel(): string {
+    const label = this.expandHint?.dismissLabel?.trim();
+    return label && label.length > 0 ? label : 'Entendido';
+  }
+
+  onExpandHintDismiss(event: Event): void {
+    event.stopPropagation();
+    this.expandHintDismiss.emit();
   }
 
   isRowExpanded(row: T): boolean {

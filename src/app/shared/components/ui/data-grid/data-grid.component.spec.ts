@@ -198,3 +198,61 @@ describe('DataGridComponent · filas expandibles', () => {
     expect(fixture.componentInstance.grid.rowDetailColspan).toBe(3);
   });
 });
+
+@Component({
+  standalone: true,
+  imports: [DataGridComponent, DataGridRowDetailDirective],
+  template: `
+    <app-data-grid
+      [columns]="columns"
+      [rows]="rows"
+      [expandableRows]="true"
+      [expandAnchorColumnId]="'name'"
+      [rowExpansionKey]="rowKeyFn"
+      [expandHint]="{ text: 'Hint de prueba', visible: true }"
+      (expandHintDismiss)="onHintDismiss()"
+    >
+      <ng-template appDataGridRowDetail let-row>
+        <div class="detalle-test">{{ row.name }}</div>
+      </ng-template>
+    </app-data-grid>
+  `,
+})
+class HostExpandableMergedComponent {
+  columns = columns;
+  rows = rows.slice(0, 5);
+  rowKeyFn = (row: TestRow) => row.id;
+  hintDismissed = false;
+  @ViewChild(DataGridComponent) grid!: DataGridComponent<TestRow>;
+
+  onHintDismiss(): void {
+    this.hintDismissed = true;
+  }
+}
+
+describe('DataGridComponent · expand anclado e hint', () => {
+  it('expandColumnMerged oculta columna dedicada y reduce colspan', () => {
+    const fixture = TestBed.createComponent(HostExpandableMergedComponent);
+    fixture.detectChanges();
+    const grid = fixture.componentInstance.grid;
+    expect(grid.expandColumnMerged).toBe(true);
+    expect(grid.expandColumnDedicated).toBe(false);
+    expect(grid.rowDetailColspan).toBe(2);
+  });
+
+  it('expandHintDismiss emite al cerrar el callout', () => {
+    const fixture = TestBed.createComponent(HostExpandableMergedComponent);
+    fixture.detectChanges();
+    const grid = fixture.componentInstance.grid;
+    grid.onExpandHintDismiss(new Event('click'));
+    expect(fixture.componentInstance.hintDismissed).toBe(true);
+  });
+
+  it('shouldShowExpandHint solo en la primera fila', () => {
+    const fixture = TestBed.createComponent(HostExpandableMergedComponent);
+    fixture.detectChanges();
+    const grid = fixture.componentInstance.grid;
+    expect(grid.shouldShowExpandHint(0)).toBe(true);
+    expect(grid.shouldShowExpandHint(1)).toBe(false);
+  });
+});

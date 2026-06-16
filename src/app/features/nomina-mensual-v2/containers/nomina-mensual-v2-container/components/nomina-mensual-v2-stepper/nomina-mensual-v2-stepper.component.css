@@ -1,6 +1,6 @@
 .nmv2-page .nomina-workflow-header.nmv2-stepper-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 52px minmax(0, 1fr) 52px;
   gap: 0;
   align-items: stretch;
   min-height: 50px;
@@ -14,18 +14,33 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Slot lateral derecho: avatar usuario + botón "Volver al paso anterior"     */
+/* Izquierda: volver · Centro: pasos · Derecha: usuario                       */
 /* -------------------------------------------------------------------------- */
 
-.nmv2-page .nomina-workflow-header .nmv2-stepper__side {
+.nmv2-page .nomina-workflow-header .nmv2-stepper__back-slot {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 4px 12px;
+  justify-content: center;
+  flex-shrink: 0;
+  border-right: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.nmv2-page .nomina-workflow-header .nmv2-stepper__track {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  background: #fff;
+}
+
+.nmv2-page .nomina-workflow-header .nmv2-stepper__user-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   border-left: 1px solid #e2e8f0;
   background: #fff;
-  flex-shrink: 0;
 }
 
 .nmv2-page .nomina-workflow-header .nmv2-stepper__back {
@@ -105,15 +120,13 @@
 }
 
 .nmv2-page .nomina-workflow-header .nomina-stepper-compact {
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: thin;
+  overflow: visible;
 }
 
 .nmv2-page .nomina-workflow-header .nmv2-stepper.nomina-stepper {
   display: flex;
   min-width: 100%;
-  width: max-content;
+  width: 100%;
   flex-wrap: nowrap;
   gap: 0;
 }
@@ -124,10 +137,10 @@
   grid-template-columns: 22px minmax(0, 1fr);
   gap: 6px;
   align-items: center;
-  flex: 1 0 108px;
-  min-width: 108px;
-  min-height: 34px;
-  padding: 4px 24px 4px 7px;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 50px;
+  padding: 6px 24px 8px 8px;
   border-right: 1px solid #eef2f7;
   border-bottom: 0;
   border-radius: 0;
@@ -332,28 +345,14 @@
   color: #94a3b8;
 }
 
-@media (max-width: 1100px) {
-  .nmv2-page .nomina-workflow-header.nmv2-stepper-card {
-    grid-template-columns: 1fr;
-  }
-
-  .nomina-workflow-header__flow {
-    border-right: 0;
-    border-bottom: 1px solid #e2e8f0;
-  }
-
-  .nmv2-page .nomina-workflow-header .nmv2-stepper__side {
-    border-left: 0;
-    border-top: 1px solid #e2e8f0;
-    justify-content: space-between;
-  }
-}
-
 @media (max-width: 760px) {
+  .nmv2-page .nomina-workflow-header.nmv2-stepper-card {
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+  }
+
   .nmv2-page .nomina-workflow-header .step.nomina-step {
-    grid-template-columns: 24px minmax(96px, 1fr);
-    flex-basis: 140px;
-    min-width: 140px;
+    flex: 1 0 120px;
+    min-width: 120px;
     padding-right: 28px;
   }
 

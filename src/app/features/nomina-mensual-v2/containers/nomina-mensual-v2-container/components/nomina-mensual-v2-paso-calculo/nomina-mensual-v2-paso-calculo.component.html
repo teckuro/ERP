@@ -95,37 +95,13 @@
       (dismiss)="error.set(null)"
     ></app-message-box>
   }
-  @if (mensaje(); as msg) {
-    <app-message-box
-      mode="inline"
-      variant="info"
-      [message]="msg"
-      [dismissible]="true"
-      dismissLabel="Cerrar"
-      (dismiss)="mensaje.set(null)"
-    ></app-message-box>
-  }
 
   @if (preValidacion(); as valid) {
-    <div class="paso-calc__prevalid" [class.is-danger]="!valid.puedeCalcular" role="status">
-      <span class="paso-calc__prevalid-chip">
-        <strong>{{ valid.totalTrabajadores }}</strong> en dotación
-      </span>
-      <span class="paso-calc__prevalid-chip is-positive">
-        <strong>{{ valid.listosParaCalculo }}</strong> listos
-      </span>
-      <span class="paso-calc__prevalid-chip" [class.is-danger]="valid.conIncidenciasCriticas > 0">
-        <strong>{{ valid.conIncidenciasCriticas }}</strong> críticos
-      </span>
-      <span class="paso-calc__prevalid-chip" [class.is-warning]="valid.conAdvertencias > 0">
-        <strong>{{ valid.conAdvertencias }}</strong> advertencias
-      </span>
-      @if (!valid.puedeCalcular) {
-        <span class="paso-calc__prevalid-help">
-          Resuelve los críticos en dotación antes de calcular.
-        </span>
-      }
-    </div>
+    @if (!resultado() && !valid.puedeCalcular) {
+      <p class="paso-calc__bloqueo" role="alert">
+        Resuelve los críticos en dotación antes de calcular.
+      </p>
+    }
   }
 
   @if (!resultado() && !cargando()) {
@@ -148,6 +124,11 @@
         [maxItems]="25"
         [persistenceKey]="persistenceKey"
         [expandableRows]="true"
+        [expandAnchorColumnId]="'trabajador'"
+        [expandRowLabel]="'Ver desglose'"
+        [collapseRowLabel]="'Ocultar desglose'"
+        [expandHint]="expandHintGrilla()"
+        (expandHintDismiss)="cerrarHintExpandDesglose()"
         [rowExpansionKey]="rowKeyTrabajador"
         [loading]="cargando()"
         loadingLabel="Procesando cálculo…"

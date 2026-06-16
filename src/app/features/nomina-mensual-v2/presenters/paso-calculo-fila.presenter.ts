@@ -16,6 +16,7 @@
 import type {
   DataGridColumn,
   DataGridFilter,
+  DataGridFilterValue,
 } from '../../../shared/components/ui/data-grid/data-grid.types';
 import type {
   LineaLiquidacionCalculada,
@@ -24,7 +25,7 @@ import type {
 } from '../../nomina-mensual/models/proceso-mensual.model';
 
 /** Clave de persistencia local de la grilla del paso Cálculo. */
-export const PERSISTENCIA_GRILLA_CALCULO = 'nomina-v2-calculo-grid-v1';
+export const PERSISTENCIA_GRILLA_CALCULO = 'nomina-v2-calculo-grid-v2';
 
 // -----------------------------------------------------------------------------
 // Viewmodel
@@ -438,75 +439,60 @@ export const COLUMNAS_GRILLA_CALCULO: DataGridColumn<FilaCalculoTrabajador>[] = 
   },
 ];
 
-type FiltroEstadoCalculoValue = 'todos' | 'solo-ok' | 'con-advertencias' | 'con-bloqueos';
+type FiltroEstadoCalculoValue = 'ok' | 'aviso' | 'bloqueo';
 
 const OPCIONES_FILTRO_ESTADO_CALCULO: ReadonlyArray<{
   label: string;
   value: FiltroEstadoCalculoValue;
 }> = [
-  { label: 'Todos los trabajadores', value: 'todos' },
-  { label: 'Solo calculados sin avisos', value: 'solo-ok' },
-  { label: 'Con advertencias', value: 'con-advertencias' },
-  { label: 'Con bloqueos', value: 'con-bloqueos' },
+  { label: 'Calculado', value: 'ok' },
+  { label: 'Con advertencias', value: 'aviso' },
+  { label: 'Con bloqueos', value: 'bloqueo' },
 ];
 
 function predicadoEstadoCalculo(
   fila: FilaCalculoTrabajador,
   valor: FiltroEstadoCalculoValue,
 ): boolean {
-  switch (valor) {
-    case 'todos':
-      return true;
-    case 'solo-ok':
-      return !fila.tieneAdvertencias && !fila.tieneBloqueos;
-    case 'con-advertencias':
-      return fila.tieneAdvertencias;
-    case 'con-bloqueos':
-      return fila.tieneBloqueos;
-    default: {
-      const _exhaustive: never = valor;
-      return _exhaustive;
-    }
-  }
+  return fila.estado.variant === valor;
+}
+
+function predicadoBusquedaTrabajador(
+  fila: FilaCalculoTrabajador,
+  valor: DataGridFilterValue,
+): boolean {
+  const termino = String(valor ?? '').trim().toLowerCase();
+  if (!termino) return true;
+  const tokens = termino.split(/\s+/).filter(Boolean);
+  const texto = `${fila.nombre} ${fila.rut}`.toLowerCase();
+  return tokens.every((token) => texto.includes(token));
 }
 
 export function construirFiltrosCalculo(
-  filas: readonly FilaCalculoTrabajador[],
+  _filas: readonly FilaCalculoTrabajador[],
 ): DataGridFilter<FilaCalculoTrabajador>[] {
-  const afps = Array.from(
-    new Set(filas.map((f) => f.afp).filter((v): v is string => !!v && v.length > 0)),
-  ).sort((a, b) => a.localeCompare(b));
-
-  const opcionesAfp: Array<{ label: string; value: string }> = [
-    { label: 'Todas las AFP', value: '' },
-    ...afps.map((afp) => ({ label: afp, value: afp })),
-  ];
-
   return [
     {
-      id: 'estado',
-      label: 'Estado del cálculo',
-      field: 'tieneAdvertencias' as keyof FilaCalculoTrabajador,
-      type: 'select',
-      operator: 'equals',
-      initialValue: 'todos',
-      options: OPCIONES_FILTRO_ESTADO_CALCULO.map((o) => ({ label: o.label, value: o.value })),
-      predicate: (row, valor) =>
-        typeof valor === 'string'
-          ? predicadoEstadoCalculo(row, valor as FiltroEstadoCalculoValue)
-          : true,
+      id: 'busqueda',
+      label: 'Trabajador',
+      field: 'nombre',
+      type: 'text',
+      operator: 'contains',
+      matchMode: 'tokens',
+      placeholder: 'Nombre o RUT',
+      predicate: (row, valor) => predicadoBusquedaTrabajador(row, valor),
     },
     {
-      id: 'afp',
-      label: 'AFP',
-      field: 'afp' as keyof FilaCalculoTrabajador,
+      id: 'estado',
+      label: 'Estado',
+      field: 'estado',
       type: 'select',
       operator: 'equals',
-      initialValue: '',
-      options: opcionesAfp,
+      emptyLabel: 'Todos',
+      options: OPCIONES_FILTRO_ESTADO_CALCULO.map((o) => ({ label: o.label, value: o.value })),
       predicate: (row, valor) => {
         if (typeof valor !== 'string' || valor.length === 0) return true;
-        return (row.afp ?? '') === valor;
+        return predicadoEstadoCalculo(row, valor as FiltroEstadoCalculoValue);
       },
     },
   ];

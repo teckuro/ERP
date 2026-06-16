@@ -547,7 +547,7 @@
             >
               <colgroup>
                 <col class="data-grid-row-number-col" />
-                @if (expansionEnabled) {
+                @if (expandColumnDedicated) {
                   <col class="data-grid-expand-col" />
                 }
                 @if (selectable) {
@@ -565,7 +565,7 @@
                   >
                     N°
                   </th>
-                  @if (expansionEnabled) {
+                  @if (expandColumnDedicated) {
                     <th
                       scope="col"
                       class="data-grid-expand-head w-9 border-b border-r border-neutral-200"
@@ -619,7 +619,7 @@
                       <td class="data-grid-row-number-cell data-grid-skel-num border-b border-r border-neutral-100">
                         <span class="data-grid-skeleton-line data-grid-skeleton-line--number"></span>
                       </td>
-                      @if (expansionEnabled) {
+                      @if (expandColumnDedicated) {
                         <td class="data-grid-expand-cell w-9 border-b border-r border-neutral-100">
                           <span class="data-grid-skeleton-box h-4 w-4 rounded"></span>
                         </td>
@@ -653,24 +653,38 @@
                       >
                         {{ absoluteIndex($index) + 1 }}
                       </td>
-                      @if (expansionEnabled) {
+                      @if (expandColumnDedicated) {
                         <td
                           class="data-grid-expand-cell w-9 border-b border-r border-neutral-100 transition-colors"
                           [class.bg-blue-50]="isRowSelected(row)"
                         >
-                          <button
-                            type="button"
-                            class="data-grid-expand-btn"
-                            [class.is-expanded]="isRowExpanded(row)"
-                            [attr.aria-label]="isRowExpanded(row) ? collapseRowLabel : expandRowLabel"
-                            [attr.aria-expanded]="isRowExpanded(row)"
-                            (click)="toggleRowExpansion(row, $event)"
-                          >
-                            <lucide-icon
-                              class="h-3.5 w-3.5"
-                              [img]="isRowExpanded(row) ? expandedIcon : expandIcon"
-                            ></lucide-icon>
-                          </button>
+                          <div class="data-grid-expand-inline-wrap">
+                            <button
+                              type="button"
+                              class="data-grid-expand-btn"
+                              [class.is-expanded]="isRowExpanded(row)"
+                              [attr.aria-label]="isRowExpanded(row) ? collapseRowLabel : expandRowLabel"
+                              [attr.aria-expanded]="isRowExpanded(row)"
+                              (click)="toggleRowExpansion(row, $event)"
+                            >
+                              <lucide-icon
+                                class="h-3.5 w-3.5"
+                                [img]="isRowExpanded(row) ? expandedIcon : expandIcon"
+                              ></lucide-icon>
+                            </button>
+                            @if (shouldShowExpandHint(absoluteIndex($index))) {
+                              <div class="data-grid-expand-hint" role="status">
+                                <p class="data-grid-expand-hint__text">{{ expandHint!.text }}</p>
+                                <button
+                                  type="button"
+                                  class="data-grid-expand-hint__dismiss"
+                                  (click)="onExpandHintDismiss($event)"
+                                >
+                                  {{ expandHintDismissLabel() }}
+                                </button>
+                              </div>
+                            }
+                          </div>
                         </td>
                       }
                       @if (selectable) {
@@ -694,17 +708,69 @@
                           [class.bg-blue-50]="isRowSelected(row)"
                           [ngClass]="[alignmentCellClass(column), column.cellClass ?? '', column.widthClass ?? '']"
                         >
-                          @if (cellTemplate(column.id); as customTemplate) {
-                            <div>
-                              <ng-container
-                                *ngTemplateOutlet="
-                                  customTemplate;
-                                  context: cellContext(row, column, absoluteIndex($index))
-                                "
-                              />
+                          @if (isExpandAnchorColumn(column.id)) {
+                            <div class="data-grid-cell-with-expand">
+                              <div class="data-grid-expand-inline-wrap">
+                                <button
+                                  type="button"
+                                  class="data-grid-expand-btn data-grid-expand-btn--inline"
+                                  [class.is-expanded]="isRowExpanded(row)"
+                                  [attr.aria-label]="isRowExpanded(row) ? collapseRowLabel : expandRowLabel"
+                                  [attr.aria-expanded]="isRowExpanded(row)"
+                                  (click)="toggleRowExpansion(row, $event)"
+                                >
+                                  <lucide-icon
+                                    class="h-3.5 w-3.5"
+                                    [img]="isRowExpanded(row) ? expandedIcon : expandIcon"
+                                  ></lucide-icon>
+                                </button>
+                                @if (shouldShowExpandHint(absoluteIndex($index))) {
+                                  <div class="data-grid-expand-hint" role="status">
+                                    <p class="data-grid-expand-hint__text">{{ expandHint!.text }}</p>
+                                    <button
+                                      type="button"
+                                      class="data-grid-expand-hint__dismiss"
+                                      (click)="onExpandHintDismiss($event)"
+                                    >
+                                      {{ expandHintDismissLabel() }}
+                                    </button>
+                                  </div>
+                                }
+                              </div>
+                              <div class="data-grid-cell-with-expand-body">
+                                @if (cellTemplate(column.id); as customTemplate) {
+                                  <ng-container
+                                    *ngTemplateOutlet="
+                                      customTemplate;
+                                      context: cellContext(row, column, absoluteIndex($index))
+                                    "
+                                  />
+                                } @else {
+                                  <span
+                                    class="block truncate"
+                                    [attr.title]="formattedValue(row, column, absoluteIndex($index))"
+                                    >{{ formattedValue(row, column, absoluteIndex($index)) }}</span
+                                  >
+                                }
+                              </div>
                             </div>
                           } @else {
-                            <span class="block truncate" [attr.title]="formattedValue(row, column, absoluteIndex($index))">{{ formattedValue(row, column, absoluteIndex($index)) }}</span>
+                            @if (cellTemplate(column.id); as customTemplate) {
+                              <div>
+                                <ng-container
+                                  *ngTemplateOutlet="
+                                    customTemplate;
+                                    context: cellContext(row, column, absoluteIndex($index))
+                                  "
+                                />
+                              </div>
+                            } @else {
+                              <span
+                                class="block truncate"
+                                [attr.title]="formattedValue(row, column, absoluteIndex($index))"
+                                >{{ formattedValue(row, column, absoluteIndex($index)) }}</span
+                              >
+                            }
                           }
                         </td>
                       }
@@ -750,20 +816,34 @@
                     @if (expansionEnabled) {
                       <div class="data-grid-mobile-card-head">
                         <span class="data-grid-mobile-counter">N° {{ absoluteIndex($index) + 1 }}</span>
-                        <button
-                          type="button"
-                          class="data-grid-expand-btn data-grid-expand-btn--mobile"
-                          [class.is-expanded]="isRowExpanded(row)"
-                          [attr.aria-label]="isRowExpanded(row) ? collapseRowLabel : expandRowLabel"
-                          [attr.aria-expanded]="isRowExpanded(row)"
-                          (click)="toggleRowExpansion(row, $event)"
-                        >
-                          <lucide-icon
-                            class="h-3.5 w-3.5"
-                            [img]="isRowExpanded(row) ? expandedIcon : expandIcon"
-                          ></lucide-icon>
-                          <span>{{ isRowExpanded(row) ? collapseRowLabel : expandRowLabel }}</span>
-                        </button>
+                        <div class="data-grid-expand-inline-wrap">
+                          <button
+                            type="button"
+                            class="data-grid-expand-btn data-grid-expand-btn--mobile"
+                            [class.is-expanded]="isRowExpanded(row)"
+                            [attr.aria-label]="isRowExpanded(row) ? collapseRowLabel : expandRowLabel"
+                            [attr.aria-expanded]="isRowExpanded(row)"
+                            (click)="toggleRowExpansion(row, $event)"
+                          >
+                            <lucide-icon
+                              class="h-3.5 w-3.5"
+                              [img]="isRowExpanded(row) ? expandedIcon : expandIcon"
+                            ></lucide-icon>
+                            <span>{{ isRowExpanded(row) ? collapseRowLabel : expandRowLabel }}</span>
+                          </button>
+                          @if (shouldShowExpandHint(absoluteIndex($index))) {
+                            <div class="data-grid-expand-hint data-grid-expand-hint--mobile" role="status">
+                              <p class="data-grid-expand-hint__text">{{ expandHint!.text }}</p>
+                              <button
+                                type="button"
+                                class="data-grid-expand-hint__dismiss"
+                                (click)="onExpandHintDismiss($event)"
+                              >
+                                {{ expandHintDismissLabel() }}
+                              </button>
+                            </div>
+                          }
+                        </div>
                       </div>
                     } @else {
                       <span class="data-grid-mobile-counter">N° {{ absoluteIndex($index) + 1 }}</span>

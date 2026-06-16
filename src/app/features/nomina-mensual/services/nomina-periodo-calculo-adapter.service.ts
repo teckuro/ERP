@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 
 import type { MotorCalculoPeriodoResultado } from '../models/proceso-mensual.model';
+import { mapSnapshotCompletoToMotorCalculoPeriodo } from '../rules/proceso-mensual-snapshot.rules';
 import { NominaPeriodoService } from './nomina-periodo.service';
 import { ProcesoMensualService } from './proceso-mensual.service';
 
@@ -41,5 +42,24 @@ export class NominaPeriodoCalculoAdapterService {
       resultado,
       idCalculoPeriodo: guardado.snapshot.idCalculoPeriodo ?? undefined,
     };
+  }
+
+  /**
+   * Rehidrata el resultado del motor desde el snapshot persistido en BD cuando
+   * la nómina ya tiene un cálculo vigente. No recalcula ni escribe.
+   */
+  async obtenerResultadoPersistido(
+    nominaPeriodoId: string,
+  ): Promise<MotorCalculoPeriodoResultado | null> {
+    const nomina = await this.nominas.obtenerNomina(nominaPeriodoId);
+    if (!nomina?.evidenciaCalculo?.calculoVigente) return null;
+
+    const idCalculoPeriodo = nomina.evidenciaCalculo.idCalculoPeriodo;
+    const completo = idCalculoPeriodo
+      ? await this.motor.obtenerSnapshotCompletoPorId(idCalculoPeriodo)
+      : await this.motor.obtenerSnapshotCompletoActivo(nomina.periodo);
+
+    if (!completo) return null;
+    return mapSnapshotCompletoToMotorCalculoPeriodo(completo);
   }
 }

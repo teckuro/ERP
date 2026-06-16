@@ -69,6 +69,14 @@ export interface DataGridRowDetailContext<T> {
   collapse: () => void;
 }
 
+/** Callout dismissible anclado al chevron de la primera fila (sin persistencia interna). */
+export interface DataGridExpandHint {
+  text: string;
+  dismissLabel?: string;
+  /** Lo resuelve el consumidor (p. ej. consulta BD). */
+  visible: boolean;
+}
+
 export interface DataGridColumn<T = unknown> {
   id: string;
   header: string;

@@ -9,6 +9,7 @@ import type {
 } from '../../../../../nomina-mensual/models/proceso-mensual.model';
 import { NominaPeriodoCalculoAdapterService } from '../../../../../nomina-mensual/services/nomina-periodo-calculo-adapter.service';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
+import { UsuarioPreferenciaUiService } from '../../../../../../core/services/usuario-preferencia-ui.service';
 import { NominaMensualV2PasoCalculoComponent } from './nomina-mensual-v2-paso-calculo.component';
 
 function nominaMock(parcial: Partial<NominaPeriodo> = {}): NominaPeriodo {
@@ -91,7 +92,11 @@ function resultadoMock(
   };
 }
 
-function configurarTestBed(): void {
+function configurarTestBed(
+  overrides: {
+    obtenerResultadoPersistido?: ReturnType<typeof vi.fn>;
+  } = {},
+): void {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
     providers: [
@@ -105,7 +110,19 @@ function configurarTestBed(): void {
       },
       {
         provide: NominaPeriodoCalculoAdapterService,
-        useValue: { calcular: vi.fn().mockResolvedValue({ resultado: null }) },
+        useValue: {
+          calcular: vi.fn().mockResolvedValue({ resultado: null }),
+          obtenerResultadoPersistido:
+            overrides.obtenerResultadoPersistido ?? vi.fn().mockResolvedValue(null),
+        },
+      },
+      {
+        provide: UsuarioPreferenciaUiService,
+        useValue: {
+          estaEstablecida: vi.fn().mockResolvedValue(false),
+          guardar: vi.fn().mockResolvedValue(undefined),
+          obtener: vi.fn().mockResolvedValue(null),
+        },
       },
     ],
   });
@@ -143,6 +160,54 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
       nominaMock({ evidenciaCalculo: { versionCalculo: 3, calculoVigente: true } }),
     );
     expect(cmp.calculoNoVigente()).toBe(false);
+  });
+
+  it('rehidrata el cálculo guardado al cargar la nómina con evidencia vigente', async () => {
+    const persistido = resultadoMock();
+    const nomina = nominaMock({
+      evidenciaCalculo: { versionCalculo: 2, calculoVigente: true, idCalculoPeriodo: 55 },
+    });
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: NominaPeriodoService,
+          useValue: {
+            obtenerNomina: vi.fn().mockResolvedValue(nomina),
+            obtenerResumenValidacionNomina: vi.fn().mockResolvedValue({
+              puedeCalcular: true,
+              bloqueos: [],
+              advertencias: [],
+            }),
+            registrarEventoAuditoria: vi.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: NominaPeriodoCalculoAdapterService,
+          useValue: {
+            calcular: vi.fn(),
+            obtenerResultadoPersistido: vi.fn().mockResolvedValue(persistido),
+          },
+        },
+        {
+          provide: UsuarioPreferenciaUiService,
+          useValue: {
+            estaEstablecida: vi.fn().mockResolvedValue(false),
+            guardar: vi.fn().mockResolvedValue(undefined),
+            obtener: vi.fn().mockResolvedValue(null),
+          },
+        },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(NominaMensualV2PasoCalculoComponent);
+    const cmp = fixture.componentInstance;
+    fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+    fixture.detectChanges();
+    await vi.waitFor(() => expect(cmp.resultado()).toEqual(persistido));
+
+    expect(cmp.puedeAvanzar()).toBe(true);
+    expect(cmp.textoCtaCalculo()).toBe('Recalcular');
   });
 
   it('activa la banda de cálculo no vigente con version > 0 y calculoVigente = false', () => {

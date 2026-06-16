@@ -6,9 +6,11 @@
  * una grilla unificada por trabajador con desglose expandible inline y un
  * preview tipo PDF de la liquidación al alcance de un click.
  *
- * No reescribe motor: solo orquesta, persiste el evento de auditoría en
- * `evento_auditoria_nomina` vía `NominaPeriodoService` y mapea las
- * `LiquidacionCalculada` a un viewmodel local con `presentarFilaCalculo`.
+ * No reescribe motor: orquesta, persiste snapshot vía adapter al generar y
+ * rehidrata el resultado guardado al volver al paso si `evidenciaCalculo`
+ * sigue vigente. Registra auditoría en `evento_auditoria_nomina` vía
+ * `NominaPeriodoService` y mapea las `LiquidacionCalculada` a viewmodel local
+ * con `presentarFilaCalculo`.
  *
  * Antes de calcular, evalúa `obtenerResumenValidacionNomina` y bloquea
  * la ejecución si hay incidencias bloqueantes.
@@ -36,6 +38,11 @@ import type {
 } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
 import { NominaPeriodoCalculoAdapterService } from '../../../../../nomina-mensual/services/nomina-periodo-calculo-adapter.service';
+import {
+  PREFERENCIA_UI_VALOR_CERRADO,
+  USUARIO_PREFERENCIA_UI_CLAVES,
+} from '../../../../../../core/constants/usuario-preferencia-ui.claves';
+import { UsuarioPreferenciaUiService } from '../../../../../../core/services/usuario-preferencia-ui.service';
 import {
   DataGridCellDirective,
   DataGridComponent,
@@ -79,6 +86,7 @@ import type {
 export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   private readonly calculoAdapter = inject(NominaPeriodoCalculoAdapterService);
   private readonly servicio = inject(NominaPeriodoService);
+  private readonly preferenciaUi = inject(UsuarioPreferenciaUiService);
 
   readonly nominaPeriodoId = input<string | null>(null);
   readonly avanceSolicitado = output<void>();
@@ -90,10 +98,12 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   readonly calculando = signal(false);
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
-  readonly mensaje = signal<string | null>(null);
 
   /** Trabajador cuya previsualización tipo PDF está abierta (null = cerrada). */
   readonly filaPreviewAbierta = signal<string | null>(null);
+
+  /** Hint dismissible en el chevron de la primera fila (persistido en BD). */
+  readonly hintExpandVisible = signal(false);
 
   readonly puedeCalcular = computed(() => {
     if (this.calculando()) return false;
@@ -154,6 +164,15 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   readonly columnas = COLUMNAS_GRILLA_CALCULO;
   readonly persistenceKey = PERSISTENCIA_GRILLA_CALCULO;
 
+  readonly expandHintGrilla = computed(() => {
+    if (!this.resultado()) return null;
+    return {
+      text: 'Abre el desglose de haberes y descuentos de cada trabajador.',
+      dismissLabel: 'Entendido',
+      visible: this.hintExpandVisible(),
+    };
+  });
+
   rowKeyTrabajador = (fila: FilaCalculoTrabajador): string => fila.trabajadorId;
 
   etiquetaImponibilidad = etiquetaImponibilidad;
@@ -181,6 +200,7 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   private async cargar(nominaPeriodoId: string): Promise<void> {
     this.cargando.set(true);
     this.error.set(null);
+    this.resultado.set(null);
     try {
       const [nomina, validacion] = await Promise.all([
         this.servicio.obtenerNomina(nominaPeriodoId),
@@ -188,6 +208,17 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
       ]);
       this.nomina.set(nomina);
       this.preValidacion.set(validacion);
+
+      const persistido = await this.calculoAdapter.obtenerResultadoPersistido(nominaPeriodoId);
+      if (persistido) {
+        this.resultado.set(persistido);
+      }
+
+      if (this.resultado()) {
+        await this.sincronizarHintExpandDesglose();
+      } else {
+        this.hintExpandVisible.set(false);
+      }
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido';
       this.error.set(`No fue posible preparar el cálculo: ${mensaje}`);
@@ -201,13 +232,10 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
     if (!nomina) return;
     this.calculando.set(true);
     this.error.set(null);
-    this.mensaje.set(null);
     try {
       const { resultado } = await this.calculoAdapter.calcular(nomina.id);
       this.resultado.set(resultado);
-      this.mensaje.set(
-        `Cálculo generado: ${resultado.resumen.totalTrabajadoresCalculados} trabajadores procesados.`,
-      );
+      await this.sincronizarHintExpandDesglose();
       this.nomina.set(await this.servicio.obtenerNomina(nomina.id));
       this.preValidacion.set(await this.servicio.obtenerResumenValidacionNomina(nomina.id));
     } catch (error) {
@@ -271,6 +299,31 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
 
   emitirVolver(): void {
     this.volverMovimientos.emit();
+  }
+
+  cerrarHintExpandDesglose(): void {
+    this.hintExpandVisible.set(false);
+    void this.preferenciaUi
+      .guardar(
+        USUARIO_PREFERENCIA_UI_CLAVES.NOMINA_CALCULO_EXPAND_DESGLOSE,
+        PREFERENCIA_UI_VALOR_CERRADO,
+      )
+      .catch(() => undefined);
+  }
+
+  private async sincronizarHintExpandDesglose(): Promise<void> {
+    if (!this.resultado()) {
+      this.hintExpandVisible.set(false);
+      return;
+    }
+    try {
+      const establecida = await this.preferenciaUi.estaEstablecida(
+        USUARIO_PREFERENCIA_UI_CLAVES.NOMINA_CALCULO_EXPAND_DESGLOSE,
+      );
+      this.hintExpandVisible.set(!establecida);
+    } catch {
+      this.hintExpandVisible.set(false);
+    }
   }
 
   /** Abre la previsualización tipo PDF del trabajador indicado. */

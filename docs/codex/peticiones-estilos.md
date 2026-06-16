@@ -9,6 +9,37 @@
 
 ---
 
+## 2026-06-16 — Generador: stepper volver | pasos | usuario (NOIA-NMV2-STEPPER-LAYOUT-01)
+
+- Cabecera del flujo en tres zonas: botón circular **Volver** a la izquierda,
+  franja de pasos divididos al centro, avatar de usuario a la derecha.
+- Los pasos ocupan el ancho disponible con divisores verticales; scroll horizontal
+  solo en la franja central si hace falta.
+
+## 2026-06-16 — Paso Cálculo: chevron inline + hint dismissible (NOIA-CALC-EXPAND-01)
+
+- Grilla del paso Cálculo: chevron de expandir integrado en columna `Trabajador`
+  (`expandAnchorColumnId`); se elimina la columna vacía "Detalle".
+- Hint en el primer chevron ("Abre el desglose…") con CTA `Entendido`; persistencia
+  en BD `usuario_preferencia_ui` vía `UsuarioPreferenciaUiService` (no localStorage).
+
+## 2026-06-16 — Paso Cálculo: filtros trabajador y estado (NOIA-CALC-FILTROS-01)
+
+- Grilla del paso Cálculo: filtros `Trabajador` (texto por nombre o RUT, tokens) y
+  `Estado` (Calculado / Con advertencias / Con bloqueos). Reemplaza el filtro AFP
+  previo. Persistencia local de grilla actualizada a `nomina-v2-calculo-grid-v2`.
+
+## 2026-06-16 — Paso Cálculo: quitar avisos duplicados (NOIA-CALC-RESUMEN-02)
+
+- Eliminado el `app-message-box` informativo de éxito ("Cálculo guardado…") en
+  `nomina-mensual-v2-paso-calculo`: el resumen de cabecera ya muestra trabajadores
+  calculados, haberes, descuentos y líquido; la versión queda en el pie.
+- Retirada la franja `paso-calc__prevalid` con chips de dotación/listos/críticos
+  cuando ya hay cálculo. Solo se muestra un aviso compacto de bloqueo si aún no
+  hay resultado y la pre-validación impide calcular.
+
+---
+
 ## 2026-06-15 — Preview + creación transaccional y bandeja simplificada (NOIA-ADM-NOM-F04-05-01, NOIA-ADM-NOM-BANDEJA-02, NOIA-ADM-NOM-RESUMEN-02)
 
 Cierre de F04 + F05 con su tracción en UX del Administrador y el Generador V2.
