@@ -62,11 +62,16 @@
     </nav>
   </div>
 
-  <div class="nmv2-stepper__user-slot" aria-label="Usuario activo">
-    <app-tooltip preferredPlacement="bottom" [text]="tooltipUsuario() ?? ''">
-      <span class="nmv2-stepper__user" role="img" [attr.aria-label]="ariaLabelUsuario()">{{
+  <div class="nmv2-stepper__user-slot" aria-label="Trazabilidad del período">
+    <app-tooltip preferredPlacement="bottom" [text]="tooltipTrazabilidad()">
+      <button
+        type="button"
+        class="nmv2-stepper__user nmv2-stepper__user-btn"
+        (click)="abrirTrazabilidadCompleta()"
+        [attr.aria-label]="ariaLabelTrazabilidad()"
+      >{{
         inicialesUsuario()
-      }}</span>
+      }}</button>
     </app-tooltip>
   </div>
 </div>

@@ -51,6 +51,7 @@ import { NominaParametrosBaseAccesoService } from '../../services/nomina-paramet
 import { NominaMensualV2OrquestadorPort } from './facade/nomina-mensual-v2-orquestador.port';
 import { NominaMensualV2TrazabilidadDrawerComponent } from './components/nomina-mensual-v2-trazabilidad-drawer/nomina-mensual-v2-trazabilidad-drawer.component';
 import { NominaMensualV2TrazabilidadModalComponent } from './components/nomina-mensual-v2-trazabilidad-modal/nomina-mensual-v2-trazabilidad-modal.component';
+import type { NominaCabeceraCambiadaEvent } from '../../models/nomina-cabecera-cambiada.models';
 
 @Component({
   selector: 'app-nomina-mensual-v2-container',
@@ -430,7 +431,10 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     }
   }
 
-  async manejarNominaCabeceraCambiada(event: { registrarPasoCompletado?: PayrollStepId } = {}): Promise<void> {
+  async manejarNominaCabeceraCambiada(event: NominaCabeceraCambiadaEvent = {}): Promise<void> {
+    if (event.trazabilidad) {
+      this.registrarTrazabilidadCabecera(event.trazabilidad);
+    }
     const id = this.nominaPeriodoId();
     if (!id) return;
     await this.refrescarNominaCargada(id);
@@ -551,6 +555,12 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     const modal = this.orquestador.modalConfirmarRetroceso();
     this.orquestador.modalConfirmarRetroceso.set(null);
     if (!modal) return;
+    this.orquestador.registrarEventoTrazabilidad(
+      this.trazabilidadService.crearEventoInvalidacion(
+        modal.destino,
+        `Revisión en ${modal.etiquetaDestino}: puede invalidar pasos posteriores.`,
+      ),
+    );
     this.irAPaso(modal.destino);
   }
 
@@ -727,6 +737,16 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       return;
     }
     this.orquestador.establecerAyudaAvance(null);
+    if (pasoActivo === 'validation') {
+      this.orquestador.registrarEventoTrazabilidad(
+        this.trazabilidadService.crearEventoLocal({
+          paso: 'validation',
+          tipoEvento: 'PRENOMINA_VALIDADA',
+          descripcion: 'Pre-nómina validada para cierre.',
+          integridad: { estadoIntegridad: 'registrado' },
+        }),
+      );
+    }
     await this.marcarPasoCompletadoYRefrescarNomina(pasoActivo);
     if (siguientePaso) {
       this.irAPaso(siguientePaso);
@@ -793,5 +813,27 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     }
     this.currentStep.set(destinoPaso);
     this.orquestador.pasoActual.set(destinoPaso);
+  }
+
+  private registrarTrazabilidadCabecera(
+    evento: NonNullable<NominaCabeceraCambiadaEvent['trazabilidad']>,
+  ): void {
+    if (evento.tipo === 'cierre') {
+      this.orquestador.registrarEventoTrazabilidad(
+        this.trazabilidadService.crearEventoLocal({
+          paso: 'closure',
+          tipoEvento: 'PRENOMINA_APROBADA',
+          descripcion: evento.motivo.trim() || 'Nómina cerrada operativamente.',
+          integridad: { estadoIntegridad: 'registrado' },
+        }),
+      );
+      return;
+    }
+    this.orquestador.registrarEventoTrazabilidad(
+      this.trazabilidadService.crearEventoInvalidacion(
+        'closure',
+        evento.motivo.trim() || 'Nómina reabierta para edición.',
+      ),
+    );
   }
 }

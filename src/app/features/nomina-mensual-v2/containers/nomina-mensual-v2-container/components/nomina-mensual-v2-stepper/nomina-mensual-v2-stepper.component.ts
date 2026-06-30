@@ -145,6 +145,24 @@ export class NominaMensualV2StepperComponent {
     return tooltip ? `Usuario activo: ${tooltip}` : 'Usuario activo';
   });
 
+  readonly tooltipTrazabilidad = computed<string>(() => {
+    const usuario = this.tooltipUsuario();
+    return usuario
+      ? `${usuario} · Ver trazabilidad del período`
+      : 'Ver trazabilidad del período';
+  });
+
+  readonly ariaLabelTrazabilidad = computed<string>(() => {
+    const usuario = this.tooltipUsuario();
+    return usuario
+      ? `Usuario activo: ${usuario}. Abrir trazabilidad del período.`
+      : 'Abrir trazabilidad del período';
+  });
+
+  abrirTrazabilidadCompleta(): void {
+    this.orquestador.abrirTrazabilidadCompleta();
+  }
+
   estadoPaso(stepId: PayrollStepId): PayrollStepStatus {
     return obtenerEstadoPaso(stepId, this.pasoActual(), this.nomina());
   }

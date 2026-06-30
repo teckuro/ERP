@@ -376,6 +376,11 @@
         @if (versionCalculo() > 1) {
           · registro {{ versionCalculo() }}
         }
+        · Para continuar, usa la acción principal del shell.
+      </span>
+    } @else {
+      <span class="paso-calc__footer-hint">
+        Procesa el cálculo con el botón superior antes de continuar a validación.
       </span>
     }
   </footer>

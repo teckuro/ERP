@@ -10,6 +10,8 @@ import type {
 import { NominaPeriodoCalculoAdapterService } from '../../../../../nomina-mensual/services/nomina-periodo-calculo-adapter.service';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
 import { UsuarioPreferenciaUiService } from '../../../../../../core/services/usuario-preferencia-ui.service';
+import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
+import { NominaMensualV2TrazabilidadService } from '../../../../services/nomina-mensual-v2-trazabilidad.service';
 import { NominaMensualV2PasoCalculoComponent } from './nomina-mensual-v2-paso-calculo.component';
 
 function nominaMock(parcial: Partial<NominaPeriodo> = {}): NominaPeriodo {
@@ -124,6 +126,16 @@ function configurarTestBed(
           obtener: vi.fn().mockResolvedValue(null),
         },
       },
+      {
+        provide: NominaMensualV2OrquestadorPort,
+        useValue: { registrarEventoTrazabilidad: vi.fn() },
+      },
+      {
+        provide: NominaMensualV2TrazabilidadService,
+        useValue: {
+          crearEventoLocal: vi.fn().mockReturnValue({ idEvento: 'local-test' }),
+        },
+      },
     ],
   });
 }
@@ -195,6 +207,16 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
             estaEstablecida: vi.fn().mockResolvedValue(false),
             guardar: vi.fn().mockResolvedValue(undefined),
             obtener: vi.fn().mockResolvedValue(null),
+          },
+        },
+        {
+          provide: NominaMensualV2OrquestadorPort,
+          useValue: { registrarEventoTrazabilidad: vi.fn() },
+        },
+        {
+          provide: NominaMensualV2TrazabilidadService,
+          useValue: {
+            crearEventoLocal: vi.fn().mockReturnValue({ idEvento: 'local-test' }),
           },
         },
       ],

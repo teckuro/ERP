@@ -33,10 +33,8 @@ import type {
 } from '../../../presenters/nomina-empleados-validacion.presenter';
 
 /**
- * Tipo conservado por compatibilidad con
- * `nomina-mensual-v2-empleados-resumen-pendientes.component`, que sigue en
- * el árbol del módulo aunque la UI activa ya no lo cuelga (no se importa
- * desde ningún paso vivo). Eliminar cuando el componente se retire.
+ * Tipo conservado por compatibilidad con tests y futura retirada de
+ * `resultadoAlcance` del orquestador post-fusión F3.
  */
 export type ModalResumenPendientesEmpleadosPort = {
   resultado: ResultadoValidacionEmpleados;

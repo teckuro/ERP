@@ -36,6 +36,7 @@ import type {
   ResultadoAvancePaso,
 } from '../../facade/nomina-mensual-v2-navegacion';
 import { MENSAJE_CALCULO_NO_VIGENTE } from '../../facade/nomina-mensual-v2-navegacion';
+import type { NominaCabeceraCambiadaEvent } from '../../../../models/nomina-cabecera-cambiada.models';
 
 interface ChecklistItem {
   id: string;
@@ -61,7 +62,7 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   readonly nominaPeriodoId = input<string | null>(null);
   readonly volverValidacion = output<void>();
   /** Notifica al container que debe refrescar cabecera (y opcionalmente persistir paso). */
-  readonly nominaCabeceraCambiada = output<{ registrarPasoCompletado?: 'closure' }>();
+  readonly nominaCabeceraCambiada = output<NominaCabeceraCambiadaEvent>();
 
   readonly nomina = signal<NominaPeriodo | null>(null);
   readonly resumen = signal<ResumenValidacionNomina | null>(null);
@@ -167,7 +168,13 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
       this.mensaje.set('Nómina cerrada correctamente.');
       const refrescada = await this.servicio.obtenerNomina(id);
       this.nomina.set(refrescada);
-      this.nominaCabeceraCambiada.emit({ registrarPasoCompletado: 'closure' });
+      this.nominaCabeceraCambiada.emit({
+        registrarPasoCompletado: 'closure',
+        trazabilidad: {
+          tipo: 'cierre',
+          motivo: this.motivoCierre().trim() || 'Nómina cerrada operativamente.',
+        },
+      });
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Error desconocido';
       this.error.set(`No fue posible cerrar la nómina: ${msg}`);
@@ -241,7 +248,9 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
       this.mensaje.set('Nómina reabierta para edición.');
       const refrescada = await this.servicio.obtenerNomina(id);
       this.nomina.set(refrescada);
-      this.nominaCabeceraCambiada.emit({});
+      this.nominaCabeceraCambiada.emit({
+        trazabilidad: { tipo: 'reapertura', motivo },
+      });
       this.mostrarReabrir.set(false);
       this.motivoReapertura.set('');
     } catch (error) {

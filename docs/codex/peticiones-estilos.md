@@ -25,6 +25,17 @@
 
 ---
 
+## 2026-06-30 — Nómina V2: trazabilidad local y limpieza F3 (NOIA-NMV2-REPAIR-02)
+
+- **Trazabilidad:** eventos locales al calcular (`CALCULO_EJECUTADO`), validar
+  (`PRENOMINA_VALIDADA`), retroceder (`SNAPSHOT_INVALIDADO`), cerrar
+  (`PRENOMINA_APROBADA`) y reabrir (`SNAPSHOT_INVALIDADO` desde cierre).
+- **Stepper:** avatar abre el drawer de trazabilidad completa del período.
+- **Limpieza:** eliminados componentes huérfanos `stepper-traceability`,
+  `empleados-resumen-pendientes` y ~590 líneas CSS muerto en container.
+
+---
+
 ## 2026-06-30 — Grilla expandible: un solo hint en la primera fila (NOIA-CALC-EXPAND-02)
 
 - Corregido bug en `app-data-grid` con chevron anclado en columna: el hint

@@ -67,6 +67,8 @@ import type {
   ResultadoAvancePaso,
 } from '../../facade/nomina-mensual-v2-navegacion';
 import { MENSAJE_CALCULO_NO_VIGENTE } from '../../facade/nomina-mensual-v2-navegacion';
+import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
+import { NominaMensualV2TrazabilidadService } from '../../../../services/nomina-mensual-v2-trazabilidad.service';
 
 @Component({
   selector: 'app-nomina-mensual-v2-paso-calculo',
@@ -88,6 +90,8 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   private readonly calculoAdapter = inject(NominaPeriodoCalculoAdapterService);
   private readonly servicio = inject(NominaPeriodoService);
   private readonly preferenciaUi = inject(UsuarioPreferenciaUiService);
+  private readonly orquestador = inject(NominaMensualV2OrquestadorPort);
+  private readonly trazabilidadService = inject(NominaMensualV2TrazabilidadService);
 
   readonly nominaPeriodoId = input<string | null>(null);
   readonly avanceSolicitado = output<void>();
@@ -242,6 +246,7 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
       this.nomina.set(await this.servicio.obtenerNomina(nomina.id));
       this.preValidacion.set(await this.servicio.obtenerResumenValidacionNomina(nomina.id));
       await this.registrarEventoCalculo(nomina, resultado);
+      this.registrarEventoCalculoTrazabilidad(resultado);
       this.nominaCabeceraCambiada.emit();
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido';
@@ -249,6 +254,18 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
     } finally {
       this.calculando.set(false);
     }
+  }
+
+  private registrarEventoCalculoTrazabilidad(resultado: MotorCalculoPeriodoResultado): void {
+    const resumen = resultado.resumen;
+    this.orquestador.registrarEventoTrazabilidad(
+      this.trazabilidadService.crearEventoLocal({
+        paso: 'calculation',
+        tipoEvento: 'CALCULO_EJECUTADO',
+        descripcion: `${resumen.totalTrabajadoresCalculados} trabajadores calculados · líquido $${resumen.totalLiquidoPreliminar.toLocaleString('es-CL')}`,
+        integridad: { estadoIntegridad: 'registrado' },
+      }),
+    );
   }
 
   private async registrarEventoCalculo(
