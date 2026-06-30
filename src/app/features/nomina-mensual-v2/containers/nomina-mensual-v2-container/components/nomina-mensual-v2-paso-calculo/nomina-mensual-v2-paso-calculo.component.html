@@ -373,9 +373,6 @@
     @if (resultado(); as r) {
       <span class="paso-calc__footer-hint">
         Cálculo generado el {{ r.generadoEn | date: 'dd-MM-yyyy HH:mm' }}
-        @if (versionCalculo() > 1) {
-          · registro {{ versionCalculo() }}
-        }
         · Para continuar, usa la acción principal del shell.
       </span>
     } @else {

@@ -2839,3 +2839,12 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **CSS**: bloques muertos en `nomina-mensual-v2-visual-system.css` (`.alcance-opcion-card*`, `.empleados-kpi-card*`, chips) y referencias a pasos legacy en `nomina-mensual-v2-container.css`.
 - **Tests**: `npx ng test --watch=false --include="**/nomina-mensual-v2/**/*.spec.ts"` → 259/259 verdes.
 - **Sin tocar**: estilos globales, `angular.json`, SQL, motor productivo, nómina V1 administrador.
+
+## 2026-06-30 - NOIA-NMV2-REPAIR-05: tipos demo y hints de avance
+
+- **Modelos** `nomina-mensual-v2.models.ts`: eliminados tipos demo del mock legacy (`SummaryMetric`, `StatusChip`, `ChecklistItem`, filas de movimientos/cálculo/validación/liquidación, etc.). Se conservan stepper, alcance para `nomina-periodo.service` y trazabilidad.
+- **CSS container**: retirados placeholders `.nmv2-paso-congelado` / `.nmv2-paso-pendiente` (sin uso en HTML).
+- **Cálculo**: pie sin número de registro/versión visible; solo fecha de generación + hint de avance vía shell.
+- **Validación**: pie alineado a Dotación/Movimientos/Cálculo — hint de avance vía shell cuando no hay bloqueos críticos.
+- **Tests**: suite `nomina-mensual-v2` en verde tras el podado.
+- **Sin tocar**: estilos globales, SQL, motor.

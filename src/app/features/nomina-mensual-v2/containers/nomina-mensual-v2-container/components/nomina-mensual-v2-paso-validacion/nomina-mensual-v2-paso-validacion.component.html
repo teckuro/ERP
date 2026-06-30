@@ -121,9 +121,12 @@
       } @else if (r.conAdvertencias > 0) {
         <span class="paso-val__footer-hint is-warning">
           {{ r.conAdvertencias }} advertencias activas, revisa antes de aprobar.
+          Para continuar al cierre, usa la acción principal del shell.
         </span>
       } @else {
-        <span class="paso-val__footer-hint">Sin incidencias pendientes.</span>
+        <span class="paso-val__footer-hint">
+          Sin incidencias pendientes. Para continuar al cierre, usa la acción principal del shell.
+        </span>
       }
     }
   </footer>
