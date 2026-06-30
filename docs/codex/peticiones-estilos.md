@@ -25,7 +25,16 @@
 
 ---
 
-## 2026-06-30 — Nómina V2: trazabilidad local y limpieza F3 (NOIA-NMV2-REPAIR-02)
+## 2026-06-30 — Nómina V2: limpieza alcance legacy y CSS dotación (NOIA-NMV2-REPAIR-03)
+
+- Eliminados del orquestador `resultadoAlcance`, `alcanceValidado` y tipos del
+  modal de resumen F3 (sin UI viva).
+- Retirados servicios/presenters huérfanos: `nomina-empleados-carga`,
+  `nomina-alcance-grid`, util de presentación checklist.
+- ~400 líneas CSS muertas del layout empleados V1/V7 en container.
+- Hint en pie de Dotación y Movimientos: avance vía shell (no duplicar CTA).
+
+---
 
 - **Trazabilidad:** eventos locales al calcular (`CALCULO_EJECUTADO`), validar
   (`PRENOMINA_VALIDADA`), retroceder (`SNAPSHOT_INVALIDADO`), cerrar

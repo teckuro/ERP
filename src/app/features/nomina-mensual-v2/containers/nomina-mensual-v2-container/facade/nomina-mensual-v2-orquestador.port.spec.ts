@@ -32,21 +32,6 @@ describe('NominaMensualV2OrquestadorPort', () => {
     const orquestador = new NominaMensualV2OrquestadorPort();
 
     orquestador.modalAvanceParametros.set({ tipo: 'revision', destinoPaso: 'dotacion' });
-    orquestador.resultadoAlcance.set({
-      tipo: 'empresaCompleta',
-      descripcion: 'Empresa completa',
-      estado: 'listo',
-      centrosCostoSeleccionados: [],
-      idsTrabajadoresManuales: [],
-      idsTrabajadoresIncluidos: ['1'],
-      resumen: {
-        totalTrabajadores: 1,
-        trabajadoresIncluidos: 1,
-        trabajadoresExcluidos: 0,
-        trabajadoresBloqueados: 0,
-        trabajadoresConAdvertencias: 0,
-      },
-    });
     orquestador.estadoParametrosBase.set({
       estado: 'guardado',
       idCalculoPeriodoBase: 10,
@@ -69,7 +54,6 @@ describe('NominaMensualV2OrquestadorPort', () => {
     orquestador.reiniciarPorCambioPeriodo('2026-06');
 
     expect(orquestador.modalAvanceParametros()).toBeNull();
-    expect(orquestador.resultadoAlcance()).toBeNull();
     expect(orquestador.estadoParametrosBase()).toBeNull();
     expect(orquestador.origenBaseParametrosAlAvanzar()).toBeNull();
     expect(orquestador.eventosTrazabilidad()).toEqual([]);

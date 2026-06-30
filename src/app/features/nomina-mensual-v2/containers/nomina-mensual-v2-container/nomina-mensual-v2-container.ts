@@ -791,10 +791,6 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     }
   }
 
-  goLegacy(): void {
-    void this.router.navigate(['/remuneraciones/proceso-mensual']);
-  }
-
   private debeConfirmarReingresoParametros(): boolean {
     const idxActual = ORDEN_PASOS_NOMINA.indexOf(this.currentStep());
     const idxParametros = ORDEN_PASOS_NOMINA.indexOf('parameters');

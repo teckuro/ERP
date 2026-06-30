@@ -1,6 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
 
-import type { PayrollStepId, ResultadoAlcanceNomina } from '../../../models/nomina-mensual-v2.models';
+import type { PayrollStepId } from '../../../models/nomina-mensual-v2.models';
 import type { ModalAccesoBaseParametrosPort } from '../../../models/nomina-parametros-base-acceso.models';
 import type {
   DiferenciaParametroBase,
@@ -26,21 +26,6 @@ import type { AyudaAvanceTono } from './nomina-mensual-v2-navegacion';
 export type ModalAvanceParametrosPort =
   | { tipo: 'bloqueo'; pendientes?: readonly string[] }
   | { tipo: 'revision'; destinoPaso: PayrollStepId };
-
-import type {
-  ResultadoValidacionEmpleados,
-  SeccionResumenPendientesEmpleados,
-} from '../../../presenters/nomina-empleados-validacion.presenter';
-
-/**
- * Tipo conservado por compatibilidad con tests y futura retirada de
- * `resultadoAlcance` del orquestador post-fusión F3.
- */
-export type ModalResumenPendientesEmpleadosPort = {
-  resultado: ResultadoValidacionEmpleados;
-  secciones: SeccionResumenPendientesEmpleados[];
-  origen: 'checklist' | 'validacion';
-};
 
 export type ModalPrepararNominaPort = {
   preview: VistaPreviaParametrosBase;
@@ -92,7 +77,6 @@ export class NominaMensualV2OrquestadorPort {
   readonly modalRevisarParametros = signal<ModalRevisarParametrosPort | null>(null);
   readonly modalConfirmarRetroceso = signal<ModalConfirmarRetrocesoPort | null>(null);
   readonly modalAccesoBaseParametros = signal<ModalAccesoBaseParametrosPort | null>(null);
-  readonly resultadoAlcance = signal<ResultadoAlcanceNomina | null>(null);
 
   readonly estadoParametrosBase = signal<EstadoBaseParametrosPeriodoView | null>(null);
   readonly origenBaseParametrosAlAvanzar = signal<OrigenBaseParametrosAlAvanzar | null>(null);
@@ -108,11 +92,6 @@ export class NominaMensualV2OrquestadorPort {
   private readonly eventosLocales = signal<EventoTrazabilidadNomina[]>([]);
   private trazabilidadService: NominaMensualV2TrazabilidadService | null = null;
   private tokenRecomputarTrazabilidad = 0;
-
-  readonly alcanceValidado = computed(() => {
-    const resultado = this.resultadoAlcance();
-    return !!resultado && resultado.estado !== 'sinConfigurar' && resultado.resumen.trabajadoresIncluidos > 0;
-  });
 
   readonly parametrosPreparados = computed(
     () =>
@@ -223,7 +202,6 @@ export class NominaMensualV2OrquestadorPort {
     this.limpiarModalesAvance();
     if (cambioPeriodo) {
       this.tokenRecomputarTrazabilidad += 1;
-      this.resultadoAlcance.set(null);
       this.estadoParametrosBase.set(null);
       this.origenBaseParametrosAlAvanzar.set(null);
       this.idCalculoPeriodoBase.set(null);
