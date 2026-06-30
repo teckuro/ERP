@@ -119,7 +119,7 @@ describe('LiquidacionPreviewModalComponent', () => {
     expect(cerrado).toBe(1);
   });
 
-  it('emite cerrar al hacer click en el backdrop', () => {
+  it('no cierra al simular click fuera del panel (sin handler de backdrop)', () => {
     const fixture = TestBed.createComponent(LiquidacionPreviewModalComponent);
     fixture.componentRef.setInput('liquidacion', liquidacionMock());
     fixture.componentRef.setInput('empresa', { razonSocial: 'X' });
@@ -129,8 +129,9 @@ describe('LiquidacionPreviewModalComponent', () => {
     let cerrado = 0;
     fixture.componentInstance.cerrar.subscribe(() => (cerrado += 1));
 
-    fixture.componentInstance.cerrarPorBackdrop();
-    expect(cerrado).toBe(1);
+    const backdrop = fixture.nativeElement.querySelector('.liq-preview__backdrop') as HTMLElement;
+    backdrop.click();
+    expect(cerrado).toBe(0);
   });
 
   it('expone el subtotal y el chip de aportes empleador (informativo)', () => {

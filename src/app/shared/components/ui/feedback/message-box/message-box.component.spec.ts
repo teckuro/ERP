@@ -153,6 +153,24 @@ describe('MessageBoxComponent', () => {
     expect(secondary).toBe(1);
   });
 
+  it('inline dismissible muestra icono X y emite dismiss', () => {
+    const fixture = TestBed.createComponent(MessageBoxComponent);
+    fixture.componentInstance.mode = 'inline';
+    fixture.componentInstance.variant = 'danger';
+    fixture.componentInstance.message = 'Error operativo';
+    fixture.componentInstance.dismissible = true;
+    let dismissed = 0;
+    fixture.componentInstance.dismiss.subscribe(() => dismissed++);
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    const closeBtn = el.querySelector('.noia-msgbox__close--inline') as HTMLButtonElement;
+    expect(closeBtn).not.toBeNull();
+    expect(closeBtn.getAttribute('aria-label')).toBe('Cerrar');
+    closeBtn.click();
+    expect(dismissed).toBe(1);
+  });
+
   it('limita a tres bloques de decisión', () => {
     const fixture = TestBed.createComponent(MessageBoxComponent);
     fixture.componentInstance.mode = 'modal';

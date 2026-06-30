@@ -24,6 +24,8 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
+import { X as XIcon } from 'lucide-angular/src/icons';
 
 import type {
   FilaTrabajadorMovimientos,
@@ -80,12 +82,15 @@ const BORRADOR_MANUAL_INICIAL: BorradorManual = {
     DataGridRowDetailDirective,
     MessageBoxComponent,
     WorkspaceLoadingComponent,
+    LucideAngularModule,
   ],
   templateUrl: './nomina-mensual-v2-paso-movimientos.component.html',
   styleUrl: './nomina-mensual-v2-paso-movimientos.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
+  readonly closeIcon = XIcon;
+
   private readonly servicio = inject(NominaPeriodoService);
 
   readonly nominaPeriodoId = input<string | null>(null);

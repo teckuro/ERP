@@ -25,6 +25,8 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
+import { X as XIcon } from 'lucide-angular/src/icons';
 
 import {
   DataGridCellDirective,
@@ -49,12 +51,15 @@ import {
     FormsModule,
     DataGridComponent,
     DataGridCellDirective,
+    LucideAngularModule,
   ],
   templateUrl: './nomina-mensual-v2-modal-incluir-trabajadores.component.html',
   styleUrl: './nomina-mensual-v2-modal-incluir-trabajadores.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NominaMensualV2ModalIncluirTrabajadoresComponent {
+  readonly closeIcon = XIcon;
+
   private readonly empleadosService = inject(EmpleadosService);
 
   readonly nominaPeriodoId = input<string | null>(null);

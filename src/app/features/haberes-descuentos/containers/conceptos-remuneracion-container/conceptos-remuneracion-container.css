@@ -623,6 +623,44 @@
   overflow: hidden;
 }
 
+.cr-detalle-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem 0;
+}
+
+.cr-detalle-head .hd-modal-title {
+  margin: 0;
+}
+
+.cr-detalle-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.cr-detalle-close:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #111827;
+}
+
+.cr-detalle-close lucide-icon {
+  width: 14px;
+  height: 14px;
+}
+
 .cr-detalle-body {
   flex: 1 1 auto;
   min-height: 0;

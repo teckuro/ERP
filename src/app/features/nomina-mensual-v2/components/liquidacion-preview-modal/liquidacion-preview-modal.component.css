@@ -109,6 +109,21 @@
   outline-offset: 2px;
 }
 
+.liq-preview__btn--close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-color: #cbd5e1;
+}
+
+.liq-preview__btn--close lucide-icon {
+  width: 14px;
+  height: 14px;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Hoja (documento)                                                            */
 /* -------------------------------------------------------------------------- */

@@ -1,7 +1,6 @@
 <div
   class="adm-nom-resumen__backdrop"
   role="presentation"
-  (click)="onBackdrop($event)"
   (keydown)="onEscape($event)"
   tabindex="-1"
 >
@@ -113,11 +112,6 @@
     </div>
 
     <footer class="adm-nom-resumen__foot">
-      <button
-        type="button"
-        class="adm-nom-resumen__btn adm-nom-resumen__btn--ghost"
-        (click)="cerrarModal()"
-      >Cerrar</button>
       <button
         type="button"
         class="adm-nom-resumen__btn adm-nom-resumen__btn--primary"

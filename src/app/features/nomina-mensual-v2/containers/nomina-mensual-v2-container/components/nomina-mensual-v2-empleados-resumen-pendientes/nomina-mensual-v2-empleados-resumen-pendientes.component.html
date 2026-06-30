@@ -1,4 +1,4 @@
-<div class="nmv2-empleados-resumen-backdrop" role="presentation" (click)="cerrarModal()"></div>
+<div class="nmv2-empleados-resumen-backdrop" role="presentation" aria-hidden="true"></div>
 
 <div
   class="nmv2-empleados-resumen-modal"
@@ -94,11 +94,6 @@
         </button>
       </div>
     } @else {
-      <div class="nmv2-empleados-resumen-modal__footer-grupo">
-        <button type="button" class="nmv2-empleados-resumen-btn nmv2-empleados-resumen-btn--ghost" (click)="cerrarModal()">
-          Cerrar
-        </button>
-      </div>
       <div class="nmv2-empleados-resumen-modal__footer-grupo">
         @if (mostrarReintentar) {
           <button type="button" class="nmv2-empleados-resumen-btn nmv2-empleados-resumen-btn--secundario" (click)="solicitarReintentarValidacion()">

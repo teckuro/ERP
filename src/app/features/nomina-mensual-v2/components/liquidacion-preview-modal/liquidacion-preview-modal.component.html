@@ -3,9 +3,8 @@
   role="dialog"
   aria-modal="true"
   aria-labelledby="liq-preview-title"
-  (click)="cerrarPorBackdrop()"
 >
-  <div class="liq-preview__modal" (click)="detenerPropagacion($event)">
+  <div class="liq-preview__modal">
     <header class="liq-preview__chrome">
       <div class="liq-preview__chrome-copy">
         <p class="liq-preview__chrome-eyebrow">Previsualización</p>
@@ -26,10 +25,12 @@
         >Imprimir</button>
         <button
           type="button"
-          class="liq-preview__btn is-ghost"
+          class="liq-preview__btn liq-preview__btn--close"
           (click)="emitirCerrar()"
           aria-label="Cerrar previsualización"
-        >Cerrar</button>
+        >
+          <lucide-icon [img]="closeIcon" aria-hidden="true"></lucide-icon>
+        </button>
       </div>
     </header>
 

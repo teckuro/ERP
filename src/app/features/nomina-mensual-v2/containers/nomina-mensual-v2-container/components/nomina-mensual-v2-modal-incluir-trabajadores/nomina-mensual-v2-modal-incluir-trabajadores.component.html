@@ -1,4 +1,4 @@
-<div class="incluir-modal__backdrop" role="presentation" (click)="cerrarPicker()"></div>
+<div class="incluir-modal__backdrop" role="presentation" aria-hidden="true"></div>
 <section
   class="incluir-modal"
   role="dialog"
@@ -24,7 +24,7 @@
       [disabled]="aplicando()"
       aria-label="Cerrar"
     >
-      Cerrar
+      <lucide-icon [img]="closeIcon" aria-hidden="true"></lucide-icon>
     </button>
   </header>
 

@@ -25,6 +25,8 @@ import {
   input,
   output,
 } from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
+import { X as XIcon } from 'lucide-angular/src/icons';
 
 import type { LiquidacionCalculada } from '../../../nomina-mensual/models/proceso-mensual.model';
 import { liquidoEnPalabras } from './liquidacion-en-palabras';
@@ -52,12 +54,14 @@ export interface LiquidacionPreviewTrabajadorMeta {
 @Component({
   selector: 'app-liquidacion-preview-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: './liquidacion-preview-modal.component.html',
   styleUrl: './liquidacion-preview-modal.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LiquidacionPreviewModalComponent {
+  readonly closeIcon = XIcon;
+
   readonly liquidacion = input.required<LiquidacionCalculada>();
   readonly empresa = input.required<LiquidacionPreviewEmpresa>();
   readonly nomina = input.required<LiquidacionPreviewNomina>();
@@ -87,14 +91,6 @@ export class LiquidacionPreviewModalComponent {
   onEscape(event: Event): void {
     event.preventDefault();
     this.cerrar.emit();
-  }
-
-  cerrarPorBackdrop(): void {
-    this.cerrar.emit();
-  }
-
-  detenerPropagacion(event: Event): void {
-    event.stopPropagation();
   }
 
   emitirCerrar(): void {

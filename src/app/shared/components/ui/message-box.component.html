@@ -100,6 +100,16 @@
     }
   } @else {
     <div class="noia-msgbox__inline">
+      @if (dismissible) {
+        <button
+          type="button"
+          class="noia-msgbox__close noia-msgbox__close--inline"
+          [attr.aria-label]="dismissLabel"
+          (click)="onDismiss()"
+        >
+          <lucide-icon class="noia-msgbox__close-icon" [img]="closeIcon"></lucide-icon>
+        </button>
+      }
       <div class="noia-msgbox__inline-head">
         @if (resolvedEyebrow()) {
           <p class="noia-msgbox__eyebrow">{{ resolvedEyebrow() }}</p>

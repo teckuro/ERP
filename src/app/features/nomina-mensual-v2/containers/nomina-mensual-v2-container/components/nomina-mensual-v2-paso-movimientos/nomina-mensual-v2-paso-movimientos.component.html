@@ -73,7 +73,6 @@
       variant="danger"
       [message]="msg"
       [dismissible]="true"
-      dismissLabel="Cerrar"
       (dismiss)="descartarError()"
     ></app-message-box>
   }
@@ -83,7 +82,6 @@
       variant="info"
       [message]="msg"
       [dismissible]="true"
-      dismissLabel="Cerrar"
       (dismiss)="descartarMensaje()"
     ></app-message-box>
   }
@@ -337,9 +335,8 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="paso-mov-modal-title"
-      (click)="cerrarModalManual()"
     >
-      <div class="paso-mov__modal" (click)="$event.stopPropagation()">
+      <div class="paso-mov__modal">
         <header class="paso-mov__modal-head">
           <div>
             <h3 id="paso-mov-modal-title" class="paso-mov__modal-title">
@@ -355,10 +352,12 @@
           </div>
           <button
             type="button"
-            class="paso-mov__btn is-ghost is-small"
+            class="paso-mov__modal-close"
             aria-label="Cerrar"
             (click)="cerrarModalManual()"
-          >Cerrar</button>
+          >
+            <lucide-icon [img]="closeIcon" aria-hidden="true"></lucide-icon>
+          </button>
         </header>
         <form
           class="paso-mov__modal-body"

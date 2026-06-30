@@ -65,15 +65,23 @@
 
 .incluir-modal__close {
   appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
   border: 1px solid #cbd5e1;
   background: #ffffff;
-  color: #0f172a;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 12px;
+  color: #475569;
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.incluir-modal__close lucide-icon {
+  width: 14px;
+  height: 14px;
 }
 
 .incluir-modal__close:hover {

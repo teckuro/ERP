@@ -9,6 +9,14 @@
 
 ---
 
+## 2026-06-16 — Modales y MessageBox: cierre con X, sin click fuera (NOIA-MODAL-CLOSE-01)
+
+- `app-message-box`: inline `dismissible` muestra icono **X** (no texto «Cerrar»); `aria-label` conserva «Cerrar».
+- Modales y overlays del ERP: botón textual «Cerrar» en pie o cabecera sustituido por **X** donde aplicaba; pie redundante eliminado si ya había X.
+- Desactivado cerrar al hacer click en el backdrop (overlay) en administrador de nóminas, plantillas, generador V2, haberes/descuentos, novedades, movimientos variables y preview de liquidación.
+
+---
+
 ## 2026-06-16 — Generador: stepper volver | pasos | usuario (NOIA-NMV2-STEPPER-LAYOUT-01)
 
 - Cabecera del flujo en tres zonas: botón circular **Volver** a la izquierda,

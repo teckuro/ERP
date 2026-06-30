@@ -106,7 +106,7 @@
       [class.nm-modal-root--behind]="formAbierto() || recurrenteFormAbierto()"
       role="presentation"
     >
-      <div class="nm-modal-backdrop" (click)="cerrarDetalleTrabajador()"></div>
+      <div class="nm-modal-backdrop" aria-hidden="true"></div>
       <section class="nm-worker-modal" role="dialog" aria-modal="true" aria-labelledby="nm-worker-modal-title">
         <header class="nm-modal-header">
           <div>
@@ -196,7 +196,7 @@
 
   @if (formAbierto()) {
     <div class="nm-modal-root nm-modal-root--child" role="presentation">
-      <div class="nm-modal-backdrop" (click)="cancelarFormularioMensual()"></div>
+      <div class="nm-modal-backdrop" aria-hidden="true"></div>
       <section class="nm-modal-movimiento nm-modal-movimiento--hijo" role="dialog" aria-modal="true" aria-labelledby="nm-modal-title">
         <header class="nm-modal-header">
           <div>
@@ -452,7 +452,7 @@
 
   @if (recurrenteFormAbierto() && recurrenteTrabajador(); as trabajador) {
     <div class="nm-modal-root nm-modal-root--child" role="presentation">
-      <div class="nm-modal-backdrop" (click)="cancelarRecurrente()"></div>
+      <div class="nm-modal-backdrop" aria-hidden="true"></div>
       <section class="nm-modal-movimiento nm-modal-movimiento--recurrente" role="dialog" aria-modal="true" aria-labelledby="nm-recurrente-title">
         <header class="nm-modal-header">
           <div>
