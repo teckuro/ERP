@@ -58,8 +58,6 @@ export class NominaMensualV2PasoValidacionComponent implements PasoNominaPort {
   private readonly servicio = inject(NominaPeriodoService);
 
   readonly nominaPeriodoId = input<string | null>(null);
-  readonly volverCalculo = output<void>();
-  readonly aprobarSolicitado = output<void>();
   readonly verEnDotacionSolicitado = output<string>();
 
   readonly resumen = signal<ResumenValidacionNomina | null>(null);
@@ -131,23 +129,6 @@ export class NominaMensualV2PasoValidacionComponent implements PasoNominaPort {
     if (trabajadorId) this.verEnDotacionSolicitado.emit(trabajadorId);
   }
 
-  async emitirAprobar(): Promise<void> {
-    const id = this.nominaPeriodoId();
-    if (!id || !this.puedeAprobar()) return;
-    this.aprobando.set(true);
-    this.error.set(null);
-    try {
-      await this.servicio.validarYAprobarNomina(id);
-      await this.cargar(id);
-      this.aprobarSolicitado.emit();
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Error desconocido';
-      this.error.set(`No fue posible aprobar la validación: ${msg}`);
-    } finally {
-      this.aprobando.set(false);
-    }
-  }
-
   /**
    * Diagnóstico puro de "completitud" del paso. Lo consultan CTA y stepper
    * antes del click. Sin side-effects.
@@ -178,9 +159,8 @@ export class NominaMensualV2PasoValidacionComponent implements PasoNominaPort {
   }
 
   /**
-   * Comando único de avance (AG-NAV-03). Paso terminal: ejecuta la aprobación
-   * y, si es exitosa, deja al container navegar a cierre. No emite
-   * `aprobarSolicitado` (la navegación la decide el container).
+   * Comando único de avance (AG-NAV-03). Ejecuta la aprobación; el container
+   * navega a cierre según el resultado de `ejecutarAvancePaso`.
    */
   async avanzar(): Promise<ResultadoAvancePaso> {
     const diagnostico = this.puedeContinuar();
@@ -202,9 +182,5 @@ export class NominaMensualV2PasoValidacionComponent implements PasoNominaPort {
     } finally {
       this.aprobando.set(false);
     }
-  }
-
-  emitirVolver(): void {
-    this.volverCalculo.emit();
   }
 }

@@ -35,6 +35,10 @@ export const ORDEN_PASOS_NOMINA: PayrollStepId[] = [
  */
 export type ResultadoAvancePaso = { ok: true } | { ok: false; razon: string };
 
+/** Respuesta de `avanzar()` en cierre cuando el modal de confirmación quedó abierto. */
+export const RAZON_CIERRE_MODAL_PENDIENTE =
+  'Revisa el resumen y confirma el cierre en el diálogo.';
+
 /** Pasos cuyo “completo” exige acción terminal confirmada (no auto-persistir al visitar). */
 export function pasoExcluidoAutoPersistenciaCompletado(paso: PayrollStepId): boolean {
   return paso === 'closure';

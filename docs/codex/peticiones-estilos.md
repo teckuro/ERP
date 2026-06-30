@@ -9,6 +9,23 @@
 
 ---
 
+## 2026-06-30 — Generador Nómina V2: flujos unificados vía shell (NOIA-NMV2-REPAIR-08)
+
+- **Avance centralizado:** pasos 2–6 ya no navegan por outputs bypass
+  (`avanceSolicitado`, `aprobarSolicitado`, `volver*`); el CTA del shell usa
+  `ejecutarAccionPrincipalPasoActual()` con confirmación de dotación, trazabilidad
+  y persistencia de paso completado.
+- **Cierre:** `avanzar()` abre el modal y devuelve hint de revisión (no limpia
+  ayuda como éxito terminal); confirmación real sigue en el diálogo.
+- **Reapertura:** tras reabrir desde cierre, navega a Validación para reaprobar.
+- **Handoff crear nómina:** query params `?from=create&…` se consumen con
+  `replaceUrl` para no re-aplicar en refresh.
+- **Carga:** gate mientras `nominaCargaEstado === 'loading'`; CTA del shell
+  refleja operaciones async (`confirmando`, `aplicando`, `calculando`, etc.).
+- **Trazabilidad local:** eventos al confirmar dotación y avanzar movimientos.
+
+---
+
 ## 2026-06-30 — Generador Nómina V2: reparación flujo e integridad (NOIA-NMV2-REPAIR-01)
 
 - **Cierre:** el paso `closure` ya no se marca completado al abrir el modal ni al
@@ -2856,3 +2873,11 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **Stepper**: estados `blocked` / `warning` / `advance-blocked` movidos a `nomina-mensual-v2-stepper.component.css` (ownership del componente).
 - **Tests**: suite `nomina-mensual-v2` en verde tras la poda.
 - **Sin tocar**: estilos globales, `visual-system.css` de pasos productivos, SQL, motor.
+
+## 2026-06-30 - NOIA-NMV2-REPAIR-07: poda visual-system.css
+
+- **`nomina-mensual-v2-visual-system.css`**: de ~492 → ~18 líneas; conservado solo scroll horizontal de `.nmv2-stepper-card`.
+- **Eliminado** bloque demo V8: `.nmv2-screen-*`, `.nomina-iconBadge`, `.nomina-chip`, `.nomina-state`, `.nomina-card`, `.parameter-*`, `.prep-*`, `.donut-ring--summary`, tokens `--nomina-*` sin consumidores.
+- **Stepper**: estilos de copy `pending` / `complete` absorbidos en `nomina-mensual-v2-stepper.component.css`.
+- **Tests**: suite `nomina-mensual-v2` en verde.
+- **Sin tocar**: estilos globales, SQL, motor.

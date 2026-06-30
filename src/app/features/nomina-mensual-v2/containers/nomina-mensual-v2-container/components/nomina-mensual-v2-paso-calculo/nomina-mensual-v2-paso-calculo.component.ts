@@ -94,8 +94,6 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   private readonly trazabilidadService = inject(NominaMensualV2TrazabilidadService);
 
   readonly nominaPeriodoId = input<string | null>(null);
-  readonly avanceSolicitado = output<void>();
-  readonly volverMovimientos = output<void>();
   readonly nominaCabeceraCambiada = output<void>();
 
   readonly nomina = signal<NominaPeriodo | null>(null);
@@ -283,10 +281,6 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
     }
   }
 
-  emitirAvance(): void {
-    if (this.puedeAvanzar()) this.avanceSolicitado.emit();
-  }
-
   /**
    * Diagnóstico puro de "completitud" del paso. Requiere cálculo procesado y
    * vigente. Sin side-effects.
@@ -317,10 +311,6 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
    */
   async avanzar(): Promise<ResultadoAvancePaso> {
     return this.puedeContinuar();
-  }
-
-  emitirVolver(): void {
-    this.volverMovimientos.emit();
   }
 
   cerrarHintExpandDesglose(): void {

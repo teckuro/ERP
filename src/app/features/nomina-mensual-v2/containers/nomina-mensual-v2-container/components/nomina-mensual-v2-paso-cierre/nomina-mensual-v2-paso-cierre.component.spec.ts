@@ -187,7 +187,7 @@ describe('NominaMensualV2PasoCierreComponent (CIE-ENUM-01)', () => {
       expect(cmp.confirmarCierreVisible()).toBe(false);
     });
 
-    it('abre el modal de confirmación y retorna ok:true cuando todoCumplido', async () => {
+    it('abre el modal de confirmación y retorna hint pendiente cuando todoCumplido', async () => {
       configurarTestBed();
       const fixture = TestBed.createComponent(NominaMensualV2PasoCierreComponent);
       const cmp = fixture.componentInstance;
@@ -219,7 +219,10 @@ describe('NominaMensualV2PasoCierreComponent (CIE-ENUM-01)', () => {
 
       const resultado = await cmp.avanzar();
 
-      expect(resultado).toEqual({ ok: true });
+      expect(resultado.ok).toBe(false);
+      if (!resultado.ok) {
+        expect(resultado.razon).toMatch(/confirma el cierre/i);
+      }
       expect(cmp.confirmarCierreVisible()).toBe(true);
     });
   });

@@ -82,8 +82,6 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
 
   readonly nominaPeriodoId = input<string | null>(null);
   readonly trabajadorDetalleInicial = input<string | null>(null);
-  readonly avanceSolicitado = output<void>();
-  readonly volverParametros = output<void>();
   readonly detalleInicialConsumido = output<void>();
 
   readonly loading = signal(false);
@@ -271,23 +269,6 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
     }
   }
 
-  async emitirAvance(): Promise<void> {
-    if (!this.puedeAvanzar()) return;
-    const id = this.nominaPeriodoId();
-    if (!id) return;
-    this.confirmando.set(true);
-    this.errorMensaje.set(null);
-    try {
-      await this.servicio.confirmarDotacion(id);
-      this.avanceSolicitado.emit();
-    } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'Error desconocido';
-      this.errorMensaje.set(`No fue posible confirmar la dotación: ${mensaje}`);
-    } finally {
-      this.confirmando.set(false);
-    }
-  }
-
   /**
    * Diagnóstico puro de "completitud" del paso. Lo consultan el CTA del shell
    * y el stepper para deshabilitarse con razón visible antes del click.
@@ -314,9 +295,8 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
   }
 
   /**
-   * Comando único de avance (AG-NAV-03). Paso terminal: confirma la dotación y
-   * pide al container navegar. No emite el output `avanceSolicitado` (eso lo
-   * decide el container con el resultado).
+   * Comando único de avance (AG-NAV-03). Confirma la dotación; el container
+   * navega según el resultado de `ejecutarAvancePaso`.
    */
   async avanzar(): Promise<ResultadoAvancePaso> {
     const diagnostico = this.puedeContinuar();
@@ -337,9 +317,5 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
     } finally {
       this.confirmando.set(false);
     }
-  }
-
-  emitirVolver(): void {
-    this.volverParametros.emit();
   }
 }

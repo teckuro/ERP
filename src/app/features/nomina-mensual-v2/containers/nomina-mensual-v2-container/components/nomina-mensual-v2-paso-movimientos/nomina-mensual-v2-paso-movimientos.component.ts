@@ -94,8 +94,6 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
   private readonly servicio = inject(NominaPeriodoService);
 
   readonly nominaPeriodoId = input<string | null>(null);
-  readonly avanceSolicitado = output<void>();
-  readonly volverDotacion = output<void>();
 
   readonly loading = signal(false);
   /** Hay una acción de cambio masivo en curso (cargar pendientes globales). */
@@ -509,10 +507,6 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
 
   // -- Navegación ------------------------------------------------------------
 
-  emitirAvance(): void {
-    this.avanceSolicitado.emit();
-  }
-
   puedeContinuar(): ResultadoAvancePaso {
     if (this.loading()) {
       return { ok: false, razon: 'Cargando los movimientos.' };
@@ -531,9 +525,5 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
 
   async avanzar(): Promise<ResultadoAvancePaso> {
     return this.puedeContinuar();
-  }
-
-  emitirVolver(): void {
-    this.volverDotacion.emit();
   }
 }

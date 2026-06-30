@@ -35,7 +35,10 @@ import type {
   PasoNominaPort,
   ResultadoAvancePaso,
 } from '../../facade/nomina-mensual-v2-navegacion';
-import { MENSAJE_CALCULO_NO_VIGENTE } from '../../facade/nomina-mensual-v2-navegacion';
+import {
+  MENSAJE_CALCULO_NO_VIGENTE,
+  RAZON_CIERRE_MODAL_PENDIENTE,
+} from '../../facade/nomina-mensual-v2-navegacion';
 import type { NominaCabeceraCambiadaEvent } from '../../../../models/nomina-cabecera-cambiada.models';
 
 interface ChecklistItem {
@@ -60,7 +63,6 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   readonly estadoLabel = estadoNominaToLabel;
 
   readonly nominaPeriodoId = input<string | null>(null);
-  readonly volverValidacion = output<void>();
   /** Notifica al container que debe refrescar cabecera (y opcionalmente persistir paso). */
   readonly nominaCabeceraCambiada = output<NominaCabeceraCambiadaEvent>();
 
@@ -217,7 +219,7 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
     const diagnostico = this.puedeContinuar();
     if (!diagnostico.ok) return diagnostico;
     this.solicitarCierre();
-    return { ok: true };
+    return { ok: false, razon: RAZON_CIERRE_MODAL_PENDIENTE };
   }
 
   abrirReaperturaModal(): void {
@@ -263,9 +265,5 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
 
   volverAdministrador(): void {
     void this.router.navigate(['/remuneraciones/nominas']);
-  }
-
-  emitirVolver(): void {
-    this.volverValidacion.emit();
   }
 }

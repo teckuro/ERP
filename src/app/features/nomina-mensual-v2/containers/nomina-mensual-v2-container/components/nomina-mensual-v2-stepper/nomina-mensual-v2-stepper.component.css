@@ -234,6 +234,21 @@
   color: #475569;
 }
 
+.nmv2-page .nomina-workflow-header .step.nomina-step--complete .step-copy strong,
+.nmv2-page .nomina-workflow-header .step.completed .step-copy strong {
+  color: #334155;
+}
+
+.nmv2-page .nomina-workflow-header .step.nomina-step--complete .step-copy small,
+.nmv2-page .nomina-workflow-header .step.completed .step-copy small {
+  color: #64748b;
+}
+
+.nmv2-page .nomina-workflow-header .step.nomina-step--pending .step-copy strong {
+  color: #64748b;
+  font-weight: 650;
+}
+
 .nmv2-page .nomina-workflow-header .step-copy {
   display: grid;
   gap: 3px;

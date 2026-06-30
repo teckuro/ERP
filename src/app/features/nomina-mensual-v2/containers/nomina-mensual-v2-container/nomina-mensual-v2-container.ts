@@ -31,6 +31,7 @@ import { NominaMensualV2PasoParametrosComponent } from './components/nomina-mens
 import { NominaMensualV2StepperComponent } from './components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component';
 import {
   ORDEN_PASOS_NOMINA,
+  RAZON_CIERRE_MODAL_PENDIENTE,
   ejecutarAvancePaso,
   esAvanceHaciaAdelante,
   esPasoCongelado,
@@ -114,6 +115,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     tono: 'info' | 'success';
   } | null>(null);
   private pasoForzadoCreacion: PayrollStepId | null = null;
+  private handoffCreacionConsumido = false;
 
   /**
    * Marca que la rehidratación del último paso visitado para la nómina actual
@@ -276,6 +278,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       // respetamos: el usuario acaba de crear y debe aterrizar ahí, no en el
       // paso visitado de una sesión previa.
       const pasoForzado = this.pasoForzadoCreacion;
+      this.pasoForzadoCreacion = null;
       const pasoTarget = pasoForzado ?? sesion.pasoVisitadoSugerido ?? sesion.pasoInicial;
       if (pasoTarget !== this.currentStep()) {
         this.currentStep.set(pasoTarget);
@@ -321,19 +324,35 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
 
   private sincronizarHandoffDesdeQueryParams(qp: { get: (key: string) => string | null }): void {
     const from = qp.get('from');
-    if (from !== 'create') {
-      this.pasoForzadoCreacion = null;
+    if (from === 'create') {
+      const paso = qp.get('paso');
+      const dotacion = Number(qp.get('dotacion') ?? '0');
+      const reutilizada = qp.get('reutilizada') === '1';
+      if (paso === 'parameters' || paso === 'dotacion') {
+        this.pasoForzadoCreacion = paso;
+        this.currentStep.set(paso);
+        this.orquestador.pasoActual.set(paso);
+      }
+      this.bannerHandoff.set(this.componerBannerHandoff(dotacion, reutilizada));
+      if (!this.handoffCreacionConsumido) {
+        this.handoffCreacionConsumido = true;
+        void this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {
+            from: null,
+            paso: null,
+            dotacion: null,
+            reutilizada: null,
+          },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      }
       return;
     }
-    const paso = qp.get('paso');
-    const dotacion = Number(qp.get('dotacion') ?? '0');
-    const reutilizada = qp.get('reutilizada') === '1';
-    if (paso === 'parameters' || paso === 'dotacion') {
-      this.pasoForzadoCreacion = paso;
-      this.currentStep.set(paso);
-      this.orquestador.pasoActual.set(paso);
+    if (!this.handoffCreacionConsumido) {
+      this.pasoForzadoCreacion = null;
     }
-    this.bannerHandoff.set(this.componerBannerHandoff(dotacion, reutilizada));
   }
 
   private componerBannerHandoff(
@@ -440,6 +459,12 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     await this.refrescarNominaCargada(id);
     if (event.registrarPasoCompletado) {
       await this.marcarPasoCompletadoYRefrescarNomina(event.registrarPasoCompletado);
+    }
+    if (
+      event.trazabilidad?.tipo === 'reapertura'
+      && this.currentStep() === 'closure'
+    ) {
+      this.irAPaso('validation');
     }
   }
 
@@ -677,10 +702,12 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     // `accesoBaseService.resolverAccionShellParametros` ya define su
     // `disabled`.
     const completitud = this.pasoActualCompleto();
+    const nominaCargando = this.nominaCargaEstado() === 'loading' && !!this.nominaPeriodoId();
     const disabledPorContenido = paso !== 'parameters' && !completitud.ok;
     const tooltipPorContenido = paso !== 'parameters' && !completitud.ok
       ? (completitud.razon ?? null)
       : null;
+    const operacionEnCurso = this.pasoOperacionEnCurso();
 
     return {
       breadcrumbs: [
@@ -696,12 +723,30 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       },
       primaryAction: {
         label: accionParametros?.label ?? this.primaryActionLabel(),
-        disabled: (accionParametros?.disabled ?? false) || disabledPorContenido,
-        loading: paso === 'parameters' ? parametrosValidando : false,
+        disabled: (accionParametros?.disabled ?? false) || disabledPorContenido || nominaCargando,
+        loading: paso === 'parameters' ? parametrosValidando : operacionEnCurso,
         actionId: `nomina-mensual-v2-${paso}`,
         tooltip: tooltipPorContenido,
       },
     };
+  }
+
+  private pasoOperacionEnCurso(): boolean {
+    const paso = this.currentStep();
+    switch (paso) {
+      case 'dotacion':
+        return this.pasoDotacion()?.confirmando() ?? false;
+      case 'movements':
+        return this.pasoMovimientos()?.aplicando() ?? false;
+      case 'calculation':
+        return this.pasoCalculo()?.calculando() ?? false;
+      case 'validation':
+        return this.pasoValidacion()?.aprobando() ?? false;
+      case 'closure':
+        return this.pasoCierre()?.ejecutando() ?? false;
+      default:
+        return false;
+    }
   }
 
   /**
@@ -724,7 +769,8 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       const paso = this.obtenerPasoActivoConComando();
       const { resultado } = await ejecutarAvancePaso(pasoActivo, paso);
       if (!resultado.ok) {
-        this.orquestador.establecerAyudaAvance(resultado.razon, 'bloqueo');
+        const tono = resultado.razon === RAZON_CIERRE_MODAL_PENDIENTE ? 'revision' : 'bloqueo';
+        this.orquestador.establecerAyudaAvance(resultado.razon, tono);
         return;
       }
       this.orquestador.establecerAyudaAvance(null);
@@ -737,7 +783,25 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       return;
     }
     this.orquestador.establecerAyudaAvance(null);
-    if (pasoActivo === 'validation') {
+    if (pasoActivo === 'dotacion') {
+      this.orquestador.registrarEventoTrazabilidad(
+        this.trazabilidadService.crearEventoLocal({
+          paso: 'dotacion',
+          tipoEvento: 'EMPLEADOS_VALIDADOS',
+          descripcion: 'Dotación confirmada para el período.',
+          integridad: { estadoIntegridad: 'registrado' },
+        }),
+      );
+    } else if (pasoActivo === 'movements') {
+      this.orquestador.registrarEventoTrazabilidad(
+        this.trazabilidadService.crearEventoLocal({
+          paso: 'movements',
+          tipoEvento: 'NOVEDADES_REGISTRADAS',
+          descripcion: 'Movimientos del período listos para cálculo.',
+          integridad: { estadoIntegridad: 'registrado' },
+        }),
+      );
+    } else if (pasoActivo === 'validation') {
       this.orquestador.registrarEventoTrazabilidad(
         this.trazabilidadService.crearEventoLocal({
           paso: 'validation',

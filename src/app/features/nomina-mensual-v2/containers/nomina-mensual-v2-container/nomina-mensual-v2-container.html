@@ -19,6 +19,10 @@
         Volver al administrador
       </button>
     </div>
+  } @else if (nominaCargaEstado() === 'loading' && nominaPeriodoId()) {
+    <div class="nmv2-empty-state" role="status" aria-live="polite">
+      <p class="nmv2-empty-state__text">Cargando la nómina…</p>
+    </div>
   } @else {
     <app-nomina-mensual-v2-stepper
       [pasoActual]="currentStep()"
@@ -68,38 +72,29 @@
             <app-nomina-mensual-v2-paso-dotacion
               [nominaPeriodoId]="nominaPeriodoId()"
               [trabajadorDetalleInicial]="trabajadorDetalleDotacion()"
-              (avanceSolicitado)="intentarIrAPaso('movements')"
-              (volverParametros)="intentarIrAPaso('parameters')"
               (detalleInicialConsumido)="limpiarTrabajadorDetalleDotacion()"
             />
           }
           @case ('movements') {
             <app-nomina-mensual-v2-paso-movimientos
               [nominaPeriodoId]="nominaPeriodoId()"
-              (avanceSolicitado)="intentarIrAPaso('calculation')"
-              (volverDotacion)="intentarIrAPaso('dotacion')"
             />
           }
           @case ('calculation') {
             <app-nomina-mensual-v2-paso-calculo
               [nominaPeriodoId]="nominaPeriodoId()"
-              (avanceSolicitado)="intentarIrAPaso('validation')"
-              (volverMovimientos)="intentarIrAPaso('movements')"
               (nominaCabeceraCambiada)="manejarNominaCabeceraCambiada()"
             />
           }
           @case ('validation') {
             <app-nomina-mensual-v2-paso-validacion
               [nominaPeriodoId]="nominaPeriodoId()"
-              (aprobarSolicitado)="intentarIrAPaso('closure')"
               (verEnDotacionSolicitado)="manejarVerEnDotacion($event)"
-              (volverCalculo)="intentarIrAPaso('calculation')"
             />
           }
           @case ('closure') {
             <app-nomina-mensual-v2-paso-cierre
               [nominaPeriodoId]="nominaPeriodoId()"
-              (volverValidacion)="intentarIrAPaso('validation')"
               (nominaCabeceraCambiada)="manejarNominaCabeceraCambiada($event)"
             />
           }
