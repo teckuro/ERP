@@ -73,11 +73,7 @@
       mode="inline"
       variant="warning"
       [title]="'Cálculo no vigente'"
-      [message]="
-        'El cálculo de la versión ' +
-        versionCalculo() +
-        ' dejó de ser vigente por cambios posteriores en dotación o movimientos. Recalcula para continuar.'
-      "
+      [message]="mensajeCalculoNoVigente"
     ></app-message-box>
   }
 
@@ -245,12 +241,10 @@
                 </button>
                 <button
                   type="button"
-                  class="paso-calc__btn is-ghost is-small"
+                  class="paso-calc__btn is-ghost is-small paso-calc__detalle-close"
                   (click)="collapse()"
                   aria-label="Cerrar detalle"
-                >
-                  Cerrar
-                </button>
+                >&times;</button>
               </div>
             </header>
 
@@ -379,8 +373,8 @@
     @if (resultado(); as r) {
       <span class="paso-calc__footer-hint">
         Cálculo generado el {{ r.generadoEn | date: 'dd-MM-yyyy HH:mm' }}
-        @if (versionCalculo() > 0) {
-          · versión {{ versionCalculo() }}
+        @if (versionCalculo() > 1) {
+          · registro {{ versionCalculo() }}
         }
       </span>
     }

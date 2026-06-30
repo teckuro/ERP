@@ -66,6 +66,7 @@ import type {
   PasoNominaPort,
   ResultadoAvancePaso,
 } from '../../facade/nomina-mensual-v2-navegacion';
+import { MENSAJE_CALCULO_NO_VIGENTE } from '../../facade/nomina-mensual-v2-navegacion';
 
 @Component({
   selector: 'app-nomina-mensual-v2-paso-calculo',
@@ -91,6 +92,7 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   readonly nominaPeriodoId = input<string | null>(null);
   readonly avanceSolicitado = output<void>();
   readonly volverMovimientos = output<void>();
+  readonly nominaCabeceraCambiada = output<void>();
 
   readonly nomina = signal<NominaPeriodo | null>(null);
   readonly preValidacion = signal<ResumenValidacionNomina | null>(null);
@@ -163,6 +165,7 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
 
   readonly columnas = COLUMNAS_GRILLA_CALCULO;
   readonly persistenceKey = PERSISTENCIA_GRILLA_CALCULO;
+  readonly mensajeCalculoNoVigente = MENSAJE_CALCULO_NO_VIGENTE;
 
   readonly expandHintGrilla = computed(() => {
     if (!this.resultado()) return null;
@@ -238,6 +241,8 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
       await this.sincronizarHintExpandDesglose();
       this.nomina.set(await this.servicio.obtenerNomina(nomina.id));
       this.preValidacion.set(await this.servicio.obtenerResumenValidacionNomina(nomina.id));
+      await this.registrarEventoCalculo(nomina, resultado);
+      this.nominaCabeceraCambiada.emit();
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido';
       this.error.set(`No fue posible ejecutar el cálculo: ${mensaje}`);
@@ -254,7 +259,7 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
       await this.servicio.registrarEventoAuditoria({
         nominaPeriodoId: nomina.id,
         accion: 'calculada',
-        motivo: `Motor V1: ${resultado.resumen.totalTrabajadoresCalculados} trabajadores · líquido $${resultado.resumen.totalLiquidoPreliminar.toLocaleString('es-CL')}`,
+        motivo: `${resultado.resumen.totalTrabajadoresCalculados} trabajadores calculados · líquido $${resultado.resumen.totalLiquidoPreliminar.toLocaleString('es-CL')}`,
       });
     } catch (error) {
       console.error('[Cálculo] No fue posible registrar evento de auditoría', error);

@@ -101,12 +101,6 @@ export class AdminNominasModalResumenNominaComponent {
     this.abrirGenerador.emit();
   }
 
-  onBackdrop(event: MouseEvent): void {
-    if (event.target === event.currentTarget) {
-      this.cerrar.emit();
-    }
-  }
-
   onEscape(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
       this.cerrar.emit();

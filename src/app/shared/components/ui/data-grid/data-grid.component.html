@@ -640,7 +640,7 @@
                     </tr>
                   }
                 } @else {
-                  @for (row of pagedRows; track trackPagedRow($index, row)) {
+                  @for (row of pagedRows; track trackPagedRow($index, row); let rowIndex = $index) {
                     <tr
                       class="data-grid-row group transition-colors duration-150"
                       [class.hover:bg-neutral-50]="hoverRows"
@@ -651,7 +651,7 @@
                         class="data-grid-row-number-cell data-grid-body-num border-b border-r border-neutral-100 text-[0.72rem] font-semibold text-slate-500 transition-colors"
                         [class.bg-blue-50]="isRowSelected(row)"
                       >
-                        {{ absoluteIndex($index) + 1 }}
+                        {{ absoluteIndex(rowIndex) + 1 }}
                       </td>
                       @if (expandColumnDedicated) {
                         <td
@@ -672,7 +672,7 @@
                                 [img]="isRowExpanded(row) ? expandedIcon : expandIcon"
                               ></lucide-icon>
                             </button>
-                            @if (shouldShowExpandHint(absoluteIndex($index))) {
+                            @if (shouldShowExpandHint(absoluteIndex(rowIndex))) {
                               <div class="data-grid-expand-hint" role="status">
                                 <p class="data-grid-expand-hint__text">{{ expandHint!.text }}</p>
                                 <button
@@ -695,7 +695,7 @@
                           <input
                             class="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
                             type="checkbox"
-                            [attr.aria-label]="'Seleccionar registro ' + (absoluteIndex($index) + 1)"
+                            [attr.aria-label]="'Seleccionar registro ' + (absoluteIndex(rowIndex) + 1)"
                             [checked]="isRowSelected(row)"
                             (click)="$event.stopPropagation()"
                             (change)="toggleRowSelection(row, $event)"
@@ -724,7 +724,7 @@
                                     [img]="isRowExpanded(row) ? expandedIcon : expandIcon"
                                   ></lucide-icon>
                                 </button>
-                                @if (shouldShowExpandHint(absoluteIndex($index))) {
+                                @if (shouldShowExpandHint(absoluteIndex(rowIndex))) {
                                   <div class="data-grid-expand-hint" role="status">
                                     <p class="data-grid-expand-hint__text">{{ expandHint!.text }}</p>
                                     <button
@@ -742,14 +742,14 @@
                                   <ng-container
                                     *ngTemplateOutlet="
                                       customTemplate;
-                                      context: cellContext(row, column, absoluteIndex($index))
+                                      context: cellContext(row, column, absoluteIndex(rowIndex))
                                     "
                                   />
                                 } @else {
                                   <span
                                     class="block truncate"
-                                    [attr.title]="formattedValue(row, column, absoluteIndex($index))"
-                                    >{{ formattedValue(row, column, absoluteIndex($index)) }}</span
+                                    [attr.title]="formattedValue(row, column, absoluteIndex(rowIndex))"
+                                    >{{ formattedValue(row, column, absoluteIndex(rowIndex)) }}</span
                                   >
                                 }
                               </div>
@@ -760,15 +760,15 @@
                                 <ng-container
                                   *ngTemplateOutlet="
                                     customTemplate;
-                                    context: cellContext(row, column, absoluteIndex($index))
+                                    context: cellContext(row, column, absoluteIndex(rowIndex))
                                   "
                                 />
                               </div>
                             } @else {
                               <span
                                 class="block truncate"
-                                [attr.title]="formattedValue(row, column, absoluteIndex($index))"
-                                >{{ formattedValue(row, column, absoluteIndex($index)) }}</span
+                                [attr.title]="formattedValue(row, column, absoluteIndex(rowIndex))"
+                                >{{ formattedValue(row, column, absoluteIndex(rowIndex)) }}</span
                               >
                             }
                           }
@@ -785,7 +785,7 @@
                             <ng-container
                               *ngTemplateOutlet="
                                 detailTpl;
-                                context: rowDetailContext(row, absoluteIndex($index))
+                                context: rowDetailContext(row, absoluteIndex(rowIndex))
                               "
                             />
                           </div>
@@ -807,7 +807,7 @@
                   </article>
                 }
               } @else {
-                @for (row of pagedRows; track trackPagedRow($index, row)) {
+                @for (row of pagedRows; track trackPagedRow($index, row); let rowIndex = $index) {
                   <article
                     class="data-grid-mobile-card"
                     [class.data-grid-mobile-card--selected]="isRowSelected(row)"
@@ -815,7 +815,7 @@
                   >
                     @if (expansionEnabled) {
                       <div class="data-grid-mobile-card-head">
-                        <span class="data-grid-mobile-counter">N° {{ absoluteIndex($index) + 1 }}</span>
+                        <span class="data-grid-mobile-counter">N° {{ absoluteIndex(rowIndex) + 1 }}</span>
                         <div class="data-grid-expand-inline-wrap">
                           <button
                             type="button"
@@ -831,7 +831,7 @@
                             ></lucide-icon>
                             <span>{{ isRowExpanded(row) ? collapseRowLabel : expandRowLabel }}</span>
                           </button>
-                          @if (shouldShowExpandHint(absoluteIndex($index))) {
+                          @if (shouldShowExpandHint(absoluteIndex(rowIndex))) {
                             <div class="data-grid-expand-hint data-grid-expand-hint--mobile" role="status">
                               <p class="data-grid-expand-hint__text">{{ expandHint!.text }}</p>
                               <button
@@ -846,7 +846,7 @@
                         </div>
                       </div>
                     } @else {
-                      <span class="data-grid-mobile-counter">N° {{ absoluteIndex($index) + 1 }}</span>
+                      <span class="data-grid-mobile-counter">N° {{ absoluteIndex(rowIndex) + 1 }}</span>
                     }
                     @if (selectable) {
                       <label class="data-grid-mobile-select">
@@ -869,11 +869,11 @@
                               <ng-container
                                 *ngTemplateOutlet="
                                   customTemplate;
-                                  context: cellContext(row, column, absoluteIndex($index))
+                                  context: cellContext(row, column, absoluteIndex(rowIndex))
                                 "
                               />
                             } @else {
-                              {{ formattedValue(row, column, absoluteIndex($index)) }}
+                              {{ formattedValue(row, column, absoluteIndex(rowIndex)) }}
                             }
                           </dd>
                         </div>
@@ -886,7 +886,7 @@
                           <ng-container
                             *ngTemplateOutlet="
                               actionTemplate;
-                              context: cellContext(row, actionColumn, absoluteIndex($index))
+                              context: cellContext(row, actionColumn, absoluteIndex(rowIndex))
                             "
                           />
                         }
@@ -897,7 +897,7 @@
                         <ng-container
                           *ngTemplateOutlet="
                             detailTpl;
-                            context: rowDetailContext(row, absoluteIndex($index))
+                            context: rowDetailContext(row, absoluteIndex(rowIndex))
                           "
                         />
                       </div>

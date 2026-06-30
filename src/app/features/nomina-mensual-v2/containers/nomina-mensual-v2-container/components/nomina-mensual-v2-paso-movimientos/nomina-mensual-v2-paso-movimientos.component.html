@@ -43,7 +43,7 @@
           [disabled]="aplicando() || !nominaPeriodoId() || !hayPendientesGlobales()"
           [attr.title]="
             hayPendientesGlobales()
-              ? 'Carga ' + statsGlobales().totalPendientes + ' movimientos pendientes a la nómina. Idempotente: no duplica ni reaplica los omitidos.'
+              ? 'Carga ' + statsGlobales().totalPendientes + ' movimientos pendientes sin duplicar los ya aplicados.'
               : 'Sin movimientos pendientes por cargar.'
           "
         >
@@ -97,6 +97,9 @@
       [maxItems]="25"
       [persistenceKey]="persistenciaGrilla"
       [expandableRows]="true"
+      [expandAnchorColumnId]="'trabajador'"
+      [expandRowLabel]="'Ver movimientos'"
+      [collapseRowLabel]="'Ocultar movimientos'"
       [rowExpansionKey]="rowKeyTrabajador"
       [trackBy]="trackByTrabajador"
       [loading]="loading()"
@@ -225,10 +228,10 @@
               </button>
               <button
                 type="button"
-                class="paso-mov__btn is-ghost is-small"
+                class="paso-mov__btn is-ghost is-small paso-mov__detalle-close"
                 (click)="collapse()"
                 aria-label="Cerrar detalle"
-              >Cerrar</button>
+              >&times;</button>
             </div>
           </header>
           @if (fila.items.length === 0) {

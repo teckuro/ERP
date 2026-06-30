@@ -35,6 +35,14 @@ export const ORDEN_PASOS_NOMINA: PayrollStepId[] = [
  */
 export type ResultadoAvancePaso = { ok: true } | { ok: false; razon: string };
 
+/** Pasos cuyo “completo” exige acción terminal confirmada (no auto-persistir al visitar). */
+export function pasoExcluidoAutoPersistenciaCompletado(paso: PayrollStepId): boolean {
+  return paso === 'closure';
+}
+
+export const MENSAJE_CALCULO_NO_VIGENTE =
+  'El cálculo dejó de ser vigente por cambios posteriores en dotación o movimientos. Vuelve al paso Cálculo y recalcula para continuar.';
+
 /**
  * Contrato que cada paso del generador debe cumplir para que el CTA del shell
  * funcione como comando único de avance.
@@ -367,7 +375,7 @@ export function obtenerSubtituloPaso(paso: PayrollStepId): string {
     case 'movements':
       return 'Recurrentes aplicados, movimientos manuales y omisiones del mes.';
     case 'calculation':
-      return 'Procesa el cálculo y revisa el snapshot antes de validar.';
+      return 'Procesa el cálculo y revisa el desglose por trabajador antes de validar.';
     case 'validation':
       return 'Resumen de incidencias y guardias antes de cerrar la nómina.';
     case 'closure':

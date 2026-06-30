@@ -299,12 +299,6 @@ export class AdminPlantillasModalEditorComponent {
     this.cerrar.emit();
   }
 
-  onBackdrop(event: MouseEvent): void {
-    if (event.target === event.currentTarget) {
-      this.cerrarModal();
-    }
-  }
-
   onEscape(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
       event.preventDefault();

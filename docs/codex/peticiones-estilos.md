@@ -9,6 +9,31 @@
 
 ---
 
+## 2026-06-30 — Generador Nómina V2: reparación flujo e integridad (NOIA-NMV2-REPAIR-01)
+
+- **Cierre:** el paso `closure` ya no se marca completado al abrir el modal ni al
+  visitar el paso; solo tras confirmar cierre en el modal (`nominaCabeceraCambiada`).
+- **Cabecera stale:** refresh de nómina tras calcular, cerrar o reabrir (`manejarNominaCabeceraCambiada`).
+- **Handoff crear nómina:** serialización de query params vs rehidratación en container.
+- **Estados vacíos:** pantalla dedicada si la nómina no existe o falla la carga.
+- **Copy RRHH:** sin «snapshot», «versión» ni IDs técnicos en Validación/Cálculo/Cierre;
+  breadcrumb `Remuneraciones → Administrador → paso`.
+- **Paneles expandibles:** botón textual «Cerrar» sustituido por **×** en Dotación,
+  Cálculo y Movimientos (detalle inline).
+- **Snapshots:** `id_empresa` numérico al guardar preliminar; anulación vía `marcarInactivo`
+  (RPC inexistente eliminada).
+
+---
+
+## 2026-06-30 — Grilla expandible: un solo hint en la primera fila (NOIA-CALC-EXPAND-02)
+
+- Corregido bug en `app-data-grid` con chevron anclado en columna: el hint
+  dismissible usaba el índice de columna en lugar del de fila y se repetía en
+  todas las filas cuando la columna ancla era la primera (p. ej. Trabajador en
+  paso Cálculo). Ahora solo el primer registro visible muestra el callout.
+
+---
+
 ## 2026-06-16 — Modales y MessageBox: cierre con X, sin click fuera (NOIA-MODAL-CLOSE-01)
 
 - `app-message-box`: inline `dismissible` muestra icono **X** (no texto «Cerrar»); `aria-label` conserva «Cerrar».

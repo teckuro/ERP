@@ -12,6 +12,7 @@ describe('NominaPeriodoCalculoAdapterService', () => {
       obtenerNomina: vi.fn().mockResolvedValue({
         id: 'nom-1',
         periodo: '2026-06',
+        empresaId: '42',
         trabajadorIds: ['10', '11'],
       }),
       registrarCalculo: vi.fn().mockResolvedValue(undefined),
@@ -51,6 +52,9 @@ describe('NominaPeriodoCalculoAdapterService', () => {
     await servicio.calcular('nom-1');
 
     expect(motor.generarCalculoPeriodo).toHaveBeenCalledWith('2026-06', [10, 11]);
+    expect(motor.guardarSnapshotPreliminar).toHaveBeenCalledWith('2026-06', {
+      idEmpresa: 42,
+    });
     expect(nominas.registrarCalculo).toHaveBeenCalledWith('nom-1', {
       idCalculoPeriodo: 77,
       totalTrabajadores: 2,

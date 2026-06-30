@@ -35,6 +35,7 @@ import type {
   PasoNominaPort,
   ResultadoAvancePaso,
 } from '../../facade/nomina-mensual-v2-navegacion';
+import { MENSAJE_CALCULO_NO_VIGENTE } from '../../facade/nomina-mensual-v2-navegacion';
 
 interface ChecklistItem {
   id: string;
@@ -59,6 +60,8 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
 
   readonly nominaPeriodoId = input<string | null>(null);
   readonly volverValidacion = output<void>();
+  /** Notifica al container que debe refrescar cabecera (y opcionalmente persistir paso). */
+  readonly nominaCabeceraCambiada = output<{ registrarPasoCompletado?: 'closure' }>();
 
   readonly nomina = signal<NominaPeriodo | null>(null);
   readonly resumen = signal<ResumenValidacionNomina | null>(null);
@@ -98,7 +101,7 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
         id: 'calculo',
         label: 'Cálculo realizado',
         cumplido: (n.evidenciaCalculo?.calculoVigente ?? false) && !!n.evidenciaCalculo?.idCalculoPeriodo,
-        detalle: 'El motor V1 generó el snapshot del período.',
+        detalle: 'El cálculo del período está guardado y vigente.',
       },
       {
         id: 'validacion',
@@ -126,6 +129,7 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   });
 
   readonly versionCalculo = computed(() => this.nomina()?.evidenciaCalculo?.versionCalculo ?? 0);
+  readonly mensajeCalculoNoVigente = MENSAJE_CALCULO_NO_VIGENTE;
 
   constructor() {
     effect(() => {
@@ -163,6 +167,7 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
       this.mensaje.set('Nómina cerrada correctamente.');
       const refrescada = await this.servicio.obtenerNomina(id);
       this.nomina.set(refrescada);
+      this.nominaCabeceraCambiada.emit({ registrarPasoCompletado: 'closure' });
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Error desconocido';
       this.error.set(`No fue posible cerrar la nómina: ${msg}`);
@@ -236,6 +241,7 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
       this.mensaje.set('Nómina reabierta para edición.');
       const refrescada = await this.servicio.obtenerNomina(id);
       this.nomina.set(refrescada);
+      this.nominaCabeceraCambiada.emit({});
       this.mostrarReabrir.set(false);
       this.motivoReapertura.set('');
     } catch (error) {

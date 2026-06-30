@@ -116,9 +116,12 @@
         <h3 id="paso-dotacion-detalle-title" class="paso-dotacion__detalle-title">
           Detalle del trabajador
         </h3>
-        <button type="button" class="paso-dotacion__chip is-ghost" (click)="cerrarDetalle()">
-          Cerrar
-        </button>
+        <button
+          type="button"
+          class="paso-dotacion__chip is-ghost paso-dotacion__detalle-close"
+          (click)="cerrarDetalle()"
+          aria-label="Cerrar detalle"
+        >&times;</button>
       </header>
       @if (detalleLoading()) {
         <p class="paso-dotacion__placeholder">Cargando…</p>

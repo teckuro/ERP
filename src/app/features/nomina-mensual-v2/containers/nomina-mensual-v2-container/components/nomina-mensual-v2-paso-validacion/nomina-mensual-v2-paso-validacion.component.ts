@@ -29,8 +29,22 @@ import type {
   PasoNominaPort,
   ResultadoAvancePaso,
 } from '../../facade/nomina-mensual-v2-navegacion';
+import { MENSAJE_CALCULO_NO_VIGENTE } from '../../facade/nomina-mensual-v2-navegacion';
 
 type FiltroSeveridad = 'todas' | 'critica' | 'advertencia';
+
+const ETIQUETAS_TIPO_INCIDENCIA: Record<string, string> = {
+  datos_incompletos: 'Datos incompletos',
+  prevision: 'Previsión',
+  bancario: 'Datos bancarios',
+  movimiento: 'Movimiento',
+  calculo: 'Cálculo',
+  dotacion: 'Dotación',
+};
+
+function etiquetaTipoIncidencia(tipo: string): string {
+  return ETIQUETAS_TIPO_INCIDENCIA[tipo] ?? 'Revisión requerida';
+}
 
 @Component({
   selector: 'app-nomina-mensual-v2-paso-validacion',
@@ -53,6 +67,8 @@ export class NominaMensualV2PasoValidacionComponent implements PasoNominaPort {
   readonly error = signal<string | null>(null);
   readonly filtroSeveridad = signal<FiltroSeveridad>('todas');
   readonly busqueda = signal('');
+  readonly mensajeCalculoNoVigente = MENSAJE_CALCULO_NO_VIGENTE;
+  readonly etiquetaTipoIncidencia = etiquetaTipoIncidencia;
   readonly aprobando = signal(false);
 
   readonly incidenciasFiltradas = computed<IncidenciaNomina[]>(() => {

@@ -81,8 +81,10 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
   private elementoOrigenDetalle: HTMLElement | null = null;
 
   readonly nominaPeriodoId = input<string | null>(null);
+  readonly trabajadorDetalleInicial = input<string | null>(null);
   readonly avanceSolicitado = output<void>();
   readonly volverParametros = output<void>();
+  readonly detalleInicialConsumido = output<void>();
 
   readonly loading = signal(false);
   readonly errorMensaje = signal<string | null>(null);
@@ -129,6 +131,12 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
     effect(() => {
       const id = this.nominaPeriodoId();
       if (id) void this.cargar();
+    });
+    effect(() => {
+      const trabajadorId = this.trabajadorDetalleInicial();
+      const id = this.nominaPeriodoId();
+      if (!trabajadorId || !id || this.loading()) return;
+      void this.abrirDetalle(trabajadorId).then(() => this.detalleInicialConsumido.emit());
     });
   }
 

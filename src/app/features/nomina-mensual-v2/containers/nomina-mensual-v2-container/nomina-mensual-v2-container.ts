@@ -40,6 +40,7 @@ import {
   obtenerEtiquetaBrevePaso,
   obtenerSubtituloPaso,
   obtenerTituloPaso,
+  pasoExcluidoAutoPersistenciaCompletado,
   puedeContinuarPaso,
   type PasoNominaPort,
   type ResultadoAvancePaso,
@@ -97,6 +98,10 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   readonly currentStep = signal<PayrollStepId>('parameters');
   readonly nominaPeriodoId = signal<string | null>(null);
   readonly nominaCargada = signal<NominaPeriodo | null>(null);
+  readonly nominaCargaEstado = signal<'idle' | 'loading' | 'ready' | 'not_found' | 'error'>('idle');
+
+  /** Trabajador a abrir en detalle al saltar desde Validación → Dotación. */
+  readonly trabajadorDetalleDotacion = signal<string | null>(null);
 
   /**
    * Banner contextual mostrado tras crear/reabrir una nómina desde el
@@ -174,8 +179,15 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       if (idx >= 0) indices.push(idx);
     }
     if (this.pasoActualCompleto().ok) {
-      const idx = ORDEN_PASOS_NOMINA.indexOf(this.currentStep());
-      if (idx >= 0) indices.push(idx);
+      const paso = this.currentStep();
+      if (!pasoExcluidoAutoPersistenciaCompletado(paso)) {
+        const idx = ORDEN_PASOS_NOMINA.indexOf(paso);
+        if (idx >= 0) indices.push(idx);
+      }
+    }
+    if (this.nominaCargada()?.estado === 'cerrada') {
+      const idxCierre = ORDEN_PASOS_NOMINA.indexOf('closure');
+      if (idxCierre >= 0) indices.push(idxCierre);
     }
     return indices.length > 0 ? Math.max(...indices) : -1;
   });
@@ -243,6 +255,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       const completitud = this.pasoActualCompleto();
       if (!completitud.ok) return;
       const paso = this.currentStep();
+      if (pasoExcluidoAutoPersistenciaCompletado(paso)) return;
       void this.nominaPeriodoService.registrarPasoCompletado(id, paso);
     });
 
@@ -255,6 +268,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
 
   private async aplicarRehidratacionPasoVisitado(nominaPeriodoId: string): Promise<void> {
     try {
+      this.sincronizarHandoffDesdeQueryParams(this.route.snapshot.queryParamMap);
       const periodo = this.periodoActivo.periodoYm();
       const sesion = await this.sesionService.resolverEstadoSesion(periodo, nominaPeriodoId);
       // Si el handoff desde el Administrador (F05) trae paso explícito, lo
@@ -289,6 +303,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     this.ultimoPeriodoInicializado = null;
     this.ultimoNominaIdCargado = null;
     this.orquestador.vincularTrazabilidadService(this.trazabilidadService);
+    this.sincronizarHandoffDesdeQueryParams(this.route.snapshot.queryParamMap);
     this.route.paramMap.subscribe((params) => {
       const id = params.get('nominaPeriodoId');
       this.nominaPeriodoId.set(id);
@@ -298,25 +313,26 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       }
     });
 
-    // Handoff desde Administrador: el RPC F05 nos dice el siguiente paso y
-    // cuántos trabajadores quedaron en la dotación inicial. La rehidratación
-    // estándar respetará `pasoForzadoCreacion` para no pisar este destino.
     this.route.queryParamMap.subscribe((qp) => {
-      const from = qp.get('from');
-      if (from !== 'create') {
-        this.pasoForzadoCreacion = null;
-        return;
-      }
-      const paso = qp.get('paso');
-      const dotacion = Number(qp.get('dotacion') ?? '0');
-      const reutilizada = qp.get('reutilizada') === '1';
-      if (paso === 'parameters' || paso === 'dotacion') {
-        this.pasoForzadoCreacion = paso;
-        this.currentStep.set(paso);
-        this.orquestador.pasoActual.set(paso);
-      }
-      this.bannerHandoff.set(this.componerBannerHandoff(dotacion, reutilizada));
+      this.sincronizarHandoffDesdeQueryParams(qp);
     });
+  }
+
+  private sincronizarHandoffDesdeQueryParams(qp: { get: (key: string) => string | null }): void {
+    const from = qp.get('from');
+    if (from !== 'create') {
+      this.pasoForzadoCreacion = null;
+      return;
+    }
+    const paso = qp.get('paso');
+    const dotacion = Number(qp.get('dotacion') ?? '0');
+    const reutilizada = qp.get('reutilizada') === '1';
+    if (paso === 'parameters' || paso === 'dotacion') {
+      this.pasoForzadoCreacion = paso;
+      this.currentStep.set(paso);
+      this.orquestador.pasoActual.set(paso);
+    }
+    this.bannerHandoff.set(this.componerBannerHandoff(dotacion, reutilizada));
   }
 
   private componerBannerHandoff(
@@ -394,20 +410,46 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   }
 
   private async cargarNominaProductiva(nominaPeriodoId: string): Promise<void> {
+    this.nominaCargaEstado.set('loading');
     try {
       const nomina = await this.nominaPeriodoService.obtenerNomina(nominaPeriodoId);
       if (!nomina) {
         this.nominaCargada.set(null);
+        this.nominaCargaEstado.set('not_found');
         return;
       }
       this.nominaCargada.set(nomina);
+      this.nominaCargaEstado.set('ready');
       if (nomina.periodo && nomina.periodo !== this.periodoActivo.getPeriodo()) {
         this.periodoActivo.setPeriodoYm(nomina.periodo);
       }
     } catch (error) {
       console.error('[Nómina V2] No fue posible cargar la nómina', error);
       this.nominaCargada.set(null);
+      this.nominaCargaEstado.set('error');
     }
+  }
+
+  async manejarNominaCabeceraCambiada(event: { registrarPasoCompletado?: PayrollStepId } = {}): Promise<void> {
+    const id = this.nominaPeriodoId();
+    if (!id) return;
+    await this.refrescarNominaCargada(id);
+    if (event.registrarPasoCompletado) {
+      await this.marcarPasoCompletadoYRefrescarNomina(event.registrarPasoCompletado);
+    }
+  }
+
+  manejarVerEnDotacion(trabajadorId: string): void {
+    this.trabajadorDetalleDotacion.set(trabajadorId);
+    this.intentarIrAPaso('dotacion');
+  }
+
+  limpiarTrabajadorDetalleDotacion(): void {
+    this.trabajadorDetalleDotacion.set(null);
+  }
+
+  volverAdministrador(): void {
+    void this.router.navigate(['/remuneraciones/nominas']);
   }
 
   private async inicializarSesionPeriodo(periodo: string): Promise<void> {
@@ -632,8 +674,9 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
 
     return {
       breadcrumbs: [
-        { label: 'Nómina', path: '/remuneraciones/proceso-mensual' },
-        { label: paso === 'parameters' ? 'Parámetros' : this.pageTitle() },
+        { label: 'Remuneraciones', path: '/remuneraciones/nominas' },
+        { label: 'Administrador de nóminas', path: '/remuneraciones/nominas' },
+        { label: this.pageTitle() },
       ],
       pageTitle: this.pageTitle(),
       pageSubtitle: this.pageSubtitle(),
@@ -665,6 +708,16 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     if (pasoActivo === 'parameters') {
       if (this.parametrosPasoOcupado()) return;
       this.orquestador.ejecutarAccionPrincipal();
+      return;
+    }
+    if (pasoActivo === 'closure') {
+      const paso = this.obtenerPasoActivoConComando();
+      const { resultado } = await ejecutarAvancePaso(pasoActivo, paso);
+      if (!resultado.ok) {
+        this.orquestador.establecerAyudaAvance(resultado.razon, 'bloqueo');
+        return;
+      }
+      this.orquestador.establecerAyudaAvance(null);
       return;
     }
     const paso = this.obtenerPasoActivoConComando();

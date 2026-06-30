@@ -218,12 +218,6 @@ export class AdminNominasModalNuevaNominaComponent {
     this.cerrar.emit();
   }
 
-  onBackdrop(event: MouseEvent): void {
-    if (event.target === event.currentTarget) {
-      this.cerrarModal();
-    }
-  }
-
   onEscape(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
       this.cerrarModal();

@@ -255,4 +255,12 @@ describe('DataGridComponent · expand anclado e hint', () => {
     expect(grid.shouldShowExpandHint(0)).toBe(true);
     expect(grid.shouldShowExpandHint(1)).toBe(false);
   });
+
+  it('expandHint renderiza un solo callout con chevron anclado en varias filas', () => {
+    const fixture = TestBed.createComponent(HostExpandableMergedComponent);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const hints = root.querySelectorAll('.data-grid-table-view .data-grid-expand-hint');
+    expect(hints.length).toBe(1);
+  });
 });

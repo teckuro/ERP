@@ -23,8 +23,7 @@
 
   @if (calculoNoVigente()) {
     <p class="paso-val__alert is-warning" role="status">
-      El cálculo dejó de ser vigente por cambios posteriores. Vuelve al paso
-      Cálculo y recalcula antes de aprobar.
+      {{ mensajeCalculoNoVigente }}
     </p>
   }
 
@@ -94,10 +93,7 @@
             <div class="paso-val__list-main">
               <strong>{{ inc.mensaje }}</strong>
               <small class="paso-val__list-meta">
-                {{ inc.tipo }}
-                @if (inc.trabajadorId) {
-                  · Trabajador {{ inc.trabajadorId }}
-                }
+                {{ etiquetaTipoIncidencia(inc.tipo) }}
                 @if (inc.bloqueante) {
                   · Bloqueante
                 }

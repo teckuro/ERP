@@ -22,9 +22,14 @@ export class NominaPeriodoCalculoAdapterService {
       throw new Error('La nómina no tiene trabajadores para calcular.');
     }
 
+    const idEmpresa = Number(nomina.empresaId);
+    const idEmpresaNumerico = Number.isFinite(idEmpresa) ? idEmpresa : null;
+
     const trabajadorIds = nomina.trabajadorIds.map(Number).filter(Number.isFinite);
     const resultado = await this.motor.generarCalculoPeriodo(nomina.periodo, trabajadorIds);
-    const guardado = await this.motor.guardarSnapshotPreliminar(nomina.periodo);
+    const guardado = await this.motor.guardarSnapshotPreliminar(nomina.periodo, {
+      idEmpresa: idEmpresaNumerico,
+    });
     if (!guardado.ok || !guardado.snapshot) {
       const detalle = guardado.issues.map((issue) => issue.mensaje).join(' ');
       throw new Error(detalle || 'No fue posible guardar el cálculo preliminar.');

@@ -245,7 +245,7 @@ export class ProcesoMensualService {
 
   async guardarSnapshotPreliminar(
     periodo: string,
-    opciones: { prevalidacion?: ProcesoMensualPrevalidacion | null } = {},
+    opciones: { prevalidacion?: ProcesoMensualPrevalidacion | null; idEmpresa?: number | null } = {},
   ): Promise<GuardarSnapshotPreliminarResult> {
     const p = periodo.trim();
     const resultado = this.obtenerResultadoCalculoPeriodo(p);
@@ -261,10 +261,11 @@ export class ProcesoMensualService {
       fechaGeneracion: new Date().toISOString(),
       origen: 'preliminar',
       usuarioGenerador: usuario.id,
+      idEmpresa: opciones.idEmpresa ?? null,
       parametrosPeriodo: insumos?.parametrosPeriodo ?? null,
       entradasMensuales: insumos?.entradasMensuales ?? [],
     });
-    const activo = await this.snapshots.obtenerSnapshotActivo(p);
+    const activo = await this.snapshots.obtenerSnapshotActivo(p, opciones.idEmpresa ?? null);
     const persistNuevo = opciones.prevalidacion
       ? buildBorradorPersistFromPrevalidacion(opciones.prevalidacion)
       : null;

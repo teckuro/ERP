@@ -16,6 +16,7 @@ import {
   obtenerEtiquetaAccionPrincipal,
   obtenerEtiquetaBrevePaso,
   obtenerTituloPaso,
+  pasoExcluidoAutoPersistenciaCompletado,
   puedeContinuarPaso,
   tooltipPasoNoAccesible,
   type PasoNominaPort,
@@ -85,6 +86,11 @@ describe('nomina-mensual-v2-navegacion (F3 fusion — 6 pasos)', () => {
   it('detecta retroceso al paso Parametros desde Dotación', () => {
     expect(esRetrocesoAPaso('dotacion', 'parameters')).toBe(true);
     expect(esRetrocesoAPaso('parameters', 'dotacion')).toBe(false);
+  });
+
+  it('pasoExcluidoAutoPersistenciaCompletado excluye cierre', () => {
+    expect(pasoExcluidoAutoPersistenciaCompletado('closure')).toBe(true);
+    expect(pasoExcluidoAutoPersistenciaCompletado('calculation')).toBe(false);
   });
 
   it('no congela ningún paso en F3 fusion: PASOS_CONGELADOS_V11 está vacío', () => {
