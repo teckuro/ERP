@@ -145,6 +145,38 @@ describe('nomina-trazabilidad.mapper', () => {
     expect(auditoria.closure?.requiereAprobacion).toBe(true);
   });
 
+  it('marca dotación y movimientos como validados con eventos locales', () => {
+    const eventos: EventoTrazabilidadNomina[] = [
+      {
+        idEvento: 'local-dotacion',
+        periodo: '2026-05',
+        paso: 'dotacion',
+        tipoEvento: 'EMPLEADOS_VALIDADOS',
+        usuarioId: 'u1',
+        usuarioNombre: 'Ana RRHH',
+        fechaEvento: '2026-05-10T10:00:00.000Z',
+        descripcion: 'Dotación confirmada para el período.',
+        integridad: { estadoIntegridad: 'registrado' },
+        origen: 'local',
+      },
+      {
+        idEvento: 'local-movimientos',
+        periodo: '2026-05',
+        paso: 'movements',
+        tipoEvento: 'NOVEDADES_REGISTRADAS',
+        usuarioId: 'u1',
+        usuarioNombre: 'Ana RRHH',
+        fechaEvento: '2026-05-10T11:00:00.000Z',
+        descripcion: 'Movimientos del período listos para cálculo.',
+        integridad: { estadoIntegridad: 'registrado' },
+        origen: 'local',
+      },
+    ];
+    const auditoria = buildAuditoriaPorPaso(eventos);
+    expect(auditoria.dotacion?.estado).toBe('validado');
+    expect(auditoria.movements?.estado).toBe('validado');
+  });
+
   it('presenta estado vacio cuando el paso no tiene eventos', () => {
     const auditoria = buildAuditoriaPorPaso([]);
     const resumen = construirResumenTrazabilidadPasoActual('parameters', auditoria, []);

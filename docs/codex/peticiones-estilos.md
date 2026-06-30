@@ -9,6 +9,15 @@
 
 ---
 
+## 2026-06-30 — Generador Nómina V2: trazabilidad drawer y bitácora (NOIA-NMV2-REPAIR-10)
+
+- **Eventos locales:** parámetros al avanzar; dotación/movimientos reflejados en auditoría
+  del stepper (`EMPLEADOS_VALIDADOS`, `NOVEDADES_REGISTRADAS`).
+- **Drawer:** cierre con backdrop/Escape; empty state operativo; sin huella técnica visible.
+- **Copy integridad:** «Registro en sesión» / «Confirmado en servidor» (sin jerga de verificación).
+
+---
+
 ## 2026-06-30 — Generador Nómina V2: consistencia P2 flujos (NOIA-NMV2-REPAIR-09)
 
 - **`esCalculoNoVigente`:** regla CAL-INV-05 compartida en Cálculo, Validación y Cierre.

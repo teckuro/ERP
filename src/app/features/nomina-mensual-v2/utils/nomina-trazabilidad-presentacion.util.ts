@@ -14,11 +14,11 @@ export function etiquetaIntegridadVisible(
 ): string {
   switch (estado) {
     case 'verificadoServidor':
-      return 'Verificado por servidor';
+      return 'Confirmado en servidor';
     case 'registrado':
       return origen === 'mock' ? 'Referencia demo' : 'Registro guardado';
     case 'pendiente':
-      return 'Pendiente de verificación del servidor';
+      return 'Registro en sesión';
     case 'invalidado':
       return 'Registro invalidado';
     case 'noDisponible':

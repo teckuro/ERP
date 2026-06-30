@@ -219,6 +219,18 @@ export class NominaMensualV2TrazabilidadService {
       };
     }
 
+    const ultimoMovimientos = locales.find((e) => e.paso === 'movements' && e.origen === 'local');
+    if (ultimoMovimientos && auditoria.movements) {
+      auditoria.movements = {
+        ...auditoria.movements,
+        estado: 'validado',
+        accionPrincipal: ultimoMovimientos.descripcion,
+        usuarioNombre: ultimoMovimientos.usuarioNombre,
+        fechaAccion: ultimoMovimientos.fechaEvento,
+        integridad: ultimoMovimientos.integridad,
+      };
+    }
+
     void contexto;
   }
 }

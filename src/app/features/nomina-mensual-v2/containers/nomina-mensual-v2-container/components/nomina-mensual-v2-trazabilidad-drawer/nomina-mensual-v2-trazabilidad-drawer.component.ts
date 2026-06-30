@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, ViewEncapsulation, inject } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { tituloPasoTrazabilidad } from '../../../../mappers/nomina-trazabilidad.mapper';
@@ -25,6 +25,13 @@ export class NominaMensualV2TrazabilidadDrawerComponent {
 
   cerrar(): void {
     this.orquestador.cerrarTrazabilidadCompleta();
+  }
+
+  @HostListener('document:keydown.escape')
+  cerrarConEscape(): void {
+    if (this.orquestador.trazabilidadDrawerAbierto()) {
+      this.cerrar();
+    }
   }
 
   abrirDetallePaso(paso: Parameters<typeof tituloPasoTrazabilidad>[0]): void {

@@ -600,6 +600,14 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   private async persistirAvanceDesdeParametros(destinoPaso: PayrollStepId): Promise<void> {
     await this.persistirCabeceraTrasParametros();
     await this.marcarPasoCompletadoYRefrescarNomina('parameters');
+    this.orquestador.registrarEventoTrazabilidad(
+      this.trazabilidadService.crearEventoLocal({
+        paso: 'parameters',
+        tipoEvento: 'PARAMETROS_VALIDADOS',
+        descripcion: 'Parámetros del período listos para dotación.',
+        integridad: { estadoIntegridad: 'registrado' },
+      }),
+    );
     this.irAPaso(destinoPaso);
   }
 

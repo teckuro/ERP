@@ -195,6 +195,7 @@ const MAP_TIPO_A_ESTADO: Partial<Record<TipoEventoTrazabilidadNomina, ResumenAud
   PARAMETROS_CONGELADOS: 'congelado',
   ALCANCE_DEFINIDO: 'validado',
   EMPLEADOS_VALIDADOS: 'validado',
+  NOVEDADES_REGISTRADAS: 'validado',
   CALCULO_EJECUTADO: 'registrado',
   PRENOMINA_VALIDADA: 'validado',
   PRENOMINA_APROBADA: 'aprobado',
