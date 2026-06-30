@@ -2829,3 +2829,13 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - Stepper traceability: un solo `computed` (`soporteIntegridadParametros`) en lugar de dos que leían señales en distinto orden.
 - Presenter: resumen unificado desde último evento + auditoría.
 - Sin cambios a estilos globales, SQL ni motor.
+
+## 2026-06-30 - NOIA-NMV2-REPAIR-04: limpieza cadena legacy F3 (alcance/empleados)
+
+- **Eliminados** presenters, mappers, repositorio y servicios de la cadena `nomina-empleados-personal` / alcance V1 (`nomina-alcance*`, `nomina-empleados-*`, `nomina-empleados-carga`, modal `empleados-resumen-pendientes`, util `presentacion.util`).
+- **Eliminados** componentes huérfanos: `paso-alcance`, `paso-empleados`, `stepper-traceability` (trazabilidad vive en drawer/modal + avatar del stepper).
+- **Mock** `nomina-mensual-v2.mock.ts`: reducido a `payrollSteps` (único consumo en runtime).
+- **Modelos**: retirados `PayrollEmployeeRow` y `OpcionAlcanceNomina`; se mantienen `ResultadoAlcanceNomina` y tipos de alcance usados por `nomina-periodo.service`.
+- **CSS**: bloques muertos en `nomina-mensual-v2-visual-system.css` (`.alcance-opcion-card*`, `.empleados-kpi-card*`, chips) y referencias a pasos legacy en `nomina-mensual-v2-container.css`.
+- **Tests**: `npx ng test --watch=false --include="**/nomina-mensual-v2/**/*.spec.ts"` → 259/259 verdes.
+- **Sin tocar**: estilos globales, `angular.json`, SQL, motor productivo, nómina V1 administrador.

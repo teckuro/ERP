@@ -29,15 +29,6 @@ export type EstadoAlcanceNomina =
   | 'conAdvertencias'
   | 'bloqueado';
 
-export interface OpcionAlcanceNomina {
-  id: TipoAlcanceNomina;
-  titulo: string;
-  descripcion: string;
-  icono: string;
-  estado: 'disponible' | 'preparado' | 'deshabilitado';
-  etiqueta?: string;
-}
-
 export interface ResumenAlcanceNomina {
   totalTrabajadores: number;
   trabajadoresIncluidos: number;
@@ -91,19 +82,6 @@ export type ConfigCard = {
   title: string;
   description: string;
   status: StatusChip;
-};
-
-export type PayrollEmployeeRow = {
-  name: string;
-  rut: string;
-  role: string;
-  costCenter: string;
-  workSchedule: string;
-  payrollStatus: StatusChip;
-  bankStatus: StatusChip;
-  contractStatus: StatusChip;
-  /** Previsión y salud asignadas para el período (mock / mapeo local). */
-  healthStatus?: StatusChip;
 };
 
 export type PayrollMovementRow = {

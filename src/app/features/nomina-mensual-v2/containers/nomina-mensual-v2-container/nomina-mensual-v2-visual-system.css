@@ -377,62 +377,6 @@
   margin-top: auto;
 }
 
-.alcance-opcion-card.nomina-card {
-  border-radius: 12px;
-}
-
-.alcance-opcion-card.nomina-card--interactive:hover:not(:disabled) {
-  border-color: var(--nomina-blue-border);
-  background: var(--nomina-blue-soft);
-  transform: translateY(-1px);
-}
-
-.alcance-opcion-card--activa.nomina-card {
-  border-color: #93c5fd;
-  background: var(--nomina-blue-soft);
-  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
-}
-
-.alcance-opcion-card__icon.nomina-iconBadge {
-  width: 38px;
-  height: 38px;
-  flex-basis: 38px;
-}
-
-/* —— KPI strip (Alcance / Empleados) —— */
-
-.empleados-kpi-card__icon.nomina-iconBadge {
-  width: 32px;
-  height: 32px;
-  flex-basis: 32px;
-  border-radius: 9px;
-}
-
-.empleados-kpi-card.tone-blue .nomina-iconBadge {
-  border-color: var(--nomina-blue-border);
-  background: var(--nomina-blue-soft);
-  color: var(--nomina-blue);
-}
-
-.empleados-kpi-card.tone-green .nomina-iconBadge {
-  border-color: var(--nomina-green-border);
-  background: var(--nomina-green-soft);
-  color: var(--nomina-green);
-}
-
-.empleados-kpi-card.tone-red .nomina-iconBadge {
-  border-color: var(--nomina-red-border);
-  background: var(--nomina-red-soft);
-  color: var(--nomina-red);
-}
-
-.empleados-kpi-card.tone-gray .nomina-iconBadge,
-.empleados-kpi-card.tone-amber .nomina-iconBadge {
-  border-color: var(--nomina-slate-border);
-  background: var(--nomina-slate-soft);
-  color: var(--nomina-slate);
-}
-
 /* —— Prep flow —— */
 
 .prep-item__estado {
@@ -533,36 +477,6 @@
 
 .parameter-blocker-empty {
   border-radius: 12px;
-}
-
-/* —— Alcance chips —— */
-
-.alcance-chip.nomina-chip {
-  min-height: 30px;
-  padding: 0 12px;
-  border-radius: 999px;
-  cursor: pointer;
-}
-
-.alcance-chip--activo.nomina-chip--info {
-  border-color: var(--nomina-blue-border);
-  background: var(--nomina-blue-soft);
-  color: #1d4ed8;
-}
-
-.alcance-opcion-card__etiqueta.nomina-chip {
-  min-height: 18px;
-  padding: 0 7px;
-  font-size: 10px;
-}
-
-/* —— Empleados filtros —— */
-
-.empleados-filtro-chip.nomina-chip {
-  min-height: 30px;
-  padding: 0 10px;
-  gap: 6px;
-  cursor: pointer;
 }
 
 @media (max-width: 980px) {

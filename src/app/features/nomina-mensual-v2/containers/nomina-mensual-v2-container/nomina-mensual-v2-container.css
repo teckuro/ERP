@@ -1,9 +1,7 @@
 ﻿@import './nomina-mensual-v2-visual-system.css';
 
 /* L2/L3/L4 movidos a CSS local del componente (L5 desacople 2026-06). Ver:
-   components/nomina-mensual-v2-paso-parametros/nomina-mensual-v2-paso-parametros.component.css
-   components/nomina-mensual-v2-paso-alcance/nomina-mensual-v2-paso-alcance.component.css
-   components/nomina-mensual-v2-paso-empleados/nomina-mensual-v2-paso-empleados.component.css */
+   components/nomina-mensual-v2-paso-parametros/nomina-mensual-v2-paso-parametros.component.css */
 
 
 /* Placeholder NOIA para pasos 4–8 congelados (L0, 2026-06).
@@ -111,9 +109,7 @@ app-nomina-mensual-v2-overlays {
   flex: 0 0 auto;
 }
 
-app-nomina-mensual-v2-paso-parametros,
-app-nomina-mensual-v2-paso-alcance,
-app-nomina-mensual-v2-paso-empleados {
+app-nomina-mensual-v2-paso-parametros {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -122,8 +118,7 @@ app-nomina-mensual-v2-paso-empleados {
   align-self: stretch;
 }
 
-app-nomina-mensual-v2-paso-parametros .nmv2-paso-parametros,
-app-nomina-mensual-v2-paso-alcance .nmv2-paso-alcance {
+app-nomina-mensual-v2-paso-parametros .nmv2-paso-parametros {
   flex: 1 1 auto;
   min-height: 0;
   height: 100%;
@@ -2023,8 +2018,6 @@ textarea {
 }
 
 .nmv2-step-frame > app-nomina-mensual-v2-paso-parametros,
-.nmv2-step-frame > app-nomina-mensual-v2-paso-alcance,
-.nmv2-step-frame > app-nomina-mensual-v2-paso-empleados,
 .nmv2-step-frame > app-nomina-mensual-v2-paso-dotacion,
 .nmv2-step-frame > app-nomina-mensual-v2-paso-movimientos,
 .nmv2-step-frame > app-nomina-mensual-v2-paso-calculo,
@@ -2037,9 +2030,7 @@ textarea {
   min-height: 0;
 }
 
-.nmv2-paso-parametros,
-.nmv2-paso-alcance,
-.nmv2-paso-empleados {
+.nmv2-paso-parametros {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -2071,11 +2062,6 @@ textarea {
    fino. Cada paso puede sobreescribir si necesita gap interno. */
 .nmv2-paso-parametros {
   gap: 0;
-}
-
-.nmv2-paso-alcance,
-.nmv2-paso-empleados {
-  gap: 12px;
 }
 
 .alert-banner--revision {
