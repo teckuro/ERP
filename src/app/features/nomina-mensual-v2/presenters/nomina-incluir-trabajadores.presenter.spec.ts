@@ -4,6 +4,7 @@ import {
   COLUMNAS_INCLUIR_TRABAJADORES,
   FILTROS_INCLUIR_TRABAJADORES,
   PERSISTENCIA_PICKER_TRABAJADORES,
+  filtroTrabajadoresElegiblesDesdeGrid,
   type FilaTrabajadorElegible,
 } from './nomina-incluir-trabajadores.presenter';
 
@@ -43,19 +44,14 @@ describe('nomina-incluir-trabajadores.presenter', () => {
       ]);
     });
 
-    it('predicate "no" deja pasar solo elegibles', () => {
-      expect(disponibilidad?.predicate?.(fila({ yaEnNomina: false }), 'no')).toBe(true);
-      expect(disponibilidad?.predicate?.(fila({ yaEnNomina: true }), 'no')).toBe(false);
-    });
-
-    it('predicate "si" deja pasar solo los ya en nómina', () => {
-      expect(disponibilidad?.predicate?.(fila({ yaEnNomina: true }), 'si')).toBe(true);
-      expect(disponibilidad?.predicate?.(fila({ yaEnNomina: false }), 'si')).toBe(false);
-    });
-
-    it('predicate sin valor deja pasar todas las filas', () => {
-      expect(disponibilidad?.predicate?.(fila({ yaEnNomina: true }), '')).toBe(true);
-      expect(disponibilidad?.predicate?.(fila({ yaEnNomina: false }), '')).toBe(true);
+    it('filtroTrabajadoresElegiblesDesdeGrid mapea búsqueda y solo elegibles', () => {
+      expect(
+        filtroTrabajadoresElegiblesDesdeGrid({
+          busqueda: ' ana ',
+          disponibilidad: 'no',
+        }),
+      ).toEqual({ busqueda: 'ana', soloDisponibles: true });
+      expect(filtroTrabajadoresElegiblesDesdeGrid({ disponibilidad: 'si' })).toEqual({});
     });
   });
 });

@@ -60,6 +60,7 @@ import type {
   DataGridRowDetailContext,
   DataGridSortDirection,
   DataGridToolbarLayout,
+  DataGridServerQuery,
 } from './data-grid.types';
 export * from './data-grid.types';
 export {
@@ -182,6 +183,10 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   @Input() emptyIcon = Search;
   @Input() loading = false;
   @Input() loadingLabel = 'Cargando resultados...';
+  /** Paginación/filtros resueltos en servidor; `rows` ya viene recortado por página. */
+  @Input() serverSide = false;
+  /** Total de filas en servidor (requerido si `serverSide`). */
+  @Input() totalRowCount = 0;
   @Input() mensajeError = '';
   @Input() hoverRows = true;
   @Input() bulkActionLoading = false;
@@ -199,6 +204,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   @Output() readonly retry = new EventEmitter<void>();
   @Output() readonly rowExpandToggle = new EventEmitter<{ row: T; expanded: boolean }>();
   @Output() readonly expandHintDismiss = new EventEmitter<void>();
+  @Output() readonly serverQueryChange = new EventEmitter<DataGridServerQuery>();
 
   readonly previousIcon = ArrowLeft;
   readonly nextIcon = ChevronRight;
@@ -305,13 +311,16 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     if (!this.preferencesLoaded && this.persistenceKey) {
       this.restorePreferences();
       this.preferencesLoaded = true;
+      if (this.serverSide) {
+        queueMicrotask(() => this.emitServerQueryChange());
+      }
     }
 
     if (changes['maxItems']) {
       this.effectivePageSize = this.normalizePageSize(this.maxItems);
     }
 
-    if (changes['rows'] || changes['maxItems'] || changes['filters']) {
+    if (changes['rows'] || changes['maxItems'] || changes['filters'] || changes['totalRowCount']) {
       if (changes['filters']) {
         this.applyInitialFilterValues();
       }
@@ -361,7 +370,8 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get totalPages(): number {
-    return Math.max(1, Math.ceil(this.filteredRows.length / this.pageSize));
+    const total = this.serverSide ? this.totalRowCount : this.filteredRows.length;
+    return Math.max(1, Math.ceil(total / this.pageSize));
   }
 
   get visibleColumns(): DataGridColumn<T>[] {
@@ -541,7 +551,8 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get headerCountText(): string {
-    const resultsText = `${this.filteredRows.length} ${this.headerCountNoun}`;
+    const count = this.serverSide ? this.totalRowCount : this.filteredRows.length;
+    const resultsText = `${count} ${this.headerCountNoun}`;
     if (!this.headerShowActiveFiltersCount || !this.hasActiveFilters) {
       return resultsText;
     }
@@ -570,19 +581,27 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get pagedRows(): T[] {
+    if (this.serverSide) {
+      return this.rows;
+    }
     const start = (this.currentPage - 1) * this.pageSize;
     return this.sortedRows.slice(start, start + this.pageSize);
   }
 
   get rangeStart(): number {
-    return this.filteredRows.length === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1;
+    const total = this.serverSide ? this.totalRowCount : this.filteredRows.length;
+    return total === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1;
   }
 
   get rangeEnd(): number {
-    return Math.min(this.currentPage * this.pageSize, this.filteredRows.length);
+    const total = this.serverSide ? this.totalRowCount : this.filteredRows.length;
+    return Math.min(this.currentPage * this.pageSize, total);
   }
 
   get filteredRows(): T[] {
+    if (this.serverSide) {
+      return this.rows;
+    }
     return this.rows.filter((row) =>
       this.visibleFilters.every((filter) => {
         const selected = this.filterValues[filter.id];
@@ -597,6 +616,9 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get sortedRows(): T[] {
+    if (this.serverSide) {
+      return this.filteredRows;
+    }
     const column = this.columns.find((item) => item.id === this.sortColumnId);
 
     if (!column || !this.isSortable(column)) {
@@ -1025,6 +1047,9 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     this.currentPage = 1;
     this.pageInput = '1';
     this.persistPreferences();
+    if (this.serverSide) {
+      this.emitServerQueryChange();
+    }
   }
 
   filterOptionValue(option: string | { label: string; value: string }): string {
@@ -1068,6 +1093,9 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     this.pageInput = '1';
     this.clearSelectionByContext('La seleccion se limpio porque cambio el contexto filtrado.');
     this.persistPreferences();
+    if (this.serverSide) {
+      this.emitServerQueryChange();
+    }
   }
 
   private clearFilterById(filterId: string): void {
@@ -1092,6 +1120,9 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     this.pageInput = '1';
     this.clearSelectionByContext('La seleccion se limpio porque se quitaron los filtros.');
     this.persistPreferences();
+    if (this.serverSide) {
+      this.emitServerQueryChange();
+    }
   }
 
   updateFilterValue(filter: DataGridFilter<T>, event: Event): void {
@@ -1139,6 +1170,9 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     this.pageInput = '1';
     this.clearSelectionByContext('La seleccion se limpio porque cambio el contexto filtrado.');
     this.persistPreferences();
+    if (this.serverSide) {
+      this.emitServerQueryChange();
+    }
   }
 
   dateFilterMin(filter: DataGridFilter<T>): string {
@@ -1259,8 +1293,23 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   goToPage(page: number): void {
+    const prev = this.currentPage;
     this.currentPage = this.normalizePage(page);
     this.pageInput = String(this.currentPage);
+    if (this.serverSide && prev !== this.currentPage) {
+      this.emitServerQueryChange();
+    }
+  }
+
+  private emitServerQueryChange(): void {
+    if (!this.serverSide) {
+      return;
+    }
+    this.serverQueryChange.emit({
+      page: this.currentPage,
+      pageSize: this.pageSize,
+      filterValues: { ...this.filterValues },
+    });
   }
 
   togglePagePopover(): void {

@@ -67,6 +67,41 @@ describe('DataGridComponent toolbar operativa', () => {
     component.lastPage();
     expect(component.currentPage).toBe(3);
   });
+
+  it('modo servidor usa totalRowCount para paginar sin recortar filas', () => {
+    const fixture = TestBed.createComponent(DataGridComponent<TestRow>);
+    const component = fixture.componentInstance;
+    component.columns = columns;
+    component.rows = rows.slice(0, 5);
+    component.serverSide = true;
+    component.totalRowCount = 120;
+    component.toolbarLayout = 'operativa';
+    component.maxItems = 10;
+    fixture.detectChanges();
+
+    expect(component.pagedRows.length).toBe(5);
+    expect(component.totalPages).toBe(12);
+    expect(component.rangeEnd).toBe(10);
+  });
+
+  it('modo servidor emite serverQueryChange al cambiar de página', () => {
+    const fixture = TestBed.createComponent(DataGridComponent<TestRow>);
+    const component = fixture.componentInstance;
+    component.columns = columns;
+    component.rows = rows.slice(0, 10);
+    component.serverSide = true;
+    component.totalRowCount = 120;
+    component.maxItems = 10;
+    fixture.detectChanges();
+
+    const emitted: unknown[] = [];
+    component.serverQueryChange.subscribe((query) => emitted.push(query));
+
+    component.nextPage();
+
+    expect(emitted).toHaveLength(1);
+    expect(emitted[0]).toMatchObject({ page: 2, pageSize: 10 });
+  });
 });
 
 // ---------------------------------------------------------------------------

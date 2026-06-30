@@ -6520,6 +6520,24 @@ export type Database = {
           trabajador_id: number
         }[]
       }
+      listar_trabajadores_elegibles_nomina: {
+        Args: {
+          p_busqueda?: string
+          p_nomina_id: string
+          p_page?: number
+          p_page_size?: number
+          p_solo_disponibles?: boolean
+        }
+        Returns: {
+          cargo: string
+          departamento: string
+          nombre: string
+          rut: string
+          total_count: number
+          trabajador_id: number
+          ya_en_nomina: boolean
+        }[]
+      }
       obtener_nomina_periodo_diagnostico_activo: {
         Args: { p_periodo: string }
         Returns: {
@@ -6622,6 +6640,24 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      resumen_dotacion_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          bloqueados: number
+          con_advertencias: number
+          con_criticos: number
+          listos: number
+          total: number
+        }[]
+      }
+      resumen_trabajadores_elegibles_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          elegibles: number
+          total_activos: number
+          ya_en_nomina: number
+        }[]
       }
       registrar_evento_auditoria_nomina: {
         Args: {

@@ -28,6 +28,7 @@ export interface RecomputarTrazabilidadInput {
   eventosLocales: readonly EventoTrazabilidadNomina[];
   contexto?: ContextoTrazabilidadPasoNomina;
   incluirMockSiVacio?: boolean;
+  nominaPeriodoId?: string | null;
 }
 
 export interface RecomputarTrazabilidadResult {
@@ -49,12 +50,17 @@ export class NominaMensualV2TrazabilidadService {
   private readonly periodoActivo = inject(PeriodoActivoService);
   private readonly auth = inject(AuthService);
 
-  async cargarEventosServidor(periodo = this.periodoActivo.periodoYm()): Promise<EventoTrazabilidadNomina[]> {
+  async cargarEventosServidor(
+    periodo = this.periodoActivo.periodoYm(),
+    nominaPeriodoId: string | null = null,
+  ): Promise<EventoTrazabilidadNomina[]> {
     try {
-      const [historial, activo] = await Promise.all([
-        this.snapshotRepo.listarSnapshotsPeriodo(periodo),
-        this.snapshotRepo.obtenerSnapshotActivo(periodo),
-      ]);
+      const historial = nominaPeriodoId
+        ? await this.snapshotRepo.listarSnapshotsNomina(nominaPeriodoId)
+        : await this.snapshotRepo.listarSnapshotsPeriodo(periodo);
+      const activo = nominaPeriodoId
+        ? historial.find((snapshot) => snapshot.activo === true && !esSnapshotParametrosBase(snapshot)) ?? null
+        : await this.snapshotRepo.obtenerSnapshotActivo(periodo);
       const historialConParametros = await Promise.all(
         historial.map((snapshot) => this.enriquecerSnapshotParametrosBase(snapshot)),
       );
@@ -86,7 +92,8 @@ export class NominaMensualV2TrazabilidadService {
     input: RecomputarTrazabilidadInput,
     periodo = this.periodoActivo.periodoYm(),
   ): Promise<RecomputarTrazabilidadResult> {
-    const servidor = await this.cargarEventosServidor(periodo);
+    const nominaPeriodoId = input.nominaPeriodoId ?? input.contexto?.nominaPeriodoId ?? null;
+    const servidor = await this.cargarEventosServidor(periodo, nominaPeriodoId);
     const usarMock =
       input.incluirMockSiVacio !== false
       && servidor.length === 0

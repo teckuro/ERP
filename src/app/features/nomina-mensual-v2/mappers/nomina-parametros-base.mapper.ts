@@ -63,12 +63,19 @@ export function buildSnapshotParametrosBasePayload(args: {
   fechaGeneracion: string;
   usuarioGenerador?: string | null;
   idEmpresa?: number | null;
+  nominaPeriodoId?: string | null;
+  fechaInicioRango?: string | null;
+  fechaFinRango?: string | null;
 }): NominaCalculoPeriodoSnapshot {
   const parametrosCongelados = construirParametrosCongelados(args.parametros);
   const hashParametros = calcularHashParametros(parametrosCongelados);
-  const trazabilidad = buildTrazabilidadParametrosBase(args.resumen);
+  const trazabilidad = buildTrazabilidadParametrosBase(args.resumen, {
+    fechaInicio: args.fechaInicioRango ?? args.resumen.fechaInicioRango,
+    fechaFin: args.fechaFinRango ?? args.resumen.fechaFinRango,
+  });
   const snapshotSinHash: NominaCalculoPeriodoSnapshot = {
     periodo: args.periodo,
+    nominaPeriodoId: args.nominaPeriodoId ?? args.resumen.nominaPeriodoId ?? null,
     idEmpresa: args.idEmpresa ?? null,
     estado: 'borrador',
     fechaGeneracion: args.fechaGeneracion,
@@ -112,6 +119,15 @@ export function buildMetadataPersistenciaParametrosBase(
   return {
     tipoSnapshot: TIPO_SNAPSHOT_PARAMETROS_BASE,
     resumenParametrosBase: buildResumenParametrosBaseMetadata(resumen) as unknown as Json,
+    ...(resumen.nominaPeriodoId ? { nominaPeriodoId: resumen.nominaPeriodoId } : {}),
+    ...(resumen.fechaInicioRango && resumen.fechaFinRango
+      ? {
+          rangoLegal: {
+            fechaInicio: resumen.fechaInicioRango,
+            fechaFin: resumen.fechaFinRango,
+          } as unknown as Json,
+        }
+      : {}),
     notaAlcance: 'Base de parámetros para preparación de nómina. El cálculo ocurre en el paso Cálculo.',
   };
 }
@@ -222,19 +238,25 @@ export function resolverOrigenBaseDesdeSnapshot(
 
 function buildTrazabilidadParametrosBase(
   resumen: NominaParametrosResumen,
+  rango?: { fechaInicio?: string | null; fechaFin?: string | null },
 ): NominaCalculoTrazabilidadSnapshot[] {
+  const vigenciaInicio = rango?.fechaInicio
+    ?? resumen.fechaInicioRango
+    ?? (resumen.periodo.length === 7 ? `${resumen.periodo}-01` : resumen.periodo);
+  const vigenciaFin = rango?.fechaFin ?? resumen.fechaFinRango ?? null;
   return [
     {
       codigo: CODIGO_TRAZA_PARAMETROS_BASE,
       origen: 'parametros_base',
       tablaFuente: 'parametros_generales',
       campoFuente: 'snapshot',
-      vigenciaInicio: resumen.periodo.length === 7 ? `${resumen.periodo}-01` : resumen.periodo,
-      vigenciaFin: null,
+      vigenciaInicio,
+      vigenciaFin,
       valorEntrada: {
         tipoSnapshot: TIPO_SNAPSHOT_PARAMETROS_BASE,
         seccionesListas: resumen.seccionesListas,
         seccionesTotales: resumen.seccionesTotales,
+        ...(resumen.nominaPeriodoId ? { nominaPeriodoId: resumen.nominaPeriodoId } : {}),
       },
       formula: '',
       valorResultado: resumen.controlesVerificados,

@@ -49,6 +49,13 @@ describe('NominaMensualV2PasoDotacionComponent (DOT-DET-04)', () => {
   beforeEach(() => {
     servicio = {
       filtrarDotacion: vi.fn().mockResolvedValue({ filas: [], total: 0 }),
+      obtenerResumenDotacion: vi.fn().mockResolvedValue({
+        total: 0,
+        listos: 0,
+        conAdvertencias: 0,
+        conCriticos: 0,
+        bloqueados: 0,
+      }),
       previsualizarAccionMasiva: vi.fn().mockResolvedValue(null),
       aplicarAccionMasiva: vi.fn().mockResolvedValue(undefined),
       confirmarDotacion: vi.fn().mockResolvedValue(undefined),
@@ -141,6 +148,13 @@ describe('NominaMensualV2PasoDotacionComponent (DOT-DET-04)', () => {
       fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
       const cmp = fixture.componentInstance;
       cmp.vista.set({ filas: [filaMock()], total: 1 });
+      cmp.resumen.set({
+        total: 1,
+        listos: 1,
+        conAdvertencias: 0,
+        conCriticos: 0,
+        bloqueados: 0,
+      });
 
       const resultado = await cmp.avanzar();
 
@@ -154,6 +168,13 @@ describe('NominaMensualV2PasoDotacionComponent (DOT-DET-04)', () => {
       fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
       const cmp = fixture.componentInstance;
       cmp.vista.set({ filas: [filaBloqueada()], total: 1 });
+      cmp.resumen.set({
+        total: 1,
+        listos: 0,
+        conAdvertencias: 0,
+        conCriticos: 0,
+        bloqueados: 1,
+      });
 
       const resultado = await cmp.avanzar();
 
@@ -170,6 +191,13 @@ describe('NominaMensualV2PasoDotacionComponent (DOT-DET-04)', () => {
       fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
       const cmp = fixture.componentInstance;
       cmp.vista.set({ filas: [filaMock()], total: 1 });
+      cmp.resumen.set({
+        total: 1,
+        listos: 1,
+        conAdvertencias: 0,
+        conCriticos: 0,
+        bloqueados: 0,
+      });
       cmp.confirmando.set(true);
 
       const resultado = await cmp.avanzar();
@@ -199,6 +227,13 @@ describe('NominaMensualV2PasoDotacionComponent (DOT-DET-04)', () => {
       const cmp = fixture.componentInstance;
       fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
       cmp.vista.set({ filas: [filaMock()], total: 1 });
+      cmp.resumen.set({
+        total: 1,
+        listos: 1,
+        conAdvertencias: 0,
+        conCriticos: 0,
+        bloqueados: 0,
+      });
       expect(cmp.puedeContinuar()).toEqual({ ok: true });
     });
 
@@ -208,6 +243,13 @@ describe('NominaMensualV2PasoDotacionComponent (DOT-DET-04)', () => {
       const cmp = fixture.componentInstance;
       fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
       cmp.vista.set({ filas: [filaBloqueada()], total: 1 });
+      cmp.resumen.set({
+        total: 1,
+        listos: 0,
+        conAdvertencias: 0,
+        conCriticos: 0,
+        bloqueados: 1,
+      });
       const r = cmp.puedeContinuar();
       expect(r.ok).toBe(false);
       expect((servicio as Record<string, ReturnType<typeof vi.fn>>)['confirmarDotacion']).not.toHaveBeenCalled();
@@ -286,22 +328,6 @@ describe('NominaMensualV2PasoDotacionComponent (DOT-DET-04)', () => {
 
       expect(cmp.errorMensaje()).toMatch(/incluir/i);
       expect(cmp.aplicandoInclusion()).toBe(false);
-    });
-  });
-
-  describe('idsActualesEnNomina', () => {
-    it('expone los ids cargados en la grilla actual', () => {
-      configurarTestBed(servicio);
-      const fixture = TestBed.createComponent(NominaMensualV2PasoDotacionComponent);
-      const cmp = fixture.componentInstance;
-      cmp.vista.set({
-        filas: [
-          filaMock({ trabajadorId: 'tr-1' }),
-          filaMock({ trabajadorId: 'tr-2' }),
-        ],
-        total: 2,
-      });
-      expect(cmp.idsActualesEnNomina()).toEqual(['tr-1', 'tr-2']);
     });
   });
 });

@@ -57,7 +57,7 @@ describe('NominaMensualV2OrquestadorPort', () => {
     expect(orquestador.estadoParametrosBase()).toBeNull();
     expect(orquestador.origenBaseParametrosAlAvanzar()).toBeNull();
     expect(orquestador.eventosTrazabilidad()).toEqual([]);
-    expect(orquestador.contextoTrazabilidad()).toEqual({ periodo: '2026-06' });
+    expect(orquestador.contextoTrazabilidad()).toEqual({ periodo: '2026-06', nominaPeriodoId: null });
   });
 
   it('no vacia trazabilidad al reiniciar el mismo periodo', () => {

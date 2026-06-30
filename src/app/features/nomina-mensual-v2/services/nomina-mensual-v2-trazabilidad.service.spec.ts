@@ -150,4 +150,57 @@ describe('NominaMensualV2TrazabilidadService', () => {
     expect(resultado.auditoriaPorPaso.parameters?.usuarioNombre).toBe('responsable.bd@empresa.cl');
     expect(resultado.auditoriaPorPaso.parameters?.accionPrincipal).toBe('Base de parámetros recién guardada');
   });
+
+  it('carga trazabilidad scoped por nominaPeriodoId sin mezclar otras nóminas del mes', async () => {
+    const listarSnapshotsNomina = vi.fn().mockResolvedValue([
+      {
+        idCalculoPeriodo: 31,
+        nominaPeriodoId: 'nom-a',
+        periodo: '2026-05',
+        estado: 'borrador',
+        fechaGeneracion: '2026-05-11T09:00:00.000Z',
+        usuarioGenerador: '00000000-0000-0000-0000-000000000031',
+        versionMotor: 'PARAMETROS-BASE-01',
+        hashSnapshot: 'fnv1a32:a',
+        activo: true,
+        reemplazadoPor: null,
+        trabajadores: [],
+        issues: [],
+        trazabilidad: [],
+        parametros: [{ grupo: 'g', clave: 'uf', valor: '1', valorNumerico: null, vigencia: null, origen: 'pg' }],
+        metadataOperativa: {
+          tipoSnapshot: 'parametrosBase',
+          origenAlGuardar: 'recienGuardada',
+          resumenParametrosBase: { seccionesListas: 2, seccionesTotales: 2 },
+        },
+      },
+    ]);
+    TestBed.configureTestingModule({
+      providers: [
+        NominaMensualV2TrazabilidadService,
+        {
+          provide: NominaCalculoSnapshotRepository,
+          useValue: {
+            listarSnapshotsNomina,
+            listarSnapshotsPeriodo: vi.fn(),
+            obtenerSnapshotActivo: vi.fn(),
+            listarParametrosSnapshot: vi.fn(),
+          },
+        },
+        {
+          provide: LiquidacionesOficialesRepository,
+          useValue: { obtenerLiquidacionPeriodo: vi.fn().mockResolvedValue(null) },
+        },
+        { provide: PeriodoActivoService, useValue: { periodoYm: () => '2026-05' } },
+        { provide: AuthService, useValue: { currentUser: () => null } },
+      ],
+    });
+
+    const service = TestBed.inject(NominaMensualV2TrazabilidadService);
+    const eventos = await service.cargarEventosServidor('2026-05', 'nom-a');
+
+    expect(listarSnapshotsNomina).toHaveBeenCalledWith('nom-a');
+    expect(eventos.some((e) => e.tipoEvento === 'PARAMETROS_CONGELADOS')).toBe(true);
+    expect(eventos.every((e) => e.periodo === '2026-05')).toBe(true);
+  });
 });

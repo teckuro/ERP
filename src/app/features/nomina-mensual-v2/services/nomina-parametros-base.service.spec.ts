@@ -6,6 +6,7 @@ import { PeriodoActivoService } from '../../../core/services/periodo-activo.serv
 import { NominaCalculoSnapshotRepository } from '../../nomina-mensual/data-access/nomina-calculo-snapshot.repository';
 import { ParametrosGeneralesService } from '../../parametros-generales/services/parametros-generales.service';
 import type { NominaParametrosResumen } from '../models/nomina-parametros-resumen.models';
+import { NominaPeriodoService } from '../../nomina-mensual/services/nomina-periodo.service';
 import { NominaParametrosBaseService } from './nomina-parametros-base.service';
 
 function resumenMinimo(): NominaParametrosResumen {
@@ -77,6 +78,7 @@ describe('NominaParametrosBaseService', () => {
         { provide: ParametrosGeneralesService, useValue: { obtenerUltimoHastaPeriodo } },
         { provide: PeriodoActivoService, useValue: { periodoYm: () => '2026-05' } },
         { provide: AuthService, useValue: { currentUser: () => null, getSession: vi.fn().mockResolvedValue(null) } },
+        { provide: NominaPeriodoService, useValue: { invalidarCalculoPorActualizacionParametros: vi.fn().mockResolvedValue(undefined) } },
       ],
     });
   });
@@ -119,7 +121,7 @@ describe('NominaParametrosBaseService', () => {
     expect(result.idCalculoPeriodoBase).toBe(8);
   });
 
-  it('guardarSnapshotParametrosBase rechaza resumen de período distinto al activo', async () => {
+  it('guardarSnapshotParametrosBase rechaza resumen de período distinto al activo sin contexto', async () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
@@ -133,11 +135,48 @@ describe('NominaParametrosBaseService', () => {
         { provide: ParametrosGeneralesService, useValue: { obtenerUltimoHastaPeriodo } },
         { provide: PeriodoActivoService, useValue: { periodoYm: () => '2026-06' } },
         { provide: AuthService, useValue: { currentUser: () => null, getSession: vi.fn().mockResolvedValue(null) } },
+        { provide: NominaPeriodoService, useValue: { invalidarCalculoPorActualizacionParametros: vi.fn().mockResolvedValue(undefined) } },
       ],
     });
 
     const service = TestBed.inject(NominaParametrosBaseService);
     await expect(service.guardarSnapshotParametrosBase(resumenMinimo())).rejects.toThrow(/período activo/);
     expect(guardarSnapshotParametrosBase).not.toHaveBeenCalled();
+  });
+
+  it('guardarSnapshotParametrosBase invalida cálculo al reemplazar con contexto de nómina', async () => {
+    const invalidar = vi.fn().mockResolvedValue(undefined);
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        NominaParametrosBaseService,
+        { provide: NominaCalculoSnapshotRepository, useValue: {
+          obtenerSnapshotParametrosBase,
+          listarParametrosSnapshot,
+          actualizarMetadataParametrosBase,
+          guardarSnapshotParametrosBase,
+        } },
+        { provide: ParametrosGeneralesService, useValue: { obtenerUltimoHastaPeriodo } },
+        { provide: PeriodoActivoService, useValue: { periodoYm: () => '2026-05' } },
+        { provide: AuthService, useValue: { currentUser: () => null, getSession: vi.fn().mockResolvedValue(null) } },
+        { provide: NominaPeriodoService, useValue: { invalidarCalculoPorActualizacionParametros: invalidar } },
+      ],
+    });
+
+    const service = TestBed.inject(NominaParametrosBaseService);
+    const context = {
+      nominaPeriodoId: 'np-1',
+      periodo: '2026-05',
+      fechaInicio: '2026-05-01',
+      fechaFin: '2026-05-31',
+      idEmpresa: 1,
+      tipoNomina: 'mensual' as const,
+    };
+    await service.guardarSnapshotParametrosBase(
+      { ...resumenMinimo(), nominaPeriodoId: 'np-1' },
+      'actualizadaExplicitamente',
+      context,
+    );
+    expect(invalidar).toHaveBeenCalledWith('np-1');
   });
 });

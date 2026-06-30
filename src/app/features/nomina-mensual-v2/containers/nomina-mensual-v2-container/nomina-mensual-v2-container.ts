@@ -280,6 +280,13 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       const pasoForzado = this.pasoForzadoCreacion;
       this.pasoForzadoCreacion = null;
       const pasoTarget = pasoForzado ?? sesion.pasoVisitadoSugerido ?? sesion.pasoInicial;
+      this.orquestador.estadoParametrosBase.set(sesion.estadoBase);
+      if (sesion.contextoTrazabilidad) {
+        this.orquestador.actualizarContextoTrazabilidad(sesion.contextoTrazabilidad);
+      }
+      if (sesion.origenBase && sesion.idCalculoPeriodoBase) {
+        this.orquestador.registrarOrigenBaseAlAvanzar(sesion.origenBase, sesion.idCalculoPeriodoBase);
+      }
       if (pasoTarget !== this.currentStep()) {
         this.currentStep.set(pasoTarget);
         this.orquestador.pasoActual.set(pasoTarget);
@@ -440,6 +447,12 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       }
       this.nominaCargada.set(nomina);
       this.nominaCargaEstado.set('ready');
+      const contextoPrevio = this.orquestador.contextoTrazabilidad();
+      this.orquestador.actualizarContextoTrazabilidad({
+        ...(contextoPrevio ?? { periodo: nomina.periodo }),
+        periodo: nomina.periodo,
+        nominaPeriodoId: nomina.id,
+      });
       if (nomina.periodo && nomina.periodo !== this.periodoActivo.getPeriodo()) {
         this.periodoActivo.setPeriodoYm(nomina.periodo);
       }
@@ -501,7 +514,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       this.orquestador.reiniciarPorCambioPeriodo(periodo);
     }
     try {
-      const sesion = await this.sesionService.resolverEstadoSesion(periodo);
+      const sesion = await this.sesionService.resolverEstadoSesion(periodo, this.nominaPeriodoId());
       if (token !== this.tokenInicializacionPeriodo) return;
       this.orquestador.estadoParametrosBase.set(sesion.estadoBase);
       if (sesion.contextoTrazabilidad) {

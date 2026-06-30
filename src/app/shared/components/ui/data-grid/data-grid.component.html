@@ -122,7 +122,7 @@
         </div>
       }
 
-      @if (showHeader && toolbarLayout === 'operativa' && filteredRows.length > 0) {
+      @if (showHeader && toolbarLayout === 'operativa' && (serverSide ? totalRowCount > 0 : filteredRows.length > 0)) {
         <div class="data-grid-toolbar data-grid-toolbar--operativa" aria-label="Paginación de la grilla">
           <div class="data-grid-toolbar--operativa__page">
             <span class="data-grid-toolbar--operativa__label">Página</span>

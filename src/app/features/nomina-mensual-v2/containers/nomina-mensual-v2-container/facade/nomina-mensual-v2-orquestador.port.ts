@@ -214,7 +214,10 @@ export class NominaMensualV2OrquestadorPort {
     this.tipoModalDetalleActivo.set(null);
     const contextoActual = this.contextoTrazabilidad();
     if (cambioPeriodo || !contextoActual) {
-      this.contextoTrazabilidad.set({ periodo });
+      this.contextoTrazabilidad.set({
+        periodo,
+        nominaPeriodoId: contextoActual?.nominaPeriodoId ?? null,
+      });
     } else if (contextoActual.periodo !== periodo) {
       this.actualizarContextoTrazabilidad({ ...contextoActual, periodo });
     }
@@ -227,6 +230,7 @@ export class NominaMensualV2OrquestadorPort {
     const result = await this.trazabilidadService.recomputar({
       eventosLocales: this.eventosLocales(),
       contexto: this.contextoTrazabilidad() ?? undefined,
+      nominaPeriodoId: this.contextoTrazabilidad()?.nominaPeriodoId ?? null,
       incluirMockSiVacio,
     });
     if (token !== this.tokenRecomputarTrazabilidad) return null;

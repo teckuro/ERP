@@ -8,6 +8,22 @@ import { EmpleadosService } from '../../services/empleados.service';
 import { ShellPageContextService } from '../../../../layout/shell-page-context.service';
 import { FormEmpleadoComponent } from './form-empleado';
 
+function shellPageContextMock() {
+  let token = 0;
+  return {
+    claimOwnership: vi.fn(() => ++token),
+    releaseOwnership: vi.fn(),
+    setContextWithToken: vi.fn(),
+    registerPrimaryActionHandlerWithToken: vi.fn(),
+    setPageContext: vi.fn(),
+    setContext: vi.fn(),
+    registerPrimaryActionHandler: vi.fn(),
+    setBindingActive: vi.fn(),
+    clearContext: vi.fn(),
+    applyRouteFallback: vi.fn(),
+  };
+}
+
 describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
   beforeEach(() => {
     HTMLElement.prototype.scrollIntoView = vi.fn();
@@ -503,14 +519,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
         { provide: Router, useValue: { navigate: vi.fn() } },
         {
           provide: ShellPageContextService,
-          useValue: {
-            setPageContext: vi.fn(),
-            setContext: vi.fn(),
-            registerPrimaryActionHandler: vi.fn(),
-            setBindingActive: vi.fn(),
-            clearContext: vi.fn(),
-            applyRouteFallback: vi.fn(),
-          },
+          useValue: shellPageContextMock(),
         },
       ],
     }).compileComponents();

@@ -6,6 +6,7 @@ import {
   puedeAplicarAccionMasiva,
   puedeAsignarSegmento,
   puedeAvanzarDotacion,
+  puedeAvanzarDotacionResumen,
 } from './nomina-dotacion.rules';
 
 function fila(estado: FilaTrabajadorNominaResumen['estado']): FilaTrabajadorNominaResumen {
@@ -61,5 +62,11 @@ describe('nomina-dotacion.rules', () => {
     ]);
     expect(aplicables.map((f) => f.estado)).toEqual(['listo', 'advertencia']);
     expect(descartadas.map((f) => f.estado)).toEqual(['bloqueado']);
+  });
+
+  it('puedeAvanzarDotacionResumen usa conteos agregados del servidor', () => {
+    expect(puedeAvanzarDotacionResumen({ total: 0, bloqueados: 0 }).puede).toBe(false);
+    expect(puedeAvanzarDotacionResumen({ total: 10, bloqueados: 2 }).puede).toBe(false);
+    expect(puedeAvanzarDotacionResumen({ total: 10, bloqueados: 0 }).puede).toBe(true);
   });
 });

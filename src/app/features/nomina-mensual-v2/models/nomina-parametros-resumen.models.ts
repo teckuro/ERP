@@ -50,6 +50,10 @@ export type ParametroResumenAcceso = {
 
 export type NominaParametrosResumen = {
   periodo: string;
+  /** Nómina dueña del resumen (F06). */
+  nominaPeriodoId?: string | null;
+  fechaInicioRango?: string | null;
+  fechaFinRango?: string | null;
   completitud: number;
   /** Porcentaje según visores/secciones visibles (5 cards). */
   completitudSecciones: number;

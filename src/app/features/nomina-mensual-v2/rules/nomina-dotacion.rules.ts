@@ -38,6 +38,26 @@ export function puedeAvanzarDotacion(
   return { puede: true };
 }
 
+/** Evalúa avance con conteos agregados del servidor (F07). */
+export function puedeAvanzarDotacionResumen(resumen: {
+  total: number;
+  bloqueados: number;
+}): { puede: boolean; motivo?: string } {
+  if (resumen.total === 0) {
+    return {
+      puede: false,
+      motivo: 'No hay trabajadores en la dotación. Agrega al menos un segmento con trabajadores.',
+    };
+  }
+  if (resumen.bloqueados > 0) {
+    return {
+      puede: false,
+      motivo: `${resumen.bloqueados} trabajadores están bloqueados. Resuelve sus incidencias antes de continuar.`,
+    };
+  }
+  return { puede: true };
+}
+
 export function clasificarFilasParaPreview(
   filas: FilaTrabajadorNominaResumen[],
 ): { aplicables: FilaTrabajadorNominaResumen[]; descartadas: FilaTrabajadorNominaResumen[] } {

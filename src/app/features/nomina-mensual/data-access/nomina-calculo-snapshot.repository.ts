@@ -219,12 +219,16 @@ export class NominaCalculoSnapshotRepository {
   async obtenerSnapshotParametrosBase(
     periodo: string,
     idEmpresa: number | null = null,
+    nominaPeriodoId: string | null = null,
   ): Promise<NominaCalculoPeriodoSnapshot | null> {
-    const snapshots = await this.listarSnapshotsPeriodo(periodo);
+    const snapshots = nominaPeriodoId
+      ? await this.listarSnapshotsNomina(nominaPeriodoId)
+      : await this.listarSnapshotsPeriodo(periodo);
     const bases = snapshots.filter(
       (snapshot) =>
         esSnapshotParametrosBase(snapshot)
-        && (idEmpresa == null || snapshot.idEmpresa === idEmpresa),
+        && (idEmpresa == null || snapshot.idEmpresa === idEmpresa)
+        && (nominaPeriodoId == null || snapshot.nominaPeriodoId === nominaPeriodoId),
     );
     if (bases.length === 0) return null;
 
@@ -235,6 +239,18 @@ export class NominaCalculoSnapshotRepository {
     return vigente ?? bases[0] ?? null;
   }
 
+  async listarSnapshotsNomina(nominaPeriodoId: string): Promise<NominaCalculoPeriodoSnapshot[]> {
+    const { data, error } = await this.supabase
+      .from('nomina_calculo_periodo')
+      .select('*')
+      .eq('id_nomina_periodo', nominaPeriodoId)
+      .order('fecha_generacion', { ascending: false });
+    if (error) {
+      throw new Error(`No fue posible listar snapshots de la nómina: ${error.message}`);
+    }
+    return (data ?? []).map(mapPeriodoRow);
+  }
+
   /**
    * Persiste snapshot base de parámetros sin reemplazar snapshot preliminar de cálculo activo.
    */
@@ -243,7 +259,11 @@ export class NominaCalculoSnapshotRepository {
     metadataOverlay: Record<string, unknown>,
   ): Promise<{ snapshot: NominaCalculoPeriodoSnapshot; reemplazoAnterior: boolean }> {
     const activo = await this.obtenerSnapshotActivo(snapshot.periodo, snapshot.idEmpresa);
-    const anteriorBase = await this.obtenerSnapshotParametrosBase(snapshot.periodo, snapshot.idEmpresa);
+    const anteriorBase = await this.obtenerSnapshotParametrosBase(
+      snapshot.periodo,
+      snapshot.idEmpresa,
+      snapshot.nominaPeriodoId ?? null,
+    );
     const preliminarActivo = !!activo && !esSnapshotParametrosBase(activo);
 
     if (anteriorBase?.idCalculoPeriodo) {
@@ -581,6 +601,7 @@ export class NominaCalculoSnapshotRepository {
       .insert({
         periodo: snapshot.periodo,
         id_empresa: snapshot.idEmpresa,
+        id_nomina_periodo: snapshot.nominaPeriodoId ?? null,
         estado: snapshot.estado,
         fecha_generacion: snapshot.fechaGeneracion,
         usuario_generador: snapshot.usuarioGenerador,

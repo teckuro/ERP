@@ -69,6 +69,9 @@
       [persistenceKey]="persistenceKey"
       toolbarLayout="operativa"
       [gridHeight]="'100%'"
+      [serverSide]="true"
+      [totalRowCount]="vista().total"
+      [maxItems]="pageSize()"
       emptyTitle="Aún no hay trabajadores en esta dotación"
       emptyDescription="Usa “Agregar trabajadores” para incluir personas en este período."
       emptyTitleWhenFiltered="Sin resultados con los filtros actuales"
@@ -76,6 +79,7 @@
       className="paso-dotacion__data-grid"
       cardClassName="paso-dotacion__data-grid-card"
       (bulkAction)="manejarAccionMasiva($event)"
+      (serverQueryChange)="manejarConsultaServidor($event)"
     >
       <ng-template appDataGridCell="estado" let-fila>
         <span class="paso-dotacion__estado" [attr.data-estado]="fila.estado">
@@ -197,7 +201,6 @@
 @if (pickerAbierto()) {
   <app-nomina-mensual-v2-modal-incluir-trabajadores
     [nominaPeriodoId]="nominaPeriodoId()"
-    [idsYaEnNomina]="idsActualesEnNomina()"
     (incluir)="incluirTrabajadores($event)"
     (cerrar)="cerrarPicker()"
   />

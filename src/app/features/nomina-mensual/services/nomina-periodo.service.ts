@@ -28,14 +28,17 @@ import type { Database } from '../../../core/models/database.types';
 type NominaPeriodoUpdate = Database['public']['Tables']['nomina_periodo']['Update'];
 import type {
   DetalleTrabajadorNomina,
+  DotacionResumenNomina,
   EstadoNomina,
   EventoAuditoriaNomina,
   FilaTrabajadorNominaResumen,
   FiltroRapidoDotacion,
+  FiltroTrabajadoresElegiblesNomina,
   IncidenciaNomina,
   NominaPeriodo,
   NominaPeriodoResumen,
   PaginacionGrilla,
+  ResumenTrabajadoresElegiblesNomina,
   ResumenValidacionNomina,
   SegmentoNomina,
   SegmentoNominaNuevo,
@@ -315,6 +318,11 @@ export class NominaPeriodoService {
     const nomina = await this.exigirNomina(nominaPeriodoId);
     await this.transicionar(nomina, 'reabierta', payload.motivo);
     await this.repo.invalidarCalculo(nominaPeriodoId);
+  }
+
+  /** F06: recalcular parámetros invalida cálculo posterior de la nómina. */
+  async invalidarCalculoPorActualizacionParametros(nominaPeriodoId: string): Promise<void> {
+    await this.invalidarCalculoPorCambio(nominaPeriodoId, 'Parámetros de la nómina actualizados.');
   }
 
   /**
@@ -1204,7 +1212,7 @@ export class NominaPeriodoService {
   }
 
   // -------------------------------------------------------------------------
-  // Dotación (lista de trabajadores resumida con paginación cliente)
+  // Dotación (lista paginada en servidor — F07)
   // -------------------------------------------------------------------------
 
   async filtrarDotacion(
@@ -1213,6 +1221,34 @@ export class NominaPeriodoService {
     paginacion: PaginacionGrilla,
   ): Promise<{ filas: FilaTrabajadorNominaResumen[]; total: number }> {
     return this.repo.listarDotacionPaginada(nominaPeriodoId, filtro, paginacion);
+  }
+
+  async obtenerResumenDotacion(nominaPeriodoId: string): Promise<DotacionResumenNomina> {
+    return this.repo.obtenerResumenDotacion(nominaPeriodoId);
+  }
+
+  async listarTrabajadoresElegiblesNomina(
+    nominaPeriodoId: string,
+    filtro: FiltroTrabajadoresElegiblesNomina,
+    paginacion: PaginacionGrilla,
+  ): Promise<{
+    filas: Array<{
+      id: string;
+      nombre: string;
+      rut: string;
+      cargo: string;
+      departamento: string;
+      yaEnNomina: boolean;
+    }>;
+    total: number;
+  }> {
+    return this.repo.listarTrabajadoresElegiblesNomina(nominaPeriodoId, filtro, paginacion);
+  }
+
+  async obtenerResumenTrabajadoresElegibles(
+    nominaPeriodoId: string,
+  ): Promise<ResumenTrabajadoresElegiblesNomina> {
+    return this.repo.obtenerResumenTrabajadoresElegibles(nominaPeriodoId);
   }
 
   private async filtrarDotacionLegacy(

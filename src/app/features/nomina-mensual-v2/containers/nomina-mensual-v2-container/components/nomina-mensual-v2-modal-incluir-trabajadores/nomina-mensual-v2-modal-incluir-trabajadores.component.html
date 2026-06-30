@@ -65,6 +65,9 @@
       [persistenceKey]="persistenceKey"
       toolbarLayout="operativa"
       [gridHeight]="'100%'"
+      [serverSide]="true"
+      [totalRowCount]="totalFiltrado()"
+      [maxItems]="pageSize()"
       emptyTitle="Sin trabajadores activos"
       emptyDescription="La empresa no tiene trabajadores activos con ficha apta para remuneraciones."
       emptyTitleWhenFiltered="Sin resultados con los filtros actuales"
@@ -72,6 +75,7 @@
       className="incluir-modal__data-grid"
       cardClassName="incluir-modal__data-grid-card"
       (bulkAction)="manejarAccionMasiva($event)"
+      (serverQueryChange)="manejarConsultaServidor($event)"
     >
       <ng-template appDataGridCell="yaEnNomina" let-fila>
         @if (fila.yaEnNomina) {

@@ -88,6 +88,7 @@ export interface DetalleTrazabilidadPasoNomina {
 
 export interface ContextoTrazabilidadPasoNomina {
   periodo: string;
+  nominaPeriodoId?: string | null;
   parametrosResumen?: {
     seccionesListas: number;
     seccionesTotal: number;

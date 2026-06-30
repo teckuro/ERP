@@ -831,4 +831,72 @@ describe('NominaCalculoSnapshotRepository', () => {
     const repo = TestBed.inject(NominaCalculoSnapshotRepository);
     await expect(repo.obtenerSnapshotCompletoPorId(1)).rejects.toThrow('No fue posible consultar el resultado guardado');
   });
+
+  it('obtenerSnapshotParametrosBase filtra por nominaPeriodoId', async () => {
+    const baseNominaA = {
+      ...baseRow,
+      id_calculo_periodo: 10,
+      id_nomina_periodo: 'nom-a',
+      version_motor: 'PARAMETROS-BASE-01',
+      estado: 'borrador',
+      activo: true,
+    };
+    const baseNominaB = {
+      ...baseRow,
+      id_calculo_periodo: 11,
+      id_nomina_periodo: 'nom-b',
+      version_motor: 'PARAMETROS-BASE-01',
+      estado: 'borrador',
+      activo: true,
+    };
+    const from = vi.fn(() => ({
+      select: vi.fn(() => ({
+        eq: vi.fn((_col: string, id: string) => ({
+          order: vi.fn(() =>
+            query(id === 'nom-a' ? [baseNominaA] : id === 'nom-b' ? [baseNominaB] : []),
+          ),
+        })),
+      })),
+    }));
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: { from, auth: { getUser: vi.fn() } },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    const snapshotA = await repo.obtenerSnapshotParametrosBase('2026-05', null, 'nom-a');
+    const snapshotB = await repo.obtenerSnapshotParametrosBase('2026-05', null, 'nom-b');
+
+    expect(snapshotA?.idCalculoPeriodo).toBe(10);
+    expect(snapshotB?.idCalculoPeriodo).toBe(11);
+  });
+
+  it('listarSnapshotsNomina consulta por id_nomina_periodo', async () => {
+    const rows = [{ ...baseRow, id_nomina_periodo: 'nom-x' }];
+    const order = vi.fn(() => query(rows));
+    const eq = vi.fn(() => ({ order }));
+    const select = vi.fn(() => ({ eq }));
+    const from = vi.fn(() => ({ select }));
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: { from, auth: { getUser: vi.fn() } },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    const snapshots = await repo.listarSnapshotsNomina('nom-x');
+
+    expect(from).toHaveBeenCalledWith('nomina_calculo_periodo');
+    expect(snapshots).toHaveLength(1);
+    expect(snapshots[0]?.nominaPeriodoId).toBe('nom-x');
+  });
 });

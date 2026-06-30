@@ -46,12 +46,26 @@ function configurarTestBed(): void {
       { provide: Router, useValue: { navigate: vi.fn().mockResolvedValue(true) } },
       {
         provide: NominaParametrosResumenService,
-        useValue: { obtenerResumen: vi.fn().mockResolvedValue(resumenVacio()) },
+        useValue: {
+          obtenerResumen: vi.fn().mockResolvedValue(resumenVacio()),
+          obtenerResumenParaNomina: vi.fn().mockResolvedValue(resumenVacio()),
+        },
       },
       {
         provide: NominaParametrosBaseService,
         useValue: {
-          obtenerEstadoBase: vi.fn().mockResolvedValue(null),
+          obtenerEstadoBasePeriodo: vi.fn().mockResolvedValue({
+            estado: 'pendiente',
+            idCalculoPeriodoBase: null,
+            fechaBaseGuardada: null,
+            comparacion: null,
+          }),
+          obtenerEstadoBaseNomina: vi.fn().mockResolvedValue({
+            estado: 'pendiente',
+            idCalculoPeriodoBase: null,
+            fechaBaseGuardada: null,
+            comparacion: null,
+          }),
           calcularPrevisualizacionBase: vi.fn(),
           resolverRamaAccionPreparacion: vi.fn(),
           origenTrasAccionDiferencias: vi.fn(),

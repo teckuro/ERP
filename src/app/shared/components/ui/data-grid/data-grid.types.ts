@@ -139,3 +139,10 @@ export interface DataGridBulkActionOption {
   confirmTitle?: string;
   confirmMessage?: string;
 }
+
+/** Consulta emitida por `app-data-grid` en modo servidor (F07 dotación). */
+export interface DataGridServerQuery {
+  page: number;
+  pageSize: number;
+  filterValues: Record<string, DataGridFilterValue>;
+}

@@ -31,6 +31,7 @@
 - [`matriz-bloqueos-periodo.md`](./matriz-bloqueos-periodo.md) — matriz transversal de bloqueos por período.
 - [`arquitectura-administrador-generador.md`](./arquitectura-administrador-generador.md) — arquitectura base del Administrador y Generador.
 - [`roadmap-admin-generador-operativo-100.md`](./roadmap-admin-generador-operativo-100.md) — hoja de ruta vigente, dividida en 25 fases ejecutables (F01–F21 más F15b y F18a/b/c/d). Versión documental v2 (refactor 2026-06-11).
+- [`plan-ejecucion-fases-vigente.md`](./plan-ejecucion-fases-vigente.md) — **plan de olas 0–7** post REPAIR (SEG-01 + F06–F21 + pista global). Actualizar al cerrar cada ola.
 
 ### Segregación V1 / V2
 

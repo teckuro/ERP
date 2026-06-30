@@ -13,8 +13,10 @@
 import type {
   DataGridColumn,
   DataGridFilter,
+  DataGridFilterValue,
 } from '../../../shared/components/ui/data-grid/data-grid.types';
 import type {
+  DotacionResumenNomina,
   EstadoTrabajadorNomina,
   FilaTrabajadorNominaResumen,
   FiltroRapidoDotacion,
@@ -67,6 +69,37 @@ export function calcularStatsDotacion(filas: FilaTrabajadorNominaResumen[]): Dot
     }
   }
   return stats;
+}
+
+export function statsDesdeResumenDotacion(resumen: DotacionResumenNomina): DotacionGridStats {
+  return {
+    total: resumen.total,
+    listos: resumen.listos,
+    conAdvertencias: resumen.conAdvertencias,
+    conCriticos: resumen.conCriticos,
+    bloqueados: resumen.bloqueados,
+  };
+}
+
+export function filtroDotacionDesdeGrid(
+  values: Record<string, DataGridFilterValue>,
+): FiltroRapidoDotacion {
+  const filtro: FiltroRapidoDotacion = {};
+  const estado = values['estado'];
+  if (typeof estado === 'string' && estado.trim()) {
+    filtro.estado = estado as EstadoTrabajadorNomina;
+  }
+  const incidencias = values['incidencias'];
+  if (incidencias === 'con') filtro.conIncidencias = true;
+  if (incidencias === 'sin') filtro.conIncidencias = false;
+  const movimientos = values['movimientos'];
+  if (movimientos === 'con') filtro.conMovimientos = true;
+  if (movimientos === 'sin') filtro.conMovimientos = false;
+  const busqueda = values['busqueda'];
+  if (typeof busqueda === 'string' && busqueda.trim()) {
+    filtro.busqueda = busqueda.trim();
+  }
+  return filtro;
 }
 
 export function hayFiltrosActivos(filtro: FiltroRapidoDotacion): boolean {
@@ -210,6 +243,15 @@ export function FILTROS_DOTACION(
   _filas: readonly FilaTrabajadorNominaResumen[],
 ): DataGridFilter<FilaTrabajadorNominaResumen>[] {
   return [
+    {
+      id: 'busqueda',
+      label: 'Buscar',
+      field: 'nombre',
+      type: 'text',
+      operator: 'contains',
+      placeholder: 'Nombre o RUT',
+      predicate: () => true,
+    },
     {
       id: 'estado',
       label: 'Estado',

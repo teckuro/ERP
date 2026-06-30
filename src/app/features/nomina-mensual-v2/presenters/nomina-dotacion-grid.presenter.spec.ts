@@ -7,8 +7,10 @@ import {
   PERSISTENCIA_GRILLA_DOTACION,
   calcularStatsDotacion,
   etiquetaEstadoDotacion,
+  filtroDotacionDesdeGrid,
   hayFiltrosActivos,
   listaEstadosDotacion,
+  statsDesdeResumenDotacion,
 } from './nomina-dotacion-grid.presenter';
 
 function filaEjemplo(
@@ -108,6 +110,40 @@ describe('nomina-dotacion-grid.presenter', () => {
       expect(filtro?.predicate?.(filaEjemplo({ totalMovimientos: 0 }), 'con')).toBe(false);
       expect(filtro?.predicate?.(filaEjemplo({ totalMovimientos: 2 }), 'con')).toBe(true);
       expect(filtro?.predicate?.(filaEjemplo({ totalMovimientos: 0 }), 'sin')).toBe(true);
+    });
+
+    it('filtroDotacionDesdeGrid mapea valores del data-grid al RPC', () => {
+      expect(
+        filtroDotacionDesdeGrid({
+          busqueda: ' pérez ',
+          estado: 'critico',
+          incidencias: 'con',
+          movimientos: 'sin',
+        }),
+      ).toEqual({
+        busqueda: 'pérez',
+        estado: 'critico',
+        conIncidencias: true,
+        conMovimientos: false,
+      });
+    });
+
+    it('statsDesdeResumenDotacion proyecta conteos agregados', () => {
+      expect(
+        statsDesdeResumenDotacion({
+          total: 12,
+          listos: 8,
+          conAdvertencias: 2,
+          conCriticos: 1,
+          bloqueados: 1,
+        }),
+      ).toEqual({
+        total: 12,
+        listos: 8,
+        conAdvertencias: 2,
+        conCriticos: 1,
+        bloqueados: 1,
+      });
     });
   });
 });

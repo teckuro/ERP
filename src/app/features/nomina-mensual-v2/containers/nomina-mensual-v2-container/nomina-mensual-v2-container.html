@@ -65,6 +65,12 @@
         @switch (currentStep()) {
           @case ('parameters') {
             <app-nomina-mensual-v2-paso-parametros
+              [nominaPeriodoId]="nominaPeriodoId()"
+              [periodoNomina]="nominaCargada()?.periodo ?? null"
+              [fechaInicioNomina]="nominaCargada()?.fechaInicio ?? null"
+              [fechaFinNomina]="nominaCargada()?.fechaFin ?? null"
+              [empresaIdNomina]="nominaCargada()?.empresaId ?? null"
+              [tipoNomina]="nominaCargada()?.tipo ?? 'mensual'"
               (avanceSolicitado)="manejarAvanceDesdeParametros($event)"
             />
           }

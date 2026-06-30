@@ -339,6 +339,26 @@ export interface FiltroRapidoDotacion {
   busqueda?: string;
 }
 
+/** Conteos agregados de dotación (RPC F07). */
+export interface DotacionResumenNomina {
+  total: number;
+  listos: number;
+  conAdvertencias: number;
+  conCriticos: number;
+  bloqueados: number;
+}
+
+export interface FiltroTrabajadoresElegiblesNomina {
+  busqueda?: string;
+  soloDisponibles?: boolean;
+}
+
+export interface ResumenTrabajadoresElegiblesNomina {
+  totalActivos: number;
+  elegibles: number;
+  yaEnNomina: number;
+}
+
 export interface PaginacionGrilla {
   page: number;
   pageSize: number;

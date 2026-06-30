@@ -15,6 +15,7 @@ import {
   ORDEN_PASOS_NOMINA,
   indiceMaximoPasoAccesibleEfectivo,
 } from '../containers/nomina-mensual-v2-container/facade/nomina-mensual-v2-navegacion';
+import { buildNominaParametrosContext } from '../rules/nomina-parametros-rango.rules';
 import { NominaParametrosBaseService } from './nomina-parametros-base.service';
 import { NominaParametrosResumenService } from './nomina-parametros-resumen.service';
 
@@ -46,16 +47,28 @@ export class NominaMensualV2SesionService {
     periodo = this.periodoActivo.periodoYm(),
     nominaPeriodoId?: string | null,
   ): Promise<EstadoSesionNominaV2> {
+    const context = nominaPeriodoId
+      ? await this.resolverContextoNomina(nominaPeriodoId)
+      : null;
+
     const [estadoBase, resumen] = await Promise.all([
-      this.parametrosBaseService.obtenerEstadoBasePeriodo(periodo),
-      this.parametrosResumenService.obtenerResumen(periodo),
+      context
+        ? this.parametrosBaseService.obtenerEstadoBaseNomina(context)
+        : this.parametrosBaseService.obtenerEstadoBasePeriodo(periodo),
+      context
+        ? this.parametrosResumenService.obtenerResumenParaNomina(context)
+        : this.parametrosResumenService.obtenerResumen(periodo),
     ]);
 
     const parametrosPreparados = estadoBase.idCalculoPeriodoBase != null;
     let origenBase: OrigenBaseParametrosAlAvanzar | null = null;
 
     if (parametrosPreparados) {
-      const snapshot = await this.snapshotRepository.obtenerSnapshotParametrosBase(periodo);
+      const snapshot = await this.snapshotRepository.obtenerSnapshotParametrosBase(
+        resumen.periodo,
+        context?.idEmpresa ?? null,
+        context?.nominaPeriodoId ?? null,
+      );
       origenBase = snapshot ? resolverOrigenBaseDesdeSnapshot(snapshot) : 'existenteSinDiferencias';
     }
 
@@ -72,6 +85,18 @@ export class NominaMensualV2SesionService {
       contextoTrazabilidad: this.buildContextoTrazabilidad(resumen, estadoBase, origenBase),
       pasoVisitadoSugerido,
     };
+  }
+
+  private async resolverContextoNomina(nominaPeriodoId: string) {
+    try {
+      const cabecera = await this.nominaPeriodoRepository.obtenerCabecera(nominaPeriodoId);
+      if (!cabecera) return null;
+      return buildNominaParametrosContext(cabecera);
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : String(error);
+      console.warn('[NominaMensualV2SesionService] No se pudo resolver contexto de parámetros:', mensaje);
+      return null;
+    }
   }
 
   /**
@@ -99,8 +124,6 @@ export class NominaMensualV2SesionService {
       const indiceVisitado = ORDEN_PASOS_NOMINA.indexOf(visitado);
       if (indiceVisitado < 0) return null;
 
-      // Contenido cliente conocido server-side: máximo paso completado
-      // persistido. Si la nómina nunca completó nada, vale `-1`.
       const indiceMaxCompletado = cabecera.maximoPasoCompletado
         ? ORDEN_PASOS_NOMINA.indexOf(cabecera.maximoPasoCompletado)
         : -1;
@@ -113,9 +136,6 @@ export class NominaMensualV2SesionService {
       if (indiceVisitado <= indiceMaximoAccesibleEfectivo) {
         return visitado;
       }
-      // Visitado quedó fuera de techo: caemos al máximo accesible efectivo
-      // (no al pasoInicial, para no perder contexto cuando el contenido
-      // está adelantado pero el estado retrocedió o viceversa).
       if (indiceMaximoAccesibleEfectivo < 0) return null;
       return ORDEN_PASOS_NOMINA[indiceMaximoAccesibleEfectivo] ?? null;
     } catch (error) {
@@ -132,6 +152,7 @@ export class NominaMensualV2SesionService {
   ): ContextoTrazabilidadPasoNomina {
     return {
       periodo: resumen.periodo,
+      nominaPeriodoId: resumen.nominaPeriodoId ?? null,
       parametrosResumen: {
         seccionesListas: resumen.seccionesListas,
         seccionesTotal: resumen.seccionesTotales,

@@ -91,12 +91,14 @@ describe('NominaMensualV2SesionService - rehidratación de paso visitado', () =>
           provide: NominaParametrosBaseService,
           useValue: {
             obtenerEstadoBasePeriodo: vi.fn().mockResolvedValue(ESTADO_BASE_VACIO),
+            obtenerEstadoBaseNomina: vi.fn().mockResolvedValue(ESTADO_BASE_VACIO),
           },
         },
         {
           provide: NominaParametrosResumenService,
           useValue: {
             obtenerResumen: vi.fn().mockResolvedValue(resumenParametrosMock()),
+            obtenerResumenParaNomina: vi.fn().mockResolvedValue(resumenParametrosMock()),
           },
         },
         {

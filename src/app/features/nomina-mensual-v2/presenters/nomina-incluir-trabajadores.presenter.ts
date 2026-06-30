@@ -11,7 +11,9 @@
 import type {
   DataGridColumn,
   DataGridFilter,
+  DataGridFilterValue,
 } from '../../../shared/components/ui/data-grid/data-grid.types';
+import type { FiltroTrabajadoresElegiblesNomina } from '../../nomina-mensual/models/nomina-periodo.models';
 
 export const PERSISTENCIA_PICKER_TRABAJADORES = 'nomina-v2-picker-trabajadores-v1';
 
@@ -98,6 +100,15 @@ export function FILTROS_INCLUIR_TRABAJADORES(
 ): DataGridFilter<FilaTrabajadorElegible>[] {
   return [
     {
+      id: 'busqueda',
+      label: 'Buscar',
+      field: 'nombre',
+      type: 'text',
+      operator: 'contains',
+      placeholder: 'Nombre, RUT o cargo',
+      predicate: () => true,
+    },
+    {
       id: 'disponibilidad',
       label: 'Disponibilidad',
       field: 'yaEnNomina',
@@ -108,11 +119,20 @@ export function FILTROS_INCLUIR_TRABAJADORES(
         { label: 'Solo elegibles', value: 'no' },
         { label: 'Ya en nómina', value: 'si' },
       ],
-      predicate: (fila, value) => {
-        if (value === 'no') return !fila.yaEnNomina;
-        if (value === 'si') return fila.yaEnNomina;
-        return true;
-      },
+      predicate: () => true,
     },
   ];
+}
+
+export function filtroTrabajadoresElegiblesDesdeGrid(
+  values: Record<string, DataGridFilterValue>,
+): FiltroTrabajadoresElegiblesNomina {
+  const filtro: FiltroTrabajadoresElegiblesNomina = {};
+  const busqueda = values['busqueda'];
+  if (typeof busqueda === 'string' && busqueda.trim()) {
+    filtro.busqueda = busqueda.trim();
+  }
+  const disponibilidad = values['disponibilidad'];
+  if (disponibilidad === 'no') filtro.soloDisponibles = true;
+  return filtro;
 }

@@ -9,6 +9,30 @@
 
 ---
 
+## 2026-06-30 — Generador Nómina V2: F07 dotación escalable (NOM-ADMIN-OPS-F07)
+
+- **Grilla dotación:** `app-data-grid` en modo servidor (50 filas/página); filtros
+  y búsqueda delegados a RPC `listar_dotacion_nomina`.
+- **Conteos:** franja de stats desde `resumen_dotacion_nomina` (sin cargar universo).
+- **Avance:** `puedeAvanzarDotacionResumen` evalúa bloqueos con conteos agregados.
+- **Picker “Agregar trabajadores”:** paginación servidor vía
+  `listar_trabajadores_elegibles_nomina`; ya no carga `EmpleadosService.listar()`.
+- **Data-grid compartido:** inputs `serverSide` + `totalRowCount`; output
+  `serverQueryChange` (reutilizable en otros módulos).
+- **Pendiente F07:** E2E 1000+ trabajadores; selección masiva por universo filtrado completo.
+
+---
+
+## 2026-06-30 — Generador Nómina V2: F06 parámetros por nómina (NOM-ADMIN-OPS-F06)
+
+- **Lógica (sin cambio visual de layout):** paso Parámetros rehidrata desde la nómina
+  cargada (`fechaInicio`/`fechaFin`/`periodo`), no desde el mes global del shell.
+- **Snapshot:** `id_nomina_periodo` en cabecera; base de parámetros scoped por nómina.
+- **Invalidación:** actualizar/reemplazar parámetros invalida cálculo vigente.
+- **Advertencias:** rango parcial o cruce de meses → revisión en resumen (reglas puras).
+
+---
+
 ## 2026-06-30 — Generador Nómina V2: drawer trazabilidad acciones (NOIA-NMV2-REPAIR-12)
 
 - **Drawer:** acciones por evento (Bitácora / Responsable / Control); `aria-modal`;

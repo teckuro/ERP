@@ -10,6 +10,7 @@ import {
   ViewEncapsulation,
   effect,
   inject,
+  input,
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
@@ -37,6 +38,12 @@ import { NominaParametrosBaseAccesoService } from '../../../../services/nomina-p
 import { ayudaAvanceParametrosConBase } from '../../../../rules/nomina-parametros-base-acceso.rules';
 import { NominaParametrosResumenService } from '../../../../services/nomina-parametros-resumen.service';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
+import type { NominaParametrosContext } from '../../../../models/nomina-parametros-context.models';
+import {
+  buildNominaParametrosContext,
+  esContextoParametrosCompleto,
+} from '../../../../rules/nomina-parametros-rango.rules';
+import type { TipoNomina } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 type DonutTonoPresentacion = 'exito' | 'revision' | 'bloqueo' | 'neutral';
 
 type ParametrosCargaOverlayPresentacion = {
@@ -88,6 +95,29 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   private readonly accesoBaseService = inject(NominaParametrosBaseAccesoService);
   private tokenCargaPeriodo = 0;
   private accionPendienteTrasConfirmacionAdmin: (() => void) | null = null;
+
+  readonly nominaPeriodoId = input<string | null>(null);
+  readonly periodoNomina = input<string | null>(null);
+  readonly fechaInicioNomina = input<string | null>(null);
+  readonly fechaFinNomina = input<string | null>(null);
+  readonly empresaIdNomina = input<string | null>(null);
+  readonly tipoNomina = input<TipoNomina>('mensual');
+
+  readonly contextoParametros = computed((): NominaParametrosContext | null => {
+    const id = this.nominaPeriodoId();
+    const periodo = this.periodoNomina();
+    const fechaInicio = this.fechaInicioNomina();
+    const fechaFin = this.fechaFinNomina();
+    if (!id || !periodo || !fechaInicio || !fechaFin) return null;
+    return buildNominaParametrosContext({
+      id,
+      periodo,
+      fechaInicio,
+      fechaFin,
+      empresaId: this.empresaIdNomina() ?? '',
+      tipo: this.tipoNomina(),
+    });
+  });
 
   @Output() avanceSolicitado = new EventEmitter<PayrollStepId>();
   @Output() resumenActualizado = new EventEmitter<void>();
@@ -252,8 +282,12 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
 
   constructor() {
     effect(() => {
-      const periodo = this.periodoActivo.periodoYm();
-      void this.cargarParametrosResumen(periodo);
+      const contexto = this.contextoParametros();
+      if (!contexto) {
+        this.parametrosLoading.set(false);
+        return;
+      }
+      void this.cargarParametrosResumen(contexto);
     });
     effect(() => {
       if (this.parametrosLoading() || this.parametrosValidando()) {
@@ -408,8 +442,9 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
       await this.parametrosBaseService.registrarMantenerBaseConDiferencias(
         modal.idCalculoPeriodoBase,
         modal.resumen,
+        this.contextoParametros(),
       );
-      await this.actualizarEstadoBase(modal.resumen.periodo);
+      await this.actualizarEstadoBase(modal.resumen.periodo, this.contextoParametros());
       this.orquestador.registrarOrigenBaseAlAvanzar(origen, modal.idCalculoPeriodoBase);
       await this.orquestador.recomputarTrazabilidad(false);
       this.continuarHaciaAlcance(modal.resumen);
@@ -456,16 +491,16 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     }
   }
 
-  async cargarParametrosResumen(periodo = this.periodoActivo.periodoYm()): Promise<void> {
+  async cargarParametrosResumen(contexto: NominaParametrosContext): Promise<void> {
     const token = ++this.tokenCargaPeriodo;
     this.parametrosLoading.set(true);
     this.parametrosError.set(null);
     try {
-      const resumen = await this.parametrosResumenService.obtenerResumen(periodo);
+      const resumen = await this.parametrosResumenService.obtenerResumenParaNomina(contexto);
       if (token !== this.tokenCargaPeriodo) return;
       this.parametrosResumen.set(resumen);
       this.actualizarContextoTrazabilidad(resumen);
-      await this.actualizarEstadoBase(resumen.periodo);
+      await this.actualizarEstadoBase(resumen.periodo, contexto);
       if (token !== this.tokenCargaPeriodo) return;
       this.resumenActualizado.emit();
     } catch (error) {
@@ -485,17 +520,21 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   }
 
   private async ejecutarPrepararNomina(): Promise<void> {
-    const periodo = this.periodoActivo.periodoYm();
+    const contexto = this.contextoParametros();
+    if (!esContextoParametrosCompleto(contexto)) {
+      this.parametrosError.set('La nómina aún no está lista para consultar parámetros.');
+      return;
+    }
     this.parametrosValidando.set(true);
     this.parametrosError.set(null);
     this.resumenActualizado.emit();
     try {
-      const resumen = await this.parametrosResumenService.obtenerResumen(periodo);
-      if (resumen.periodo !== this.periodoActivo.periodoYm()) return;
+      const resumen = await this.parametrosResumenService.obtenerResumenParaNomina(contexto);
+      if (this.contextoParametros()?.nominaPeriodoId !== contexto.nominaPeriodoId) return;
       this.parametrosResumen.set(resumen);
       this.actualizarContextoTrazabilidad(resumen);
-      const estadoBase = await this.actualizarEstadoBase(resumen.periodo);
-      if (resumen.periodo !== this.periodoActivo.periodoYm()) return;
+      const estadoBase = await this.actualizarEstadoBase(resumen.periodo, contexto);
+      if (this.contextoParametros()?.nominaPeriodoId !== contexto.nominaPeriodoId) return;
       this.resumenActualizado.emit();
 
       const rama = this.parametrosBaseService.resolverRamaAccionPreparacion(resumen, estadoBase);
@@ -641,9 +680,10 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   }
 
   private interceptarRecargaBaseGuardada(accion: () => void): boolean {
+    const contexto = this.contextoParametros();
     const evaluacion = this.accesoBaseService.evaluarIntentoRecarga(
       this.hayBaseParametrosGuardada(),
-      this.periodoActivo.periodoYm(),
+      contexto?.periodo ?? this.periodoActivo.periodoYm(),
     );
     if (!this.accesoBaseService.debeInterceptarRecarga(evaluacion)) {
       return false;
@@ -662,10 +702,11 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     resumen: NominaParametrosResumen,
     origen: OrigenBaseParametrosAlAvanzar,
   ): Promise<void> {
+    const contexto = this.contextoParametros();
     const guardado = origen === 'actualizadaExplicitamente'
-      ? await this.parametrosBaseService.actualizarSnapshotParametrosBase(resumen)
-      : await this.parametrosBaseService.guardarSnapshotParametrosBase(resumen, origen);
-    await this.actualizarEstadoBase(resumen.periodo);
+      ? await this.parametrosBaseService.actualizarSnapshotParametrosBase(resumen, contexto)
+      : await this.parametrosBaseService.guardarSnapshotParametrosBase(resumen, origen, contexto);
+    await this.actualizarEstadoBase(resumen.periodo, contexto);
     this.orquestador.registrarOrigenBaseAlAvanzar(origen, guardado.idCalculoPeriodoBase);
     await this.orquestador.recomputarTrazabilidad(false);
     this.continuarHaciaAlcance(resumen);
@@ -677,15 +718,19 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
     this.avanceSolicitado.emit('dotacion');
   }
 
-  private async actualizarEstadoBase(periodo: string) {
-    const estado = await this.parametrosBaseService.obtenerEstadoBasePeriodo(periodo);
+  private async actualizarEstadoBase(periodo: string, contexto: NominaParametrosContext | null = this.contextoParametros()) {
+    const estado = contexto
+      ? await this.parametrosBaseService.obtenerEstadoBaseNomina(contexto)
+      : await this.parametrosBaseService.obtenerEstadoBasePeriodo(periodo);
     this.orquestador.estadoParametrosBase.set(estado);
     return estado;
   }
 
   private actualizarContextoTrazabilidad(resumen: NominaParametrosResumen): void {
+    const contexto = this.contextoParametros();
     this.orquestador.actualizarContextoTrazabilidad({
       periodo: resumen.periodo,
+      nominaPeriodoId: contexto?.nominaPeriodoId ?? resumen.nominaPeriodoId ?? null,
       parametrosResumen: {
         seccionesListas: resumen.seccionesListas,
         seccionesTotal: resumen.seccionesTotales,

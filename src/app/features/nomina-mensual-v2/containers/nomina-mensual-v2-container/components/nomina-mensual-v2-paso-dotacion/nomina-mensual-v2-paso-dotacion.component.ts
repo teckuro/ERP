@@ -1,16 +1,9 @@
 /**
- * Paso Dotación — F3 fusion (F3e-2).
+ * Paso Dotación — F07 paginación servidor.
  *
- * Unifica los antiguos pasos "Alcance" y "Empleados" en una sola grilla operativa
- * sobre la nómina identificada por `nominaPeriodoId`. Se apoya en:
- *
- * - `NominaPeriodoService.filtrarDotacion` para listar trabajadores (paginación cliente).
- * - `NominaPeriodoService.previsualizarAccionMasiva` para validar acciones masivas.
- * - `NominaPeriodoService.obtenerDetalleTrabajador` para el panel lateral.
- *
- * La grilla actual es HTML/CSS — no integra `app-data-grid` aún. La integración con
- * el data-grid productivo y la administración de segmentos se completan en una
- * iteración posterior (declarado en `peticiones-estilos.md`).
+ * - `NominaPeriodoService.filtrarDotacion` + `obtenerResumenDotacion` (RPC).
+ * - `app-data-grid` en modo `serverSide` (50 filas/página).
+ * - Conteos agregados sin cargar todas las filas.
  */
 
 import { CommonModule, DOCUMENT } from '@angular/common';
@@ -33,9 +26,11 @@ import {
   DataGridComponent,
   type DataGridBulkActionEvent,
   type DataGridBulkActionOption,
+  type DataGridServerQuery,
 } from '../../../../../../shared/components/ui/data-grid';
 import type {
   DetalleTrabajadorNomina,
+  DotacionResumenNomina,
   FilaTrabajadorNominaResumen,
   FiltroRapidoDotacion,
 } from '../../../../../nomina-mensual/models/nomina-periodo.models';
@@ -44,10 +39,11 @@ import {
   COLUMNAS_DOTACION,
   FILTROS_DOTACION,
   PERSISTENCIA_GRILLA_DOTACION,
-  calcularStatsDotacion,
   etiquetaEstadoDotacion,
+  filtroDotacionDesdeGrid,
+  statsDesdeResumenDotacion,
 } from '../../../../presenters/nomina-dotacion-grid.presenter';
-import { puedeAvanzarDotacion } from '../../../../rules/nomina-dotacion.rules';
+import { puedeAvanzarDotacionResumen } from '../../../../rules/nomina-dotacion.rules';
 import type {
   PasoNominaPort,
   ResultadoAvancePaso,
@@ -58,6 +54,14 @@ interface VistaDotacion {
   filas: FilaTrabajadorNominaResumen[];
   total: number;
 }
+
+const RESUMEN_VACIO: DotacionResumenNomina = {
+  total: 0,
+  listos: 0,
+  conAdvertencias: 0,
+  conCriticos: 0,
+  bloqueados: 0,
+};
 
 @Component({
   selector: 'app-nomina-mensual-v2-paso-dotacion',
@@ -87,14 +91,15 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
   readonly loading = signal(false);
   readonly errorMensaje = signal<string | null>(null);
   readonly vista = signal<VistaDotacion>({ filas: [], total: 0 });
+  readonly resumen = signal<DotacionResumenNomina>(RESUMEN_VACIO);
   readonly filtro = signal<FiltroRapidoDotacion>({});
+  readonly pagina = signal(1);
+  readonly pageSize = signal(50);
   readonly trabajadorSeleccionado = signal<string | null>(null);
   readonly detalleTrabajador = signal<DetalleTrabajadorNomina | null>(null);
   readonly detalleTrabajadorIdentidad = signal<{ nombre: string; rut: string } | null>(null);
   readonly detalleLoading = signal(false);
   readonly confirmando = signal(false);
-  readonly pagina = signal(1);
-  readonly pageSize = 200;
   readonly aplicandoMasiva = signal(false);
   readonly pickerAbierto = signal(false);
   readonly aplicandoInclusion = signal(false);
@@ -113,22 +118,25 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
     },
   ];
 
-  readonly stats = computed(() => calcularStatsDotacion(this.vista().filas));
-  readonly filtros = computed(() => FILTROS_DOTACION(this.vista().filas));
-  readonly evaluacionAvance = computed(() => puedeAvanzarDotacion(this.vista().filas));
+  readonly stats = computed(() => statsDesdeResumenDotacion(this.resumen()));
+  readonly filtros = computed(() => FILTROS_DOTACION([]));
+  readonly evaluacionAvance = computed(() => puedeAvanzarDotacionResumen(this.resumen()));
   readonly puedeAvanzar = computed(() => this.evaluacionAvance().puede);
   readonly motivoBloqueo = computed(() => this.evaluacionAvance().motivo ?? null);
-  readonly idsActualesEnNomina = computed(() =>
-    this.vista().filas.map((fila) => fila.trabajadorId),
-  );
-  readonly totalPaginas = computed(() => Math.max(1, Math.ceil(this.vista().total / this.pageSize)));
 
   etiquetaEstado = etiquetaEstadoDotacion;
 
   constructor() {
     effect(() => {
       const id = this.nominaPeriodoId();
-      if (id) void this.cargar();
+      if (id) {
+        this.pagina.set(1);
+        this.filtro.set({});
+        void this.cargar(true);
+      } else {
+        this.vista.set({ filas: [], total: 0 });
+        this.resumen.set(RESUMEN_VACIO);
+      }
     });
     effect(() => {
       const trabajadorId = this.trabajadorDetalleInicial();
@@ -138,32 +146,48 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
     });
   }
 
-  async cargar(): Promise<void> {
+  async cargar(refrescarResumen = false): Promise<void> {
     const id = this.nominaPeriodoId();
     if (!id) {
       this.vista.set({ filas: [], total: 0 });
+      this.resumen.set(RESUMEN_VACIO);
       return;
     }
     this.loading.set(true);
     this.errorMensaje.set(null);
     try {
-      // Se carga la primera página con un tamaño grande (`pageSize=200`) porque
-      // la búsqueda, ordenamiento y filtros se resuelven en `app-data-grid`. Si
-      // el listado supera ese tamaño, se paginará del lado servidor en una fase
-      // posterior (registrar en peticiones-estilos.md).
-      const { filas, total } = await this.servicio.filtrarDotacion(id, this.filtro(), {
+      const paginacion = {
         page: this.pagina(),
-        pageSize: this.pageSize,
+        pageSize: this.pageSize(),
         total: 0,
-      });
-      this.vista.set({ filas, total });
+      };
+      const [filasResult, resumenResult] = await Promise.all([
+        this.servicio.filtrarDotacion(id, this.filtro(), paginacion),
+        refrescarResumen
+          ? this.servicio.obtenerResumenDotacion(id)
+          : Promise.resolve(this.resumen()),
+      ]);
+      this.vista.set(filasResult);
+      if (refrescarResumen) {
+        this.resumen.set(resumenResult);
+      }
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido';
       this.errorMensaje.set(`No fue posible cargar la dotación: ${mensaje}`);
       this.vista.set({ filas: [], total: 0 });
+      if (refrescarResumen) {
+        this.resumen.set(RESUMEN_VACIO);
+      }
     } finally {
       this.loading.set(false);
     }
+  }
+
+  async manejarConsultaServidor(consulta: DataGridServerQuery): Promise<void> {
+    this.pagina.set(consulta.page);
+    this.pageSize.set(consulta.pageSize);
+    this.filtro.set(filtroDotacionDesdeGrid(consulta.filterValues));
+    await this.cargar(false);
   }
 
   trackFila = (_index: number, fila: FilaTrabajadorNominaResumen) => fila.trabajadorId;
@@ -191,7 +215,7 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
         return;
       }
       await this.servicio.aplicarAccionMasiva(id, ids, preview.accion);
-      await this.cargar();
+      await this.cargar(true);
     } catch (error) {
       this.errorMensaje.set(
         error instanceof Error ? error.message : 'No fue posible aplicar la acción.',
@@ -222,7 +246,7 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
     try {
       await this.servicio.agregarTrabajadoresANomina(id, trabajadorIds);
       this.pickerAbierto.set(false);
-      await this.cargar();
+      await this.cargar(true);
     } catch (error) {
       this.errorMensaje.set(
         error instanceof Error
@@ -241,7 +265,6 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
     this.detalleTrabajadorIdentidad.set(
       fila ? { nombre: fila.nombre, rut: fila.rut } : null,
     );
-    // Tras el render del aside, mover el foco a su contenedor (tabindex=-1)
     queueMicrotask(() => this.detalleAsideRef?.nativeElement?.focus());
 
     const id = this.nominaPeriodoId();
@@ -269,12 +292,6 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
     }
   }
 
-  /**
-   * Diagnóstico puro de "completitud" del paso. Lo consultan el CTA del shell
-   * y el stepper para deshabilitarse con razón visible antes del click.
-   * Refleja las mismas precondiciones que evalúa `avanzar()` antes de
-   * ejecutar `confirmarDotacion`, pero sin side-effects.
-   */
   puedeContinuar(): ResultadoAvancePaso {
     if (this.loading()) {
       return { ok: false, razon: 'Cargando la dotación.' };
@@ -294,10 +311,6 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
     return { ok: true };
   }
 
-  /**
-   * Comando único de avance (AG-NAV-03). Confirma la dotación; el container
-   * navega según el resultado de `ejecutarAvancePaso`.
-   */
   async avanzar(): Promise<ResultadoAvancePaso> {
     const diagnostico = this.puedeContinuar();
     if (!diagnostico.ok) return diagnostico;

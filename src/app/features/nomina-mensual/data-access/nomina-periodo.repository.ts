@@ -25,10 +25,13 @@ import type {
   NominaPeriodo,
   SegmentoNomina,
   SegmentoNominaNuevo,
+  DotacionResumenNomina,
   EstadoTrabajadorNomina,
   FilaTrabajadorNominaResumen,
   FiltroRapidoDotacion,
+  FiltroTrabajadoresElegiblesNomina,
   PaginacionGrilla,
+  ResumenTrabajadoresElegiblesNomina,
 } from '../models/nomina-periodo.models';
 import type {
   ConfirmarCreacionRequest,
@@ -444,6 +447,73 @@ export class NominaPeriodoRepository {
         tieneDatosBancarios: true,
         tieneDatosPrevisionales: true,
       })),
+    };
+  }
+
+  async obtenerResumenDotacion(nominaPeriodoId: string): Promise<DotacionResumenNomina> {
+    const { data, error } = await this.supabase.rpc('resumen_dotacion_nomina', {
+      p_nomina_id: nominaPeriodoId,
+    });
+    throwIfError(error, 'obtenerResumenDotacion');
+    const row = (data ?? [])[0];
+    return {
+      total: Number(row?.total ?? 0),
+      listos: Number(row?.listos ?? 0),
+      conAdvertencias: Number(row?.con_advertencias ?? 0),
+      conCriticos: Number(row?.con_criticos ?? 0),
+      bloqueados: Number(row?.bloqueados ?? 0),
+    };
+  }
+
+  async listarTrabajadoresElegiblesNomina(
+    nominaPeriodoId: string,
+    filtro: FiltroTrabajadoresElegiblesNomina,
+    paginacion: PaginacionGrilla,
+  ): Promise<{
+    filas: Array<{
+      id: string;
+      nombre: string;
+      rut: string;
+      cargo: string;
+      departamento: string;
+      yaEnNomina: boolean;
+    }>;
+    total: number;
+  }> {
+    const { data, error } = await this.supabase.rpc('listar_trabajadores_elegibles_nomina', {
+      p_nomina_id: nominaPeriodoId,
+      p_page: paginacion.page,
+      p_page_size: paginacion.pageSize,
+      p_busqueda: filtro.busqueda ?? undefined,
+      p_solo_disponibles: filtro.soloDisponibles ?? undefined,
+    });
+    throwIfError(error, 'listarTrabajadoresElegiblesNomina');
+    const rows = data ?? [];
+    return {
+      total: Number(rows[0]?.total_count ?? 0),
+      filas: rows.map((row) => ({
+        id: String(row.trabajador_id),
+        nombre: row.nombre,
+        rut: row.rut,
+        cargo: row.cargo,
+        departamento: row.departamento,
+        yaEnNomina: Boolean(row.ya_en_nomina),
+      })),
+    };
+  }
+
+  async obtenerResumenTrabajadoresElegibles(
+    nominaPeriodoId: string,
+  ): Promise<ResumenTrabajadoresElegiblesNomina> {
+    const { data, error } = await this.supabase.rpc('resumen_trabajadores_elegibles_nomina', {
+      p_nomina_id: nominaPeriodoId,
+    });
+    throwIfError(error, 'obtenerResumenTrabajadoresElegibles');
+    const row = (data ?? [])[0];
+    return {
+      totalActivos: Number(row?.total_activos ?? 0),
+      elegibles: Number(row?.elegibles ?? 0),
+      yaEnNomina: Number(row?.ya_en_nomina ?? 0),
     };
   }
 
