@@ -2848,3 +2848,11 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **Validación**: pie alineado a Dotación/Movimientos/Cálculo — hint de avance vía shell cuando no hay bloqueos críticos.
 - **Tests**: suite `nomina-mensual-v2` en verde tras el podado.
 - **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-06-30 - NOIA-NMV2-REPAIR-06: poda CSS demo del container
+
+- **`nomina-mensual-v2-container.css`**: reescrito conservando solo shell activo (~460 líneas vs ~2 400): layout page/frame, hints, handoff, empty state, drawer trazabilidad, utilidades `text-link`/`icon-btn`.
+- **Eliminado** bloque demo V10.1 (`.surface-card`, `.toolbar-card`, `.alert-banner`, KPIs, tablas demo, donuts, parameter-cards, media queries huérfanas).
+- **Stepper**: estados `blocked` / `warning` / `advance-blocked` movidos a `nomina-mensual-v2-stepper.component.css` (ownership del componente).
+- **Tests**: suite `nomina-mensual-v2` en verde tras la poda.
+- **Sin tocar**: estilos globales, `visual-system.css` de pasos productivos, SQL, motor.

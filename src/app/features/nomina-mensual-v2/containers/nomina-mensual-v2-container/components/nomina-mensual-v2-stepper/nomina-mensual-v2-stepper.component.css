@@ -359,6 +359,25 @@
   color: #94a3b8;
 }
 
+.nmv2-page .nomina-workflow-header .step.nomina-step.nomina-step--blocked .step-number {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.nmv2-page .nomina-workflow-header .step.nomina-step.nomina-step--advance-blocked {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.nmv2-page .nomina-workflow-header .step.nomina-step.nomina-step--advance-blocked .step-copy small {
+  color: #94a3b8;
+}
+
+.nmv2-page .nomina-workflow-header .step.nomina-step.nomina-step--warning .step-number {
+  background: #fef3c7;
+  color: #b45309;
+}
+
 @media (max-width: 760px) {
   .nmv2-page .nomina-workflow-header.nmv2-stepper-card {
     grid-template-columns: 44px minmax(0, 1fr) 44px;
