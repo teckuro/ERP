@@ -21,7 +21,6 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/message-box.component';
 import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 
@@ -38,6 +37,7 @@ import type {
 import {
   MENSAJE_CALCULO_NO_VIGENTE,
   RAZON_CIERRE_MODAL_PENDIENTE,
+  esCalculoNoVigente,
 } from '../../facade/nomina-mensual-v2-navegacion';
 import type { NominaCabeceraCambiadaEvent } from '../../../../models/nomina-cabecera-cambiada.models';
 
@@ -58,7 +58,6 @@ interface ChecklistItem {
 })
 export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   private readonly servicio = inject(NominaPeriodoService);
-  private readonly router = inject(Router);
 
   readonly estadoLabel = estadoNominaToLabel;
 
@@ -126,10 +125,7 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
    * posteriores. Replica el banner CAL-INV-05 introducido en el paso Cálculo
    * para que la advertencia persista hasta que se recalcule.
    */
-  readonly calculoNoVigente = computed(() => {
-    const ev = this.nomina()?.evidenciaCalculo;
-    return ev != null && ev.versionCalculo > 0 && ev.calculoVigente === false;
-  });
+  readonly calculoNoVigente = computed(() => esCalculoNoVigente(this.nomina()?.evidenciaCalculo));
 
   readonly versionCalculo = computed(() => this.nomina()?.evidenciaCalculo?.versionCalculo ?? 0);
   readonly mensajeCalculoNoVigente = MENSAJE_CALCULO_NO_VIGENTE;
@@ -261,9 +257,5 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
     } finally {
       this.ejecutando.set(false);
     }
-  }
-
-  volverAdministrador(): void {
-    void this.router.navigate(['/remuneraciones/nominas']);
   }
 }

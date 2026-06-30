@@ -17,6 +17,16 @@ export type PayrollStepId =
   | 'validation'
   | 'closure';
 
+/** Orden canónico de pasos del Generador V2 (única fuente para navegación y persistencia). */
+export const ORDEN_PASOS_NOMINA: readonly PayrollStepId[] = [
+  'parameters',
+  'dotacion',
+  'movements',
+  'calculation',
+  'validation',
+  'closure',
+] as const;
+
 export type TipoAlcanceNomina =
   | 'empresaCompleta'
   | 'grupo'

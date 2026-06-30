@@ -1,22 +1,18 @@
 import { payrollSteps } from '../../../data/nomina-mensual-v2.mock';
 import type { PayrollStepId, PayrollStepStatus } from '../../../models/nomina-mensual-v2.models';
+import { ORDEN_PASOS_NOMINA } from '../../../models/nomina-mensual-v2.models';
 import type {
   EstadoNomina,
+  EvidenciaCalculoNomina,
   NominaPeriodo,
 } from '../../../../nomina-mensual/models/nomina-periodo.models';
+
+export { ORDEN_PASOS_NOMINA };
 
 /**
  * Orden de pasos del Generador definitivo (NOM-REBUILD-NOMINA-MENSUAL-01 / F3 fusion).
  * Reemplaza el set de 8 pasos por 6 pasos.
  */
-export const ORDEN_PASOS_NOMINA: PayrollStepId[] = [
-  'parameters',
-  'dotacion',
-  'movements',
-  'calculation',
-  'validation',
-  'closure',
-];
 
 /**
  * Resultado tipado del comando único de avance por paso (AG-NAV-03).
@@ -46,6 +42,24 @@ export function pasoExcluidoAutoPersistenciaCompletado(paso: PayrollStepId): boo
 
 export const MENSAJE_CALCULO_NO_VIGENTE =
   'El cálculo dejó de ser vigente por cambios posteriores en dotación o movimientos. Vuelve al paso Cálculo y recalcula para continuar.';
+
+type FuenteCalculoVigencia = Pick<EvidenciaCalculoNomina, 'versionCalculo' | 'calculoVigente'> | {
+  versionCalculo?: number;
+  calculoVigente?: boolean | null;
+};
+
+/**
+ * Regla única CAL-INV-05: el banner/stepper warning aplica cuando hubo un
+ * cálculo previo (`versionCalculo > 0`) que dejó de ser vigente. Si no hay
+ * versión (p. ej. resumen de validación), confía en `calculoVigente === false`.
+ */
+export function esCalculoNoVigente(fuente: FuenteCalculoVigencia | null | undefined): boolean {
+  if (!fuente || fuente.calculoVigente !== false) return false;
+  if (fuente.versionCalculo != null) {
+    return fuente.versionCalculo > 0;
+  }
+  return true;
+}
 
 /**
  * Contrato que cada paso del generador debe cumplir para que el CTA del shell
@@ -198,21 +212,21 @@ export function indiceUltimoPasoCompletadoPorEstado(estado: EstadoNomina | null)
     case 'borrador':
       return -1;
     case 'dotacion_generada':
-      return 0;
+      return ORDEN_PASOS_NOMINA.indexOf('parameters');
     case 'en_revision':
-      return 1;
+      return ORDEN_PASOS_NOMINA.indexOf('dotacion');
     case 'calculada':
-      return 2;
+      return ORDEN_PASOS_NOMINA.indexOf('calculation');
     case 'validada':
-      return 3;
+      return ORDEN_PASOS_NOMINA.indexOf('calculation');
     case 'aprobada':
-      return 4;
+      return ORDEN_PASOS_NOMINA.indexOf('validation');
     case 'liquidada':
-      return 4;
+      return ORDEN_PASOS_NOMINA.indexOf('validation');
     case 'cerrada':
-      return 5;
+      return ORDEN_PASOS_NOMINA.indexOf('closure');
     case 'reabierta':
-      return 4;
+      return ORDEN_PASOS_NOMINA.indexOf('validation');
     case 'anulada':
       return -1;
   }
@@ -336,8 +350,11 @@ export function obtenerEstadoPaso(
   const indicePaso = ORDEN_PASOS_NOMINA.indexOf(stepId);
   const ultimoCompletado = indiceUltimoPasoCompletado(nomina);
   if (indicePaso > ultimoCompletado) return 'pending';
-  if (stepId === 'calculation' && !(nomina?.evidenciaCalculo?.calculoVigente ?? false)) {
-    return 'pending';
+  if (stepId === 'calculation') {
+    const ev = nomina?.evidenciaCalculo;
+    if (!(ev?.calculoVigente ?? false)) {
+      return esCalculoNoVigente(ev) ? 'warning' : 'pending';
+    }
   }
   return 'completed';
 }

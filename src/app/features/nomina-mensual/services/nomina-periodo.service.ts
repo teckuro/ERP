@@ -61,10 +61,8 @@ import type {
   MovimientoRecurrente,
   PreviewAccionMasivaTrabajadores,
 } from '../models/movimiento-nomina.models';
-import type {
-  PayrollStepId,
-  ResultadoAlcanceNomina,
-} from '../../nomina-mensual-v2/models/nomina-mensual-v2.models';
+import type { PayrollStepId, ResultadoAlcanceNomina } from '../../nomina-mensual-v2/models/nomina-mensual-v2.models';
+import { ORDEN_PASOS_NOMINA } from '../../nomina-mensual-v2/models/nomina-mensual-v2.models';
 import { EmpleadosService } from '../../empleados/services/empleados.service';
 import {
   estadoNominaBloqueaEdicion,
@@ -120,15 +118,6 @@ export class NominaPeriodoService {
    * ida-vuelta innecesaria).
    */
   private readonly ultimoPasoCompletadoRegistrado = new Map<string, PayrollStepId>();
-
-  private readonly ORDEN_PASOS_PAYROLL: readonly PayrollStepId[] = [
-    'parameters',
-    'dotacion',
-    'movements',
-    'calculation',
-    'validation',
-    'closure',
-  ];
 
   readonly resumenes = computed(() => this.resumenesState());
   readonly cargando = computed(() => this.cargandoState());
@@ -298,12 +287,12 @@ export class NominaPeriodoService {
   async registrarPasoCompletado(nominaPeriodoId: string, paso: PayrollStepId): Promise<void> {
     if (!nominaPeriodoId || !paso) return;
 
-    const indiceNuevo = this.ORDEN_PASOS_PAYROLL.indexOf(paso);
+    const indiceNuevo = ORDEN_PASOS_NOMINA.indexOf(paso);
     if (indiceNuevo < 0) return;
 
     const previo = this.ultimoPasoCompletadoRegistrado.get(nominaPeriodoId);
     if (previo) {
-      const indicePrevio = this.ORDEN_PASOS_PAYROLL.indexOf(previo);
+      const indicePrevio = ORDEN_PASOS_NOMINA.indexOf(previo);
       if (indiceNuevo <= indicePrevio) return;
     }
 

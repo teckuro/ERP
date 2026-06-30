@@ -66,7 +66,7 @@ import type {
   PasoNominaPort,
   ResultadoAvancePaso,
 } from '../../facade/nomina-mensual-v2-navegacion';
-import { MENSAJE_CALCULO_NO_VIGENTE } from '../../facade/nomina-mensual-v2-navegacion';
+import { MENSAJE_CALCULO_NO_VIGENTE, esCalculoNoVigente } from '../../facade/nomina-mensual-v2-navegacion';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 import { NominaMensualV2TrazabilidadService } from '../../../../services/nomina-mensual-v2-trazabilidad.service';
 
@@ -122,10 +122,7 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
    * vigente por cambios posteriores (dotación/movimientos). Activa el banner
    * de advertencia replicado en Validación y Cierre (CAL-INV-05).
    */
-  readonly calculoNoVigente = computed(() => {
-    const ev = this.nomina()?.evidenciaCalculo;
-    return ev != null && ev.versionCalculo > 0 && ev.calculoVigente === false;
-  });
+  readonly calculoNoVigente = computed(() => esCalculoNoVigente(this.nomina()?.evidenciaCalculo));
 
   readonly versionCalculo = computed(() => this.nomina()?.evidenciaCalculo?.versionCalculo ?? 0);
 

@@ -29,7 +29,7 @@ import type {
   PasoNominaPort,
   ResultadoAvancePaso,
 } from '../../facade/nomina-mensual-v2-navegacion';
-import { MENSAJE_CALCULO_NO_VIGENTE } from '../../facade/nomina-mensual-v2-navegacion';
+import { MENSAJE_CALCULO_NO_VIGENTE, esCalculoNoVigente } from '../../facade/nomina-mensual-v2-navegacion';
 
 type FiltroSeveridad = 'todas' | 'critica' | 'advertencia';
 
@@ -93,7 +93,9 @@ export class NominaMensualV2PasoValidacionComponent implements PasoNominaPort {
    * ser vigente. Activa la misma banda warning que Cálculo y Cierre
    * (CAL-INV-05).
    */
-  readonly calculoNoVigente = computed(() => this.resumen()?.calculoVigente === false);
+  readonly calculoNoVigente = computed(() =>
+    esCalculoNoVigente({ calculoVigente: this.resumen()?.calculoVigente }),
+  );
 
   constructor() {
     effect(() => {

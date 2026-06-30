@@ -63,10 +63,6 @@
           placeholder="Ej.: cierre del período mayo, sin observaciones"
         />
       </label>
-      <p class="paso-cierre__hint">
-        Para cerrar la nómina usa el botón principal del shell. La acción abrirá
-        una confirmación con el resumen de consecuencias.
-      </p>
     </section>
   } @else {
     <section class="paso-cierre__reopen">
@@ -76,10 +72,24 @@
     </section>
   }
 
-  <footer class="paso-cierre__footer">
-    <button type="button" class="paso-cierre__btn" (click)="volverAdministrador()">
-      Volver al administrador de nóminas
-    </button>
+  <footer class="paso-cierre__footer" aria-live="polite">
+    @if (cerrada()) {
+      <span class="paso-cierre__footer-hint">
+        Nómina cerrada. Para volver a editar, usa Reabrir nómina arriba.
+      </span>
+    } @else if (calculoNoVigente()) {
+      <span class="paso-cierre__footer-hint is-warning">
+        Recalcula antes de cerrar. La acción principal del shell quedará bloqueada hasta tener cálculo vigente.
+      </span>
+    } @else if (todoCumplido()) {
+      <span class="paso-cierre__footer-hint">
+        Checklist lista. Para cerrar, usa la acción principal del shell.
+      </span>
+    } @else {
+      <span class="paso-cierre__footer-hint is-warning">
+        Completa los ítems pendientes de la checklist antes de cerrar.
+      </span>
+    }
   </footer>
 </section>
 

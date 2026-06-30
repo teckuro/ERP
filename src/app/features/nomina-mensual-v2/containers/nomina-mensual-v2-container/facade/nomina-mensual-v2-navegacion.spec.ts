@@ -5,6 +5,7 @@ import { crearNomina } from '../../../../nomina-mensual/models/nomina-periodo.mo
 import {
   ORDEN_PASOS_NOMINA,
   PASOS_CONGELADOS_V11,
+  esCalculoNoVigente,
   ejecutarAvancePaso,
   esPasoCongelado,
   esRetrocesoAPaso,
@@ -134,45 +135,42 @@ describe('indiceUltimoPasoCompletado / obtenerEstadoPaso desde evidencia (AG-NAV
 
   it('estado calculada con cálculo vigente: calculation queda completed', () => {
     const n = nominaConEstado('calculada', true);
-    expect(indiceUltimoPasoCompletado(n)).toBe(2);
+    expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('calculation'));
     expect(obtenerEstadoPaso('movements', 'validation', n)).toBe('completed');
-    expect(obtenerEstadoPaso('calculation', 'validation', n)).toBe('pending');
-    // Excepción CAL-INV-05: calculation requiere ÍNDICE>=propio Y calculoVigente.
-    // En `calculada` (índice 2 == calculation), no es <= 2 - 1, así que pending.
-    // La excepción la observamos mejor con `validada` (índice 3) más abajo.
+    expect(obtenerEstadoPaso('calculation', 'validation', n)).toBe('completed');
   });
 
   it('estado validada con cálculo vigente: calculation queda completed; validation pending', () => {
     const n = nominaConEstado('validada', true);
-    expect(indiceUltimoPasoCompletado(n)).toBe(3);
+    expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('calculation'));
     expect(obtenerEstadoPaso('calculation', 'closure', n)).toBe('completed');
     // validada significa "cálculo OK, validación en curso": validation aún no
     // está completa (se completa al aprobar).
     expect(obtenerEstadoPaso('validation', 'closure', n)).toBe('pending');
   });
 
-  it('estado validada con cálculo NO vigente: calculation vuelve a pending (excepción CAL-INV-05)', () => {
+  it('estado validada con cálculo NO vigente: calculation queda warning (CAL-INV-05)', () => {
     const n = nominaConEstado('validada', false);
-    expect(obtenerEstadoPaso('calculation', 'closure', n)).toBe('pending');
+    expect(obtenerEstadoPaso('calculation', 'closure', n)).toBe('warning');
   });
 
   it('estado aprobada: validation queda completed, closure pending', () => {
     const n = nominaConEstado('aprobada', true);
-    expect(indiceUltimoPasoCompletado(n)).toBe(4);
+    expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('validation'));
     expect(obtenerEstadoPaso('validation', 'closure', n)).toBe('completed');
     expect(obtenerEstadoPaso('closure', 'closure', n)).toBe('active');
   });
 
   it('estado liquidada: validation queda completed y closure pendiente', () => {
     const n = nominaConEstado('liquidada', true);
-    expect(indiceUltimoPasoCompletado(n)).toBe(4);
+    expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('validation'));
     expect(obtenerEstadoPaso('validation', 'closure', n)).toBe('completed');
     expect(obtenerEstadoPaso('closure', 'parameters', n)).toBe('pending');
   });
 
   it('estado cerrada: todos los pasos quedan completed', () => {
     const n = nominaConEstado('cerrada', true);
-    expect(indiceUltimoPasoCompletado(n)).toBe(5);
+    expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('closure'));
     for (const stepId of ORDEN_PASOS_NOMINA) {
       if (stepId === 'closure') {
         expect(obtenerEstadoPaso(stepId, 'closure', n)).toBe('active');
@@ -184,7 +182,7 @@ describe('indiceUltimoPasoCompletado / obtenerEstadoPaso desde evidencia (AG-NAV
 
   it('estado reabierta: closure vuelve a pending (cierre deshecho)', () => {
     const n = nominaConEstado('reabierta', true);
-    expect(indiceUltimoPasoCompletado(n)).toBe(4);
+    expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('validation'));
     expect(obtenerEstadoPaso('validation', 'parameters', n)).toBe('completed');
     expect(obtenerEstadoPaso('closure', 'parameters', n)).toBe('pending');
   });
@@ -385,5 +383,24 @@ describe('tooltipPasoNoAccesible / obtenerEtiquetaBrevePaso', () => {
 
   it('tooltipPasoNoAccesible para el primer paso devuelve mensaje genérico', () => {
     expect(tooltipPasoNoAccesible('parameters')).toBe('Completa el paso actual para continuar.');
+  });
+});
+
+describe('esCalculoNoVigente (CAL-INV-05)', () => {
+  it('no activa sin evidencia ni resumen', () => {
+    expect(esCalculoNoVigente(null)).toBe(false);
+    expect(esCalculoNoVigente(undefined)).toBe(false);
+  });
+
+  it('no activa con versionCalculo 0 aunque calculoVigente sea false', () => {
+    expect(esCalculoNoVigente({ versionCalculo: 0, calculoVigente: false })).toBe(false);
+  });
+
+  it('activa con versionCalculo > 0 y calculoVigente false', () => {
+    expect(esCalculoNoVigente({ versionCalculo: 2, calculoVigente: false })).toBe(true);
+  });
+
+  it('activa desde resumen sin versionCalculo cuando calculoVigente es false', () => {
+    expect(esCalculoNoVigente({ calculoVigente: false })).toBe(true);
   });
 });

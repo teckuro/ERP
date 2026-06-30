@@ -9,6 +9,16 @@
 
 ---
 
+## 2026-06-30 — Generador Nómina V2: consistencia P2 flujos (NOIA-NMV2-REPAIR-09)
+
+- **`esCalculoNoVigente`:** regla CAL-INV-05 compartida en Cálculo, Validación y Cierre.
+- **`ORDEN_PASOS_NOMINA`:** fuente única en modelos; `NominaPeriodoService` deja de duplicar
+  `ORDEN_PASOS_PAYROLL`.
+- **Stepper:** estado `calculada` marca Cálculo como completado; cálculo invalidado → `warning`.
+- **Cierre:** footer hint-only alineado a Validación/Cálculo (sin botón admin duplicado).
+
+---
+
 ## 2026-06-30 — Generador Nómina V2: flujos unificados vía shell (NOIA-NMV2-REPAIR-08)
 
 - **Avance centralizado:** pasos 2–6 ya no navegan por outputs bypass
