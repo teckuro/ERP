@@ -8,7 +8,10 @@ import type {
   EventoTrazabilidadNomina,
 } from '../../../../models/nomina-trazabilidad.models';
 import { NominaParametrosBaseService } from '../../../../services/nomina-parametros-base.service';
-import { formatoFechaTrazabilidad } from '../../../../utils/nomina-trazabilidad-presentacion.util';
+import {
+  etiquetaIntegridadVisible,
+  formatoFechaTrazabilidad,
+} from '../../../../utils/nomina-trazabilidad-presentacion.util';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 
 interface ParametroBaseModalDetalle {
@@ -135,8 +138,10 @@ export class NominaMensualV2TrazabilidadModalComponent {
 
   filasControlOperativo(detalle: DetalleTrazabilidadPasoNomina): FilaDetalleModal[] {
     const evento = this.ultimoEventoPaso();
+    const integridad = evento?.integridad.estadoIntegridad ?? 'noDisponible';
     return [
       { label: 'Estado operativo', value: this.estadoOperativo(detalle.estadoActual) },
+      { label: 'Integridad', value: etiquetaIntegridadVisible(integridad, evento?.origen) },
       { label: 'Último registro', value: evento?.descripcion ?? detalle.accionPrincipal ?? 'Sin registro' },
       { label: 'Responsable', value: this.valorUsuario(detalle.usuarioNombre || evento?.usuarioNombre) },
       { label: 'Fecha y hora', value: formatoFechaTrazabilidad(detalle.fechaAccion ?? evento?.fechaEvento) },

@@ -7,13 +7,14 @@
   <aside
     class="nmv2-trazabilidad-drawer"
     role="dialog"
+    aria-modal="true"
     aria-labelledby="nmv2-trazabilidad-drawer-title"
     (click)="$event.stopPropagation()"
   >
     <header class="nmv2-trazabilidad-drawer__header">
       <div>
         <h2 id="nmv2-trazabilidad-drawer-title">Trazabilidad completa</h2>
-        <p>Acciones registradas en el flujo de esta nómina</p>
+        <p>Acciones registradas en el flujo. Ctrl+clic en un paso del flujo abre su bitácora.</p>
       </div>
       <button type="button" class="icon-btn" (click)="cerrar()" aria-label="Cerrar trazabilidad">
         <lucide-icon name="x" aria-hidden="true"></lucide-icon>
@@ -42,10 +43,17 @@
                 <strong>{{ tituloPaso(evento.paso) }} · {{ evento.descripcion }}</strong>
                 <span>{{ evento.usuarioNombre }} · {{ formatoFecha(evento.fechaEvento) }}</span>
                 <em>{{ etiquetaIntegridad(evento.integridad.estadoIntegridad, evento.origen) }}</em>
-                <button type="button" class="text-link text-link--left" (click)="abrirDetallePaso(evento.paso)">
-                  Ver detalle del paso
-                  <lucide-icon name="arrow-right" aria-hidden="true"></lucide-icon>
-                </button>
+                <div class="nmv2-trazabilidad-timeline__actions">
+                  <button type="button" class="text-link text-link--left" (click)="abrirDetallePaso(evento.paso, 'history')">
+                    Bitácora
+                  </button>
+                  <button type="button" class="text-link text-link--left" (click)="abrirDetallePaso(evento.paso, 'owner')">
+                    Responsable
+                  </button>
+                  <button type="button" class="text-link text-link--left" (click)="abrirDetallePaso(evento.paso, 'integrity')">
+                    Control
+                  </button>
+                </div>
               </div>
             </li>
           }

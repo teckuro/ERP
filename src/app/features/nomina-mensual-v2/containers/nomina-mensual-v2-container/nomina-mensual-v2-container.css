@@ -326,6 +326,10 @@ app-nomina-mensual-v2-container > .nmv2-page {
   color: #2563eb;
 }
 
+body.nmv2-trazabilidad-scroll-lock {
+  overflow: hidden;
+}
+
 .nmv2-trazabilidad-drawer-backdrop {
   position: fixed;
   inset: 0;
@@ -417,6 +421,18 @@ app-nomina-mensual-v2-container > .nmv2-page {
 .nmv2-trazabilidad-timeline__content em {
   color: #64748b;
   font-style: normal;
+}
+
+.nmv2-trazabilidad-timeline__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 2px;
+}
+
+.nmv2-trazabilidad-timeline__actions .text-link {
+  padding: 0;
+  font-size: 12px;
 }
 
 .nmv2-empty-state {

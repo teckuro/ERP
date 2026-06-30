@@ -9,6 +9,15 @@
 
 ---
 
+## 2026-06-30 — Generador Nómina V2: drawer trazabilidad acciones (NOIA-NMV2-REPAIR-12)
+
+- **Drawer:** acciones por evento (Bitácora / Responsable / Control); `aria-modal`;
+  bloqueo de scroll de fondo al abrir.
+- **Modal control:** fila de integridad con copy operativo (sin huella técnica).
+- **Hint:** Ctrl+clic en paso del stepper abre bitácora del paso.
+
+---
+
 ## 2026-06-30 — Generador Nómina V2: stepper advertencia y bitácora (NOIA-NMV2-REPAIR-11)
 
 - **Stepper:** icono `triangle-alert` y clase `step-status--warning` cuando el cálculo
