@@ -1,4 +1,5 @@
 import type { PayrollStep, PayrollStepId, PayrollStepStatus } from '../models/nomina-mensual-v2.models';
+import { MENSAJE_CALCULO_NO_VIGENTE } from '../containers/nomina-mensual-v2-container/facade/nomina-mensual-v2-navegacion';
 import type {
   PasoNominaStepperEstadoVisual,
   PasoNominaStepperView,
@@ -139,4 +140,27 @@ export function tooltipIntegridadPaso(resumen: ResumenTrazabilidadPasoActualView
 export function copyResponsableCompacto(resumen: ResumenAuditoriaPasoNomina | undefined): string {
   if (!resumen || resumen.estado === 'pendiente') return 'Sin responsable registrado';
   return obtenerCopyAuditoriaPaso(resumen);
+}
+
+export interface OpcionesTooltipPasoStepper {
+  congelado: boolean;
+  noAccesible: boolean;
+  tooltipCongelado: () => string;
+  tooltipNoAccesible: (paso: PayrollStepId) => string;
+}
+
+/**
+ * Tooltip nativo del botón de paso: bloqueos operativos, cálculo no vigente
+ * y última acción registrada cuando hay trazabilidad.
+ */
+export function tooltipPasoStepper(
+  vista: PasoNominaStepperView,
+  opts: OpcionesTooltipPasoStepper,
+): string | null {
+  if (opts.congelado) return opts.tooltipCongelado();
+  if (opts.noAccesible) return opts.tooltipNoAccesible(vista.clave);
+  if (vista.estado === 'advertencia') return MENSAJE_CALCULO_NO_VIGENTE;
+  const ultimo = vista.ultimoEvento?.trim();
+  if (vista.tieneTrazabilidad && ultimo) return ultimo;
+  return null;
 }

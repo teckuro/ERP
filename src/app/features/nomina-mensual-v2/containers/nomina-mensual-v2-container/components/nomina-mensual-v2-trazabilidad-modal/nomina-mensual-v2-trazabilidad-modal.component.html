@@ -40,7 +40,7 @@
           width="lg"
           eyebrow="Bitácora"
           [title]="'Bitácora de ' + tituloPaso(detalle.paso)"
-          [message]="'Movimientos relevantes registrados para este paso.'"
+          [message]="'Acciones registradas para este paso.'"
           (dismiss)="cerrar()"
         >
           <div class="nmv2-trace-modal">
@@ -48,7 +48,7 @@
               <div class="nmv2-trace-modal__empty">
                 <lucide-icon name="history" aria-hidden="true"></lucide-icon>
                 <strong>Sin eventos registrados</strong>
-                <span>Este paso aún no tiene movimientos guardados.</span>
+                <span>Este paso aún no tiene acciones registradas.</span>
               </div>
             } @else {
               <ol class="nmv2-trace-modal__timeline">

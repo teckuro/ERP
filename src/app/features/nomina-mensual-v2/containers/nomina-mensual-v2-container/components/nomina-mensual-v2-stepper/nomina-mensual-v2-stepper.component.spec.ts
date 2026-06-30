@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { LucideAngularModule, ArrowLeft, ArrowRight, Check, Clock3, Lock } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, Check, Clock3, Lock, TriangleAlert } from 'lucide-angular';
 import { importProvidersFrom, signal } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { PayrollStep, PayrollStepId } from '../../../../models/nomina-mensual-v2.models';
 import { AuthService } from '../../../../../../core/auth/auth.service';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
-import { ORDEN_PASOS_NOMINA } from '../../facade/nomina-mensual-v2-navegacion';
+import { ORDEN_PASOS_NOMINA, MENSAJE_CALCULO_NO_VIGENTE } from '../../facade/nomina-mensual-v2-navegacion';
 import { NominaMensualV2StepperComponent } from './nomina-mensual-v2-stepper.component';
 
 function pasosBase(): PayrollStep[] {
@@ -24,6 +24,7 @@ function orquestadorMock(): unknown {
     pasoActual: signal('parameters' as PayrollStepId),
     auditoriaPorPaso: signal({}),
     eventosTrazabilidad: signal([]),
+    abrirTrazabilidadPaso: () => undefined,
   };
 }
 
@@ -45,7 +46,7 @@ function configurar(authOverride?: unknown) {
   TestBed.configureTestingModule({
     imports: [NominaMensualV2StepperComponent],
     providers: [
-      importProvidersFrom(LucideAngularModule.pick({ ArrowLeft, ArrowRight, Check, Clock3, Lock })),
+      importProvidersFrom(LucideAngularModule.pick({ ArrowLeft, ArrowRight, Check, Clock3, Lock, TriangleAlert })),
       { provide: NominaMensualV2OrquestadorPort, useValue: orquestadorMock() },
       { provide: AuthService, useValue: authOverride ?? authMock({ fullName: 'Catalina Rojas', email: 'catalina@empresa.cl' }) },
     ],
@@ -115,8 +116,107 @@ describe('NominaMensualV2StepperComponent — bloqueo por accesibilidad efectiva
     fixture.componentRef.setInput('steps', pasosBase());
     fixture.componentRef.setInput('indiceMaximoAccesible', 1);
     fixture.detectChanges();
-    expect(fixture.componentInstance.tooltipPaso('movements')).toBe('Completa Dotación para continuar.');
-    expect(fixture.componentInstance.tooltipPaso('dotacion')).toBeNull();
+    const vistaMovements = fixture.componentInstance.vistasStepper().find((v) => v.clave === 'movements')!;
+    const vistaDotacion = fixture.componentInstance.vistasStepper().find((v) => v.clave === 'dotacion')!;
+    expect(fixture.componentInstance.tooltipPaso(vistaMovements)).toBe('Completa Dotación para continuar.');
+    expect(fixture.componentInstance.tooltipPaso(vistaDotacion)).toBeNull();
+  });
+});
+
+describe('NominaMensualV2StepperComponent — advertencia y bitácora por paso (NOIA-NMV2-REPAIR-11)', () => {
+  beforeEach(() => configurar());
+
+  it('renderiza triangle-alert en paso calculation con cálculo no vigente', () => {
+    const fixture = TestBed.createComponent(NominaMensualV2StepperComponent);
+    fixture.componentRef.setInput('pasoActual', 'validation' as PayrollStepId);
+    fixture.componentRef.setInput('steps', pasosBase());
+    fixture.componentRef.setInput('nomina', {
+      estado: 'validada',
+      evidenciaCalculo: { versionCalculo: 2, calculoVigente: false },
+    });
+    fixture.detectChanges();
+
+    const botones = fixture.debugElement.queryAll(By.css('button.nomina-step'));
+    const indiceCalculo = ORDEN_PASOS_NOMINA.indexOf('calculation');
+    const pasoCalculo = botones[indiceCalculo];
+    expect(pasoCalculo.nativeElement.classList.contains('nomina-step--warning')).toBe(true);
+    const icono = pasoCalculo.query(By.css('lucide-icon'));
+    expect(icono).not.toBeNull();
+    expect(icono.nativeElement.getAttribute('aria-label')).toBe('Revisión requerida');
+  });
+
+  it('tooltipPaso expone MENSAJE_CALCULO_NO_VIGENTE en advertencia', () => {
+    const fixture = TestBed.createComponent(NominaMensualV2StepperComponent);
+    fixture.componentRef.setInput('pasoActual', 'validation' as PayrollStepId);
+    fixture.componentRef.setInput('steps', pasosBase());
+    fixture.componentRef.setInput('nomina', {
+      estado: 'validada',
+      evidenciaCalculo: { versionCalculo: 2, calculoVigente: false },
+    });
+    fixture.detectChanges();
+
+    const vistaCalculo = fixture.componentInstance.vistasStepper().find((v) => v.clave === 'calculation')!;
+    expect(vistaCalculo.estado).toBe('advertencia');
+    expect(fixture.componentInstance.tooltipPaso(vistaCalculo)).toBe(MENSAJE_CALCULO_NO_VIGENTE);
+  });
+
+  it('Ctrl+clic abre bitácora del paso cuando hay trazabilidad', () => {
+    let pasoAbierto: PayrollStepId | null = null;
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [NominaMensualV2StepperComponent],
+      providers: [
+        importProvidersFrom(LucideAngularModule.pick({ ArrowLeft, ArrowRight, Check, Clock3, Lock, TriangleAlert })),
+        {
+          provide: NominaMensualV2OrquestadorPort,
+          useValue: {
+            pasoActual: signal('movements' as PayrollStepId),
+            auditoriaPorPaso: signal({
+              dotacion: {
+                paso: 'dotacion',
+                estado: 'completado',
+                usuarioNombre: 'Ana',
+                usuarioId: 'u1',
+                accionPrincipal: 'Dotación confirmada',
+                fechaAccion: '2026-06-30T10:00:00Z',
+                integridad: { estadoIntegridad: 'registrado' },
+              },
+            }),
+            eventosTrazabilidad: signal([
+              {
+                idEvento: 'e1',
+                paso: 'dotacion',
+                descripcion: 'Dotación confirmada',
+                usuarioNombre: 'Ana',
+                fechaEvento: '2026-06-30',
+                periodo: '2026-06',
+                tipoEvento: 'EMPLEADOS_VALIDADOS',
+                integridad: { estadoIntegridad: 'registrado' },
+              },
+            ]),
+            abrirTrazabilidadPaso: (paso: PayrollStepId) => {
+              pasoAbierto = paso;
+            },
+          },
+        },
+        { provide: AuthService, useValue: authMock() },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(NominaMensualV2StepperComponent);
+    fixture.componentRef.setInput('pasoActual', 'movements' as PayrollStepId);
+    fixture.componentRef.setInput('steps', pasosBase());
+    fixture.componentRef.setInput('nomina', { estado: 'dotacion_confirmada' });
+    const eventos: PayrollStepId[] = [];
+    fixture.componentInstance.pasoSeleccionado.subscribe((p) => eventos.push(p));
+    fixture.detectChanges();
+
+    fixture.componentInstance.seleccionarPaso('dotacion', {
+      ctrlKey: true,
+      preventDefault: () => undefined,
+    } as MouseEvent);
+    expect(pasoAbierto).toBe('dotacion');
+    expect(eventos).toEqual([]);
   });
 });
 

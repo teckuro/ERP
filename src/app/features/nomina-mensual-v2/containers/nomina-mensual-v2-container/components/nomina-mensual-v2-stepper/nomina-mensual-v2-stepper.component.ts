@@ -14,7 +14,11 @@ import type { PayrollStep, PayrollStepId, PayrollStepStatus } from '../../../../
 import type { NominaPeriodo } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { AuthService } from '../../../../../../core/auth/auth.service';
 import { TooltipComponent } from '../../../../../../shared/components/ui/tooltip/tooltip.component';
-import { construirVistasStepper } from '../../../../presenters/nomina-stepper-trazabilidad.presenter';
+import {
+  construirVistasStepper,
+  tooltipPasoStepper,
+} from '../../../../presenters/nomina-stepper-trazabilidad.presenter';
+import type { PasoNominaStepperView } from '../../../../models/nomina-stepper-trazabilidad.models';
 import {
   ORDEN_PASOS_NOMINA,
   esAvanceHaciaAdelante,
@@ -183,7 +187,16 @@ export class NominaMensualV2StepperComponent {
     }
   }
 
-  seleccionarPaso(stepId: PayrollStepId): void {
+  seleccionarPaso(stepId: PayrollStepId, event?: MouseEvent): void {
+    if (
+      event &&
+      (event.ctrlKey || event.metaKey) &&
+      this.vistaPaso(stepId)?.tieneTrazabilidad
+    ) {
+      event.preventDefault?.();
+      this.orquestador.abrirTrazabilidadPaso(stepId, 'history');
+      return;
+    }
     if (this.pasoCongelado(stepId)) return;
     if (this.pasoNoAccesible(stepId)) return;
     if (this.avanceDesdePasoActualBloqueado() && esAvanceHaciaAdelante(this.pasoActual(), stepId)) {
@@ -212,10 +225,22 @@ export class NominaMensualV2StepperComponent {
     return indice > this.indiceMaximoAccesible();
   }
 
-  tooltipPaso(stepId: PayrollStepId): string | null {
-    if (this.pasoCongelado(stepId)) return tooltipPasoCongelado();
-    if (this.pasoNoAccesible(stepId)) return tooltipPasoNoAccesible(stepId);
+  tooltipPaso(vista: PasoNominaStepperView): string | null {
+    const base = tooltipPasoStepper(vista, {
+      congelado: this.pasoCongelado(vista.clave),
+      noAccesible: this.pasoNoAccesible(vista.clave),
+      tooltipCongelado: tooltipPasoCongelado,
+      tooltipNoAccesible: tooltipPasoNoAccesible,
+    });
+    if (base) return base;
+    if (vista.tieneTrazabilidad) {
+      return 'Ctrl+clic para abrir la bitácora del paso';
+    }
     return null;
+  }
+
+  private vistaPaso(stepId: PayrollStepId): PasoNominaStepperView | undefined {
+    return this.vistasStepper().find((vista) => vista.clave === stepId);
   }
 
   /** Click handler del botón "Volver al paso anterior" del stepper. */

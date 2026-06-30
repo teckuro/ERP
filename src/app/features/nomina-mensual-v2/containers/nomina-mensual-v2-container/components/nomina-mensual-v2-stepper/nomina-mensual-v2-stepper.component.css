@@ -318,6 +318,12 @@
   color: #047857;
 }
 
+.step-status--warning {
+  border-color: #fcd34d;
+  background: #fef3c7;
+  color: #b45309;
+}
+
 /* Pasos congelados V11: lectura clara de "no disponible aún" sin gritar. */
 .nmv2-page .nomina-workflow-header .step.nomina-step.nomina-step--frozen {
   cursor: not-allowed;

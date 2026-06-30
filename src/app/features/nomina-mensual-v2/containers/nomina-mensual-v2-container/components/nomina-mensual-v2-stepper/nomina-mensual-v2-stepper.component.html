@@ -28,8 +28,8 @@
           [class.nomina-step--locked]="pasoNoAccesible(vista.clave)"
           [disabled]="pasoAvanceBloqueado(vista.clave) || pasoCongelado(vista.clave) || pasoNoAccesible(vista.clave)"
           [attr.aria-disabled]="pasoAvanceBloqueado(vista.clave) || pasoCongelado(vista.clave) || pasoNoAccesible(vista.clave) ? 'true' : null"
-          [attr.title]="tooltipPaso(vista.clave)"
-          (click)="seleccionarPaso(vista.clave)"
+          [attr.title]="tooltipPaso(vista)"
+          (click)="seleccionarPaso(vista.clave, $event)"
         >
           <span class="step-index">
             <span class="step-number">
@@ -43,7 +43,8 @@
           <span
             class="step-status step-status--icon-only"
             [class.step-status--ready]="vista.estado === 'completo'"
-            [class.step-status--waiting]="vista.estado !== 'completo'"
+            [class.step-status--waiting]="vista.estado === 'pendiente' || vista.estado === 'activo'"
+            [class.step-status--warning]="vista.estado === 'advertencia'"
             [class.step-status--frozen]="pasoCongelado(vista.clave)"
             [class.step-status--locked]="pasoNoAccesible(vista.clave)"
           >
@@ -53,6 +54,8 @@
               <lucide-icon name="lock" aria-label="Completa el paso anterior para desbloquear"></lucide-icon>
             } @else if (vista.estado === 'completo') {
               <lucide-icon name="check" aria-label="Listo"></lucide-icon>
+            } @else if (vista.estado === 'advertencia') {
+              <lucide-icon name="triangle-alert" aria-label="Revisión requerida"></lucide-icon>
             } @else {
               <lucide-icon name="clock-3" aria-label="No listo"></lucide-icon>
             }

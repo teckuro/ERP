@@ -9,6 +9,15 @@
 
 ---
 
+## 2026-06-30 — Generador Nómina V2: stepper advertencia y bitácora (NOIA-NMV2-REPAIR-11)
+
+- **Stepper:** icono `triangle-alert` y clase `step-status--warning` cuando el cálculo
+  dejó de ser vigente; tooltips con última acción o mensaje CAL-INV-05.
+- **Acceso bitácora:** Ctrl+clic en paso con trazabilidad abre modal de historial.
+- **Modal bitácora:** copy operativo («acciones registradas») sin «movimientos guardados».
+
+---
+
 ## 2026-06-30 — Generador Nómina V2: trazabilidad drawer y bitácora (NOIA-NMV2-REPAIR-10)
 
 - **Eventos locales:** parámetros al avanzar; dotación/movimientos reflejados en auditoría
