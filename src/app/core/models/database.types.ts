@@ -6202,15 +6202,6 @@ export type Database = {
         }
         Returns: Json
       }
-      confirmar_rectificacion_nomina: {
-        Args: {
-          p_fingerprint: string
-          p_motivo: string
-          p_nomina_origen_id: string
-          p_trabajador_ids?: number[]
-        }
-        Returns: Json
-      }
       confirmar_nomina_preparacion: {
         Args: { p_id_preparacion_nomina: number; p_metadata?: Json }
         Returns: {
@@ -6246,6 +6237,15 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      confirmar_rectificacion_nomina: {
+        Args: {
+          p_fingerprint: string
+          p_motivo: string
+          p_nomina_origen_id: string
+          p_trabajador_ids?: number[]
+        }
+        Returns: Json
       }
       crear_nomina_preparacion: {
         Args: {
@@ -6907,6 +6907,14 @@ export type Database = {
           trabajador_id: number
           ya_en_nomina: boolean
         }[]
+      }
+      nomina_dotacion_ids_origen: {
+        Args: { p_nomina_origen_id: string }
+        Returns: number[]
+      }
+      nomina_resolver_origen_rectificacion: {
+        Args: { p_nomina_id: string }
+        Returns: string
       }
       obtener_feature_gates_nomina: { Args: never; Returns: Json }
       obtener_nomina_mensual_consolidadora: {
