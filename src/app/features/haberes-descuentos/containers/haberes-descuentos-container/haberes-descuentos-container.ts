@@ -257,7 +257,7 @@ export class HaberesDescuentosContainer implements OnInit {
       this.destroyRef,
       () => ({
         breadcrumbs: [
-          { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+          { label: 'Remuneraciones', path: '/remuneraciones/nominas' },
           { label: 'Recurrentes' },
         ],
         primaryAction: {

@@ -832,7 +832,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
         const idPersona = idPersonaDesdeFlowQuery(params);
         const returnPath = debeRehidratarDesdeFlowQuery(params)
           ? buildNominaFlowReturnUrl(periodo, idPersona ?? undefined)
-          : '/remuneraciones/proceso-mensual';
+          : '/remuneraciones/nominas';
         return {
         breadcrumbs: [
           { label: 'Remuneraciones', path: returnPath },

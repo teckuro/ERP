@@ -465,7 +465,7 @@ export function crearNominaResumen(
   const periodo = overrides.periodo ?? '2026-06';
   const identidad = derivarIdentidadNominaMensual(periodo);
   return {
-    id: 'nom-mock-001',
+    id: 'nom-fixture-001',
     periodo,
     empresaId: 'emp-001',
     empresaNombre: 'Empresa de prueba',
@@ -508,7 +508,7 @@ export function crearNomina(overrides: Partial<NominaPeriodo> = {}): NominaPerio
   const periodo = overrides.periodo ?? '2026-06';
   const identidad = derivarIdentidadNominaMensual(periodo);
   return {
-    id: 'nom-mock-001',
+    id: 'nom-fixture-001',
     periodo,
     empresaId: 'emp-001',
     empresaNombre: 'Empresa de prueba',
@@ -540,13 +540,13 @@ export function crearNomina(overrides: Partial<NominaPeriodo> = {}): NominaPerio
 /** Crea un `SegmentoNomina` con ordinal calculado o explícito. */
 export function crearSegmento(
   overrides: Partial<SegmentoNomina> & { nominaPeriodoId: string } = {
-    nominaPeriodoId: 'nom-mock-001',
+    nominaPeriodoId: 'nom-fixture-001',
   },
 ): SegmentoNomina {
   const ahora = new Date().toISOString();
   const trabajadorIds = overrides.trabajadorIds ?? [];
   return {
-    id: 'seg-mock-001',
+    id: 'seg-fixture-001',
     nombre: 'Planta',
     tipo: 'planta',
     estado: 'borrador',

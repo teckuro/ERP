@@ -126,7 +126,7 @@ export function resolveNominaEstadoRrhh(frame: NominaVisualFrame): NominaEstadoR
   }
 }
 
-export const NOMINA_FLOW_RETURN_PATH = '/remuneraciones/proceso-mensual';
+export const NOMINA_FLOW_RETURN_PATH = '/remuneraciones/nominas';
 
 export const NOMINA_FLOW_QUERY_ID_PERSONA = 'idPersona';
 

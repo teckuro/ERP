@@ -64,7 +64,7 @@ describe('HeaderComponent', () => {
   it('muestra chip de estado y CTA cuando el contexto los registra', () => {
     shellContext.setContext({
       breadcrumbs: [
-        { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+        { label: 'Remuneraciones', path: '/remuneraciones/nominas' },
         { label: 'Nómina mensual' },
       ],
       statusChip: { label: 'Sin generar', tone: 'neutral' },

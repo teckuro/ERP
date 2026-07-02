@@ -14,12 +14,9 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
-import { BadgeComponent } from '../../../../shared/components/ui/primitives/badge.component';
 import { ButtonComponent } from '../../../../shared/components/ui/primitives/button.component';
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import type { MessageBoxSection } from '../../../../shared/components/ui/feedback/message-box/message-box.types';
-import { LiquidacionDetallePanelComponent } from '../../components/liquidacion-detalle-panel/liquidacion-detalle-panel';
-import { LiquidacionesTrabajadoresGridComponent } from '../../components/liquidaciones-trabajadores-grid/liquidaciones-trabajadores-grid';
 import type {
   LiquidacionConcepto,
   LiquidacionesEstadoPeriodo,
@@ -56,11 +53,8 @@ import type { ShellStatusChipTone } from '../../../../layout/shell-page-context.
     CommonModule,
     RouterLink,
     LucideAngularModule,
-    BadgeComponent,
     ButtonComponent,
     MessageBoxComponent,
-    LiquidacionesTrabajadoresGridComponent,
-    LiquidacionDetallePanelComponent,
   ],
   templateUrl: './liquidaciones-oficiales-container.html',
   styleUrl: './liquidaciones-oficiales-container.css',
@@ -111,6 +105,7 @@ export class LiquidacionesOficialesContainer {
 
   readonly periodoSeleccionado = computed(() => this.periodoActivo.getPeriodo());
   readonly volverNominaQuery = computed(() => ({ periodo: this.periodoSeleccionado() }));
+  readonly rutaAdministradorNominas = '/remuneraciones/nominas';
   readonly estadoPeriodo = signal<LiquidacionesEstadoPeriodo | null>(null);
   readonly cargando = signal(false);
   readonly generando = signal(false);
@@ -197,23 +192,30 @@ export class LiquidacionesOficialesContainer {
       destroyRef,
       () => ({
         breadcrumbs: [
-          { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+          { label: 'Remuneraciones', path: this.rutaAdministradorNominas },
           { label: 'Liquidaciones' },
         ],
-        statusChip: {
-          label: this.estadoLabel(),
-          tone: this.tonoEstadoLiquidaciones(),
-        },
-        primaryAction: this.estadoPeriodo()?.liquidacion
+        statusChip: this.modoNominaInterna()
           ? {
-              label: 'Volver a Nómina mensual para cerrar el período',
-              actionId: 'volver_nomina_cerrar',
+              label: this.nominaInterna()?.estado === 'cerrada' ? 'Congelada' : 'Por nómina',
+              tone: this.nominaInterna()?.estado === 'cerrada' ? 'success' : 'warning',
             }
-          : undefined,
+          : {
+              label: this.estadoLabel(),
+              tone: this.tonoEstadoLiquidaciones(),
+            },
+        primaryAction: this.modoNominaInterna()
+          ? undefined
+          : this.estadoPeriodo()?.liquidacion
+            ? {
+                label: 'Volver al administrador de nóminas',
+                actionId: 'volver_nomina_cerrar',
+              }
+            : undefined,
       }),
       {
         onPrimaryAction: () => {
-          void this.router.navigate(['/remuneraciones/proceso-mensual'], {
+          void this.router.navigate([this.rutaAdministradorNominas], {
             queryParams: this.volverNominaQuery(),
           });
         },
@@ -229,11 +231,15 @@ export class LiquidacionesOficialesContainer {
 
     effect(() => {
       this.periodoSeleccionado();
-      this.nominaPeriodoId();
+      const id = this.nominaPeriodoId();
       untracked(() => {
         this.resetearEstadoPeriodo();
-        void this.consultar();
-        void this.cargarNominaInterna();
+        if (id) {
+          void this.cargarNominaInterna();
+        } else {
+          this.nominaInterna.set(null);
+          this.liquidacionesInternas.set([]);
+        }
       });
     });
   }
@@ -290,7 +296,9 @@ export class LiquidacionesOficialesContainer {
   }
 
   volverAdministradorNomina(): void {
-    void this.router.navigate(['/remuneraciones/nominas']);
+    void this.router.navigate([this.rutaAdministradorNominas], {
+      queryParams: this.volverNominaQuery(),
+    });
   }
 
   consultar(): Promise<void> {

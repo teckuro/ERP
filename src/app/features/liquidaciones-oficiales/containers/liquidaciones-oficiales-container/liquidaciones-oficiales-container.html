@@ -66,196 +66,17 @@
         <p class="liq-empty-inline">Esta nómina aún no tiene liquidaciones generadas.</p>
       }
     </section>
-  }
-
-  @let estado = estadoPeriodo();
-  @let resumen = resumenFinanciero();
-  @let flujo = resumenFlujoTrabajadores();
-
-  <section
-    class="liq-hero"
-    [class.liq-hero--ok]="estado?.liquidacion"
-    [class.liq-hero--review]="estado?.estado === 'lista_para_generar' || generando()"
-    [class.liq-hero--blocked]="!estado?.snapshot && !generando()"
-    aria-label="Estado operativo de liquidaciones"
-  >
-    <div class="liq-hero__main">
-      <p class="liq-hero__eyebrow">Liquidaciones oficiales · {{ periodoActivo.etiqueta() }}</p>
-      <h2>{{ siguienteAccion().titulo }}</h2>
-      <p>{{ siguienteAccion().descripcion }}</p>
-      <p class="liq-hero__source">
-        Origen: nómina mensual aprobada. Esta pantalla materializa comprobantes internos y no recalcula montos.
+  } @else {
+    <section class="liq-empty-gateway" aria-label="Acceso a liquidaciones">
+      <h2>Liquidaciones por nómina</h2>
+      <p>
+        Abre liquidaciones desde el administrador de nóminas. Cada consulta queda vinculada a una nómina concreta.
       </p>
-
-      @if (estado?.motivoNoPuedeGenerar && !estado?.liquidacion) {
-        <p class="liq-status-note liq-status-note--review">{{ estado?.motivoNoPuedeGenerar }}</p>
-      }
-      @if (error()) {
-        <p class="liq-status-note liq-status-note--error" role="alert">{{ error() }}</p>
-      }
-    </div>
-
-    <div class="liq-hero__aside">
-      <app-badge [variant]="badgeVariant()" size="sm">{{ estadoLabel() }}</app-badge>
-      @if (estado?.estado === 'lista_para_generar') {
-        <app-button variant="primary" size="sm" [disabled]="!puedeGenerar()" (click)="generarLiquidaciones()">
-          <lucide-icon icon name="file-check-2" class="liq-button-icon"></lucide-icon>
-          Generar liquidaciones
-        </app-button>
-      } @else if (estado?.liquidacion) {
-        <a class="liq-link-button liq-link-button--primary" routerLink="/remuneraciones/proceso-mensual" [queryParams]="volverNominaQuery()">
-          <lucide-icon name="arrow-left" aria-hidden="true"></lucide-icon>
-          Cerrar proceso mensual
-        </a>
-      } @else {
-        <a class="liq-link-button" routerLink="/remuneraciones/proceso-mensual" [queryParams]="volverNominaQuery()">
-          <lucide-icon name="arrow-left" aria-hidden="true"></lucide-icon>
-          Volver a Nómina mensual
-        </a>
-      }
-    </div>
-  </section>
-
-  <div class="liq-secondary-actions">
-    <a class="liq-secondary-link" routerLink="/remuneraciones/proceso-mensual" [queryParams]="volverNominaQuery()">
-      <lucide-icon name="arrow-left" aria-hidden="true"></lucide-icon>
-      Nómina mensual
-    </a>
-    <button type="button" class="liq-secondary-link" [disabled]="cargando() || generando()" (click)="consultar()">
-      <lucide-icon name="refresh-cw" aria-hidden="true"></lucide-icon>
-      Recargar
-    </button>
-  </div>
-
-  <section class="liq-summary" aria-label="Resumen financiero">
-    <header class="liq-section-head">
-      <div>
-        <h2>Resumen financiero</h2>
-        <p>{{ resumen?.origen ?? 'Sin nómina aprobada disponible para este período.' }}</p>
-      </div>
-      @if (estado?.liquidacion?.fechaGeneracion) {
-        <span class="liq-section-head__meta">Emitidas: {{ estado?.liquidacion?.fechaGeneracion | date:'dd-MM-yyyy, h:mm a' }}</span>
-      }
-    </header>
-
-    @if (resumen) {
-      <dl class="liq-metrics">
-        <div>
-          <dt>Trabajadores</dt>
-          <dd>{{ resumen.trabajadores }}</dd>
-        </div>
-        <div>
-          <dt>Haberes</dt>
-          <dd>{{ money(resumen.haberes) }}</dd>
-        </div>
-        <div>
-          <dt>Descuentos</dt>
-          <dd>{{ money(resumen.descuentos) }}</dd>
-        </div>
-        <div>
-          <dt>Líquido</dt>
-          <dd>{{ money(resumen.liquido) }}</dd>
-        </div>
-      </dl>
-    } @else {
-      <p class="liq-empty-inline">
-        {{ cargando() ? 'Consultando período...' : 'Primero debe existir una nómina mensual aprobada.' }}
-      </p>
-    }
-  </section>
-
-  @if (estado?.advertencias?.length) {
-    <section class="liq-status-note liq-status-note--review liq-status-note--block" aria-label="Advertencias">
-      <strong>Revisar antes de continuar</strong>
-      <ul>
-        @for (advertencia of estado?.advertencias ?? []; track advertencia) {
-          <li>{{ advertencia }}</li>
-        }
-      </ul>
+      <a class="liq-link-button liq-link-button--primary" [routerLink]="rutaAdministradorNominas">
+        Ir al administrador de nóminas
+      </a>
     </section>
   }
-
-  <div class="liq-workspace">
-    <section class="liq-section liq-section--workers">
-      <header class="liq-section-head">
-        <div>
-          <h2>Trabajadores liquidados</h2>
-          <p>Flujo visual por trabajador: autorizar, registrar pago y enviar documento.</p>
-        </div>
-        <app-badge variant="default" size="sm">{{ estado?.trabajadores?.length ?? 0 }} trabajador(es)</app-badge>
-      </header>
-
-      <dl class="liq-flow-summary" aria-label="Avance visual de liquidaciones">
-        <div><dt>Pendientes</dt><dd>{{ flujo.pendientesAutorizar }}</dd></div>
-        <div><dt>Autorizadas</dt><dd>{{ flujo.autorizadas }}</dd></div>
-        <div><dt>Pagos</dt><dd>{{ flujo.pagosRegistrados }}</dd></div>
-        <div><dt>Enviadas</dt><dd>{{ flujo.documentosEnviados }}</dd></div>
-        <div class="liq-flow-summary__danger"><dt>Rectificación</dt><dd>{{ flujo.rectificacionesSolicitadas }}</dd></div>
-      </dl>
-
-      @if (feedbackAccionTrabajador()) {
-        <p
-          class="liq-status-note"
-          [class.liq-status-note--error]="feedbackAccionTrabajador()?.includes('Rectificación')"
-          role="status"
-        >
-          {{ feedbackAccionTrabajador() }}
-        </p>
-      }
-
-      @if ((estado?.trabajadores?.length ?? 0) > 0) {
-        <app-liquidaciones-trabajadores-grid
-          [trabajadores]="estado?.trabajadores ?? []"
-          [seleccionado]="trabajadorSeleccionado()"
-          [estadosAccion]="estadosAccionTrabajador()"
-          (verDetalle)="verDetalleTrabajador($event)"
-          (accionFlujo)="ejecutarAccionTrabajador($event)"
-        />
-      } @else {
-        <div class="liq-empty-compact">
-          <p class="liq-panel__lead liq-panel__lead--flush">Sin trabajadores liquidados</p>
-          <p class="liq-text-muted">
-            Cuando exista una liquidación oficial interna, aquí aparecerá el listado por trabajador.
-          </p>
-        </div>
-      }
-    </section>
-
-    <aside class="liq-section liq-section--detail" aria-label="Detalle de liquidación">
-      <header class="liq-section-head">
-        <div>
-          <h2>Detalle por trabajador</h2>
-          <p>Conceptos materializados desde la nómina mensual aprobada.</p>
-        </div>
-      </header>
-
-      @if (cargandoDetalle()) {
-        <p class="liq-status-note liq-status-note--review">Consultando detalle...</p>
-      } @else {
-        <app-liquidacion-detalle-panel
-          [trabajador]="trabajadorSeleccionado()"
-          [conceptos]="conceptosDetalle()"
-        />
-      }
-    </aside>
-  </div>
-
-  <details class="liq-details">
-    <summary>Información interna y alcance</summary>
-    <p class="liq-text-muted--spaced">
-      Esta salida interna usa la nómina mensual aprobada y no recalcula montos. PDF, firma, envío real,
-      portal trabajador, archivo banco, contabilidad, reapertura, anulación, rectificación persistida y reliquidación
-      quedan fuera de esta fase.
-    </p>
-    @if (estado?.snapshot; as snapshot) {
-      <dl class="liq-metrics liq-detalle-wrap">
-        <div><dt>Referencia interna</dt><dd>#{{ snapshot.idCalculoPeriodo }}</dd></div>
-        <div><dt>Trabajadores</dt><dd>{{ snapshot.totalTrabajadores }}</dd></div>
-        <div><dt>Líquido</dt><dd>{{ money(snapshot.totalLiquido) }}</dd></div>
-        <div><dt>Versión interna</dt><dd>{{ snapshot.versionMotor }}</dd></div>
-      </dl>
-    }
-  </details>
 
   @if (confirmacionRegeneracionInternaVisible()) {
     <app-message-box
@@ -272,21 +93,6 @@
       (secondary)="cancelarRegeneracionInterna()"
       (dismiss)="cancelarRegeneracionInterna()"
       (action)="confirmarRegeneracionInterna()"
-    ></app-message-box>
-  }
-
-  @if (confirmacionGeneracionVisible()) {
-    <app-message-box
-      variant="warning"
-      mode="modal"
-      title="Generar liquidaciones oficiales"
-      message="No se recalcularán montos en este paso."
-      [sections]="seccionesConfirmacionGeneracion()"
-      secondaryLabel="Cancelar"
-      primaryLabel="Generar liquidaciones"
-      (secondary)="cancelarGeneracion()"
-      (dismiss)="cancelarGeneracion()"
-      (action)="confirmarGeneracionLiquidaciones()"
     ></app-message-box>
   }
 </div>

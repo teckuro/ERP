@@ -3074,3 +3074,11 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **Grilla administrador**: sublínea de cadena, botón consultar original, CTA primario «Continuar rectificación».
 - **Tests**: rules/presenter + smoke admin en verde.
 - **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-02 - F19: retiro compatibilidad mensual legacy
+
+- **Fixtures**: `nomina-periodo.fixture.ts` + mock adapter bajo `testing/`; sin `providedIn: 'root'`.
+- **Rutas/enlaces**: `NOMINA_FLOW_RETURN_PATH` y breadcrumbs apuntan a `/remuneraciones/nominas`; redirect `proceso-mensual` conservado.
+- **Liquidaciones**: gateway al administrador sin `nominaPeriodoId`; eliminada UI por período global.
+- **Tests**: redirects de rutas + liquidaciones + flow-nav en verde.
+- **Sin tocar**: estilos globales, SQL, motor productivo.

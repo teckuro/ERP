@@ -1,18 +1,7 @@
 /**
- * Adapter mock de F1 (NOM-REBUILD-NOMINA-MENSUAL-01).
+ * Adapter mock de F1 — solo fixtures de test (F19).
  *
- * Expone el contrato que la UI Admin (F2) y Generador (F3+) consumirán cuando
- * el productivo conecte BD. Mientras tanto, retorna datos mock determinísticos.
- *
- * Naming intencional: `mock-adapter` para evitar confusión con servicios productivos.
- * En F6 se sumará `nomina-periodo-calculo-adapter.service.ts` (puente al motor),
- * y en el futuro real se sustituye por `nomina-periodo.repository.ts` /
- * `nomina-periodo.service.ts`.
- *
- * Uso permitido: tests, stories, adapters mock, UI temporal F2-F5.
- * NO importar desde servicios productivos definitivos.
- *
- * Documento rector: `docs/codex/modulos/nomina-mensual/arquitectura-administrador-generador.md`.
+ * NO importar desde servicios productivos, repositorios ni UI runtime.
  */
 
 import { Injectable } from '@angular/core';
@@ -24,7 +13,7 @@ import {
   DOTACION_MOCK,
   MOVIMIENTOS_RECURRENTES_MOCK,
   NOMINAS_PERIODO_MOCK,
-} from '../data/nomina-periodo.mock';
+} from './fixtures/nomina-periodo.fixture';
 import type {
   DetalleTrabajadorNomina,
   FilaTrabajadorNominaResumen,
@@ -43,7 +32,7 @@ import type {
   PreviewAccionMasivaTrabajadores,
 } from '../models/movimiento-nomina.models';
 
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class NominaPeriodoMockAdapterService {
   private readonly nominas = new Map<string, NominaPeriodo>();
   private readonly resumenes: NominaPeriodoResumen[] = [...NOMINAS_PERIODO_MOCK];

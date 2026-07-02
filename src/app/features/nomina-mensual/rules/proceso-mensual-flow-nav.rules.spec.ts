@@ -38,7 +38,7 @@ describe('proceso-mensual-flow-nav.rules', () => {
   it('appendNominaFlowQuery agrega periodo y retorno', () => {
     const url = appendNominaFlowQuery('/remuneraciones/novedades-mensuales', '2026-05');
     expect(url).toContain('periodo=2026-05');
-    expect(url).toContain('returnTo=%2Fremuneraciones%2Fproceso-mensual');
+    expect(url).toContain('returnTo=%2Fremuneraciones%2Fnominas');
   });
 
   it('appendNominaFlowQuery incluye idPersona cuando aplica', () => {

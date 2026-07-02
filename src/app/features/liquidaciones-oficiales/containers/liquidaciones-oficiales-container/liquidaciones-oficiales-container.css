@@ -466,3 +466,25 @@
 .liq-nomina-interna__table tr.is-vigente td {
   background: var(--erp-ok-soft);
 }
+
+.liq-empty-gateway {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--erp-border);
+  border-radius: 6px;
+  background: var(--erp-surface-soft);
+}
+
+.liq-empty-gateway h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.liq-empty-gateway p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--erp-muted);
+}

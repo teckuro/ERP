@@ -1,14 +1,7 @@
 /**
- * Datos mock de F1 (NOM-REBUILD-NOMINA-MENSUAL-01).
+ * Fixtures deterministas de nómina — solo tests (F19).
  *
- * Uso permitido: tests vitest, stories (futuro), adapters mock, UI temporal F2-F5
- * mientras no exista persistencia productiva conectada.
- *
- * NO importar desde servicios productivos definitivos, repositorios reales,
- * motor de cálculo ni flujos productivos. En F7 (limpieza) se reevalúa qué
- * mocks se mantienen como fixtures de test.
- *
- * Documento rector: `docs/codex/modulos/nomina-mensual/arquitectura-administrador-generador.md`.
+ * NO importar desde servicios productivos ni UI runtime.
  */
 
 import type {
@@ -18,11 +11,11 @@ import type {
   NominaPeriodo,
   NominaPeriodoResumen,
   SegmentoNomina,
-} from '../models/nomina-periodo.models';
+} from '../../models/nomina-periodo.models';
 import type {
   MovimientoNomina,
   MovimientoRecurrente,
-} from '../models/movimiento-nomina.models';
+} from '../../models/movimiento-nomina.models';
 
 const FECHA_BASE = '2026-06-01T08:00:00.000Z';
 const FECHA_ACTUALIZACION = '2026-06-03T18:00:00.000Z';

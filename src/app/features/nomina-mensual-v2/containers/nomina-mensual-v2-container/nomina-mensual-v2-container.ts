@@ -806,7 +806,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       case 'calculation':
         return this.pasoCalculo()?.calculando() ?? false;
       case 'validation':
-        return this.pasoValidacion()?.aprobando() ?? false;
+        return this.pasoValidacion()?.validando() ?? false;
       case 'closure':
         return this.pasoCierre()?.ejecutando() ?? false;
       default:
