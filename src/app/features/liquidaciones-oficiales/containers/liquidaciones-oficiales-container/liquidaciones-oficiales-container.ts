@@ -33,6 +33,18 @@ import {
   type LiquidacionAccionUiEvent,
 } from '../../rules/liquidaciones-acciones-ui.rules';
 import { LiquidacionesOficialesService } from '../../services/liquidaciones-oficiales.service';
+import { NominaPeriodoService } from '../../../nomina-mensual/services/nomina-periodo.service';
+import type { NominaPeriodo } from '../../../nomina-mensual/models/nomina-periodo.models';
+import type { NominaLiquidacionResumen } from '../../../nomina-mensual/models/nomina-consolidacion.models';
+import {
+  formatearFechaLiquidacion,
+  prepararFilasLiquidacionesInternas,
+} from '../../../nomina-mensual/presenters/nomina-liquidaciones-internas.presenter';
+import {
+  calcularTrabajadoresSinLiquidacion,
+  esLiquidacionesSoloLectura,
+  puedeRegenerarLiquidacionesInternas,
+} from '../../../nomina-mensual/rules/nomina-liquidaciones-internas-ui.rules';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import type { ShellStatusChipTone } from '../../../../layout/shell-page-context.service';
 
@@ -56,9 +68,46 @@ import type { ShellStatusChipTone } from '../../../../layout/shell-page-context.
 export class LiquidacionesOficialesContainer {
   readonly periodoActivo = inject(PeriodoActivoService);
   private readonly service = inject(LiquidacionesOficialesService);
+  private readonly nominaService = inject(NominaPeriodoService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly queryParams = toSignal(this.route.queryParams, { initialValue: {} });
+
+  readonly nominaPeriodoId = computed(() => {
+    const params = this.queryParams() as Record<string, unknown>;
+    const id = params['nominaPeriodoId'];
+    return typeof id === 'string' && id.trim() ? id.trim() : null;
+  });
+  readonly modoNominaInterna = computed(() => !!this.nominaPeriodoId());
+  readonly nominaInterna = signal<NominaPeriodo | null>(null);
+  readonly liquidacionesInternas = signal<readonly NominaLiquidacionResumen[]>([]);
+  readonly cargandoNominaInterna = signal(false);
+  readonly regenerandoInterna = signal(false);
+  readonly confirmacionRegeneracionInternaVisible = signal(false);
+  readonly formatearFechaLiquidacion = formatearFechaLiquidacion;
+
+  readonly filasLiquidacionesInternas = computed(() =>
+    prepararFilasLiquidacionesInternas(
+      this.liquidacionesInternas(),
+      this.nominaInterna()?.estado ?? 'borrador',
+    ),
+  );
+  readonly soloLecturaInterna = computed(() =>
+    esLiquidacionesSoloLectura(this.nominaInterna()?.estado ?? 'borrador'),
+  );
+  readonly puedeRegenerarInterna = computed(() =>
+    puedeRegenerarLiquidacionesInternas(
+      this.nominaInterna()?.estado ?? 'borrador',
+      this.nominaInterna()?.evidenciaCalculo?.calculoVigente ?? false,
+    ),
+  );
+  readonly trabajadoresSinLiquidacionInterna = computed(() => {
+    const vigente = this.filasLiquidacionesInternas().find((f) => f.clasificacion === 'vigente');
+    return calcularTrabajadoresSinLiquidacion(
+      this.nominaInterna()?.trabajadorIds.length ?? 0,
+      vigente?.totalTrabajadores,
+    );
+  });
 
   readonly periodoSeleccionado = computed(() => this.periodoActivo.getPeriodo());
   readonly volverNominaQuery = computed(() => ({ periodo: this.periodoSeleccionado() }));
@@ -180,11 +229,68 @@ export class LiquidacionesOficialesContainer {
 
     effect(() => {
       this.periodoSeleccionado();
+      this.nominaPeriodoId();
       untracked(() => {
         this.resetearEstadoPeriodo();
         void this.consultar();
+        void this.cargarNominaInterna();
       });
     });
+  }
+
+  private async cargarNominaInterna(): Promise<void> {
+    const id = this.nominaPeriodoId();
+    if (!id) {
+      this.nominaInterna.set(null);
+      this.liquidacionesInternas.set([]);
+      return;
+    }
+    this.cargandoNominaInterna.set(true);
+    try {
+      const [nomina, liquidaciones] = await Promise.all([
+        this.nominaService.obtenerNomina(id),
+        this.nominaService.listarLiquidacionesNomina(id),
+      ]);
+      if (this.nominaPeriodoId() !== id) return;
+      this.nominaInterna.set(nomina);
+      this.liquidacionesInternas.set(liquidaciones);
+    } catch (error) {
+      if (this.nominaPeriodoId() !== id) return;
+      this.error.set(error instanceof Error ? error.message : 'No fue posible cargar liquidaciones de la nómina.');
+    } finally {
+      if (this.nominaPeriodoId() === id) {
+        this.cargandoNominaInterna.set(false);
+      }
+    }
+  }
+
+  solicitarRegeneracionInterna(): void {
+    if (!this.puedeRegenerarInterna()) return;
+    this.confirmacionRegeneracionInternaVisible.set(true);
+  }
+
+  cancelarRegeneracionInterna(): void {
+    this.confirmacionRegeneracionInternaVisible.set(false);
+  }
+
+  async confirmarRegeneracionInterna(): Promise<void> {
+    const id = this.nominaPeriodoId();
+    if (!id || !this.puedeRegenerarInterna()) return;
+    this.confirmacionRegeneracionInternaVisible.set(false);
+    this.regenerandoInterna.set(true);
+    this.error.set(null);
+    try {
+      await this.nominaService.generarLiquidacionesNomina(id);
+      await this.cargarNominaInterna();
+    } catch (error) {
+      this.error.set(error instanceof Error ? error.message : 'No fue posible regenerar liquidaciones.');
+    } finally {
+      this.regenerandoInterna.set(false);
+    }
+  }
+
+  volverAdministradorNomina(): void {
+    void this.router.navigate(['/remuneraciones/nominas']);
   }
 
   consultar(): Promise<void> {

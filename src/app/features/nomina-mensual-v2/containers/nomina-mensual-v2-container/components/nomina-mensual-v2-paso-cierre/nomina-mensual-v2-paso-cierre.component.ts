@@ -17,6 +17,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/message-box.component';
 import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 
@@ -41,6 +42,16 @@ import {
   esCalculoNoVigente,
 } from '../../facade/nomina-mensual-v2-navegacion';
 import type { NominaCabeceraCambiadaEvent } from '../../../../models/nomina-cabecera-cambiada.models';
+import {
+  formatearFechaLiquidacion,
+  liquidacionVigente,
+  prepararFilasLiquidacionesInternas,
+} from '../../../../../nomina-mensual/presenters/nomina-liquidaciones-internas.presenter';
+import {
+  calcularTrabajadoresSinLiquidacion,
+  esLiquidacionesSoloLectura,
+  puedeRegenerarLiquidacionesInternas,
+} from '../../../../../nomina-mensual/rules/nomina-liquidaciones-internas-ui.rules';
 
 interface ChecklistItem {
   id: string;
@@ -60,8 +71,10 @@ interface ChecklistItem {
 export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   private readonly servicio = inject(NominaPeriodoService);
   private readonly capabilities = inject(NominaMensualCapabilitiesService);
+  private readonly router = inject(Router);
 
   readonly estadoLabel = estadoNominaToLabel;
+  readonly formatearFechaLiquidacion = formatearFechaLiquidacion;
 
   readonly nominaPeriodoId = input<string | null>(null);
   readonly nominaCabeceraCambiada = output<NominaCabeceraCambiadaEvent>();
@@ -79,6 +92,7 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   readonly mostrarReabrir = signal(false);
   readonly confirmarCierreVisible = signal(false);
   readonly confirmarAprobacionVisible = signal(false);
+  readonly confirmarGeneracionLiquidacionesVisible = signal(false);
 
   readonly esMensualConsolidadora = computed(() => {
     const n = this.nomina();
@@ -174,6 +188,32 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   readonly versionCalculo = computed(() => this.nomina()?.evidenciaCalculo?.versionCalculo ?? 0);
   readonly mensajeCalculoNoVigente = MENSAJE_CALCULO_NO_VIGENTE;
 
+  readonly filasLiquidaciones = computed(() =>
+    prepararFilasLiquidacionesInternas(
+      this.liquidaciones(),
+      this.nomina()?.estado ?? 'borrador',
+    ),
+  );
+  readonly liquidacionVigente = computed(() => liquidacionVigente(this.filasLiquidaciones()));
+  readonly soloLecturaLiquidaciones = computed(() =>
+    esLiquidacionesSoloLectura(this.nomina()?.estado ?? 'borrador'),
+  );
+  readonly puedeRegenerarLiquidaciones = computed(() =>
+    puedeRegenerarLiquidacionesInternas(
+      this.nomina()?.estado ?? 'borrador',
+      !this.calculoNoVigente(),
+    ) && this.puedeGenerarLiquidaciones(),
+  );
+  readonly trabajadoresSinLiquidacion = computed(() =>
+    calcularTrabajadoresSinLiquidacion(
+      this.nomina()?.trabajadorIds.length ?? this.resumen()?.totalTrabajadores ?? 0,
+      this.liquidacionVigente()?.totalTrabajadores,
+    ),
+  );
+  readonly etiquetaAccionLiquidaciones = computed(() =>
+    this.liquidaciones().length > 0 ? 'Regenerar liquidaciones' : 'Generar liquidaciones',
+  );
+
   constructor() {
     effect(() => {
       const id = this.nominaPeriodoId();
@@ -250,11 +290,16 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   async generarLiquidaciones(): Promise<void> {
     const id = this.nominaPeriodoId();
     if (!id) return;
+    this.confirmarGeneracionLiquidacionesVisible.set(false);
     this.ejecutando.set(true);
     this.error.set(null);
     try {
       await this.servicio.generarLiquidacionesNomina(id);
-      this.mensaje.set('Liquidaciones generadas correctamente.');
+      this.mensaje.set(
+        this.liquidaciones().length > 0
+          ? 'Liquidaciones regeneradas. La versión anterior queda como superada.'
+          : 'Liquidaciones generadas correctamente.',
+      );
       await this.cargar(id);
       this.nominaCabeceraCambiada.emit({
         trazabilidad: { tipo: 'liquidaciones', motivo: 'Liquidaciones generadas.' },
@@ -265,6 +310,24 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
     } finally {
       this.ejecutando.set(false);
     }
+  }
+
+  solicitarGeneracionLiquidaciones(): void {
+    if (!this.puedeRegenerarLiquidaciones()) return;
+    this.confirmarGeneracionLiquidacionesVisible.set(true);
+  }
+
+  verLiquidacionesCompletas(): void {
+    const id = this.nominaPeriodoId();
+    const nomina = this.nomina();
+    if (!id || !nomina?.evidenciaCalculo?.idCalculoPeriodo) return;
+    void this.router.navigate(['/remuneraciones/liquidaciones'], {
+      queryParams: {
+        periodo: nomina.periodo,
+        nominaPeriodoId: id,
+        idCalculoPeriodo: nomina.evidenciaCalculo.idCalculoPeriodo,
+      },
+    });
   }
 
   async cerrarNomina(): Promise<void> {

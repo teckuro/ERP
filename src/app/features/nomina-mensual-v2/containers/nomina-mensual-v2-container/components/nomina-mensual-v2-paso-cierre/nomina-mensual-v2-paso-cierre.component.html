@@ -79,6 +79,104 @@
     </section>
   }
 
+  @if (filasLiquidaciones().length > 0 || !cerrada()) {
+    <section class="paso-cierre__panel" aria-labelledby="paso-cierre-liquidaciones">
+      <header class="paso-cierre__panel-head">
+        <div>
+          <h3 id="paso-cierre-liquidaciones" class="paso-cierre__panel-title">Liquidaciones internas</h3>
+          <p class="paso-cierre__panel-copy">
+            @if (soloLecturaLiquidaciones()) {
+              Evidencia congelada por cierre. Solo consulta; no se pueden regenerar.
+            } @else {
+              Versiones materializadas desde el cálculo aprobado. Regenerar crea una versión nueva.
+            }
+          </p>
+        </div>
+        @if (filasLiquidaciones().length > 0) {
+          <button
+            type="button"
+            class="paso-cierre__btn is-ghost"
+            (click)="verLiquidacionesCompletas()"
+          >
+            Ver detalle por trabajador
+          </button>
+        }
+      </header>
+
+      @if (liquidacionVigente(); as vigente) {
+        <dl class="paso-cierre__liq-resumen">
+          <div>
+            <dt>Versión vigente</dt>
+            <dd>v{{ vigente.version }} · {{ vigente.etiquetaClasificacion }}</dd>
+          </div>
+          <div>
+            <dt>Trabajadores liquidados</dt>
+            <dd>{{ vigente.totalTrabajadores }}</dd>
+          </div>
+          <div>
+            <dt>Líquido total</dt>
+            <dd>${{ vigente.totalLiquido | number:'1.0-0' }}</dd>
+          </div>
+          @if (trabajadoresSinLiquidacion() > 0) {
+            <div class="is-warning">
+              <dt>Sin liquidación</dt>
+              <dd>{{ trabajadoresSinLiquidacion() }} trabajador@if (trabajadoresSinLiquidacion() !== 1) {es}</dd>
+            </div>
+          }
+        </dl>
+      }
+
+      @if (filasLiquidaciones().length > 0) {
+        <div class="paso-cierre__liq-table-wrap">
+          <table class="paso-cierre__liq-table">
+            <thead>
+              <tr>
+                <th scope="col">Versión</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Trabajadores</th>
+                <th scope="col">Líquido</th>
+                <th scope="col">Generada</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (fila of filasLiquidaciones(); track fila.idLiquidacionPeriodo) {
+                <tr [class.is-vigente]="fila.clasificacion === 'vigente'">
+                  <td>v{{ fila.version }}</td>
+                  <td>
+                    <span class="paso-cierre__liq-estado" [attr.data-tono]="fila.tono">
+                      {{ fila.etiquetaClasificacion }}
+                    </span>
+                  </td>
+                  <td>{{ fila.totalTrabajadores }}</td>
+                  <td>${{ fila.totalLiquido | number:'1.0-0' }}</td>
+                  <td>{{ formatearFechaLiquidacion(fila.fechaGeneracion) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="paso-cierre__panel-copy">Aún no hay liquidaciones generadas para esta nómina.</p>
+      }
+    </section>
+  }
+
+  @if (cerrada() && liquidacionVigente(); as acta) {
+    <section class="paso-cierre__panel paso-cierre__panel--acta" aria-labelledby="paso-cierre-acta">
+      <h3 id="paso-cierre-acta" class="paso-cierre__panel-title">Acta de cierre · liquidación congelada</h3>
+      <p class="paso-cierre__panel-copy">
+        Nómina cerrada el {{ formatearFechaLiquidacion(nomina()?.closedAt ?? nomina()?.updatedAt ?? '') }}.
+        La versión v{{ acta.version }} queda como evidencia de solo lectura.
+      </p>
+      <dl class="paso-cierre__liq-resumen">
+        <div><dt>Trabajadores</dt><dd>{{ acta.totalTrabajadores }}</dd></div>
+        <div><dt>Haberes</dt><dd>${{ acta.totalHaberes | number:'1.0-0' }}</dd></div>
+        <div><dt>Descuentos</dt><dd>${{ acta.totalDescuentos | number:'1.0-0' }}</dd></div>
+        <div><dt>Líquido</dt><dd>${{ acta.totalLiquido | number:'1.0-0' }}</dd></div>
+      </dl>
+    </section>
+  }
+
   @if (!cerrada() && (nomina()?.estado === 'validada' || nomina()?.estado === 'aprobada' || nomina()?.estado === 'liquidada')) {
     <section class="paso-cierre__panel" aria-labelledby="paso-cierre-acciones">
       <h3 id="paso-cierre-acciones" class="paso-cierre__panel-title">Acciones de cierre</h3>
@@ -97,10 +195,10 @@
           <button
             type="button"
             class="paso-cierre__btn is-secondary"
-            [disabled]="ejecutando() || calculoNoVigente()"
-            (click)="generarLiquidaciones()"
+            [disabled]="ejecutando() || !puedeRegenerarLiquidaciones()"
+            (click)="solicitarGeneracionLiquidaciones()"
           >
-            {{ ejecutando() ? 'Generando…' : 'Generar liquidaciones' }}
+            {{ ejecutando() ? 'Generando…' : etiquetaAccionLiquidaciones() }}
           </button>
         }
       </div>
@@ -157,6 +255,26 @@
     }
   </footer>
 </section>
+
+@if (confirmarGeneracionLiquidacionesVisible()) {
+  <app-message-box
+    mode="modal"
+    variant="warning"
+    eyebrow="Liquidaciones internas"
+    [title]="etiquetaAccionLiquidaciones()"
+    [message]="liquidaciones().length > 0
+      ? 'Se creará una nueva versión. La versión anterior quedará marcada como superada.'
+      : 'Se materializarán comprobantes internos por trabajador desde el cálculo aprobado.'"
+    detail="No se recalculan montos en este paso. Revisa trabajadores sin liquidación antes de continuar."
+    [primaryLabel]="ejecutando() ? 'Procesando…' : etiquetaAccionLiquidaciones()"
+    secondaryLabel="Cancelar"
+    [dismissible]="!ejecutando()"
+    [disableClose]="ejecutando()"
+    (action)="generarLiquidaciones()"
+    (secondary)="confirmarGeneracionLiquidacionesVisible.set(false)"
+    (dismiss)="confirmarGeneracionLiquidacionesVisible.set(false)"
+  />
+}
 
 @if (confirmarAprobacionVisible()) {
   <app-message-box

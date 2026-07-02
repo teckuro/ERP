@@ -19,6 +19,9 @@ function liquidacionMock(): NominaLiquidacionResumen {
     periodo: '2026-06',
     version: 1,
     estado: 'generada',
+    activo: true,
+    idLiquidacionReemplazada: null,
+    fechaGeneracion: '2026-06-01T00:00:00Z',
     totalTrabajadores: 2,
     totalHaberes: 100,
     totalDescuentos: 10,
@@ -71,6 +74,8 @@ function configurarTestBed(
         useValue: {
           puedeAccionesAdminNomina: () => true,
           puedeCerrarNomina: () => true,
+          puedeAprobarNomina: () => true,
+          puedeGenerarLiquidaciones: () => true,
           ...capabilities,
         },
       },

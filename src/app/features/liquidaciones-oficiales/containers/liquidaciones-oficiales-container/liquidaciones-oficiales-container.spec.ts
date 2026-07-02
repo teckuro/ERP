@@ -16,6 +16,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { LiquidacionesOficialesService } from '../../services/liquidaciones-oficiales.service';
+import { NominaPeriodoService } from '../../../nomina-mensual/services/nomina-periodo.service';
 import { LiquidacionesOficialesContainer } from './liquidaciones-oficiales-container';
 
 describe('LiquidacionesOficialesContainer', () => {
@@ -71,6 +72,14 @@ describe('LiquidacionesOficialesContainer', () => {
         ),
         PeriodoActivoService,
         { provide: LiquidacionesOficialesService, useValue: service },
+        {
+          provide: NominaPeriodoService,
+          useValue: {
+            obtenerNomina: vi.fn().mockResolvedValue(null),
+            listarLiquidacionesNomina: vi.fn().mockResolvedValue([]),
+            generarLiquidacionesNomina: vi.fn().mockResolvedValue(undefined),
+          },
+        },
       ],
     }).compileComponents();
 

@@ -389,3 +389,80 @@
     flex-direction: column;
   }
 }
+
+.liq-nomina-interna {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--erp-border);
+  border-radius: 6px;
+  background: var(--erp-surface-soft);
+}
+
+.liq-nomina-interna__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.liq-nomina-interna__eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--erp-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.liq-nomina-interna__head h2 {
+  margin: 4px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.liq-nomina-interna__copy {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--erp-muted);
+}
+
+.liq-nomina-interna__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.liq-nomina-interna__table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--erp-border);
+  border-radius: 6px;
+  background: var(--erp-surface);
+}
+
+.liq-nomina-interna__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.liq-nomina-interna__table th,
+.liq-nomina-interna__table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--erp-border);
+}
+
+.liq-nomina-interna__table th {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--erp-muted);
+  background: var(--erp-surface-soft);
+}
+
+.liq-nomina-interna__table tr.is-vigente td {
+  background: var(--erp-ok-soft);
+}

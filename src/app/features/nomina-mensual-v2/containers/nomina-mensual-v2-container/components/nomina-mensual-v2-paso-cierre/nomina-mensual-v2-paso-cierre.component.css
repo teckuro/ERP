@@ -343,3 +343,99 @@
   font-size: 12px;
   color: #475569;
 }
+
+.paso-cierre__panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.paso-cierre__liq-resumen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin: 0;
+}
+
+.paso-cierre__liq-resumen div {
+  min-width: 7rem;
+}
+
+.paso-cierre__liq-resumen dt {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.paso-cierre__liq-resumen dd {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+.paso-cierre__liq-resumen .is-warning dd {
+  color: #b45309;
+}
+
+.paso-cierre__liq-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.paso-cierre__liq-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.paso-cierre__liq-table th,
+.paso-cierre__liq-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #eef0eb;
+}
+
+.paso-cierre__liq-table th {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  background: #f8fafc;
+}
+
+.paso-cierre__liq-table tr.is-vigente td {
+  background: #f0fdf4;
+}
+
+.paso-cierre__liq-estado {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.paso-cierre__liq-estado[data-tono='success'] {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.paso-cierre__liq-estado[data-tono='neutral'] {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.paso-cierre__liq-estado[data-tono='warning'] {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.paso-cierre__panel--acta {
+  border-color: #bfdbfe;
+  background: #f8fafc;
+}

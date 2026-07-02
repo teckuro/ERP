@@ -1,4 +1,73 @@
 <div class="liq-page">
+  @if (modoNominaInterna()) {
+    <section class="liq-nomina-interna" aria-label="Liquidaciones de la nómina">
+      <header class="liq-nomina-interna__head">
+        <div>
+          <p class="liq-nomina-interna__eyebrow">Nómina · {{ nominaInterna()?.empresaNombre ?? 'Cargando…' }}</p>
+          <h2>Liquidaciones internas · {{ nominaInterna()?.periodo ?? periodoActivo.etiqueta() }}</h2>
+          <p class="liq-nomina-interna__copy">
+            @if (soloLecturaInterna()) {
+              Evidencia congelada por cierre. Solo consulta.
+            } @else {
+              Historial de versiones materializadas desde el cálculo aprobado.
+            }
+          </p>
+        </div>
+        <div class="liq-nomina-interna__actions">
+          <button type="button" class="liq-secondary-link" (click)="volverAdministradorNomina()">
+            Volver al administrador
+          </button>
+          @if (puedeRegenerarInterna()) {
+            <app-button
+              variant="outline"
+              size="sm"
+              [disabled]="regenerandoInterna() || cargandoNominaInterna()"
+              (click)="solicitarRegeneracionInterna()"
+            >
+              {{ liquidacionesInternas().length > 0 ? 'Regenerar' : 'Generar' }}
+            </app-button>
+          }
+        </div>
+      </header>
+
+      @if (cargandoNominaInterna()) {
+        <p class="liq-empty-inline">Cargando liquidaciones de la nómina…</p>
+      } @else if (filasLiquidacionesInternas().length > 0) {
+        @if (trabajadoresSinLiquidacionInterna() > 0) {
+          <p class="liq-status-note liq-status-note--review">
+            {{ trabajadoresSinLiquidacionInterna() }} trabajador(es) en dotación aún sin liquidación en la versión vigente.
+          </p>
+        }
+        <div class="liq-nomina-interna__table-wrap">
+          <table class="liq-nomina-interna__table">
+            <thead>
+              <tr>
+                <th scope="col">Versión</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Trabajadores</th>
+                <th scope="col">Líquido</th>
+                <th scope="col">Generada</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (fila of filasLiquidacionesInternas(); track fila.idLiquidacionPeriodo) {
+                <tr [class.is-vigente]="fila.clasificacion === 'vigente'">
+                  <td>v{{ fila.version }}</td>
+                  <td>{{ fila.etiquetaClasificacion }}</td>
+                  <td>{{ fila.totalTrabajadores }}</td>
+                  <td>{{ money(fila.totalLiquido) }}</td>
+                  <td>{{ formatearFechaLiquidacion(fila.fechaGeneracion) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="liq-empty-inline">Esta nómina aún no tiene liquidaciones generadas.</p>
+      }
+    </section>
+  }
+
   @let estado = estadoPeriodo();
   @let resumen = resumenFinanciero();
   @let flujo = resumenFlujoTrabajadores();
@@ -187,6 +256,24 @@
       </dl>
     }
   </details>
+
+  @if (confirmacionRegeneracionInternaVisible()) {
+    <app-message-box
+      variant="warning"
+      mode="modal"
+      title="{{ liquidacionesInternas().length > 0 ? 'Regenerar liquidaciones' : 'Generar liquidaciones' }}"
+      message="{{ liquidacionesInternas().length > 0
+        ? 'Se creará una nueva versión. La anterior quedará como superada.'
+        : 'Se materializarán comprobantes internos por trabajador.' }}"
+      detail="No se recalculan montos en este paso."
+      secondaryLabel="Cancelar"
+      primaryLabel="{{ regenerandoInterna() ? 'Procesando…' : (liquidacionesInternas().length > 0 ? 'Regenerar' : 'Generar') }}"
+      [dismissible]="!regenerandoInterna()"
+      (secondary)="cancelarRegeneracionInterna()"
+      (dismiss)="cancelarRegeneracionInterna()"
+      (action)="confirmarRegeneracionInterna()"
+    ></app-message-box>
+  }
 
   @if (confirmacionGeneracionVisible()) {
     <app-message-box

@@ -3055,3 +3055,12 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **CSS local** container: franja contexto + responsive 1024/768 px.
 - **Tests**: presenter contexto + suite v2 en verde.
 - **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-02 - F18c: vista de liquidaciones internas
+
+- **`nomina-liquidaciones-internas.presenter` + rules**: clasificación vigente / superada / congelada; trabajadores sin liquidación; regeneración pre-cierre.
+- **`NominaLiquidacionResumen`**: campos `activo`, `idLiquidacionReemplazada`, `fechaGeneracion` mapeados desde BD.
+- **`nomina-mensual-v2-paso-cierre`**: panel de versiones, resumen vigente, acta congelada post-cierre, confirmación MessageBox al generar/regenerar, enlace a detalle por trabajador.
+- **`liquidaciones-oficiales-container`**: modo `nominaPeriodoId` (desde Administrador/Generador) con historial F15 y regeneración confirmada.
+- **Tests**: presenter + rules + suite v2/cierre en verde.
+- **Sin tocar**: estilos globales, SQL, motor.

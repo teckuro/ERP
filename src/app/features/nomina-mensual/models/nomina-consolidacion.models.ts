@@ -27,6 +27,9 @@ export interface NominaLiquidacionResumen {
   readonly periodo: string;
   readonly version: number;
   readonly estado: string;
+  readonly activo: boolean;
+  readonly idLiquidacionReemplazada: number | null;
+  readonly fechaGeneracion: string;
   readonly totalTrabajadores: number;
   readonly totalHaberes: number;
   readonly totalDescuentos: number;
