@@ -34,6 +34,28 @@
       (volverPasoAnterior)="intentarIrAPaso($event)"
     />
 
+    @if (contextoNomina().items.length > 0) {
+      <div class="nmv2-context-franja" role="status" aria-label="Contexto de la nómina">
+        @for (item of contextoNomina().items; track item.id) {
+          <div class="nmv2-context-franja__item">
+            <span class="nmv2-context-franja__label">{{ item.label }}</span>
+            <strong class="nmv2-context-franja__value">{{ item.value }}</strong>
+          </div>
+        }
+      </div>
+    }
+
+    @if (rehidratacionError(); as errorRehidratacion) {
+      <app-message-box
+        mode="inline"
+        variant="warning"
+        title="Reanudación parcial"
+        [message]="errorRehidratacion"
+        [dismissible]="true"
+        (dismiss)="rehidratacionError.set(null)"
+      />
+    }
+
     @if (bannerHandoff(); as banner) {
       <div
         class="nmv2-banner-handoff"

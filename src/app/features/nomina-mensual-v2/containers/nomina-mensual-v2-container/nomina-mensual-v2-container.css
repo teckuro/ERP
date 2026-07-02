@@ -98,6 +98,75 @@ button:disabled {
   background: #ffffff;
 }
 
+/* Franja de contexto fijo (F18b — AG-CTX-04) -------------------------------- */
+
+.nmv2-context-franja {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px 16px;
+  margin: 0;
+  padding: 8px 16px;
+  border-bottom: 1px solid #eef0eb;
+  background: #ffffff;
+}
+
+.nmv2-context-franja__item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-right: 16px;
+  border-right: 1px solid #eef0eb;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.nmv2-context-franja__item:last-child {
+  border-right: 0;
+  padding-right: 0;
+}
+
+.nmv2-context-franja__label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.nmv2-context-franja__value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 16rem;
+}
+
+@media (max-width: 1024px) {
+  .nmv2-context-franja {
+    gap: 8px 12px;
+    padding: 6px 12px;
+  }
+
+  .nmv2-context-franja__item {
+    padding-right: 12px;
+  }
+
+  .nmv2-context-franja__value {
+    max-width: 12rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .nmv2-context-franja__item {
+    flex: 1 1 calc(50% - 8px);
+    border-right: 0;
+    padding-right: 0;
+  }
+}
+
 .nmv2-step-body {
   display: flex;
   flex: 1 1 auto;

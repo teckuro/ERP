@@ -3046,3 +3046,12 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **CSS local** `administrador-nominas-container.css`: patrón stats inline (dotación v2); media queries 1024/768 px para KPIs y acciones por fila.
 - **Tests**: specs presenter, util presentación y smoke container en verde.
 - **Sin tocar**: estilos globales, SQL, motor, data-grid compartido.
+
+## 2026-07-02 - F18b: pulido UX Generador y rehidratación
+
+- **`nomina-generador-context.presenter`**: contexto fijo empresa, período, rango, tipo/naturaleza, estado y versión de cálculo (reutiliza etiquetas del Administrador).
+- **`nomina-mensual-v2-container`**: franja de contexto bajo stepper; subtítulo shell enriquecido; chip de estado + paso; aviso recuperable si falla rehidratación de paso visitado.
+- **CTA único shell (AG-CTA-01)**: botones de paso Cálculo/Movimientos/Cierre degradados a secundario/ghost; avance principal sigue en header.
+- **CSS local** container: franja contexto + responsive 1024/768 px.
+- **Tests**: presenter contexto + suite v2 en verde.
+- **Sin tocar**: estilos globales, SQL, motor.

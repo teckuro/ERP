@@ -15,6 +15,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
+import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { NominaPeriodoService } from '../../../nomina-mensual/services/nomina-periodo.service';
 import { NominaMensualCapabilitiesService } from '../../../nomina-mensual/services/nomina-mensual-capabilities.service';
@@ -55,11 +56,13 @@ import { NominaMensualV2OrquestadorPort } from './facade/nomina-mensual-v2-orque
 import { NominaMensualV2TrazabilidadDrawerComponent } from './components/nomina-mensual-v2-trazabilidad-drawer/nomina-mensual-v2-trazabilidad-drawer.component';
 import { NominaMensualV2TrazabilidadModalComponent } from './components/nomina-mensual-v2-trazabilidad-modal/nomina-mensual-v2-trazabilidad-modal.component';
 import type { NominaCabeceraCambiadaEvent } from '../../models/nomina-cabecera-cambiada.models';
+import { construirContextoGeneradorNomina } from '../../presenters/nomina-generador-context.presenter';
 
 @Component({
   selector: 'app-nomina-mensual-v2-container',
   standalone: true,
   imports: [
+    MessageBoxComponent,
     NominaMensualV2StepperComponent,
     NominaMensualV2PasoParametrosComponent,
     NominaMensualV2PasoDotacionComponent,
@@ -127,14 +130,16 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
    * después de entrar.
    */
   private readonly pasoVisitadoRehidratado = signal(false);
+  readonly rehidratacionError = signal<string | null>(null);
+
+  readonly contextoNomina = computed(() => construirContextoGeneradorNomina(this.nominaCargada()));
 
   readonly pageTitle = computed(() => obtenerTituloPaso(this.currentStep()));
   readonly pageSubtitle = computed(() => {
-    const nomina = this.nominaCargada();
-    if (nomina?.naturaleza === 'rectificacion') {
-      return `Rectificación de ${nomina.periodo} · Original cerrada · ${obtenerSubtituloPaso(this.currentStep())}`;
-    }
-    return obtenerSubtituloPaso(this.currentStep());
+    const pasoSub = obtenerSubtituloPaso(this.currentStep());
+    const resumen = this.contextoNomina().resumenLinea;
+    if (!resumen) return pasoSub;
+    return `${resumen} — ${pasoSub}`;
   });
   readonly primaryActionLabel = computed(() => obtenerEtiquetaAccionPrincipal(this.currentStep()));
 
@@ -279,6 +284,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   }
 
   private async aplicarRehidratacionPasoVisitado(nominaPeriodoId: string): Promise<void> {
+    this.rehidratacionError.set(null);
     try {
       this.sincronizarHandoffDesdeQueryParams(this.route.snapshot.queryParamMap);
       const periodo = this.periodoActivo.periodoYm();
@@ -311,6 +317,9 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       }
     } catch (error) {
       console.warn('[Nómina V2] Rehidratación de paso visitado falló', error);
+      this.rehidratacionError.set(
+        'No fue posible reanudar el último paso visitado. Revisa el avance desde Parámetros o vuelve al administrador.',
+      );
     } finally {
       this.pasoVisitadoRehidratado.set(true);
     }
@@ -739,6 +748,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
         })
       : null;
     const currentIndex = ORDEN_PASOS_NOMINA.indexOf(paso);
+    const ctxNomina = this.contextoNomina();
 
     // Para los pasos 2..6 (`PasoNominaPort`) el CTA queda deshabilitado con
     // tooltip cuando el paso no está poblado correctamente. Parámetros
@@ -764,10 +774,15 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       ],
       pageTitle: this.pageTitle(),
       pageSubtitle: this.pageSubtitle(),
-      statusChip: {
-        label: `Paso ${currentIndex + 1} de ${ORDEN_PASOS_NOMINA.length}`,
-        tone: 'neutral',
-      },
+      statusChip: ctxNomina.estadoLabel
+        ? {
+            label: `${ctxNomina.estadoLabel} · Paso ${currentIndex + 1}/${ORDEN_PASOS_NOMINA.length}`,
+            tone: ctxNomina.estadoTone,
+          }
+        : {
+            label: `Paso ${currentIndex + 1} de ${ORDEN_PASOS_NOMINA.length}`,
+            tone: 'neutral',
+          },
       primaryAction: {
         label: accionParametros?.label ?? this.primaryActionLabel(),
         disabled: (accionParametros?.disabled ?? false)

@@ -38,7 +38,7 @@
       <div class="paso-mov__toolbar">
         <button
           type="button"
-          class="paso-mov__btn is-primary"
+          class="paso-mov__btn is-secondary"
           (click)="cargarPendientesGlobales()"
           [disabled]="aplicando() || !nominaPeriodoId() || !hayPendientesGlobales()"
           [attr.title]="
@@ -486,7 +486,7 @@
             >Cancelar</button>
             <button
               type="submit"
-              class="paso-mov__btn is-primary"
+              class="paso-mov__btn is-secondary"
               [disabled]="aplicando() || !puedeGuardarManual()"
             >Agregar movimiento</button>
           </footer>

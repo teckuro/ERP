@@ -10,6 +10,22 @@ import { crearNomina } from '../../../../../nomina-mensual/models/nomina-periodo
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
 import { NominaMensualCapabilitiesService } from '../../../../../nomina-mensual/services/nomina-mensual-capabilities.service';
 import { NominaMensualV2PasoCierreComponent } from './nomina-mensual-v2-paso-cierre.component';
+import type { NominaLiquidacionResumen } from '../../../../../nomina-mensual/models/nomina-consolidacion.models';
+
+function liquidacionMock(): NominaLiquidacionResumen {
+  return {
+    idLiquidacionPeriodo: 1,
+    nominaPeriodoId: 'np-1',
+    periodo: '2026-06',
+    version: 1,
+    estado: 'generada',
+    totalTrabajadores: 2,
+    totalHaberes: 100,
+    totalDescuentos: 10,
+    totalLiquido: 90,
+    createdAt: '2026-06-01T00:00:00Z',
+  };
+}
 
 function nominaMock(parcial: Partial<NominaPeriodo> = {}): NominaPeriodo {
   return crearNomina({
@@ -34,7 +50,7 @@ function nominaMock(parcial: Partial<NominaPeriodo> = {}): NominaPeriodo {
 
 function configurarTestBed(
   servicio?: Partial<Record<string, ReturnType<typeof vi.fn>>>,
-  capabilities?: Partial<{ puedeAccionesAdminNomina: () => boolean }>,
+  capabilities?: Partial<{ puedeAccionesAdminNomina: () => boolean; puedeCerrarNomina: () => boolean }>,
 ): void {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
@@ -54,6 +70,7 @@ function configurarTestBed(
         provide: NominaMensualCapabilitiesService,
         useValue: {
           puedeAccionesAdminNomina: () => true,
+          puedeCerrarNomina: () => true,
           ...capabilities,
         },
       },
@@ -227,6 +244,7 @@ describe('NominaMensualV2PasoCierreComponent (CIE-ENUM-01)', () => {
         incidenciasCriticas: [],
         advertencias: [],
       });
+      cmp.liquidaciones.set([liquidacionMock()]);
 
       const resultado = await cmp.avanzar();
 
@@ -272,7 +290,7 @@ describe('NominaMensualV2PasoCierreComponent (CIE-ENUM-01)', () => {
     });
 
     it('retorna ok:false sin permiso admin aunque la checklist esté lista', () => {
-      configurarTestBed(undefined, { puedeAccionesAdminNomina: () => false });
+      configurarTestBed(undefined, { puedeCerrarNomina: () => false });
       const fixture = TestBed.createComponent(NominaMensualV2PasoCierreComponent);
       const cmp = fixture.componentInstance;
       cmp.nomina.set(
@@ -295,6 +313,7 @@ describe('NominaMensualV2PasoCierreComponent (CIE-ENUM-01)', () => {
         incidenciasCriticas: [],
         advertencias: [],
       });
+      cmp.liquidaciones.set([liquidacionMock()]);
       const r = cmp.puedeContinuar();
       expect(r.ok).toBe(false);
       if (!r.ok) {
