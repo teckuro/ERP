@@ -1227,6 +1227,14 @@ export class NominaPeriodoService {
     return this.repo.obtenerResumenDotacion(nominaPeriodoId);
   }
 
+  /** F07b: ids del universo filtrado de dotación para acciones masivas. */
+  async listarIdsDotacion(
+    nominaPeriodoId: string,
+    filtro: FiltroRapidoDotacion,
+  ): Promise<string[]> {
+    return this.repo.listarIdsDotacion(nominaPeriodoId, filtro);
+  }
+
   async listarTrabajadoresElegiblesNomina(
     nominaPeriodoId: string,
     filtro: FiltroTrabajadoresElegiblesNomina,
@@ -1338,19 +1346,22 @@ export class NominaPeriodoService {
     trabajadorIds: string[],
     accion: AccionMasivaTrabajadores,
   ): Promise<PreviewAccionMasivaTrabajadores> {
-    const [incidencias, dotacion] = await Promise.all([
+    // F07b: sin cargar el universo completo de filas — incidencias no resueltas
+    // + ids de dotación bastan para el preview, a cualquier escala.
+    const [incidencias, idsDotacion] = await Promise.all([
       this.repo.listarIncidencias(nominaPeriodoId),
-      this.filtrarDotacion(
-        nominaPeriodoId,
-        {},
-        { page: 1, pageSize: 10000, total: 0 },
-      ),
+      this.repo.listarIdsDotacion(nominaPeriodoId, {}),
     ]);
 
     const idsSet = new Set(trabajadorIds);
-    const filasAfectadas = dotacion.filas.filter((f) => idsSet.has(f.trabajadorId));
-    const totalCriticas = filasAfectadas.reduce((acc, f) => acc + f.totalIncidenciasCriticas, 0);
-    const totalAdvertencias = filasAfectadas.reduce((acc, f) => acc + f.totalAdvertencias, 0);
+    const idsAfectados = idsDotacion.filter((id) => idsSet.has(id));
+    const afectadosSet = new Set(idsAfectados);
+    const totalCriticas = incidencias.filter(
+      (i) => i.severidad === 'critica' && i.trabajadorId && afectadosSet.has(i.trabajadorId),
+    ).length;
+    const totalAdvertencias = incidencias.filter(
+      (i) => i.severidad === 'advertencia' && i.trabajadorId && afectadosSet.has(i.trabajadorId),
+    ).length;
 
     const incidenciasBloqueantes = incidencias.filter(
       (i) => i.bloqueante && i.trabajadorId && idsSet.has(i.trabajadorId),
@@ -1360,12 +1371,12 @@ export class NominaPeriodoService {
     if (accion.tipo === 'agregar-movimiento') {
       const monto = accion.movimiento.monto;
       if (typeof monto === 'number') {
-        montoTotalEstimado = monto * filasAfectadas.length;
+        montoTotalEstimado = monto * idsAfectados.length;
       }
     }
 
     const mensajes: string[] = [];
-    mensajes.push(`Se aplicará a ${filasAfectadas.length} trabajadores.`);
+    mensajes.push(`Se aplicará a ${idsAfectados.length} trabajadores.`);
     if (montoTotalEstimado !== undefined) {
       mensajes.push(`Monto total estimado: $${montoTotalEstimado.toLocaleString('es-CL')}.`);
     }
@@ -1378,7 +1389,7 @@ export class NominaPeriodoService {
 
     return {
       accion,
-      totalTrabajadoresAfectados: filasAfectadas.length,
+      totalTrabajadoresAfectados: idsAfectados.length,
       montoTotalEstimado,
       totalIncidenciasCriticas: totalCriticas,
       totalAdvertencias,

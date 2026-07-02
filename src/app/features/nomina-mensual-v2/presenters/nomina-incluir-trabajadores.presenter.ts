@@ -134,5 +134,6 @@ export function filtroTrabajadoresElegiblesDesdeGrid(
   }
   const disponibilidad = values['disponibilidad'];
   if (disponibilidad === 'no') filtro.soloDisponibles = true;
+  if (disponibilidad === 'si') filtro.soloEnNomina = true;
   return filtro;
 }

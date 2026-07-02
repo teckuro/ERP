@@ -114,11 +114,20 @@ export interface DataGridExportEvent<T = unknown> {
   includeHiddenColumns: boolean;
 }
 
+/**
+ * Alcance de una acción masiva:
+ * - `page`: solo las filas seleccionadas visibles (comportamiento histórico).
+ * - `all-filtered`: todo el universo filtrado en servidor; `rows` trae solo la
+ *   página visible y el consumidor debe resolver los ids restantes vía RPC.
+ */
+export type DataGridBulkActionScope = 'page' | 'all-filtered';
+
 export interface DataGridBulkActionEvent<T = unknown> {
   action: DataGridBulkAction;
   rows: T[];
   value?: string;
   label?: string;
+  scope?: DataGridBulkActionScope;
 }
 
 export interface DataGridBulkActionResult<T = unknown> {

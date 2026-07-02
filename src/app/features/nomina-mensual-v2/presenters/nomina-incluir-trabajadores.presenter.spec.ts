@@ -44,14 +44,16 @@ describe('nomina-incluir-trabajadores.presenter', () => {
       ]);
     });
 
-    it('filtroTrabajadoresElegiblesDesdeGrid mapea búsqueda y solo elegibles', () => {
+    it('filtroTrabajadoresElegiblesDesdeGrid mapea búsqueda, solo elegibles y ya en nómina', () => {
       expect(
         filtroTrabajadoresElegiblesDesdeGrid({
           busqueda: ' ana ',
           disponibilidad: 'no',
         }),
       ).toEqual({ busqueda: 'ana', soloDisponibles: true });
-      expect(filtroTrabajadoresElegiblesDesdeGrid({ disponibilidad: 'si' })).toEqual({});
+      expect(filtroTrabajadoresElegiblesDesdeGrid({ disponibilidad: 'si' })).toEqual({
+        soloEnNomina: true,
+      });
     });
   });
 });

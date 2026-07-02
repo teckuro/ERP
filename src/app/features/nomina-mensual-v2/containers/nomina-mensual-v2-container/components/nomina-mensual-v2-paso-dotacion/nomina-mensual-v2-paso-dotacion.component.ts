@@ -197,11 +197,18 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
   ): Promise<void> {
     if (evento.action !== 'excluir-nomina') return;
     const id = this.nominaPeriodoId();
-    if (!id || evento.rows.length === 0) return;
-    const ids = evento.rows.map((fila) => fila.trabajadorId);
+    if (!id) return;
+    if (evento.scope !== 'all-filtered' && evento.rows.length === 0) return;
     this.aplicandoMasiva.set(true);
     this.errorMensaje.set(null);
     try {
+      // F07b: con alcance "universo filtrado" los ids se resuelven en servidor
+      // con los filtros vigentes, no solo con las filas de la página visible.
+      const ids =
+        evento.scope === 'all-filtered'
+          ? await this.servicio.listarIdsDotacion(id, this.filtro())
+          : evento.rows.map((fila) => fila.trabajadorId);
+      if (ids.length === 0) return;
       const preview = await this.servicio.previsualizarAccionMasiva(id, ids, {
         tipo: 'excluir-nomina',
       });

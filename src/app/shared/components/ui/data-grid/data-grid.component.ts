@@ -191,6 +191,12 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   @Input() hoverRows = true;
   @Input() bulkActionLoading = false;
   @Input() bulkActionResult: DataGridBulkActionResult<T> | null = null;
+  /**
+   * Opt-in (solo `serverSide`): permite extender la selección de la página al
+   * universo filtrado completo. El consumidor recibe `scope: 'all-filtered'`
+   * en el evento y resuelve los ids restantes vía RPC.
+   */
+  @Input() bulkSelectAllFiltered = false;
   @Input() bulkActions: DataGridBulkActionOption[] = [
     { id: 'activate', label: 'Activar', value: 'activo', tone: 'success', confirmLabel: 'Activar seleccion' },
     { id: 'deactivate', label: 'Desactivar', value: 'inactivo', tone: 'danger', confirmLabel: 'Desactivar seleccion' },
@@ -240,6 +246,8 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   draftFilterValues: Record<string, DataGridFilterValue> = {};
   pendingBulkAction: DataGridBulkActionOption | null = null;
   activeBulkAction: DataGridBulkAction | null = null;
+  /** true cuando el usuario extendió la selección al universo filtrado (serverSide). */
+  bulkScopeAllFiltered = false;
   notice: DataGridNotice | null = null;
 
   private visibleColumnIds = new Set<string>();
@@ -647,6 +655,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
       this.selectedRowKeys.add(key);
     } else {
       this.selectedRowKeys.delete(key);
+      this.bulkScopeAllFiltered = false;
     }
   }
 
@@ -662,10 +671,47 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
         this.selectedRowKeys.delete(key);
       }
     });
+    if (!checked) {
+      this.bulkScopeAllFiltered = false;
+    }
   }
 
   clearSelection(): void {
     this.selectedRowKeys.clear();
+    this.bulkScopeAllFiltered = false;
+  }
+
+  // -------------------------------------------------------------------------
+  // Selección de universo filtrado (opt-in serverSide, F07b)
+  // -------------------------------------------------------------------------
+
+  /** Muestra el enlace "Seleccionar los N del filtro" cuando la página completa está marcada. */
+  get canExtendSelectionToAllFiltered(): boolean {
+    return (
+      this.serverSide &&
+      this.bulkSelectAllFiltered &&
+      !this.bulkScopeAllFiltered &&
+      this.allPageRowsSelected &&
+      this.totalRowCount > this.rows.length
+    );
+  }
+
+  /** Conteo mostrado en la barra masiva y en la confirmación. */
+  get bulkSelectionCount(): number {
+    return this.bulkScopeAllFiltered ? this.totalRowCount : this.selectedRows.length;
+  }
+
+  get bulkBarVisible(): boolean {
+    return this.selectable && (this.selectedRows.length > 0 || this.bulkScopeAllFiltered);
+  }
+
+  extendSelectionToAllFiltered(): void {
+    if (!this.canExtendSelectionToAllFiltered) return;
+    this.bulkScopeAllFiltered = true;
+  }
+
+  limitSelectionToPage(): void {
+    this.bulkScopeAllFiltered = false;
   }
 
   // -------------------------------------------------------------------------
@@ -787,7 +833,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   requestBulkAction(action: DataGridBulkActionOption): void {
     const rows = this.selectedRows;
 
-    if (rows.length === 0) {
+    if (rows.length === 0 && !this.bulkScopeAllFiltered) {
       return;
     }
 
@@ -804,7 +850,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     const rows = this.selectedRows;
     this.pendingBulkAction = null;
 
-    if (rows.length === 0) {
+    if (rows.length === 0 && !this.bulkScopeAllFiltered) {
       return;
     }
 
@@ -814,6 +860,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
       rows,
       value: action.value,
       label: action.label,
+      scope: this.bulkScopeAllFiltered ? 'all-filtered' : 'page',
     });
   }
 
@@ -841,12 +888,14 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     if (!this.pendingBulkAction) {
       return [];
     }
-    const count = this.selectedRowKeys.size;
+    const count = this.bulkSelectionCount;
     const label = `${count} ${this.selectionLabel}`;
-    return [
+    const sections: MessageBoxSection[] = [
       {
         title: 'Principal',
-        text: `Se procesarán ${label} seleccionados.`,
+        text: this.bulkScopeAllFiltered
+          ? `Se procesarán ${label}: todos los resultados del filtro actual, no solo la página visible.`
+          : `Se procesarán ${label} seleccionados.`,
         tone: this.pendingBulkAction.tone === 'danger' || this.pendingBulkAction.tone === 'blocked' ? 'attention' : 'neutral',
       },
       {
@@ -857,6 +906,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
         tone: 'info',
       },
     ];
+    return sections;
   }
 
   get bulkConfirmationActions(): MessageBoxAction[] {

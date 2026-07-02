@@ -9,6 +9,23 @@
 
 ---
 
+## 2026-07-02 — Generador Nómina V2: F07b cierre dotación escalable (NOM-ADMIN-OPS-F07b)
+
+- **Selección de universo filtrado (`app-data-grid`, opt-in `bulkSelectAllFiltered`):**
+  al marcar toda la página en modo servidor aparece el enlace
+  «Seleccionar los N trabajadores del filtro»; la barra masiva y la confirmación
+  muestran el conteo total y aclaran que aplica a todos los resultados del filtro,
+  con opción «Limitar a esta página». Sin cambio de paleta ni layout (reusa la
+  barra masiva azul existente).
+- **Paso Dotación:** «Excluir de la nómina» con alcance universo filtrado resuelve
+  ids en servidor (`listar_ids_dotacion_nomina`), no solo la página visible.
+- **Picker «Agregar trabajadores»:** filtro «Ya en nómina» ahora se resuelve en
+  servidor (`p_solo_en_nomina`); antes la opción no filtraba.
+- **Preview masivo:** ya no carga hasta 10.000 filas; usa incidencias + ids.
+- **Pendiente (BKL-08):** E2E de escala 1000+ (queda para certificación).
+
+---
+
 ## 2026-06-30 — Generador Nómina V2: F07 dotación escalable (NOM-ADMIN-OPS-F07)
 
 - **Grilla dotación:** `app-data-grid` en modo servidor (50 filas/página); filtros

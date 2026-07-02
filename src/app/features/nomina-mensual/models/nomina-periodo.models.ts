@@ -351,6 +351,8 @@ export interface DotacionResumenNomina {
 export interface FiltroTrabajadoresElegiblesNomina {
   busqueda?: string;
   soloDisponibles?: boolean;
+  /** F07b: solo trabajadores que ya están en la nómina (resuelto en servidor). */
+  soloEnNomina?: boolean;
 }
 
 export interface ResumenTrabajadoresElegiblesNomina {

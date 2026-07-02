@@ -6497,6 +6497,19 @@ export type Database = {
         Args: { p_clave: string; p_valor?: Json }
         Returns: undefined
       }
+      listar_ids_dotacion_nomina: {
+        Args: {
+          p_busqueda?: string
+          p_con_incidencias?: boolean
+          p_con_movimientos?: boolean
+          p_estado?: string
+          p_nomina_id: string
+          p_segmento_id?: string
+        }
+        Returns: {
+          trabajador_id: number
+        }[]
+      }
       listar_dotacion_nomina: {
         Args: {
           p_busqueda?: string
@@ -6527,6 +6540,7 @@ export type Database = {
           p_page?: number
           p_page_size?: number
           p_solo_disponibles?: boolean
+          p_solo_en_nomina?: boolean
         }
         Returns: {
           cargo: string

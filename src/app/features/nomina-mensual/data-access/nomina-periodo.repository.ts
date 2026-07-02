@@ -450,6 +450,26 @@ export class NominaPeriodoRepository {
     };
   }
 
+  /**
+   * F07b: ids del universo filtrado de dotación, sin paginar filas completas.
+   * Soporta acciones masivas sobre el conjunto filtrado (no solo la página).
+   */
+  async listarIdsDotacion(
+    nominaPeriodoId: string,
+    filtro: FiltroRapidoDotacion,
+  ): Promise<string[]> {
+    const { data, error } = await this.supabase.rpc('listar_ids_dotacion_nomina', {
+      p_nomina_id: nominaPeriodoId,
+      p_busqueda: filtro.busqueda ?? undefined,
+      p_estado: filtro.estado ?? undefined,
+      p_segmento_id: filtro.segmentoId ?? undefined,
+      p_con_incidencias: filtro.conIncidencias ?? undefined,
+      p_con_movimientos: filtro.conMovimientos ?? undefined,
+    });
+    throwIfError(error, 'listarIdsDotacion');
+    return (data ?? []).map((row) => String(row.trabajador_id));
+  }
+
   async obtenerResumenDotacion(nominaPeriodoId: string): Promise<DotacionResumenNomina> {
     const { data, error } = await this.supabase.rpc('resumen_dotacion_nomina', {
       p_nomina_id: nominaPeriodoId,
@@ -486,6 +506,7 @@ export class NominaPeriodoRepository {
       p_page_size: paginacion.pageSize,
       p_busqueda: filtro.busqueda ?? undefined,
       p_solo_disponibles: filtro.soloDisponibles ?? undefined,
+      p_solo_en_nomina: filtro.soloEnNomina ?? undefined,
     });
     throwIfError(error, 'listarTrabajadoresElegiblesNomina');
     const rows = data ?? [];

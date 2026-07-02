@@ -265,6 +265,66 @@ describe('NominaMensualV2PasoDotacionComponent (DOT-DET-04)', () => {
     });
   });
 
+  describe('Acción masiva — alcance universo filtrado (F07b)', () => {
+    function servicioConMasiva(): Record<string, unknown> {
+      return {
+        ...servicio,
+        listarIdsDotacion: vi.fn().mockResolvedValue(['tr-1', 'tr-2', 'tr-3']),
+        previsualizarAccionMasiva: vi.fn().mockResolvedValue({
+          accion: { tipo: 'excluir-nomina' },
+          totalTrabajadoresAfectados: 3,
+          totalIncidenciasCriticas: 0,
+          totalAdvertencias: 0,
+          mensajes: [],
+          puedeAplicar: true,
+        }),
+      };
+    }
+
+    it('scope all-filtered resuelve los ids con el filtro vigente vía servicio', async () => {
+      const svc = servicioConMasiva();
+      configurarTestBed(svc);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoDotacionComponent);
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      const cmp = fixture.componentInstance;
+      cmp.filtro.set({ estado: 'advertencia' });
+
+      await cmp.manejarAccionMasiva({
+        action: 'excluir-nomina',
+        rows: [filaMock({ trabajadorId: 'tr-1' })],
+        scope: 'all-filtered',
+      });
+
+      expect(svc['listarIdsDotacion']).toHaveBeenCalledWith('np-1', { estado: 'advertencia' });
+      expect(svc['aplicarAccionMasiva']).toHaveBeenCalledWith(
+        'np-1',
+        ['tr-1', 'tr-2', 'tr-3'],
+        { tipo: 'excluir-nomina' },
+      );
+    });
+
+    it('scope page usa solo las filas seleccionadas de la página', async () => {
+      const svc = servicioConMasiva();
+      configurarTestBed(svc);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoDotacionComponent);
+      fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+      const cmp = fixture.componentInstance;
+
+      await cmp.manejarAccionMasiva({
+        action: 'excluir-nomina',
+        rows: [filaMock({ trabajadorId: 'tr-9' })],
+        scope: 'page',
+      });
+
+      expect(svc['listarIdsDotacion']).not.toHaveBeenCalled();
+      expect(svc['aplicarAccionMasiva']).toHaveBeenCalledWith(
+        'np-1',
+        ['tr-9'],
+        { tipo: 'excluir-nomina' },
+      );
+    });
+  });
+
   describe('Picker "Agregar trabajadores"', () => {
     it('abrirPicker marca el modal como abierto cuando hay nómina activa', () => {
       configurarTestBed(servicio);
