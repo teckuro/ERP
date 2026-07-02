@@ -13,6 +13,7 @@ import type {
 } from '../../../shared/components/ui/data-grid/data-grid.types';
 import type {
   EstadoNomina,
+  NaturalezaNomina,
   NominaPeriodoResumen,
   TipoNomina,
 } from '../models/nomina-periodo.models';
@@ -173,6 +174,27 @@ const ETIQUETAS_TIPO: Record<TipoNomina, string> = {
   extraordinaria: 'Extraordinaria',
 };
 
+const ETIQUETAS_NATURALEZA: Record<NaturalezaNomina, string> = {
+  liquidacion_legal: 'Liquidación legal',
+  anticipo: 'Anticipo',
+  pago_extraordinario: 'Pago extraordinario',
+  rectificacion: 'Rectificación',
+};
+
+function textoBusquedaFila(fila: NominaPeriodoResumen): string {
+  return normalizarTextoBusqueda([
+    fila.empresaNombre,
+    fila.periodo,
+    ETIQUETAS_ESTADO_NOMINA[fila.estado],
+    ETIQUETAS_TIPO[fila.tipo],
+    ETIQUETAS_NATURALEZA[fila.naturaleza],
+  ].join(' '));
+}
+
+function normalizarTextoBusqueda(texto: string): string {
+  return texto.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+}
+
 /**
  * Construye los filtros del data-grid a partir del conjunto cargado.
  *
@@ -184,6 +206,7 @@ export function crearFiltrosAdminNominas(
 ): DataGridFilter<NominaPeriodoResumen>[] {
   const periodos = [...new Set(resumenes.map((r) => r.periodo))].sort().reverse();
   const tipos = [...new Set(resumenes.map((r) => r.tipo))];
+  const naturalezas = [...new Set(resumenes.map((r) => r.naturaleza))];
   const estadosPresentes = [...new Set(resumenes.map((r) => r.estado))];
   const contarVista = (vista: VistaOperativaAdminNominas): number =>
     resumenes.filter((fila) => coincideVistaOperativa(fila, vista)).length;
@@ -214,10 +237,10 @@ export function crearFiltrosAdminNominas(
     matchMode: 'tokens',
     placeholder: 'Empresa, período o estado',
     predicate: (fila, value) => {
-      const termino = String(value ?? '').trim().toLowerCase();
+      const termino = String(value ?? '').trim();
       if (!termino) return true;
-      const tokens = termino.split(/\s+/).filter(Boolean);
-      const texto = `${fila.empresaNombre} ${fila.periodo} ${ETIQUETAS_ESTADO_NOMINA[fila.estado]} ${ETIQUETAS_TIPO[fila.tipo]}`.toLowerCase();
+      const tokens = normalizarTextoBusqueda(termino).split(/\s+/).filter(Boolean);
+      const texto = textoBusquedaFila(fila);
       return tokens.every((token) => texto.includes(token));
     },
   };
@@ -271,6 +294,21 @@ export function crearFiltrosAdminNominas(
     });
   }
 
+  if (naturalezas.length > 1) {
+    filtros.push({
+      id: 'naturaleza',
+      label: 'Naturaleza',
+      field: 'naturaleza',
+      type: 'select',
+      operator: 'equals',
+      emptyLabel: 'Todas las naturalezas',
+      options: naturalezas.map((naturaleza) => ({
+        label: ETIQUETAS_NATURALEZA[naturaleza],
+        value: naturaleza,
+      })),
+    });
+  }
+
   filtros.push({
     id: 'conIncidencias',
     label: 'Incidencias',
@@ -310,6 +348,7 @@ export interface FiltroAdminNominasInput {
   periodo?: string;
   estado?: EstadoNomina;
   tipo?: TipoNomina;
+  naturaleza?: NaturalezaNomina;
   observaciones?: 'criticas' | 'advertencias' | 'limpias';
 }
 
@@ -324,6 +363,7 @@ export function filtrarResumenes(
     if (filtros.periodo && fila.periodo !== filtros.periodo) return false;
     if (filtros.estado && fila.estado !== filtros.estado) return false;
     if (filtros.tipo && fila.tipo !== filtros.tipo) return false;
+    if (filtros.naturaleza && fila.naturaleza !== filtros.naturaleza) return false;
 
     if (filtros.observaciones === 'criticas' && fila.totalIncidenciasCriticas === 0) {
       return false;
@@ -342,9 +382,9 @@ export function filtrarResumenes(
     }
 
     if (filtros.busqueda && filtros.busqueda.trim()) {
-      const termino = filtros.busqueda.trim().toLowerCase();
-      const tokens = termino.split(/\s+/).filter(Boolean);
-      const texto = `${fila.empresaNombre} ${fila.periodo} ${ETIQUETAS_ESTADO_NOMINA[fila.estado]} ${ETIQUETAS_TIPO[fila.tipo]}`.toLowerCase();
+      const termino = filtros.busqueda.trim();
+      const tokens = normalizarTextoBusqueda(termino).split(/\s+/).filter(Boolean);
+      const texto = textoBusquedaFila(fila);
       if (!tokens.every((token) => texto.includes(token))) {
         return false;
       }

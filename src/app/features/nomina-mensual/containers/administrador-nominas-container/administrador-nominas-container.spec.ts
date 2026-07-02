@@ -491,4 +491,35 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     expect(cmp.historialEventos()).toHaveLength(0);
     expect(cmp.historialError()).toBeNull();
   });
+
+  it('Test 52 — F18a: franja KPI operativa visible tras cargar resúmenes', async () => {
+    configurar({ servicio });
+    const fixture = TestBed.createComponent(AdministradorNominasContainer);
+    const cmp = fixture.componentInstance;
+    await cmp.cargarResumenes();
+    fixture.detectChanges();
+
+    const kpis = fixture.nativeElement.querySelector('.adm-nom__kpis');
+    expect(kpis).toBeTruthy();
+    expect(cmp.kpis().items).toHaveLength(4);
+  });
+
+  it('Test 53 — F18a: sub-renglón Avance visible cuando mostrarEnCurso es true', async () => {
+    servicio.listarResumenes.mockReset().mockResolvedValue([
+      resumenMock({
+        id: 'nom-avance',
+        proximoPaso: 'dotacion',
+        maximoPasoCompletado: 'calculation',
+      }),
+    ]);
+    configurar({ servicio });
+    const fixture = TestBed.createComponent(AdministradorNominasContainer);
+    const cmp = fixture.componentInstance;
+    await cmp.cargarResumenes();
+    fixture.detectChanges();
+
+    const avance = fixture.nativeElement.querySelector('.adm-nom__en-curso');
+    expect(avance?.textContent).toContain('Avance');
+    expect(avance?.textContent).toContain('Cálculo');
+  });
 });

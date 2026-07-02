@@ -7,6 +7,7 @@
 
 import type {
   EstadoNomina,
+  NaturalezaNomina,
   NominaPeriodoResumen,
   TipoNomina,
 } from '../../../models/nomina-periodo.models';
@@ -68,12 +69,68 @@ const MAPA_TIPO: Record<TipoNomina, string> = {
   extraordinaria: 'Extraordinaria',
 };
 
+const MAPA_NATURALEZA: Record<NaturalezaNomina, string> = {
+  liquidacion_legal: 'Liquidación legal',
+  anticipo: 'Anticipo',
+  pago_extraordinario: 'Pago extraordinario',
+  rectificacion: 'Rectificación',
+};
+
 export function estadoNominaToBadge(estado: EstadoNomina): AdminBadgeView {
   return MAPA_ESTADO[estado];
 }
 
 export function tipoNominaToLabel(tipo: TipoNomina): string {
   return MAPA_TIPO[tipo];
+}
+
+export function naturalezaNominaToLabel(naturaleza: NaturalezaNomina): string {
+  return MAPA_NATURALEZA[naturaleza];
+}
+
+/**
+ * Meta compacta bajo el período cuando la nómina no es mensual legal estándar.
+ * Ej.: "Rectificación", "Anticipo · Quincenal".
+ */
+export function etiquetaMetaNomina(fila: Pick<NominaPeriodoResumen, 'tipo' | 'naturaleza'>): string {
+  const partes: string[] = [];
+  if (fila.naturaleza !== 'liquidacion_legal') {
+    partes.push(naturalezaNominaToLabel(fila.naturaleza));
+  }
+  if (fila.tipo !== 'mensual') {
+    partes.push(tipoNominaToLabel(fila.tipo));
+  }
+  return partes.join(' · ');
+}
+
+/** Formato corto del rango legal para subtítulo de celda período. */
+export function formatearRangoLegal(fechaInicio: string, fechaFin: string): string {
+  const inicio = parseIsoLocal(fechaInicio);
+  const fin = parseIsoLocal(fechaFin);
+  if (!inicio || !fin) return '';
+
+  const ddIni = inicio.dia.toString().padStart(2, '0');
+  const mmIni = inicio.mes.toString().padStart(2, '0');
+  const ddFin = fin.dia.toString().padStart(2, '0');
+  const mmFin = fin.mes.toString().padStart(2, '0');
+
+  if (inicio.anio === fin.anio) {
+    if (inicio.mes === fin.mes) {
+      return `${ddIni}–${ddFin}/${mmFin}/${fin.anio}`;
+    }
+    return `${ddIni}/${mmIni} – ${ddFin}/${mmFin}/${fin.anio}`;
+  }
+  return `${ddIni}/${mmIni}/${inicio.anio} – ${ddFin}/${mmFin}/${fin.anio}`;
+}
+
+function parseIsoLocal(iso: string): { dia: number; mes: number; anio: number } | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  if (!match) return null;
+  return {
+    anio: Number(match[1]),
+    mes: Number(match[2]),
+    dia: Number(match[3]),
+  };
 }
 
 export function proximoPasoToLabel(paso: NominaPeriodoResumen['proximoPaso']): string {

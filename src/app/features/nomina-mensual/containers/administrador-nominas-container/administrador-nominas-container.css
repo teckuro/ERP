@@ -56,6 +56,83 @@
   overflow: visible;
 }
 
+/* Franja KPI operativa (sin cards; patrón dotación / parámetros v2) ---------- */
+
+.adm-nom__kpis {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  padding: 8px 16px;
+  border-bottom: 1px solid #eef0eb;
+  background: #ffffff;
+}
+
+.adm-nom__kpi {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-right: 14px;
+  border-right: 1px solid #eef0eb;
+  line-height: 1.2;
+  color: #647084;
+  font-variant-numeric: tabular-nums;
+}
+
+.adm-nom__kpi:last-child {
+  border-right: 0;
+  padding-right: 0;
+}
+
+.adm-nom__kpi strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.adm-nom__kpi small {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #647084;
+}
+
+.adm-nom__kpi--info strong {
+  color: #1d4ed8;
+}
+
+.adm-nom__kpi--warning strong {
+  color: #b45309;
+}
+
+.adm-nom__kpi--danger strong {
+  color: #b91c1c;
+}
+
+.adm-nom__cell-periodo-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.adm-nom__cell-meta {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748b;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-nom__cell-meta--rango {
+  font-weight: 400;
+  color: #94a3b8;
+}
+
 /* Host del <app-data-grid> y su <app-card> interna (mismo patrón
    `empleados-grid-shell` del listado de empleados, ver
    src/app/features/empleados/components/tabla-empleados/tabla-empleados.css).
@@ -363,4 +440,50 @@
   margin: 6px 0 0;
   color: #b91c1c;
   font-size: 12px;
+}
+
+@media (max-width: 1024px) {
+  .adm-nom__row-actions {
+    gap: 2px;
+    flex-wrap: wrap;
+    max-width: 9.5rem;
+    justify-content: flex-end;
+  }
+
+  .adm-nom__row-action {
+    width: 28px;
+    height: 28px;
+  }
+
+  .adm-nom__kpis {
+    gap: 10px;
+    padding: 6px 12px;
+  }
+
+  .adm-nom__kpi {
+    padding-right: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .adm-nom__kpis {
+    gap: 8px;
+  }
+
+  .adm-nom__kpi {
+    padding-right: 8px;
+  }
+
+  .adm-nom__kpi strong {
+    font-size: 13px;
+  }
+
+  .adm-nom__kpi small {
+    font-size: 11px;
+  }
+
+  .adm-nom__row-actions {
+    max-width: 100%;
+    justify-content: center;
+  }
 }

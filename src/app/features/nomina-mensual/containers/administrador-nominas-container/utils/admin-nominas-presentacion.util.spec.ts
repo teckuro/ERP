@@ -7,10 +7,13 @@ import {
   desgloseIncidencias,
   estadoNominaToBadge,
   etiquetaMaximoPasoCompletado,
+  etiquetaMetaNomina,
   etiquetaPasoVisitado,
   formatearActualizada,
   formatearActualizadaCompleta,
+  formatearRangoLegal,
   mostrarEnCurso,
+  naturalezaNominaToLabel,
   proximoPasoToIcon,
   tipoNominaToLabel,
 } from './admin-nominas-presentacion.util';
@@ -46,6 +49,29 @@ describe('admin-nominas-presentacion.util — mapeos de badge', () => {
     const tipos: TipoNomina[] = ['mensual', 'quincenal', 'semanal', 'extraordinaria'];
     const labels = tipos.map((t) => tipoNominaToLabel(t));
     expect(labels).toEqual(['Mensual', 'Quincenal', 'Semanal', 'Extraordinaria']);
+  });
+
+  it('Test 17b — naturalezaNominaToLabel cubre las 4 naturalezas', () => {
+    expect(naturalezaNominaToLabel('liquidacion_legal')).toBe('Liquidación legal');
+    expect(naturalezaNominaToLabel('rectificacion')).toBe('Rectificación');
+    expect(naturalezaNominaToLabel('anticipo')).toBe('Anticipo');
+  });
+
+  it('Test 17c — etiquetaMetaNomina solo cuando difiere del mensual legal', () => {
+    expect(
+      etiquetaMetaNomina({ tipo: 'mensual', naturaleza: 'liquidacion_legal' }),
+    ).toBe('');
+    expect(
+      etiquetaMetaNomina({ tipo: 'mensual', naturaleza: 'rectificacion' }),
+    ).toBe('Rectificación');
+    expect(
+      etiquetaMetaNomina({ tipo: 'extraordinaria', naturaleza: 'pago_extraordinario' }),
+    ).toBe('Pago extraordinario · Extraordinaria');
+  });
+
+  it('Test 17d — formatearRangoLegal compacta fechas del ciclo', () => {
+    expect(formatearRangoLegal('2026-06-01', '2026-06-30')).toBe('01–30/06/2026');
+    expect(formatearRangoLegal('2026-05-16', '2026-05-31')).toBe('16–31/05/2026');
   });
 });
 

@@ -3038,3 +3038,11 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **Historial administrativo**: nombre de usuario resuelto en servidor (`listar_eventos_auditoria_nomina`).
 - **Tests**: specs paso Cálculo, adapter, modal nueva nómina y auditoría en verde.
 - **Sin tocar**: estilos globales, motor de cálculo.
+
+## 2026-07-02 - F18a: pulido UX Administrador de nóminas
+
+- **`administrador-nominas-container`**: franja KPI operativa (Abiertas, En cálculo, Pendientes de cierre, Con críticas) sin cards; sub-renglón "Avance" en Siguiente acción; meta tipo/naturaleza + rango legal bajo Período para ciclos no estándar.
+- **`admin-nominas.presenter`**: filtro Naturaleza cuando hay más de una; búsqueda libre incluye etiqueta de naturaleza.
+- **CSS local** `administrador-nominas-container.css`: patrón stats inline (dotación v2); media queries 1024/768 px para KPIs y acciones por fila.
+- **Tests**: specs presenter, util presentación y smoke container en verde.
+- **Sin tocar**: estilos globales, SQL, motor, data-grid compartido.

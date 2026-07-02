@@ -8,6 +8,18 @@
 
   <div class="adm-nom__grid-shell" aria-labelledby="adm-nom-grid-title">
     <h2 id="adm-nom-grid-title" class="sr-only">Listado de nóminas</h2>
+
+    @if (resumenes().length > 0) {
+      <div class="adm-nom__kpis" role="status" aria-label="Resumen operativo de nóminas">
+        @for (item of kpis().items; track item.id) {
+          <div class="adm-nom__kpi" [class]="'adm-nom__kpi--' + item.tone">
+            <strong>{{ item.value }}</strong>
+            <small>{{ item.label }}</small>
+          </div>
+        }
+      </div>
+    }
+
     @if (!cargando() || resumenes().length > 0) {
       <app-data-grid
         title=""
@@ -33,10 +45,18 @@
         cardClassName="adm-nom__grid-card"
       >
       <ng-template appDataGridCell="periodo" let-fila>
-        <span
-          class="adm-nom__cell-periodo"
-          [title]="tooltipAvanceFila(fila)"
-        >{{ fila.periodo }}</span>
+        <div class="adm-nom__cell-periodo-wrap">
+          <span
+            class="adm-nom__cell-periodo"
+            [title]="tooltipAvanceFila(fila)"
+          >{{ fila.periodo }}</span>
+          @if (etiquetaMetaNomina(fila); as meta) {
+            <span class="adm-nom__cell-meta">{{ meta }}</span>
+            <span class="adm-nom__cell-meta adm-nom__cell-meta--rango">
+              {{ formatearRangoLegal(fila.fechaInicio, fila.fechaFin) }}
+            </span>
+          }
+        </div>
       </ng-template>
 
       <ng-template appDataGridCell="empresa" let-fila>
@@ -71,6 +91,11 @@
             ></lucide-icon>
             <span class="adm-nom__next-step-label">{{ proximoPasoToLabel(fila.proximoPaso) }}</span>
           </span>
+          @if (mostrarEnCurso(fila)) {
+            <span class="adm-nom__en-curso">
+              Avance: {{ etiquetaMaximoPasoCompletado(fila.maximoPasoCompletado) }}
+            </span>
+          }
           @if (fila.totalIncidenciasCriticas > 0) {
             <span
               class="adm-nom__chip adm-nom__chip--danger adm-nom__chip--inline"

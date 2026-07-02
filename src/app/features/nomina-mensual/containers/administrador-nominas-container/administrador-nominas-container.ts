@@ -44,10 +44,15 @@ import {
 } from '../../presenters/admin-nominas.presenter';
 import { nominaRequiereAccion } from '../../rules/nomina-periodo-state.rules';
 import {
+  calcularKpisAdminNominas,
   desgloseIncidencias,
   estadoNominaToBadge,
+  etiquetaMaximoPasoCompletado,
+  etiquetaMetaNomina,
   formatearActualizada,
   formatearActualizadaCompleta,
+  formatearRangoLegal,
+  mostrarEnCurso,
   proximoPasoToIcon,
   proximoPasoToLabel,
   tooltipAvanceFila,
@@ -143,6 +148,7 @@ export class AdministradorNominasContainer {
 
   readonly filtros = computed(() => crearFiltrosAdminNominas(this.resumenes()));
   readonly resumenesOrdenados = computed(() => ordenarResumenesOperativos(this.resumenes()));
+  readonly kpis = computed(() => calcularKpisAdminNominas(this.resumenes()));
 
   readonly subtitulo = computed(() => {
     const resumenes = this.resumenes();
@@ -199,6 +205,10 @@ export class AdministradorNominasContainer {
   proximoPasoToIcon = proximoPasoToIcon;
   desgloseIncidencias = desgloseIncidencias;
   tooltipAvanceFila = tooltipAvanceFila;
+  mostrarEnCurso = mostrarEnCurso;
+  etiquetaMaximoPasoCompletado = etiquetaMaximoPasoCompletado;
+  etiquetaMetaNomina = etiquetaMetaNomina;
+  formatearRangoLegal = formatearRangoLegal;
   puedeEliminar = puedeEliminar;
   puedeReabrir = puedeReabrir;
   tieneLiquidaciones = tieneLiquidaciones;

@@ -143,4 +143,31 @@ describe('admin-nominas.presenter — filtrarResumenes', () => {
     expect(filtrarResumenes(muestraResumenes(), { vistaOperativa: 'requiere-accion' })
       .some((fila) => fila.estado === 'cerrada')).toBe(false);
   });
+
+  it('Test 9 — filtra por naturaleza cuando hay rectificaciones', () => {
+    const resumenes = [
+      ...muestraResumenes(),
+      crearNominaResumen({
+        id: 'r-5',
+        periodo: '2026-06',
+        naturaleza: 'rectificacion',
+        estado: 'borrador',
+      }),
+    ];
+    const filtradas = filtrarResumenes(resumenes, { naturaleza: 'rectificacion' });
+    expect(filtradas).toHaveLength(1);
+    expect(filtradas[0]?.id).toBe('r-5');
+  });
+
+  it('Test 10 — búsqueda libre incluye naturaleza (rectificación)', () => {
+    const resumenes = [
+      crearNominaResumen({
+        id: 'r-rect',
+        naturaleza: 'rectificacion',
+        empresaNombre: 'Demo SpA',
+      }),
+    ];
+    const filtradas = filtrarResumenes(resumenes, { busqueda: 'rectificacion' });
+    expect(filtradas).toHaveLength(1);
+  });
 });
