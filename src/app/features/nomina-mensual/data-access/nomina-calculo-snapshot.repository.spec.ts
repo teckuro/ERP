@@ -118,6 +118,7 @@ function query(result: unknown) {
   const chain = {
     select: vi.fn(() => chain),
     eq: vi.fn(() => chain),
+    neq: vi.fn(() => chain),
     in: vi.fn(() => chain),
     is: vi.fn(() => chain),
     insert: vi.fn(() => chain),
@@ -136,6 +137,7 @@ function query(result: unknown) {
 function snapshotParaGuardar(overrides: Record<string, unknown> = {}) {
   return {
     idCalculoPeriodo: null,
+    nominaPeriodoId: 'nomina-uuid-1',
     periodo: '2026-05',
     idEmpresa: null,
     estado: 'preliminar',
@@ -393,6 +395,8 @@ describe('NominaCalculoSnapshotRepository', () => {
     expect(rpcPayload.p_conceptos[0]).toMatchObject({ trabajador_index: 0, nombre_concepto_snapshot: 'Sueldo base' });
     expect(rpcPayload.p_observaciones[0]).toMatchObject({ trabajador_index: 0, mensaje: 'Informacion guardada.' });
     expect(rpcPayload.p_trazabilidad[0]).toMatchObject({ trabajador_index: 0, codigo: 'LIQUIDO_PRELIMINAR' });
+    // F09: la RPC recibe la nómina para scopear el reemplazo del activo.
+    expect(rpcPayload.p_id_nomina_periodo).toBe('nomina-uuid-1');
     expect(guardado.snapshot.idCalculoPeriodo).toBe(2);
     expect(guardado.snapshot.nominaPeriodoId).toBe('nomina-uuid-1');
     expect(guardado.snapshot.aprobacionOperativa).toBeNull();

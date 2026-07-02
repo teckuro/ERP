@@ -26,9 +26,13 @@ export class NominaPeriodoCalculoAdapterService {
     const idEmpresaNumerico = Number.isFinite(idEmpresa) ? idEmpresa : null;
 
     const trabajadorIds = nomina.trabajadorIds.map(Number).filter(Number.isFinite);
-    const resultado = await this.motor.generarCalculoPeriodo(nomina.periodo, trabajadorIds);
+    // F09: cálculo y snapshot keyed por la nómina, no por el mes global.
+    const resultado = await this.motor.generarCalculoPeriodo(nomina.periodo, trabajadorIds, {
+      nominaPeriodoId,
+    });
     const guardado = await this.motor.guardarSnapshotPreliminar(nomina.periodo, {
       idEmpresa: idEmpresaNumerico,
+      nominaPeriodoId,
     });
     if (!guardado.ok || !guardado.snapshot) {
       const detalle = guardado.issues.map((issue) => issue.mensaje).join(' ');
@@ -60,9 +64,11 @@ export class NominaPeriodoCalculoAdapterService {
     if (!nomina?.evidenciaCalculo?.calculoVigente) return null;
 
     const idCalculoPeriodo = nomina.evidenciaCalculo.idCalculoPeriodo;
+    // F09: la rehidratación sin id explícito se resuelve por nómina, nunca por
+    // el snapshot global del mes (dos nóminas del mismo mes no se contaminan).
     const completo = idCalculoPeriodo
       ? await this.motor.obtenerSnapshotCompletoPorId(idCalculoPeriodo)
-      : await this.motor.obtenerSnapshotCompletoActivo(nomina.periodo);
+      : await this.motor.obtenerSnapshotCompletoActivoDeNomina(nominaPeriodoId);
 
     if (!completo) return null;
     return mapSnapshotCompletoToMotorCalculoPeriodo(completo);

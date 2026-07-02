@@ -6481,6 +6481,7 @@ export type Database = {
           p_cabecera: Json
           p_conceptos?: Json
           p_id_empresa: number
+          p_id_nomina_periodo?: string
           p_id_preparacion_nomina?: number
           p_observaciones?: Json
           p_parametros?: Json

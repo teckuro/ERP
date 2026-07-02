@@ -227,12 +227,16 @@ export class ProcesoMensualService {
   async generarCalculoPeriodo(
     periodo: string,
     trabajadorIds?: readonly number[],
+    opciones: { nominaPeriodoId?: string | null } = {},
   ): Promise<MotorCalculoPeriodoResultado> {
     const p = periodo.trim();
+    // F09: con nómina el resultado en memoria se aísla por nominaPeriodoId
+    // (dos nóminas del mismo mes no comparten cache de cálculo).
+    const claveCache = opciones.nominaPeriodoId ?? p;
     const input = await this.construirInputMotorPeriodo(p, trabajadorIds);
     const resultado = generarCalculoPreliminarPeriodo(input, new Date().toISOString());
-    this.calculosPorPeriodo.set(p, resultado);
-    this.insumosCalculoPorPeriodo.set(p, {
+    this.calculosPorPeriodo.set(claveCache, resultado);
+    this.insumosCalculoPorPeriodo.set(claveCache, {
       parametrosPeriodo: input.parametrosPeriodo,
       entradasMensuales: input.entradasMensuales,
     });
@@ -245,17 +249,22 @@ export class ProcesoMensualService {
 
   async guardarSnapshotPreliminar(
     periodo: string,
-    opciones: { prevalidacion?: ProcesoMensualPrevalidacion | null; idEmpresa?: number | null } = {},
+    opciones: {
+      prevalidacion?: ProcesoMensualPrevalidacion | null;
+      idEmpresa?: number | null;
+      nominaPeriodoId?: string | null;
+    } = {},
   ): Promise<GuardarSnapshotPreliminarResult> {
     const p = periodo.trim();
-    const resultado = this.obtenerResultadoCalculoPeriodo(p);
+    const claveCache = opciones.nominaPeriodoId ?? p;
+    const resultado = this.calculosPorPeriodo.get(claveCache) ?? null;
     const issues = validarResultadoSnapshotPreliminar(resultado);
     if (issues.length > 0 || !resultado) {
       return buildGuardarSnapshotRechazado(issues);
     }
 
     const usuario = await this.resolverUsuarioActual();
-    const insumos = this.insumosCalculoPorPeriodo.get(p) ?? null;
+    const insumos = this.insumosCalculoPorPeriodo.get(claveCache) ?? null;
     const snapshot = mapResultadoMotorToSnapshotPayload({
       resultado,
       fechaGeneracion: new Date().toISOString(),
@@ -265,7 +274,10 @@ export class ProcesoMensualService {
       parametrosPeriodo: insumos?.parametrosPeriodo ?? null,
       entradasMensuales: insumos?.entradasMensuales ?? [],
     });
-    const activo = await this.snapshots.obtenerSnapshotActivo(p, opciones.idEmpresa ?? null);
+    snapshot.nominaPeriodoId = opciones.nominaPeriodoId ?? null;
+    const activo = opciones.nominaPeriodoId
+      ? await this.snapshots.obtenerSnapshotActivoDeNomina(opciones.nominaPeriodoId)
+      : await this.snapshots.obtenerSnapshotActivo(p, opciones.idEmpresa ?? null);
     const persistNuevo = opciones.prevalidacion
       ? buildBorradorPersistFromPrevalidacion(opciones.prevalidacion)
       : null;
@@ -278,6 +290,13 @@ export class ProcesoMensualService {
       hashSnapshot: guardado.snapshot.hashSnapshot,
       issues: [],
     };
+  }
+
+  /** F09: detalle completo del snapshot activo de UNA nómina. */
+  obtenerSnapshotCompletoActivoDeNomina(
+    nominaPeriodoId: string,
+  ): Promise<NominaSnapshotCompletoView | null> {
+    return this.snapshots.obtenerSnapshotCompletoActivoDeNomina(nominaPeriodoId);
   }
 
   async reemplazarSnapshotPreliminar(periodo: string): Promise<GuardarSnapshotPreliminarResult> {

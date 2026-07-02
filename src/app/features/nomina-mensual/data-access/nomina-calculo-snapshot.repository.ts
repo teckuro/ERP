@@ -140,7 +140,11 @@ export class NominaCalculoSnapshotRepository {
     snapshot: NominaCalculoPeriodoSnapshot;
     reemplazoSnapshotAnterior: boolean;
   }> {
-    const anterior = await this.obtenerSnapshotActivo(snapshot.periodo, snapshot.idEmpresa);
+    // F09: con nómina el "anterior" se resuelve dentro de la misma nómina;
+    // sin nómina se conserva el scope legacy por período/empresa.
+    const anterior = snapshot.nominaPeriodoId
+      ? await this.obtenerSnapshotActivoDeNomina(snapshot.nominaPeriodoId)
+      : await this.obtenerSnapshotActivo(snapshot.periodo, snapshot.idEmpresa);
     const persist =
       borradorPersist
       ?? anterior?.borradorPersist
@@ -156,6 +160,7 @@ export class NominaCalculoSnapshotRepository {
       p_observaciones: payload.observaciones,
       p_trazabilidad: payload.trazabilidad,
       p_parametros: payload.parametros,
+      p_id_nomina_periodo: snapshot.nominaPeriodoId ?? undefined,
     });
     if (error || typeof data !== 'number') {
       logGuardarSnapshotRpcError(snapshot, payload, error, data);
@@ -190,6 +195,27 @@ export class NominaCalculoSnapshotRepository {
     query = idEmpresa == null ? query.is('id_empresa', null) : query.eq('id_empresa', idEmpresa);
     const { data, error } = await query.maybeSingle();
     if (error) throw new Error(`No fue posible consultar snapshot activo: ${error.message}`);
+    return data ? mapPeriodoRow(data) : null;
+  }
+
+  /**
+   * F09: snapshot de cálculo activo de UNA nómina (excluye las bases de
+   * parámetros F06, que conviven activas en paralelo).
+   */
+  async obtenerSnapshotActivoDeNomina(
+    nominaPeriodoId: string,
+  ): Promise<NominaCalculoPeriodoSnapshot | null> {
+    const { data, error } = await this.supabase
+      .from('nomina_calculo_periodo')
+      .select('*')
+      .eq('id_nomina_periodo', nominaPeriodoId)
+      .eq('activo', true)
+      .neq('version_motor', 'PARAMETROS-BASE-01')
+      .limit(1)
+      .maybeSingle();
+    if (error) {
+      throw new Error(`No fue posible consultar snapshot activo de la nómina: ${error.message}`);
+    }
     return data ? mapPeriodoRow(data) : null;
   }
 
@@ -321,6 +347,15 @@ export class NominaCalculoSnapshotRepository {
 
   async obtenerSnapshotCompletoActivo(periodo: string, idEmpresa: number | null = null): Promise<NominaSnapshotCompletoView | null> {
     const cabecera = await this.obtenerSnapshotActivo(periodo, idEmpresa);
+    if (!cabecera?.idCalculoPeriodo) return null;
+    return this.obtenerSnapshotCompletoPorId(cabecera.idCalculoPeriodo);
+  }
+
+  /** F09: detalle completo del snapshot activo de UNA nómina. */
+  async obtenerSnapshotCompletoActivoDeNomina(
+    nominaPeriodoId: string,
+  ): Promise<NominaSnapshotCompletoView | null> {
+    const cabecera = await this.obtenerSnapshotActivoDeNomina(nominaPeriodoId);
     if (!cabecera?.idCalculoPeriodo) return null;
     return this.obtenerSnapshotCompletoPorId(cabecera.idCalculoPeriodo);
   }

@@ -51,9 +51,12 @@ describe('NominaPeriodoCalculoAdapterService', () => {
     const servicio = TestBed.inject(NominaPeriodoCalculoAdapterService);
     await servicio.calcular('nom-1');
 
-    expect(motor.generarCalculoPeriodo).toHaveBeenCalledWith('2026-06', [10, 11]);
+    expect(motor.generarCalculoPeriodo).toHaveBeenCalledWith('2026-06', [10, 11], {
+      nominaPeriodoId: 'nom-1',
+    });
     expect(motor.guardarSnapshotPreliminar).toHaveBeenCalledWith('2026-06', {
       idEmpresa: 42,
+      nominaPeriodoId: 'nom-1',
     });
     expect(nominas.registrarCalculo).toHaveBeenCalledWith('nom-1', {
       idCalculoPeriodo: 77,
@@ -144,7 +147,7 @@ describe('NominaPeriodoCalculoAdapterService', () => {
     };
     const motor = {
       obtenerSnapshotCompletoPorId: vi.fn().mockResolvedValue(completo),
-      obtenerSnapshotCompletoActivo: vi.fn(),
+      obtenerSnapshotCompletoActivoDeNomina: vi.fn(),
     };
 
     TestBed.configureTestingModule({
@@ -159,7 +162,38 @@ describe('NominaPeriodoCalculoAdapterService', () => {
     const resultado = await servicio.obtenerResultadoPersistido('nom-1');
 
     expect(motor.obtenerSnapshotCompletoPorId).toHaveBeenCalledWith(77);
-    expect(motor.obtenerSnapshotCompletoActivo).not.toHaveBeenCalled();
+    expect(motor.obtenerSnapshotCompletoActivoDeNomina).not.toHaveBeenCalled();
     expect(resultado?.liquidaciones[0].liquidoAPago).toBe(800000);
+  });
+
+  it('sin idCalculoPeriodo rehidrata por nómina, nunca por el mes global (F09)', async () => {
+    const nominas = {
+      obtenerNomina: vi.fn().mockResolvedValue({
+        id: 'nom-1',
+        periodo: '2026-06',
+        evidenciaCalculo: { calculoVigente: true, idCalculoPeriodo: null, versionCalculo: 1 },
+      }),
+    };
+    const motor = {
+      obtenerSnapshotCompletoPorId: vi.fn(),
+      obtenerSnapshotCompletoActivoDeNomina: vi.fn().mockResolvedValue(null),
+      obtenerSnapshotCompletoActivo: vi.fn(),
+    };
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        NominaPeriodoCalculoAdapterService,
+        { provide: NominaPeriodoService, useValue: nominas },
+        { provide: ProcesoMensualService, useValue: motor },
+      ],
+    });
+
+    const servicio = TestBed.inject(NominaPeriodoCalculoAdapterService);
+    const resultado = await servicio.obtenerResultadoPersistido('nom-1');
+
+    expect(motor.obtenerSnapshotCompletoActivoDeNomina).toHaveBeenCalledWith('nom-1');
+    expect(motor.obtenerSnapshotCompletoActivo).not.toHaveBeenCalled();
+    expect(resultado).toBeNull();
   });
 });
