@@ -33,6 +33,7 @@ import { NominaMensualV2StepperComponent } from './components/nomina-mensual-v2-
 import {
   ORDEN_PASOS_NOMINA,
   RAZON_CIERRE_MODAL_PENDIENTE,
+  RAZON_VALIDACION_MODAL_PENDIENTE,
   ejecutarAvancePaso,
   esAvanceHaciaAdelante,
   esPasoCongelado,
@@ -488,6 +489,20 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     this.intentarIrAPaso('dotacion');
   }
 
+  async manejarValidacionCompletada(): Promise<void> {
+    this.orquestador.establecerAyudaAvance(null);
+    this.orquestador.registrarEventoTrazabilidad(
+      this.trazabilidadService.crearEventoLocal({
+        paso: 'validation',
+        tipoEvento: 'PRENOMINA_VALIDADA',
+        descripcion: 'Pre-nómina validada para cierre.',
+        integridad: { estadoIntegridad: 'registrado' },
+      }),
+    );
+    await this.marcarPasoCompletadoYRefrescarNomina('validation');
+    this.irAPaso('closure');
+  }
+
   limpiarTrabajadorDetalleDotacion(): void {
     this.trabajadorDetalleDotacion.set(null);
   }
@@ -798,7 +813,10 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       const paso = this.obtenerPasoActivoConComando();
       const { resultado } = await ejecutarAvancePaso(pasoActivo, paso);
       if (!resultado.ok) {
-        const tono = resultado.razon === RAZON_CIERRE_MODAL_PENDIENTE ? 'revision' : 'bloqueo';
+        const tono = resultado.razon === RAZON_CIERRE_MODAL_PENDIENTE
+          || resultado.razon === RAZON_VALIDACION_MODAL_PENDIENTE
+          ? 'revision'
+          : 'bloqueo';
         this.orquestador.establecerAyudaAvance(resultado.razon, tono);
         return;
       }

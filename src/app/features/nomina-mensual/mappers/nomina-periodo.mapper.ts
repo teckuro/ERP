@@ -333,6 +333,10 @@ export function rowToIncidenciaNomina(row: IncidenciaNominaRow): IncidenciaNomin
     trabajadorId: row.id_persona != null ? String(row.id_persona) : undefined,
     segmentoId: row.id_segmento_nomina ?? undefined,
     bloqueante: row.bloqueante,
+    estadoDecision: (row.estado_decision ?? 'pendiente') as IncidenciaNomina['estadoDecision'],
+    justificacion: row.justificacion ?? undefined,
+    versionCalculoSnapshot: row.version_calculo_snapshot ?? undefined,
+    decididaAt: row.decidida_at ?? undefined,
   };
 }
 
@@ -349,6 +353,10 @@ export function incidenciaNominaToInsert(
     tipo: inc.tipo,
     mensaje: inc.mensaje,
     bloqueante: inc.bloqueante,
+    estado_decision: inc.estadoDecision ?? 'pendiente',
+    justificacion: inc.justificacion ?? null,
+    version_calculo_snapshot: inc.versionCalculoSnapshot ?? null,
+    decidida_at: inc.decididaAt ?? null,
   };
 }
 

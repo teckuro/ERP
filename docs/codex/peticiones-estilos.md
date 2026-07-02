@@ -9,6 +9,16 @@
 
 ---
 
+## 2026-07-02 — Generador Nómina V2: F13 validación con decisiones (NOM-ADMIN-OPS-F13 núcleo)
+
+- **Paso Validación:** incidencias con estado de decisión (pendiente / resuelta / aceptada);
+  críticas → «Marcar resuelta»; advertencias → justificación + «Aceptar advertencia».
+- **CTA shell:** «Validar para cierre» abre confirmación (`MessageBox`) y transiciona a
+  `validada` (ya no salta directo a `aprobada`; F14 pendiente).
+- Copy operativo RRHH; sin IDs técnicos. Misma densidad `paso-val__`.
+
+---
+
 ## 2026-07-02 — Administrador Nómina: F10/F11 creación multi-tipo (NOM-ADMIN-OPS-F10/F11 núcleo)
 
 - **Modal «Nueva nómina»:** selector de **Tipo** (Mensual / Quincenal / Semanal / Extraordinaria)

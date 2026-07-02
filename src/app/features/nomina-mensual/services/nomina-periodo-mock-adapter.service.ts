@@ -288,6 +288,7 @@ export class NominaPeriodoMockAdapterService {
           mensaje: `Trabajador está en ${segmentoIds.length} segmentos: ${segmentoIds.join(', ')}`,
           trabajadorId,
           bloqueante: true,
+          estadoDecision: 'pendiente',
         });
       }
     }

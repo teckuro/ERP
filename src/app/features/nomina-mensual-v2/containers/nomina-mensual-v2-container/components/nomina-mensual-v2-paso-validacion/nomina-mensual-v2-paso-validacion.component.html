@@ -12,8 +12,8 @@
       <p class="paso-val__eyebrow">Paso 5 · Validación</p>
       <h2 id="paso-val-title" class="paso-val__title">Resumen de validación</h2>
       <p class="paso-val__subtitle">
-        Revisa incidencias críticas y advertencias antes de aprobar el cierre. Sólo se habilita
-        la aprobación cuando no quedan bloqueos críticos.
+        Revisa incidencias, registra decisiones y valida la nómina antes del cierre.
+        Las advertencias requieren justificación para continuar.
       </p>
     </div>
     <button type="button" class="paso-val__btn is-ghost" (click)="recargar()" [disabled]="cargando()">
@@ -43,11 +43,11 @@
       </li>
       <li>
         <strong>{{ r.conIncidenciasCriticas }}</strong>
-        <small>con incidencias críticas</small>
+        <small>con críticas pendientes</small>
       </li>
       <li>
-        <strong>{{ r.conAdvertencias }}</strong>
-        <small>con advertencias</small>
+        <strong>{{ r.advertenciasPendientes ?? r.conAdvertencias }}</strong>
+        <small>advertencias pendientes</small>
       </li>
       <li>
         <strong>{{ r.conMovimientosEspeciales }}</strong>
@@ -94,18 +94,53 @@
               <strong>{{ inc.mensaje }}</strong>
               <small class="paso-val__list-meta">
                 {{ etiquetaTipoIncidencia(inc.tipo) }}
-                @if (inc.bloqueante) {
+                · {{ etiquetaEstadoDecision(inc.estadoDecision ?? 'pendiente') }}
+                @if (inc.bloqueante && incidenciaCriticaPendiente(inc)) {
                   · Bloqueante
                 }
               </small>
+              @if (inc.justificacion) {
+                <small class="paso-val__list-justificacion">Justificación: {{ inc.justificacion }}</small>
+              }
             </div>
-            @if (inc.trabajadorId) {
-              <button
-                type="button"
-                class="paso-val__link"
-                (click)="emitirVerEnDotacion(inc.trabajadorId)"
-              >Ver en dotación</button>
-            }
+            <div class="paso-val__list-actions">
+              @if (inc.trabajadorId) {
+                <button
+                  type="button"
+                  class="paso-val__link"
+                  (click)="emitirVerEnDotacion(inc.trabajadorId)"
+                >Ver en dotación</button>
+              }
+              @if (incidenciaCriticaPendiente(inc)) {
+                <button
+                  type="button"
+                  class="paso-val__btn is-secondary"
+                  [disabled]="procesandoDecision() === inc.id"
+                  (click)="marcarResuelta(inc)"
+                >
+                  Marcar resuelta
+                </button>
+              }
+              @if (advertenciaPendiente(inc)) {
+                <label class="paso-val__justificacion">
+                  <span class="paso-val__justificacion-label">Justificación</span>
+                  <textarea
+                    rows="2"
+                    [value]="justificaciones()[inc.id] ?? ''"
+                    (input)="setJustificacion(inc.id, $any($event.target).value)"
+                    placeholder="Motivo operativo para continuar"
+                  ></textarea>
+                </label>
+                <button
+                  type="button"
+                  class="paso-val__btn is-secondary"
+                  [disabled]="procesandoDecision() === inc.id"
+                  (click)="aceptarAdvertencia(inc)"
+                >
+                  Aceptar advertencia
+                </button>
+              }
+            </div>
           </li>
         }
       </ul>
@@ -114,20 +149,30 @@
 
   <footer class="paso-val__footer" aria-live="polite">
     @if (resumen(); as r) {
-      @if (r.conIncidenciasCriticas > 0) {
-        <span class="paso-val__footer-hint is-danger">
-          Resuelve los {{ r.conIncidenciasCriticas }} bloqueos antes de aprobar.
-        </span>
-      } @else if (r.conAdvertencias > 0) {
+      @if ((r.advertenciasPendientes ?? 0) > 0 || r.conIncidenciasCriticas > 0) {
         <span class="paso-val__footer-hint is-warning">
-          {{ r.conAdvertencias }} advertencias activas, revisa antes de aprobar.
-          Para continuar al cierre, usa la acción principal del shell.
+          Cierra incidencias críticas y acepta advertencias pendientes antes de validar.
         </span>
       } @else {
         <span class="paso-val__footer-hint">
-          Sin incidencias pendientes. Para continuar al cierre, usa la acción principal del shell.
+          Sin bloqueos pendientes. Usa la acción principal del shell para validar y continuar al cierre.
         </span>
       }
     }
   </footer>
 </section>
+
+@if (confirmarValidacionVisible()) {
+  <app-message-box
+    tone="warning"
+    title="Validar nómina"
+    message="Confirmas que revisaste incidencias y decisiones registradas. La nómina pasará a estado validada."
+    [primaryLabel]="validando() ? 'Validando…' : 'Validar nómina'"
+    secondaryLabel="Cancelar"
+    [dismissible]="!validando()"
+    [disableClose]="validando()"
+    (action)="confirmarValidacion()"
+    (secondary)="confirmarValidacionVisible.set(false)"
+    (dismiss)="confirmarValidacionVisible.set(false)"
+  />
+}

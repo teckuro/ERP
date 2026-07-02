@@ -96,6 +96,7 @@
             <app-nomina-mensual-v2-paso-validacion
               [nominaPeriodoId]="nominaPeriodoId()"
               (verEnDotacionSolicitado)="manejarVerEnDotacion($event)"
+              (validacionCompletada)="manejarValidacionCompletada()"
             />
           }
           @case ('closure') {

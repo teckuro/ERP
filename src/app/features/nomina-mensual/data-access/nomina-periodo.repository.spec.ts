@@ -284,12 +284,12 @@ describe('NominaPeriodoRepository', () => {
     });
   });
 
-  it('listarIncidencias filtra por id_nomina_periodo y resuelta_at null', async () => {
+  it('listarIncidencias filtra por id_nomina_periodo y estado_decision pendiente', async () => {
     const builder = makeBuilder({ data: [], error: null });
     setSupabase(() => builder);
     await repo.listarIncidencias('nom-uuid-1');
     expect(builder.eq).toHaveBeenCalledWith('id_nomina_periodo', 'nom-uuid-1');
-    expect(builder.is).toHaveBeenCalledWith('resuelta_at', null);
+    expect(builder.eq).toHaveBeenCalledWith('estado_decision', 'pendiente');
   });
 
   it('reemplazarIncidencias borra existentes y reinserta', async () => {
@@ -304,6 +304,7 @@ describe('NominaPeriodoRepository', () => {
         tipo: 't',
         mensaje: 'm',
         bloqueante: true,
+        estadoDecision: 'pendiente',
       },
     ]);
 

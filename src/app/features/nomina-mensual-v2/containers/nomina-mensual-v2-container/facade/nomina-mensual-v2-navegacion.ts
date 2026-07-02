@@ -35,6 +35,10 @@ export type ResultadoAvancePaso = { ok: true } | { ok: false; razon: string };
 export const RAZON_CIERRE_MODAL_PENDIENTE =
   'Revisa el resumen y confirma el cierre en el diálogo.';
 
+/** Respuesta de `avanzar()` en validación cuando el modal de confirmación quedó abierto. */
+export const RAZON_VALIDACION_MODAL_PENDIENTE =
+  'Revisa incidencias y confirma la validación en el diálogo.';
+
 /** Pasos cuyo “completo” exige acción terminal confirmada (no auto-persistir al visitar). */
 export function pasoExcluidoAutoPersistenciaCompletado(paso: PayrollStepId): boolean {
   return paso === 'closure';
@@ -218,7 +222,7 @@ export function indiceUltimoPasoCompletadoPorEstado(estado: EstadoNomina | null)
     case 'calculada':
       return ORDEN_PASOS_NOMINA.indexOf('calculation');
     case 'validada':
-      return ORDEN_PASOS_NOMINA.indexOf('calculation');
+      return ORDEN_PASOS_NOMINA.indexOf('validation');
     case 'aprobada':
       return ORDEN_PASOS_NOMINA.indexOf('validation');
     case 'liquidada':
@@ -415,7 +419,7 @@ export function obtenerEtiquetaAccionPrincipal(paso: PayrollStepId): string {
     case 'calculation':
       return 'Continuar a validación';
     case 'validation':
-      return 'Aprobar para cierre';
+      return 'Validar para cierre';
     case 'closure':
       return 'Cerrar nómina';
   }

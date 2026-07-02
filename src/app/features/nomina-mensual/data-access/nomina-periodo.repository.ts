@@ -726,9 +726,40 @@ export class NominaPeriodoRepository {
       .from('incidencia_nomina')
       .select('*')
       .eq('id_nomina_periodo', nominaPeriodoId)
-      .is('resuelta_at', null);
+      .eq('estado_decision', 'pendiente');
     throwIfError(error, 'listarIncidencias');
     return (data ?? []).map(rowToIncidenciaNomina);
+  }
+
+  async sincronizarIncidenciasNomina(nominaPeriodoId: string): Promise<void> {
+    const { error } = await this.supabase.rpc('sincronizar_incidencias_nomina', {
+      p_nomina_id: nominaPeriodoId,
+    });
+    throwIfError(error, 'sincronizarIncidenciasNomina');
+  }
+
+  async registrarDecisionIncidencia(
+    incidenciaId: string,
+    accion: 'resolver' | 'aceptar',
+    justificacion?: string,
+  ): Promise<IncidenciaNomina> {
+    const { data, error } = await this.supabase.rpc('registrar_decision_incidencia', {
+      p_id_incidencia: incidenciaId,
+      p_accion: accion,
+      p_justificacion: justificacion ?? undefined,
+    });
+    throwIfError(error, 'registrarDecisionIncidencia');
+    if (!data) {
+      throw new Error('registrarDecisionIncidencia: la BD no retornó la incidencia actualizada.');
+    }
+    return rowToIncidenciaNomina(data);
+  }
+
+  async validarNominaRpc(nominaPeriodoId: string): Promise<void> {
+    const { error } = await this.supabase.rpc('validar_nomina', {
+      p_nomina_id: nominaPeriodoId,
+    });
+    throwIfError(error, 'validarNominaRpc');
   }
 
   async reemplazarIncidencias(

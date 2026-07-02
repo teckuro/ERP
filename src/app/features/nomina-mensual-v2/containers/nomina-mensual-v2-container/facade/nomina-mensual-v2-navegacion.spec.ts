@@ -140,13 +140,12 @@ describe('indiceUltimoPasoCompletado / obtenerEstadoPaso desde evidencia (AG-NAV
     expect(obtenerEstadoPaso('calculation', 'validation', n)).toBe('completed');
   });
 
-  it('estado validada con cálculo vigente: calculation queda completed; validation pending', () => {
+  it('estado validada con cálculo vigente: validation queda completed (F13)', () => {
     const n = nominaConEstado('validada', true);
-    expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('calculation'));
+    expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('validation'));
     expect(obtenerEstadoPaso('calculation', 'closure', n)).toBe('completed');
-    // validada significa "cálculo OK, validación en curso": validation aún no
-    // está completa (se completa al aprobar).
-    expect(obtenerEstadoPaso('validation', 'closure', n)).toBe('pending');
+    expect(obtenerEstadoPaso('validation', 'closure', n)).toBe('completed');
+    expect(obtenerEstadoPaso('closure', 'closure', n)).toBe('active');
   });
 
   it('estado validada con cálculo NO vigente: calculation queda warning (CAL-INV-05)', () => {

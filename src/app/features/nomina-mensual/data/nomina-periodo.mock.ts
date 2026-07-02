@@ -365,6 +365,7 @@ export const INCIDENCIAS_MOCK: IncidenciaNomina[] = [
     trabajadorId: 'trab-005',
     segmentoId: 'seg-001',
     bloqueante: true,
+    estadoDecision: 'pendiente',
   },
   {
     id: 'inc-002',
@@ -375,6 +376,7 @@ export const INCIDENCIAS_MOCK: IncidenciaNomina[] = [
     trabajadorId: 'trab-017',
     segmentoId: 'seg-002',
     bloqueante: true,
+    estadoDecision: 'pendiente',
   },
   {
     id: 'inc-003',
@@ -385,6 +387,7 @@ export const INCIDENCIAS_MOCK: IncidenciaNomina[] = [
     trabajadorId: 'trab-008',
     segmentoId: 'seg-001',
     bloqueante: false,
+    estadoDecision: 'pendiente',
   },
   {
     id: 'inc-004',
@@ -395,6 +398,7 @@ export const INCIDENCIAS_MOCK: IncidenciaNomina[] = [
     trabajadorId: 'trab-021',
     segmentoId: 'seg-003',
     bloqueante: false,
+    estadoDecision: 'pendiente',
   },
   {
     id: 'inc-005',
@@ -405,6 +409,7 @@ export const INCIDENCIAS_MOCK: IncidenciaNomina[] = [
     trabajadorId: 'trab-009',
     segmentoId: 'seg-001',
     bloqueante: false,
+    estadoDecision: 'pendiente',
   },
   {
     id: 'inc-006',
@@ -415,6 +420,7 @@ export const INCIDENCIAS_MOCK: IncidenciaNomina[] = [
     trabajadorId: 'trab-018',
     segmentoId: 'seg-002',
     bloqueante: false,
+    estadoDecision: 'pendiente',
   },
   {
     id: 'inc-007',
@@ -425,6 +431,7 @@ export const INCIDENCIAS_MOCK: IncidenciaNomina[] = [
     trabajadorId: 'trab-011',
     segmentoId: 'seg-001',
     bloqueante: false,
+    estadoDecision: 'pendiente',
   },
   {
     id: 'inc-008',
@@ -433,6 +440,7 @@ export const INCIDENCIAS_MOCK: IncidenciaNomina[] = [
     tipo: 'feriado-en-periodo',
     mensaje: 'Hay feriado en el período — revisar horas',
     bloqueante: false,
+    estadoDecision: 'pendiente',
   },
 ];
 

@@ -1502,38 +1502,50 @@ export type Database = {
         Row: {
           bloqueante: boolean
           created_at: string
+          decidida_at: string | null
+          estado_decision: string
           id: string
           id_nomina_periodo: string
           id_persona: number | null
           id_segmento_nomina: string | null
+          justificacion: string | null
           mensaje: string
           resuelta_at: string | null
           severidad: string
           tipo: string
+          version_calculo_snapshot: number | null
         }
         Insert: {
           bloqueante?: boolean
           created_at?: string
+          decidida_at?: string | null
+          estado_decision?: string
           id?: string
           id_nomina_periodo: string
           id_persona?: number | null
           id_segmento_nomina?: string | null
+          justificacion?: string | null
           mensaje: string
           resuelta_at?: string | null
           severidad: string
           tipo: string
+          version_calculo_snapshot?: number | null
         }
         Update: {
           bloqueante?: boolean
           created_at?: string
+          decidida_at?: string | null
+          estado_decision?: string
           id?: string
           id_nomina_periodo?: string
           id_persona?: number | null
           id_segmento_nomina?: string | null
+          justificacion?: string | null
           mensaje?: string
           resuelta_at?: string | null
           severidad?: string
           tipo?: string
+          version_calculo_snapshot?: number | null
         }
         Relationships: [
           {
@@ -6531,6 +6543,10 @@ export type Database = {
         Args: { p_clave: string; p_valor?: Json }
         Returns: undefined
       }
+      invalidar_decisiones_incidencias_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: number
+      }
       listar_calculo_trabajadores_nomina: {
         Args: {
           p_busqueda?: string
@@ -6781,6 +6797,35 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      registrar_decision_incidencia: {
+        Args: {
+          p_accion: string
+          p_id_incidencia: string
+          p_justificacion?: string
+        }
+        Returns: {
+          bloqueante: boolean
+          created_at: string
+          decidida_at: string | null
+          estado_decision: string
+          id: string
+          id_nomina_periodo: string
+          id_persona: number | null
+          id_segmento_nomina: string | null
+          justificacion: string | null
+          mensaje: string
+          resuelta_at: string | null
+          severidad: string
+          tipo: string
+          version_calculo_snapshot: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "incidencia_nomina"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       registrar_evento_auditoria_nomina: {
         Args: {
           p_accion: string
@@ -6834,6 +6879,10 @@ export type Database = {
           total_activos: number
           ya_en_nomina: number
         }[]
+      }
+      sincronizar_incidencias_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: Json
       }
       transicionar_nomina_periodo: {
         Args: {
@@ -6892,6 +6941,51 @@ export type Database = {
         }
       }
       unaccent: { Args: { "": string }; Returns: string }
+      validar_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          aprobado_at: string | null
+          calculado_at: string | null
+          calculo_vigente: boolean
+          closed_at: string | null
+          codigo_ciclo: string
+          created_at: string
+          empresa_nombre: string | null
+          estado: string
+          fecha_fin: string
+          fecha_inicio: string
+          fecha_pago: string | null
+          id: string
+          id_calculo_periodo_vigente: number | null
+          id_empresa: number
+          maximo_paso_completado: string | null
+          maximo_paso_completado_at: string | null
+          naturaleza: string
+          nomina_origen_id: string | null
+          paso_visitado_at: string | null
+          periodo: string
+          plantilla_ciclo_id: string | null
+          tipo: string
+          total_advertencias: number
+          total_descuentos: number
+          total_haberes: number
+          total_incidencias_criticas: number
+          total_liquido: number
+          total_segmentos: number
+          total_trabajadores: number
+          ultimo_paso_visitado: string | null
+          updated_at: string
+          validado_at: string | null
+          version_calculo: number
+          version_estado: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       tipo_concepto_enum: "HABER" | "DESCUENTO" | "APORTE_EMPLEADOR"

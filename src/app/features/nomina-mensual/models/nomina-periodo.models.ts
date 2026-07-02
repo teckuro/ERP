@@ -252,7 +252,18 @@ export interface IncidenciaNomina {
   segmentoId?: string;
 
   bloqueante: boolean;
+
+  /** F13: decisión persistida sobre la incidencia (default `pendiente`). */
+  estadoDecision?: EstadoDecisionIncidencia;
+  justificacion?: string;
+  versionCalculoSnapshot?: number;
+  decididaAt?: string;
 }
+
+export type EstadoDecisionIncidencia =
+  | 'pendiente'
+  | 'resuelta'
+  | 'aceptada_justificada';
 
 /** Incidencia aún no persistida. `id` lo genera la BD. */
 export type IncidenciaNominaNueva = Omit<IncidenciaNomina, 'id'>;
@@ -277,6 +288,7 @@ export interface ResumenValidacionNomina {
   puedeValidar?: boolean;
   puedeCerrar: boolean;
   calculoVigente?: boolean;
+  advertenciasPendientes?: number;
 
   incidenciasCriticas: IncidenciaNomina[];
   advertencias: IncidenciaNomina[];

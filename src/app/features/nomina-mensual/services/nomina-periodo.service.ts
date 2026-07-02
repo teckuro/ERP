@@ -84,6 +84,7 @@ import {
 } from '../rules/nomina-periodo-state.rules';
 import { NominaFeatureGatesService } from './nomina-feature-gates.service';
 import { tipoNominaRequiereCorte } from '../rules/nomina-tipos-creacion.rules';
+import { construirResumenValidacionDesdeIncidencias } from '../rules/nomina-validacion-incidencias.rules';
 
 export interface CrearNominaPayload {
   periodo: string;
@@ -426,19 +427,26 @@ export class NominaPeriodoService {
   }
 
   async validarYAprobarNomina(nominaPeriodoId: string): Promise<void> {
+    await this.validarNomina(nominaPeriodoId);
+  }
+
+  /** F13: valida incidencias persistidas y transiciona calculada → validada. */
+  async validarNomina(nominaPeriodoId: string): Promise<void> {
     this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
-    let nomina = await this.exigirNomina(nominaPeriodoId);
-    const resumen = await this.obtenerResumenValidacionNomina(nominaPeriodoId);
-    if (!resumen.puedeValidar) {
-      throw new Error('La nómina requiere un cálculo vigente y no debe tener bloqueos.');
-    }
-    if (nomina.estado === 'calculada') {
-      await this.transicionar(nomina, 'validada');
-      nomina = await this.exigirNomina(nominaPeriodoId);
-    }
-    if (nomina.estado === 'validada') {
-      await this.transicionar(nomina, 'aprobada');
-    }
+    await this.repo.validarNominaRpc(nominaPeriodoId);
+  }
+
+  async sincronizarIncidenciasNomina(nominaPeriodoId: string): Promise<void> {
+    await this.repo.sincronizarIncidenciasNomina(nominaPeriodoId);
+  }
+
+  async registrarDecisionIncidencia(
+    incidenciaId: string,
+    accion: 'resolver' | 'aceptar',
+    justificacion?: string,
+  ): Promise<IncidenciaNomina> {
+    this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
+    return this.repo.registrarDecisionIncidencia(incidenciaId, accion, justificacion);
   }
 
   // -------------------------------------------------------------------------
@@ -1124,6 +1132,8 @@ export class NominaPeriodoService {
   async obtenerResumenValidacionNomina(
     nominaPeriodoId: string,
   ): Promise<ResumenValidacionNomina> {
+    await this.repo.sincronizarIncidenciasNomina(nominaPeriodoId);
+
     const [nomina, movimientos] = await Promise.all([
       this.repo.obtenerNominaCompleta(nominaPeriodoId),
       this.repo.listarMovimientos(nominaPeriodoId),
@@ -1136,6 +1146,7 @@ export class NominaPeriodoService {
         conIncidenciasCriticas: 0,
         conAdvertencias: 0,
         conMovimientosEspeciales: 0,
+        advertenciasPendientes: 0,
         puedeCalcular: false,
         puedeCerrar: false,
         incidenciasCriticas: [],
@@ -1143,41 +1154,26 @@ export class NominaPeriodoService {
       };
     }
 
-    const incidenciasCriticas = nomina.incidencias.filter((i) => i.severidad === 'critica');
-    const advertencias = nomina.incidencias.filter((i) => i.severidad === 'advertencia');
-
-    const trabajadoresCriticos = new Set(
-      incidenciasCriticas
-        .map((i) => i.trabajadorId)
-        .filter((id): id is string => !!id),
-    );
-    const trabajadoresAdvertencia = new Set(
-      advertencias.map((i) => i.trabajadorId).filter((id): id is string => !!id),
-    );
     const trabajadoresConMovimientos = new Set(
       movimientos
         .filter((m) => m.origen === 'manual' || m.estado === 'omitido')
         .map((m) => m.trabajadorId),
     );
 
-    const hayBloqueante = nomina.incidencias.some((i) => i.bloqueante);
     const calculoVigente = nomina.evidenciaCalculo?.calculoVigente ?? false;
-    const totalTrabajadores = nomina.trabajadorIds.length;
+    const resumenParcial = construirResumenValidacionDesdeIncidencias({
+      totalTrabajadores: nomina.trabajadorIds.length,
+      estado: nomina.estado,
+      calculoVigente,
+      incidencias: nomina.incidencias,
+      conMovimientosEspeciales: trabajadoresConMovimientos.size,
+    });
 
     return {
-      totalTrabajadores,
-      listosParaCalculo: totalTrabajadores - trabajadoresCriticos.size,
-      conIncidenciasCriticas: trabajadoresCriticos.size,
-      conAdvertencias: trabajadoresAdvertencia.size,
+      totalTrabajadores: nomina.trabajadorIds.length,
       conMovimientosEspeciales: trabajadoresConMovimientos.size,
-      puedeCalcular: !hayBloqueante,
-      puedeValidar: !hayBloqueante && calculoVigente && nomina.estado === 'calculada',
-      puedeCerrar: !hayBloqueante
-        && calculoVigente
-        && (nomina.estado === 'validada' || nomina.estado === 'aprobada'),
       calculoVigente,
-      incidenciasCriticas,
-      advertencias,
+      ...resumenParcial,
     };
   }
 
@@ -1211,6 +1207,7 @@ export class NominaPeriodoService {
           mensaje: `Trabajador está en ${segmentoIds.length} segmentos: ${segmentoIds.join(', ')}`,
           trabajadorId,
           bloqueante: true,
+          estadoDecision: 'pendiente',
         });
       }
     }
