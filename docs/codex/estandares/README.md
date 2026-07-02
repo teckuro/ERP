@@ -74,3 +74,13 @@ El ERP acumula convenciones históricas (`ix_` vs `idx_`, `trg_` vs `tg_`, FK `i
 - **Versión colección:** 1.0 (2026-07-02)
 - **Estado:** Obligatorio para desarrollo nuevo
 - Cambios estructurales a un EST requieren actualizar este README y, si aplica, `contexto-rapido.md`
+
+## Auditoría continua
+
+Antes de cerrar fases BD o features grandes:
+
+```powershell
+./scripts/auditar-estandares-desviaciones.ps1
+```
+
+Hallazgos y backlog: [`auditorias/auditoria-estandares-desviaciones-2026-07.md`](../auditorias/auditoria-estandares-desviaciones-2026-07.md).

@@ -34,6 +34,7 @@ Al abrir el proyecto, Cursor/VS Code sugiere instalar las de `.vscode/extensions
 - `ng test (sin watch)` — una pasada CI
 - `lint: texto` / `lint: nomina rules` — higiene de copy y reglas nómina
 - Gates por módulo: empleados, parámetros, nómina (unit + e2e según script)
+- `auditar-estandares-desviaciones.ps1` — baseline EST vs repo (antes de cerrar fase BD/feature)
 
 ## Debug
 
