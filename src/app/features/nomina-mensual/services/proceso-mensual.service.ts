@@ -56,6 +56,8 @@ import {
   resolveEmpresaMutualSnapshot,
 } from '../rules/proceso-mensual-empresa-ley16744.rules';
 import { generarCalculoPreliminarPeriodo } from '../rules/proceso-mensual-motor.rules';
+import { generarCalculoAnticipoPeriodo } from '../rules/proceso-mensual-motor-anticipo.rules';
+import type { ReglaAnticipo } from '../models/nomina-plantilla-ciclo.models';
 import {
   buildGuardarSnapshotRechazado,
   mapResultadoMotorToSnapshotPayload,
@@ -235,6 +237,30 @@ export class ProcesoMensualService {
     const claveCache = opciones.nominaPeriodoId ?? p;
     const input = await this.construirInputMotorPeriodo(p, trabajadorIds);
     const resultado = generarCalculoPreliminarPeriodo(input, new Date().toISOString());
+    this.calculosPorPeriodo.set(claveCache, resultado);
+    this.insumosCalculoPorPeriodo.set(claveCache, {
+      parametrosPeriodo: input.parametrosPeriodo,
+      entradasMensuales: input.entradasMensuales,
+    });
+    return resultado;
+  }
+
+  /** F10: motor de anticipo con regla de plantilla (no aplica descuentos legales). */
+  async generarCalculoAnticipoPeriodo(
+    periodo: string,
+    trabajadorIds: readonly number[],
+    reglaAnticipo: ReglaAnticipo,
+    opciones: { nominaPeriodoId?: string | null } = {},
+  ): Promise<MotorCalculoPeriodoResultado> {
+    const p = periodo.trim();
+    const claveCache = opciones.nominaPeriodoId ?? p;
+    const input = await this.construirInputMotorPeriodo(p, trabajadorIds);
+    const resultado = generarCalculoAnticipoPeriodo({
+      periodo: p,
+      reglaAnticipo,
+      trabajadores: input.trabajadores,
+      generadoEn: new Date().toISOString(),
+    });
     this.calculosPorPeriodo.set(claveCache, resultado);
     this.insumosCalculoPorPeriodo.set(claveCache, {
       parametrosPeriodo: input.parametrosPeriodo,

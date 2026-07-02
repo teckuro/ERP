@@ -6019,6 +6019,100 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      aplicar_consolidaciones_nomina: {
+        Args: { p_id_nomina_destino: string }
+        Returns: Json
+      }
+      aprobar_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          aprobado_at: string | null
+          calculado_at: string | null
+          calculo_vigente: boolean
+          closed_at: string | null
+          codigo_ciclo: string
+          created_at: string
+          empresa_nombre: string | null
+          estado: string
+          fecha_fin: string
+          fecha_inicio: string
+          fecha_pago: string | null
+          id: string
+          id_calculo_periodo_vigente: number | null
+          id_empresa: number
+          maximo_paso_completado: string | null
+          maximo_paso_completado_at: string | null
+          naturaleza: string
+          nomina_origen_id: string | null
+          paso_visitado_at: string | null
+          periodo: string
+          plantilla_ciclo_id: string | null
+          tipo: string
+          total_advertencias: number
+          total_descuentos: number
+          total_haberes: number
+          total_incidencias_criticas: number
+          total_liquido: number
+          total_segmentos: number
+          total_trabajadores: number
+          ultimo_paso_visitado: string | null
+          updated_at: string
+          validado_at: string | null
+          version_calculo: number
+          version_estado: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      cerrar_nomina: {
+        Args: { p_motivo?: string; p_nomina_id: string }
+        Returns: {
+          aprobado_at: string | null
+          calculado_at: string | null
+          calculo_vigente: boolean
+          closed_at: string | null
+          codigo_ciclo: string
+          created_at: string
+          empresa_nombre: string | null
+          estado: string
+          fecha_fin: string
+          fecha_inicio: string
+          fecha_pago: string | null
+          id: string
+          id_calculo_periodo_vigente: number | null
+          id_empresa: number
+          maximo_paso_completado: string | null
+          maximo_paso_completado_at: string | null
+          naturaleza: string
+          nomina_origen_id: string | null
+          paso_visitado_at: string | null
+          periodo: string
+          plantilla_ciclo_id: string | null
+          tipo: string
+          total_advertencias: number
+          total_descuentos: number
+          total_haberes: number
+          total_incidencias_criticas: number
+          total_liquido: number
+          total_segmentos: number
+          total_trabajadores: number
+          ultimo_paso_visitado: string | null
+          updated_at: string
+          validado_at: string | null
+          version_calculo: number
+          version_estado: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       cerrar_nomina_operativa: {
         Args: {
           p_id_calculo_periodo: number
@@ -6247,6 +6341,27 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      desvincular_consolidacion_nomina: {
+        Args: { p_id_consolidacion: string }
+        Returns: {
+          created_at: string
+          estado: string
+          id: string
+          id_empresa: number
+          id_nomina_destino: string
+          id_nomina_origen: string
+          metadata: Json
+          monto_pagado: number
+          tipo: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_consolidacion"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       eliminar_nomina_completa: { Args: { p_nomina_id: string }; Returns: Json }
       empleado_historial_changed_fields: {
         Args: { p_new: Json; p_old: Json }
@@ -6263,6 +6378,10 @@ export type Database = {
       erp_etiqueta_usuario: { Args: { p_id: string }; Returns: string }
       erp_nomina_feature_habilitado: {
         Args: { p_gate: string }
+        Returns: boolean
+      }
+      erp_nomina_permiso_efectivo: {
+        Args: { p_permiso: string }
         Returns: boolean
       }
       fn_aplicar_politica_fds: {
@@ -6464,6 +6583,39 @@ export type Database = {
         }
         Returns: Json
       }
+      generar_liquidaciones_nomina: {
+        Args: { p_id_nomina_periodo: string }
+        Returns: {
+          activo: boolean
+          created_at: string
+          estado: string
+          fecha_generacion: string
+          id_calculo_periodo: number
+          id_empresa: number | null
+          id_liquidacion_origen: number | null
+          id_liquidacion_periodo: number
+          id_liquidacion_reemplazada: number | null
+          id_nomina_periodo: string | null
+          id_preparacion_nomina: number | null
+          metadata: Json
+          periodo: string
+          tipo_liquidacion: string
+          total_descuentos: number
+          total_haberes: number
+          total_liquido: number
+          total_trabajadores: number
+          updated_at: string
+          usuario_generacion_id: string | null
+          usuario_generacion_label: string | null
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_liquidacion_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       generar_liquidaciones_oficiales: {
         Args: {
           p_id_calculo_periodo: number
@@ -6574,6 +6726,27 @@ export type Database = {
           total_haberes: number
         }[]
       }
+      listar_consolidaciones_pendientes: {
+        Args: { p_id_nomina_destino: string }
+        Returns: {
+          created_at: string
+          estado: string
+          id: string
+          id_empresa: number
+          id_nomina_destino: string
+          id_nomina_origen: string
+          metadata: Json
+          monto_pagado: number
+          tipo: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "nomina_consolidacion"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       listar_dotacion_nomina: {
         Args: {
           p_busqueda?: string
@@ -6626,6 +6799,39 @@ export type Database = {
         Returns: {
           trabajador_id: number
         }[]
+      }
+      listar_liquidaciones_nomina: {
+        Args: { p_id_nomina_periodo: string }
+        Returns: {
+          activo: boolean
+          created_at: string
+          estado: string
+          fecha_generacion: string
+          id_calculo_periodo: number
+          id_empresa: number | null
+          id_liquidacion_origen: number | null
+          id_liquidacion_periodo: number
+          id_liquidacion_reemplazada: number | null
+          id_nomina_periodo: string | null
+          id_preparacion_nomina: number | null
+          metadata: Json
+          periodo: string
+          tipo_liquidacion: string
+          total_descuentos: number
+          total_haberes: number
+          total_liquido: number
+          total_trabajadores: number
+          updated_at: string
+          usuario_generacion_id: string | null
+          usuario_generacion_label: string | null
+          version: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "nomina_liquidacion_periodo"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       listar_movimientos_trabajadores_nomina: {
         Args: {
@@ -6694,6 +6900,10 @@ export type Database = {
         }[]
       }
       obtener_feature_gates_nomina: { Args: never; Returns: Json }
+      obtener_nomina_mensual_consolidadora: {
+        Args: { p_id_empresa: number; p_periodo: string }
+        Returns: string
+      }
       obtener_nomina_periodo_diagnostico_activo: {
         Args: { p_periodo: string }
         Returns: {
@@ -6793,6 +7003,27 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "nomina_calculo_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      registrar_consolidacion_calculo: {
+        Args: { p_id_nomina_origen: string }
+        Returns: {
+          created_at: string
+          estado: string
+          id: string
+          id_empresa: number
+          id_nomina_destino: string
+          id_nomina_origen: string
+          metadata: Json
+          monto_pagado: number
+          tipo: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_consolidacion"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -6982,6 +7213,27 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "nomina_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      vincular_consolidacion_nomina: {
+        Args: { p_id_consolidacion: string; p_id_nomina_destino: string }
+        Returns: {
+          created_at: string
+          estado: string
+          id: string
+          id_empresa: number
+          id_nomina_destino: string
+          id_nomina_origen: string
+          metadata: Json
+          monto_pagado: number
+          tipo: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_consolidacion"
           isOneToOne: true
           isSetofReturn: false
         }

@@ -9,6 +9,16 @@
 
 ---
 
+## 2026-07-02 — Generador Nómina V2: paso Cierre Ola 4–6 (F12/F14/F15/F16)
+
+- **Paso Cierre:** checklist dividida (validación / aprobación / conciliación / liquidaciones);
+  panel conciliación multi-tipo con montos; acciones «Aprobar nómina» y «Generar liquidaciones»;
+  MessageBox confirmación aprobación; CSS local `paso-cierre__panel`, `paso-cierre__origenes`, `paso-cierre__acciones`.
+- **Navegación:** estado `validada` permite acceder a Cierre (solo lectura + aprobar).
+- **Contraste:** `noia-ui-manual.md`, patrón checklist existente en paso Cierre, copy RRHH sin términos RPC.
+
+---
+
 ## 2026-07-02 — Generador Nómina V2: F13 validación con decisiones (NOM-ADMIN-OPS-F13 núcleo)
 
 - **Paso Validación:** incidencias con estado de decisión (pendiente / resuelta / aceptada);

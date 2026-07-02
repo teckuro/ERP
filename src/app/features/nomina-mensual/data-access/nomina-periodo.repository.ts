@@ -762,6 +762,21 @@ export class NominaPeriodoRepository {
     throwIfError(error, 'validarNominaRpc');
   }
 
+  async aprobarNominaRpc(nominaPeriodoId: string): Promise<void> {
+    const { error } = await this.supabase.rpc('aprobar_nomina', {
+      p_nomina_id: nominaPeriodoId,
+    });
+    throwIfError(error, 'aprobarNominaRpc');
+  }
+
+  async cerrarNominaRpc(nominaPeriodoId: string, motivo?: string): Promise<void> {
+    const { error } = await this.supabase.rpc('cerrar_nomina', {
+      p_nomina_id: nominaPeriodoId,
+      p_motivo: motivo ?? undefined,
+    });
+    throwIfError(error, 'cerrarNominaRpc');
+  }
+
   async reemplazarIncidencias(
     nominaPeriodoId: string,
     incidencias: ReadonlyArray<IncidenciaNomina | IncidenciaNominaNueva>,

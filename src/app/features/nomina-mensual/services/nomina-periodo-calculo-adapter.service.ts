@@ -15,7 +15,9 @@ import {
   mapTrabajadorSnapshotToLiquidacion,
 } from '../rules/proceso-mensual-snapshot.rules';
 import { NominaCalculoSnapshotRepository } from '../data-access/nomina-calculo-snapshot.repository';
+import { NominaConsolidacionRepository } from '../data-access/nomina-consolidacion.repository';
 import { NominaPeriodoService } from './nomina-periodo.service';
+import { NominaPlantillaCicloService } from './nomina-plantilla-ciclo.service';
 import { ProcesoMensualService } from './proceso-mensual.service';
 
 export interface ResultadoCalculoNominaPeriodo {
@@ -27,7 +29,9 @@ export interface ResultadoCalculoNominaPeriodo {
 export class NominaPeriodoCalculoAdapterService {
   private readonly nominas = inject(NominaPeriodoService);
   private readonly motor = inject(ProcesoMensualService);
+  private readonly plantillas = inject(NominaPlantillaCicloService);
   private readonly snapshotRepo = inject(NominaCalculoSnapshotRepository);
+  private readonly consolidacion = inject(NominaConsolidacionRepository);
 
   async calcular(nominaPeriodoId: string): Promise<ResultadoCalculoNominaPeriodo> {
     const nomina = await this.nominas.obtenerNomina(nominaPeriodoId);
@@ -40,9 +44,21 @@ export class NominaPeriodoCalculoAdapterService {
     const idEmpresaNumerico = Number.isFinite(idEmpresa) ? idEmpresa : null;
 
     const trabajadorIds = nomina.trabajadorIds.map(Number).filter(Number.isFinite);
-    const resultado = await this.motor.generarCalculoPeriodo(nomina.periodo, trabajadorIds, {
-      nominaPeriodoId,
-    });
+    const opcionesMotor = { nominaPeriodoId };
+
+    let resultado: MotorCalculoPeriodoResultado;
+    if (nomina.naturaleza === 'anticipo') {
+      const regla = await this.resolverReglaAnticipo(nomina.plantillaCicloId);
+      resultado = await this.motor.generarCalculoAnticipoPeriodo(
+        nomina.periodo,
+        trabajadorIds,
+        regla,
+        opcionesMotor,
+      );
+    } else {
+      resultado = await this.motor.generarCalculoPeriodo(nomina.periodo, trabajadorIds, opcionesMotor);
+    }
+
     const guardado = await this.motor.guardarSnapshotPreliminar(nomina.periodo, {
       idEmpresa: idEmpresaNumerico,
       nominaPeriodoId,
@@ -60,10 +76,32 @@ export class NominaPeriodoCalculoAdapterService {
       totalLiquido: resultado.resumen.totalLiquidoPreliminar,
     });
 
+    if (nomina.naturaleza === 'anticipo' || nomina.naturaleza === 'pago_extraordinario') {
+      try {
+        await this.consolidacion.registrarConsolidacionCalculo(nominaPeriodoId);
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error);
+        if (!msg.includes('No existe nómina mensual')) {
+          throw error;
+        }
+      }
+    }
+
     return {
       resultado,
       idCalculoPeriodo: guardado.snapshot.idCalculoPeriodo ?? undefined,
     };
+  }
+
+  private async resolverReglaAnticipo(plantillaCicloId?: string) {
+    if (!plantillaCicloId) {
+      throw new Error('La nómina de anticipo no tiene plantilla asociada.');
+    }
+    const plantilla = await this.plantillas.obtenerPorId(plantillaCicloId);
+    if (!plantilla?.reglaAnticipo) {
+      throw new Error('La plantilla no define regla de anticipo.');
+    }
+    return plantilla.reglaAnticipo;
   }
 
   /**

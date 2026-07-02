@@ -24,6 +24,7 @@ import { ErpPermisosRemuneracionesService } from '../../../core/auth/erp-permiso
 import { EmpresaActivaService } from '../../../core/services/empresa-activa.service';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import { NominaPeriodoRepository } from '../data-access/nomina-periodo.repository';
+import { NominaConsolidacionRepository } from '../data-access/nomina-consolidacion.repository';
 import type { Database } from '../../../core/models/database.types';
 
 type NominaPeriodoUpdate = Database['public']['Tables']['nomina_periodo']['Update'];
@@ -84,6 +85,11 @@ import {
 } from '../rules/nomina-periodo-state.rules';
 import { NominaFeatureGatesService } from './nomina-feature-gates.service';
 import { tipoNominaRequiereCorte } from '../rules/nomina-tipos-creacion.rules';
+import type {
+  NominaConsolidacion,
+  NominaLiquidacionResumen,
+  ResultadoAplicarConsolidaciones,
+} from '../models/nomina-consolidacion.models';
 import { construirResumenValidacionDesdeIncidencias } from '../rules/nomina-validacion-incidencias.rules';
 
 export interface CrearNominaPayload {
@@ -114,6 +120,7 @@ interface PersonaResumenRow {
 @Injectable({ providedIn: 'root' })
 export class NominaPeriodoService {
   private readonly repo = inject(NominaPeriodoRepository);
+  private readonly consolidacionRepo = inject(NominaConsolidacionRepository);
   private readonly empresaActiva = inject(EmpresaActivaService);
   private readonly supabase = injectSupabase();
   private readonly empleados = inject(EmpleadosService);
@@ -296,7 +303,13 @@ export class NominaPeriodoService {
         'La nómina debe estar aprobada o liquidada, con cálculo vigente y sin bloqueos.',
       );
     }
-    await this.transicionar(nomina, 'cerrada', payload.motivo);
+    await this.repo.cerrarNominaRpc(nominaPeriodoId, payload.motivo);
+  }
+
+  /** F14: transiciona validada → aprobada vía RPC server-side. */
+  async aprobarNomina(nominaPeriodoId: string): Promise<void> {
+    this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
+    await this.repo.aprobarNominaRpc(nominaPeriodoId);
   }
 
   /**
@@ -447,6 +460,28 @@ export class NominaPeriodoService {
   ): Promise<IncidenciaNomina> {
     this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
     return this.repo.registrarDecisionIncidencia(incidenciaId, accion, justificacion);
+  }
+
+  async listarConsolidacionesPendientes(
+    nominaDestinoId: string,
+  ): Promise<readonly NominaConsolidacion[]> {
+    return this.consolidacionRepo.listarPendientes(nominaDestinoId);
+  }
+
+  async aplicarConsolidaciones(nominaDestinoId: string): Promise<ResultadoAplicarConsolidaciones> {
+    this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
+    return this.consolidacionRepo.aplicar(nominaDestinoId);
+  }
+
+  async listarLiquidacionesNomina(
+    nominaPeriodoId: string,
+  ): Promise<readonly NominaLiquidacionResumen[]> {
+    return this.consolidacionRepo.listarLiquidaciones(nominaPeriodoId);
+  }
+
+  async generarLiquidacionesNomina(nominaPeriodoId: string): Promise<NominaLiquidacionResumen> {
+    this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
+    return this.consolidacionRepo.generarLiquidaciones(nominaPeriodoId);
   }
 
   // -------------------------------------------------------------------------

@@ -20,4 +20,12 @@ export class NominaMensualCapabilitiesService {
   readonly esSoloLectura = this.permisos.esSoloConsulta;
 
   readonly puedeEscribirNomina = this.permisos.puedeEscribirNomina;
+
+  readonly puedeValidarNomina = computed(() => this.permisos.permisosNomina().puedeValidarNomina);
+  readonly puedeAprobarNomina = computed(() => this.permisos.permisosNomina().puedeAprobarNomina);
+  readonly puedeConsolidarNomina = computed(() => this.permisos.permisosNomina().puedeConsolidarNomina);
+  readonly puedeGenerarLiquidaciones = computed(
+    () => this.permisos.permisosNomina().puedeGenerarLiquidaciones,
+  );
+  readonly puedeCerrarNomina = computed(() => this.permisos.permisosNomina().puedeCerrarNomina);
 }

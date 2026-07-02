@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { mapResultadoMotorToSnapshotPayload } from '../rules/proceso-mensual-snapshot.rules';
 import { NominaCalculoSnapshotRepository } from '../data-access/nomina-calculo-snapshot.repository';
+import { NominaConsolidacionRepository } from '../data-access/nomina-consolidacion.repository';
 import { NominaPeriodoService } from './nomina-periodo.service';
+import { NominaPlantillaCicloService } from './nomina-plantilla-ciclo.service';
 import { ProcesoMensualService } from './proceso-mensual.service';
 import { NominaPeriodoCalculoAdapterService } from './nomina-periodo-calculo-adapter.service';
 
@@ -15,6 +17,8 @@ describe('NominaPeriodoCalculoAdapterService', () => {
         periodo: '2026-06',
         empresaId: '42',
         trabajadorIds: ['10', '11'],
+        naturaleza: 'liquidacion_legal',
+        tipo: 'mensual',
       }),
       registrarCalculo: vi.fn().mockResolvedValue(undefined),
     };
@@ -47,6 +51,8 @@ describe('NominaPeriodoCalculoAdapterService', () => {
         { provide: NominaPeriodoService, useValue: nominas },
         { provide: ProcesoMensualService, useValue: motor },
         { provide: NominaCalculoSnapshotRepository, useValue: {} },
+        { provide: NominaPlantillaCicloService, useValue: { obtenerPorId: vi.fn() } },
+        { provide: NominaConsolidacionRepository, useValue: { registrarConsolidacionCalculo: vi.fn() } },
       ],
     });
 
@@ -154,6 +160,8 @@ describe('NominaPeriodoCalculoAdapterService', () => {
         { provide: NominaPeriodoService, useValue: nominas },
         { provide: ProcesoMensualService, useValue: motor },
         { provide: NominaCalculoSnapshotRepository, useValue: {} },
+        { provide: NominaPlantillaCicloService, useValue: { obtenerPorId: vi.fn() } },
+        { provide: NominaConsolidacionRepository, useValue: {} },
       ],
     });
 
@@ -180,6 +188,8 @@ describe('NominaPeriodoCalculoAdapterService', () => {
         { provide: NominaPeriodoService, useValue: nominas },
         { provide: ProcesoMensualService, useValue: motor },
         { provide: NominaCalculoSnapshotRepository, useValue: {} },
+        { provide: NominaPlantillaCicloService, useValue: { obtenerPorId: vi.fn() } },
+        { provide: NominaConsolidacionRepository, useValue: {} },
       ],
     });
 

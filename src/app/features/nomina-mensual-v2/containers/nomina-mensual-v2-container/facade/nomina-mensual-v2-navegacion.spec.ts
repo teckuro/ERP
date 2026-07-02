@@ -267,9 +267,9 @@ describe('indiceMaximoPasoAccesible — restringe rehidratación a pasos alcanza
     expect(indiceMaximoPasoAccesible('en_revision')).toBe(ORDEN_PASOS_NOMINA.indexOf('calculation'));
   });
 
-  it('calculada/validada permiten hasta validation', () => {
+  it('calculada permite hasta validation; validada abre cierre (F14)', () => {
     expect(indiceMaximoPasoAccesible('calculada')).toBe(ORDEN_PASOS_NOMINA.indexOf('validation'));
-    expect(indiceMaximoPasoAccesible('validada')).toBe(ORDEN_PASOS_NOMINA.indexOf('validation'));
+    expect(indiceMaximoPasoAccesible('validada')).toBe(ORDEN_PASOS_NOMINA.indexOf('closure'));
   });
 
   it('aprobada/liquidada/cerrada/reabierta permiten hasta closure', () => {

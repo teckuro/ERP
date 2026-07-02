@@ -14,6 +14,10 @@ export interface PermisosNominaMensual {
   puedeReabrirNomina: boolean;
   puedeCerrarNomina: boolean;
   puedeRecargarParametrosBase: boolean;
+  puedeValidarNomina: boolean;
+  puedeAprobarNomina: boolean;
+  puedeConsolidarNomina: boolean;
+  puedeGenerarLiquidaciones: boolean;
 }
 
 export const MENSAJE_SIN_PERMISO_ADMIN_NOMINA =

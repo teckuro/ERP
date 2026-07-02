@@ -27,6 +27,8 @@
 ### En la raíz del módulo
 
 - [`README.md`](./README.md) — este archivo (índice + bitácora histórica de H2 por ID).
+- [`tablero-cierre-fases.md`](./tablero-cierre-fases.md) — **tablero vivo** de fases cerradas/pendientes del módulo (Admin + Generador).
+- [`plan-ejecucion-fases-vigente.md`](./plan-ejecucion-fases-vigente.md) — plan maestro olas 0–7 post-REPAIR.
 - [`contrato-general.md`](./contrato-general.md) — contrato funcional canónico del módulo.
 - [`matriz-bloqueos-periodo.md`](./matriz-bloqueos-periodo.md) — matriz transversal de bloqueos por período.
 - [`arquitectura-administrador-generador.md`](./arquitectura-administrador-generador.md) — arquitectura base del Administrador y Generador.

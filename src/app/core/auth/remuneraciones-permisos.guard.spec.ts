@@ -37,6 +37,10 @@ describe('remuneraciones-permisos.guard', () => {
     puedeReabrirNomina: false,
     puedeCerrarNomina: false,
     puedeRecargarParametrosBase: false,
+    puedeValidarNomina: true,
+    puedeAprobarNomina: true,
+    puedeConsolidarNomina: true,
+    puedeGenerarLiquidaciones: true,
   };
 
   const permisosAdmin = {
@@ -55,6 +59,10 @@ describe('remuneraciones-permisos.guard', () => {
     puedeReabrirNomina: false,
     puedeCerrarNomina: false,
     puedeRecargarParametrosBase: false,
+    puedeValidarNomina: false,
+    puedeAprobarNomina: false,
+    puedeConsolidarNomina: false,
+    puedeGenerarLiquidaciones: false,
   };
 
   it('remuneracionesEscrituraGuard permite operador y bloquea consulta', async () => {

@@ -1,12 +1,8 @@
 /**
- * Paso Cierre — F3 fusion (F3e-6).
+ * Paso Cierre — F3 fusion (F3e-6) + F12/F14/F15/F16.
  *
- * Muestra una checklist de cierre operativo (parámetros, dotación, movimientos,
- * cálculo, validación) y, cuando todo está OK, habilita el cierre.
- *
- * Cerrar cambia `nomina_periodo.estado` a `'cerrada'` y registra un evento de
- * auditoría con el motivo opcional. Reabrir es una acción secundaria que pide
- * motivo obligatorio.
+ * Checklist operativa: parámetros, dotación, movimientos, cálculo, validación,
+ * aprobación, conciliación (mensual), liquidaciones y cierre transaccional.
  */
 
 import { CommonModule } from '@angular/common';
@@ -28,6 +24,10 @@ import type {
   NominaPeriodo,
   ResumenValidacionNomina,
 } from '../../../../../nomina-mensual/models/nomina-periodo.models';
+import type {
+  NominaConsolidacion,
+  NominaLiquidacionResumen,
+} from '../../../../../nomina-mensual/models/nomina-consolidacion.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
 import { NominaMensualCapabilitiesService } from '../../../../../nomina-mensual/services/nomina-mensual-capabilities.service';
 import { estadoNominaToLabel } from '../../../../../nomina-mensual/presenters/admin-nominas.presenter';
@@ -64,11 +64,12 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   readonly estadoLabel = estadoNominaToLabel;
 
   readonly nominaPeriodoId = input<string | null>(null);
-  /** Notifica al container que debe refrescar cabecera (y opcionalmente persistir paso). */
   readonly nominaCabeceraCambiada = output<NominaCabeceraCambiadaEvent>();
 
   readonly nomina = signal<NominaPeriodo | null>(null);
   readonly resumen = signal<ResumenValidacionNomina | null>(null);
+  readonly consolidaciones = signal<readonly NominaConsolidacion[]>([]);
+  readonly liquidaciones = signal<readonly NominaLiquidacionResumen[]>([]);
   readonly cargando = signal(false);
   readonly ejecutando = signal(false);
   readonly error = signal<string | null>(null);
@@ -77,12 +78,19 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   readonly motivoReapertura = signal('');
   readonly mostrarReabrir = signal(false);
   readonly confirmarCierreVisible = signal(false);
+  readonly confirmarAprobacionVisible = signal(false);
+
+  readonly esMensualConsolidadora = computed(() => {
+    const n = this.nomina();
+    return n?.tipo === 'mensual' && n.naturaleza === 'liquidacion_legal';
+  });
 
   readonly checklist = computed<ChecklistItem[]>(() => {
     const n = this.nomina();
     const r = this.resumen();
     if (!n || !r) return [];
-    return [
+
+    const items: ChecklistItem[] = [
       {
         id: 'parametros',
         label: 'Parámetros guardados',
@@ -109,27 +117,60 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
       },
       {
         id: 'validacion',
-        label: 'Validación aprobada',
+        label: 'Validación completada',
         cumplido:
-          (n.estado === 'aprobada' || n.estado === 'liquidada')
-          && r.puedeCerrar
+          ['validada', 'aprobada', 'liquidada', 'cerrada'].includes(n.estado)
           && r.conIncidenciasCriticas === 0,
         detalle: `${r.conIncidenciasCriticas} críticas · ${r.conAdvertencias} advertencias.`,
       },
+      {
+        id: 'aprobacion',
+        label: 'Aprobación registrada',
+        cumplido: ['aprobada', 'liquidada', 'cerrada'].includes(n.estado),
+        detalle: n.estado === 'validada'
+          ? 'Pendiente de aprobación para continuar con liquidaciones.'
+          : 'Aprobación operativa registrada.',
+      },
     ];
+
+    if (this.esMensualConsolidadora()) {
+      const pendientes = this.consolidaciones().length;
+      items.push({
+        id: 'conciliacion',
+        label: 'Conciliación multi-tipo',
+        cumplido: pendientes === 0,
+        detalle: pendientes === 0
+          ? 'Anticipos y extraordinarias conciliados.'
+          : `${pendientes} origen(es) pendiente(s) de aplicar.`,
+      });
+    }
+
+    items.push({
+      id: 'liquidaciones',
+      label: 'Liquidaciones generadas',
+      cumplido: this.liquidaciones().length > 0,
+      detalle: this.liquidaciones().length > 0
+        ? `${this.liquidaciones().length} lote(s) persistido(s).`
+        : 'Genera liquidaciones desde el cálculo aprobado.',
+    });
+
+    return items;
   });
 
   readonly todoCumplido = computed(() => this.checklist().every((c) => c.cumplido));
   readonly cerrada = computed(() => this.nomina()?.estado === 'cerrada');
+  readonly puedeAprobar = computed(
+    () =>
+      this.capabilities.puedeAprobarNomina()
+      && this.nomina()?.estado === 'validada'
+      && !this.calculoNoVigente(),
+  );
   readonly puedeAccionesAdmin = this.capabilities.puedeAccionesAdminNomina;
+  readonly puedeCerrar = this.capabilities.puedeCerrarNomina;
+  readonly puedeConsolidar = this.capabilities.puedeConsolidarNomina;
+  readonly puedeGenerarLiquidaciones = this.capabilities.puedeGenerarLiquidaciones;
 
-  /**
-   * `true` cuando el snapshot persistido dejó de ser vigente por cambios
-   * posteriores. Replica el banner CAL-INV-05 introducido en el paso Cálculo
-   * para que la advertencia persista hasta que se recalcule.
-   */
   readonly calculoNoVigente = computed(() => esCalculoNoVigente(this.nomina()?.evidenciaCalculo));
-
   readonly versionCalculo = computed(() => this.nomina()?.evidenciaCalculo?.versionCalculo ?? 0);
   readonly mensajeCalculoNoVigente = MENSAJE_CALCULO_NO_VIGENTE;
 
@@ -144,17 +185,85 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
     this.cargando.set(true);
     this.error.set(null);
     try {
-      const [nomina, resumen] = await Promise.all([
-        this.servicio.obtenerNomina(nominaPeriodoId),
+      const nomina = await this.servicio.obtenerNomina(nominaPeriodoId);
+      const [resumen, consolidaciones, liquidaciones] = await Promise.all([
         this.servicio.obtenerResumenValidacionNomina(nominaPeriodoId),
+        nomina?.tipo === 'mensual' && nomina.naturaleza === 'liquidacion_legal'
+          ? this.servicio.listarConsolidacionesPendientes(nominaPeriodoId)
+          : Promise.resolve([]),
+        this.servicio.listarLiquidacionesNomina(nominaPeriodoId),
       ]);
       this.nomina.set(nomina);
       this.resumen.set(resumen);
+      this.consolidaciones.set(consolidaciones);
+      this.liquidaciones.set(liquidaciones);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Error desconocido';
       this.error.set(`No fue posible cargar el resumen de cierre: ${msg}`);
     } finally {
       this.cargando.set(false);
+    }
+  }
+
+  async aprobarNomina(): Promise<void> {
+    const id = this.nominaPeriodoId();
+    if (!id) return;
+    this.confirmarAprobacionVisible.set(false);
+    this.ejecutando.set(true);
+    this.error.set(null);
+    try {
+      await this.servicio.aprobarNomina(id);
+      this.mensaje.set('Nómina aprobada. Ya puedes generar liquidaciones.');
+      await this.cargar(id);
+      this.nominaCabeceraCambiada.emit({ trazabilidad: { tipo: 'aprobacion', motivo: 'Nómina aprobada.' } });
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Error desconocido';
+      this.error.set(`No fue posible aprobar la nómina: ${msg}`);
+    } finally {
+      this.ejecutando.set(false);
+    }
+  }
+
+  solicitarAprobacion(): void {
+    if (this.puedeAprobar()) this.confirmarAprobacionVisible.set(true);
+  }
+
+  async aplicarConsolidaciones(): Promise<void> {
+    const id = this.nominaPeriodoId();
+    if (!id || !this.esMensualConsolidadora()) return;
+    this.ejecutando.set(true);
+    this.error.set(null);
+    try {
+      const resultado = await this.servicio.aplicarConsolidaciones(id);
+      this.mensaje.set(
+        `Conciliación aplicada: ${resultado.aplicadas} origen(es) incorporados.`,
+      );
+      await this.cargar(id);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Error desconocido';
+      this.error.set(`No fue posible aplicar la conciliación: ${msg}`);
+    } finally {
+      this.ejecutando.set(false);
+    }
+  }
+
+  async generarLiquidaciones(): Promise<void> {
+    const id = this.nominaPeriodoId();
+    if (!id) return;
+    this.ejecutando.set(true);
+    this.error.set(null);
+    try {
+      await this.servicio.generarLiquidacionesNomina(id);
+      this.mensaje.set('Liquidaciones generadas correctamente.');
+      await this.cargar(id);
+      this.nominaCabeceraCambiada.emit({
+        trazabilidad: { tipo: 'liquidaciones', motivo: 'Liquidaciones generadas.' },
+      });
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Error desconocido';
+      this.error.set(`No fue posible generar liquidaciones: ${msg}`);
+    } finally {
+      this.ejecutando.set(false);
     }
   }
 
@@ -188,15 +297,11 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
     if (this.todoCumplido()) this.confirmarCierreVisible.set(true);
   }
 
-  /**
-   * Diagnóstico puro de "completitud" del paso. Sin side-effects. Lo
-   * consultan CTA y stepper.
-   */
   puedeContinuar(): ResultadoAvancePaso {
     if (this.cerrada()) {
       return { ok: false, razon: 'La nómina ya está cerrada.' };
     }
-    if (!this.puedeAccionesAdmin()) {
+    if (!this.puedeCerrar()) {
       return {
         ok: false,
         razon: 'El cierre requiere rol de administración de remuneraciones.',
@@ -214,12 +319,6 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
     return { ok: true };
   }
 
-  /**
-   * Comando único de avance (AG-NAV-03). Paso terminal: abre el modal de
-   * confirmación del cierre. El cierre real ocurre cuando el usuario confirma
-   * dentro del modal (`cerrarNomina()`). El container NO navega tras
-   * `ok: true` porque cierre es el paso final del flujo.
-   */
   async avanzar(): Promise<ResultadoAvancePaso> {
     const diagnostico = this.puedeContinuar();
     if (!diagnostico.ok) return diagnostico;
@@ -266,5 +365,9 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
     } finally {
       this.ejecutando.set(false);
     }
+  }
+
+  etiquetaTipoConsolidacion(tipo: string): string {
+    return tipo === 'anticipo' ? 'Anticipo' : 'Extraordinaria';
   }
 }

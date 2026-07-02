@@ -88,6 +88,10 @@ export function resolverPermisosNominaMensual(rol: RolRemuneracionesLogico): Per
     puedeReabrirNomina: esAdmin,
     puedeCerrarNomina: esAdmin,
     puedeRecargarParametrosBase: esAdmin,
+    puedeValidarNomina: esAdmin || esOperador,
+    puedeAprobarNomina: esAdmin || esOperador,
+    puedeConsolidarNomina: esAdmin || esOperador,
+    puedeGenerarLiquidaciones: esAdmin || esOperador,
   };
 }
 

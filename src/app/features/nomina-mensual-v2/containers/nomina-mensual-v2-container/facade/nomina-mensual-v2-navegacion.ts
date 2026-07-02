@@ -257,8 +257,8 @@ export function indiceMaximoPasoAccesible(estado: EstadoNomina | null): number {
     case 'en_revision':
       return ORDEN_PASOS_NOMINA.indexOf('calculation');
     case 'calculada':
-    case 'validada':
       return ORDEN_PASOS_NOMINA.indexOf('validation');
+    case 'validada':
     case 'aprobada':
     case 'liquidada':
     case 'cerrada':

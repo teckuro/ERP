@@ -52,6 +52,61 @@
     </ul>
   }
 
+  @if (esMensualConsolidadora() && consolidaciones().length > 0 && !cerrada()) {
+    <section class="paso-cierre__panel" aria-labelledby="paso-cierre-conciliacion">
+      <h3 id="paso-cierre-conciliacion" class="paso-cierre__panel-title">Conciliación pendiente</h3>
+      <p class="paso-cierre__panel-copy">
+        Hay nóminas de anticipo o extraordinarias del mismo período por incorporar antes de validar o aprobar.
+      </p>
+      <ul class="paso-cierre__origenes">
+        @for (c of consolidaciones(); track c.id) {
+          <li class="paso-cierre__origen">
+            <span>{{ etiquetaTipoConsolidacion(c.tipo) }}</span>
+            <span class="paso-cierre__origen-monto">${{ c.montoPagado | number:'1.0-0' }}</span>
+          </li>
+        }
+      </ul>
+      @if (puedeConsolidar()) {
+        <button
+          type="button"
+          class="paso-cierre__btn is-secondary"
+          [disabled]="ejecutando()"
+          (click)="aplicarConsolidaciones()"
+        >
+          {{ ejecutando() ? 'Aplicando…' : 'Aplicar conciliación' }}
+        </button>
+      }
+    </section>
+  }
+
+  @if (!cerrada() && (nomina()?.estado === 'validada' || nomina()?.estado === 'aprobada' || nomina()?.estado === 'liquidada')) {
+    <section class="paso-cierre__panel" aria-labelledby="paso-cierre-acciones">
+      <h3 id="paso-cierre-acciones" class="paso-cierre__panel-title">Acciones de cierre</h3>
+      <div class="paso-cierre__acciones">
+        @if (puedeAprobar()) {
+          <button
+            type="button"
+            class="paso-cierre__btn is-primary"
+            [disabled]="ejecutando()"
+            (click)="solicitarAprobacion()"
+          >
+            Aprobar nómina
+          </button>
+        }
+        @if (puedeGenerarLiquidaciones() && ['aprobada', 'liquidada'].includes(nomina()?.estado ?? '')) {
+          <button
+            type="button"
+            class="paso-cierre__btn is-secondary"
+            [disabled]="ejecutando() || calculoNoVigente()"
+            (click)="generarLiquidaciones()"
+          >
+            {{ ejecutando() ? 'Generando…' : 'Generar liquidaciones' }}
+          </button>
+        }
+      </div>
+    </section>
+  }
+
   @if (!cerrada()) {
     <section class="paso-cierre__form">
       <label class="paso-cierre__field paso-cierre__field--wide">
@@ -87,7 +142,7 @@
       <span class="paso-cierre__footer-hint is-warning">
         Recalcula antes de cerrar. La acción principal del shell quedará bloqueada hasta tener cálculo vigente.
       </span>
-    } @else if (!puedeAccionesAdmin()) {
+    } @else if (!puedeCerrar()) {
       <span class="paso-cierre__footer-hint is-warning">
         El cierre operativo está reservado a administración de remuneraciones.
       </span>
@@ -102,6 +157,23 @@
     }
   </footer>
 </section>
+
+@if (confirmarAprobacionVisible()) {
+  <app-message-box
+    mode="modal"
+    variant="confirm"
+    eyebrow="Aprobación"
+    title="Aprobar nómina"
+    message="Registra la aprobación operativa del cálculo validado. Después podrás generar liquidaciones."
+    detail="La acción queda en auditoría. Si recalculas, deberás validar de nuevo."
+    primaryLabel="Aprobar nómina"
+    secondaryLabel="Cancelar"
+    [dismissible]="true"
+    (action)="aprobarNomina()"
+    (secondary)="confirmarAprobacionVisible.set(false)"
+    (dismiss)="confirmarAprobacionVisible.set(false)"
+  />
+}
 
 @if (confirmarCierreVisible()) {
   <app-message-box

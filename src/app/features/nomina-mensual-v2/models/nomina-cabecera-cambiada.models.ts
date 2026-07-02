@@ -5,5 +5,7 @@ export type NominaCabeceraCambiadaEvent = {
   registrarPasoCompletado?: PayrollStepId;
   trazabilidad?:
     | { tipo: 'cierre'; motivo: string }
-    | { tipo: 'reapertura'; motivo: string };
+    | { tipo: 'reapertura'; motivo: string }
+    | { tipo: 'aprobacion'; motivo: string }
+    | { tipo: 'liquidaciones'; motivo: string };
 };
