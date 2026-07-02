@@ -27,6 +27,7 @@ import { bindShellPageContext } from '../../../../layout/shell-page-context.bind
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { NominaPeriodoService } from '../../services/nomina-periodo.service';
+import { NominaPeriodoCalculoAdapterService } from '../../services/nomina-periodo-calculo-adapter.service';
 import { NominaMensualCapabilitiesService } from '../../services/nomina-mensual-capabilities.service';
 import { NominaFeatureGatesService } from '../../services/nomina-feature-gates.service';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -67,6 +68,7 @@ import {
 } from './components/admin-nominas-modal-rectificacion/admin-nominas-modal-rectificacion.component';
 import { AdminNominasModalResumenNominaComponent } from './components/admin-nominas-modal-resumen-nomina/admin-nominas-modal-resumen-nomina.component';
 import { AdminNominasModalHistorialNominaComponent } from './components/admin-nominas-modal-historial-nomina/admin-nominas-modal-historial-nomina.component';
+import { AdminNominasModalCadenaRectificacionComponent } from './components/admin-nominas-modal-cadena-rectificacion/admin-nominas-modal-cadena-rectificacion.component';
 import {
   puedeEliminar,
   puedeEliminarConPermiso,
@@ -75,6 +77,17 @@ import {
   puedeCrearRectificacion,
   tieneLiquidaciones,
 } from '../../rules/admin-nominas.rules';
+import type { TotalesRectificacionVista } from '../../rules/proceso-mensual-motor-rectificacion.rules';
+import {
+  agruparRectificacionesPorOrigen,
+  etiquetaAccionPrimariaFila,
+  puedeConsultarOriginal,
+  rectificacionesDeOrigen,
+} from '../../rules/nomina-rectificacion-ui.rules';
+import {
+  etiquetaCadenaEnOriginal,
+  etiquetaSublineaRectificacion,
+} from '../../presenters/nomina-rectificacion-ui.presenter';
 
 type AccionAdministrativa = 'eliminar' | 'reabrir';
 
@@ -97,6 +110,7 @@ interface AccionAdministrativaPendiente {
     AdminNominasModalRectificacionComponent,
     AdminNominasModalResumenNominaComponent,
     AdminNominasModalHistorialNominaComponent,
+    AdminNominasModalCadenaRectificacionComponent,
   ],
   templateUrl: './administrador-nominas-container.html',
   styleUrl: './administrador-nominas-container.css',
@@ -105,6 +119,7 @@ interface AccionAdministrativaPendiente {
 export class AdministradorNominasContainer {
   private readonly router = inject(Router);
   private readonly servicio = inject(NominaPeriodoService);
+  private readonly calculoAdapter = inject(NominaPeriodoCalculoAdapterService);
   private readonly capabilities = inject(NominaMensualCapabilitiesService);
   private readonly featureGates = inject(NominaFeatureGatesService);
   private readonly authService = inject(AuthService);
@@ -114,7 +129,9 @@ export class AdministradorNominasContainer {
   readonly resumenes = signal<NominaPeriodoResumen[]>([]);
   readonly modalNuevaAbierto = signal(false);
   readonly rectificacionOrigen = signal<NominaPeriodoResumen | null>(null);
+  readonly cadenaRectificacionOrigen = signal<NominaPeriodoResumen | null>(null);
   readonly resumenSeleccionado = signal<ResumenValidacionNomina | null>(null);
+  readonly totalesRectificacionSeleccionada = signal<TotalesRectificacionVista | null>(null);
   readonly nominaSeleccionada = signal<NominaPeriodoResumen | null>(null);
   readonly cargando = signal(false);
   readonly errorCarga = signal<string | null>(null);
@@ -148,6 +165,15 @@ export class AdministradorNominasContainer {
 
   readonly filtros = computed(() => crearFiltrosAdminNominas(this.resumenes()));
   readonly resumenesOrdenados = computed(() => ordenarResumenesOperativos(this.resumenes()));
+
+  readonly rectificacionesPorOrigen = computed(() =>
+    agruparRectificacionesPorOrigen(this.resumenes()),
+  );
+
+  readonly etiquetaAccionPrimariaFila = etiquetaAccionPrimariaFila;
+  readonly puedeConsultarOriginalFila = puedeConsultarOriginal;
+  readonly etiquetaSublineaRectificacion = etiquetaSublineaRectificacion;
+  readonly etiquetaCadenaEnOriginal = etiquetaCadenaEnOriginal;
   readonly kpis = computed(() => calcularKpisAdminNominas(this.resumenes()));
 
   readonly subtitulo = computed(() => {
@@ -304,10 +330,19 @@ export class AdministradorNominasContainer {
 
   async abrirResumen(fila: NominaPeriodoResumen): Promise<void> {
     this.nominaSeleccionada.set(fila);
+    this.totalesRectificacionSeleccionada.set(null);
     try {
-      const resumen = await this.servicio.obtenerResumenValidacionNomina(fila.id);
+      const [resumen, totales] = await Promise.all([
+        this.servicio.obtenerResumenValidacionNomina(fila.id),
+        fila.naturaleza === 'rectificacion'
+          ? this.calculoAdapter.obtenerTotalesRectificacion(fila.id)
+          : Promise.resolve(null),
+      ]);
+      if (this.nominaSeleccionada()?.id !== fila.id) return;
       this.resumenSeleccionado.set(resumen);
+      this.totalesRectificacionSeleccionada.set(totales);
     } catch {
+      if (this.nominaSeleccionada()?.id !== fila.id) return;
       this.resumenSeleccionado.set({
         totalTrabajadores: fila.totalTrabajadores,
         listosParaCalculo: 0,
@@ -322,9 +357,43 @@ export class AdministradorNominasContainer {
     }
   }
 
+  consultarOriginalDesdeResumen(): void {
+    const fila = this.nominaSeleccionada();
+    if (!fila?.nominaOrigenId) return;
+    const origen = this.resumenes().find((r) => r.id === fila.nominaOrigenId);
+    if (!origen) return;
+    void this.abrirResumen(origen);
+  }
+
+  conteoRectificaciones(fila: NominaPeriodoResumen): number {
+    return rectificacionesDeOrigen(this.resumenes(), fila.id).length;
+  }
+
+  abrirCadenaRectificacion(fila: NominaPeriodoResumen): void {
+    if (fila.estado !== 'cerrada' || this.conteoRectificaciones(fila) === 0) return;
+    this.cadenaRectificacionOrigen.set(fila);
+  }
+
+  cerrarCadenaRectificacion(): void {
+    this.cadenaRectificacionOrigen.set(null);
+  }
+
+  onAbrirRectificacionDesdeCadena(fila: NominaPeriodoResumen): void {
+    this.cadenaRectificacionOrigen.set(null);
+    this.abrirGenerador(fila);
+  }
+
+  onConsultarOriginalDesdeCadena(): void {
+    const origen = this.cadenaRectificacionOrigen();
+    if (!origen) return;
+    this.cadenaRectificacionOrigen.set(null);
+    void this.abrirResumen(origen);
+  }
+
   cerrarResumen(): void {
     this.resumenSeleccionado.set(null);
     this.nominaSeleccionada.set(null);
+    this.totalesRectificacionSeleccionada.set(null);
   }
 
   async abrirHistorial(fila: NominaPeriodoResumen): Promise<void> {
@@ -440,6 +509,12 @@ export class AdministradorNominasContainer {
     } finally {
       this.ejecutandoAccion.set(false);
     }
+  }
+
+  consultarOriginal(fila: NominaPeriodoResumen): void {
+    if (!puedeConsultarOriginal(fila) || !fila.nominaOrigenId) return;
+    const origen = this.resumenes().find((r) => r.id === fila.nominaOrigenId);
+    if (origen) void this.abrirResumen(origen);
   }
 
   verLiquidaciones(fila: NominaPeriodoResumen): void {

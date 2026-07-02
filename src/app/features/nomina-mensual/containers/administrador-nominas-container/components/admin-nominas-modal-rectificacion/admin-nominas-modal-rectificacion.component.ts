@@ -20,6 +20,7 @@ import type {
   ConfirmarRectificacionResultado,
   RectificacionPreview,
 } from '../../../../models/nomina-rectificacion-preview.models';
+import { prepararContextoRectificacionModal } from '../../../../presenters/nomina-rectificacion-ui.presenter';
 
 export interface RectificacionCreadaEvento {
   resumen: NominaPeriodoResumen;
@@ -54,6 +55,17 @@ export class AdminNominasModalRectificacionComponent {
   readonly puedeConfirmar = computed(() => {
     const p = this.preview();
     return !!p?.puedeCrear && !this.cargandoPreview() && !this.confirmando();
+  });
+
+  readonly contextoModal = computed(() =>
+    prepararContextoRectificacionModal(this.nominaOrigen(), this.preview()),
+  );
+
+  readonly detalleConfirmacion = computed(() => {
+    const ctx = this.contextoModal();
+    const seleccionados = ctx.seleccionados;
+    const trabajadores = seleccionados === 1 ? '1 trabajador' : `${seleccionados} trabajadores`;
+    return `Se abrirá un nuevo ciclo con ${trabajadores}. ${ctx.notaReferencia}`;
   });
 
   constructor() {

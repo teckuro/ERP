@@ -52,6 +52,21 @@
         </ul>
       </section>
 
+      @if (esRectificacion() && comparativaRectificacion().length > 0) {
+        <section class="adm-nom-resumen__section" aria-labelledby="adm-nom-resumen-rect">
+          <h3 id="adm-nom-resumen-rect" class="adm-nom-resumen__section-title">Comparación rectificación</h3>
+          <div class="adm-nom-resumen__rect-grid">
+            @for (col of comparativaRectificacion(); track col.id) {
+              <div class="adm-nom-resumen__rect-col" [class.is-strong]="col.destacada">
+                <span class="adm-nom-resumen__rect-label">{{ col.label }}</span>
+                <span class="adm-nom-resumen__rect-liquido">{{ col.liquido }}</span>
+                <span class="adm-nom-resumen__rect-meta">Haberes {{ col.haberes }} · Desc. {{ col.descuentos }}</span>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
       <section class="adm-nom-resumen__section" aria-labelledby="adm-nom-resumen-situacion">
         <h3 id="adm-nom-resumen-situacion" class="adm-nom-resumen__section-title">Situación</h3>
         @let s = situacion();
@@ -112,11 +127,18 @@
     </div>
 
     <footer class="adm-nom-resumen__foot">
+      @if (puedeConsultarOriginal()) {
+        <button
+          type="button"
+          class="adm-nom-resumen__btn"
+          (click)="consultarOriginalCierre()"
+        >Consultar cierre original</button>
+      }
       <button
         type="button"
         class="adm-nom-resumen__btn adm-nom-resumen__btn--primary"
         (click)="abrirAccionRecomendada()"
-      >Continuar en el generador</button>
+      >{{ etiquetaAccionPrimaria() }}</button>
     </footer>
   </div>
 </div>

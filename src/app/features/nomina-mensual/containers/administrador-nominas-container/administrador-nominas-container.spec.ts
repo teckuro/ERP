@@ -24,6 +24,7 @@ import {
 import type { EventoAuditoriaNomina, NominaPeriodoResumen } from '../../models/nomina-periodo.models';
 import { crearNominaResumen } from '../../models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../services/nomina-periodo.service';
+import { NominaPeriodoCalculoAdapterService } from '../../services/nomina-periodo-calculo-adapter.service';
 import { NominaMensualCapabilitiesService } from '../../services/nomina-mensual-capabilities.service';
 import { NominaFeatureGatesService } from '../../services/nomina-feature-gates.service';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -104,6 +105,10 @@ function configurar(opts: {
       { provide: Router, useValue: { navigate } },
       { provide: NominaPeriodoService, useValue: opts.servicio },
       { provide: AuthService, useValue: authService },
+      {
+        provide: NominaPeriodoCalculoAdapterService,
+        useValue: { obtenerTotalesRectificacion: vi.fn().mockResolvedValue(null) },
+      },
       { provide: NominaMensualCapabilitiesService, useValue: capabilities },
       { provide: NominaFeatureGatesService, useValue: featureGates },
     ],

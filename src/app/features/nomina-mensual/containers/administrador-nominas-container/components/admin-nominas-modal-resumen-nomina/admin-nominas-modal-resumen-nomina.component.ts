@@ -22,6 +22,13 @@ import type {
   NominaPeriodoResumen,
   ResumenValidacionNomina,
 } from '../../../../models/nomina-periodo.models';
+import type { TotalesRectificacionVista } from '../../../../rules/proceso-mensual-motor-rectificacion.rules';
+import {
+  etiquetaAccionResumen,
+  esNominaRectificacion,
+  puedeConsultarOriginal,
+} from '../../../../rules/nomina-rectificacion-ui.rules';
+import { prepararComparativaRectificacion } from '../../../../presenters/nomina-rectificacion-ui.presenter';
 import { estadoNominaToBadge } from '../../utils/admin-nominas-presentacion.util';
 
 interface MetricaResumenView {
@@ -42,8 +49,29 @@ interface MetricaResumenView {
 export class AdminNominasModalResumenNominaComponent {
   readonly resumen = input.required<ResumenValidacionNomina>();
   readonly nomina = input<NominaPeriodoResumen | null>(null);
+  readonly totalesRectificacion = input<TotalesRectificacionVista | null>(null);
   readonly cerrar = output<void>();
   readonly abrirGenerador = output<void>();
+  readonly consultarOriginal = output<void>();
+
+  readonly esRectificacion = computed(() => {
+    const n = this.nomina();
+    return n ? esNominaRectificacion(n) : false;
+  });
+
+  readonly puedeConsultarOriginal = computed(() => {
+    const n = this.nomina();
+    return n ? puedeConsultarOriginal(n) : false;
+  });
+
+  readonly etiquetaAccionPrimaria = computed(() =>
+    this.nomina() ? etiquetaAccionResumen(this.nomina()!) : 'Continuar en el generador',
+  );
+
+  readonly comparativaRectificacion = computed(() => {
+    const totales = this.totalesRectificacion();
+    return totales ? prepararComparativaRectificacion(totales) : [];
+  });
 
   readonly metricas = computed<MetricaResumenView[]>(() => {
     const r = this.resumen();
@@ -99,6 +127,10 @@ export class AdminNominasModalResumenNominaComponent {
 
   abrirAccionRecomendada(): void {
     this.abrirGenerador.emit();
+  }
+
+  consultarOriginalCierre(): void {
+    this.consultarOriginal.emit();
   }
 
   onEscape(event: KeyboardEvent): void {

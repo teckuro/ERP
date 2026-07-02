@@ -23,6 +23,22 @@
     </header>
 
     <section class="adm-nom-modal__body adm-nom-modal__body--preview">
+      <div class="adm-nom-modal__rect-contexto" role="status" aria-label="Referencia del cierre original">
+        <div class="adm-nom-modal__rect-col">
+          <span class="adm-nom-modal__rect-label">Líquido original</span>
+          <span class="adm-nom-modal__rect-value">{{ contextoModal().liquidoOriginal }}</span>
+        </div>
+        <div class="adm-nom-modal__rect-col">
+          <span class="adm-nom-modal__rect-label">Dotación original</span>
+          <span class="adm-nom-modal__rect-value">{{ contextoModal().trabajadoresOriginal }}</span>
+        </div>
+        <div class="adm-nom-modal__rect-col is-strong">
+          <span class="adm-nom-modal__rect-label">A rectificar</span>
+          <span class="adm-nom-modal__rect-value">{{ contextoModal().seleccionados || '—' }}</span>
+        </div>
+      </div>
+      <p class="adm-nom-modal__rect-nota">{{ contextoModal().notaReferencia }}</p>
+
       <label class="adm-nom-modal__field">
         <span class="adm-nom-modal__label">Motivo obligatorio</span>
         <textarea
@@ -103,7 +119,7 @@
     eyebrow="Confirmar rectificación"
     title="¿Crear rectificación diferencial?"
     [message]="nominaOrigen().empresaNombre + ' · ' + nominaOrigen().periodo"
-    detail="Se abrirá un nuevo ciclo en el generador. La nómina original cerrada no se modificará."
+    [detail]="detalleConfirmacion()"
     [primaryLabel]="confirmando() ? 'Creando…' : 'Crear rectificación'"
     secondaryLabel="Volver"
     [dismissible]="!confirmando()"

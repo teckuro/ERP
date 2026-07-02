@@ -1,0 +1,88 @@
+.adm-nom-cadena {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.adm-nom-cadena__origen {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--erp-border);
+  border-radius: 6px;
+  background: var(--erp-surface-soft);
+  text-align: left;
+  cursor: pointer;
+}
+
+.adm-nom-cadena__origen strong {
+  display: block;
+  font-size: 13px;
+}
+
+.adm-nom-cadena__origen small {
+  display: block;
+  font-size: 11px;
+  color: var(--erp-muted);
+}
+
+.adm-nom-cadena__vacio {
+  margin: 0;
+  font-size: 12px;
+  color: var(--erp-muted);
+}
+
+.adm-nom-cadena__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.adm-nom-cadena__item {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--erp-border);
+  border-radius: 6px;
+  background: var(--erp-surface);
+  text-align: left;
+  cursor: pointer;
+}
+
+.adm-nom-cadena__indice {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--erp-muted);
+}
+
+.adm-nom-cadena__copy strong {
+  display: block;
+  font-size: 13px;
+}
+
+.adm-nom-cadena__copy small {
+  display: block;
+  font-size: 11px;
+  color: var(--erp-muted);
+}
+
+.adm-nom-cadena__estado {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--erp-surface-soft);
+}
+
+.adm-nom-cadena__fecha {
+  font-size: 11px;
+  color: var(--erp-muted);
+}

@@ -133,6 +133,29 @@
   color: #94a3b8;
 }
 
+.adm-nom__cell-meta--rect {
+  color: #475569;
+}
+
+.adm-nom__cell-link {
+  display: block;
+  margin-top: 2px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--erp-color-primary, #0f172a);
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.adm-nom__cell-link:hover {
+  color: var(--erp-color-primary-hover, #1e293b);
+}
+
 /* Host del <app-data-grid> y su <app-card> interna (mismo patrón
    `empleados-grid-shell` del listado de empleados, ver
    src/app/features/empleados/components/tabla-empleados/tabla-empleados.css).

@@ -3064,3 +3064,13 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **`liquidaciones-oficiales-container`**: modo `nominaPeriodoId` (desde Administrador/Generador) con historial F15 y regeneración confirmada.
 - **Tests**: presenter + rules + suite v2/cierre en verde.
 - **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-02 - F18d: rectificación diferencial (UX)
+
+- **`nomina-rectificacion-ui.presenter` + rules**: cadena por origen, comparativa original/ajuste/acumulado, etiquetas de acción diferenciadas.
+- **Modal crear rectificación**: panel de referencia al cierre original, conteo de trabajadores y confirmación enriquecida.
+- **Modal resumen**: comparativa RRHH para filas rectificación; CTA secundario «Consultar cierre original».
+- **Modal cadena**: listado de rectificaciones vinculadas a un cierre; enlace al original solo lectura.
+- **Grilla administrador**: sublínea de cadena, botón consultar original, CTA primario «Continuar rectificación».
+- **Tests**: rules/presenter + smoke admin en verde.
+- **Sin tocar**: estilos globales, SQL, motor.

@@ -56,6 +56,18 @@
               {{ formatearRangoLegal(fila.fechaInicio, fila.fechaFin) }}
             </span>
           }
+          @if (etiquetaSublineaRectificacion(fila, resumenes()); as subRect) {
+            <span class="adm-nom__cell-meta adm-nom__cell-meta--rect">{{ subRect }}</span>
+          }
+          @if (fila.estado === 'cerrada'; as _) {
+            @if (etiquetaCadenaEnOriginal(conteoRectificaciones(fila)); as cadena) {
+              <button
+                type="button"
+                class="adm-nom__cell-link"
+                (click)="abrirCadenaRectificacion(fila); $event.stopPropagation()"
+              >{{ cadena }}</button>
+            }
+          }
         </div>
       </ng-template>
 
@@ -161,6 +173,17 @@
               <lucide-icon name="git-branch" aria-hidden="true"></lucide-icon>
             </button>
           }
+          @if (puedeConsultarOriginalFila(fila)) {
+            <button
+              type="button"
+              class="adm-nom__row-action"
+              title="Consultar cierre original"
+              [attr.aria-label]="'Consultar cierre original de ' + fila.empresaNombre + ' ' + fila.periodo"
+              (click)="consultarOriginal(fila)"
+            >
+              <lucide-icon name="lock" aria-hidden="true"></lucide-icon>
+            </button>
+          }
           @if (tieneLiquidaciones(fila.estado) && fila.evidenciaCalculo?.idCalculoPeriodo) {
             <button
               type="button"
@@ -185,8 +208,8 @@
             type="button"
             class="adm-nom__row-action adm-nom__row-action--primary"
             (click)="abrirGenerador(fila)"
-            title="Abrir generador"
-            [attr.aria-label]="'Abrir generador de ' + fila.empresaNombre + ' ' + fila.periodo"
+            [title]="etiquetaAccionPrimariaFila(fila)"
+            [attr.aria-label]="etiquetaAccionPrimariaFila(fila) + ' de ' + fila.empresaNombre + ' ' + fila.periodo"
           >
             <lucide-icon name="arrow-right" aria-hidden="true"></lucide-icon>
           </button>
@@ -259,8 +282,20 @@
   <app-admin-nominas-modal-resumen-nomina
     [nomina]="nominaSeleccionada()"
     [resumen]="resumen"
+    [totalesRectificacion]="totalesRectificacionSeleccionada()"
     (abrirGenerador)="abrirGenerador(nominaSeleccionada()!); cerrarResumen()"
+    (consultarOriginal)="consultarOriginalDesdeResumen()"
     (cerrar)="cerrarResumen()"
+  />
+}
+
+@if (cadenaRectificacionOrigen(); as origenCadena) {
+  <app-admin-nominas-modal-cadena-rectificacion
+    [origen]="origenCadena"
+    [resumenes]="resumenes()"
+    (consultarOriginal)="onConsultarOriginalDesdeCadena()"
+    (abrirRectificacion)="onAbrirRectificacionDesdeCadena($event)"
+    (cerrar)="cerrarCadenaRectificacion()"
   />
 }
 

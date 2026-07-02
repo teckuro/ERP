@@ -303,14 +303,57 @@
   border-top: 1px solid var(--erp-border, #e5e7eb);
 }
 
+.adm-nom-resumen__rect-grid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.adm-nom-resumen__rect-col {
+  flex: 1 1 140px;
+  border: 1px solid var(--erp-border, #e5e7eb);
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: var(--erp-surface-soft, #f8fafc);
+}
+
+.adm-nom-resumen__rect-col.is-strong {
+  background: var(--erp-info-soft, #eff6ff);
+}
+
+.adm-nom-resumen__rect-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--erp-muted, #64748b);
+  margin-bottom: 4px;
+}
+
+.adm-nom-resumen__rect-liquido {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.adm-nom-resumen__rect-meta {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--erp-muted, #64748b);
+}
+
 .adm-nom-resumen__btn {
   padding: 8px 14px;
   border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  border: 1px solid transparent;
-  background: transparent;
+  border: 1px solid var(--erp-border, #e5e7eb);
+  background: #fff;
+  color: var(--erp-text-strong, #0f172a);
 }
 
 .adm-nom-resumen__btn--ghost {

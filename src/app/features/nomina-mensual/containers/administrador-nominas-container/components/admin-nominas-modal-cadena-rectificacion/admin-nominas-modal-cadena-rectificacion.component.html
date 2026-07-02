@@ -1,0 +1,43 @@
+<app-message-box
+  variant="info"
+  mode="modal"
+  width="lg"
+  eyebrow="Rectificaciones"
+  title="Cadena de ajustes"
+  [message]="contexto()"
+  detail="Cada rectificación apunta al cierre original. El registro cerrado permanece solo lectura."
+  (dismiss)="cerrarModal()"
+>
+  <div class="adm-nom-cadena">
+    <button type="button" class="adm-nom-cadena__origen" (click)="consultarOriginal.emit()">
+      <lucide-icon name="lock" aria-hidden="true"></lucide-icon>
+      <span>
+        <strong>Consultar cierre original</strong>
+        <small>Solo lectura · no se modifica</small>
+      </span>
+    </button>
+
+    @if (filas().length === 0) {
+      <p class="adm-nom-cadena__vacio">Aún no hay rectificaciones vinculadas a este cierre.</p>
+    } @else {
+      <ol class="adm-nom-cadena__lista">
+        @for (fila of filas(); track fila.id) {
+          <li>
+            <button type="button" class="adm-nom-cadena__item" (click)="abrirFila(fila.id)">
+              <span class="adm-nom-cadena__indice">#{{ fila.indice }}</span>
+              <span class="adm-nom-cadena__copy">
+                <strong>Rectificación {{ fila.indice }}</strong>
+                <small>{{ fila.trabajadores }} trabajador(es) · {{ fila.liquido }} líquido</small>
+              </span>
+              @let badge = estadoNominaToBadge(fila.estado);
+              <span class="adm-nom-cadena__estado adm-nom-cadena__estado--{{ badge.variant }}">
+                {{ badge.label }}
+              </span>
+              <span class="adm-nom-cadena__fecha">{{ fila.actualizada }}</span>
+            </button>
+          </li>
+        }
+      </ol>
+    }
+  </div>
+</app-message-box>
