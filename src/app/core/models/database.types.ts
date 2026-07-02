@@ -6240,6 +6240,7 @@ export type Database = {
         Args: { p_tabla: string }
         Returns: string
       }
+      erp_etiqueta_usuario: { Args: { p_id: string }; Returns: string }
       fn_aplicar_politica_fds: {
         Args: { p_fecha: string; p_politica: string }
         Returns: string
@@ -6518,56 +6519,6 @@ export type Database = {
         Args: { p_clave: string; p_valor?: Json }
         Returns: undefined
       }
-      listar_movimientos_trabajadores_nomina: {
-        Args: {
-          p_busqueda?: string
-          p_categoria?: string
-          p_estado?: string
-          p_nomina_id: string
-          p_page?: number
-          p_page_size?: number
-        }
-        Returns: {
-          cargo: string
-          cuenta_aplicados: number
-          cuenta_ausencias: number
-          cuenta_informativos: number
-          cuenta_items: number
-          cuenta_manuales_aplicados: number
-          cuenta_omitidos: number
-          cuenta_pendientes: number
-          departamento: string
-          nombre: string
-          rut: string
-          total_count: number
-          total_descuentos: number
-          total_haberes: number
-          trabajador_id: number
-        }[]
-      }
-      resumen_movimientos_nomina: {
-        Args: { p_nomina_id: string }
-        Returns: {
-          total_aplicados: number
-          total_descuentos: number
-          total_haberes: number
-          total_pendientes: number
-          trabajadores_con_movimientos: number
-          trabajadores_con_pendientes: number
-        }[]
-      }
-      resumen_calculo_nomina: {
-        Args: { p_nomina_id: string }
-        Returns: {
-          con_advertencias: number
-          con_bloqueos: number
-          id_calculo_periodo: number
-          total_descuentos: number
-          total_haberes: number
-          total_liquido: number
-          trabajadores_calculados: number
-        }[]
-      }
       listar_calculo_trabajadores_nomina: {
         Args: {
           p_busqueda?: string
@@ -6595,59 +6546,6 @@ export type Database = {
           total_haberes: number
         }[]
       }
-      listar_preview_creacion_trabajadores: {
-        Args: {
-          p_busqueda?: string
-          p_clasificacion?: string
-          p_page?: number
-          p_page_size?: number
-          p_periodo: string
-          p_tipo?: string
-        }
-        Returns: {
-          cargo: string
-          id_persona: number
-          motivo: string
-          motivo_humano: string
-          nombre: string
-          rut: string
-          total_count: number
-        }[]
-      }
-      listar_eventos_auditoria_nomina: {
-        Args: { p_nomina_id: string }
-        Returns: {
-          accion: string
-          created_at: string
-          estado_nuevo: string
-          estado_previo: string
-          id: string
-          id_nomina_periodo: string
-          id_usuario: string
-          motivo: string
-          payload: Json
-          usuario_nombre: string
-          version_estado_esperada: number
-          version_estado_resultante: number
-        }[]
-      }
-      erp_etiqueta_usuario: {
-        Args: { p_id: string }
-        Returns: string
-      }
-      listar_ids_dotacion_nomina: {
-        Args: {
-          p_busqueda?: string
-          p_con_incidencias?: boolean
-          p_con_movimientos?: boolean
-          p_estado?: string
-          p_nomina_id: string
-          p_segmento_id?: string
-        }
-        Returns: {
-          trabajador_id: number
-        }[]
-      }
       listar_dotacion_nomina: {
         Args: {
           p_busqueda?: string
@@ -6669,6 +6567,82 @@ export type Database = {
           total_incidencias_criticas: number
           total_movimientos: number
           trabajador_id: number
+        }[]
+      }
+      listar_eventos_auditoria_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          accion: string
+          created_at: string
+          estado_nuevo: string
+          estado_previo: string
+          id: string
+          id_nomina_periodo: string
+          id_usuario: string
+          motivo: string
+          payload: Json
+          usuario_nombre: string
+          version_estado_esperada: number
+          version_estado_resultante: number
+        }[]
+      }
+      listar_ids_dotacion_nomina: {
+        Args: {
+          p_busqueda?: string
+          p_con_incidencias?: boolean
+          p_con_movimientos?: boolean
+          p_estado?: string
+          p_nomina_id: string
+          p_segmento_id?: string
+        }
+        Returns: {
+          trabajador_id: number
+        }[]
+      }
+      listar_movimientos_trabajadores_nomina: {
+        Args: {
+          p_busqueda?: string
+          p_categoria?: string
+          p_estado?: string
+          p_nomina_id: string
+          p_page?: number
+          p_page_size?: number
+        }
+        Returns: {
+          cargo: string
+          cuenta_aplicados: number
+          cuenta_ausencias: number
+          cuenta_informativos: number
+          cuenta_items: number
+          cuenta_manuales_aplicados: number
+          cuenta_omitidos: number
+          cuenta_pendientes: number
+          departamento: string
+          nombre: string
+          rut: string
+          total_count: number
+          total_descuentos: number
+          total_haberes: number
+          trabajador_id: number
+        }[]
+      }
+      listar_preview_creacion_trabajadores: {
+        Args: {
+          p_busqueda?: string
+          p_clasificacion?: string
+          p_page?: number
+          p_page_size?: number
+          p_periodo: string
+          p_tipo?: string
+        }
+        Returns: {
+          cargo: string
+          id_persona: number
+          motivo: string
+          motivo_humano: string
+          nombre: string
+          rut: string
+          total_count: number
         }[]
       }
       listar_trabajadores_elegibles_nomina: {
@@ -6793,24 +6767,6 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      resumen_dotacion_nomina: {
-        Args: { p_nomina_id: string }
-        Returns: {
-          bloqueados: number
-          con_advertencias: number
-          con_criticos: number
-          listos: number
-          total: number
-        }[]
-      }
-      resumen_trabajadores_elegibles_nomina: {
-        Args: { p_nomina_id: string }
-        Returns: {
-          elegibles: number
-          total_activos: number
-          ya_en_nomina: number
-        }[]
-      }
       registrar_evento_auditoria_nomina: {
         Args: {
           p_accion: string
@@ -6823,6 +6779,47 @@ export type Database = {
           p_version_estado_resultante?: number
         }
         Returns: string
+      }
+      resumen_calculo_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          con_advertencias: number
+          con_bloqueos: number
+          id_calculo_periodo: number
+          total_descuentos: number
+          total_haberes: number
+          total_liquido: number
+          trabajadores_calculados: number
+        }[]
+      }
+      resumen_dotacion_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          bloqueados: number
+          con_advertencias: number
+          con_criticos: number
+          listos: number
+          total: number
+        }[]
+      }
+      resumen_movimientos_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          total_aplicados: number
+          total_descuentos: number
+          total_haberes: number
+          total_pendientes: number
+          trabajadores_con_movimientos: number
+          trabajadores_con_pendientes: number
+        }[]
+      }
+      resumen_trabajadores_elegibles_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          elegibles: number
+          total_activos: number
+          ya_en_nomina: number
+        }[]
       }
       transicionar_nomina_periodo: {
         Args: {

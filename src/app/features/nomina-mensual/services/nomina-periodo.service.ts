@@ -378,18 +378,17 @@ export class NominaPeriodoService {
 
   /**
    * Elimina físicamente una nómina y, en cascada, todos sus datos (segmentos,
-   * movimientos, incidencias, eventos de auditoría).
+   * movimientos, incidencias, eventos de auditoría) vía RPC
+   * `eliminar_nomina_completa`.
    *
-   * **No se puede deshacer**: la guarda de qué estados son eliminables vive en
-   * `puedeEliminar()` (reglas) — los estados productivos (`calculada`,
-   * `validada`, `aprobada`, `cerrada`, `reabierta`) NO deberían llegar aquí
-   * porque el botón de UI no aparece. Si alguien fuerza la llamada con un
-   * estado bloqueado, BD aceptará el DELETE igual: la única protección extra
-   * sería un trigger SQL o un check en RLS — fuera del scope de este cambio.
+   * **No se puede deshacer**. Guardas en tres capas:
+   *   - UI/reglas: `puedeEliminar()` oculta la acción en estados productivos.
+   *   - Servicio: exige permiso admin (`exigirPermisoAdminNomina`).
+   *   - BD (RPC): tenant, estado eliminable, bloqueo si hay liquidaciones o
+   *     preparaciones del período — ver JSDoc de `repo.eliminarNomina`.
    *
-   * Esta operación libera el slot `UNIQUE (empresa, periodo, tipo)` para que
-   * el usuario pueda rehacer la nómina del período sin colisionar con un
-   * registro zombie anulado.
+   * Libera el slot `UNIQUE (empresa, periodo, tipo)` para rehacer la nómina
+   * del período sin colisionar con un registro anulado.
    */
   async eliminarNomina(nominaPeriodoId: string): Promise<void> {
     this.permisosRemuneraciones.exigirPermisoAdminNomina();

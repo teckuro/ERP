@@ -186,7 +186,8 @@ de F09; no tipos no mensuales antes de F10/F11; no permisos solo en UI.
 | BKL-08 | **Cerrado núcleo** | 2026-07-02 | E2E incremental en `tests/nominas-admin-generador.e2e.spec.ts` + helper versionado: aislamiento al alternar 2 nóminas del mismo período (F06/F09) y paginación server-side en dotación (`E2E_NOMINA_DOTACION_MIN`); script `npm run test:e2e:nominas`. Matriz F20 completa queda en fase F20. |
 | BKL-09 | **Cerrado** | 2026-07-02 | Migración `20260702190000_nomina_bkl09_bkl10_escala.sql`: RPCs `listar_calculo_trabajadores_nomina` + `resumen_calculo_nomina`. Paso Cálculo server-side (25/página); desglose y preview lazy desde snapshot; stats desde cabecera sin liquidaciones en memoria. |
 | BKL-10 | **Cerrado** | 2026-07-02 | Misma migración: F04 sin arrays masivos + `listar_preview_creacion_trabajadores`; modal nueva nómina paginado; `listar_eventos_auditoria_nomina` + `erp_etiqueta_usuario` resuelve nombre humano en historial. |
-| BKL-06, BKL-11 | Pendiente | — | — |
+| BKL-11 | **Cerrado** | 2026-07-02 | JSDoc `eliminarNomina` alineado al RPC `eliminar_nomina_completa`; mock de trazabilidad solo con `incluirMockSiVacio: true` (orquestador V2 ya lo dejaba en false). |
+| BKL-06 | Pendiente | — | Bloqueado hasta F13 (F15b permisos en RPC). |
 
 Al cerrar un ítem: actualizar esta tabla, el documento de fase correspondiente y
 [`estado-fases/nomina-mensual.md`](../orquestador/estado-fases/nomina-mensual.md).

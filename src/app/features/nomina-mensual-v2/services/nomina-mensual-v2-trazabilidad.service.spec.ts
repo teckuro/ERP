@@ -151,6 +151,33 @@ describe('NominaMensualV2TrazabilidadService', () => {
     expect(resultado.auditoriaPorPaso.parameters?.accionPrincipal).toBe('Base de parámetros recién guardada');
   });
 
+  it('no inyecta eventos mock cuando servidor y locales están vacíos (por defecto)', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        NominaMensualV2TrazabilidadService,
+        {
+          provide: NominaCalculoSnapshotRepository,
+          useValue: {
+            listarSnapshotsPeriodo: vi.fn().mockResolvedValue([]),
+            obtenerSnapshotActivo: vi.fn().mockResolvedValue(null),
+          },
+        },
+        {
+          provide: LiquidacionesOficialesRepository,
+          useValue: { obtenerLiquidacionPeriodo: vi.fn().mockResolvedValue(null) },
+        },
+        { provide: PeriodoActivoService, useValue: { periodoYm: () => '2026-05' } },
+        { provide: AuthService, useValue: { currentUser: () => null } },
+      ],
+    });
+
+    const service = TestBed.inject(NominaMensualV2TrazabilidadService);
+    const resultado = await service.recomputar({ eventosLocales: [] });
+
+    expect(resultado.eventos).toHaveLength(0);
+    expect(resultado.eventos.some((e) => e.origen === 'mock')).toBe(false);
+  });
+
   it('carga trazabilidad scoped por nominaPeriodoId sin mezclar otras nóminas del mes', async () => {
     const listarSnapshotsNomina = vi.fn().mockResolvedValue([
       {

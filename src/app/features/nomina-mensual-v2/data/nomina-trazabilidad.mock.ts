@@ -1,6 +1,10 @@
 import type { EventoTrazabilidadNomina } from '../models/nomina-trazabilidad.models';
 
-/** Mock aislado para pasos demo 4–8 cuando no hay datos de servidor. */
+/**
+ * Datos demo opcionales. Solo se inyectan si el caller pasa
+ * `incluirMockSiVacio: true` a `NominaMensualV2TrazabilidadService.recomputar`.
+ * El flujo productivo (orquestador V2) nunca los solicita.
+ */
 export function buildEventosTrazabilidadMock(periodo: string): EventoTrazabilidadNomina[] {
   const base = `${periodo}-mock`;
   return [

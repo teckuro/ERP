@@ -27,6 +27,7 @@ import { pasosInvalidadosPorEvento } from '../rules/nomina-trazabilidad-invalida
 export interface RecomputarTrazabilidadInput {
   eventosLocales: readonly EventoTrazabilidadNomina[];
   contexto?: ContextoTrazabilidadPasoNomina;
+  /** Solo demo explícita: no se activa por defecto en flujo productivo. */
   incluirMockSiVacio?: boolean;
   nominaPeriodoId?: string | null;
 }
@@ -95,7 +96,7 @@ export class NominaMensualV2TrazabilidadService {
     const nominaPeriodoId = input.nominaPeriodoId ?? input.contexto?.nominaPeriodoId ?? null;
     const servidor = await this.cargarEventosServidor(periodo, nominaPeriodoId);
     const usarMock =
-      input.incluirMockSiVacio !== false
+      input.incluirMockSiVacio === true
       && servidor.length === 0
       && input.eventosLocales.length === 0;
     const mock = usarMock ? buildEventosTrazabilidadMock(periodo) : [];
