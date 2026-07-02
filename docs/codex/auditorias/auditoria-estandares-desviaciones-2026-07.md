@@ -47,24 +47,14 @@
 
 **Acción:** documentar en PR/migración cuando se toque el archivo; no migración masiva.
 
-### 2.3 RLS policies `FOR ALL` (P1 — BKL-12)
+### 2.3 RLS policies `FOR ALL` (P1 — BKL-12) — **Cerrado 2026-07-02**
 
-Estándar EST-002 exige policies **por operación**. En PROD siguen activas (migración `20260604180000`):
+Migración `20260702170000_nomina_bkl12_rls_por_operacion.sql`:
 
-| Tabla | Policy legacy | Riesgo |
-|-------|---------------|--------|
-| `segmento_nomina` | `segmento_nomina_all` | Medio: filtra empresa pero no permite DELETE granular futuro |
-| `movimiento_nomina` | `movimiento_nomina_all` | Medio |
-| `incidencia_nomina` | `incidencia_nomina_all` | Medio |
-| `evento_auditoria_nomina` | (revisar en misma migración) | Bajo lectura |
+- `segmento_nomina_*`, `movimiento_nomina_*`, `incidencia_nomina_*` (select/insert/update/delete).
+- `evento_auditoria_nomina` ya cumplía (select + insert).
 
-`nomina_periodo` ya cumple patrón F02 (`select`/`insert`/`update`/`delete` separados).
-
-**Criterio de listo BKL-12:**
-
-- Migración idempotente: drop `*_all`, create `*_select|insert|update|delete` con mismo `using`/`check`.
-- Smoke SQL nuevo o extensión de validación nómina RLS.
-- Sin regresión Haberes/Movimientos/nómina V2.
+Smoke: `bd/scripts/validar-nomina-bkl12-rls-por-operacion.sql` EXIT 0 en PROD.
 
 ### 2.4 Grants `anon` históricos
 
@@ -111,7 +101,7 @@ Estándar EST-002 exige policies **por operación**. En PROD siguen activas (mig
 
 | Ítem | Prioridad | Esfuerzo | Depende de |
 |------|-----------|----------|------------|
-| **BKL-12** — RLS `*_all` → por operación (segmento, movimiento_nomina, incidencia, auditoría) | P1 | S | — |
+| **BKL-12** — RLS `*_all` → por operación | **Cerrado** | 2026-07-02 | — |
 | **EST-LEG-04** — Inglés residual motor/nómina (`Payroll*`) | P2 | M | NOMENCLATURA fase 2 |
 | **EST-LEG-06** — Mover alias `Tables` del service al mapper | P2 | S | Próxima fase nómina |
 | **EST-LEG-05/07** — Renombrar `*.util` → `*.presenter` / mover a `presenters/` | P2 | M | Oportunista por módulo |
@@ -138,5 +128,6 @@ Ejecutar auditoría antes de cada cierre de fase BD o feature grande:
 | Fecha | Acción |
 |-------|--------|
 | 2026-07-02 | Baseline inicial post EST-001…008; script `auditar-estandares-desviaciones.ps1` |
+| 2026-07-02 | **BKL-12 cerrado:** RLS por operación en tablas hijo nómina; smoke EXIT 0 |
 
 Al cerrar BKL-12: marcar fila en [`auditoria-proyecto-2026-07-backlog.md`](./auditoria-proyecto-2026-07-backlog.md) y esta sección.
