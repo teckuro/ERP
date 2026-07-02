@@ -16,10 +16,16 @@
  */
 
 /**
- * Tipo de movimiento. Union string abierta — se cierra a un enum literal cuando
- * el módulo `Conceptos de remuneración` exponga su catálogo definitivo.
+ * Tipo de movimiento. Desde F08 deja de ser texto libre en entradas
+ * productivas: para haberes/descuentos es el **snapshot del código** de un
+ * concepto del catálogo (`conceptoId` referencia la fila); para registros no
+ * monetarios sin concepto se admite la whitelist `AUSENCIA` / `INFORMATIVO`
+ * (guardia BD `tg_movimiento_nomina_concepto_guard`).
  */
 export type MovimientoTipo = string;
+
+/** F08: tipos operativos permitidos sin concepto de catálogo. */
+export const TIPOS_MOVIMIENTO_SIN_CONCEPTO = ['AUSENCIA', 'INFORMATIVO'] as const;
 
 export type MovimientoCategoria = 'haber' | 'descuento' | 'ausencia' | 'informativo';
 
@@ -61,6 +67,8 @@ export interface MovimientoRecurrente {
 
   tipo: MovimientoTipo;
   categoria: MovimientoCategoria;
+  /** F08: concepto del catálogo asociado a la regla (si está mapeada). */
+  conceptoId?: number;
 
   monto?: number;
   cantidad?: number;
@@ -104,6 +112,8 @@ export interface MovimientoNomina {
 
   tipo: MovimientoTipo;
   categoria: MovimientoCategoria;
+  /** F08: concepto del catálogo que originó el movimiento (`tipo` = snapshot del código). */
+  conceptoId?: number;
 
   monto?: number;
   cantidad?: number;

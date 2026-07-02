@@ -66,6 +66,8 @@ import type {
   PreviewAccionMasivaTrabajadores,
   ResumenMovimientosNomina,
 } from '../models/movimiento-nomina.models';
+import { TIPOS_MOVIMIENTO_SIN_CONCEPTO } from '../models/movimiento-nomina.models';
+import { HaberesDescuentosService } from '../../haberes-descuentos/services/haberes-descuentos.service';
 import type { PayrollStepId, ResultadoAlcanceNomina } from '../../nomina-mensual-v2/models/nomina-mensual-v2.models';
 import { ORDEN_PASOS_NOMINA } from '../../nomina-mensual-v2/models/nomina-mensual-v2.models';
 import { EmpleadosService } from '../../empleados/services/empleados.service';
@@ -104,6 +106,8 @@ export class NominaPeriodoService {
   private readonly empresaActiva = inject(EmpresaActivaService);
   private readonly supabase = injectSupabase();
   private readonly empleados = inject(EmpleadosService);
+  /** F08: validación de conceptos del catálogo (misma regla que HD/MV). */
+  private readonly haberesDescuentos = inject(HaberesDescuentosService);
 
   private readonly resumenesState = signal<NominaPeriodoResumen[]>([]);
   private readonly cargandoState = signal(false);
@@ -551,13 +555,56 @@ export class NominaPeriodoService {
     if (idEmpresa == null) {
       throw new Error('No hay empresa activa para agregar movimiento.');
     }
-    await this.exigirNominaEditable(mov.nominaPeriodoId);
+    const nomina = await this.exigirNominaEditable(mov.nominaPeriodoId);
+    const movValidado = await this.validarConceptoMovimientoManual(mov, nomina.fechaInicio);
     const insertados = await this.repo.insertarMovimientos(
-      [{ ...mov, origen: 'manual' }],
+      [{ ...movValidado, origen: 'manual' }],
       idEmpresa,
     );
     await this.invalidarCalculoPorCambio(mov.nominaPeriodoId, 'Movimiento manual agregado.');
     return insertados;
+  }
+
+  /**
+   * F08: los movimientos manuales monetarios (haber/descuento) exigen un
+   * concepto del catálogo asignable en el rango de la nómina — misma regla
+   * central que Haberes/descuentos y Movimientos variables
+   * (`esConceptoAsignable`). El `tipo` queda como snapshot del código
+   * canónico. Ausencias e informativos sin concepto usan los tipos operativos
+   * de la whitelist (`AUSENCIA` / `INFORMATIVO`), que la guardia BD también
+   * acepta.
+   */
+  private async validarConceptoMovimientoManual(
+    mov: Omit<MovimientoNominaNuevo, 'origen'>,
+    fechaInicioNomina: string,
+  ): Promise<Omit<MovimientoNominaNuevo, 'origen'>> {
+    if (mov.categoria === 'haber' || mov.categoria === 'descuento') {
+      if (mov.conceptoId == null) {
+        throw new Error('Selecciona un concepto del catálogo para haberes y descuentos.');
+      }
+      const ref = new Date(`${fechaInicioNomina}T12:00:00`);
+      const snapshot = await this.haberesDescuentos
+        .resolverSnapshotConceptoParaMovimientoVariableManual(
+          mov.conceptoId,
+          Number.isFinite(ref.getTime()) ? ref : new Date(),
+        );
+      const categoriaConcepto =
+        (snapshot.tipo ?? '').toUpperCase() === 'DESCUENTO' ? 'descuento' : 'haber';
+      if (categoriaConcepto !== mov.categoria) {
+        throw new Error(
+          `El concepto «${snapshot.nombre ?? snapshot.codigo ?? ''}» es un ${categoriaConcepto}, no un ${mov.categoria}.`,
+        );
+      }
+      return { ...mov, tipo: snapshot.codigo ?? mov.tipo };
+    }
+
+    const tipoOperativo = (mov.tipo ?? '').trim().toUpperCase();
+    if (!(TIPOS_MOVIMIENTO_SIN_CONCEPTO as readonly string[]).includes(tipoOperativo)) {
+      throw new Error(
+        'Para ausencias e informativos usa el tipo operativo correspondiente (Ausencia / Informativo).',
+      );
+    }
+    return { ...mov, tipo: tipoOperativo, conceptoId: undefined };
   }
 
   /**

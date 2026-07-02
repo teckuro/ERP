@@ -9,6 +9,20 @@
 
 ---
 
+## 2026-07-02 — Generador Nómina V2: F08 movimientos ligados al catálogo (NOM-ADMIN-OPS-F08)
+
+- **Modal «Agregar movimiento manual»:** el campo de texto libre «Tipo / Concepto»
+  se reemplaza por un selector **«Concepto del catálogo»** (haberes y descuentos),
+  filtrado por la categoría elegida y con la misma regla central de asignabilidad
+  que Haberes/descuentos (`esConceptoAsignable`).
+- **Ausencias e informativos:** campo fijo de solo lectura («Ausencia del período» /
+  «Informativo del período»); el tipo operativo se fija solo.
+- **Guardar:** deshabilitado hasta tener trabajador + concepto (o tipo operativo);
+  errores de catálogo llegan con el motivo humano de la regla central.
+- Sin cambio de paleta ni layout; mismo formulario y densidad del modal.
+
+---
+
 ## 2026-07-02 — Generador Nómina V2: paso Movimientos escalable (BKL-02)
 
 - **Grilla por trabajador en modo servidor:** paginación 25/página y filtros

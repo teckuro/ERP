@@ -37,6 +37,8 @@ import type {
 } from '../../../../../nomina-mensual/models/movimiento-nomina.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
 import type { FilaTrabajadorNominaResumen } from '../../../../../nomina-mensual/models/nomina-periodo.models';
+import type { ConceptoListado } from '../../../../../haberes-descuentos/models/haber-descuento-asignacion.model';
+import { HaberesDescuentosService } from '../../../../../haberes-descuentos/services/haberes-descuentos.service';
 import type {
   PasoNominaPort,
   ResultadoAvancePaso,
@@ -65,13 +67,15 @@ interface BorradorManual {
   trabajadorId: string;
   tipo: MovimientoTipo;
   categoria: MovimientoCategoria;
+  /** F08: concepto del catálogo (obligatorio para haber/descuento). */
+  conceptoId?: number;
   monto?: number;
   glosa?: string;
 }
 
 const BORRADOR_MANUAL_INICIAL: BorradorManual = {
   trabajadorId: '',
-  tipo: 'haber-extra',
+  tipo: '',
   categoria: 'haber',
 };
 
@@ -105,6 +109,7 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
   readonly closeIcon = XIcon;
 
   private readonly servicio = inject(NominaPeriodoService);
+  private readonly haberesDescuentos = inject(HaberesDescuentosService);
 
   readonly nominaPeriodoId = input<string | null>(null);
 
@@ -136,6 +141,29 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
   /** Modal manual. */
   readonly modalManualAbierto = signal(false);
   readonly borradorManual = signal<BorradorManual>({ ...BORRADOR_MANUAL_INICIAL });
+  /** F08: catálogo de conceptos asignables (selector del modal manual). */
+  readonly conceptosCatalogo = signal<ConceptoListado[]>([]);
+  readonly cargandoConceptos = signal(false);
+  /** Conceptos filtrados por la categoría del borrador (haber ↔ HABER, etc.). */
+  readonly conceptosParaCategoria = computed(() => {
+    const categoria = this.borradorManual().categoria;
+    if (categoria !== 'haber' && categoria !== 'descuento') return [];
+    const tipoEsperado = categoria === 'haber' ? 'HABER' : 'DESCUENTO';
+    return this.conceptosCatalogo().filter(
+      (c) => (c.tipo ?? '').toUpperCase() === tipoEsperado,
+    );
+  });
+  /** La categoría del borrador exige concepto de catálogo. */
+  readonly categoriaRequiereConcepto = computed(() => {
+    const categoria = this.borradorManual().categoria;
+    return categoria === 'haber' || categoria === 'descuento';
+  });
+  readonly puedeGuardarManual = computed(() => {
+    const b = this.borradorManual();
+    if (!b.trabajadorId) return false;
+    if (this.categoriaRequiereConcepto()) return b.conceptoId != null;
+    return Boolean(b.tipo);
+  });
   /**
    * Ficha del trabajador con el que se abrió el modal desde una fila. Cuando
    * está presente la UI muestra una ficha fija (nombre + RUT + cargo) en
@@ -497,8 +525,23 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
         void this.buscarTrabajadores('');
       }
     }
+    if (this.conceptosCatalogo().length === 0) {
+      void this.cargarConceptosCatalogo();
+    }
     this.error.set(null);
     this.modalManualAbierto.set(true);
+  }
+
+  private async cargarConceptosCatalogo(): Promise<void> {
+    this.cargandoConceptos.set(true);
+    try {
+      this.conceptosCatalogo.set(await this.haberesDescuentos.listarConceptos());
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido';
+      this.error.set(`No fue posible cargar el catálogo de conceptos: ${mensaje}`);
+    } finally {
+      this.cargandoConceptos.set(false);
+    }
   }
 
   cerrarModalManual(): void {
@@ -544,7 +587,7 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
   async crearMovimientoManual(): Promise<void> {
     const id = this.nominaPeriodoId();
     const borrador = this.borradorManual();
-    if (!id || !borrador.trabajadorId) return;
+    if (!id || !this.puedeGuardarManual()) return;
     this.aplicando.set(true);
     this.error.set(null);
     try {
@@ -553,6 +596,7 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
         trabajadorId: borrador.trabajadorId,
         tipo: borrador.tipo,
         categoria: borrador.categoria,
+        conceptoId: borrador.conceptoId,
         monto: borrador.monto,
         estado: 'aplicado',
         glosa: borrador.glosa,
@@ -606,8 +650,26 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
     this.borradorManual.update((b) => ({ ...b, tipo: valor }));
   }
 
+  /** F08: seleccionar concepto fija también el tipo (snapshot del código). */
+  actualizarConceptoManual(valor: string): void {
+    const conceptoId = valor ? Number(valor) : undefined;
+    const concepto = this.conceptosCatalogo().find((c) => c.idConcepto === conceptoId);
+    this.borradorManual.update((b) => ({
+      ...b,
+      conceptoId,
+      tipo: concepto?.codigo ?? '',
+    }));
+  }
+
   actualizarCategoriaManual(valor: MovimientoCategoria): void {
-    this.borradorManual.update((b) => ({ ...b, categoria: valor }));
+    this.borradorManual.update((b) => ({
+      ...b,
+      categoria: valor,
+      // Cambiar de familia limpia la selección: haber/descuento → concepto;
+      // ausencia/informativo → tipo operativo fijo.
+      conceptoId: undefined,
+      tipo: valor === 'ausencia' ? 'AUSENCIA' : valor === 'informativo' ? 'INFORMATIVO' : '',
+    }));
   }
 
   actualizarMontoManual(valor: number | null): void {

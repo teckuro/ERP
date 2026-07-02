@@ -18,6 +18,7 @@ import type {
 } from '../models/movimiento-nomina.models';
 import { NominaPeriodoService } from './nomina-periodo.service';
 import { EmpleadosService } from '../../empleados/services/empleados.service';
+import { HaberesDescuentosService } from '../../haberes-descuentos/services/haberes-descuentos.service';
 
 function nomina(overrides: Partial<NominaPeriodo> = {}): NominaPeriodo {
   return crearNomina({
@@ -197,6 +198,7 @@ function configurar(opts: {
   repo: RepoMock;
   empresaId?: number | null;
   supabase?: unknown;
+  haberesDescuentos?: unknown;
 }): NominaPeriodoService {
   const supabase = opts.supabase ?? {
     from: vi.fn().mockReturnValue({
@@ -217,6 +219,19 @@ function configurar(opts: {
       { provide: EmpresaActivaService, useValue: fakeEmpresaActiva(empresaId) },
       { provide: SUPABASE_CLIENT, useValue: supabase },
       { provide: EmpleadosService, useValue: { listar: vi.fn().mockResolvedValue([]) } },
+      {
+        provide: HaberesDescuentosService,
+        useValue: opts.haberesDescuentos ?? {
+          resolverSnapshotConceptoParaMovimientoVariableManual: vi.fn().mockResolvedValue({
+            tipo: 'HABER',
+            calculoAutomatico: false,
+            esSistema: false,
+            codigo: 'BONO',
+            nombre: 'Bono',
+          }),
+          listarConceptos: vi.fn().mockResolvedValue([]),
+        },
+      },
     ],
   });
   return TestBed.inject(NominaPeriodoService);
@@ -654,6 +669,136 @@ describe('NominaPeriodoService', () => {
       expect(items.map((i) => i.estado)).toEqual(['pendiente', 'aplicado', 'aplicado', 'omitido']);
       expect(items[1].origen).toBe('configurado');
       expect(items[2].origen).toBe('manual');
+    });
+  });
+
+  describe('agregarMovimientoManual — concepto de catálogo obligatorio (F08)', () => {
+    function haberesDescuentosMock(snapshot: Record<string, unknown> | Error) {
+      return {
+        resolverSnapshotConceptoParaMovimientoVariableManual:
+          snapshot instanceof Error
+            ? vi.fn().mockRejectedValue(snapshot)
+            : vi.fn().mockResolvedValue(snapshot),
+        listarConceptos: vi.fn().mockResolvedValue([]),
+      };
+    }
+
+    it('haber sin conceptoId se rechaza antes de insertar', async () => {
+      repo.obtenerNominaCompleta.mockResolvedValue(nomina());
+      const service = configurar({ repo });
+
+      await expect(
+        service.agregarMovimientoManual({
+          nominaPeriodoId: 'nom-1',
+          trabajadorId: '10',
+          tipo: 'BONO_LIBRE',
+          categoria: 'haber',
+          monto: 1000,
+          estado: 'aplicado',
+        }),
+      ).rejects.toThrow(/concepto del catálogo/i);
+      expect(repo.insertarMovimientos).not.toHaveBeenCalled();
+    });
+
+    it('haber con concepto válido inserta con el código canónico como tipo', async () => {
+      repo.obtenerNominaCompleta.mockResolvedValue(nomina());
+      const hd = haberesDescuentosMock({
+        tipo: 'HABER',
+        calculoAutomatico: false,
+        esSistema: false,
+        codigo: 'BONO',
+        nombre: 'Bono',
+      });
+      const service = configurar({ repo, haberesDescuentos: hd });
+
+      await service.agregarMovimientoManual({
+        nominaPeriodoId: 'nom-1',
+        trabajadorId: '10',
+        tipo: 'lo-que-sea',
+        categoria: 'haber',
+        conceptoId: 9,
+        monto: 1000,
+        estado: 'aplicado',
+      });
+
+      expect(hd.resolverSnapshotConceptoParaMovimientoVariableManual).toHaveBeenCalledWith(
+        9,
+        expect.any(Date),
+      );
+      expect(repo.insertarMovimientos).toHaveBeenCalledWith(
+        [expect.objectContaining({ tipo: 'BONO', conceptoId: 9, origen: 'manual' })],
+        7,
+      );
+    });
+
+    it('categoría descuento con concepto HABER se rechaza por incompatibilidad', async () => {
+      repo.obtenerNominaCompleta.mockResolvedValue(nomina());
+      const hd = haberesDescuentosMock({
+        tipo: 'HABER',
+        calculoAutomatico: false,
+        esSistema: false,
+        codigo: 'BONO',
+        nombre: 'Bono',
+      });
+      const service = configurar({ repo, haberesDescuentos: hd });
+
+      await expect(
+        service.agregarMovimientoManual({
+          nominaPeriodoId: 'nom-1',
+          trabajadorId: '10',
+          tipo: '',
+          categoria: 'descuento',
+          conceptoId: 9,
+          monto: 1000,
+          estado: 'aplicado',
+        }),
+      ).rejects.toThrow(/haber/i);
+      expect(repo.insertarMovimientos).not.toHaveBeenCalled();
+    });
+
+    it('concepto no asignable propaga el motivo de la regla central', async () => {
+      repo.obtenerNominaCompleta.mockResolvedValue(nomina());
+      const hd = haberesDescuentosMock(new Error('El interruptor «vigente» del catálogo está apagado.'));
+      const service = configurar({ repo, haberesDescuentos: hd });
+
+      await expect(
+        service.agregarMovimientoManual({
+          nominaPeriodoId: 'nom-1',
+          trabajadorId: '10',
+          tipo: '',
+          categoria: 'haber',
+          conceptoId: 9,
+          monto: 1000,
+          estado: 'aplicado',
+        }),
+      ).rejects.toThrow(/vigente/i);
+    });
+
+    it('ausencia con tipo libre se rechaza; tipo operativo se normaliza', async () => {
+      repo.obtenerNominaCompleta.mockResolvedValue(nomina());
+      const service = configurar({ repo });
+
+      await expect(
+        service.agregarMovimientoManual({
+          nominaPeriodoId: 'nom-1',
+          trabajadorId: '10',
+          tipo: 'falta-injustificada',
+          categoria: 'ausencia',
+          estado: 'aplicado',
+        }),
+      ).rejects.toThrow(/tipo operativo/i);
+
+      await service.agregarMovimientoManual({
+        nominaPeriodoId: 'nom-1',
+        trabajadorId: '10',
+        tipo: 'ausencia',
+        categoria: 'ausencia',
+        estado: 'aplicado',
+      });
+      expect(repo.insertarMovimientos).toHaveBeenCalledWith(
+        [expect.objectContaining({ tipo: 'AUSENCIA', conceptoId: undefined })],
+        7,
+      );
     });
   });
 

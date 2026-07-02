@@ -2037,6 +2037,7 @@ export type Database = {
           fecha_hasta: string | null
           glosa: string | null
           id: string
+          id_concepto: number | null
           id_empresa: number
           id_nomina_periodo: string
           id_persona: number
@@ -2057,6 +2058,7 @@ export type Database = {
           fecha_hasta?: string | null
           glosa?: string | null
           id?: string
+          id_concepto?: number | null
           id_empresa: number
           id_nomina_periodo: string
           id_persona: number
@@ -2077,6 +2079,7 @@ export type Database = {
           fecha_hasta?: string | null
           glosa?: string | null
           id?: string
+          id_concepto?: number | null
           id_empresa?: number
           id_nomina_periodo?: string
           id_persona?: number
@@ -2089,6 +2092,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "movimiento_nomina_id_concepto_fkey"
+            columns: ["id_concepto"]
+            isOneToOne: false
+            referencedRelation: "concepto"
+            referencedColumns: ["id_concepto"]
+          },
           {
             foreignKeyName: "movimiento_nomina_id_empresa_fkey"
             columns: ["id_empresa"]
@@ -2146,6 +2156,7 @@ export type Database = {
           id: string
           id_cargo: number | null
           id_centro_costo: number | null
+          id_concepto: number | null
           id_empresa: number
           id_grupo: number | null
           id_haberdescuento_origen: number | null
@@ -2169,6 +2180,7 @@ export type Database = {
           id?: string
           id_cargo?: number | null
           id_centro_costo?: number | null
+          id_concepto?: number | null
           id_empresa: number
           id_grupo?: number | null
           id_haberdescuento_origen?: number | null
@@ -2192,6 +2204,7 @@ export type Database = {
           id?: string
           id_cargo?: number | null
           id_centro_costo?: number | null
+          id_concepto?: number | null
           id_empresa?: number
           id_grupo?: number | null
           id_haberdescuento_origen?: number | null
@@ -2210,6 +2223,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "centro_costo"
             referencedColumns: ["id_centro_costo"]
+          },
+          {
+            foreignKeyName: "movimiento_recurrente_id_concepto_fkey"
+            columns: ["id_concepto"]
+            isOneToOne: false
+            referencedRelation: "concepto"
+            referencedColumns: ["id_concepto"]
           },
           {
             foreignKeyName: "movimiento_recurrente_id_empresa_fkey"
