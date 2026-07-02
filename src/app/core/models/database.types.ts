@@ -1044,6 +1044,7 @@ export type Database = {
           direccion_linea_2: string | null
           dv: string
           email_contacto: string | null
+          feature_gates: Json
           fecha_creacion: string | null
           fuente_resolucion_o_certificado: string | null
           giro: string | null
@@ -1074,6 +1075,7 @@ export type Database = {
           direccion_linea_2?: string | null
           dv: string
           email_contacto?: string | null
+          feature_gates?: Json
           fecha_creacion?: string | null
           fuente_resolucion_o_certificado?: string | null
           giro?: string | null
@@ -1104,6 +1106,7 @@ export type Database = {
           direccion_linea_2?: string | null
           dv?: string
           email_contacto?: string | null
+          feature_gates?: Json
           fecha_creacion?: string | null
           fuente_resolucion_o_certificado?: string | null
           giro?: string | null
@@ -6085,7 +6088,12 @@ export type Database = {
         }
       }
       confirmar_creacion_nomina: {
-        Args: { p_fingerprint: string; p_periodo: string; p_tipo: string }
+        Args: {
+          p_codigo_ciclo?: string
+          p_fingerprint: string
+          p_periodo: string
+          p_tipo: string
+        }
         Returns: Json
       }
       confirmar_nomina_preparacion: {
@@ -6241,6 +6249,10 @@ export type Database = {
         Returns: string
       }
       erp_etiqueta_usuario: { Args: { p_id: string }; Returns: string }
+      erp_nomina_feature_habilitado: {
+        Args: { p_gate: string }
+        Returns: boolean
+      }
       fn_aplicar_politica_fds: {
         Args: { p_fecha: string; p_politica: string }
         Returns: string
@@ -6630,6 +6642,7 @@ export type Database = {
         Args: {
           p_busqueda?: string
           p_clasificacion?: string
+          p_codigo_ciclo?: string
           p_page?: number
           p_page_size?: number
           p_periodo: string
@@ -6664,6 +6677,7 @@ export type Database = {
           ya_en_nomina: boolean
         }[]
       }
+      obtener_feature_gates_nomina: { Args: never; Returns: Json }
       obtener_nomina_periodo_diagnostico_activo: {
         Args: { p_periodo: string }
         Returns: {
@@ -6706,7 +6720,7 @@ export type Database = {
         }[]
       }
       previsualizar_creacion_nomina: {
-        Args: { p_periodo: string; p_tipo?: string }
+        Args: { p_codigo_ciclo?: string; p_periodo: string; p_tipo?: string }
         Returns: Json
       }
       reabrir_nomina_operativa: {

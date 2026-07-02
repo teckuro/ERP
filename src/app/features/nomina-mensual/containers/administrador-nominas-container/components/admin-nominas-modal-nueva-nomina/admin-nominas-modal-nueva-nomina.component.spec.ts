@@ -3,6 +3,8 @@ import { signal } from '@angular/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { EmpresaActivaService } from '../../../../../../core/services/empresa-activa.service';
+import { NominaFeatureGatesService } from '../../../../services/nomina-feature-gates.service';
+import { NominaPlantillaCicloService } from '../../../../services/nomina-plantilla-ciclo.service';
 import { NominaPeriodoService } from '../../../../services/nomina-periodo.service';
 import type { NominaPeriodoResumen } from '../../../../models/nomina-periodo.models';
 import { crearNominaResumen } from '../../../../models/nomina-periodo.models';
@@ -62,6 +64,7 @@ function configurar(opts: {
   preview?: ReturnType<typeof vi.fn>;
   previewPagina?: ReturnType<typeof vi.fn>;
   empresaSnap?: { idEmpresa: number; nombre: string; razonSocial: string; rut: string; dv: string } | null;
+  gates?: { anticipos: boolean; extraordinaria: boolean };
 } = {}) {
   const empresaSnap = opts.empresaSnap === undefined
     ? { idEmpresa: 7, nombre: 'Demo', razonSocial: 'Demo S.A.', rut: '76', dv: 'K' }
@@ -95,6 +98,21 @@ function configurar(opts: {
     providers: [
       { provide: NominaPeriodoService, useValue: servicio },
       { provide: EmpresaActivaService, useValue: empresaActiva },
+      {
+        provide: NominaFeatureGatesService,
+        useValue: {
+          gates: () => opts.gates ?? { anticipos: false, extraordinaria: false },
+          cargar: vi.fn().mockResolvedValue(opts.gates ?? { anticipos: false, extraordinaria: false }),
+        },
+      },
+      {
+        provide: NominaPlantillaCicloService,
+        useValue: {
+          refrescar: vi.fn().mockResolvedValue([]),
+          plantillasActivas: () => [],
+          previsualizarCortes: vi.fn().mockResolvedValue([]),
+        },
+      },
     ],
   });
   return { servicio, empresaActiva };
@@ -136,6 +154,7 @@ describe('AdminNominasModalNuevaNominaComponent (F04 — wizard 2 pasos)', () =>
     expect(servicio.previsualizarCreacion).toHaveBeenCalledWith({
       periodo: '2026-07',
       tipo: 'mensual',
+      codigoCiclo: null,
     });
     expect(cmp.paso()).toBe('preview');
     expect(cmp.preview()?.totales.incluidos).toBe(1);
@@ -155,6 +174,7 @@ describe('AdminNominasModalNuevaNominaComponent (F04 — wizard 2 pasos)', () =>
       periodo: '2026-07',
       tipo: 'mensual',
       fingerprint: 'fp-abc',
+      codigoCiclo: '2026-07-MES',
     });
     expect(emitido).not.toBeNull();
     expect(emitido!.resumen.id).toBe('nom-creado');
@@ -163,10 +183,15 @@ describe('AdminNominasModalNuevaNominaComponent (F04 — wizard 2 pasos)', () =>
     expect(emitido!.reutilizada).toBe(false);
   });
 
-  it('expone solo el tipo mensual durante F01/F04', () => {
+  it('expone solo mensual cuando los feature gates están apagados', () => {
     const cmp = crearComponente();
-    expect(cmp.tiposNomina.map((tipo) => tipo.id)).toEqual(['mensual']);
-    cmp.setTipo('semanal');
+    expect(cmp.tiposNomina().map((tipo) => tipo.id)).toEqual(['mensual']);
+  });
+
+  it('bloquea preview de quincenal sin corte seleccionado', () => {
+    configurar({ gates: { anticipos: true, extraordinaria: false } });
+    const cmp = crearComponente();
+    cmp.setTipo('quincenal');
     expect(cmp.puedeAvanzarPreview()).toBe(false);
   });
 

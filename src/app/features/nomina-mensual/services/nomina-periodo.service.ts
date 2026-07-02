@@ -82,10 +82,13 @@ import {
   estadoNominaBloqueaEdicion,
   exigirTransicionNomina,
 } from '../rules/nomina-periodo-state.rules';
+import { NominaFeatureGatesService } from './nomina-feature-gates.service';
+import { tipoNominaRequiereCorte } from '../rules/nomina-tipos-creacion.rules';
 
 export interface CrearNominaPayload {
   periodo: string;
   tipo: TipoNomina;
+  codigoCiclo?: string | null;
   empresaId?: string;
   empresaNombre?: string;
 }
@@ -116,6 +119,7 @@ export class NominaPeriodoService {
   /** F08: validación de conceptos del catálogo (misma regla que HD/MV). */
   private readonly haberesDescuentos = inject(HaberesDescuentosService);
   private readonly permisosRemuneraciones = inject(ErpPermisosRemuneracionesService);
+  private readonly featureGates = inject(NominaFeatureGatesService);
 
   private readonly resumenesState = signal<NominaPeriodoResumen[]>([]);
   private readonly cargandoState = signal(false);
@@ -188,6 +192,7 @@ export class NominaPeriodoService {
     clasificacion: ClasificacionPreviewCreacion,
     paginacion: PaginacionGrilla,
     busqueda?: string,
+    codigoCiclo?: string | null,
   ): Promise<{
     filas: TrabajadorIncluidoPreview[] | TrabajadorExcluidoPreview[];
     total: number;
@@ -199,6 +204,7 @@ export class NominaPeriodoService {
       clasificacion,
       paginacion,
       busqueda,
+      codigoCiclo,
     );
   }
 
@@ -224,8 +230,9 @@ export class NominaPeriodoService {
    */
   async crearNominaPeriodo(payload: CrearNominaPayload): Promise<NominaPeriodoResumen> {
     this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
-    if (payload.tipo !== 'mensual') {
-      throw new Error('Solo se admiten nóminas mensuales en este flujo.');
+    this.featureGates.exigirTipoPermitido(payload.tipo);
+    if (tipoNominaRequiereCorte(payload.tipo) && !payload.codigoCiclo?.trim()) {
+      throw new Error('Selecciona el corte del anticipo antes de continuar.');
     }
 
     const idEmpresa = await this.resolverEmpresaActiva();
@@ -237,11 +244,13 @@ export class NominaPeriodoService {
       const preview = await this.repo.previsualizarCreacion({
         periodo: payload.periodo,
         tipo: payload.tipo,
+        codigoCiclo: payload.codigoCiclo ?? null,
       });
       const resultado = await this.repo.confirmarCreacion({
         periodo: payload.periodo,
         tipo: payload.tipo,
         fingerprint: preview.fingerprint,
+        codigoCiclo: payload.codigoCiclo ?? preview.codigoCiclo ?? null,
       });
       const cabecera = await this.repo.obtenerCabecera(resultado.idNominaPeriodo);
       if (cabecera) return cabecera;
@@ -249,7 +258,7 @@ export class NominaPeriodoService {
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : String(error);
       if (/duplicate|unique|duplic/i.test(mensaje)) {
-        throw new Error('Ya existe una nómina mensual legal para esa empresa y período.');
+        throw new Error('Ya existe una nómina para esa empresa y ciclo.');
       }
       throw error;
     }

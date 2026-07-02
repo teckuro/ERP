@@ -9,6 +9,18 @@
 
 ---
 
+## 2026-07-02 — Administrador Nómina: F10/F11 creación multi-tipo (NOM-ADMIN-OPS-F10/F11 núcleo)
+
+- **Modal «Nueva nómina»:** selector de **Tipo** (Mensual / Quincenal / Semanal / Extraordinaria)
+  visible solo si el tenant tiene activos los feature gates Anexo B; sin gates, el tipo
+  queda fijo en «Mensual» como antes.
+- **Anticipos (quincenal/semanal):** campo **«Corte del anticipo»** con cortes del período
+  desde plantillas activas; hint de error operativo si faltan plantillas.
+- **Copy:** descripción breve por tipo bajo el selector; sin nombres técnicos de BD ni RPC.
+- Misma densidad, prefijo `adm-nom-modal__` y patrón del wizard F04/F05 existente.
+
+---
+
 ## 2026-07-02 — Generador Nómina V2: F08 movimientos ligados al catálogo (NOM-ADMIN-OPS-F08)
 
 - **Modal «Agregar movimiento manual»:** el campo de texto libre «Tipo / Concepto»

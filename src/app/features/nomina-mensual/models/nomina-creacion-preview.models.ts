@@ -22,6 +22,7 @@ export type MotivoConflictoNomina =
 export interface NominaCreatePreviewRequest {
   periodo: string;
   tipo: TipoNomina;
+  codigoCiclo?: string | null;
 }
 
 export interface TrabajadorIncluidoPreview {
@@ -83,6 +84,7 @@ export interface ConfirmarCreacionRequest {
   periodo: string;
   tipo: TipoNomina;
   fingerprint: string;
+  codigoCiclo?: string | null;
 }
 
 /** Paso sugerido para llevar al usuario al abrir el Generador tras crear. */

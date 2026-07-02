@@ -20,6 +20,8 @@ import { NominaPeriodoService } from './nomina-periodo.service';
 import { EmpleadosService } from '../../empleados/services/empleados.service';
 import { HaberesDescuentosService } from '../../haberes-descuentos/services/haberes-descuentos.service';
 import { ErpPermisosRemuneracionesService } from '../../../core/auth/erp-permisos-remuneraciones.service';
+import { NominaFeatureGatesService } from './nomina-feature-gates.service';
+import { tipoNominaPermitido } from '../rules/nomina-tipos-creacion.rules';
 
 function nomina(overrides: Partial<NominaPeriodo> = {}): NominaPeriodo {
   return crearNomina({
@@ -220,12 +222,29 @@ function permisosMock(opts?: { admin?: boolean; escribir?: boolean }) {
   };
 }
 
+function featureGatesMock(opts?: { anticipos?: boolean; extraordinaria?: boolean }) {
+  const gates = {
+    anticipos: opts?.anticipos ?? false,
+    extraordinaria: opts?.extraordinaria ?? false,
+  };
+  return {
+    gates: () => gates,
+    cargar: vi.fn().mockResolvedValue(gates),
+    exigirTipoPermitido: vi.fn((tipo: import('../models/nomina-periodo.models').TipoNomina) => {
+      if (!tipoNominaPermitido(tipo, gates)) {
+        throw new Error('Este tipo de nómina no está habilitado para su empresa.');
+      }
+    }),
+  };
+}
+
 function configurar(opts: {
   repo: RepoMock;
   empresaId?: number | null;
   supabase?: unknown;
   haberesDescuentos?: unknown;
   permisos?: ReturnType<typeof permisosMock>;
+  featureGates?: ReturnType<typeof featureGatesMock>;
 }): NominaPeriodoService {
   const supabase = opts.supabase ?? {
     from: vi.fn().mockReturnValue({
@@ -262,6 +281,10 @@ function configurar(opts: {
       {
         provide: ErpPermisosRemuneracionesService,
         useValue: opts.permisos ?? permisosMock(),
+      },
+      {
+        provide: NominaFeatureGatesService,
+        useValue: opts.featureGates ?? featureGatesMock(),
       },
     ],
   });
@@ -332,24 +355,33 @@ describe('NominaPeriodoService', () => {
     expect(repo.previsualizarCreacion).toHaveBeenCalledWith({
       periodo: '2026-06',
       tipo: 'mensual',
+      codigoCiclo: null,
     });
     expect(repo.confirmarCreacion).toHaveBeenCalledWith({
       periodo: '2026-06',
       tipo: 'mensual',
       fingerprint: 'fp-1',
+      codigoCiclo: '2026-06-MES',
     });
     expect(resultado).toEqual(cabecera);
     expect(repo.crear).not.toHaveBeenCalled();
   });
 
-  it('crearNominaPeriodo rechaza ciclos no mensuales', async () => {
-    const service = configurar({ repo });
+  it('crearNominaPeriodo rechaza tipos no habilitados por feature gate', async () => {
+    const service = configurar({ repo, featureGates: featureGatesMock() });
+
+    await expect(
+      service.crearNominaPeriodo({ periodo: '2026-06', tipo: 'quincenal', codigoCiclo: '2026-06-Q1' }),
+    ).rejects.toThrow(/no está habilitado/i);
+    expect(repo.previsualizarCreacion).not.toHaveBeenCalled();
+  });
+
+  it('crearNominaPeriodo exige corte para anticipos quincenales', async () => {
+    const service = configurar({ repo, featureGates: featureGatesMock({ anticipos: true }) });
 
     await expect(
       service.crearNominaPeriodo({ periodo: '2026-06', tipo: 'quincenal' }),
-    ).rejects.toThrow(/mensuales/i);
-    expect(repo.previsualizarCreacion).not.toHaveBeenCalled();
-    expect(repo.confirmarCreacion).not.toHaveBeenCalled();
+    ).rejects.toThrow(/corte/i);
   });
 
   it('crearNominaPeriodo lanza error si no hay empresa activa', async () => {

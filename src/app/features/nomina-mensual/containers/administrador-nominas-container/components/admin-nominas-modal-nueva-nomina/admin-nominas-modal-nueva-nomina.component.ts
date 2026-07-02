@@ -28,8 +28,15 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { EmpresaActivaService } from '../../../../../../core/services/empresa-activa.service';
+import { NominaFeatureGatesService } from '../../../../services/nomina-feature-gates.service';
+import { NominaPlantillaCicloService } from '../../../../services/nomina-plantilla-ciclo.service';
 import { NominaPeriodoService } from '../../../../services/nomina-periodo.service';
+import type { PreviewCorte } from '../../../../models/nomina-plantilla-ciclo.models';
 import type { NominaPeriodoResumen, TipoNomina } from '../../../../models/nomina-periodo.models';
+import {
+  opcionesTipoNominaCreacion,
+  tipoNominaRequiereCorte,
+} from '../../../../rules/nomina-tipos-creacion.rules';
 import type {
   ConfirmarCreacionResultado,
   NominaCreatePreview,
@@ -58,14 +65,6 @@ export interface NominaCreadaEvento {
 type PasoWizard = 'configuracion' | 'preview';
 type TabPreview = 'incluidos' | 'excluidos' | 'conflictos';
 
-const TIPOS_NOMINA: { id: TipoNomina; label: string; descripcion: string }[] = [
-  {
-    id: 'mensual',
-    label: 'Mensual',
-    descripcion: 'Liquidación legal del mes calendario.',
-  },
-];
-
 function periodoActual(): string {
   const hoy = new Date();
   const anio = hoy.getFullYear();
@@ -92,6 +91,8 @@ function etiquetaPeriodoLegible(periodo: string): string {
 export class AdminNominasModalNuevaNominaComponent {
   private readonly servicio = inject(NominaPeriodoService);
   private readonly empresaActiva = inject(EmpresaActivaService);
+  private readonly featureGates = inject(NominaFeatureGatesService);
+  private readonly plantillas = inject(NominaPlantillaCicloService);
 
   readonly empresasDisponibles = input<readonly NominaPeriodoResumen[]>([]);
   /** Período sugerido desde el shell (selector global), si está disponible. */
@@ -99,11 +100,15 @@ export class AdminNominasModalNuevaNominaComponent {
   readonly creada = output<NominaCreadaEvento>();
   readonly cerrar = output<void>();
 
-  readonly tiposNomina = TIPOS_NOMINA;
+  readonly tiposNomina = computed(() => opcionesTipoNominaCreacion(this.featureGates.gates()));
+  readonly mostrarSelectorTipo = computed(() => this.tiposNomina().length > 1);
 
   readonly periodo = signal(periodoActual());
   readonly empresaId = signal('');
   readonly tipo = signal<TipoNomina>('mensual');
+  readonly codigoCiclo = signal('');
+  readonly cortesDisponibles = signal<readonly PreviewCorte[]>([]);
+  readonly cargandoCortes = signal(false);
   readonly paso = signal<PasoWizard>('configuracion');
   readonly tabActiva = signal<TabPreview>('incluidos');
   readonly cargandoPreview = signal(false);
@@ -153,13 +158,30 @@ export class AdminNominasModalNuevaNominaComponent {
 
   readonly etiquetaPeriodo = computed(() => etiquetaPeriodoLegible(this.periodo()));
 
-  readonly puedeAvanzarPreview = computed(
-    () =>
-      !this.cargandoPreview()
-      && this.periodoEsValido()
-      && this.empresaId().length > 0
-      && this.tipo() === 'mensual',
-  );
+  readonly puedeAvanzarPreview = computed(() => {
+    if (this.cargandoPreview() || !this.periodoEsValido() || this.empresaId().length === 0) {
+      return false;
+    }
+    if (tipoNominaRequiereCorte(this.tipo()) && !this.codigoCiclo().trim()) {
+      return false;
+    }
+    if (tipoNominaRequiereCorte(this.tipo()) && this.cargandoCortes()) {
+      return false;
+    }
+    return true;
+  });
+
+  readonly etiquetaTipoSeleccionado = computed(() => {
+    const actual = this.tiposNomina().find((t) => t.id === this.tipo());
+    return actual?.label ?? 'Mensual';
+  });
+
+  readonly descripcionTipoSeleccionado = computed(() => {
+    const actual = this.tiposNomina().find((t) => t.id === this.tipo());
+    return actual?.descripcion ?? '';
+  });
+
+  readonly requiereCorte = computed(() => tipoNominaRequiereCorte(this.tipo()));
 
   readonly puedeConfirmar = computed(() => {
     const p = this.preview();
@@ -203,6 +225,8 @@ export class AdminNominasModalNuevaNominaComponent {
       }
     }, { allowSignalWrites: true });
 
+    void this.featureGates.cargar();
+
     const primera = this.empresas()[0];
     if (primera) {
       this.empresaId.set(primera.id);
@@ -213,6 +237,8 @@ export class AdminNominasModalNuevaNominaComponent {
     this.periodo.set(valor);
     if (this.paso() === 'preview') {
       this.volverAConfiguracion();
+    } else if (this.requiereCorte()) {
+      void this.cargarCortesParaTipo();
     }
   }
 
@@ -225,6 +251,60 @@ export class AdminNominasModalNuevaNominaComponent {
 
   setTipo(valor: TipoNomina): void {
     this.tipo.set(valor);
+    this.codigoCiclo.set('');
+    this.cortesDisponibles.set([]);
+    if (this.paso() === 'preview') {
+      this.volverAConfiguracion();
+    } else if (tipoNominaRequiereCorte(valor)) {
+      void this.cargarCortesParaTipo();
+    }
+  }
+
+  setCodigoCiclo(valor: string): void {
+    this.codigoCiclo.set(valor);
+    if (this.paso() === 'preview') {
+      this.volverAConfiguracion();
+    }
+  }
+
+  private codigoCicloRequest(): string | null {
+    if (tipoNominaRequiereCorte(this.tipo())) {
+      return this.codigoCiclo().trim() || null;
+    }
+    return null;
+  }
+
+  private async cargarCortesParaTipo(): Promise<void> {
+    const tipo = this.tipo();
+    if (!tipoNominaRequiereCorte(tipo) || !this.periodoEsValido()) {
+      this.cortesDisponibles.set([]);
+      return;
+    }
+    this.cargandoCortes.set(true);
+    try {
+      await this.plantillas.refrescar({ soloActivas: true });
+      const codigoPlantilla = tipo === 'quincenal' ? 'QUIN' : 'SEM';
+      const plantilla = this.plantillas.plantillasActivas().find(
+        (p) => p.tipo === tipo && p.codigo === codigoPlantilla,
+      ) ?? this.plantillas.plantillasActivas().find((p) => p.tipo === tipo);
+      if (!plantilla) {
+        this.cortesDisponibles.set([]);
+        return;
+      }
+      const anio = Number(this.periodo().slice(0, 4));
+      const cortes = await this.plantillas.previsualizarCortes(plantilla.id, anio);
+      const mes = this.periodo();
+      this.cortesDisponibles.set(
+        cortes.filter((c) => c.codigoCiclo.startsWith(mes) || c.fechaInicio.startsWith(mes)),
+      );
+      if (this.cortesDisponibles().length === 1) {
+        this.codigoCiclo.set(this.cortesDisponibles()[0].codigoCiclo);
+      }
+    } catch {
+      this.cortesDisponibles.set([]);
+    } finally {
+      this.cargandoCortes.set(false);
+    }
   }
 
   setTab(valor: TabPreview): void {
@@ -270,6 +350,7 @@ export class AdminNominasModalNuevaNominaComponent {
       const preview = await this.servicio.previsualizarCreacion({
         periodo: this.periodo(),
         tipo: this.tipo(),
+        codigoCiclo: this.codigoCicloRequest(),
       });
       this.preview.set(preview);
       this.paso.set('preview');
@@ -317,6 +398,8 @@ export class AdminNominasModalNuevaNominaComponent {
           pageSize: this.pageSizePreview(),
           total: 0,
         },
+        undefined,
+        this.codigoCicloRequest(),
       );
       this.filasPreviewPagina.set(pagina.filas);
       this.totalPreviewTab.set(pagina.total);
@@ -343,6 +426,7 @@ export class AdminNominasModalNuevaNominaComponent {
         periodo: this.periodo(),
         tipo: this.tipo(),
         fingerprint: preview.fingerprint,
+        codigoCiclo: preview.codigoCiclo ?? this.codigoCicloRequest(),
       });
       const resumenes = await this.servicio.listarResumenes();
       const resumen = resumenes.find(

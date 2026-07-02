@@ -87,9 +87,51 @@
 
         <p class="adm-nom-modal__contexto adm-nom-modal__contexto--tipo">
           <span class="adm-nom-modal__contexto-label">Tipo</span>
-          <span class="adm-nom-modal__contexto-valor">Mensual</span>
-          <span class="adm-nom-modal__contexto-hint">Liquidación legal del mes calendario.</span>
+          @if (mostrarSelectorTipo()) {
+            <select
+              class="adm-nom-modal__input adm-nom-modal__input--inline"
+              [value]="tipo()"
+              (change)="setTipo($any($event.target).value)"
+            >
+              @for (opcion of tiposNomina(); track opcion.id) {
+                <option [value]="opcion.id">{{ opcion.label }}</option>
+              }
+            </select>
+            <span class="adm-nom-modal__contexto-hint">{{ descripcionTipoSeleccionado() }}</span>
+          } @else {
+            <span class="adm-nom-modal__contexto-valor">{{ etiquetaTipoSeleccionado() }}</span>
+            <span class="adm-nom-modal__contexto-hint">{{ descripcionTipoSeleccionado() }}</span>
+          }
         </p>
+
+        @if (requiereCorte()) {
+          <div class="adm-nom-modal__field">
+            <label for="adm-nom-modal-corte" class="adm-nom-modal__label">Corte del anticipo</label>
+            @if (cargandoCortes()) {
+              <p class="adm-nom-modal__hint">Cargando cortes del período…</p>
+            } @else if (cortesDisponibles().length === 0) {
+              <p class="adm-nom-modal__hint adm-nom-modal__hint--error">
+                No hay plantilla activa ni cortes para este período. Revise Plantillas de ciclo.
+              </p>
+            } @else {
+              <select
+                id="adm-nom-modal-corte"
+                class="adm-nom-modal__input"
+                [value]="codigoCiclo()"
+                (change)="setCodigoCiclo($any($event.target).value)"
+                required
+              >
+                <option value="" disabled>Seleccione un corte</option>
+                @for (corte of cortesDisponibles(); track corte.codigoCiclo) {
+                  <option [value]="corte.codigoCiclo">
+                    {{ corte.notas || corte.codigoCiclo }}
+                    ({{ corte.fechaInicio }} – {{ corte.fechaFin }})
+                  </option>
+                }
+              </select>
+            }
+          </div>
+        }
 
         @if (error()) {
           <div class="adm-nom-modal__error" role="alert">{{ error() }}</div>

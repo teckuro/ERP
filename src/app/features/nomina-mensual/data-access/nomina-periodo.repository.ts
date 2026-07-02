@@ -211,6 +211,7 @@ export class NominaPeriodoRepository {
     const { data, error } = await this.supabase.rpc('previsualizar_creacion_nomina', {
       p_periodo: request.periodo,
       p_tipo: request.tipo,
+      p_codigo_ciclo: request.codigoCiclo ?? undefined,
     });
     throwIfError(error, 'previsualizarCreacion');
     return mapNominaCreatePreview(data);
@@ -228,6 +229,7 @@ export class NominaPeriodoRepository {
       p_periodo: request.periodo,
       p_tipo: request.tipo,
       p_fingerprint: request.fingerprint,
+      p_codigo_ciclo: request.codigoCiclo ?? undefined,
     });
     throwIfError(error, 'confirmarCreacion');
     return mapConfirmarCreacionResultado(data);
@@ -825,6 +827,7 @@ export class NominaPeriodoRepository {
     clasificacion: ClasificacionPreviewCreacion,
     paginacion: PaginacionGrilla,
     busqueda?: string,
+    codigoCiclo?: string | null,
   ): Promise<{
     filas: TrabajadorIncluidoPreview[] | TrabajadorExcluidoPreview[];
     total: number;
@@ -836,6 +839,7 @@ export class NominaPeriodoRepository {
       p_page: paginacion.page,
       p_page_size: paginacion.pageSize,
       p_busqueda: busqueda ?? undefined,
+      p_codigo_ciclo: codigoCiclo ?? undefined,
     });
     throwIfError(error, 'listarPreviewCreacionTrabajadores');
     const rows = data ?? [];
