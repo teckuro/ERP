@@ -32,12 +32,18 @@ import type {
   FiltroTrabajadoresElegiblesNomina,
   PaginacionGrilla,
   ResumenTrabajadoresElegiblesNomina,
+  FiltroCalculoPorTrabajador,
+  FilaCalculoTrabajadorListado,
+  ResumenCalculoNomina,
 } from '../models/nomina-periodo.models';
 import type {
   ConfirmarCreacionRequest,
   ConfirmarCreacionResultado,
   NominaCreatePreview,
   NominaCreatePreviewRequest,
+  ClasificacionPreviewCreacion,
+  TrabajadorExcluidoPreview,
+  TrabajadorIncluidoPreview,
 } from '../models/nomina-creacion-preview.models';
 import {
   mapConfirmarCreacionResultado,
@@ -62,6 +68,7 @@ import {
   nominaPeriodoToInsert,
   type NominaPeriodoUpdate,
   rowToEventoAuditoria,
+  rowRpcToEventoAuditoria,
   rowToIncidenciaNomina,
   rowToMovimientoNomina,
   rowToMovimientoRecurrente,
@@ -746,13 +753,114 @@ export class NominaPeriodoRepository {
   // -------------------------------------------------------------------------
 
   async listarEventosAuditoria(nominaPeriodoId: string): Promise<EventoAuditoriaNomina[]> {
-    const { data, error } = await this.supabase
-      .from('evento_auditoria_nomina')
-      .select('*')
-      .eq('id_nomina_periodo', nominaPeriodoId)
-      .order('created_at', { ascending: false });
+    const { data, error } = await this.supabase.rpc('listar_eventos_auditoria_nomina', {
+      p_nomina_id: nominaPeriodoId,
+    });
     throwIfError(error, 'listarEventosAuditoria');
-    return (data ?? []).map(rowToEventoAuditoria);
+    return (data ?? []).map(rowRpcToEventoAuditoria);
+  }
+
+  /** BKL-09: stats de cabecera del cálculo vigente sin cargar filas. */
+  async obtenerResumenCalculo(nominaPeriodoId: string): Promise<ResumenCalculoNomina | null> {
+    const { data, error } = await this.supabase.rpc('resumen_calculo_nomina', {
+      p_nomina_id: nominaPeriodoId,
+    });
+    throwIfError(error, 'obtenerResumenCalculo');
+    const row = (data ?? [])[0];
+    if (!row) return null;
+    return {
+      idCalculoPeriodo: row.id_calculo_periodo ?? undefined,
+      trabajadoresCalculados: Number(row.trabajadores_calculados ?? 0),
+      totalHaberes: Number(row.total_haberes ?? 0),
+      totalDescuentos: Number(row.total_descuentos ?? 0),
+      totalLiquido: Number(row.total_liquido ?? 0),
+      conAdvertencias: Number(row.con_advertencias ?? 0),
+      conBloqueos: Number(row.con_bloqueos ?? 0),
+    };
+  }
+
+  /** BKL-09: página de filas del paso Cálculo desde snapshot persistido. */
+  async listarCalculoTrabajadoresPaginado(
+    nominaPeriodoId: string,
+    filtro: FiltroCalculoPorTrabajador,
+    paginacion: PaginacionGrilla,
+  ): Promise<{ filas: FilaCalculoTrabajadorListado[]; total: number }> {
+    const { data, error } = await this.supabase.rpc('listar_calculo_trabajadores_nomina', {
+      p_nomina_id: nominaPeriodoId,
+      p_page: paginacion.page,
+      p_page_size: paginacion.pageSize,
+      p_busqueda: filtro.busqueda ?? undefined,
+      p_estado: filtro.estado ?? undefined,
+    });
+    throwIfError(error, 'listarCalculoTrabajadoresPaginado');
+    const rows = data ?? [];
+    return {
+      total: Number(rows[0]?.total_count ?? 0),
+      filas: rows.map((row) => ({
+        idCalculoTrabajador: Number(row.id_calculo_trabajador),
+        trabajadorId: String(row.id_persona),
+        idPersona: Number(row.id_persona),
+        rut: row.rut,
+        nombre: row.nombre,
+        estado: row.estado,
+        sueldoBase: Number(row.sueldo_base ?? 0),
+        totalHaberes: Number(row.total_haberes ?? 0),
+        totalDescuentos: Number(row.total_descuentos ?? 0),
+        liquidoAPago: Number(row.liquido_preliminar ?? 0),
+        baseImponiblePrevisional: Number(row.base_imponible_previsional ?? 0),
+        baseTributable: Number(row.base_tributable ?? 0),
+        cotizacionSis: Number(row.cotizacion_sis ?? 0),
+        cotizacionSanna: Number(row.cotizacion_sanna ?? 0),
+        cotizacionLey16744: Number(row.cotizacion_ley_16744_empleador ?? 0),
+        cuentaIssues: Number(row.cuenta_issues ?? 0),
+        detalleCargado: false,
+      })),
+    };
+  }
+
+  /** BKL-10: página de trabajadores incluidos/excluidos del preview F04. */
+  async listarPreviewCreacionTrabajadores(
+    periodo: string,
+    tipo: NominaPeriodo['tipo'],
+    clasificacion: ClasificacionPreviewCreacion,
+    paginacion: PaginacionGrilla,
+    busqueda?: string,
+  ): Promise<{
+    filas: TrabajadorIncluidoPreview[] | TrabajadorExcluidoPreview[];
+    total: number;
+  }> {
+    const { data, error } = await this.supabase.rpc('listar_preview_creacion_trabajadores', {
+      p_periodo: periodo,
+      p_tipo: tipo,
+      p_clasificacion: clasificacion,
+      p_page: paginacion.page,
+      p_page_size: paginacion.pageSize,
+      p_busqueda: busqueda ?? undefined,
+    });
+    throwIfError(error, 'listarPreviewCreacionTrabajadores');
+    const rows = data ?? [];
+    const total = Number(rows[0]?.total_count ?? 0);
+    if (clasificacion === 'incluidos') {
+      return {
+        total,
+        filas: rows.map((row) => ({
+          idPersona: Number(row.id_persona),
+          rut: row.rut,
+          nombre: row.nombre,
+          cargo: row.cargo || null,
+        })),
+      };
+    }
+    return {
+      total,
+      filas: rows.map((row) => ({
+        idPersona: Number(row.id_persona),
+        rut: row.rut,
+        nombre: row.nombre,
+        motivo: row.motivo ?? '',
+        motivoHumano: row.motivo_humano ?? '',
+      })),
+    };
   }
 
   async registrarEventoAuditoria(

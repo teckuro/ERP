@@ -350,7 +350,7 @@ export function mapSnapshotCompletoToMotorCalculoPeriodo(
   };
 }
 
-function mapTrabajadorSnapshotToLiquidacion(
+export function mapTrabajadorSnapshotToLiquidacion(
   trabajador: NominaCalculoTrabajadorSnapshot,
   periodo: string,
 ): LiquidacionCalculada {

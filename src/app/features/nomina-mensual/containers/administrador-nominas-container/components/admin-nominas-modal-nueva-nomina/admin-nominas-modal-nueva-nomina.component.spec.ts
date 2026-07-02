@@ -44,13 +44,14 @@ function previewMock(overrides: Partial<NominaCreatePreview> = {}): NominaCreate
     fechaInicio: '2026-07-01',
     fechaFin: '2026-07-31',
     plantillaCicloId: 'pl-1',
-    incluidos: [{ idPersona: 10, rut: '1-1', nombre: 'Ana Pérez', cargo: 'Analista' }],
+    incluidos: [],
     excluidos: [],
     conflictos: [],
     totales: { incluidos: 1, excluidos: 0, conflictos: 0 },
     puedeCrear: true,
     fingerprint: 'fp-abc',
     generadoEn: '2026-07-15T12:00:00Z',
+    detallePaginado: true,
     ...overrides,
   };
 }
@@ -59,6 +60,7 @@ function configurar(opts: {
   confirmar?: ReturnType<typeof vi.fn>;
   listar?: ReturnType<typeof vi.fn>;
   preview?: ReturnType<typeof vi.fn>;
+  previewPagina?: ReturnType<typeof vi.fn>;
   empresaSnap?: { idEmpresa: number; nombre: string; razonSocial: string; rut: string; dv: string } | null;
 } = {}) {
   const empresaSnap = opts.empresaSnap === undefined
@@ -82,6 +84,10 @@ function configurar(opts: {
       reutilizada: false,
     }),
     previsualizarCreacion: opts.preview ?? vi.fn().mockResolvedValue(previewMock()),
+    listarPreviewCreacionTrabajadores: opts.previewPagina ?? vi.fn().mockResolvedValue({
+      filas: [{ idPersona: 10, rut: '1-1', nombre: 'Ana Pérez', cargo: 'Analista' }],
+      total: 1,
+    }),
     listarResumenes: opts.listar ?? vi.fn().mockResolvedValue([resumenMock()]),
   };
   TestBed.resetTestingModule();

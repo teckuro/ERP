@@ -138,5 +138,6 @@ export function mapNominaCreatePreview(raw: unknown): NominaCreatePreview {
     puedeCrear: asBoolean(obj['puedeCrear']),
     fingerprint: asString(obj['fingerprint']),
     generadoEn: asString(obj['generadoEn']),
+    detallePaginado: asBoolean(obj['detallePaginado']),
   };
 }

@@ -1,7 +1,20 @@
 import { inject, Injectable } from '@angular/core';
 
-import type { MotorCalculoPeriodoResultado } from '../models/proceso-mensual.model';
-import { mapSnapshotCompletoToMotorCalculoPeriodo } from '../rules/proceso-mensual-snapshot.rules';
+import type {
+  MotorCalculoPeriodoResultado,
+  NominaCalculoTrabajadorSnapshot,
+} from '../models/proceso-mensual.model';
+import type {
+  FiltroCalculoPorTrabajador,
+  FilaCalculoTrabajadorListado,
+  PaginacionGrilla,
+  ResumenCalculoNomina,
+} from '../models/nomina-periodo.models';
+import {
+  mapSnapshotCompletoToMotorCalculoPeriodo,
+  mapTrabajadorSnapshotToLiquidacion,
+} from '../rules/proceso-mensual-snapshot.rules';
+import { NominaCalculoSnapshotRepository } from '../data-access/nomina-calculo-snapshot.repository';
 import { NominaPeriodoService } from './nomina-periodo.service';
 import { ProcesoMensualService } from './proceso-mensual.service';
 
@@ -14,6 +27,7 @@ export interface ResultadoCalculoNominaPeriodo {
 export class NominaPeriodoCalculoAdapterService {
   private readonly nominas = inject(NominaPeriodoService);
   private readonly motor = inject(ProcesoMensualService);
+  private readonly snapshotRepo = inject(NominaCalculoSnapshotRepository);
 
   async calcular(nominaPeriodoId: string): Promise<ResultadoCalculoNominaPeriodo> {
     const nomina = await this.nominas.obtenerNomina(nominaPeriodoId);
@@ -26,7 +40,6 @@ export class NominaPeriodoCalculoAdapterService {
     const idEmpresaNumerico = Number.isFinite(idEmpresa) ? idEmpresa : null;
 
     const trabajadorIds = nomina.trabajadorIds.map(Number).filter(Number.isFinite);
-    // F09: cálculo y snapshot keyed por la nómina, no por el mes global.
     const resultado = await this.motor.generarCalculoPeriodo(nomina.periodo, trabajadorIds, {
       nominaPeriodoId,
     });
@@ -56,21 +69,43 @@ export class NominaPeriodoCalculoAdapterService {
   /**
    * Rehidrata el resultado del motor desde el snapshot persistido en BD cuando
    * la nómina ya tiene un cálculo vigente. No recalcula ni escribe.
+   *
+   * @deprecated Preferir paginación server-side (`listarFilasCalculoPaginado`) en UI.
    */
   async obtenerResultadoPersistido(
     nominaPeriodoId: string,
   ): Promise<MotorCalculoPeriodoResultado | null> {
-    const nomina = await this.nominas.obtenerNomina(nominaPeriodoId);
-    if (!nomina?.evidenciaCalculo?.calculoVigente) return null;
-
-    const idCalculoPeriodo = nomina.evidenciaCalculo.idCalculoPeriodo;
-    // F09: la rehidratación sin id explícito se resuelve por nómina, nunca por
-    // el snapshot global del mes (dos nóminas del mismo mes no se contaminan).
-    const completo = idCalculoPeriodo
-      ? await this.motor.obtenerSnapshotCompletoPorId(idCalculoPeriodo)
-      : await this.motor.obtenerSnapshotCompletoActivoDeNomina(nominaPeriodoId);
-
+    const resumen = await this.nominas.obtenerResumenCalculo(nominaPeriodoId);
+    if (!resumen?.idCalculoPeriodo) return null;
+    const completo = await this.motor.obtenerSnapshotCompletoPorId(resumen.idCalculoPeriodo);
     if (!completo) return null;
     return mapSnapshotCompletoToMotorCalculoPeriodo(completo);
+  }
+
+  /** BKL-09: stats globales del paso Cálculo sin cargar filas. */
+  obtenerResumenCalculo(nominaPeriodoId: string): Promise<ResumenCalculoNomina | null> {
+    return this.nominas.obtenerResumenCalculo(nominaPeriodoId);
+  }
+
+  /** BKL-09: página de filas resumidas desde snapshot persistido. */
+  listarFilasCalculoPaginado(
+    nominaPeriodoId: string,
+    filtro: FiltroCalculoPorTrabajador,
+    paginacion: PaginacionGrilla,
+  ): Promise<{ filas: FilaCalculoTrabajadorListado[]; total: number }> {
+    return this.nominas.listarCalculoTrabajadoresPaginado(nominaPeriodoId, filtro, paginacion);
+  }
+
+  /** BKL-09: detalle expandible/preview de un trabajador (conceptos + issues). */
+  async obtenerDetalleTrabajadorCalculo(
+    idCalculoTrabajador: number,
+    periodo: string,
+  ): Promise<{ trabajador: NominaCalculoTrabajadorSnapshot; liquidacion: ReturnType<typeof mapTrabajadorSnapshotToLiquidacion> } | null> {
+    const trabajador = await this.snapshotRepo.obtenerTrabajadorCalculoDetalle(idCalculoTrabajador);
+    if (!trabajador) return null;
+    return {
+      trabajador,
+      liquidacion: mapTrabajadorSnapshotToLiquidacion(trabajador, periodo),
+    };
   }
 }

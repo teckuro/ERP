@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 
 import { mapResultadoMotorToSnapshotPayload } from '../rules/proceso-mensual-snapshot.rules';
+import { NominaCalculoSnapshotRepository } from '../data-access/nomina-calculo-snapshot.repository';
 import { NominaPeriodoService } from './nomina-periodo.service';
 import { ProcesoMensualService } from './proceso-mensual.service';
 import { NominaPeriodoCalculoAdapterService } from './nomina-periodo-calculo-adapter.service';
@@ -45,6 +46,7 @@ describe('NominaPeriodoCalculoAdapterService', () => {
         NominaPeriodoCalculoAdapterService,
         { provide: NominaPeriodoService, useValue: nominas },
         { provide: ProcesoMensualService, useValue: motor },
+        { provide: NominaCalculoSnapshotRepository, useValue: {} },
       ],
     });
 
@@ -139,11 +141,7 @@ describe('NominaPeriodoCalculoAdapterService', () => {
       },
     };
     const nominas = {
-      obtenerNomina: vi.fn().mockResolvedValue({
-        id: 'nom-1',
-        periodo: '2026-06',
-        evidenciaCalculo: { calculoVigente: true, idCalculoPeriodo: 77, versionCalculo: 2 },
-      }),
+      obtenerResumenCalculo: vi.fn().mockResolvedValue({ idCalculoPeriodo: 77 }),
     };
     const motor = {
       obtenerSnapshotCompletoPorId: vi.fn().mockResolvedValue(completo),
@@ -155,6 +153,7 @@ describe('NominaPeriodoCalculoAdapterService', () => {
         NominaPeriodoCalculoAdapterService,
         { provide: NominaPeriodoService, useValue: nominas },
         { provide: ProcesoMensualService, useValue: motor },
+        { provide: NominaCalculoSnapshotRepository, useValue: {} },
       ],
     });
 
@@ -162,22 +161,16 @@ describe('NominaPeriodoCalculoAdapterService', () => {
     const resultado = await servicio.obtenerResultadoPersistido('nom-1');
 
     expect(motor.obtenerSnapshotCompletoPorId).toHaveBeenCalledWith(77);
-    expect(motor.obtenerSnapshotCompletoActivoDeNomina).not.toHaveBeenCalled();
     expect(resultado?.liquidaciones[0].liquidoAPago).toBe(800000);
   });
 
-  it('sin idCalculoPeriodo rehidrata por nómina, nunca por el mes global (F09)', async () => {
+  it('sin id de cálculo vigente no rehidrata resultado completo', async () => {
     const nominas = {
-      obtenerNomina: vi.fn().mockResolvedValue({
-        id: 'nom-1',
-        periodo: '2026-06',
-        evidenciaCalculo: { calculoVigente: true, idCalculoPeriodo: null, versionCalculo: 1 },
-      }),
+      obtenerResumenCalculo: vi.fn().mockResolvedValue(null),
     };
     const motor = {
       obtenerSnapshotCompletoPorId: vi.fn(),
-      obtenerSnapshotCompletoActivoDeNomina: vi.fn().mockResolvedValue(null),
-      obtenerSnapshotCompletoActivo: vi.fn(),
+      obtenerSnapshotCompletoActivoDeNomina: vi.fn(),
     };
 
     TestBed.resetTestingModule();
@@ -186,14 +179,15 @@ describe('NominaPeriodoCalculoAdapterService', () => {
         NominaPeriodoCalculoAdapterService,
         { provide: NominaPeriodoService, useValue: nominas },
         { provide: ProcesoMensualService, useValue: motor },
+        { provide: NominaCalculoSnapshotRepository, useValue: {} },
       ],
     });
 
     const servicio = TestBed.inject(NominaPeriodoCalculoAdapterService);
     const resultado = await servicio.obtenerResultadoPersistido('nom-1');
 
-    expect(motor.obtenerSnapshotCompletoActivoDeNomina).toHaveBeenCalledWith('nom-1');
-    expect(motor.obtenerSnapshotCompletoActivo).not.toHaveBeenCalled();
+    expect(motor.obtenerSnapshotCompletoPorId).not.toHaveBeenCalled();
+    expect(motor.obtenerSnapshotCompletoActivoDeNomina).not.toHaveBeenCalled();
     expect(resultado).toBeNull();
   });
 });

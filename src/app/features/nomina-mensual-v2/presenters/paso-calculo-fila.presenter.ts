@@ -17,7 +17,9 @@ import type {
   DataGridColumn,
   DataGridFilter,
   DataGridFilterValue,
+  DataGridServerQuery,
 } from '../../../shared/components/ui/data-grid/data-grid.types';
+import type { FilaCalculoTrabajadorListado, ResumenCalculoNomina } from '../../nomina-mensual/models/nomina-periodo.models';
 import type {
   LineaLiquidacionCalculada,
   LiquidacionCalculada,
@@ -102,7 +104,10 @@ export interface FilaCalculoTrabajador {
   cuentaIssues: number;
 
   /** Referencia inmutable a la liquidación cruda para el modal de preview. */
-  origen: LiquidacionCalculada;
+  origen?: LiquidacionCalculada;
+  /** BKL-09: fila resumida sin desglose hasta expandir o abrir preview. */
+  detalleCargado?: boolean;
+  idCalculoTrabajador?: number;
 }
 
 /**
@@ -140,6 +145,79 @@ export function calcularStatsCalculo(
     stats.totalLiquido += liq.liquidoAPago;
   }
   return stats;
+}
+
+/** BKL-09: stats desde cabecera persistida (sin liquidaciones en memoria). */
+export function statsDesdeResumenCalculo(resumen: ResumenCalculoNomina | null): StatsCalculoCabecera {
+  if (!resumen) {
+    return {
+      trabajadoresCalculados: 0,
+      totalHaberes: 0,
+      totalDescuentos: 0,
+      totalLiquido: 0,
+      conAdvertencias: 0,
+      conBloqueos: 0,
+    };
+  }
+  return {
+    trabajadoresCalculados: resumen.trabajadoresCalculados,
+    totalHaberes: resumen.totalHaberes,
+    totalDescuentos: resumen.totalDescuentos,
+    totalLiquido: resumen.totalLiquido,
+    conAdvertencias: resumen.conAdvertencias,
+    conBloqueos: resumen.conBloqueos,
+  };
+}
+
+export function presentarFilaCalculoListado(fila: FilaCalculoTrabajadorListado): FilaCalculoTrabajador {
+  const estadoMotor = fila.estado as MotorCalculoEstadoTrabajador;
+  const tieneBloqueos = estadoMotor === 'con_bloqueos';
+  const tieneAdvertencias = estadoMotor === 'con_advertencias';
+  return {
+    trabajadorId: fila.trabajadorId,
+    idPersona: fila.idPersona,
+    rut: fila.rut,
+    nombre: fila.nombre,
+    afp: null,
+    salud: null,
+    tipoContrato: null,
+    sueldoBase: fila.sueldoBase,
+    totalHaberes: fila.totalHaberes,
+    totalDescuentos: fila.totalDescuentos,
+    liquidoAPago: fila.liquidoAPago,
+    bases: {
+      baseImponiblePrevisional: fila.baseImponiblePrevisional,
+      baseTributable: fila.baseTributable,
+    },
+    haberes: [],
+    descuentosLegales: [],
+    descuentosVoluntarios: [],
+    cargosEmpleador: {
+      sis: fila.cotizacionSis,
+      sanna: fila.cotizacionSanna,
+      ley16744: fila.cotizacionLey16744,
+    },
+    estado: presentarEstadoChip(estadoMotor),
+    tieneAdvertencias,
+    tieneBloqueos,
+    cuentaIssues: fila.cuentaIssues,
+    detalleCargado: fila.detalleCargado,
+    idCalculoTrabajador: fila.idCalculoTrabajador,
+  };
+}
+
+export function filtroCalculoDesdeGrid(
+  filterValues: DataGridServerQuery['filterValues'],
+): { busqueda?: string; estado?: string } {
+  const busquedaRaw = filterValues['busqueda'];
+  const estadoRaw = filterValues['estado'];
+  const busqueda =
+    typeof busquedaRaw === 'string' && busquedaRaw.trim().length > 0
+      ? busquedaRaw.trim()
+      : undefined;
+  const estado =
+    typeof estadoRaw === 'string' && estadoRaw.length > 0 ? estadoRaw : undefined;
+  return { busqueda, estado };
 }
 
 // -----------------------------------------------------------------------------

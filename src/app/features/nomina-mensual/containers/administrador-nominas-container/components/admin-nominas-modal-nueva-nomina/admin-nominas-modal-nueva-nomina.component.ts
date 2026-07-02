@@ -34,6 +34,8 @@ import type {
   ConfirmarCreacionResultado,
   NominaCreatePreview,
   SiguientePasoCreacion,
+  TrabajadorExcluidoPreview,
+  TrabajadorIncluidoPreview,
 } from '../../../../models/nomina-creacion-preview.models';
 
 interface OpcionEmpresa {
@@ -109,6 +111,15 @@ export class AdminNominasModalNuevaNominaComponent {
   readonly guardando = signal(false);
   readonly error = signal<string | null>(null);
 
+  /** BKL-10: filas paginadas de la pestaña activa (incluidos/excluidos). */
+  readonly filasPreviewPagina = signal<
+    readonly (TrabajadorIncluidoPreview | TrabajadorExcluidoPreview)[]
+  >([]);
+  readonly totalPreviewTab = signal(0);
+  readonly paginaPreview = signal(1);
+  readonly pageSizePreview = signal(50);
+  readonly cargandoTabPreview = signal(false);
+
   readonly empresas = computed<OpcionEmpresa[]>(() => {
     const fuente = this.empresasDisponibles();
     const mapa = new Map<string, string>();
@@ -161,14 +172,27 @@ export class AdminNominasModalNuevaNominaComponent {
   readonly filasTabActiva = computed(() => {
     const p = this.preview();
     if (!p) return [];
-    switch (this.tabActiva()) {
-      case 'incluidos':
-        return p.incluidos;
-      case 'excluidos':
-        return p.excluidos;
-      case 'conflictos':
-        return p.conflictos;
-    }
+    if (this.tabActiva() === 'conflictos') return p.conflictos;
+    return this.filasPreviewPagina();
+  });
+
+  readonly totalPaginasPreview = computed(() => {
+    const total = this.totalPreviewTab();
+    const size = this.pageSizePreview();
+    return total > 0 ? Math.ceil(total / size) : 1;
+  });
+
+  readonly rangoPreviewVisible = computed(() => {
+    const total = this.totalPreviewTab();
+    if (total === 0) return '0';
+    const inicio = (this.paginaPreview() - 1) * this.pageSizePreview() + 1;
+    const fin = Math.min(this.paginaPreview() * this.pageSizePreview(), total);
+    return `${inicio}–${fin} de ${total}`;
+  });
+
+  readonly tabUsaPaginacion = computed(() => {
+    const tab = this.tabActiva();
+    return tab === 'incluidos' || tab === 'excluidos';
   });
 
   constructor() {
@@ -205,11 +229,21 @@ export class AdminNominasModalNuevaNominaComponent {
 
   setTab(valor: TabPreview): void {
     this.tabActiva.set(valor);
+    this.paginaPreview.set(1);
+    if (valor === 'incluidos' || valor === 'excluidos') {
+      void this.cargarPaginaPreview();
+    } else {
+      this.filasPreviewPagina.set([]);
+      this.totalPreviewTab.set(0);
+    }
   }
 
   volverAConfiguracion(): void {
     this.paso.set('configuracion');
     this.preview.set(null);
+    this.filasPreviewPagina.set([]);
+    this.totalPreviewTab.set(0);
+    this.paginaPreview.set(1);
     this.error.set(null);
   }
 
@@ -239,17 +273,58 @@ export class AdminNominasModalNuevaNominaComponent {
       });
       this.preview.set(preview);
       this.paso.set('preview');
-      const tabSugerida: TabPreview = preview.conflictos.length > 0
+      const tabSugerida: TabPreview = preview.totales.conflictos > 0
         ? 'conflictos'
-        : preview.incluidos.length === 0 && preview.excluidos.length > 0
+        : preview.totales.incluidos === 0 && preview.totales.excluidos > 0
           ? 'excluidos'
           : 'incluidos';
       this.tabActiva.set(tabSugerida);
+      this.paginaPreview.set(1);
+      if (tabSugerida === 'incluidos' || tabSugerida === 'excluidos') {
+        await this.cargarPaginaPreview();
+      }
     } catch (err) {
       const mensaje = err instanceof Error ? err.message : 'No fue posible generar la vista previa.';
       this.error.set(mensaje);
     } finally {
       this.cargandoPreview.set(false);
+    }
+  }
+
+  irPaginaPreviewAnterior(): void {
+    if (this.paginaPreview() <= 1 || this.cargandoTabPreview()) return;
+    this.paginaPreview.update((p) => p - 1);
+    void this.cargarPaginaPreview();
+  }
+
+  irPaginaPreviewSiguiente(): void {
+    if (this.paginaPreview() >= this.totalPaginasPreview() || this.cargandoTabPreview()) return;
+    this.paginaPreview.update((p) => p + 1);
+    void this.cargarPaginaPreview();
+  }
+
+  private async cargarPaginaPreview(): Promise<void> {
+    const tab = this.tabActiva();
+    if (tab !== 'incluidos' && tab !== 'excluidos') return;
+    this.cargandoTabPreview.set(true);
+    try {
+      const pagina = await this.servicio.listarPreviewCreacionTrabajadores(
+        this.periodo(),
+        this.tipo(),
+        tab,
+        {
+          page: this.paginaPreview(),
+          pageSize: this.pageSizePreview(),
+          total: 0,
+        },
+      );
+      this.filasPreviewPagina.set(pagina.filas);
+      this.totalPreviewTab.set(pagina.total);
+    } catch (err) {
+      const mensaje = err instanceof Error ? err.message : 'No fue posible cargar la lista.';
+      this.error.set(mensaje);
+    } finally {
+      this.cargandoTabPreview.set(false);
     }
   }
 

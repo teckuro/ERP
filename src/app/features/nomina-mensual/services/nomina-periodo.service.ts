@@ -41,6 +41,9 @@ import type {
   PaginacionGrilla,
   ResumenTrabajadoresElegiblesNomina,
   ResumenValidacionNomina,
+  FiltroCalculoPorTrabajador,
+  FilaCalculoTrabajadorListado,
+  ResumenCalculoNomina,
   SegmentoNomina,
   SegmentoNominaNuevo,
   TipoNomina,
@@ -51,6 +54,9 @@ import type {
   ConfirmarCreacionResultado,
   NominaCreatePreview,
   NominaCreatePreviewRequest,
+  ClasificacionPreviewCreacion,
+  TrabajadorExcluidoPreview,
+  TrabajadorIncluidoPreview,
 } from '../models/nomina-creacion-preview.models';
 import type {
   AccionMasivaTrabajadores,
@@ -173,6 +179,27 @@ export class NominaPeriodoService {
   ): Promise<NominaCreatePreview> {
     this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
     return this.repo.previsualizarCreacion(request);
+  }
+
+  /** BKL-10: página de trabajadores incluidos/excluidos del preview F04. */
+  async listarPreviewCreacionTrabajadores(
+    periodo: string,
+    tipo: TipoNomina,
+    clasificacion: ClasificacionPreviewCreacion,
+    paginacion: PaginacionGrilla,
+    busqueda?: string,
+  ): Promise<{
+    filas: TrabajadorIncluidoPreview[] | TrabajadorExcluidoPreview[];
+    total: number;
+  }> {
+    this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
+    return this.repo.listarPreviewCreacionTrabajadores(
+      periodo,
+      tipo,
+      clasificacion,
+      paginacion,
+      busqueda,
+    );
   }
 
   /**
@@ -827,6 +854,22 @@ export class NominaPeriodoService {
     nominaPeriodoId: string,
   ): Promise<ResumenMovimientosNomina> {
     return this.repo.obtenerResumenMovimientos(nominaPeriodoId);
+  }
+
+  /** BKL-09: stats globales del paso Cálculo sin cargar filas. */
+  async obtenerResumenCalculo(
+    nominaPeriodoId: string,
+  ): Promise<ResumenCalculoNomina | null> {
+    return this.repo.obtenerResumenCalculo(nominaPeriodoId);
+  }
+
+  /** BKL-09: página de filas resumidas del paso Cálculo. */
+  async listarCalculoTrabajadoresPaginado(
+    nominaPeriodoId: string,
+    filtro: FiltroCalculoPorTrabajador,
+    paginacion: PaginacionGrilla,
+  ): Promise<{ filas: FilaCalculoTrabajadorListado[]; total: number }> {
+    return this.repo.listarCalculoTrabajadoresPaginado(nominaPeriodoId, filtro, paginacion);
   }
 
   /**

@@ -43,7 +43,7 @@ describe('admin-nominas-auditoria.presenter — etiquetas y mapper', () => {
   it('Test 2 — mapearHistorialAdministrativo ordena desc por createdAt y resuelve usuario actual', () => {
     const eventos = [
       eventoMock({ id: 'a', createdAt: '2026-06-10T10:00:00Z', usuarioId: 'u-self' }),
-      eventoMock({ id: 'b', createdAt: '2026-06-11T11:00:00Z', usuarioId: 'u-other' }),
+      eventoMock({ id: 'b', createdAt: '2026-06-11T11:00:00Z', usuarioId: 'u-other', usuarioNombre: 'Pedro Ríos' }),
       eventoMock({
         id: 'c',
         createdAt: '2026-06-12T09:00:00Z',
@@ -55,7 +55,7 @@ describe('admin-nominas-auditoria.presenter — etiquetas y mapper', () => {
     const filas = mapearHistorialAdministrativo(eventos, resolver);
     expect(filas.map((f) => f.id)).toEqual(['c', 'b', 'a']);
     expect(filas[2].usuario).toBe('María Soto');
-    expect(filas[1].usuario).toBe('Usuario no informado');
+    expect(filas[1].usuario).toBe('Pedro Ríos');
     expect(filas[0].motivo).toBe('Corrección de movimientos');
     expect(filas[2].motivo).toBeNull();
   });

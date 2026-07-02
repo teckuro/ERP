@@ -1,5 +1,5 @@
 <section class="paso-calc" aria-labelledby="paso-calc-title">
-  @if (cargando() && !resultado()) {
+  @if (cargando() && !calculoDisponible()) {
     <app-workspace-loading
       [fill]="true"
       title="Procesando cálculo"
@@ -56,7 +56,7 @@
           [disabled]="!puedeCalcular()"
           [attr.title]="
             puedeCalcular()
-              ? resultado()
+              ? calculoDisponible()
                 ? 'Vuelve a procesar el cálculo con los datos actuales.'
                 : 'Procesa el cálculo del período.'
               : 'Resuelve los bloqueos de pre-validación para poder calcular.'
@@ -92,14 +92,14 @@
   }
 
   @if (preValidacion(); as valid) {
-    @if (!resultado() && !valid.puedeCalcular) {
+    @if (!calculoDisponible() && !valid.puedeCalcular) {
       <p class="paso-calc__bloqueo" role="alert">
         Resuelve los críticos en dotación antes de calcular.
       </p>
     }
   }
 
-  @if (!resultado() && !cargando()) {
+  @if (!calculoDisponible() && !cargando()) {
     <div class="paso-calc__vacio" role="status">
       <p class="paso-calc__vacio-title">Aún no has procesado el cálculo</p>
       <p class="paso-calc__vacio-desc">
@@ -107,7 +107,7 @@
         el período y ver el desglose por trabajador.
       </p>
     </div>
-  } @else if (resultado()) {
+  } @else if (calculoDisponible()) {
     <div class="paso-calc__grid-wrapper">
       <app-data-grid
         [columns]="columnas"
@@ -116,7 +116,11 @@
         [filtersEnabled]="true"
         [filtersCollapsible]="false"
         [filterChipsDisplay]="'always'"
-        [maxItems]="25"
+        [serverSide]="true"
+        [totalRowCount]="totalFiltrado()"
+        [maxItems]="pageSize()"
+        (serverQueryChange)="manejarConsultaServidor($event)"
+        (rowExpandToggle)="manejarExpansionFila($event)"
         [persistenceKey]="persistenceKey"
         [expandableRows]="true"
         [expandAnchorColumnId]="'trabajador'"
@@ -132,6 +136,8 @@
         cardClassName="paso-calc__data-grid-card"
         emptyTitle="Sin trabajadores con cálculo"
         emptyDescription="Ajusta los filtros o vuelve a recalcular el período."
+        emptyTitleWhenFiltered="Sin trabajadores que coincidan con el filtro"
+        emptyDescriptionWhenFiltered="Ajusta los filtros para ver más trabajadores calculados."
         headerCountNoun="trabajadores"
         [headerCountDisplay]="'text'"
         [headerShowActiveFiltersCount]="true"
@@ -216,6 +222,9 @@
 
         <ng-template appDataGridRowDetail let-fila let-collapse="collapse">
           <div class="paso-calc__detalle">
+            @if (estaCargandoDetalleFila(fila.trabajadorId)) {
+              <p class="paso-calc__placeholder">Cargando desglose…</p>
+            } @else {
             <header class="paso-calc__detalle-head">
               <div class="paso-calc__detalle-head-info">
                 <strong class="paso-calc__detalle-head-nombre">{{ fila.nombre }}</strong>
@@ -363,6 +372,7 @@
                 ${{ fila.liquidoAPago | number: '1.0-0' }}
               </strong>
             </footer>
+            }
           </div>
         </ng-template>
       </app-data-grid>
@@ -370,9 +380,13 @@
   }
 
   <footer class="paso-calc__footer" aria-live="polite">
-    @if (resultado(); as r) {
+    @if (calculoDisponible()) {
       <span class="paso-calc__footer-hint">
-        Cálculo generado el {{ r.generadoEn | date: 'dd-MM-yyyy HH:mm' }}
+        @if (nomina()?.evidenciaCalculo?.calculadoAt; as fecha) {
+          Cálculo generado el {{ fecha | date: 'dd-MM-yyyy HH:mm' }}
+        } @else {
+          Cálculo vigente registrado
+        }
         · Para continuar, usa la acción principal del shell.
       </span>
     } @else {

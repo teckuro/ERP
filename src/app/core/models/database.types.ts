@@ -6556,6 +6556,85 @@ export type Database = {
           trabajadores_con_pendientes: number
         }[]
       }
+      resumen_calculo_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          con_advertencias: number
+          con_bloqueos: number
+          id_calculo_periodo: number
+          total_descuentos: number
+          total_haberes: number
+          total_liquido: number
+          trabajadores_calculados: number
+        }[]
+      }
+      listar_calculo_trabajadores_nomina: {
+        Args: {
+          p_busqueda?: string
+          p_estado?: string
+          p_nomina_id: string
+          p_page?: number
+          p_page_size?: number
+        }
+        Returns: {
+          base_imponible_previsional: number
+          base_tributable: number
+          cotizacion_ley_16744_empleador: number
+          cotizacion_sanna: number
+          cotizacion_sis: number
+          cuenta_issues: number
+          estado: string
+          id_calculo_trabajador: number
+          id_persona: number
+          liquido_preliminar: number
+          nombre: string
+          rut: string
+          sueldo_base: number
+          total_count: number
+          total_descuentos: number
+          total_haberes: number
+        }[]
+      }
+      listar_preview_creacion_trabajadores: {
+        Args: {
+          p_busqueda?: string
+          p_clasificacion?: string
+          p_page?: number
+          p_page_size?: number
+          p_periodo: string
+          p_tipo?: string
+        }
+        Returns: {
+          cargo: string
+          id_persona: number
+          motivo: string
+          motivo_humano: string
+          nombre: string
+          rut: string
+          total_count: number
+        }[]
+      }
+      listar_eventos_auditoria_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          accion: string
+          created_at: string
+          estado_nuevo: string
+          estado_previo: string
+          id: string
+          id_nomina_periodo: string
+          id_usuario: string
+          motivo: string
+          payload: Json
+          usuario_nombre: string
+          version_estado_esperada: number
+          version_estado_resultante: number
+        }[]
+      }
+      erp_etiqueta_usuario: {
+        Args: { p_id: string }
+        Returns: string
+      }
       listar_ids_dotacion_nomina: {
         Args: {
           p_busqueda?: string

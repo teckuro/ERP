@@ -184,7 +184,9 @@ de F09; no tipos no mensuales antes de F10/F11; no permisos solo en UI.
 | BKL-05 | **Cerrado** | 2026-07-02 | **SEG-01b (Angular):** `ErpPermisosRemuneracionesService` + rules + guards; `NominaMensualCapabilitiesService` delega (admin solo `app_metadata`, sin gate `modoPruebas`); bloqueos en `NominaPeriodoService` (eliminar/reabrir/cerrar/recarga params/escritura); UI admin + paso cierre + shell Generador V2; tests 111+ en specs del alcance. RPC F15b queda en BKL-06. |
 | BKL-07 | **Cerrado** | 2026-07-02 | `EmpresaActivaService` sin fallback a primera empresa (motivo visible si falta `id_empresa` en JWT); sidebar usa etiqueta de rol desde `ErpPermisosRemuneracionesService`; migración `20260702180000_bkl07_revoke_anon_identity_helpers.sql` revoca `execute` de `current_user_id`/`current_user_empresa_id` a `anon`. Admin rol desde `app_metadata` ya cubierto en BKL-05. |
 | BKL-08 | **Cerrado núcleo** | 2026-07-02 | E2E incremental en `tests/nominas-admin-generador.e2e.spec.ts` + helper versionado: aislamiento al alternar 2 nóminas del mismo período (F06/F09) y paginación server-side en dotación (`E2E_NOMINA_DOTACION_MIN`); script `npm run test:e2e:nominas`. Matriz F20 completa queda en fase F20. |
-| BKL-06…BKL-11 | Pendiente | — | — |
+| BKL-09 | **Cerrado** | 2026-07-02 | Migración `20260702190000_nomina_bkl09_bkl10_escala.sql`: RPCs `listar_calculo_trabajadores_nomina` + `resumen_calculo_nomina`. Paso Cálculo server-side (25/página); desglose y preview lazy desde snapshot; stats desde cabecera sin liquidaciones en memoria. |
+| BKL-10 | **Cerrado** | 2026-07-02 | Misma migración: F04 sin arrays masivos + `listar_preview_creacion_trabajadores`; modal nueva nómina paginado; `listar_eventos_auditoria_nomina` + `erp_etiqueta_usuario` resuelve nombre humano en historial. |
+| BKL-06, BKL-11 | Pendiente | — | — |
 
 Al cerrar un ítem: actualizar esta tabla, el documento de fase correspondiente y
 [`estado-fases/nomina-mensual.md`](../orquestador/estado-fases/nomina-mensual.md).

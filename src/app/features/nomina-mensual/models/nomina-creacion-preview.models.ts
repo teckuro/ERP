@@ -68,6 +68,15 @@ export interface NominaCreatePreview {
   puedeCrear: boolean;
   fingerprint: string;
   generadoEn: string;
+  /** Cuando true, incluidos/excluidos se cargan vía RPC paginada (BKL-10). */
+  detallePaginado?: boolean;
+}
+
+export type ClasificacionPreviewCreacion = 'incluidos' | 'excluidos';
+
+export interface PreviewCreacionTrabajadoresPagina {
+  filas: TrabajadorIncluidoPreview[] | TrabajadorExcluidoPreview[];
+  total: number;
 }
 
 export interface ConfirmarCreacionRequest {

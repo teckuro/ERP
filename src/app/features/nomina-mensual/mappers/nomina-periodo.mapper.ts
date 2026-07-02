@@ -367,6 +367,27 @@ export function rowToEventoAuditoria(row: EventoAuditoriaNominaRow): EventoAudit
   };
 }
 
+/** Fila enriquecida de `listar_eventos_auditoria_nomina` (BKL-10). */
+export function rowRpcToEventoAuditoria(row: {
+  id: string;
+  id_nomina_periodo: string;
+  accion: string;
+  id_usuario: string | null;
+  usuario_nombre: string | null;
+  motivo: string | null;
+  created_at: string;
+}): EventoAuditoriaNomina {
+  return {
+    id: row.id,
+    nominaPeriodoId: row.id_nomina_periodo,
+    accion: row.accion as EventoAuditoriaNomina['accion'],
+    usuarioId: row.id_usuario ?? undefined,
+    usuarioNombre: row.usuario_nombre ?? undefined,
+    motivo: row.motivo ?? undefined,
+    createdAt: row.created_at,
+  };
+}
+
 export function eventoAuditoriaToInsert(
   evento: Omit<EventoAuditoriaNomina, 'id' | 'createdAt'>,
 ): EventoAuditoriaNominaInsert {

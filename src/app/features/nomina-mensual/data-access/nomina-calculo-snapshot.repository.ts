@@ -278,6 +278,46 @@ export class NominaCalculoSnapshotRepository {
   }
 
   /**
+   * BKL-09: detalle expandible/preview de un trabajador desde snapshot persistido.
+   */
+  async obtenerTrabajadorCalculoDetalle(
+    idCalculoTrabajador: number,
+  ): Promise<NominaCalculoTrabajadorSnapshot | null> {
+    const { data, error } = await this.supabase
+      .from('nomina_calculo_trabajador')
+      .select('*')
+      .eq('id_calculo_trabajador', idCalculoTrabajador)
+      .maybeSingle();
+    if (error) {
+      throw new Error(`No fue posible consultar el trabajador del cálculo: ${error.message}`);
+    }
+    if (!data) return null;
+
+    const trabajador = mapTrabajadorCompletoRow(data);
+    const [conceptos, issues] = await Promise.all([
+      this.obtenerConceptosSnapshot([idCalculoTrabajador]),
+      this.obtenerIssuesTrabajador(idCalculoTrabajador),
+    ]);
+    trabajador.conceptos = conceptos;
+    trabajador.issues = issues;
+    return trabajador;
+  }
+
+  private async obtenerIssuesTrabajador(
+    idCalculoTrabajador: number,
+  ): Promise<NominaCalculoIssueSnapshot[]> {
+    const { data, error } = await this.supabase
+      .from('nomina_calculo_issue')
+      .select('*')
+      .eq('id_calculo_trabajador', idCalculoTrabajador)
+      .order('severidad', { ascending: true });
+    if (error) {
+      throw new Error(`No fue posible consultar observaciones del trabajador: ${error.message}`);
+    }
+    return (data ?? []).map(mapIssueCompletoRow);
+  }
+
+  /**
    * Persiste snapshot base de parámetros sin reemplazar snapshot preliminar de cálculo activo.
    */
   async guardarSnapshotParametrosBase(

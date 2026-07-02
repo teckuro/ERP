@@ -182,41 +182,88 @@
         </div>
 
         <div class="adm-nom-modal__lista" role="tabpanel">
+          @if (tabUsaPaginacion() && cargandoTabPreview()) {
+            <p class="adm-nom-modal__vacio">Cargando trabajadores…</p>
+          }
           @switch (tabActiva()) {
             @case ('incluidos') {
-              @if (preview.incluidos.length === 0) {
+              @if (preview.totales.incluidos === 0) {
                 <p class="adm-nom-modal__vacio">No hay trabajadores que cumplan los criterios.</p>
-              } @else {
+              } @else if (!cargandoTabPreview()) {
                 <ul class="adm-nom-modal__lista-items">
-                  @for (fila of preview.incluidos; track fila.idPersona) {
+                  @for (fila of filasPreviewPagina(); track fila.idPersona) {
                     <li class="adm-nom-modal__lista-item">
                       <div class="adm-nom-modal__lista-principal">
                         <strong>{{ fila.nombre }}</strong>
                         <span class="adm-nom-modal__lista-meta">{{ fila.rut }}</span>
                       </div>
-                      @if (fila.cargo) {
+                      @if ('cargo' in fila && fila.cargo) {
                         <span class="adm-nom-modal__lista-aux">{{ fila.cargo }}</span>
                       }
                     </li>
                   }
                 </ul>
+                @if (totalPaginasPreview() > 1) {
+                  <nav class="adm-nom-modal__paginacion" aria-label="Paginación de incluidos">
+                    <button
+                      type="button"
+                      class="adm-nom-modal__btn"
+                      (click)="irPaginaPreviewAnterior()"
+                      [disabled]="paginaPreview() <= 1"
+                    >
+                      Anterior
+                    </button>
+                    <span class="adm-nom-modal__paginacion-info">{{ rangoPreviewVisible() }}</span>
+                    <button
+                      type="button"
+                      class="adm-nom-modal__btn"
+                      (click)="irPaginaPreviewSiguiente()"
+                      [disabled]="paginaPreview() >= totalPaginasPreview()"
+                    >
+                      Siguiente
+                    </button>
+                  </nav>
+                }
               }
             }
             @case ('excluidos') {
-              @if (preview.excluidos.length === 0) {
+              @if (preview.totales.excluidos === 0) {
                 <p class="adm-nom-modal__vacio">Sin exclusiones registradas.</p>
-              } @else {
+              } @else if (!cargandoTabPreview()) {
                 <ul class="adm-nom-modal__lista-items">
-                  @for (fila of preview.excluidos; track fila.idPersona) {
+                  @for (fila of filasPreviewPagina(); track fila.idPersona) {
                     <li class="adm-nom-modal__lista-item">
                       <div class="adm-nom-modal__lista-principal">
                         <strong>{{ fila.nombre }}</strong>
                         <span class="adm-nom-modal__lista-meta">{{ fila.rut }}</span>
                       </div>
-                      <span class="adm-nom-modal__lista-motivo">{{ fila.motivoHumano }}</span>
+                      @if ('motivoHumano' in fila) {
+                        <span class="adm-nom-modal__lista-motivo">{{ fila.motivoHumano }}</span>
+                      }
                     </li>
                   }
                 </ul>
+                @if (totalPaginasPreview() > 1) {
+                  <nav class="adm-nom-modal__paginacion" aria-label="Paginación de excluidos">
+                    <button
+                      type="button"
+                      class="adm-nom-modal__btn"
+                      (click)="irPaginaPreviewAnterior()"
+                      [disabled]="paginaPreview() <= 1"
+                    >
+                      Anterior
+                    </button>
+                    <span class="adm-nom-modal__paginacion-info">{{ rangoPreviewVisible() }}</span>
+                    <button
+                      type="button"
+                      class="adm-nom-modal__btn"
+                      (click)="irPaginaPreviewSiguiente()"
+                      [disabled]="paginaPreview() >= totalPaginasPreview()"
+                    >
+                      Siguiente
+                    </button>
+                  </nav>
+                }
               }
             }
             @case ('conflictos') {

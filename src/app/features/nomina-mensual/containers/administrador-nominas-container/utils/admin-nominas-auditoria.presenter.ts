@@ -86,7 +86,10 @@ export function mapearHistorialAdministrativo(
   // porque `eventos` puede venir como signal readonly y no podemos mutarlo.
   const ordenados = [...eventos].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   return ordenados.map<FilaHistorialAdministrativo>((evento) => {
-    const usuarioResuelto = usuarioLabelResolver?.(evento.usuarioId) ?? null;
+    const usuarioResuelto =
+      evento.usuarioNombre?.trim()
+      || usuarioLabelResolver?.(evento.usuarioId)
+      || null;
     const usuario = usuarioResuelto && usuarioResuelto.trim().length > 0
       ? usuarioResuelto
       : 'Usuario no informado';

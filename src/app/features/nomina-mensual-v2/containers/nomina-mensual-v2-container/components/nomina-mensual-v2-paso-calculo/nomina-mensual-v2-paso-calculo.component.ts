@@ -1,19 +1,9 @@
 /**
  * Paso Cálculo — Generador V2 (rediseño NOIA-CALC-DESGLOSE-01).
  *
- * Orquesta el motor V1 (`ProcesoMensualService.generarCalculoPeriodo` vía el
- * adapter) sobre el período de la nómina activa, y presenta el resultado en
- * una grilla unificada por trabajador con desglose expandible inline y un
- * preview tipo PDF de la liquidación al alcance de un click.
- *
- * No reescribe motor: orquesta, persiste snapshot vía adapter al generar y
- * rehidrata el resultado guardado al volver al paso si `evidenciaCalculo`
- * sigue vigente. Registra auditoría en `evento_auditoria_nomina` vía
- * `NominaPeriodoService` y mapea las `LiquidacionCalculada` a viewmodel local
- * con `presentarFilaCalculo`.
- *
- * Antes de calcular, evalúa `obtenerResumenValidacionNomina` y bloquea
- * la ejecución si hay incidencias bloqueantes.
+ * Orquesta el motor V1 vía adapter, persiste snapshot al generar y presenta
+ * resultados paginados server-side desde BD (BKL-09). El desglose expandible
+ * y la previsualización PDF cargan el detalle del trabajador bajo demanda.
  */
 
 import { CommonModule } from '@angular/common';
@@ -29,11 +19,13 @@ import {
 } from '@angular/core';
 
 import type {
-  MotorCalculoPeriodoResultado,
   LiquidacionCalculada,
+  MotorCalculoPeriodoResultado,
 } from '../../../../../nomina-mensual/models/proceso-mensual.model';
 import type {
+  FiltroCalculoPorTrabajador,
   NominaPeriodo,
+  ResumenCalculoNomina,
   ResumenValidacionNomina,
 } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
@@ -47,16 +39,19 @@ import {
   DataGridCellDirective,
   DataGridComponent,
   DataGridRowDetailDirective,
+  type DataGridServerQuery,
 } from '../../../../../../shared/components/ui/data-grid';
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import {
-  calcularStatsCalculo,
-  construirFiltrosCalculo,
   COLUMNAS_GRILLA_CALCULO,
-  etiquetaImponibilidad,
   PERSISTENCIA_GRILLA_CALCULO,
+  construirFiltrosCalculo,
+  etiquetaImponibilidad,
+  filtroCalculoDesdeGrid,
   presentarFilaCalculo,
+  presentarFilaCalculoListado,
+  statsDesdeResumenCalculo,
   type FilaCalculoTrabajador,
   type LineaDesgloseCalculo,
   type StatsCalculoCabecera,
@@ -69,6 +64,15 @@ import type {
 import { MENSAJE_CALCULO_NO_VIGENTE, esCalculoNoVigente } from '../../facade/nomina-mensual-v2-navegacion';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 import { NominaMensualV2TrazabilidadService } from '../../../../services/nomina-mensual-v2-trazabilidad.service';
+
+const RESUMEN_CALCULO_VACIO: ResumenCalculoNomina = {
+  trabajadoresCalculados: 0,
+  totalHaberes: 0,
+  totalDescuentos: 0,
+  totalLiquido: 0,
+  conAdvertencias: 0,
+  conBloqueos: 0,
+};
 
 @Component({
   selector: 'app-nomina-mensual-v2-paso-calculo',
@@ -98,16 +102,29 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
 
   readonly nomina = signal<NominaPeriodo | null>(null);
   readonly preValidacion = signal<ResumenValidacionNomina | null>(null);
-  readonly resultado = signal<MotorCalculoPeriodoResultado | null>(null);
+  readonly resumenCalculo = signal<ResumenCalculoNomina | null>(null);
+  readonly filasGrilla = signal<FilaCalculoTrabajador[]>([]);
+  readonly totalFiltrado = signal(0);
+  readonly filtro = signal<FiltroCalculoPorTrabajador>({});
+  readonly pagina = signal(1);
+  readonly pageSize = signal(25);
   readonly calculando = signal(false);
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
 
-  /** Trabajador cuya previsualización tipo PDF está abierta (null = cerrada). */
   readonly filaPreviewAbierta = signal<string | null>(null);
+  readonly liquidacionPreviewCargada = signal<LiquidacionCalculada | null>(null);
+  readonly previewCargando = signal(false);
 
-  /** Hint dismissible en el chevron de la primera fila (persistido en BD). */
   readonly hintExpandVisible = signal(false);
+  readonly detalleCargando = signal<Set<string>>(new Set());
+  private readonly filasExpandidas = new Set<string>();
+
+  readonly calculoDisponible = computed(
+    () =>
+      !!this.nomina()?.evidenciaCalculo?.calculoVigente
+      && (this.resumenCalculo()?.trabajadoresCalculados ?? 0) > 0,
+  );
 
   readonly puedeCalcular = computed(() => {
     if (this.calculando()) return false;
@@ -115,46 +132,17 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
     return !!valid && valid.puedeCalcular;
   });
 
-  readonly puedeAvanzar = computed(() => this.resultado() != null);
+  readonly puedeAvanzar = computed(() => this.calculoDisponible());
 
-  /**
-   * `true` cuando el snapshot persistido en `evidenciaCalculo` dejó de ser
-   * vigente por cambios posteriores (dotación/movimientos). Activa el banner
-   * de advertencia replicado en Validación y Cierre (CAL-INV-05).
-   */
   readonly calculoNoVigente = computed(() => esCalculoNoVigente(this.nomina()?.evidenciaCalculo));
 
   readonly versionCalculo = computed(() => this.nomina()?.evidenciaCalculo?.versionCalculo ?? 0);
 
-  /**
-   * Filas de la grilla, una por trabajador calculado. Ordenadas por defecto
-   * por líquido descendente (los más caros primero, comportamiento operativo
-   * típico de revisión RRHH).
-   */
-  readonly filasGrilla = computed<FilaCalculoTrabajador[]>(() => {
-    const liqs = this.resultado()?.liquidaciones ?? [];
-    return liqs
-      .map((liq) =>
-        presentarFilaCalculo(liq, {
-          afp: inferirAfp(liq),
-          salud: inferirSalud(liq),
-        }),
-      )
-      .sort((a, b) => (b.liquidoAPago ?? 0) - (a.liquidoAPago ?? 0));
-  });
-
   readonly statsCabecera = computed<StatsCalculoCabecera>(() =>
-    calcularStatsCalculo(this.resultado()?.liquidaciones ?? []),
+    statsDesdeResumenCalculo(this.resumenCalculo()),
   );
 
   readonly filtrosGrilla = computed(() => construirFiltrosCalculo(this.filasGrilla()));
-
-  readonly liquidacionPreview = computed<LiquidacionCalculada | null>(() => {
-    const trabajadorId = this.filaPreviewAbierta();
-    if (!trabajadorId) return null;
-    const fila = this.filasGrilla().find((f) => f.trabajadorId === trabajadorId);
-    return fila?.origen ?? null;
-  });
 
   readonly filaPreview = computed<FilaCalculoTrabajador | null>(() => {
     const trabajadorId = this.filaPreviewAbierta();
@@ -162,12 +150,14 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
     return this.filasGrilla().find((f) => f.trabajadorId === trabajadorId) ?? null;
   });
 
+  readonly liquidacionPreview = computed(() => this.liquidacionPreviewCargada());
+
   readonly columnas = COLUMNAS_GRILLA_CALCULO;
   readonly persistenceKey = PERSISTENCIA_GRILLA_CALCULO;
   readonly mensajeCalculoNoVigente = MENSAJE_CALCULO_NO_VIGENTE;
 
   readonly expandHintGrilla = computed(() => {
-    if (!this.resultado()) return null;
+    if (!this.calculoDisponible()) return null;
     return {
       text: 'Abre el desglose de haberes y descuentos de cada trabajador.',
       dismissLabel: 'Entendido',
@@ -179,13 +169,11 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
 
   etiquetaImponibilidad = etiquetaImponibilidad;
 
-  /** Texto del CTA según estado (Calculando… / Recalcular / Calcular nómina). */
   textoCtaCalculo(): string {
     if (this.calculando()) return 'Calculando…';
-    return this.resultado() ? 'Recalcular' : 'Calcular nómina';
+    return this.calculoDisponible() ? 'Recalcular' : 'Calcular nómina';
   }
 
-  /** Suma defensiva de líneas de desglose para el bloque "Bases". */
   totalLineas(lineas: readonly LineaDesgloseCalculo[]): number {
     let total = 0;
     for (const l of lineas) total += l.monto ?? 0;
@@ -195,14 +183,21 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   constructor() {
     effect(() => {
       const id = this.nominaPeriodoId();
-      if (id) void this.cargar(id);
+      if (id) {
+        this.pagina.set(1);
+        this.filtro.set({});
+        this.filasExpandidas.clear();
+        void this.cargar(id);
+      }
     });
   }
 
   private async cargar(nominaPeriodoId: string): Promise<void> {
     this.cargando.set(true);
     this.error.set(null);
-    this.resultado.set(null);
+    this.resumenCalculo.set(null);
+    this.filasGrilla.set([]);
+    this.totalFiltrado.set(0);
     try {
       const [nomina, validacion] = await Promise.all([
         this.servicio.obtenerNomina(nominaPeriodoId),
@@ -211,13 +206,13 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
       this.nomina.set(nomina);
       this.preValidacion.set(validacion);
 
-      const persistido = await this.calculoAdapter.obtenerResultadoPersistido(nominaPeriodoId);
-      if (persistido) {
-        this.resultado.set(persistido);
-      }
-
-      if (this.resultado()) {
-        await this.sincronizarHintExpandDesglose();
+      if (nomina?.evidenciaCalculo?.calculoVigente) {
+        await this.cargarGrilla(true);
+        if (this.calculoDisponible()) {
+          await this.sincronizarHintExpandDesglose();
+        } else {
+          this.hintExpandVisible.set(false);
+        }
       } else {
         this.hintExpandVisible.set(false);
       }
@@ -229,6 +224,99 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
     }
   }
 
+  private async cargarGrilla(refrescarResumen: boolean): Promise<void> {
+    const id = this.nominaPeriodoId();
+    if (!id) return;
+    const paginacion = { page: this.pagina(), pageSize: this.pageSize(), total: 0 };
+    const [pagina, resumen] = await Promise.all([
+      this.calculoAdapter.listarFilasCalculoPaginado(id, this.filtro(), paginacion),
+      refrescarResumen
+        ? this.calculoAdapter.obtenerResumenCalculo(id)
+        : Promise.resolve(this.resumenCalculo()),
+    ]);
+    this.filasGrilla.set(pagina.filas.map((fila) => presentarFilaCalculoListado(fila)));
+    this.totalFiltrado.set(pagina.total);
+    if (refrescarResumen) {
+      this.resumenCalculo.set(resumen ?? RESUMEN_CALCULO_VACIO);
+    }
+    await this.rehidratarFilasExpandidas();
+  }
+
+  async manejarConsultaServidor(consulta: DataGridServerQuery): Promise<void> {
+    this.pagina.set(consulta.page);
+    this.pageSize.set(consulta.pageSize);
+    this.filtro.set(filtroCalculoDesdeGrid(consulta.filterValues));
+    this.cargando.set(true);
+    try {
+      await this.cargarGrilla(false);
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido';
+      this.error.set(`No fue posible cargar el cálculo: ${mensaje}`);
+    } finally {
+      this.cargando.set(false);
+    }
+  }
+
+  async manejarExpansionFila(evento: {
+    row: FilaCalculoTrabajador;
+    expanded: boolean;
+  }): Promise<void> {
+    const trabajadorId = evento.row.trabajadorId;
+    if (!evento.expanded) {
+      this.filasExpandidas.delete(trabajadorId);
+      return;
+    }
+    this.filasExpandidas.add(trabajadorId);
+    if (evento.row.detalleCargado) return;
+    await this.cargarDetalleFila(trabajadorId);
+  }
+
+  estaCargandoDetalleFila(trabajadorId: string): boolean {
+    return this.detalleCargando().has(trabajadorId);
+  }
+
+  private async cargarDetalleFila(trabajadorId: string): Promise<void> {
+    const fila = this.filasGrilla().find((f) => f.trabajadorId === trabajadorId);
+    const periodo = this.nomina()?.periodo;
+    if (!fila?.idCalculoTrabajador || !periodo) return;
+
+    this.detalleCargando.update((s) => new Set(s).add(trabajadorId));
+    try {
+      const detalle = await this.calculoAdapter.obtenerDetalleTrabajadorCalculo(
+        fila.idCalculoTrabajador,
+        periodo,
+      );
+      if (!detalle) return;
+      const filaCompleta = presentarFilaCalculo(detalle.liquidacion, {
+        afp: inferirAfp(detalle.liquidacion),
+        salud: inferirSalud(detalle.liquidacion),
+        sueldoBase: detalle.trabajador.sueldoBase,
+      });
+      this.filasGrilla.update((filas) =>
+        filas.map((f) =>
+          f.trabajadorId === trabajadorId
+            ? { ...filaCompleta, detalleCargado: true, idCalculoTrabajador: fila.idCalculoTrabajador }
+            : f,
+        ),
+      );
+    } finally {
+      this.detalleCargando.update((s) => {
+        const next = new Set(s);
+        next.delete(trabajadorId);
+        return next;
+      });
+    }
+  }
+
+  private async rehidratarFilasExpandidas(): Promise<void> {
+    for (const trabajadorId of this.filasExpandidas) {
+      const fila = this.filasGrilla().find((f) => f.trabajadorId === trabajadorId);
+      if (fila && !fila.detalleCargado) {
+        await this.cargarDetalleFila(trabajadorId);
+      }
+    }
+  }
+
   async calcular(): Promise<void> {
     const nomina = this.nomina();
     if (!nomina) return;
@@ -236,10 +324,12 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
     this.error.set(null);
     try {
       const { resultado } = await this.calculoAdapter.calcular(nomina.id);
-      this.resultado.set(resultado);
-      await this.sincronizarHintExpandDesglose();
       this.nomina.set(await this.servicio.obtenerNomina(nomina.id));
       this.preValidacion.set(await this.servicio.obtenerResumenValidacionNomina(nomina.id));
+      this.pagina.set(1);
+      this.filtro.set({});
+      await this.cargarGrilla(true);
+      await this.sincronizarHintExpandDesglose();
       await this.registrarEventoCalculo(nomina, resultado);
       this.registrarEventoCalculoTrazabilidad(resultado);
       this.nominaCabeceraCambiada.emit();
@@ -278,10 +368,6 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
     }
   }
 
-  /**
-   * Diagnóstico puro de "completitud" del paso. Requiere cálculo procesado y
-   * vigente. Sin side-effects.
-   */
   puedeContinuar(): ResultadoAvancePaso {
     if (this.cargando()) {
       return { ok: false, razon: 'Cargando el resumen de cálculo.' };
@@ -301,11 +387,6 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
     return { ok: true };
   }
 
-  /**
-   * Comando único de avance (AG-NAV-03). Paso navegacional con guard: requiere
-   * un resultado de cálculo vigente. La acción operativa real (`Calcular
-   * nómina`) sigue siendo un botón inline en el cuerpo del paso.
-   */
   async avanzar(): Promise<ResultadoAvancePaso> {
     return this.puedeContinuar();
   }
@@ -321,7 +402,7 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   }
 
   private async sincronizarHintExpandDesglose(): Promise<void> {
-    if (!this.resultado()) {
+    if (!this.calculoDisponible()) {
       this.hintExpandVisible.set(false);
       return;
     }
@@ -335,16 +416,48 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
     }
   }
 
-  /** Abre la previsualización tipo PDF del trabajador indicado. */
-  abrirPreview(fila: FilaCalculoTrabajador): void {
+  async abrirPreview(fila: FilaCalculoTrabajador): Promise<void> {
     this.filaPreviewAbierta.set(fila.trabajadorId);
+    this.liquidacionPreviewCargada.set(fila.origen ?? null);
+    if (fila.origen) return;
+
+    const periodo = this.nomina()?.periodo;
+    if (!fila.idCalculoTrabajador || !periodo) return;
+
+    this.previewCargando.set(true);
+    try {
+      const detalle = await this.calculoAdapter.obtenerDetalleTrabajadorCalculo(
+        fila.idCalculoTrabajador,
+        periodo,
+      );
+      if (detalle) {
+        this.liquidacionPreviewCargada.set(detalle.liquidacion);
+        this.filasGrilla.update((filas) =>
+          filas.map((f) => {
+            if (f.trabajadorId !== fila.trabajadorId) return f;
+            const completa = presentarFilaCalculo(detalle.liquidacion, {
+              afp: inferirAfp(detalle.liquidacion),
+              salud: inferirSalud(detalle.liquidacion),
+              sueldoBase: detalle.trabajador.sueldoBase,
+            });
+            return {
+              ...completa,
+              detalleCargado: true,
+              idCalculoTrabajador: fila.idCalculoTrabajador,
+            };
+          }),
+        );
+      }
+    } finally {
+      this.previewCargando.set(false);
+    }
   }
 
   cerrarPreview(): void {
     this.filaPreviewAbierta.set(null);
+    this.liquidacionPreviewCargada.set(null);
   }
 
-  /** Dispara el diálogo de impresión del navegador para guardar como PDF. */
   imprimirPreview(): void {
     if (typeof window !== 'undefined') {
       window.print();
@@ -352,14 +465,6 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   }
 }
 
-/**
- * Heurística pragmática: extrae el nombre de la AFP desde la descripción del
- * descuento legal (`"Cotizacion AFP <Nombre>"`). Si el motor no entrega el
- * nombre (descripción genérica "Cotizacion AFP trabajador"), devuelve null y
- * la grilla muestra "—". Cuando el container conecte el catálogo de AFPs,
- * podrá inyectar el nombre real vía `presentarFilaCalculo` reemplazando este
- * helper sin tocar el presenter.
- */
 function inferirAfp(liq: LiquidacionCalculada): string | null {
   const linea = liq.descuentosLegales.find((d) => d.codigo === 'AFP');
   if (!linea) return null;

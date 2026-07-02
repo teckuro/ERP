@@ -12,7 +12,41 @@ import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nom
 import { UsuarioPreferenciaUiService } from '../../../../../../core/services/usuario-preferencia-ui.service';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 import { NominaMensualV2TrazabilidadService } from '../../../../services/nomina-mensual-v2-trazabilidad.service';
+import {
+  presentarFilaCalculo,
+} from '../../../../presenters/paso-calculo-fila.presenter';
 import { NominaMensualV2PasoCalculoComponent } from './nomina-mensual-v2-paso-calculo.component';
+
+function seedCalculoEnComponente(
+  cmp: NominaMensualV2PasoCalculoComponent,
+  liquidaciones: LiquidacionCalculada[] = [liquidacionMock()],
+): void {
+  cmp.nomina.set(
+    nominaMock({ evidenciaCalculo: { versionCalculo: 2, calculoVigente: true, idCalculoPeriodo: 55 } }),
+  );
+  const resumen = resultadoMock(liquidaciones).resumen;
+  cmp.resumenCalculo.set({
+    idCalculoPeriodo: 55,
+    trabajadoresCalculados: resumen.totalTrabajadoresCalculados,
+    totalHaberes: resumen.totalHaberes,
+    totalDescuentos: resumen.totalDescuentos,
+    totalLiquido: resumen.totalLiquidoPreliminar,
+    conAdvertencias: resumen.totalConAdvertencias,
+    conBloqueos: resumen.totalBloqueados,
+  });
+  cmp.filasGrilla.set(
+    liquidaciones.map((liq) =>
+      presentarFilaCalculo(liq, {
+        afp: /Cuprum/i.test(liq.descuentosLegales.find((d) => d.codigo === 'AFP')?.descripcion ?? '')
+          ? 'Cuprum'
+          : null,
+        salud: /Fonasa/i.test(liq.descuentosLegales.find((d) => d.codigo === 'SALUD')?.descripcion ?? '')
+          ? 'Fonasa'
+          : null,
+      }),
+    ),
+  );
+}
 
 function nominaMock(parcial: Partial<NominaPeriodo> = {}): NominaPeriodo {
   return crearNomina({
@@ -96,7 +130,8 @@ function resultadoMock(
 
 function configurarTestBed(
   overrides: {
-    obtenerResultadoPersistido?: ReturnType<typeof vi.fn>;
+    listarFilasCalculoPaginado?: ReturnType<typeof vi.fn>;
+    obtenerResumenCalculo?: ReturnType<typeof vi.fn>;
   } = {},
 ): void {
   TestBed.resetTestingModule();
@@ -114,8 +149,12 @@ function configurarTestBed(
         provide: NominaPeriodoCalculoAdapterService,
         useValue: {
           calcular: vi.fn().mockResolvedValue({ resultado: null }),
-          obtenerResultadoPersistido:
-            overrides.obtenerResultadoPersistido ?? vi.fn().mockResolvedValue(null),
+          listarFilasCalculoPaginado:
+            overrides.listarFilasCalculoPaginado
+            ?? vi.fn().mockResolvedValue({ filas: [], total: 0 }),
+          obtenerResumenCalculo:
+            overrides.obtenerResumenCalculo ?? vi.fn().mockResolvedValue(null),
+          obtenerDetalleTrabajadorCalculo: vi.fn().mockResolvedValue(null),
         },
       },
       {
@@ -179,6 +218,25 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
     const nomina = nominaMock({
       evidenciaCalculo: { versionCalculo: 2, calculoVigente: true, idCalculoPeriodo: 55 },
     });
+    const filaListado = {
+      idCalculoTrabajador: 901,
+      trabajadorId: '2',
+      idPersona: 2,
+      rut: '25050001',
+      nombre: 'Dependiente Activo Auditoria',
+      estado: 'calculado_preliminar',
+      sueldoBase: 900000,
+      totalHaberes: 1089157,
+      totalDescuentos: 200841,
+      liquidoAPago: 888316,
+      baseImponiblePrevisional: 1089157,
+      baseTributable: 901782,
+      cotizacionSis: 17645,
+      cotizacionSanna: 32674,
+      cotizacionLey16744: 10128,
+      cuentaIssues: 0,
+      detalleCargado: false,
+    };
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
@@ -198,7 +256,20 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
           provide: NominaPeriodoCalculoAdapterService,
           useValue: {
             calcular: vi.fn(),
-            obtenerResultadoPersistido: vi.fn().mockResolvedValue(persistido),
+            listarFilasCalculoPaginado: vi.fn().mockResolvedValue({
+              filas: [filaListado],
+              total: 1,
+            }),
+            obtenerResumenCalculo: vi.fn().mockResolvedValue({
+              idCalculoPeriodo: 55,
+              trabajadoresCalculados: persistido.resumen.totalTrabajadoresCalculados,
+              totalHaberes: persistido.resumen.totalHaberes,
+              totalDescuentos: persistido.resumen.totalDescuentos,
+              totalLiquido: persistido.resumen.totalLiquidoPreliminar,
+              conAdvertencias: 0,
+              conBloqueos: 0,
+            }),
+            obtenerDetalleTrabajadorCalculo: vi.fn(),
           },
         },
         {
@@ -226,10 +297,11 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
     const cmp = fixture.componentInstance;
     fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
     fixture.detectChanges();
-    await vi.waitFor(() => expect(cmp.resultado()).toEqual(persistido));
+    await vi.waitFor(() => expect(cmp.calculoDisponible()).toBe(true));
 
     expect(cmp.puedeAvanzar()).toBe(true);
     expect(cmp.textoCtaCalculo()).toBe('Recalcular');
+    expect(cmp.filasGrilla()).toHaveLength(1);
   });
 
   it('activa la banda de cálculo no vigente con version > 0 y calculoVigente = false', () => {
@@ -247,7 +319,7 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
     it('retorna ok:false si no hay resultado de cálculo', async () => {
       const fixture = TestBed.createComponent(NominaMensualV2PasoCalculoComponent);
       const cmp = fixture.componentInstance;
-      cmp.resultado.set(null);
+      cmp.resumenCalculo.set(null);
 
       const resultado = await cmp.avanzar();
 
@@ -275,10 +347,7 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
     it('retorna ok:true cuando hay resultado y el cálculo está vigente', async () => {
       const fixture = TestBed.createComponent(NominaMensualV2PasoCalculoComponent);
       const cmp = fixture.componentInstance;
-      cmp.nomina.set(
-        nominaMock({ evidenciaCalculo: { versionCalculo: 3, calculoVigente: true } }),
-      );
-      cmp.resultado.set(resultadoMock());
+      seedCalculoEnComponente(cmp);
 
       const resultado = await cmp.avanzar();
 
@@ -290,7 +359,7 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
     it('retorna ok:false sin resultado', () => {
       const fixture = TestBed.createComponent(NominaMensualV2PasoCalculoComponent);
       const cmp = fixture.componentInstance;
-      cmp.resultado.set(null);
+      cmp.resumenCalculo.set(null);
       const r = cmp.puedeContinuar();
       expect(r.ok).toBe(false);
     });
@@ -310,7 +379,7 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
     it('renderiza el header con título, subtítulo y mini-stats en el aside', () => {
       const fixture = TestBed.createComponent(NominaMensualV2PasoCalculoComponent);
       const cmp = fixture.componentInstance;
-      cmp.resultado.set(resultadoMock());
+      seedCalculoEnComponente(cmp);
       fixture.detectChanges();
 
       const el = fixture.nativeElement as HTMLElement;
@@ -324,16 +393,14 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
       expect(stats?.querySelectorAll('.paso-calc__stat').length).toBe(4);
     });
 
-    it('expone filas presentadas ordenadas por líquido descendente', () => {
+    it('expone filas presentadas en el orden entregado por la página server-side', () => {
       const fixture = TestBed.createComponent(NominaMensualV2PasoCalculoComponent);
       const cmp = fixture.componentInstance;
-      cmp.resultado.set(
-        resultadoMock([
-          liquidacionMock({ idPersona: 1, liquidoAPago: 700000 }),
-          liquidacionMock({ idPersona: 2, liquidoAPago: 900000 }),
-          liquidacionMock({ idPersona: 3, liquidoAPago: 800000 }),
-        ]),
-      );
+      seedCalculoEnComponente(cmp, [
+        liquidacionMock({ idPersona: 2, liquidoAPago: 900000 }),
+        liquidacionMock({ idPersona: 3, liquidoAPago: 800000 }),
+        liquidacionMock({ idPersona: 1, liquidoAPago: 700000 }),
+      ]);
 
       const filas = cmp.filasGrilla();
       expect(filas.map((f) => f.idPersona)).toEqual([2, 3, 1]);
@@ -342,7 +409,7 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
     it('infiere el nombre de la AFP desde la descripción del descuento legal', () => {
       const fixture = TestBed.createComponent(NominaMensualV2PasoCalculoComponent);
       const cmp = fixture.componentInstance;
-      cmp.resultado.set(resultadoMock());
+      seedCalculoEnComponente(cmp);
 
       const fila = cmp.filasGrilla()[0];
       expect(fila.afp).toBe('Cuprum');
@@ -352,12 +419,10 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
     it('agrega stats de cabecera coherentes con las liquidaciones', () => {
       const fixture = TestBed.createComponent(NominaMensualV2PasoCalculoComponent);
       const cmp = fixture.componentInstance;
-      cmp.resultado.set(
-        resultadoMock([
-          liquidacionMock({ idPersona: 1, totalHaberes: 1000000, totalDescuentos: 200000, liquidoAPago: 800000 }),
-          liquidacionMock({ idPersona: 2, totalHaberes: 2000000, totalDescuentos: 400000, liquidoAPago: 1600000 }),
-        ]),
-      );
+      seedCalculoEnComponente(cmp, [
+        liquidacionMock({ idPersona: 1, totalHaberes: 1000000, totalDescuentos: 200000, liquidoAPago: 800000 }),
+        liquidacionMock({ idPersona: 2, totalHaberes: 2000000, totalDescuentos: 400000, liquidoAPago: 1600000 }),
+      ]);
 
       const stats = cmp.statsCabecera();
       expect(stats.trabajadoresCalculados).toBe(2);
@@ -366,16 +431,16 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
       expect(stats.totalLiquido).toBe(2400000);
     });
 
-    it('abre y cierra la previsualización al invocar abrirPreview/cerrarPreview', () => {
+    it('abre y cierra la previsualización al invocar abrirPreview/cerrarPreview', async () => {
       const fixture = TestBed.createComponent(NominaMensualV2PasoCalculoComponent);
       const cmp = fixture.componentInstance;
-      cmp.resultado.set(resultadoMock());
+      seedCalculoEnComponente(cmp);
 
       expect(cmp.filaPreviewAbierta()).toBeNull();
       expect(cmp.liquidacionPreview()).toBeNull();
 
       const fila = cmp.filasGrilla()[0];
-      cmp.abrirPreview(fila);
+      await cmp.abrirPreview(fila);
       expect(cmp.filaPreviewAbierta()).toBe(fila.trabajadorId);
       expect(cmp.liquidacionPreview()?.idPersona).toBe(fila.idPersona);
       expect(cmp.filaPreview()?.trabajadorId).toBe(fila.trabajadorId);
@@ -389,7 +454,7 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
       const fixture = TestBed.createComponent(NominaMensualV2PasoCalculoComponent);
       const cmp = fixture.componentInstance;
       cmp.cargando.set(false);
-      cmp.resultado.set(null);
+      cmp.resumenCalculo.set(null);
       fixture.detectChanges();
 
       const html = (fixture.nativeElement as HTMLElement).textContent ?? '';
@@ -399,7 +464,7 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
     it('renderiza la grilla del paso cuando hay resultado', () => {
       const fixture = TestBed.createComponent(NominaMensualV2PasoCalculoComponent);
       const cmp = fixture.componentInstance;
-      cmp.resultado.set(resultadoMock());
+      seedCalculoEnComponente(cmp);
       fixture.detectChanges();
 
       const grid = (fixture.nativeElement as HTMLElement).querySelector('app-data-grid');
@@ -412,7 +477,7 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
 
       expect(cmp.textoCtaCalculo()).toBe('Calcular nómina');
 
-      cmp.resultado.set(resultadoMock());
+      seedCalculoEnComponente(cmp);
       expect(cmp.textoCtaCalculo()).toBe('Recalcular');
 
       cmp.calculando.set(true);

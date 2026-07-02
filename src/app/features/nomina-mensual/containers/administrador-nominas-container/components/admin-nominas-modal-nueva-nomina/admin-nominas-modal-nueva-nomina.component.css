@@ -435,3 +435,20 @@
   font-size: 12px;
   color: var(--erp-text-muted, #6b7280);
 }
+
+.adm-nom-modal__paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px 12px 0;
+  border-top: 1px solid var(--erp-border-subtle, #e5e7eb);
+  margin-top: 8px;
+}
+
+.adm-nom-modal__paginacion-info {
+  font-size: 11px;
+  color: var(--erp-text-muted, #6b7280);
+  min-width: 6rem;
+  text-align: center;
+}

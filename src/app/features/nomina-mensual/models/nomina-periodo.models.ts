@@ -367,6 +367,45 @@ export interface PaginacionGrilla {
   total: number;
 }
 
+/** Filtros server-side del paso Cálculo (BKL-09). */
+export interface FiltroCalculoPorTrabajador {
+  busqueda?: string;
+  /** ok | aviso | bloqueo — alineado a chips de la grilla. */
+  estado?: string;
+}
+
+/** Stats globales del paso Cálculo desde cabecera de snapshot (BKL-09). */
+export interface ResumenCalculoNomina {
+  idCalculoPeriodo?: number;
+  trabajadoresCalculados: number;
+  totalHaberes: number;
+  totalDescuentos: number;
+  totalLiquido: number;
+  conAdvertencias: number;
+  conBloqueos: number;
+}
+
+/** Fila resumida del listado paginado de cálculo (BKL-09). */
+export interface FilaCalculoTrabajadorListado {
+  idCalculoTrabajador: number;
+  trabajadorId: string;
+  idPersona: number;
+  rut: string;
+  nombre: string;
+  estado: string;
+  sueldoBase: number;
+  totalHaberes: number;
+  totalDescuentos: number;
+  liquidoAPago: number;
+  baseImponiblePrevisional: number;
+  baseTributable: number;
+  cotizacionSis: number;
+  cotizacionSanna: number;
+  cotizacionLey16744: number;
+  cuentaIssues: number;
+  detalleCargado: boolean;
+}
+
 /**
  * Trazabilidad de eventos críticos sobre la nómina (cierre, reapertura, etc.).
  *
@@ -395,6 +434,8 @@ export interface EventoAuditoriaNomina {
     | 'anulada';
 
   usuarioId?: string;
+  /** Nombre resuelto en servidor cuando está disponible (BKL-10). */
+  usuarioNombre?: string;
   motivo?: string;
 
   createdAt: string;

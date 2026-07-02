@@ -2990,3 +2990,11 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **Stepper**: estilos de copy `pending` / `complete` absorbidos en `nomina-mensual-v2-stepper.component.css`.
 - **Tests**: suite `nomina-mensual-v2` en verde.
 - **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-02 - BKL-09/BKL-10: escala Cálculo y preview nueva nómina
+
+- **`nomina-mensual-v2-paso-calculo`**: grilla server-side (patrón Movimientos); desglose/preview lazy; stats desde cabecera snapshot.
+- **`admin-nominas-modal-nueva-nomina`**: listas incluidos/excluidos paginadas (50/página) con nav compacta `.adm-nom-modal__paginacion`.
+- **Historial administrativo**: nombre de usuario resuelto en servidor (`listar_eventos_auditoria_nomina`).
+- **Tests**: specs paso Cálculo, adapter, modal nueva nómina y auditoría en verde.
+- **Sin tocar**: estilos globales, motor de cálculo.
