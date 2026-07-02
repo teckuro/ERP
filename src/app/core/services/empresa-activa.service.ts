@@ -3,12 +3,11 @@
  *
  * Creado en `NOM-REBUILD-NOMINA-MENSUAL-01` (F3a, 2026-06-04).
  *
- * Estrategia de resolución:
- * 1. JWT (`app_metadata.id_empresa` o `user_metadata.id_empresa`) — preferido,
- *    consistente con la función `current_user_empresa_id()` de RLS.
- * 2. Fallback: `select * from empresa order by id_empresa limit 1` (RLS server-side
- *    decide qué empresa puede ver el usuario). Coherente con
- *    `proceso-mensual.service.ts:1003` hasta que el JWT incluya `id_empresa`.
+ * Estrategia de resolución (BKL-07):
+ * 1. JWT (`app_metadata.id_empresa` o `user_metadata.id_empresa`) — obligatorio
+ *    para cargar empresa; consistente con `current_user_empresa_id()` en RLS.
+ * 2. Sin `id_empresa` en el JWT: no se consulta BD ni se elige la primera
+ *    empresa del tenant (evita filtraciones cross-empresa en sesiones mal configuradas).
  *
  * No persiste cambio de empresa entre sesiones — el JWT manda. Si se necesita
  * cambio multi-empresa por sesión, se introduce `seleccionarEmpresa(idEmpresa)`
@@ -34,10 +33,12 @@ export class EmpresaActivaService {
   private readonly auth = inject(AuthService);
 
   private readonly state = signal<EmpresaActivaSnapshot | null>(null);
+  private readonly motivoSinEmpresaState = signal<string | null>(null);
   private readonly loadingState = signal(false);
   private cargaInicialPromise: Promise<EmpresaActivaSnapshot | null> | null = null;
 
   readonly empresa = computed(() => this.state());
+  readonly motivoSinEmpresa = computed(() => this.motivoSinEmpresaState());
   readonly empresaActivaId = computed(() => this.state()?.idEmpresa ?? null);
   readonly empresaActivaNombre = computed(() =>
     this.state()?.nombre ?? this.state()?.razonSocial ?? null,
@@ -90,19 +91,27 @@ export class EmpresaActivaService {
    */
   async cargar(): Promise<EmpresaActivaSnapshot | null> {
     this.loadingState.set(true);
+    this.motivoSinEmpresaState.set(null);
     try {
       const idDesdeJwt = this.resolverIdEmpresaDesdeJwt();
+      if (idDesdeJwt == null) {
+        this.motivoSinEmpresaState.set(
+          'No hay empresa asignada en tu sesión. Contacta al administrador para configurar el acceso.',
+        );
+        this.state.set(null);
+        return null;
+      }
 
-      const builder = this.supabase
+      const { data, error } = await this.supabase
         .from('empresa')
-        .select('id_empresa, razon_social, nombre_fantasia, rut, dv');
+        .select('id_empresa, razon_social, nombre_fantasia, rut, dv')
+        .eq('id_empresa', idDesdeJwt)
+        .maybeSingle();
 
-      const query = idDesdeJwt != null
-        ? builder.eq('id_empresa', idDesdeJwt).maybeSingle()
-        : builder.order('id_empresa', { ascending: true }).limit(1).maybeSingle();
-
-      const { data, error } = await query;
       if (error || !data) {
+        this.motivoSinEmpresaState.set(
+          'No fue posible cargar la empresa asignada a tu sesión.',
+        );
         this.state.set(null);
         return null;
       }
@@ -125,6 +134,7 @@ export class EmpresaActivaService {
   /** Limpia el snapshot (logout). */
   limpiar(): void {
     this.state.set(null);
+    this.motivoSinEmpresaState.set(null);
     this.cargaInicialPromise = null;
   }
 }

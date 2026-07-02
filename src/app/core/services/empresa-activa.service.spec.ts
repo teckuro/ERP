@@ -95,13 +95,13 @@ describe('EmpresaActivaService', () => {
     expect(service.empresaActivaNombre()).toBe('Demo');
   });
 
-  it('cargar() hace fallback a .limit(1) cuando no hay id_empresa en JWT', async () => {
+  it('cargar() sin id_empresa en JWT no consulta BD y expone motivo', async () => {
     const service = crear({ app_metadata: {} } as Partial<User>);
-    await service.cargar();
+    const snap = await service.cargar();
 
-    expect(builder.order).toHaveBeenCalledWith('id_empresa', { ascending: true });
-    expect(builder.limit).toHaveBeenCalledWith(1);
-    expect(builder.eq).not.toHaveBeenCalled();
+    expect(snap).toBeNull();
+    expect(supabase.from).not.toHaveBeenCalled();
+    expect(service.motivoSinEmpresa()).toContain('empresa asignada');
   });
 
   it('usa razon_social cuando nombre_fantasia es null', async () => {

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   esRolAdministradorRemuneraciones,
   esRolConsultaRemuneraciones,
+  etiquetaRolRemuneraciones,
   resolverPermisosNominaMensual,
   resolverRolRemuneracionesDesdeClaims,
 } from './erp-permisos-remuneraciones.rules';
@@ -61,5 +62,11 @@ describe('erp-permisos-remuneraciones.rules', () => {
   it('normaliza aliases de rol', () => {
     expect(esRolAdministradorRemuneraciones('admin-sistema')).toBe(true);
     expect(esRolConsultaRemuneraciones('solo-lectura')).toBe(true);
+  });
+
+  it('etiquetaRolRemuneraciones traduce roles a copy RRHH', () => {
+    expect(etiquetaRolRemuneraciones('admin_remuneraciones')).toBe('Admin remuneraciones');
+    expect(etiquetaRolRemuneraciones('consulta_remuneraciones')).toBe('Consulta');
+    expect(etiquetaRolRemuneraciones('sin_sesion')).toBe('RRHH');
   });
 });

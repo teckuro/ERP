@@ -90,3 +90,19 @@ export function resolverPermisosNominaMensual(rol: RolRemuneracionesLogico): Per
     puedeRecargarParametrosBase: esAdmin,
   };
 }
+
+/** Etiqueta RRHH para sidebar / perfil (sin nombres técnicos de enum). */
+export function etiquetaRolRemuneraciones(rol: RolRemuneracionesLogico): string {
+  switch (rol) {
+    case 'admin_sistema':
+      return 'Admin sistema';
+    case 'admin_remuneraciones':
+      return 'Admin remuneraciones';
+    case 'operador_remuneraciones':
+      return 'Operador';
+    case 'consulta_remuneraciones':
+      return 'Consulta';
+    default:
+      return 'RRHH';
+  }
+}

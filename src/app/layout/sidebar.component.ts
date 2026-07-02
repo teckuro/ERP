@@ -4,6 +4,8 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Building2Icon, LucideAngularModule, SettingsIcon } from 'lucide-angular';
 
 import { AuthService } from '../core/auth/auth.service';
+import { ErpPermisosRemuneracionesService } from '../core/auth/erp-permisos-remuneraciones.service';
+import { etiquetaRolRemuneraciones } from '../core/auth/erp-permisos-remuneraciones.rules';
 import { mesCortoDesdeYm, PeriodoActivoService } from '../core/services/periodo-activo.service';
 import {
   SHELL_NAV_FOOTER_CONFIG,
@@ -334,6 +336,7 @@ export class SidebarComponent {
   readonly footerConfig = SHELL_NAV_FOOTER_CONFIG;
 
   private readonly auth = inject(AuthService);
+  private readonly permisosRemuneraciones = inject(ErpPermisosRemuneracionesService);
   private readonly periodoActivo = inject(PeriodoActivoService);
 
   readonly mesPeriodoBadge = computed(() => mesCortoDesdeYm(this.periodoActivo.periodoYm()));
@@ -362,17 +365,9 @@ export class SidebarComponent {
     return 'Usuario';
   });
 
-  readonly rolUsuario = computed(() => {
-    const user = this.auth.currentUser();
-    const appRole = (user?.app_metadata as Record<string, unknown> | undefined)?.['role'];
-    const userRole = (user?.user_metadata as Record<string, unknown> | undefined)?.['role'];
-    const role = appRole ?? userRole;
-    if (role === 'admin') return 'Admin';
-    if (typeof role === 'string' && role.trim()) {
-      return role.charAt(0).toUpperCase() + role.slice(1);
-    }
-    return 'RRHH';
-  });
+  readonly rolUsuario = computed(() =>
+    etiquetaRolRemuneraciones(this.permisosRemuneraciones.rol()),
+  );
 
   badgeFor(item: ShellNavItem): string | null {
     if (item.badgeKey === 'periodoMes') {

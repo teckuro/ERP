@@ -109,7 +109,7 @@ Regla rectora SEG-01: **ocultar un botón no es seguridad**.
 | Campo | Definición |
 | ----- | ---------- |
 | Problema | `esAdmin` leído de `user_metadata` (manipulable por el propio usuario) en `NominaParametrosBaseAccesoService`; fallback a primera empresa en `EmpresaActivaService` si el JWT no trae `id_empresa`; grants `anon` residuales en funciones legacy detectados en smoke. |
-| Fase | Acompaña SEG-01b · **Parcial 2026-07-02:** admin nómina solo desde `app_metadata` (BKL-05) |
+| Fase | Acompaña SEG-01b · **Cerrado 2026-07-02** (ver fila BKL-07 en §6) |
 | Esfuerzo | S–M |
 | Criterio de listo | Rol solo desde `app_metadata`; fallback de empresa eliminado o degradado a estado de error visible; auditoría de grants en PROD con revocación explícita de `anon` donde no aplique. |
 
@@ -182,6 +182,7 @@ de F09; no tipos no mensuales antes de F10/F11; no permisos solo en UI.
 | BKL-01 | **Cerrado núcleo** | 2026-07-02 | **F08**: `id_concepto` + guardia BD (migración `20260702150000`, smoke EXIT 0). **F09**: snapshot por `nominaPeriodoId` (migración `20260702160000`, smoke EXIT 0 con escenario real dos-nóminas-mismo-mes); adapter y rehidratación por nómina; cache motor aislada. Tests 551/551. **Pendiente F09 completo**: diffs entre versiones, golden fixture, control optimista → con F20/MOTOR-01. |
 | BKL-12 | **Cerrado** | 2026-07-02 | Migración `20260702170000_nomina_bkl12_rls_por_operacion.sql` en PROD. `segmento_nomina`, `movimiento_nomina`, `incidencia_nomina`: drop `*_all`, 4 policies por operación `TO authenticated`; revoke `anon`. Smoke `validar-nomina-bkl12-rls-por-operacion.sql` EXIT 0. |
 | BKL-05 | **Cerrado** | 2026-07-02 | **SEG-01b (Angular):** `ErpPermisosRemuneracionesService` + rules + guards; `NominaMensualCapabilitiesService` delega (admin solo `app_metadata`, sin gate `modoPruebas`); bloqueos en `NominaPeriodoService` (eliminar/reabrir/cerrar/recarga params/escritura); UI admin + paso cierre + shell Generador V2; tests 111+ en specs del alcance. RPC F15b queda en BKL-06. |
+| BKL-07 | **Cerrado** | 2026-07-02 | `EmpresaActivaService` sin fallback a primera empresa (motivo visible si falta `id_empresa` en JWT); sidebar usa etiqueta de rol desde `ErpPermisosRemuneracionesService`; migración `20260702180000_bkl07_revoke_anon_identity_helpers.sql` revoca `execute` de `current_user_id`/`current_user_empresa_id` a `anon`. Admin rol desde `app_metadata` ya cubierto en BKL-05. |
 | BKL-06…BKL-11 | Pendiente | — | — |
 
 Al cerrar un ítem: actualizar esta tabla, el documento de fase correspondiente y

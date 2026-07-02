@@ -19,6 +19,7 @@ import {
 } from 'lucide-angular/src/icons';
 import { signal } from '@angular/core';
 import { AuthService } from '../core/auth/auth.service';
+import { ErpPermisosRemuneracionesService } from '../core/auth/erp-permisos-remuneraciones.service';
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
 import { SidebarComponent } from './sidebar.component';
 import { SHELL_HEADER_HEIGHT_PX, SHELL_NAV_WIDTH_PX } from './shell-navigation.config';
@@ -61,6 +62,7 @@ describe('SidebarComponent', () => {
             currentEmail: () => 'rrhh@empresa.cl',
           },
         },
+        ErpPermisosRemuneracionesService,
         {
           provide: PeriodoActivoService,
           useValue: {
