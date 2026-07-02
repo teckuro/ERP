@@ -17,6 +17,7 @@
     "test:supabase": "node scripts/test-supabase-api.mjs",
     "list:supabase:endpoints": "node scripts/list-supabase-endpoints.mjs",
     "test:visual": "playwright test",
+    "test:e2e:nominas": "playwright test tests/nominas-admin-generador.e2e.spec.ts --workers=1",
     "screenshots:empleados-avanzada": "playwright test tests/empleados-creacion-avanzada.screenshots.spec.ts --workers=1",
     "test:e2e:empleados-borrador": "playwright test tests/empleados-borrador-persistencia.spec.ts --workers=1",
     "test:e2e:empleados:ui": "playwright test tests/empleados-borrador.spec.ts tests/empleados-creacion-avanzada-validaciones.spec.ts tests/empleados-wizard-stability.spec.ts tests/empleados-basic-create.spec.ts --workers=1",
