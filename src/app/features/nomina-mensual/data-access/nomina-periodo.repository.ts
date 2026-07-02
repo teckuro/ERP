@@ -45,6 +45,15 @@ import type {
   TrabajadorExcluidoPreview,
   TrabajadorIncluidoPreview,
 } from '../models/nomina-creacion-preview.models';
+import type {
+  ConfirmarRectificacionRequest,
+  ConfirmarRectificacionResultado,
+  RectificacionPreview,
+} from '../models/nomina-rectificacion-preview.models';
+import {
+  mapConfirmarRectificacionResultado,
+  mapRectificacionPreview,
+} from '../mappers/nomina-rectificacion-preview.mapper';
 import {
   mapConfirmarCreacionResultado,
   mapNominaCreatePreview,
@@ -233,6 +242,33 @@ export class NominaPeriodoRepository {
     });
     throwIfError(error, 'confirmarCreacion');
     return mapConfirmarCreacionResultado(data);
+  }
+
+  async previsualizarRectificacion(args: {
+    nominaOrigenId: string;
+    trabajadorIds?: number[];
+    motivo?: string;
+  }): Promise<RectificacionPreview> {
+    const { data, error } = await this.supabase.rpc('previsualizar_rectificacion_nomina', {
+      p_nomina_origen_id: args.nominaOrigenId,
+      p_trabajador_ids: args.trabajadorIds?.length ? args.trabajadorIds : undefined,
+      p_motivo: args.motivo ?? undefined,
+    });
+    throwIfError(error, 'previsualizarRectificacion');
+    return mapRectificacionPreview(data);
+  }
+
+  async confirmarRectificacion(
+    request: ConfirmarRectificacionRequest,
+  ): Promise<ConfirmarRectificacionResultado> {
+    const { data, error } = await this.supabase.rpc('confirmar_rectificacion_nomina', {
+      p_nomina_origen_id: request.nominaOrigenId,
+      p_fingerprint: request.fingerprint,
+      p_motivo: request.motivo,
+      p_trabajador_ids: request.trabajadorIds?.length ? request.trabajadorIds : undefined,
+    });
+    throwIfError(error, 'confirmarRectificacion');
+    return mapConfirmarRectificacionResultado(data);
   }
 
   async actualizarEstado(id: string, estado: NominaPeriodo['estado']): Promise<void> {

@@ -101,8 +101,8 @@ function configurar(opts: {
       {
         provide: NominaFeatureGatesService,
         useValue: {
-          gates: () => opts.gates ?? { anticipos: false, extraordinaria: false },
-          cargar: vi.fn().mockResolvedValue(opts.gates ?? { anticipos: false, extraordinaria: false }),
+          gates: () => opts.gates ?? { anticipos: false, extraordinaria: false, rectificacion: false },
+          cargar: vi.fn().mockResolvedValue(opts.gates ?? { anticipos: false, extraordinaria: false, rectificacion: false }),
         },
       },
       {

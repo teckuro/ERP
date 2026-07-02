@@ -129,7 +129,13 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   private readonly pasoVisitadoRehidratado = signal(false);
 
   readonly pageTitle = computed(() => obtenerTituloPaso(this.currentStep()));
-  readonly pageSubtitle = computed(() => obtenerSubtituloPaso(this.currentStep()));
+  readonly pageSubtitle = computed(() => {
+    const nomina = this.nominaCargada();
+    if (nomina?.naturaleza === 'rectificacion') {
+      return `Rectificación de ${nomina.periodo} · Original cerrada · ${obtenerSubtituloPaso(this.currentStep())}`;
+    }
+    return obtenerSubtituloPaso(this.currentStep());
+  });
   readonly primaryActionLabel = computed(() => obtenerEtiquetaAccionPrincipal(this.currentStep()));
 
   readonly parametrosPasoOcupado = computed(() => {

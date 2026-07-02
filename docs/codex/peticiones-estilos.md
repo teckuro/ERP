@@ -9,6 +9,14 @@
 
 ---
 
+## 2026-07-02 — F17 Rectificación diferencial (Admin + Generador)
+
+- **Administrador:** acción fila «Crear rectificación» (nómina cerrada + gate); modal motivo + checklist trabajadores; MessageBox confirmación; reutiliza clases `adm-nom-modal__*`.
+- **Generador:** subtítulo «Rectificación de [período] · Original cerrada»; panel compacto Original | Diferencia | Acumulado en paso Cálculo (`paso-calc__rect-*`).
+- **Contraste:** `noia-ui-manual.md`, patrón modal nueva nómina, copy RRHH sin términos técnicos.
+
+---
+
 ## 2026-07-02 — Generador Nómina V2: paso Cierre Ola 4–6 (F12/F14/F15/F16)
 
 - **Paso Cierre:** checklist dividida (validación / aprobación / conciliación / liquidaciones);

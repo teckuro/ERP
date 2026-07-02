@@ -62,6 +62,7 @@ import type {
   ResultadoAvancePaso,
 } from '../../facade/nomina-mensual-v2-navegacion';
 import { MENSAJE_CALCULO_NO_VIGENTE, esCalculoNoVigente } from '../../facade/nomina-mensual-v2-navegacion';
+import type { TotalesRectificacionVista } from '../../../../../nomina-mensual/rules/proceso-mensual-motor-rectificacion.rules';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 import { NominaMensualV2TrazabilidadService } from '../../../../services/nomina-mensual-v2-trazabilidad.service';
 
@@ -111,6 +112,9 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   readonly calculando = signal(false);
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
+  readonly totalesRectificacion = signal<TotalesRectificacionVista | null>(null);
+
+  readonly esRectificacion = computed(() => this.nomina()?.naturaleza === 'rectificacion');
 
   readonly filaPreviewAbierta = signal<string | null>(null);
   readonly liquidacionPreviewCargada = signal<LiquidacionCalculada | null>(null);
@@ -205,6 +209,12 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
       ]);
       this.nomina.set(nomina);
       this.preValidacion.set(validacion);
+
+      if (nomina?.naturaleza === 'rectificacion') {
+        this.totalesRectificacion.set(await this.calculoAdapter.obtenerTotalesRectificacion(nominaPeriodoId));
+      } else {
+        this.totalesRectificacion.set(null);
+      }
 
       if (nomina?.evidenciaCalculo?.calculoVigente) {
         await this.cargarGrilla(true);
@@ -329,6 +339,9 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
       this.pagina.set(1);
       this.filtro.set({});
       await this.cargarGrilla(true);
+      if (this.nomina()?.naturaleza === 'rectificacion') {
+        this.totalesRectificacion.set(await this.calculoAdapter.obtenerTotalesRectificacion(nomina.id));
+      }
       await this.sincronizarHintExpandDesglose();
       await this.registrarEventoCalculo(nomina, resultado);
       this.registrarEventoCalculoTrazabilidad(resultado);

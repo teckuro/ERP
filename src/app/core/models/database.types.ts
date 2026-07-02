@@ -6202,6 +6202,15 @@ export type Database = {
         }
         Returns: Json
       }
+      confirmar_rectificacion_nomina: {
+        Args: {
+          p_fingerprint: string
+          p_motivo: string
+          p_nomina_origen_id: string
+          p_trabajador_ids?: number[]
+        }
+        Returns: Json
+      }
       confirmar_nomina_preparacion: {
         Args: { p_id_preparacion_nomina: number; p_metadata?: Json }
         Returns: {
@@ -6947,6 +6956,14 @@ export type Database = {
       }
       previsualizar_creacion_nomina: {
         Args: { p_codigo_ciclo?: string; p_periodo: string; p_tipo?: string }
+        Returns: Json
+      }
+      previsualizar_rectificacion_nomina: {
+        Args: {
+          p_motivo?: string
+          p_nomina_origen_id: string
+          p_trabajador_ids?: number[]
+        }
         Returns: Json
       }
       reabrir_nomina_operativa: {

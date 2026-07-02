@@ -41,6 +41,7 @@ describe('remuneraciones-permisos.guard', () => {
     puedeAprobarNomina: true,
     puedeConsolidarNomina: true,
     puedeGenerarLiquidaciones: true,
+    puedeRectificarNomina: true,
   };
 
   const permisosAdmin = {
@@ -63,6 +64,7 @@ describe('remuneraciones-permisos.guard', () => {
     puedeAprobarNomina: false,
     puedeConsolidarNomina: false,
     puedeGenerarLiquidaciones: false,
+    puedeRectificarNomina: false,
   };
 
   it('remuneracionesEscrituraGuard permite operador y bloquea consulta', async () => {

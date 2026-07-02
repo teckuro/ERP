@@ -1,0 +1,17 @@
+@import '../admin-nominas-modal-nueva-nomina/admin-nominas-modal-nueva-nomina.component.css';
+
+.adm-nom-modal__check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.adm-nom-modal__check-row input {
+  margin-top: 3px;
+}
+
+.adm-nom-modal__lista-items--compact {
+  margin-bottom: 8px;
+}

@@ -31,5 +31,6 @@ function mapFeatureGates(raw: unknown): NominaFeatureGates {
   return {
     anticipos: record['anticipos'] === true,
     extraordinaria: record['extraordinaria'] === true,
+    rectificacion: record['rectificacion'] === true,
   };
 }

@@ -28,4 +28,5 @@ export class NominaMensualCapabilitiesService {
     () => this.permisos.permisosNomina().puedeGenerarLiquidaciones,
   );
   readonly puedeCerrarNomina = computed(() => this.permisos.permisosNomina().puedeCerrarNomina);
+  readonly puedeRectificarNomina = computed(() => this.permisos.permisosNomina().puedeRectificarNomina);
 }

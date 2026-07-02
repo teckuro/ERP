@@ -28,6 +28,7 @@ import type { ShellPageContext } from '../../../../layout/shell-page-context.ser
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { NominaPeriodoService } from '../../services/nomina-periodo.service';
 import { NominaMensualCapabilitiesService } from '../../services/nomina-mensual-capabilities.service';
+import { NominaFeatureGatesService } from '../../services/nomina-feature-gates.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { resolverUsuarioResponsableActual } from '../../../../core/auth/auth-user-label';
 import type {
@@ -55,6 +56,10 @@ import {
   AdminNominasModalNuevaNominaComponent,
   type NominaCreadaEvento,
 } from './components/admin-nominas-modal-nueva-nomina/admin-nominas-modal-nueva-nomina.component';
+import {
+  AdminNominasModalRectificacionComponent,
+  type RectificacionCreadaEvento,
+} from './components/admin-nominas-modal-rectificacion/admin-nominas-modal-rectificacion.component';
 import { AdminNominasModalResumenNominaComponent } from './components/admin-nominas-modal-resumen-nomina/admin-nominas-modal-resumen-nomina.component';
 import { AdminNominasModalHistorialNominaComponent } from './components/admin-nominas-modal-historial-nomina/admin-nominas-modal-historial-nomina.component';
 import {
@@ -62,6 +67,7 @@ import {
   puedeEliminarConPermiso,
   puedeReabrir,
   puedeReabrirConPermiso,
+  puedeCrearRectificacion,
   tieneLiquidaciones,
 } from '../../rules/admin-nominas.rules';
 
@@ -83,6 +89,7 @@ interface AccionAdministrativaPendiente {
     MessageBoxComponent,
     WorkspaceLoadingComponent,
     AdminNominasModalNuevaNominaComponent,
+    AdminNominasModalRectificacionComponent,
     AdminNominasModalResumenNominaComponent,
     AdminNominasModalHistorialNominaComponent,
   ],
@@ -94,12 +101,14 @@ export class AdministradorNominasContainer {
   private readonly router = inject(Router);
   private readonly servicio = inject(NominaPeriodoService);
   private readonly capabilities = inject(NominaMensualCapabilitiesService);
+  private readonly featureGates = inject(NominaFeatureGatesService);
   private readonly authService = inject(AuthService);
   readonly periodoActivo = inject(PeriodoActivoService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly resumenes = signal<NominaPeriodoResumen[]>([]);
   readonly modalNuevaAbierto = signal(false);
+  readonly rectificacionOrigen = signal<NominaPeriodoResumen | null>(null);
   readonly resumenSeleccionado = signal<ResumenValidacionNomina | null>(null);
   readonly nominaSeleccionada = signal<NominaPeriodoResumen | null>(null);
   readonly cargando = signal(false);
@@ -157,6 +166,7 @@ export class AdministradorNominasContainer {
     bindShellPageContext(this.destroyRef, () => this.computeShellContext(), {
       onPrimaryAction: () => this.abrirNuevaNomina(),
     });
+    void this.featureGates.cargar();
     void this.cargarResumenes();
   }
 
@@ -233,6 +243,37 @@ export class AdministradorNominasContainer {
 
   cerrarNuevaNomina(): void {
     this.modalNuevaAbierto.set(false);
+  }
+
+  abrirRectificacion(fila: NominaPeriodoResumen): void {
+    if (!this.puedeCrearRectificacionFila(fila)) return;
+    this.rectificacionOrigen.set(fila);
+  }
+
+  cerrarRectificacion(): void {
+    this.rectificacionOrigen.set(null);
+  }
+
+  onRectificacionCreada(evento: RectificacionCreadaEvento): void {
+    this.resumenes.update((lista) => {
+      const sinDuplicado = lista.filter((r) => r.id !== evento.resumen.id);
+      return [evento.resumen, ...sinDuplicado];
+    });
+    this.rectificacionOrigen.set(null);
+    this.abrirGenerador(evento.resumen, {
+      from: 'create',
+      siguientePaso: evento.resultado.siguientePaso,
+      totalIniciales: evento.resultado.totalTrabajadores,
+      reutilizada: false,
+    });
+  }
+
+  puedeCrearRectificacionFila(fila: NominaPeriodoResumen): boolean {
+    return puedeCrearRectificacion({
+      estado: fila.estado,
+      gateRectificacion: this.featureGates.gates().rectificacion,
+      puedeEscribir: this.capabilities.puedeRectificarNomina(),
+    });
   }
 
   onNominaCreada(evento: NominaCreadaEvento): void {

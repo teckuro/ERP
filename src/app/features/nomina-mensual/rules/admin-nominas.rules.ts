@@ -82,6 +82,15 @@ export function tieneLiquidaciones(estado: EstadoNomina): boolean {
   return estado === 'liquidada' || estado === 'cerrada';
 }
 
+/** F17: crear rectificación desde nómina cerrada con gate activo. */
+export function puedeCrearRectificacion(args: {
+  estado: EstadoNomina;
+  gateRectificacion: boolean;
+  puedeEscribir: boolean;
+}): boolean {
+  return args.estado === 'cerrada' && args.gateRectificacion && args.puedeEscribir;
+}
+
 /**
  * Lista de acciones disponibles según el estado. `abrir-generador` y
  * `ver-resumen` siempre están disponibles. Las demás dependen del estado.

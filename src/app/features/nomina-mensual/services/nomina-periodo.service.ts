@@ -59,6 +59,7 @@ import type {
   TrabajadorExcluidoPreview,
   TrabajadorIncluidoPreview,
 } from '../models/nomina-creacion-preview.models';
+import type { ConfirmarRectificacionRequest } from '../models/nomina-rectificacion-preview.models';
 import type {
   AccionMasivaTrabajadores,
   CriterioAplicacionRecurrente,
@@ -177,6 +178,10 @@ export class NominaPeriodoService {
     return this.repo.obtenerNominaCompleta(nominaPeriodoId);
   }
 
+  async obtenerCabeceraNomina(nominaPeriodoId: string): Promise<NominaPeriodoResumen | null> {
+    return this.repo.obtenerCabecera(nominaPeriodoId);
+  }
+
   // -------------------------------------------------------------------------
   // CRUD cabecera
   // -------------------------------------------------------------------------
@@ -227,6 +232,20 @@ export class NominaPeriodoService {
   ): Promise<ConfirmarCreacionResultado> {
     this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
     return this.repo.confirmarCreacion(request);
+  }
+
+  async previsualizarRectificacion(args: {
+    nominaOrigenId: string;
+    trabajadorIds?: number[];
+    motivo?: string;
+  }) {
+    this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
+    return this.repo.previsualizarRectificacion(args);
+  }
+
+  async confirmarRectificacion(request: ConfirmarRectificacionRequest) {
+    this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
+    return this.repo.confirmarRectificacion(request);
   }
 
   /**

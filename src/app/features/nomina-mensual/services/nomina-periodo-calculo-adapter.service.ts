@@ -9,6 +9,7 @@ import type {
   FilaCalculoTrabajadorListado,
   PaginacionGrilla,
   ResumenCalculoNomina,
+  NominaPeriodo,
 } from '../models/nomina-periodo.models';
 import {
   mapSnapshotCompletoToMotorCalculoPeriodo,
@@ -19,6 +20,7 @@ import { NominaConsolidacionRepository } from '../data-access/nomina-consolidaci
 import { NominaPeriodoService } from './nomina-periodo.service';
 import { NominaPlantillaCicloService } from './nomina-plantilla-ciclo.service';
 import { ProcesoMensualService } from './proceso-mensual.service';
+import { calcularTotalesRectificacionVista } from '../rules/proceso-mensual-motor-rectificacion.rules';
 
 export interface ResultadoCalculoNominaPeriodo {
   resultado: MotorCalculoPeriodoResultado;
@@ -55,6 +57,8 @@ export class NominaPeriodoCalculoAdapterService {
         regla,
         opcionesMotor,
       );
+    } else if (nomina.naturaleza === 'rectificacion') {
+      resultado = await this.calcularRectificacion(nomina, trabajadorIds, opcionesMotor);
     } else {
       resultado = await this.motor.generarCalculoPeriodo(nomina.periodo, trabajadorIds, opcionesMotor);
     }
@@ -102,6 +106,63 @@ export class NominaPeriodoCalculoAdapterService {
       throw new Error('La plantilla no define regla de anticipo.');
     }
     return plantilla.reglaAnticipo;
+  }
+
+  private async calcularRectificacion(
+    nomina: NominaPeriodo,
+    trabajadorIds: number[],
+    opcionesMotor: { nominaPeriodoId: string },
+  ): Promise<MotorCalculoPeriodoResultado> {
+    if (!nomina.nominaOrigenId) {
+      throw new Error('La rectificación no tiene nómina origen vinculada.');
+    }
+    const origen = await this.nominas.obtenerNomina(nomina.nominaOrigenId);
+    if (!origen) {
+      throw new Error('No se encontró la nómina original cerrada.');
+    }
+    if (origen.estado !== 'cerrada') {
+      throw new Error('La nómina original debe permanecer cerrada para calcular la rectificación.');
+    }
+    const resumenOrigen = await this.nominas.obtenerResumenCalculo(origen.id);
+    if (!resumenOrigen?.idCalculoPeriodo) {
+      throw new Error('La nómina original no tiene cálculo vigente para comparar.');
+    }
+    const snapshotOrigen = await this.motor.obtenerSnapshotCompletoPorId(resumenOrigen.idCalculoPeriodo);
+    if (!snapshotOrigen) {
+      throw new Error('No fue posible cargar el cálculo original.');
+    }
+    return this.motor.generarCalculoRectificacionPeriodo({
+      periodo: nomina.periodo,
+      trabajadorIds,
+      snapshotOrigen,
+      nominaOrigenId: origen.id,
+      versionCalculoOrigen: origen.evidenciaCalculo?.versionCalculo ?? 0,
+      opciones: opcionesMotor,
+    });
+  }
+
+  async obtenerTotalesRectificacion(nominaPeriodoId: string) {
+    const nomina = await this.nominas.obtenerNomina(nominaPeriodoId);
+    if (!nomina?.nominaOrigenId || nomina.naturaleza !== 'rectificacion') return null;
+
+    const origen = await this.nominas.obtenerNomina(nomina.nominaOrigenId);
+    if (!origen) return null;
+
+    const resumenOrigen = await this.nominas.obtenerResumenCalculo(origen.id);
+    const resumenDiff = await this.nominas.obtenerResumenCalculo(nominaPeriodoId);
+
+    const original = {
+      haberes: resumenOrigen?.totalHaberes ?? origen.totalHaberes ?? 0,
+      descuentos: resumenOrigen?.totalDescuentos ?? origen.totalDescuentos ?? 0,
+      liquido: resumenOrigen?.totalLiquido ?? origen.totalLiquido ?? 0,
+    };
+    const diferencia = {
+      haberes: resumenDiff?.totalHaberes ?? nomina.totalHaberes ?? 0,
+      descuentos: resumenDiff?.totalDescuentos ?? nomina.totalDescuentos ?? 0,
+      liquido: resumenDiff?.totalLiquido ?? nomina.totalLiquido ?? 0,
+    };
+
+    return calcularTotalesRectificacionVista({ totalesOrigen: original, totalesDiferencia: diferencia });
   }
 
   /**

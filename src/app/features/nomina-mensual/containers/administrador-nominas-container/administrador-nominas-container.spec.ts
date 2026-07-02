@@ -14,6 +14,7 @@ import {
   Receipt,
   RefreshCw,
   Repeat,
+  GitBranch,
   Settings,
   ShieldCheck,
   Trash2,
@@ -24,6 +25,7 @@ import type { EventoAuditoriaNomina, NominaPeriodoResumen } from '../../models/n
 import { crearNominaResumen } from '../../models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../services/nomina-periodo.service';
 import { NominaMensualCapabilitiesService } from '../../services/nomina-mensual-capabilities.service';
+import { NominaFeatureGatesService } from '../../services/nomina-feature-gates.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { DataGridComponent } from '../../../../shared/components/ui/data-grid/data-grid.component';
 import { AdministradorNominasContainer } from './administrador-nominas-container';
@@ -72,8 +74,13 @@ function configurar(opts: {
     esAdmin: () => true,
     puedeEscribirNomina: () => true,
     puedeAccionesAdminNomina: () => true,
+    puedeRectificarNomina: () => true,
     esSoloLectura: () => false,
     ...opts.capabilities,
+  };
+  const featureGates = {
+    gates: () => ({ anticipos: false, extraordinaria: false, rectificacion: false }),
+    cargar: vi.fn().mockResolvedValue({ anticipos: false, extraordinaria: false, rectificacion: false }),
   };
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
@@ -88,6 +95,7 @@ function configurar(opts: {
         Receipt,
         RefreshCw,
         Repeat,
+        GitBranch,
         Settings,
         ShieldCheck,
         Trash2,
@@ -97,6 +105,7 @@ function configurar(opts: {
       { provide: NominaPeriodoService, useValue: opts.servicio },
       { provide: AuthService, useValue: authService },
       { provide: NominaMensualCapabilitiesService, useValue: capabilities },
+      { provide: NominaFeatureGatesService, useValue: featureGates },
     ],
   });
   return { navigate, authService, capabilities };

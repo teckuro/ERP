@@ -12,11 +12,31 @@
       <p class="paso-calc__eyebrow">Paso 4 · Cálculo</p>
       <h2 id="paso-calc-title" class="paso-calc__title">Cálculo de la nómina</h2>
       <p class="paso-calc__subtitle">
-        Procesa el período y revisa el líquido de cada trabajador. Expande una fila para ver el
-        desglose ejecutivo o abre la previsualización para validar la liquidación antes de pasar a
-        validación.
+        @if (esRectificacion()) {
+          Compara el resultado original cerrado con la diferencia calculada. Solo se persisten ajustes distintos de cero.
+        } @else {
+          Procesa el período y revisa el líquido de cada trabajador. Expande una fila para ver el
+          desglose ejecutivo o abre la previsualización para validar la liquidación antes de pasar a
+          validación.
+        }
       </p>
     </div>
+    @if (esRectificacion() && totalesRectificacion(); as totales) {
+      <div class="paso-calc__rect-panel" role="status" aria-label="Comparación rectificación">
+        <div class="paso-calc__rect-col">
+          <span class="paso-calc__rect-label">Original</span>
+          <span class="paso-calc__rect-value">${{ totales.original.liquido | number: '1.0-0' }}</span>
+        </div>
+        <div class="paso-calc__rect-col">
+          <span class="paso-calc__rect-label">Diferencia</span>
+          <span class="paso-calc__rect-value">${{ totales.diferencia.liquido | number: '1.0-0' }}</span>
+        </div>
+        <div class="paso-calc__rect-col is-strong">
+          <span class="paso-calc__rect-label">Acumulado</span>
+          <span class="paso-calc__rect-value">${{ totales.acumulado.liquido | number: '1.0-0' }}</span>
+        </div>
+      </div>
+    }
     <div class="paso-calc__head-aside">
       <dl class="paso-calc__stats" role="status" aria-label="Resumen del cálculo">
         <div class="paso-calc__stat">

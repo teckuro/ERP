@@ -57,6 +57,7 @@ import {
 } from '../rules/proceso-mensual-empresa-ley16744.rules';
 import { generarCalculoPreliminarPeriodo } from '../rules/proceso-mensual-motor.rules';
 import { generarCalculoAnticipoPeriodo } from '../rules/proceso-mensual-motor-anticipo.rules';
+import { generarCalculoRectificacionPeriodo } from '../rules/proceso-mensual-motor-rectificacion.rules';
 import type { ReglaAnticipo } from '../models/nomina-plantilla-ciclo.models';
 import {
   buildGuardarSnapshotRechazado,
@@ -266,6 +267,30 @@ export class ProcesoMensualService {
       parametrosPeriodo: input.parametrosPeriodo,
       entradasMensuales: input.entradasMensuales,
     });
+    return resultado;
+  }
+
+  /** F17: motor diferencial contra snapshot de nómina origen cerrada. */
+  async generarCalculoRectificacionPeriodo(args: {
+    periodo: string;
+    trabajadorIds: readonly number[];
+    snapshotOrigen: NominaSnapshotCompletoView;
+    nominaOrigenId: string;
+    versionCalculoOrigen: number;
+    opciones?: { nominaPeriodoId?: string | null };
+  }): Promise<MotorCalculoPeriodoResultado> {
+    const p = args.periodo.trim();
+    const claveCache = args.opciones?.nominaPeriodoId ?? p;
+    const rectificado = await this.generarCalculoPeriodo(p, args.trabajadorIds, args.opciones ?? {});
+    const resultado = generarCalculoRectificacionPeriodo({
+      periodo: p,
+      snapshotOrigen: args.snapshotOrigen,
+      resultadoRectificado: rectificado,
+      nominaOrigenId: args.nominaOrigenId,
+      versionCalculoOrigen: args.versionCalculoOrigen,
+      generadoEn: new Date().toISOString(),
+    });
+    this.calculosPorPeriodo.set(claveCache, resultado);
     return resultado;
   }
 

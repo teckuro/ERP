@@ -8,12 +8,12 @@ import {
 
 describe('nomina-tipos-creacion.rules', () => {
   it('solo mensual cuando los gates están apagados', () => {
-    const opciones = opcionesTipoNominaCreacion({ anticipos: false, extraordinaria: false });
+    const opciones = opcionesTipoNominaCreacion({ anticipos: false, extraordinaria: false, rectificacion: false });
     expect(opciones.map((o) => o.id)).toEqual(['mensual']);
   });
 
   it('expone anticipos y extraordinaria según gates', () => {
-    const opciones = opcionesTipoNominaCreacion({ anticipos: true, extraordinaria: true });
+    const opciones = opcionesTipoNominaCreacion({ anticipos: true, extraordinaria: true, rectificacion: true });
     expect(opciones.map((o) => o.id)).toEqual(['mensual', 'quincenal', 'semanal', 'extraordinaria']);
   });
 
@@ -24,7 +24,7 @@ describe('nomina-tipos-creacion.rules', () => {
   });
 
   it('tipoNominaPermitido valida contra gates', () => {
-    const gates = { anticipos: true, extraordinaria: false };
+    const gates = { anticipos: true, extraordinaria: false, rectificacion: false };
     expect(tipoNominaPermitido('quincenal', gates)).toBe(true);
     expect(tipoNominaPermitido('extraordinaria', gates)).toBe(false);
   });

@@ -222,10 +222,11 @@ function permisosMock(opts?: { admin?: boolean; escribir?: boolean }) {
   };
 }
 
-function featureGatesMock(opts?: { anticipos?: boolean; extraordinaria?: boolean }) {
+function featureGatesMock(opts?: { anticipos?: boolean; extraordinaria?: boolean; rectificacion?: boolean }) {
   const gates = {
     anticipos: opts?.anticipos ?? false,
     extraordinaria: opts?.extraordinaria ?? false,
+    rectificacion: opts?.rectificacion ?? false,
   };
   return {
     gates: () => gates,

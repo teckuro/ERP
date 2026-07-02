@@ -125,6 +125,17 @@
               <lucide-icon name="refresh-cw" aria-hidden="true"></lucide-icon>
             </button>
           }
+          @if (puedeCrearRectificacionFila(fila)) {
+            <button
+              type="button"
+              class="adm-nom__row-action"
+              title="Crear rectificación"
+              [attr.aria-label]="'Crear rectificación de ' + fila.empresaNombre + ' ' + fila.periodo"
+              (click)="abrirRectificacion(fila)"
+            >
+              <lucide-icon name="git-branch" aria-hidden="true"></lucide-icon>
+            </button>
+          }
           @if (tieneLiquidaciones(fila.estado) && fila.evidenciaCalculo?.idCalculoPeriodo) {
             <button
               type="button"
@@ -175,6 +186,14 @@
     [periodoInicial]="periodoActivo.periodoYm()"
     (creada)="onNominaCreada($event)"
     (cerrar)="cerrarNuevaNomina()"
+  />
+}
+
+@if (rectificacionOrigen(); as origenRect) {
+  <app-admin-nominas-modal-rectificacion
+    [nominaOrigen]="origenRect"
+    (creada)="onRectificacionCreada($event)"
+    (cerrar)="cerrarRectificacion()"
   />
 }
 
