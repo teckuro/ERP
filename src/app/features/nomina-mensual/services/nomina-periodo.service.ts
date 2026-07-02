@@ -58,11 +58,13 @@ import type {
   EstadoMovimientoConfiguradoEnNomina,
   FilaMovimientoConfigurado,
   FilaTrabajadorMovimientos,
+  FiltroMovimientosPorTrabajador,
   ItemMovimientoTrabajador,
   MovimientoNomina,
   MovimientoNominaNuevo,
   MovimientoRecurrente,
   PreviewAccionMasivaTrabajadores,
+  ResumenMovimientosNomina,
 } from '../models/movimiento-nomina.models';
 import type { PayrollStepId, ResultadoAlcanceNomina } from '../../nomina-mensual-v2/models/nomina-mensual-v2.models';
 import { ORDEN_PASOS_NOMINA } from '../../nomina-mensual-v2/models/nomina-mensual-v2.models';
@@ -754,43 +756,60 @@ export class NominaPeriodoService {
    * Orden de items dentro de cada trabajador: pendientes → aplicados →
    * omitidos. Dentro de cada grupo, configurados antes que manuales.
    */
-  async listarMovimientosPorTrabajador(
+  async filtrarMovimientosPorTrabajador(
     nominaPeriodoId: string,
-  ): Promise<FilaTrabajadorMovimientos[]> {
+    filtro: FiltroMovimientosPorTrabajador,
+    paginacion: PaginacionGrilla,
+  ): Promise<{ filas: FilaTrabajadorMovimientos[]; total: number }> {
+    return this.repo.listarMovimientosTrabajadoresPaginado(nominaPeriodoId, filtro, paginacion);
+  }
+
+  /** BKL-02: stats globales del paso Movimientos sin cargar filas. */
+  async obtenerResumenMovimientos(
+    nominaPeriodoId: string,
+  ): Promise<ResumenMovimientosNomina> {
+    return this.repo.obtenerResumenMovimientos(nominaPeriodoId);
+  }
+
+  /**
+   * BKL-02: items (configurados + manuales) de UN trabajador, para hidratar el
+   * detalle expandible de la grilla server-side. Misma semántica que la vieja
+   * vista unificada completa, acotada a un trabajador:
+   *  - configurado pendiente / aplicado / omitido según `movimiento_nomina`;
+   *  - manuales del período con su propio estado;
+   *  - orden: pendientes → aplicados → omitidos; configurados antes que manuales.
+   */
+  async listarItemsMovimientosDeTrabajador(
+    nominaPeriodoId: string,
+    trabajadorId: string,
+  ): Promise<ItemMovimientoTrabajador[]> {
     const idEmpresa = await this.resolverEmpresaActiva();
     if (idEmpresa == null) return [];
 
-    const [nomina, recurrentes, movimientosExistentes, dotacion] = await Promise.all([
-      this.repo.obtenerNominaCompleta(nominaPeriodoId),
+    const [segmentos, recurrentes, movimientos] = await Promise.all([
+      this.repo.listarSegmentos(nominaPeriodoId),
       this.repo.listarRecurrentesActivos(idEmpresa),
-      this.repo.listarMovimientos(nominaPeriodoId),
-      this.repo.listarDotacionPaginada(
-        nominaPeriodoId,
-        {},
-        { page: 1, pageSize: 1000, total: 0 },
-      ),
+      this.repo.listarMovimientosDeTrabajador(nominaPeriodoId, trabajadorId),
     ]);
-    if (!nomina) return [];
 
-    const identidades = new Map<string, FilaTrabajadorNominaResumen>();
-    for (const fila of dotacion.filas) {
-      identidades.set(fila.trabajadorId, fila);
-    }
+    const segmentoDelTrabajador = segmentos.find((s) =>
+      s.trabajadorIds.includes(trabajadorId),
+    );
+    const estaEnDotacion = segmentos.some((s) => s.trabajadorIds.includes(trabajadorId));
 
-    // 1) Pre-cargar items por trabajador a partir de recurrentes (configurados).
-    const itemsPorTrabajador = new Map<string, ItemMovimientoTrabajador[]>();
-    for (const trabajadorId of nomina.trabajadorIds) {
-      itemsPorTrabajador.set(trabajadorId, []);
-    }
+    const items: ItemMovimientoTrabajador[] = [];
 
-    for (const recurrente of recurrentes) {
-      const trabajadores = this.resolverTrabajadoresParaRecurrente(nomina, recurrente);
-      for (const trabajadorId of trabajadores) {
-        const movimientoExistente = movimientosExistentes.find(
-          (m) =>
-            m.trabajadorId === trabajadorId &&
-            m.recurrenteId === recurrente.id &&
-            m.tipo === recurrente.tipo,
+    if (estaEnDotacion) {
+      for (const recurrente of recurrentes) {
+        const aplica = recurrente.trabajadorId
+          ? recurrente.trabajadorId === trabajadorId
+          : recurrente.segmentoId
+            ? recurrente.segmentoId === segmentoDelTrabajador?.id
+            : true;
+        if (!aplica) continue;
+
+        const movimientoExistente = movimientos.find(
+          (m) => m.recurrenteId === recurrente.id && m.tipo === recurrente.tipo,
         );
 
         const estado: EstadoItemMovimiento =
@@ -800,13 +819,11 @@ export class NominaPeriodoService {
               ? 'omitido'
               : 'aplicado';
 
-        const itemId =
-          movimientoExistente == null
-            ? `cfg::${trabajadorId}::${recurrente.id}::${recurrente.tipo}`
-            : `mov::${movimientoExistente.id}`;
-
-        const item: ItemMovimientoTrabajador = {
-          itemId,
+        items.push({
+          itemId:
+            movimientoExistente == null
+              ? `cfg::${trabajadorId}::${recurrente.id}::${recurrente.tipo}`
+              : `mov::${movimientoExistente.id}`,
           origen: 'configurado',
           estado,
           concepto: recurrente.tipo,
@@ -820,24 +837,16 @@ export class NominaPeriodoService {
           glosa: recurrente.glosa,
           recurrenteId: recurrente.id,
           movimientoNominaId: movimientoExistente?.id,
-        };
-
-        const bucket = itemsPorTrabajador.get(trabajadorId) ?? [];
-        bucket.push(item);
-        itemsPorTrabajador.set(trabajadorId, bucket);
+        });
       }
     }
 
-    // 2) Añadir items manuales (no tienen recurrenteId).
-    for (const movimiento of movimientosExistentes) {
+    for (const movimiento of movimientos) {
       if (movimiento.origen !== 'manual') continue;
-      const estado: EstadoItemMovimiento =
-        movimiento.estado === 'omitido' ? 'omitido' : 'aplicado';
-
-      const item: ItemMovimientoTrabajador = {
+      items.push({
         itemId: `mov::${movimiento.id}`,
         origen: 'manual',
-        estado,
+        estado: movimiento.estado === 'omitido' ? 'omitido' : 'aplicado',
         concepto: movimiento.tipo,
         categoria: movimiento.categoria,
         monto: movimiento.monto,
@@ -845,58 +854,7 @@ export class NominaPeriodoService {
         unidad: movimiento.unidad,
         glosa: movimiento.glosa,
         movimientoNominaId: movimiento.id,
-      };
-
-      const bucket = itemsPorTrabajador.get(movimiento.trabajadorId) ?? [];
-      bucket.push(item);
-      itemsPorTrabajador.set(movimiento.trabajadorId, bucket);
-    }
-
-    // 3) Construir filas por trabajador con agregaciones.
-    const filas: FilaTrabajadorMovimientos[] = [];
-    for (const trabajadorId of nomina.trabajadorIds) {
-      const items = itemsPorTrabajador.get(trabajadorId) ?? [];
-      const identidad = identidades.get(trabajadorId);
-      filas.push(
-        this.armarFilaTrabajadorMovimientos(trabajadorId, identidad, items),
-      );
-    }
-
-    return filas;
-  }
-
-  private armarFilaTrabajadorMovimientos(
-    trabajadorId: string,
-    identidad: FilaTrabajadorNominaResumen | undefined,
-    items: ItemMovimientoTrabajador[],
-  ): FilaTrabajadorMovimientos {
-    let totalHaberes = 0;
-    let totalDescuentos = 0;
-    let cuentaAusencias = 0;
-    let cuentaInformativos = 0;
-    let cuentaPendientes = 0;
-    let cuentaAplicados = 0;
-    let cuentaOmitidos = 0;
-    let cuentaManualesAplicados = 0;
-
-    for (const item of items) {
-      if (item.estado === 'pendiente') cuentaPendientes += 1;
-      else if (item.estado === 'aplicado') cuentaAplicados += 1;
-      else if (item.estado === 'omitido') cuentaOmitidos += 1;
-
-      if (item.origen === 'manual' && item.estado === 'aplicado') {
-        cuentaManualesAplicados += 1;
-      }
-
-      if (item.estado === 'aplicado' && typeof item.monto === 'number') {
-        if (item.categoria === 'haber') totalHaberes += item.monto;
-        else if (item.categoria === 'descuento') totalDescuentos += item.monto;
-      }
-
-      if (item.estado !== 'omitido') {
-        if (item.categoria === 'ausencia') cuentaAusencias += 1;
-        else if (item.categoria === 'informativo') cuentaInformativos += 1;
-      }
+      });
     }
 
     const ordenEstado = (estado: EstadoItemMovimiento): number =>
@@ -904,28 +862,11 @@ export class NominaPeriodoService {
     const ordenOrigen = (origen: ItemMovimientoTrabajador['origen']): number =>
       origen === 'configurado' ? 0 : 1;
 
-    const ordenados = [...items].sort((a, b) => {
+    return items.sort((a, b) => {
       const dEstado = ordenEstado(a.estado) - ordenEstado(b.estado);
       if (dEstado !== 0) return dEstado;
       return ordenOrigen(a.origen) - ordenOrigen(b.origen);
     });
-
-    return {
-      trabajadorId,
-      nombre: identidad?.nombre ?? 'Trabajador sin identificar',
-      rut: identidad?.rut ?? '',
-      cargo: identidad?.cargo,
-      centroCosto: identidad?.centroCosto,
-      totalHaberes,
-      totalDescuentos,
-      cuentaAusencias,
-      cuentaInformativos,
-      cuentaPendientes,
-      cuentaAplicados,
-      cuentaOmitidos,
-      cuentaManualesAplicados,
-      items: ordenados,
-    };
   }
 
   /**

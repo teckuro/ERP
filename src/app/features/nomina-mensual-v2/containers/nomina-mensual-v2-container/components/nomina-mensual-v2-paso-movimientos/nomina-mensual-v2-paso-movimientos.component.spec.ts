@@ -67,9 +67,20 @@ function configurarTestBed(servicio: Record<string, unknown>): void {
 describe('NominaMensualV2PasoMovimientosComponent (UI unificada)', () => {
   let servicio: Record<string, unknown>;
 
+  const RESUMEN_VACIO = {
+    trabajadoresConMovimientos: 0,
+    trabajadoresConPendientes: 0,
+    totalHaberes: 0,
+    totalDescuentos: 0,
+    totalPendientes: 0,
+    totalAplicados: 0,
+  };
+
   beforeEach(() => {
     servicio = {
-      listarMovimientosPorTrabajador: vi.fn().mockResolvedValue([]),
+      filtrarMovimientosPorTrabajador: vi.fn().mockResolvedValue({ filas: [], total: 0 }),
+      obtenerResumenMovimientos: vi.fn().mockResolvedValue(RESUMEN_VACIO),
+      listarItemsMovimientosDeTrabajador: vi.fn().mockResolvedValue([]),
       filtrarDotacion: vi.fn().mockResolvedValue({
         filas: [
           dotacionMock({ trabajadorId: 'tr-1', nombre: 'Carlos Soto', rut: '17.222.333-4' }),
@@ -87,12 +98,22 @@ describe('NominaMensualV2PasoMovimientosComponent (UI unificada)', () => {
     };
   });
 
-  it('cargar() hidrata filasTrabajadores desde listarMovimientosPorTrabajador', async () => {
+  it('cargar() hidrata filasTrabajadores y stats desde el servidor (BKL-02)', async () => {
     const filas = [
-      filaMock({ trabajadorId: 'tr-1', cuentaPendientes: 2, items: [itemMock()] }),
+      filaMock({ trabajadorId: 'tr-1', cuentaPendientes: 2, itemsCargados: false, cuentaItems: 2 }),
       filaMock({ trabajadorId: 'tr-2', nombre: 'María Rojas', totalHaberes: 5000, cuentaAplicados: 1 }),
     ];
-    (servicio['listarMovimientosPorTrabajador'] as ReturnType<typeof vi.fn>).mockResolvedValue(filas);
+    (servicio['filtrarMovimientosPorTrabajador'] as ReturnType<typeof vi.fn>).mockResolvedValue({
+      filas,
+      total: 2,
+    });
+    (servicio['obtenerResumenMovimientos'] as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ...RESUMEN_VACIO,
+      trabajadoresConPendientes: 1,
+      totalHaberes: 5000,
+      totalPendientes: 2,
+      totalAplicados: 1,
+    });
 
     configurarTestBed(servicio);
     const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
@@ -101,16 +122,18 @@ describe('NominaMensualV2PasoMovimientosComponent (UI unificada)', () => {
 
     await cmp.cargar();
 
-    expect(servicio['listarMovimientosPorTrabajador']).toHaveBeenCalledWith('np-1');
+    expect(servicio['filtrarMovimientosPorTrabajador']).toHaveBeenCalledWith(
+      'np-1',
+      {},
+      expect.objectContaining({ page: 1, pageSize: 25 }),
+    );
     expect(cmp.filasTrabajadores()).toEqual(filas);
+    expect(cmp.totalFiltrado()).toBe(2);
     expect(cmp.statsGlobales().trabajadoresConPendientes).toBe(1);
     expect(cmp.statsGlobales().totalHaberes).toBe(5000);
   });
 
   it('CTA "Cargar todos los pendientes" deshabilitado cuando no hay pendientes', async () => {
-    (servicio['listarMovimientosPorTrabajador'] as ReturnType<typeof vi.fn>).mockResolvedValue([
-      filaMock({ cuentaAplicados: 1 }),
-    ]);
     configurarTestBed(servicio);
     const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
     fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
@@ -119,6 +142,48 @@ describe('NominaMensualV2PasoMovimientosComponent (UI unificada)', () => {
 
     expect(cmp.hayPendientesGlobales()).toBe(false);
     expect(cmp.statsGlobales().totalPendientes).toBe(0);
+  });
+
+  it('manejarConsultaServidor traduce filtros de grilla y recarga la página', async () => {
+    configurarTestBed(servicio);
+    const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+    fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+    const cmp = fixture.componentInstance;
+
+    await cmp.manejarConsultaServidor({
+      page: 2,
+      pageSize: 50,
+      filterValues: { estado: 'con-pendientes', buscar: ' ana ' },
+    });
+
+    expect(servicio['filtrarMovimientosPorTrabajador']).toHaveBeenLastCalledWith(
+      'np-1',
+      { estado: 'con-pendientes', busqueda: 'ana' },
+      expect.objectContaining({ page: 2, pageSize: 50 }),
+    );
+  });
+
+  it('expandir una fila sin items hidrata el detalle vía listarItemsMovimientosDeTrabajador', async () => {
+    const fila = filaMock({ trabajadorId: 'tr-1', itemsCargados: false, cuentaItems: 1 });
+    (servicio['filtrarMovimientosPorTrabajador'] as ReturnType<typeof vi.fn>).mockResolvedValue({
+      filas: [fila],
+      total: 1,
+    });
+    const items = [itemMock({ estado: 'aplicado', movimientoNominaId: 'mov-1' })];
+    (servicio['listarItemsMovimientosDeTrabajador'] as ReturnType<typeof vi.fn>).mockResolvedValue(items);
+
+    configurarTestBed(servicio);
+    const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+    fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+    const cmp = fixture.componentInstance;
+    await cmp.cargar();
+
+    await cmp.manejarExpansionFila({ row: cmp.filasTrabajadores()[0], expanded: true });
+
+    expect(servicio['listarItemsMovimientosDeTrabajador']).toHaveBeenCalledWith('np-1', 'tr-1');
+    const actualizada = cmp.filasTrabajadores()[0];
+    expect(actualizada.items).toEqual(items);
+    expect(actualizada.itemsCargados).toBe(true);
   });
 
   it('cargarPendientesGlobales delega en aplicarRecurrentesANomina y compone mensaje humano', async () => {
@@ -282,10 +347,11 @@ describe('NominaMensualV2PasoMovimientosComponent (UI unificada)', () => {
       expect(r.ok).toBe(false);
     });
 
-    it('retorna ok:true cuando hay al menos una fila con aplicados', async () => {
-      (servicio['listarMovimientosPorTrabajador'] as ReturnType<typeof vi.fn>).mockResolvedValue([
-        filaMock({ cuentaAplicados: 1 }),
-      ]);
+    it('retorna ok:true cuando el resumen global reporta aplicados', async () => {
+      (servicio['obtenerResumenMovimientos'] as ReturnType<typeof vi.fn>).mockResolvedValue({
+        ...RESUMEN_VACIO,
+        totalAplicados: 1,
+      });
       configurarTestBed(servicio);
       const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
       fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
@@ -307,6 +373,13 @@ describe('NominaMensualV2PasoMovimientosComponent (UI unificada)', () => {
 
   describe('cache de identidades (compat con specs previos)', () => {
     it('hidrata cache al cargar', async () => {
+      (servicio['filtrarMovimientosPorTrabajador'] as ReturnType<typeof vi.fn>).mockResolvedValue({
+        filas: [
+          filaMock({ trabajadorId: 'tr-1', nombre: 'Carlos Soto', rut: '17.222.333-4' }),
+          filaMock({ trabajadorId: 'tr-2', nombre: 'María Rojas', rut: '18.444.555-6' }),
+        ],
+        total: 2,
+      });
       configurarTestBed(servicio);
       const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
       fixture.componentRef.setInput('nominaPeriodoId', 'np-1');

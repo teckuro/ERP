@@ -284,6 +284,32 @@ export interface FilaTrabajadorMovimientos {
   cuentaManualesAplicados: number;
 
   items: ItemMovimientoTrabajador[];
+
+  /**
+   * BKL-02 (paginación servidor): la fila llega agregada desde RPC sin items;
+   * estos se hidratan al expandir vía `listarItemsMovimientosDeTrabajador`.
+   * `undefined` = flujo legacy (items ya vienen); `false` = pendiente de cargar.
+   */
+  itemsCargados?: boolean;
+  /** Total de items reportado por el servidor (para placeholder al expandir). */
+  cuentaItems?: number;
+}
+
+/** Filtros del paso Movimientos resueltos en servidor (BKL-02). */
+export interface FiltroMovimientosPorTrabajador {
+  busqueda?: string;
+  estado?: 'con-pendientes' | 'solo-aplicados' | 'con-omitidos';
+  categoria?: 'con-haberes' | 'con-descuentos' | 'con-ausencias' | 'con-informativos';
+}
+
+/** Stats globales del paso Movimientos (RPC `resumen_movimientos_nomina`). */
+export interface ResumenMovimientosNomina {
+  trabajadoresConMovimientos: number;
+  trabajadoresConPendientes: number;
+  totalHaberes: number;
+  totalDescuentos: number;
+  totalPendientes: number;
+  totalAplicados: number;
 }
 
 /**

@@ -94,7 +94,11 @@
       [filtersEnabled]="true"
       [filtersCollapsible]="false"
       [filterChipsDisplay]="'always'"
-      [maxItems]="25"
+      [serverSide]="true"
+      [totalRowCount]="totalFiltrado()"
+      [maxItems]="pageSize()"
+      (serverQueryChange)="manejarConsultaServidor($event)"
+      (rowExpandToggle)="manejarExpansionFila($event)"
       [persistenceKey]="persistenciaGrilla"
       [expandableRows]="true"
       [expandAnchorColumnId]="'trabajador'"
@@ -234,7 +238,9 @@
               >&times;</button>
             </div>
           </header>
-          @if (fila.items.length === 0) {
+          @if (estaCargandoItemsDeFila(fila.trabajadorId) || (fila.itemsCargados === false && fila.cuentaItems)) {
+            <p class="paso-mov__detalle-empty" role="status">Cargando movimientos del trabajador…</p>
+          } @else if (fila.items.length === 0) {
             <p class="paso-mov__detalle-empty">
               Este trabajador no tiene movimientos configurados ni manuales. Usa
               <strong>Agregar movimiento</strong> para registrar uno.

@@ -29,9 +29,11 @@ import { X as XIcon } from 'lucide-angular/src/icons';
 
 import type {
   FilaTrabajadorMovimientos,
+  FiltroMovimientosPorTrabajador,
   ItemMovimientoTrabajador,
   MovimientoCategoria,
   MovimientoTipo,
+  ResumenMovimientosNomina,
 } from '../../../../../nomina-mensual/models/movimiento-nomina.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
 import type { FilaTrabajadorNominaResumen } from '../../../../../nomina-mensual/models/nomina-periodo.models';
@@ -43,17 +45,19 @@ import {
   DataGridCellDirective,
   DataGridComponent,
   DataGridRowDetailDirective,
+  type DataGridServerQuery,
 } from '../../../../../../shared/components/ui/data-grid';
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import {
-  calcularStatsMovimientosPorTrabajador,
   COLUMNAS_MOVIMIENTOS_POR_TRABAJADOR,
   etiquetaEstadoItem,
   etiquetaOrigenItem,
   FILTROS_MOVIMIENTOS_POR_TRABAJADOR,
+  filtroMovimientosDesdeGrid,
   itemAdmiteEliminacion,
   PERSISTENCIA_GRILLA_MOVIMIENTOS_POR_TRABAJADOR,
+  statsDesdeResumenMovimientos,
   type StatsMovimientosPorTrabajador,
 } from '../../../../presenters/nomina-movimientos-por-trabajador.presenter';
 
@@ -69,6 +73,15 @@ const BORRADOR_MANUAL_INICIAL: BorradorManual = {
   trabajadorId: '',
   tipo: 'haber-extra',
   categoria: 'haber',
+};
+
+const RESUMEN_MOVIMIENTOS_VACIO: ResumenMovimientosNomina = {
+  trabajadoresConMovimientos: 0,
+  trabajadoresConPendientes: 0,
+  totalHaberes: 0,
+  totalDescuentos: 0,
+  totalPendientes: 0,
+  totalAplicados: 0,
 };
 
 @Component({
@@ -103,8 +116,16 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
   readonly error = signal<string | null>(null);
   readonly mensaje = signal<string | null>(null);
 
-  /** Filas agrupadas por trabajador (vista unificada). */
+  /** Filas agrupadas por trabajador (página actual, agregadas en servidor). */
   readonly filasTrabajadores = signal<FilaTrabajadorMovimientos[]>([]);
+  /** Total de trabajadores del filtro vigente (paginación servidor). */
+  readonly totalFiltrado = signal(0);
+  /** Stats globales desde RPC (independientes de la página visible). */
+  readonly resumen = signal<ResumenMovimientosNomina>(RESUMEN_MOVIMIENTOS_VACIO);
+  /** Filtro vigente traducido desde la grilla (server-side). */
+  readonly filtro = signal<FiltroMovimientosPorTrabajador>({});
+  readonly pagina = signal(1);
+  readonly pageSize = signal(25);
   /** Trabajadores de la dotación (alimenta el modal manual). */
   readonly trabajadores = signal<FilaTrabajadorNominaResumen[]>([]);
   /** Búsqueda incremental del search del modal manual. */
@@ -138,7 +159,7 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
   );
   readonly persistenciaGrilla = PERSISTENCIA_GRILLA_MOVIMIENTOS_POR_TRABAJADOR;
   readonly statsGlobales = computed<StatsMovimientosPorTrabajador>(() =>
-    calcularStatsMovimientosPorTrabajador(this.filasTrabajadores()),
+    statsDesdeResumenMovimientos(this.resumen()),
   );
 
   /** TrackBy estable por trabajador. */
@@ -157,10 +178,8 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
   /** Hay al menos un pendiente global → CTA "Cargar pendientes" habilitado. */
   readonly hayPendientesGlobales = computed(() => this.statsGlobales().totalPendientes > 0);
 
-  /** El paso queda válido cuando hay al menos un movimiento aplicado. */
-  readonly puedeAvanzar = computed(() =>
-    this.filasTrabajadores().some((f) => f.cuentaAplicados > 0),
-  );
+  /** El paso queda válido cuando hay al menos un movimiento aplicado (global, no por página). */
+  readonly puedeAvanzar = computed(() => this.resumen().totalAplicados > 0);
 
   /** Identidades para fallback en mensajes (compatibilidad con specs previos). */
   private readonly identidadesTrabajador = new Map<
@@ -168,10 +187,20 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
     { nombre: string; rut: string }
   >();
 
+  /** Filas expandidas cuya carga de items está en curso (placeholder en UI). */
+  readonly itemsCargando = signal<Set<string>>(new Set());
+  /** Filas actualmente expandidas (para re-hidratar items tras una acción). */
+  private readonly filasExpandidas = new Set<string>();
+
   constructor() {
     effect(() => {
       const id = this.nominaPeriodoId();
-      if (id) void this.cargar();
+      if (id) {
+        this.pagina.set(1);
+        this.filtro.set({});
+        this.filasExpandidas.clear();
+        void this.cargar(true);
+      }
     });
   }
 
@@ -192,24 +221,103 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
     return this.identidadesTrabajador.get(trabajadorId)?.rut ?? '';
   }
 
-  async cargar(): Promise<void> {
+  async cargar(refrescarResumen = true): Promise<void> {
     const id = this.nominaPeriodoId();
     if (!id) return;
     this.loading.set(true);
     this.error.set(null);
     try {
-      const [filas, dotacion] = await Promise.all([
-        this.servicio.listarMovimientosPorTrabajador(id),
-        this.servicio.filtrarDotacion(id, {}, { page: 1, pageSize: 1000, total: 0 }),
+      const paginacion = { page: this.pagina(), pageSize: this.pageSize(), total: 0 };
+      const [pagina, resumen] = await Promise.all([
+        this.servicio.filtrarMovimientosPorTrabajador(id, this.filtro(), paginacion),
+        refrescarResumen
+          ? this.servicio.obtenerResumenMovimientos(id)
+          : Promise.resolve(this.resumen()),
       ]);
-      this.filasTrabajadores.set(filas);
-      this.trabajadores.set(dotacion.filas);
-      this.sincronizarIdentidades(dotacion.filas);
+      this.filasTrabajadores.set(pagina.filas);
+      this.totalFiltrado.set(pagina.total);
+      if (refrescarResumen) {
+        this.resumen.set(resumen);
+      }
+      this.sincronizarIdentidadesDesdeFilas(pagina.filas);
+      await this.rehidratarItemsExpandidos(id, pagina.filas);
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido';
       this.error.set(`No fue posible cargar los movimientos: ${mensaje}`);
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  async manejarConsultaServidor(consulta: DataGridServerQuery): Promise<void> {
+    this.pagina.set(consulta.page);
+    this.pageSize.set(consulta.pageSize);
+    this.filtro.set(filtroMovimientosDesdeGrid(consulta.filterValues));
+    await this.cargar(false);
+  }
+
+  // -- Detalle expandible: items lazy (BKL-02) --------------------------------
+
+  async manejarExpansionFila(evento: {
+    row: FilaTrabajadorMovimientos;
+    expanded: boolean;
+  }): Promise<void> {
+    const trabajadorId = evento.row.trabajadorId;
+    if (!evento.expanded) {
+      this.filasExpandidas.delete(trabajadorId);
+      return;
+    }
+    this.filasExpandidas.add(trabajadorId);
+    if (evento.row.itemsCargados !== false) return;
+    await this.cargarItemsDeFila(trabajadorId);
+  }
+
+  estaCargandoItemsDeFila(trabajadorId: string): boolean {
+    return this.itemsCargando().has(trabajadorId);
+  }
+
+  private async cargarItemsDeFila(trabajadorId: string): Promise<void> {
+    const id = this.nominaPeriodoId();
+    if (!id) return;
+    this.itemsCargando.update((s) => new Set(s).add(trabajadorId));
+    try {
+      const items = await this.servicio.listarItemsMovimientosDeTrabajador(id, trabajadorId);
+      this.filasTrabajadores.update((filas) =>
+        filas.map((fila) =>
+          fila.trabajadorId === trabajadorId
+            ? { ...fila, items, itemsCargados: true }
+            : fila,
+        ),
+      );
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido';
+      this.error.set(`No fue posible cargar el detalle del trabajador: ${mensaje}`);
+    } finally {
+      this.itemsCargando.update((s) => {
+        const nuevo = new Set(s);
+        nuevo.delete(trabajadorId);
+        return nuevo;
+      });
+    }
+  }
+
+  /** Tras recargar la página, vuelve a hidratar los items de filas aún expandidas. */
+  private async rehidratarItemsExpandidos(
+    _nominaId: string,
+    filas: FilaTrabajadorMovimientos[],
+  ): Promise<void> {
+    const visibles = filas
+      .filter((f) => this.filasExpandidas.has(f.trabajadorId) && f.itemsCargados === false)
+      .map((f) => f.trabajadorId);
+    await Promise.all(visibles.map((trabajadorId) => this.cargarItemsDeFila(trabajadorId)));
+  }
+
+  private sincronizarIdentidadesDesdeFilas(filas: FilaTrabajadorMovimientos[]): void {
+    for (const fila of filas) {
+      this.identidadesTrabajador.set(fila.trabajadorId, {
+        nombre: fila.nombre,
+        rut: fila.rut,
+      });
     }
   }
 
@@ -383,6 +491,11 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
       this.trabajadorPreseleccionadoModal.set(ficha);
     } else {
       this.trabajadorPreseleccionadoModal.set(null);
+      // Sin preselección el select necesita opciones: primera página de la
+      // dotación vía servidor (la búsqueda incremental refina después).
+      if (this.trabajadores().length === 0) {
+        void this.buscarTrabajadores('');
+      }
     }
     this.error.set(null);
     this.modalManualAbierto.set(true);

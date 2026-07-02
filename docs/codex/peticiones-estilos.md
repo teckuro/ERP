@@ -9,6 +9,23 @@
 
 ---
 
+## 2026-07-02 — Generador Nómina V2: paso Movimientos escalable (BKL-02)
+
+- **Grilla por trabajador en modo servidor:** paginación 25/página y filtros
+  (Estado / Tipo de movimiento / Buscar) resueltos por RPC
+  `listar_movimientos_trabajadores_nomina`; se eliminó la carga de dotación
+  con techo `pageSize: 1000` (que además el RPC truncaba a 200 identidades).
+- **Stats del header:** desde RPC `resumen_movimientos_nomina` (globales de la
+  nómina, no de la página visible); el CTA «Cargar todos los pendientes» y el
+  avance del paso usan esos totales.
+- **Detalle expandible lazy:** los items del trabajador se hidratan al expandir
+  la fila, con placeholder «Cargando movimientos del trabajador…»; sin cambio
+  de layout ni paleta.
+- **Modal manual:** el select de trabajadores se puebla al abrir (primera página
+  server-side), no en la carga del paso.
+
+---
+
 ## 2026-07-02 — Generador Nómina V2: F07b cierre dotación escalable (NOM-ADMIN-OPS-F07b)
 
 - **Selección de universo filtrado (`app-data-grid`, opt-in `bulkSelectAllFiltered`):**

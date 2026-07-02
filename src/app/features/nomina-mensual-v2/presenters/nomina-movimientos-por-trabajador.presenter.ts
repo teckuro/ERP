@@ -19,12 +19,15 @@
 import type {
   DataGridColumn,
   DataGridFilter,
+  DataGridFilterValue,
 } from '../../../shared/components/ui/data-grid/data-grid.types';
 import type {
   EstadoItemMovimiento,
   FilaTrabajadorMovimientos,
+  FiltroMovimientosPorTrabajador,
   ItemMovimientoTrabajador,
   OrigenMovimientoTrabajador,
+  ResumenMovimientosNomina,
 } from '../../nomina-mensual/models/movimiento-nomina.models';
 
 /** Clave de persistencia local de la grilla por trabajador. */
@@ -62,6 +65,47 @@ export function calcularStatsMovimientosPorTrabajador(
     stats.totalPendientes += fila.cuentaPendientes;
   }
   return stats;
+}
+
+/** BKL-02: stats globales desde RPC `resumen_movimientos_nomina` (sin recorrer filas). */
+export function statsDesdeResumenMovimientos(
+  resumen: ResumenMovimientosNomina,
+): StatsMovimientosPorTrabajador {
+  return {
+    trabajadoresConMovimientos: resumen.trabajadoresConMovimientos,
+    trabajadoresConPendientes: resumen.trabajadoresConPendientes,
+    totalHaberes: resumen.totalHaberes,
+    totalDescuentos: resumen.totalDescuentos,
+    totalPendientes: resumen.totalPendientes,
+  };
+}
+
+/**
+ * BKL-02: traduce los valores de filtros del `app-data-grid` (modo servidor)
+ * al filtro que consume la RPC `listar_movimientos_trabajadores_nomina`.
+ */
+export function filtroMovimientosDesdeGrid(
+  values: Record<string, DataGridFilterValue>,
+): FiltroMovimientosPorTrabajador {
+  const filtro: FiltroMovimientosPorTrabajador = {};
+  const buscar = values['buscar'];
+  if (typeof buscar === 'string' && buscar.trim()) {
+    filtro.busqueda = buscar.trim();
+  }
+  const estado = values['estado'];
+  if (estado === 'con-pendientes' || estado === 'solo-aplicados' || estado === 'con-omitidos') {
+    filtro.estado = estado;
+  }
+  const categoria = values['categoria'];
+  if (
+    categoria === 'con-haberes' ||
+    categoria === 'con-descuentos' ||
+    categoria === 'con-ausencias' ||
+    categoria === 'con-informativos'
+  ) {
+    filtro.categoria = categoria;
+  }
+  return filtro;
 }
 
 // -----------------------------------------------------------------------------

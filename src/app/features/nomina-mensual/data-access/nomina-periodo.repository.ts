@@ -44,9 +44,12 @@ import {
   mapNominaCreatePreview,
 } from '../mappers/nomina-creacion-preview.mapper';
 import type {
+  FilaTrabajadorMovimientos,
+  FiltroMovimientosPorTrabajador,
   MovimientoNomina,
   MovimientoNominaNuevo,
   MovimientoRecurrente,
+  ResumenMovimientosNomina,
 } from '../models/movimiento-nomina.models';
 import type { PayrollStepId } from '../../nomina-mensual-v2/models/nomina-mensual-v2.models';
 import {
@@ -573,6 +576,83 @@ export class NominaPeriodoRepository {
       .eq('id_nomina_periodo', nominaPeriodoId);
     throwIfError(error, 'listarMovimientos');
     return (data ?? []).map(rowToMovimientoNomina);
+  }
+
+  /** BKL-02: movimientos de UN trabajador dentro de la nómina (payload acotado). */
+  async listarMovimientosDeTrabajador(
+    nominaPeriodoId: string,
+    trabajadorId: string,
+  ): Promise<MovimientoNomina[]> {
+    const { data, error } = await this.supabase
+      .from('movimiento_nomina')
+      .select('*')
+      .eq('id_nomina_periodo', nominaPeriodoId)
+      .eq('id_persona', Number(trabajadorId));
+    throwIfError(error, 'listarMovimientosDeTrabajador');
+    return (data ?? []).map(rowToMovimientoNomina);
+  }
+
+  /**
+   * BKL-02: filas agregadas por trabajador del paso Movimientos, con filtros
+   * y paginación resueltos en servidor (RPC `listar_movimientos_trabajadores_nomina`).
+   * Las filas llegan sin items (`itemsCargados: false`); estos se hidratan al
+   * expandir la fila.
+   */
+  async listarMovimientosTrabajadoresPaginado(
+    nominaPeriodoId: string,
+    filtro: FiltroMovimientosPorTrabajador,
+    paginacion: PaginacionGrilla,
+  ): Promise<{ filas: FilaTrabajadorMovimientos[]; total: number }> {
+    const { data, error } = await this.supabase.rpc('listar_movimientos_trabajadores_nomina', {
+      p_nomina_id: nominaPeriodoId,
+      p_page: paginacion.page,
+      p_page_size: paginacion.pageSize,
+      p_busqueda: filtro.busqueda ?? undefined,
+      p_estado: filtro.estado ?? undefined,
+      p_categoria: filtro.categoria ?? undefined,
+    });
+    throwIfError(error, 'listarMovimientosTrabajadoresPaginado');
+    const rows = data ?? [];
+    return {
+      total: Number(rows[0]?.total_count ?? 0),
+      filas: rows.map((row) => ({
+        trabajadorId: String(row.trabajador_id),
+        nombre: row.nombre,
+        rut: row.rut,
+        cargo: row.cargo || undefined,
+        centroCosto: row.departamento || undefined,
+        totalHaberes: Number(row.total_haberes ?? 0),
+        totalDescuentos: Number(row.total_descuentos ?? 0),
+        cuentaAusencias: Number(row.cuenta_ausencias ?? 0),
+        cuentaInformativos: Number(row.cuenta_informativos ?? 0),
+        cuentaPendientes: Number(row.cuenta_pendientes ?? 0),
+        cuentaAplicados: Number(row.cuenta_aplicados ?? 0),
+        cuentaOmitidos: Number(row.cuenta_omitidos ?? 0),
+        cuentaManualesAplicados: Number(row.cuenta_manuales_aplicados ?? 0),
+        items: [],
+        itemsCargados: false,
+        cuentaItems: Number(row.cuenta_items ?? 0),
+      })),
+    };
+  }
+
+  /** BKL-02: stats globales del paso Movimientos sin cargar filas. */
+  async obtenerResumenMovimientos(
+    nominaPeriodoId: string,
+  ): Promise<ResumenMovimientosNomina> {
+    const { data, error } = await this.supabase.rpc('resumen_movimientos_nomina', {
+      p_nomina_id: nominaPeriodoId,
+    });
+    throwIfError(error, 'obtenerResumenMovimientos');
+    const row = (data ?? [])[0];
+    return {
+      trabajadoresConMovimientos: Number(row?.trabajadores_con_movimientos ?? 0),
+      trabajadoresConPendientes: Number(row?.trabajadores_con_pendientes ?? 0),
+      totalHaberes: Number(row?.total_haberes ?? 0),
+      totalDescuentos: Number(row?.total_descuentos ?? 0),
+      totalPendientes: Number(row?.total_pendientes ?? 0),
+      totalAplicados: Number(row?.total_aplicados ?? 0),
+    };
   }
 
   async obtenerMovimiento(id: string): Promise<MovimientoNomina | null> {

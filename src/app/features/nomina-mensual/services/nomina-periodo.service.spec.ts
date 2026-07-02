@@ -105,6 +105,9 @@ interface RepoMock {
   listarRecurrentes: ReturnType<typeof vi.fn>;
   listarRecurrentesActivos: ReturnType<typeof vi.fn>;
   listarMovimientos: ReturnType<typeof vi.fn>;
+  listarMovimientosDeTrabajador: ReturnType<typeof vi.fn>;
+  listarMovimientosTrabajadoresPaginado: ReturnType<typeof vi.fn>;
+  obtenerResumenMovimientos: ReturnType<typeof vi.fn>;
   obtenerMovimiento: ReturnType<typeof vi.fn>;
   insertarMovimientos: ReturnType<typeof vi.fn>;
   actualizarEstadoMovimiento: ReturnType<typeof vi.fn>;
@@ -139,6 +142,16 @@ function repoMock(): RepoMock {
     listarRecurrentes: vi.fn().mockResolvedValue([]),
     listarRecurrentesActivos: vi.fn().mockResolvedValue([]),
     listarMovimientos: vi.fn().mockResolvedValue([]),
+    listarMovimientosDeTrabajador: vi.fn().mockResolvedValue([]),
+    listarMovimientosTrabajadoresPaginado: vi.fn().mockResolvedValue({ filas: [], total: 0 }),
+    obtenerResumenMovimientos: vi.fn().mockResolvedValue({
+      trabajadoresConMovimientos: 0,
+      trabajadoresConPendientes: 0,
+      totalHaberes: 0,
+      totalDescuentos: 0,
+      totalPendientes: 0,
+      totalAplicados: 0,
+    }),
     obtenerMovimiento: vi.fn().mockResolvedValue(null),
     insertarMovimientos: vi.fn().mockResolvedValue([]),
     actualizarEstadoMovimiento: vi.fn().mockResolvedValue(undefined),
@@ -508,27 +521,8 @@ describe('NominaPeriodoService', () => {
     expect(repo.insertarMovimientos).not.toHaveBeenCalled();
   });
 
-  describe('listarMovimientosPorTrabajador (vista unificada)', () => {
-    function dotacionMock(idTrabajadores: string[]) {
-      return {
-        filas: idTrabajadores.map((id) => ({
-          trabajadorId: id,
-          nombre: `Trabajador ${id}`,
-          rut: `${id}-K`,
-          cargo: 'cargo',
-          centroCosto: 'CC',
-          estado: 'listo' as const,
-          totalIncidenciasCriticas: 0,
-          totalAdvertencias: 0,
-          totalMovimientos: 0,
-          tieneDatosBancarios: true,
-          tieneDatosPrevisionales: true,
-        })),
-        total: idTrabajadores.length,
-      };
-    }
-
-    it('trabajador con 2 configurados pendientes + 1 manual aplicado: subtotal solo del manual', async () => {
+  describe('listarItemsMovimientosDeTrabajador (detalle expandible BKL-02)', () => {
+    it('2 configurados pendientes + 1 manual aplicado: estados y orden correctos', async () => {
       const movManual: MovimientoNomina = {
         id: 'mov-manual',
         nominaPeriodoId: 'nom-1',
@@ -541,112 +535,83 @@ describe('NominaPeriodoService', () => {
         createdAt: '2026-06-04T00:00:00Z',
         updatedAt: '2026-06-04T00:00:00Z',
       };
-      repo.obtenerNominaCompleta.mockResolvedValue(
-        nomina({ trabajadorIds: ['10'], movimientos: [movManual] }),
-      );
+      repo.listarSegmentos.mockResolvedValue([segmento({ trabajadorIds: ['10'] })]);
       repo.listarRecurrentesActivos.mockResolvedValue([
         recurrente({ id: 'rec-1', tipo: 'BONO_A', monto: 1000 }),
         recurrente({ id: 'rec-2', tipo: 'BONO_B', monto: 2000 }),
       ]);
-      repo.listarMovimientos.mockResolvedValue([movManual]);
-      repo.listarDotacionPaginada.mockResolvedValue(dotacionMock(['10']));
+      repo.listarMovimientosDeTrabajador.mockResolvedValue([movManual]);
 
       const service = configurar({ repo });
-      const filas = await service.listarMovimientosPorTrabajador('nom-1');
+      const items = await service.listarItemsMovimientosDeTrabajador('nom-1', '10');
 
-      expect(filas).toHaveLength(1);
-      const fila = filas[0];
-      expect(fila.cuentaPendientes).toBe(2);
-      expect(fila.cuentaAplicados).toBe(1);
-      expect(fila.cuentaOmitidos).toBe(0);
-      expect(fila.cuentaManualesAplicados).toBe(1);
-      expect(fila.totalHaberes).toBe(7000);
-      expect(fila.items).toHaveLength(3);
-      // Pendientes primero
-      expect(fila.items[0].estado).toBe('pendiente');
-      expect(fila.items[1].estado).toBe('pendiente');
-      expect(fila.items[2].estado).toBe('aplicado');
+      expect(repo.listarMovimientosDeTrabajador).toHaveBeenCalledWith('nom-1', '10');
+      expect(items).toHaveLength(3);
+      // Pendientes primero, luego el manual aplicado
+      expect(items[0].estado).toBe('pendiente');
+      expect(items[1].estado).toBe('pendiente');
+      expect(items[2].estado).toBe('aplicado');
+      expect(items[2].origen).toBe('manual');
     });
 
-    it('trabajador con configurado aplicado + omitido: subtotal solo del aplicado', async () => {
-      const movAplicado: MovimientoNomina = {
-        id: 'mov-1',
+    it('configurado con movimiento omitido queda como item omitido', async () => {
+      const movOmitido: MovimientoNomina = {
+        id: 'mov-2',
         nominaPeriodoId: 'nom-1',
         trabajadorId: '10',
-        tipo: 'BONO_A',
+        tipo: 'BONO_B',
         categoria: 'haber',
-        monto: 1000,
+        monto: 5000,
         origen: 'recurrente',
-        recurrenteId: 'rec-1',
-        estado: 'aplicado',
+        recurrenteId: 'rec-2',
+        estado: 'omitido',
         createdAt: '2026-06-04T00:00:00Z',
         updatedAt: '2026-06-04T00:00:00Z',
       };
-      const movOmitido: MovimientoNomina = {
-        ...movAplicado,
-        id: 'mov-2',
-        tipo: 'BONO_B',
-        recurrenteId: 'rec-2',
-        monto: 5000,
-        estado: 'omitido',
-      };
-      repo.obtenerNominaCompleta.mockResolvedValue(
-        nomina({ trabajadorIds: ['10'], movimientos: [movAplicado, movOmitido] }),
-      );
+      repo.listarSegmentos.mockResolvedValue([segmento({ trabajadorIds: ['10'] })]);
       repo.listarRecurrentesActivos.mockResolvedValue([
-        recurrente({ id: 'rec-1', tipo: 'BONO_A', monto: 1000 }),
         recurrente({ id: 'rec-2', tipo: 'BONO_B', monto: 5000 }),
       ]);
-      repo.listarMovimientos.mockResolvedValue([movAplicado, movOmitido]);
-      repo.listarDotacionPaginada.mockResolvedValue(dotacionMock(['10']));
+      repo.listarMovimientosDeTrabajador.mockResolvedValue([movOmitido]);
 
       const service = configurar({ repo });
-      const filas = await service.listarMovimientosPorTrabajador('nom-1');
+      const items = await service.listarItemsMovimientosDeTrabajador('nom-1', '10');
 
-      expect(filas).toHaveLength(1);
-      expect(filas[0].totalHaberes).toBe(1000);
-      expect(filas[0].cuentaAplicados).toBe(1);
-      expect(filas[0].cuentaOmitidos).toBe(1);
-      expect(filas[0].cuentaPendientes).toBe(0);
+      expect(items).toHaveLength(1);
+      expect(items[0].estado).toBe('omitido');
+      expect(items[0].movimientoNominaId).toBe('mov-2');
     });
 
-    it('trabajador con 1 ausencia y 1 informativo: contadores correctos, $ en cero', async () => {
-      repo.obtenerNominaCompleta.mockResolvedValue(nomina({ trabajadorIds: ['10'] }));
-      repo.listarRecurrentesActivos.mockResolvedValue([
-        recurrente({ id: 'rec-1', tipo: 'AUS', categoria: 'ausencia', monto: undefined, cantidad: 1, unidad: 'dias' }),
-        recurrente({ id: 'rec-2', tipo: 'INF', categoria: 'informativo', monto: undefined }),
+    it('recurrente dirigido a otro trabajador o a otro segmento no genera item', async () => {
+      repo.listarSegmentos.mockResolvedValue([
+        segmento({ id: 'seg-1', trabajadorIds: ['10'] }),
+        segmento({ id: 'seg-2', trabajadorIds: ['11'] }),
       ]);
-      repo.listarMovimientos.mockResolvedValue([]);
-      repo.listarDotacionPaginada.mockResolvedValue(dotacionMock(['10']));
+      repo.listarRecurrentesActivos.mockResolvedValue([
+        recurrente({ id: 'rec-persona', trabajadorId: '11' }),
+        recurrente({ id: 'rec-segmento', segmentoId: 'seg-2' }),
+        recurrente({ id: 'rec-global', tipo: 'BONO_GLOBAL' }),
+      ]);
+      repo.listarMovimientosDeTrabajador.mockResolvedValue([]);
 
       const service = configurar({ repo });
-      const filas = await service.listarMovimientosPorTrabajador('nom-1');
+      const items = await service.listarItemsMovimientosDeTrabajador('nom-1', '10');
 
-      const fila = filas[0];
-      expect(fila.cuentaAusencias).toBe(1);
-      expect(fila.cuentaInformativos).toBe(1);
-      expect(fila.totalHaberes).toBe(0);
-      expect(fila.totalDescuentos).toBe(0);
-      expect(fila.cuentaPendientes).toBe(2);
+      expect(items).toHaveLength(1);
+      expect(items[0].recurrenteId).toBe('rec-global');
     });
 
-    it('trabajador sin movimientos pero en dotación: aparece con todo en cero', async () => {
-      repo.obtenerNominaCompleta.mockResolvedValue(nomina({ trabajadorIds: ['10'] }));
-      repo.listarRecurrentesActivos.mockResolvedValue([]);
-      repo.listarMovimientos.mockResolvedValue([]);
-      repo.listarDotacionPaginada.mockResolvedValue(dotacionMock(['10']));
+    it('trabajador fuera de la dotación: solo devuelve sus manuales', async () => {
+      repo.listarSegmentos.mockResolvedValue([segmento({ trabajadorIds: ['11'] })]);
+      repo.listarRecurrentesActivos.mockResolvedValue([recurrente()]);
+      repo.listarMovimientosDeTrabajador.mockResolvedValue([]);
 
       const service = configurar({ repo });
-      const filas = await service.listarMovimientosPorTrabajador('nom-1');
-
-      expect(filas).toHaveLength(1);
-      expect(filas[0].items).toEqual([]);
-      expect(filas[0].cuentaPendientes).toBe(0);
-      expect(filas[0].cuentaAplicados).toBe(0);
-      expect(filas[0].totalHaberes).toBe(0);
+      const items = await service.listarItemsMovimientosDeTrabajador('nom-1', '10');
+      expect(items).toEqual([]);
     });
 
-    it('orden de items: pendientes → aplicados → omitidos; configurados antes que manuales', async () => {
+    it('orden: pendientes → aplicados → omitidos; configurados antes que manuales', async () => {
       const movAplicado: MovimientoNomina = {
         id: 'mov-cfg-aplicado',
         nominaPeriodoId: 'nom-1',
@@ -672,25 +637,42 @@ describe('NominaPeriodoService', () => {
         id: 'mov-manual-omitido',
         estado: 'omitido',
       };
-      repo.obtenerNominaCompleta.mockResolvedValue(
-        nomina({ trabajadorIds: ['10'], movimientos: [movAplicado, movManualAplicado, movManualOmitido] }),
-      );
+      repo.listarSegmentos.mockResolvedValue([segmento({ trabajadorIds: ['10'] })]);
       repo.listarRecurrentesActivos.mockResolvedValue([
         recurrente({ id: 'rec-1', tipo: 'BONO_A' }),
         recurrente({ id: 'rec-2', tipo: 'BONO_PENDIENTE' }),
       ]);
-      repo.listarMovimientos.mockResolvedValue([movAplicado, movManualAplicado, movManualOmitido]);
-      repo.listarDotacionPaginada.mockResolvedValue(dotacionMock(['10']));
+      repo.listarMovimientosDeTrabajador.mockResolvedValue([
+        movAplicado,
+        movManualAplicado,
+        movManualOmitido,
+      ]);
 
       const service = configurar({ repo });
-      const filas = await service.listarMovimientosPorTrabajador('nom-1');
-      const items = filas[0].items;
+      const items = await service.listarItemsMovimientosDeTrabajador('nom-1', '10');
 
-      // 1 pendiente (cfg) → 2 aplicados (cfg, manual) → 1 omitido (manual)
       expect(items.map((i) => i.estado)).toEqual(['pendiente', 'aplicado', 'aplicado', 'omitido']);
-      // Dentro de aplicados, configurado va antes que manual
       expect(items[1].origen).toBe('configurado');
       expect(items[2].origen).toBe('manual');
+    });
+  });
+
+  describe('filtrarMovimientosPorTrabajador / obtenerResumenMovimientos (BKL-02)', () => {
+    it('delegan en el repository con filtro y paginación', async () => {
+      const service = configurar({ repo });
+      await service.filtrarMovimientosPorTrabajador(
+        'nom-1',
+        { estado: 'con-pendientes' },
+        { page: 2, pageSize: 25, total: 0 },
+      );
+      expect(repo.listarMovimientosTrabajadoresPaginado).toHaveBeenCalledWith(
+        'nom-1',
+        { estado: 'con-pendientes' },
+        { page: 2, pageSize: 25, total: 0 },
+      );
+
+      await service.obtenerResumenMovimientos('nom-1');
+      expect(repo.obtenerResumenMovimientos).toHaveBeenCalledWith('nom-1');
     });
   });
 

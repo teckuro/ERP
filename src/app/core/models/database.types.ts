@@ -6497,6 +6497,44 @@ export type Database = {
         Args: { p_clave: string; p_valor?: Json }
         Returns: undefined
       }
+      listar_movimientos_trabajadores_nomina: {
+        Args: {
+          p_busqueda?: string
+          p_categoria?: string
+          p_estado?: string
+          p_nomina_id: string
+          p_page?: number
+          p_page_size?: number
+        }
+        Returns: {
+          cargo: string
+          cuenta_aplicados: number
+          cuenta_ausencias: number
+          cuenta_informativos: number
+          cuenta_items: number
+          cuenta_manuales_aplicados: number
+          cuenta_omitidos: number
+          cuenta_pendientes: number
+          departamento: string
+          nombre: string
+          rut: string
+          total_count: number
+          total_descuentos: number
+          total_haberes: number
+          trabajador_id: number
+        }[]
+      }
+      resumen_movimientos_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          total_aplicados: number
+          total_descuentos: number
+          total_haberes: number
+          total_pendientes: number
+          trabajadores_con_movimientos: number
+          trabajadores_con_pendientes: number
+        }[]
+      }
       listar_ids_dotacion_nomina: {
         Args: {
           p_busqueda?: string
