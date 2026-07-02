@@ -121,6 +121,7 @@ Thumbs.db
 src/app/supabase
 /tests/*
 !/tests/nominas-admin-generador.e2e.spec.ts
+!/tests/helpers/
 !/tests/helpers/nominas-admin-generador-e2e.ts
 !/tests/nomina-mensual.e2e.spec.ts
 !/tests/empleados-nomina-error-fixtures.spec.ts
