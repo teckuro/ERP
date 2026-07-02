@@ -9,11 +9,12 @@ Este archivo es un resumen operativo corto para iniciar tareas en Cursor/Codex s
 Antes de modificar, leer según alcance:
 
 1. `docs/codex/AGENTS.md`
-2. `docs/codex/README.md`
-3. `docs/codex/orquestador/estado-fases.md`
-4. `docs/codex/peticiones-estilos.md`
-5. Documento del módulo o fase bajo `docs/codex/modulos/` o `docs/codex/diseno/`
-6. Contratos del módulo y archivos reales del ZIP actual
+2. `docs/codex/estandares/README.md` (+ EST-008 si eres agente IA)
+3. `docs/codex/README.md`
+4. `docs/codex/orquestador/estado-fases.md`
+5. `docs/codex/peticiones-estilos.md`
+6. Documento del módulo o fase bajo `docs/codex/modulos/` o `docs/codex/diseno/`
+7. Contratos del módulo y archivos reales del ZIP actual
 
 La memoria o resúmenes externos solo sirven como apoyo. Si contradicen el ZIP o `docs/codex`, gana el proyecto.
 
@@ -22,10 +23,11 @@ La memoria o resúmenes externos solo sirven como apoyo. Si contradicen el ZIP o
 Para nuevas fases:
 
 1. Leer `docs/codex/contexto-rapido.md`.
-2. Leer el `context-pack` correspondiente (cuando exista bajo `docs/codex/context-packs/`).
-3. Leer el documento vivo del módulo en `docs/codex/modulos/<módulo>/`.
-4. Revisar archivos reales de la base actual.
-5. No usar `docs/codex/archivo/` como fuente principal.
+2. Leer `docs/codex/estandares/EST-008-ia.md` (agentes) y EST de capa según alcance.
+3. Leer el `context-pack` correspondiente (cuando exista bajo `docs/codex/context-packs/`).
+4. Leer el documento vivo del módulo en `docs/codex/modulos/<módulo>/`.
+5. Revisar archivos reales de la base actual.
+6. No usar `docs/codex/archivo/` como fuente principal.
 
 No existen respaldos `.bak` ni ZIPs en `docs/codex` (auditoría 2026-06-02: `docs/codex/auditorias/auditoria-docs-2026-06.md`). Los assets antiguos pesados fueron eliminados del repo activo; la referencia visual activa de parámetros es `docs/codex/assets/parametros-tabs/`.
 

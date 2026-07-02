@@ -22,6 +22,8 @@ No modificar sin fase explícita que lo autorice:
 
 ## 2. Zonas críticas
 
+Normas de capa cuando sí hay fase autorizada: `docs/codex/estandares/` (EST-002…006).
+
 No modificar sin fase explícita:
 
 - SQL/RPC/RLS/BD;

@@ -4,7 +4,7 @@
 
 | Pieza | Ubicación | Rol |
 |-------|-----------|-----|
-| Reglas globales | `.cursor/rules/*.mdc` (`alwaysApply: true`) | Orquestador, contrato codex, archivos protegidos, NOIA |
+| Reglas globales | `.cursor/rules/*.mdc` (`alwaysApply: true`) | Orquestador, **estándares EST**, contrato codex, archivos protegidos, NOIA |
 | Skill | `.cursor/skills/erp-codex-docs/` | Flujo lectura → implementar → autorevisar |
 | Contrato raíz | `AGENTS.md` | Puntero al contrato en `docs/codex` |
 | Workspace VS Code | `.vscode/` | Formato, tareas npm, debug Chrome, MCP Angular CLI |
@@ -13,9 +13,10 @@
 ## Reglas (leer en este orden al iniciar)
 
 1. `erp-orquestador.mdc` — `docs/codex/orquestador/*`, fases, qué no construir
-2. `erp-codex-contract.mdc` — skill codex, alcance, peticiones-estilos
-3. `erp-protected-files.mdc` — no tocar estilos globales, motor, SQL sin fase
-4. `erp-ui-noia.mdc` + `erp-ui-visual-guardrails.mdc` — solo si hay UI
+2. `erp-estandares.mdc` — constitución técnica EST-001…EST-008
+3. `erp-codex-contract.mdc` — skill codex, alcance, peticiones-estilos
+4. `erp-protected-files.mdc` — no tocar estilos globales, motor, SQL sin fase
+5. `erp-ui-noia.mdc` + `erp-ui-visual-guardrails.mdc` — solo si hay UI
 
 ## Extensiones recomendadas
 
@@ -49,9 +50,9 @@ Al abrir el proyecto, Cursor/VS Code sugiere instalar las de `.vscode/extensions
 Módulo: <empleados | parametros | nomina-mensual | …>
 Alcance: <archivo o pantalla>
 Tipo: solo UI | lógica | ambos
-Leer: docs/codex/modulos/<módulo>/README.md + estado-fases.md
+Leer: docs/codex/estandares/EST-008-ia.md + docs/codex/modulos/<módulo>/README.md + estado-fases.md
 Validar: npx ng test --watch=false --include=**/ruta/**/*.spec.ts
-No tocar: estilos globales, angular.json, motor, SQL (salvo fase explícita)
+No tocar: estilos globales, angular.json, motor, SQL (salvo fase explícita; si hay fase BD seguir EST-002…006)
 ```
 
 Prompt UI listo para User Rules: `docs/codex/diseno/noia-prompt-cursor.md`.

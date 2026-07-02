@@ -4,6 +4,8 @@
 
 Este archivo define la base de trabajo para Codex en este proyecto. Antes de generar o modificar UI, Codex debe leer estas reglas y aplicarlas como contrato visual y tecnico del ERP.
 
+**Constitución técnica (código y BD):** [`estandares/README.md`](./estandares/README.md) — EST-001…EST-008. Agentes: leer [`estandares/EST-008-ia.md`](./estandares/EST-008-ia.md) además de este archivo.
+
 ## Pedidos al agente (como comunicar mejor)
 
 - En cada tarea, respetar la **jerarquía** de [`README.md`](./README.md) y no contradecir reglas de negocio o UI de un documento de mayor prioridad.

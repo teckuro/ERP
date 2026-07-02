@@ -40,6 +40,7 @@ yarn-error.log
 !.cursor/rules/erp-codex-contract.mdc
 !.cursor/rules/erp-orquestador.mdc
 !.cursor/rules/erp-protected-files.mdc
+!.cursor/rules/erp-estandares.mdc
 !.cursor/skills/
 !.cursor/skills/erp-codex-docs/
 !.cursor/skills/erp-codex-docs/SKILL.md
@@ -51,6 +52,8 @@ yarn-error.log
 !/docs/codex/observaciones.md
 !/docs/codex/flujo-git-developer-main.md
 !/docs/codex/ui-form-guidelines.md
+!/docs/codex/estandares/
+!/docs/codex/estandares/**
 !/docs/codex/diseno/
 /docs/codex/diseno/*
 !/docs/codex/diseno/bitacora-operativa-noia.md

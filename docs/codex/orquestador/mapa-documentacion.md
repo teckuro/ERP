@@ -26,6 +26,7 @@
 
 | Documento                                                                          | Rol                                                                                    |
 | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [`../estandares/README.md`](../estandares/README.md) | Constitución técnica EST-001…EST-008 (nomenclatura, BD, Angular, IA) |
 | [`../arquitectura/frontend-interfaces.md`](../arquitectura/frontend-interfaces.md) | Contrato Angular: `pages/` wrapper, `features/`, contenedores vs logica, anti-patrones |
 | [`../AGENTS.md`](../AGENTS.md)                                                     | Contrato del agente, stack, layout, checklist                                          |
 | [`../README.md`](../README.md)                                                     | Índice padre y orden de lectura                                                        |

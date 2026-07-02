@@ -7,12 +7,13 @@
 Para fases acotadas o diagnóstico rápido, partir por [`contexto-rapido.md`](./contexto-rapido.md) y luego seguir la jerarquía completa de este README. El contexto rápido no reemplaza los contratos; solo reduce ruido inicial.
 
 1. **Orquestador** — contexto global, diseño operativo y fases: [`orquestador/README.md`](./orquestador/README.md), [`orquestador/contexto-proyecto.md`](./orquestador/contexto-proyecto.md), [`orquestador/diseno-operativo-erp.md`](./orquestador/diseno-operativo-erp.md), [`orquestador/estado-fases.md`](./orquestador/estado-fases.md).
-2. **Mapa de documentación** — inventario global / por módulo / histórico: [`orquestador/mapa-documentacion.md`](./orquestador/mapa-documentacion.md).
-3. **Arquitectura frontend (Angular)** — páginas wrapper, contenedores, capas: [`arquitectura/frontend-interfaces.md`](./arquitectura/frontend-interfaces.md) (leer antes de rutas/pantallas/feature nuevos o refactors grandes).
-4. **Contrato del agente y guías UI** — para UI visible leer primero [`diseno/noia-ui-manual.md`](./diseno/noia-ui-manual.md), luego [`AGENTS.md`](./AGENTS.md), [`ui-form-guidelines.md`](./ui-form-guidelines.md), [`ui-button-guidelines.md`](./ui-button-guidelines.md), [`ui-tables.md`](./ui-tables.md), [`estilos/README.md`](./estilos/README.md).
-5. **Módulo** — [`modulos/<módulo>/README.md`](./modulos/empleados/README.md) (elegir carpeta: `empleados`, `parametros`, etc.).
-6. **Subflujo / pantalla** — el `.md` concreto dentro de esa carpeta (p. ej. [`modulos/empleados/ficha-empleado.md`](./modulos/empleados/ficha-empleado.md)).
-7. **`temas/`** — solo si hace falta un **flujo por rutas** ([`temas/flujos/README.md`](./temas/flujos/README.md)), UI de implementación ([`temas/implementacion-ui.md`](./temas/implementacion-ui.md)), menú ([`temas/crear-menu-base.md`](./temas/crear-menu-base.md)) o un doc **aún no migrado**. Muchos `.md` en la raíz de `temas/` son **stubs** (“Documento migrado…”) hacia `modulos/`.
+2. **Constitución técnica** — estándares transversales EST-001…EST-008: [`estandares/README.md`](./estandares/README.md) (obligatorio para código nuevo y agentes).
+3. **Mapa de documentación** — inventario global / por módulo / histórico: [`orquestador/mapa-documentacion.md`](./orquestador/mapa-documentacion.md).
+4. **Arquitectura frontend (Angular)** — páginas wrapper, contenedores, capas: [`arquitectura/frontend-interfaces.md`](./arquitectura/frontend-interfaces.md) (leer antes de rutas/pantallas/feature nuevos o refactors grandes).
+5. **Contrato del agente y guías UI** — para UI visible leer primero [`diseno/noia-ui-manual.md`](./diseno/noia-ui-manual.md), luego [`AGENTS.md`](./AGENTS.md), [`ui-form-guidelines.md`](./ui-form-guidelines.md), [`ui-button-guidelines.md`](./ui-button-guidelines.md), [`ui-tables.md`](./ui-tables.md), [`estilos/README.md`](./estilos/README.md).
+6. **Módulo** — [`modulos/<módulo>/README.md`](./modulos/empleados/README.md) (elegir carpeta: `empleados`, `parametros`, etc.).
+7. **Subflujo / pantalla** — el `.md` concreto dentro de esa carpeta (p. ej. [`modulos/empleados/ficha-empleado.md`](./modulos/empleados/ficha-empleado.md)).
+8. **`temas/`** — solo si hace falta un **flujo por rutas** ([`temas/flujos/README.md`](./temas/flujos/README.md)), UI de implementación ([`temas/implementacion-ui.md`](./temas/implementacion-ui.md)), menú ([`temas/crear-menu-base.md`](./temas/crear-menu-base.md)) o un doc **aún no migrado**. Muchos `.md` en la raíz de `temas/` son **stubs** (“Documento migrado…”) hacia `modulos/`.
 
 ### Cada petición: qué pedir y qué se aplica
 
@@ -22,10 +23,27 @@ Para fases acotadas o diagnóstico rápido, partir por [`contexto-rapido.md`](./
 4. **Jerarquía** (en conflicto gana el primero):
    1. [`diseno/noia-ui-manual.md`](./diseno/noia-ui-manual.md) para UI visible.
    2. [`AGENTS.md`](./AGENTS.md)
-   3. **Este README** — índice y orden de lectura; no sustituye `AGENTS.md`.
-   4. [`arquitectura/frontend-interfaces.md`](./arquitectura/frontend-interfaces.md) — estructura Angular (`pages` vs `features`, contenedores, capas).
-   5. [`ui-form-guidelines.md`](./ui-form-guidelines.md)
-   6. Documentos bajo [`modulos/`](./modulos/empleados/README.md) (y transversales en `temas/` cuando aplique).
+   3. [`estandares/README.md`](./estandares/README.md) — constitución técnica EST-001…EST-008.
+   4. **Este README** — índice y orden de lectura; no sustituye `AGENTS.md`.
+   5. [`arquitectura/frontend-interfaces.md`](./arquitectura/frontend-interfaces.md) — estructura Angular (`pages` vs `features`, contenedores, capas).
+   6. [`ui-form-guidelines.md`](./ui-form-guidelines.md)
+   7. Documentos bajo [`modulos/`](./modulos/empleados/README.md) (y transversales en `temas/` cuando aplique).
+
+---
+
+## `docs/codex/estandares/` — constitución técnica (EST-001…EST-008)
+
+| Documento | Contenido |
+|-------------|-------------|
+| [`estandares/README.md`](./estandares/README.md) | Índice, jerarquía y legacy vs código nuevo |
+| [`estandares/EST-001-nomenclatura-tecnica.md`](./estandares/EST-001-nomenclatura-tecnica.md) | Nomenclatura BD, SQL, TS, archivos |
+| [`estandares/EST-002-base-de-datos.md`](./estandares/EST-002-base-de-datos.md) | Tablas, RLS, índices, auditoría |
+| [`estandares/EST-003-sql-postgresql.md`](./estandares/EST-003-sql-postgresql.md) | Funciones, transacciones, errores |
+| [`estandares/EST-004-typescript.md`](./estandares/EST-004-typescript.md) | Models, mappers, repositories |
+| [`estandares/EST-005-angular.md`](./estandares/EST-005-angular.md) | Features, containers, grid servidor |
+| [`estandares/EST-006-supabase.md`](./estandares/EST-006-supabase.md) | RPC, auth, migraciones |
+| [`estandares/EST-007-documentacion.md`](./estandares/EST-007-documentacion.md) | docs/codex, fases, auditorías |
+| [`estandares/EST-008-ia.md`](./estandares/EST-008-ia.md) | Agentes IA: flujo, prohibiciones |
 
 ---
 

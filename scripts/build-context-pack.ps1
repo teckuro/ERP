@@ -79,6 +79,8 @@ $coreFiles = @(
   "docs/codex/contexto-rapido.md",
   "docs/codex/AGENTS.md",
   "docs/codex/README.md",
+  "docs/codex/estandares/README.md",
+  "docs/codex/estandares/EST-008-ia.md",
   "docs/codex/CHANGELOG.md",
   "docs/codex/orquestador/contexto-proyecto.md",
   "docs/codex/orquestador/estado-fases.md",
@@ -91,6 +93,7 @@ $coreFiles = @(
   "docs/codex/diseno/bitacora-operativa-noia.md",
   "docs/codex/diseno/erp-shell-bitacora-operativa-01.md",
   ".cursor/rules/erp-codex-contract.mdc",
+  ".cursor/rules/erp-estandares.mdc",
   ".cursor/rules/erp-orquestador.mdc",
   ".cursor/rules/erp-ui-noia.mdc",
   ".cursor/rules/erp-protected-files.mdc",
@@ -100,6 +103,8 @@ $coreFiles = @(
 foreach ($file in $coreFiles) {
   Add-RelativeFile -RelativePath $file
 }
+
+Add-RelativeDirectoryFiles -RelativeDirectory "docs/codex/estandares"
 
 if ($IncludeEmpleadoAdvanced) {
   $empleadosFiles = @(

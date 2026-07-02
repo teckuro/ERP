@@ -1,5 +1,7 @@
 ## Base v11
 
+**Normas técnicas (migraciones Supabase, RLS, RPC):** [`docs/codex/estandares/README.md`](../docs/codex/estandares/README.md) — EST-002, EST-003, EST-006. Smoke tests: `bd/scripts/validar-*.sql`.
+
 ### Formas de ejecutar el esquema
 
 - **Fresh install local (destructivo)**: `run_all.sql` incluye `partes/00_reset.sql` y recrea la base v11 por partes. Usarlo solo en BD local/dev sin datos que conservar.
