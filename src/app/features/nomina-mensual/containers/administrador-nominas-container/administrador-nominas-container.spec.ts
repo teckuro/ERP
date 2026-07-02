@@ -23,6 +23,7 @@ import {
 import type { EventoAuditoriaNomina, NominaPeriodoResumen } from '../../models/nomina-periodo.models';
 import { crearNominaResumen } from '../../models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../services/nomina-periodo.service';
+import { NominaMensualCapabilitiesService } from '../../services/nomina-mensual-capabilities.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { DataGridComponent } from '../../../../shared/components/ui/data-grid/data-grid.component';
 import { AdministradorNominasContainer } from './administrador-nominas-container';
@@ -56,10 +57,24 @@ interface ServicioMock {
   listarEventosAuditoria?: ReturnType<typeof vi.fn>;
 }
 
-function configurar(opts: { servicio: ServicioMock; navigate?: ReturnType<typeof vi.fn> }) {
+function configurar(opts: {
+  servicio: ServicioMock;
+  navigate?: ReturnType<typeof vi.fn>;
+  capabilities?: Partial<{
+    esAdmin: () => boolean;
+    puedeEscribirNomina: () => boolean;
+  }>;
+}) {
   const navigate = opts.navigate ?? vi.fn().mockResolvedValue(true);
   opts.servicio.listarEventosAuditoria ??= vi.fn().mockResolvedValue([]);
   const authService = { currentUser: () => null };
+  const capabilities = {
+    esAdmin: () => true,
+    puedeEscribirNomina: () => true,
+    puedeAccionesAdminNomina: () => true,
+    esSoloLectura: () => false,
+    ...opts.capabilities,
+  };
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
     providers: [
@@ -81,9 +96,10 @@ function configurar(opts: { servicio: ServicioMock; navigate?: ReturnType<typeof
       { provide: Router, useValue: { navigate } },
       { provide: NominaPeriodoService, useValue: opts.servicio },
       { provide: AuthService, useValue: authService },
+      { provide: NominaMensualCapabilitiesService, useValue: capabilities },
     ],
   });
-  return { navigate, authService };
+  return { navigate, authService, capabilities };
 }
 
 describe('AdministradorNominasContainer (smoke F3c)', () => {
@@ -141,6 +157,34 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     expect(cmp.modalNuevaAbierto()).toBe(true);
     cmp.cerrarNuevaNomina();
     expect(cmp.modalNuevaAbierto()).toBe(false);
+  });
+
+  it('no abre modal nueva nómina en perfil solo lectura', () => {
+    configurar({
+      servicio,
+      capabilities: { puedeEscribirNomina: () => false, esAdmin: () => false },
+    });
+    const fixture = TestBed.createComponent(AdministradorNominasContainer);
+    const cmp = fixture.componentInstance;
+    cmp.abrirNuevaNomina();
+    expect(cmp.modalNuevaAbierto()).toBe(false);
+  });
+
+  it('oculta eliminar/reabrir para operador sin rol admin', async () => {
+    configurar({
+      servicio,
+      capabilities: { esAdmin: () => false, puedeEscribirNomina: () => true },
+    });
+    servicio.listarResumenes.mockReset().mockResolvedValue([
+      resumenMock({ id: 'borrador', estado: 'borrador' }),
+      resumenMock({ id: 'cerrada', estado: 'cerrada' }),
+    ]);
+    const fixture = TestBed.createComponent(AdministradorNominasContainer);
+    const cmp = fixture.componentInstance;
+    await cmp.cargarResumenes();
+
+    expect(cmp.puedeEliminarFila(cmp.resumenes()[0]!)).toBe(false);
+    expect(cmp.puedeReabrirFila(cmp.resumenes()[1]!)).toBe(false);
   });
 
   it('Test 36 — abrirResumen llama servicio.obtenerResumenValidacionNomina', async () => {

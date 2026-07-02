@@ -19,6 +19,7 @@ import type {
 import { NominaPeriodoService } from './nomina-periodo.service';
 import { EmpleadosService } from '../../empleados/services/empleados.service';
 import { HaberesDescuentosService } from '../../haberes-descuentos/services/haberes-descuentos.service';
+import { ErpPermisosRemuneracionesService } from '../../../core/auth/erp-permisos-remuneraciones.service';
 
 function nomina(overrides: Partial<NominaPeriodo> = {}): NominaPeriodo {
   return crearNomina({
@@ -194,11 +195,37 @@ function repoMock(): RepoMock {
   };
 }
 
+function permisosMock(opts?: { admin?: boolean; escribir?: boolean }) {
+  const admin = opts?.admin ?? true;
+  const escribir = opts?.escribir ?? true;
+  return {
+    exigirPermisoAdminNomina: vi.fn(() => {
+      if (!admin) throw new Error('sin permiso admin');
+    }),
+    exigirPermisoEscrituraNomina: vi.fn(() => {
+      if (!escribir) throw new Error('solo lectura');
+    }),
+    exigirPermisoRecargaParametrosBase: vi.fn(() => {
+      if (!admin) throw new Error('sin permiso recarga');
+    }),
+    permisosNomina: () => ({
+      puedeVerNomina: true,
+      puedeCrearNomina: escribir,
+      puedeEditarNomina: escribir,
+      puedeEliminarNomina: admin,
+      puedeReabrirNomina: admin,
+      puedeCerrarNomina: admin,
+      puedeRecargarParametrosBase: admin,
+    }),
+  };
+}
+
 function configurar(opts: {
   repo: RepoMock;
   empresaId?: number | null;
   supabase?: unknown;
   haberesDescuentos?: unknown;
+  permisos?: ReturnType<typeof permisosMock>;
 }): NominaPeriodoService {
   const supabase = opts.supabase ?? {
     from: vi.fn().mockReturnValue({
@@ -231,6 +258,10 @@ function configurar(opts: {
           }),
           listarConceptos: vi.fn().mockResolvedValue([]),
         },
+      },
+      {
+        provide: ErpPermisosRemuneracionesService,
+        useValue: opts.permisos ?? permisosMock(),
       },
     ],
   });
@@ -402,6 +433,30 @@ describe('NominaPeriodoService', () => {
       'nom-1',
       expect.objectContaining({ motivo: 'rev externa' }),
     );
+  });
+
+  it('eliminarNomina rechaza sin permiso admin', async () => {
+    const permisos = permisosMock({ admin: false });
+    const service = configurar({ repo, permisos });
+    await expect(service.eliminarNomina('nom-1')).rejects.toThrow('sin permiso admin');
+    expect(repo.eliminarNomina).not.toHaveBeenCalled();
+  });
+
+  it('cerrarNomina rechaza sin permiso admin', async () => {
+    repo.obtenerNominaCompleta.mockResolvedValue(nomina({ estado: 'aprobada' }));
+    const permisos = permisosMock({ admin: false });
+    const service = configurar({ repo, permisos });
+    await expect(service.cerrarNomina('nom-1')).rejects.toThrow('sin permiso admin');
+    expect(repo.transicionarEstado).not.toHaveBeenCalled();
+  });
+
+  it('crearNominaPeriodo rechaza perfil solo lectura', async () => {
+    const permisos = permisosMock({ escribir: false });
+    const service = configurar({ repo, permisos });
+    await expect(
+      service.crearNominaPeriodo({ periodo: '2026-06', tipo: 'mensual' }),
+    ).rejects.toThrow('solo lectura');
+    expect(repo.previsualizarCreacion).not.toHaveBeenCalled();
   });
 
   it('registrarCalculo permite recalcular sobre estado "calculada" (re-bajando a "en_revision" primero)', async () => {

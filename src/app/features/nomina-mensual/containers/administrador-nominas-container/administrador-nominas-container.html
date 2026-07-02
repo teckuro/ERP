@@ -103,7 +103,7 @@
           >
             <lucide-icon name="eye" aria-hidden="true"></lucide-icon>
           </button>
-          @if (puedeEliminar(fila.estado)) {
+          @if (puedeEliminarFila(fila)) {
             <button
               type="button"
               class="adm-nom__row-action adm-nom__row-action--danger"
@@ -114,7 +114,7 @@
               <lucide-icon name="trash-2" aria-hidden="true"></lucide-icon>
             </button>
           }
-          @if (puedeReabrir(fila.estado)) {
+          @if (puedeReabrirFila(fila)) {
             <button
               type="button"
               class="adm-nom__row-action"

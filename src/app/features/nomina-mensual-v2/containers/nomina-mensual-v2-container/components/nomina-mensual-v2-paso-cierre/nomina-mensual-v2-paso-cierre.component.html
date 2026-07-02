@@ -66,9 +66,15 @@
     </section>
   } @else {
     <section class="paso-cierre__reopen">
-      <button type="button" class="paso-cierre__btn is-ghost" (click)="abrirReaperturaModal()">
-        Reabrir nómina
-      </button>
+      @if (puedeAccionesAdmin()) {
+        <button type="button" class="paso-cierre__btn is-ghost" (click)="abrirReaperturaModal()">
+          Reabrir nómina
+        </button>
+      } @else {
+        <span class="paso-cierre__footer-hint">
+          La reapertura requiere rol de administración de remuneraciones.
+        </span>
+      }
     </section>
   }
 
@@ -80,6 +86,10 @@
     } @else if (calculoNoVigente()) {
       <span class="paso-cierre__footer-hint is-warning">
         Recalcula antes de cerrar. La acción principal del shell quedará bloqueada hasta tener cálculo vigente.
+      </span>
+    } @else if (!puedeAccionesAdmin()) {
+      <span class="paso-cierre__footer-hint is-warning">
+        El cierre operativo está reservado a administración de remuneraciones.
       </span>
     } @else if (todoCumplido()) {
       <span class="paso-cierre__footer-hint">

@@ -1,23 +1,23 @@
 import { computed, inject, Injectable } from '@angular/core';
 
-import { AuthService } from '../../../core/auth/auth.service';
 import { environment } from '../../../../environments/environment';
+import { ErpPermisosRemuneracionesService } from '../../../core/auth/erp-permisos-remuneraciones.service';
 
+/**
+ * Capacidades de nómina mensual para UI y servicios auxiliares (Generador V2).
+ * Delega la matriz SEG-01b en {@link ErpPermisosRemuneracionesService}.
+ */
 @Injectable({ providedIn: 'root' })
 export class NominaMensualCapabilitiesService {
-  private readonly auth = inject(AuthService);
+  private readonly permisos = inject(ErpPermisosRemuneracionesService);
 
   readonly modoPruebas = computed(() => !environment.production);
 
-  readonly esAdmin = computed(() => {
-    const user = this.auth.currentUser();
-    if (!user) return false;
-    const appRole = (user.app_metadata as Record<string, unknown> | undefined)?.['role'];
-    const userRole = (user.user_metadata as Record<string, unknown> | undefined)?.['role'];
-    return appRole === 'admin' || userRole === 'admin';
-  });
+  readonly esAdmin = this.permisos.esAdministradorRemuneraciones;
 
-  readonly puedeAccionesAdminNomina = computed(
-    () => this.esAdmin() && this.modoPruebas(),
-  );
+  readonly puedeAccionesAdminNomina = this.permisos.esAdministradorRemuneraciones;
+
+  readonly esSoloLectura = this.permisos.esSoloConsulta;
+
+  readonly puedeEscribirNomina = this.permisos.puedeEscribirNomina;
 }

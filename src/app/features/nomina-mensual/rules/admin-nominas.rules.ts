@@ -67,6 +67,16 @@ export function puedeReabrir(estado: EstadoNomina): boolean {
   return estado === 'cerrada';
 }
 
+/** Combina regla de estado con permiso admin (matriz §8.1). */
+export function puedeEliminarConPermiso(estado: EstadoNomina, esAdmin: boolean): boolean {
+  return esAdmin && puedeEliminar(estado);
+}
+
+/** Combina regla de estado con permiso admin (matriz §8.1). */
+export function puedeReabrirConPermiso(estado: EstadoNomina, esAdmin: boolean): boolean {
+  return esAdmin && puedeReabrir(estado);
+}
+
 /** Una nómina cerrada puede tener liquidaciones generadas. */
 export function tieneLiquidaciones(estado: EstadoNomina): boolean {
   return estado === 'liquidada' || estado === 'cerrada';

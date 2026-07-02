@@ -27,6 +27,7 @@ import { bindShellPageContext } from '../../../../layout/shell-page-context.bind
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { NominaPeriodoService } from '../../services/nomina-periodo.service';
+import { NominaMensualCapabilitiesService } from '../../services/nomina-mensual-capabilities.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { resolverUsuarioResponsableActual } from '../../../../core/auth/auth-user-label';
 import type {
@@ -58,7 +59,9 @@ import { AdminNominasModalResumenNominaComponent } from './components/admin-nomi
 import { AdminNominasModalHistorialNominaComponent } from './components/admin-nominas-modal-historial-nomina/admin-nominas-modal-historial-nomina.component';
 import {
   puedeEliminar,
+  puedeEliminarConPermiso,
   puedeReabrir,
+  puedeReabrirConPermiso,
   tieneLiquidaciones,
 } from '../../rules/admin-nominas.rules';
 
@@ -90,6 +93,7 @@ interface AccionAdministrativaPendiente {
 export class AdministradorNominasContainer {
   private readonly router = inject(Router);
   private readonly servicio = inject(NominaPeriodoService);
+  private readonly capabilities = inject(NominaMensualCapabilitiesService);
   private readonly authService = inject(AuthService);
   readonly periodoActivo = inject(PeriodoActivoService);
   private readonly destroyRef = inject(DestroyRef);
@@ -166,9 +170,12 @@ export class AdministradorNominasContainer {
       pageSubtitle: this.subtitulo(),
       primaryAction: {
         label: 'Nueva nómina',
-        disabled: this.cargando(),
+        disabled: this.cargando() || !this.capabilities.puedeEscribirNomina(),
         loading: false,
         actionId: 'admin-nominas-nueva',
+        tooltip: !this.capabilities.puedeEscribirNomina()
+          ? 'Tu perfil es de solo consulta. No puedes crear nóminas.'
+          : null,
       },
     };
   }
@@ -185,6 +192,14 @@ export class AdministradorNominasContainer {
   puedeEliminar = puedeEliminar;
   puedeReabrir = puedeReabrir;
   tieneLiquidaciones = tieneLiquidaciones;
+
+  puedeEliminarFila(fila: NominaPeriodoResumen): boolean {
+    return puedeEliminarConPermiso(fila.estado, this.capabilities.esAdmin());
+  }
+
+  puedeReabrirFila(fila: NominaPeriodoResumen): boolean {
+    return puedeReabrirConPermiso(fila.estado, this.capabilities.esAdmin());
+  }
 
   /**
    * Marca visual de prioridad para la celda "Siguiente acción". Se activa
@@ -212,6 +227,7 @@ export class AdministradorNominasContainer {
   }
 
   abrirNuevaNomina(): void {
+    if (!this.capabilities.puedeEscribirNomina()) return;
     this.modalNuevaAbierto.set(true);
   }
 

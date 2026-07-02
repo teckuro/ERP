@@ -29,6 +29,7 @@ import type {
   ResumenValidacionNomina,
 } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
+import { NominaMensualCapabilitiesService } from '../../../../../nomina-mensual/services/nomina-mensual-capabilities.service';
 import { estadoNominaToLabel } from '../../../../../nomina-mensual/presenters/admin-nominas.presenter';
 import type {
   PasoNominaPort,
@@ -58,6 +59,7 @@ interface ChecklistItem {
 })
 export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   private readonly servicio = inject(NominaPeriodoService);
+  private readonly capabilities = inject(NominaMensualCapabilitiesService);
 
   readonly estadoLabel = estadoNominaToLabel;
 
@@ -119,6 +121,7 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
 
   readonly todoCumplido = computed(() => this.checklist().every((c) => c.cumplido));
   readonly cerrada = computed(() => this.nomina()?.estado === 'cerrada');
+  readonly puedeAccionesAdmin = this.capabilities.puedeAccionesAdminNomina;
 
   /**
    * `true` cuando el snapshot persistido dejó de ser vigente por cambios
@@ -192,6 +195,12 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   puedeContinuar(): ResultadoAvancePaso {
     if (this.cerrada()) {
       return { ok: false, razon: 'La nómina ya está cerrada.' };
+    }
+    if (!this.puedeAccionesAdmin()) {
+      return {
+        ok: false,
+        razon: 'El cierre requiere rol de administración de remuneraciones.',
+      };
     }
     if (this.ejecutando()) {
       return { ok: false, razon: 'Cierre en curso.' };

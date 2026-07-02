@@ -17,6 +17,7 @@ import { bindShellPageContext } from '../../../../layout/shell-page-context.bind
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { NominaPeriodoService } from '../../../nomina-mensual/services/nomina-periodo.service';
+import { NominaMensualCapabilitiesService } from '../../../nomina-mensual/services/nomina-mensual-capabilities.service';
 import type { NominaPeriodo } from '../../../nomina-mensual/models/nomina-periodo.models';
 import { payrollSteps } from '../../data/nomina-mensual-v2.mock';
 import type { PayrollStepId } from '../../models/nomina-mensual-v2.models';
@@ -85,6 +86,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   private readonly nominaPeriodoService = inject(NominaPeriodoService);
   readonly orquestador = inject(NominaMensualV2OrquestadorPort);
   private readonly accesoBaseService = inject(NominaParametrosBaseAccesoService);
+  private readonly nominaCapabilities = inject(NominaMensualCapabilitiesService);
 
   private readonly pasoParametros = viewChild(NominaMensualV2PasoParametrosComponent);
   private readonly pasoDotacion = viewChild(NominaMensualV2PasoDotacionComponent);
@@ -724,10 +726,13 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     // `disabled`.
     const completitud = this.pasoActualCompleto();
     const nominaCargando = this.nominaCargaEstado() === 'loading' && !!this.nominaPeriodoId();
+    const sinPermisoCierre = paso === 'closure' && !this.nominaCapabilities.puedeAccionesAdminNomina();
     const disabledPorContenido = paso !== 'parameters' && !completitud.ok;
-    const tooltipPorContenido = paso !== 'parameters' && !completitud.ok
-      ? (completitud.razon ?? null)
-      : null;
+    const tooltipPorContenido = sinPermisoCierre
+      ? 'El cierre requiere rol de administración de remuneraciones.'
+      : paso !== 'parameters' && !completitud.ok
+        ? (completitud.razon ?? null)
+        : null;
     const operacionEnCurso = this.pasoOperacionEnCurso();
 
     return {
@@ -744,7 +749,10 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       },
       primaryAction: {
         label: accionParametros?.label ?? this.primaryActionLabel(),
-        disabled: (accionParametros?.disabled ?? false) || disabledPorContenido || nominaCargando,
+        disabled: (accionParametros?.disabled ?? false)
+          || disabledPorContenido
+          || nominaCargando
+          || sinPermisoCierre,
         loading: paso === 'parameters' ? parametrosValidando : operacionEnCurso,
         actionId: `nomina-mensual-v2-${paso}`,
         tooltip: tooltipPorContenido,

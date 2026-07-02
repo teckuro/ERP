@@ -20,6 +20,7 @@
 
 import { computed, inject, Injectable, signal } from '@angular/core';
 
+import { ErpPermisosRemuneracionesService } from '../../../core/auth/erp-permisos-remuneraciones.service';
 import { EmpresaActivaService } from '../../../core/services/empresa-activa.service';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import { NominaPeriodoRepository } from '../data-access/nomina-periodo.repository';
@@ -108,6 +109,7 @@ export class NominaPeriodoService {
   private readonly empleados = inject(EmpleadosService);
   /** F08: validación de conceptos del catálogo (misma regla que HD/MV). */
   private readonly haberesDescuentos = inject(HaberesDescuentosService);
+  private readonly permisosRemuneraciones = inject(ErpPermisosRemuneracionesService);
 
   private readonly resumenesState = signal<NominaPeriodoResumen[]>([]);
   private readonly cargandoState = signal(false);
@@ -169,6 +171,7 @@ export class NominaPeriodoService {
   async previsualizarCreacion(
     request: NominaCreatePreviewRequest,
   ): Promise<NominaCreatePreview> {
+    this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
     return this.repo.previsualizarCreacion(request);
   }
 
@@ -181,6 +184,7 @@ export class NominaPeriodoService {
   async confirmarCreacion(
     request: ConfirmarCreacionRequest,
   ): Promise<ConfirmarCreacionResultado> {
+    this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
     return this.repo.confirmarCreacion(request);
   }
 
@@ -192,6 +196,7 @@ export class NominaPeriodoService {
    * se persisten server-side en una sola transacción.
    */
   async crearNominaPeriodo(payload: CrearNominaPayload): Promise<NominaPeriodoResumen> {
+    this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
     if (payload.tipo !== 'mensual') {
       throw new Error('Solo se admiten nóminas mensuales en este flujo.');
     }
@@ -227,6 +232,7 @@ export class NominaPeriodoService {
     nominaPeriodoId: string,
     cambios: { fechaPago?: string | null; estado?: EstadoNomina },
   ): Promise<void> {
+    this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
     const update: NominaPeriodoUpdate = {};
     if (cambios.fechaPago !== undefined) update.fecha_pago = cambios.fechaPago;
     if (cambios.estado !== undefined) update.estado = cambios.estado;
@@ -242,6 +248,7 @@ export class NominaPeriodoService {
   }
 
   async cerrarNomina(nominaPeriodoId: string, payload: CerrarNominaPayload = {}): Promise<void> {
+    this.permisosRemuneraciones.exigirPermisoAdminNomina();
     const nomina = await this.exigirNomina(nominaPeriodoId);
     const validacion = await this.obtenerResumenValidacionNomina(nominaPeriodoId);
     if (
@@ -321,6 +328,7 @@ export class NominaPeriodoService {
   }
 
   async reabrirNomina(nominaPeriodoId: string, payload: ReabrirNominaPayload): Promise<void> {
+    this.permisosRemuneraciones.exigirPermisoAdminNomina();
     const nomina = await this.exigirNomina(nominaPeriodoId);
     await this.transicionar(nomina, 'reabierta', payload.motivo);
     await this.repo.invalidarCalculo(nominaPeriodoId);
@@ -328,6 +336,7 @@ export class NominaPeriodoService {
 
   /** F06: recalcular parámetros invalida cálculo posterior de la nómina. */
   async invalidarCalculoPorActualizacionParametros(nominaPeriodoId: string): Promise<void> {
+    this.permisosRemuneraciones.exigirPermisoRecargaParametrosBase();
     await this.invalidarCalculoPorCambio(nominaPeriodoId, 'Parámetros de la nómina actualizados.');
   }
 
@@ -356,6 +365,7 @@ export class NominaPeriodoService {
    * registro zombie anulado.
    */
   async eliminarNomina(nominaPeriodoId: string): Promise<void> {
+    this.permisosRemuneraciones.exigirPermisoAdminNomina();
     await this.repo.eliminarNomina(nominaPeriodoId);
   }
 
@@ -381,6 +391,7 @@ export class NominaPeriodoService {
   }
 
   async validarYAprobarNomina(nominaPeriodoId: string): Promise<void> {
+    this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
     let nomina = await this.exigirNomina(nominaPeriodoId);
     const resumen = await this.obtenerResumenValidacionNomina(nominaPeriodoId);
     if (!resumen.puedeValidar) {
@@ -1618,6 +1629,7 @@ export class NominaPeriodoService {
   }
 
   private async exigirNominaEditable(nominaPeriodoId: string): Promise<NominaPeriodo> {
+    this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
     const nomina = await this.exigirNomina(nominaPeriodoId);
     if (estadoNominaBloqueaEdicion(nomina.estado)) {
       throw new Error(`La nómina ${nomina.estado} no admite cambios.`);
@@ -1657,6 +1669,7 @@ export class NominaPeriodoService {
       totalLiquido: number;
     },
   ): Promise<void> {
+    this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
     let nomina = await this.exigirNomina(nominaPeriodoId);
 
     // Recálculo idempotente: si la nómina ya estaba calculada o validada,

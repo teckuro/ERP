@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 
+import { ErpPermisosRemuneracionesService } from '../../../core/auth/erp-permisos-remuneraciones.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { resolverUsuarioResponsableActual } from '../../../core/auth/auth-user-label';
 import { PeriodoActivoService } from '../../../core/services/periodo-activo.service';
@@ -37,6 +38,7 @@ export class NominaParametrosBaseService {
   private readonly periodoActivo = inject(PeriodoActivoService);
   private readonly auth = inject(AuthService);
   private readonly nominaPeriodoService = inject(NominaPeriodoService);
+  private readonly permisosRemuneraciones = inject(ErpPermisosRemuneracionesService);
 
   async obtenerEstadoBasePeriodo(
     periodo = this.periodoActivo.periodoYm(),
@@ -115,6 +117,7 @@ export class NominaParametrosBaseService {
     resumen: NominaParametrosResumen,
     context?: NominaParametrosContext | null,
   ): Promise<{ idCalculoPeriodoBase: number; fechaBaseGuardada: string }> {
+    this.permisosRemuneraciones.exigirPermisoRecargaParametrosBase();
     return this.guardarSnapshotParametrosBase(resumen, 'actualizadaExplicitamente', context);
   }
 

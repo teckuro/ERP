@@ -8,6 +8,7 @@ import type {
 } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { crearNomina } from '../../../../../nomina-mensual/models/nomina-periodo.models';
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
+import { NominaMensualCapabilitiesService } from '../../../../../nomina-mensual/services/nomina-mensual-capabilities.service';
 import { NominaMensualV2PasoCierreComponent } from './nomina-mensual-v2-paso-cierre.component';
 
 function nominaMock(parcial: Partial<NominaPeriodo> = {}): NominaPeriodo {
@@ -31,7 +32,10 @@ function nominaMock(parcial: Partial<NominaPeriodo> = {}): NominaPeriodo {
   });
 }
 
-function configurarTestBed(servicio?: Partial<Record<string, ReturnType<typeof vi.fn>>>): void {
+function configurarTestBed(
+  servicio?: Partial<Record<string, ReturnType<typeof vi.fn>>>,
+  capabilities?: Partial<{ puedeAccionesAdminNomina: () => boolean }>,
+): void {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
     providers: [
@@ -44,6 +48,13 @@ function configurarTestBed(servicio?: Partial<Record<string, ReturnType<typeof v
           cerrarNomina: vi.fn().mockResolvedValue(undefined),
           reabrirNomina: vi.fn().mockResolvedValue(undefined),
           ...servicio,
+        },
+      },
+      {
+        provide: NominaMensualCapabilitiesService,
+        useValue: {
+          puedeAccionesAdminNomina: () => true,
+          ...capabilities,
         },
       },
     ],
@@ -258,6 +269,37 @@ describe('NominaMensualV2PasoCierreComponent (CIE-ENUM-01)', () => {
       const r = cmp.puedeContinuar();
       expect(r.ok).toBe(false);
       expect(cmp.confirmarCierreVisible()).toBe(false);
+    });
+
+    it('retorna ok:false sin permiso admin aunque la checklist esté lista', () => {
+      configurarTestBed(undefined, { puedeAccionesAdminNomina: () => false });
+      const fixture = TestBed.createComponent(NominaMensualV2PasoCierreComponent);
+      const cmp = fixture.componentInstance;
+      cmp.nomina.set(
+        nominaMock({
+          estado: 'aprobada',
+          trabajadorIds: ['tr-1'],
+          evidenciaCalculo: { versionCalculo: 1, calculoVigente: true, idCalculoPeriodo: 1 },
+        }),
+      );
+      cmp.resumen.set({
+        totalTrabajadores: 1,
+        listosParaCalculo: 1,
+        conIncidenciasCriticas: 0,
+        conAdvertencias: 0,
+        conMovimientosEspeciales: 0,
+        puedeCalcular: true,
+        puedeValidar: true,
+        puedeCerrar: true,
+        calculoVigente: true,
+        incidenciasCriticas: [],
+        advertencias: [],
+      });
+      const r = cmp.puedeContinuar();
+      expect(r.ok).toBe(false);
+      if (!r.ok) {
+        expect(r.razon).toMatch(/administraci/i);
+      }
     });
   });
 });
