@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 import { AuthService } from '../../../core/auth/auth.service';
+import { ErpPermisosRemuneracionesService } from '../../../core/auth/erp-permisos-remuneraciones.service';
 import { PeriodoActivoService } from '../../../core/services/periodo-activo.service';
 import { NominaCalculoSnapshotRepository } from '../../nomina-mensual/data-access/nomina-calculo-snapshot.repository';
 import { ParametrosGeneralesService } from '../../parametros-generales/services/parametros-generales.service';
@@ -33,6 +34,12 @@ function resumenMinimo(): NominaParametrosResumen {
     pendientesPreparacion: [],
     advertenciasNoBloqueantes: [],
     accesos: [],
+  };
+}
+
+function permisosRemuneracionesMock() {
+  return {
+    exigirPermisoRecargaParametrosBase: vi.fn(),
   };
 }
 
@@ -79,6 +86,7 @@ describe('NominaParametrosBaseService', () => {
         { provide: PeriodoActivoService, useValue: { periodoYm: () => '2026-05' } },
         { provide: AuthService, useValue: { currentUser: () => null, getSession: vi.fn().mockResolvedValue(null) } },
         { provide: NominaPeriodoService, useValue: { invalidarCalculoPorActualizacionParametros: vi.fn().mockResolvedValue(undefined) } },
+        { provide: ErpPermisosRemuneracionesService, useValue: permisosRemuneracionesMock() },
       ],
     });
   });
@@ -136,6 +144,7 @@ describe('NominaParametrosBaseService', () => {
         { provide: PeriodoActivoService, useValue: { periodoYm: () => '2026-06' } },
         { provide: AuthService, useValue: { currentUser: () => null, getSession: vi.fn().mockResolvedValue(null) } },
         { provide: NominaPeriodoService, useValue: { invalidarCalculoPorActualizacionParametros: vi.fn().mockResolvedValue(undefined) } },
+        { provide: ErpPermisosRemuneracionesService, useValue: permisosRemuneracionesMock() },
       ],
     });
 
@@ -160,6 +169,7 @@ describe('NominaParametrosBaseService', () => {
         { provide: PeriodoActivoService, useValue: { periodoYm: () => '2026-05' } },
         { provide: AuthService, useValue: { currentUser: () => null, getSession: vi.fn().mockResolvedValue(null) } },
         { provide: NominaPeriodoService, useValue: { invalidarCalculoPorActualizacionParametros: invalidar } },
+        { provide: ErpPermisosRemuneracionesService, useValue: permisosRemuneracionesMock() },
       ],
     });
 

@@ -2,7 +2,7 @@
 
 > **ID:** `AUDIT-PROYECTO-2026-07`
 >
-> **Fecha:** 2026-07-02 · **Estado:** Abierto (backlog vivo)
+> **Fecha:** 2026-07-02 · **Estado:** **Cerrado núcleo** (solo BKL-06/F15b pendiente, bloqueado hasta F13)
 >
 > **Origen:** revisión de flujos, casos de uso, vulnerabilidades y pendientes sobre
 > Administrador/Generador de nómina V2, seguridad transversal y escala, tras cierre
