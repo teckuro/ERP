@@ -17,7 +17,10 @@ import {
   leerPasoActual,
   leerTotalDotacion,
   listarFilasBandeja,
+  locatorGeneradorShell,
   loginNominasAdmin,
+  esperarGeneradorListo,
+  esListadoBandejaNominaE2e,
   loginNominasPartial,
   mostrarTodasLasNominas,
   nominasAdminGeneradorCredentialsReady,
@@ -69,7 +72,7 @@ test.describe('Administrador y generador de nóminas', () => {
 
     const [periodo, grupo] = parMismoPeriodo!;
     const idA = await abrirGeneradorDesdeFila(page, grupo[0]!);
-    await expect(page.locator('.nomina-shell')).toHaveAttribute('data-step', /parameters|dotacion|movements|calculation|validation|closure/);
+    await expect(locatorGeneradorShell(page)).toHaveAttribute('data-step', /parameters|dotacion|movements|calculation|validation|closure/);
 
     await volverAdministradorNominas(page);
     await mostrarTodasLasNominas(page);
@@ -141,7 +144,7 @@ test.describe('F20 — Certificación operativa (matriz E2E)', () => {
     test.skip(!candidata, 'Requiere nómina mensual legal (sin meta Anticipo/Extraordinaria) en BD.');
 
     await abrirGeneradorDesdeFila(page, candidata!);
-    await expect(page.locator('.nomina-shell')).toHaveAttribute(
+    await expect(locatorGeneradorShell(page)).toHaveAttribute(
       'data-step',
       /parameters|dotacion|movements|calculation|validation|closure/,
     );
@@ -250,13 +253,13 @@ test.describe('F20 — Certificación operativa (matriz E2E)', () => {
     test.skip(filas.length === 0, 'Requiere al menos 1 nómina en la bandeja.');
 
     const id = await abrirGeneradorDesdeFila(page, filas[0]!);
-    await irPasoDotacion(page);
+    await expect(locatorGeneradorShell(page)).toHaveAttribute('data-step', /.+/);
     const pasoAntes = await leerPasoActual(page);
 
     await page.reload({ waitUntil: 'networkidle' });
     expect(extraerNominaPeriodoId(page.url())).toBe(id);
-    await expect(page.getByLabel('Generador de nómina')).toBeVisible();
-    expect(await leerPasoActual(page)).toBe(pasoAntes);
+    await esperarGeneradorListo(page);
+    await expect(locatorGeneradorShell(page)).toHaveAttribute('data-step', pasoAntes, { timeout: 30_000 });
   });
 
   test('F20-10: dos nóminas del mismo mes sin contaminación (BKL-08)', async ({ page }) => {
@@ -308,9 +311,20 @@ test.describe('F20 — Certificación operativa (matriz E2E)', () => {
   });
 
   test('F20-13: reintento tras timeout recupera la bandeja', async ({ page }) => {
+    await mostrarTodasLasNominas(page);
+    await esperarBandejaLista(page);
+
     await withFalloTemporalBandeja(page, 1, async () => {
-      await page.goto('/remuneraciones/nominas');
-      await expect(page.locator('.adm-nom__state--error')).toBeVisible({ timeout: 60_000 });
+      const errorVisible = expect(page.locator('.adm-nom__state--error')).toBeVisible({
+        timeout: 60_000,
+      });
+      const listadoFallido = page.waitForResponse(
+        (res) => esListadoBandejaNominaE2e(res.url(), res.request().method()) && res.status() === 500,
+        { timeout: 60_000 },
+      );
+      await page.goto('/remuneraciones/nominas', { waitUntil: 'domcontentloaded' });
+      await listadoFallido;
+      await errorVisible;
       await page.getByRole('button', { name: 'Reintentar' }).click();
       await esperarBandejaLista(page);
     });

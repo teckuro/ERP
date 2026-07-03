@@ -150,11 +150,25 @@ export function extraerNominaPeriodoId(url: string): string | null {
   return match?.[1] ?? null;
 }
 
+/** Contenedor del generador (único `data-step`; el stepper también usa clase `nomina-shell`). */
+export function locatorGeneradorShell(page: Page): Locator {
+  return page.locator('section.nomina-shell[aria-label="Generador de nómina"]');
+}
+
+/** Espera cabecera + rehidratación (sin overlay de preparación). */
+export async function esperarGeneradorListo(page: Page): Promise<void> {
+  await expect(locatorGeneradorShell(page)).toBeVisible({ timeout: 60_000 });
+  const overlay = locatorGeneradorShell(page).locator('app-workspace-loading');
+  await expect(overlay).toHaveCount(0, { timeout: NOMINAS_E2E_TIMEOUT_MS });
+  await page.waitForLoadState('networkidle');
+}
+
 export async function abrirGeneradorDesdeFila(page: Page, fila: FilaBandejaNomina): Promise<string> {
   await expect(fila.abrirGenerador).toBeVisible();
   await fila.abrirGenerador.click();
   await page.waitForURL(/\/remuneraciones\/nominas\/[^/]+\/generador/, { timeout: 60_000 });
   await expect(page.getByLabel('Generador de nómina')).toBeVisible();
+  await esperarGeneradorListo(page);
   const id = extraerNominaPeriodoId(page.url());
   expect(id, 'La URL del generador debe incluir nominaPeriodoId.').toBeTruthy();
   return id!;
@@ -178,14 +192,14 @@ export async function irPasoGenerador(page: Page, paso: PasoGenerador): Promise<
   const pasoBtn = page
     .locator('nav.nomina-stepper')
     .getByRole('button', { name: ETIQUETA_PASO[paso] })
-    .first();
-  await expect(pasoBtn).toBeVisible();
-  await pasoBtn.click();
-  await expect(page.locator('.nomina-shell')).toHaveAttribute('data-step', paso);
+    .and(page.locator(':not([disabled])'));
+  await expect(pasoBtn.first()).toBeVisible();
+  await pasoBtn.first().click();
+  await expect(locatorGeneradorShell(page)).toHaveAttribute('data-step', paso, { timeout: 15_000 });
 }
 
 export async function leerPasoActual(page: Page): Promise<string> {
-  return (await page.locator('.nomina-shell').getAttribute('data-step')) ?? '';
+  return (await locatorGeneradorShell(page).getAttribute('data-step')) ?? '';
 }
 
 export async function irPasoDotacion(page: Page): Promise<void> {
@@ -258,6 +272,15 @@ export async function assertCierreInmutable(page: Page): Promise<void> {
   await expect(page.getByRole('button', { name: /Regenerar/i })).toHaveCount(0);
 }
 
+export function esListadoBandejaNominaE2e(url: string, method: string): boolean {
+  if (method !== 'GET') return false;
+  const lower = url.toLowerCase();
+  if (!lower.includes('/rest/v1/nomina_periodo')) return false;
+  // Listado del administrador (filtro empresa); excluir lecturas por id del generador.
+  if (lower.includes('id=eq.')) return false;
+  return lower.includes('id_empresa=eq.');
+}
+
 export async function withFalloTemporalBandeja(
   page: Page,
   failTimes: number,
@@ -265,19 +288,29 @@ export async function withFalloTemporalBandeja(
 ): Promise<void> {
   let failures = 0;
   const handler = async (route: import('@playwright/test').Route) => {
-    if (failures < failTimes && route.request().method() === 'GET') {
+    const req = route.request();
+    if (failures < failTimes && esListadoBandejaNominaE2e(req.url(), req.method())) {
       failures += 1;
-      await route.abort('timedout');
+      await route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          code: 'PGRST500',
+          details: null,
+          hint: null,
+          message: 'E2E simulated bandeja failure',
+        }),
+      });
       return;
     }
     await route.continue();
   };
 
-  await page.route('**/rest/v1/nomina_periodo**', handler);
+  await page.route('**/*', handler);
   try {
     await fn();
   } finally {
-    await page.unroute('**/rest/v1/nomina_periodo**', handler);
+    await page.unroute('**/*', handler);
   }
 }
 
