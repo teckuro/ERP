@@ -9,6 +9,15 @@
 
 ---
 
+## 2026-07-03 — F09 diff recálculo en paso Cálculo (Generador V2)
+
+- **Pantalla:** Generador → Paso 4 Cálculo (`nomina-mensual-v2-paso-calculo`).
+- **UI:** franja compacta `paso-calc__diff-recalculo` cuando hay más de un recálculo con cambios en totales (haberes, descuentos, líquido, trabajadores).
+- **Copy:** «Cambios entre recálculo vN y vN+1»; sin IDs técnicos ni nombres de RPC.
+- **Contraste:** patrón franja operativa similar a rectificación; densidad compacta; CSS local.
+
+---
+
 ## 2026-07-03 — Plan diagnóstico global (certificación, BKL-06, CONC-02, MOTOR-00)
 
 - **Ola 7:** `cert:ola7`, doc [`smoke-certificacion-ola7.md`](./modulos/nomina-mensual/smoke-certificacion-ola7.md).

@@ -22,6 +22,7 @@ import { NominaPlantillaCicloService } from './nomina-plantilla-ciclo.service';
 import { ProcesoMensualService } from './proceso-mensual.service';
 import { calcularTotalesRectificacionVista } from '../rules/proceso-mensual-motor-rectificacion.rules';
 import { validarAlcanceMotorPiloto } from '../rules/nomina-motor-01-acotado.rules';
+import type { DiffCalculoVersionResultado } from '../rules/nomina-calculo-version-diff.rules';
 
 export interface ResultadoCalculoNominaPeriodo {
   resultado: MotorCalculoPeriodoResultado;
@@ -210,5 +211,10 @@ export class NominaPeriodoCalculoAdapterService {
       trabajador,
       liquidacion: mapTrabajadorSnapshotToLiquidacion(trabajador, periodo),
     };
+  }
+
+  /** F09: diffs entre recálculos consecutivos persistidos de la nómina. */
+  obtenerDiffsRecalculo(nominaPeriodoId: string): Promise<DiffCalculoVersionResultado[]> {
+    return this.snapshotRepo.obtenerDiffsVersionesCalculoNomina(nominaPeriodoId);
   }
 }

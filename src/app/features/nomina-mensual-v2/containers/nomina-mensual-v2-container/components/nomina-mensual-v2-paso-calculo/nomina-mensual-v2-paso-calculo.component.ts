@@ -65,6 +65,10 @@ import { MENSAJE_CALCULO_NO_VIGENTE, esCalculoNoVigente } from '../../facade/nom
 import type { TotalesRectificacionVista } from '../../../../../nomina-mensual/rules/proceso-mensual-motor-rectificacion.rules';
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
 import { NominaMensualV2TrazabilidadService } from '../../../../services/nomina-mensual-v2-trazabilidad.service';
+import {
+  ultimoDiffRecalculoConCambios,
+  type DiffRecalculoView,
+} from '../../../../presenters/nomina-calculo-version-diff.presenter';
 
 const RESUMEN_CALCULO_VACIO: ResumenCalculoNomina = {
   trabajadoresCalculados: 0,
@@ -114,6 +118,7 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
   readonly totalesRectificacion = signal<TotalesRectificacionVista | null>(null);
+  readonly diffRecalculo = signal<DiffRecalculoView | null>(null);
 
   readonly esRectificacion = computed(() => this.nomina()?.naturaleza === 'rectificacion');
 
@@ -154,6 +159,10 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   });
 
   readonly versionCalculo = computed(() => this.nomina()?.evidenciaCalculo?.versionCalculo ?? 0);
+
+  readonly mostrarDiffRecalculo = computed(
+    () => this.calculoDisponible() && this.versionCalculo() > 1 && !!this.diffRecalculo(),
+  );
 
   readonly statsCabecera = computed<StatsCalculoCabecera>(() =>
     statsDesdeResumenCalculo(this.resumenCalculo()),
@@ -231,6 +240,7 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
 
       if (nomina?.evidenciaCalculo?.calculoVigente) {
         await this.cargarGrilla(true);
+        await this.cargarDiffRecalculo(nominaPeriodoId);
         if (this.calculoDisponible()) {
           await this.sincronizarHintExpandDesglose();
         } else {
@@ -238,6 +248,7 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
         }
       } else {
         this.hintExpandVisible.set(false);
+        this.diffRecalculo.set(null);
       }
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido';
@@ -356,6 +367,7 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
         this.totalesRectificacion.set(await this.calculoAdapter.obtenerTotalesRectificacion(nomina.id));
       }
       await this.sincronizarHintExpandDesglose();
+      await this.cargarDiffRecalculo(nomina.id);
       await this.registrarEventoCalculo(nomina, resultado);
       this.registrarEventoCalculoTrazabilidad(resultado);
       this.nominaCabeceraCambiada.emit();
@@ -377,6 +389,15 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
         integridad: { estadoIntegridad: 'registrado' },
       }),
     );
+  }
+
+  private async cargarDiffRecalculo(nominaPeriodoId: string): Promise<void> {
+    try {
+      const diffs = await this.calculoAdapter.obtenerDiffsRecalculo(nominaPeriodoId);
+      this.diffRecalculo.set(ultimoDiffRecalculoConCambios(diffs));
+    } catch {
+      this.diffRecalculo.set(null);
+    }
   }
 
   private async registrarEventoCalculo(

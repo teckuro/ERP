@@ -91,6 +91,31 @@
     </div>
   </header>
 
+  @if (mostrarDiffRecalculo() && diffRecalculo(); as diff) {
+    <div class="paso-calc__diff-recalculo" role="status" [attr.aria-label]="diff.titulo">
+      <p class="paso-calc__diff-recalculo-title">{{ diff.titulo }}</p>
+      <dl class="paso-calc__diff-recalculo-grid">
+        @for (campo of diff.campos; track campo.id) {
+          <div class="paso-calc__diff-recalculo-item">
+            <dt>{{ campo.label }}</dt>
+            <dd>
+              <span class="paso-calc__diff-recalculo-valor">{{ campo.anterior }}</span>
+              <span class="paso-calc__diff-recalculo-arrow" aria-hidden="true">→</span>
+              <span class="paso-calc__diff-recalculo-valor is-strong">{{ campo.actual }}</span>
+              <span
+                class="paso-calc__diff-recalculo-delta"
+                [class.is-positive]="campo.deltaPositivo"
+                [class.is-negative]="!campo.deltaPositivo && campo.delta !== '0'"
+              >
+                ({{ campo.delta }})
+              </span>
+            </dd>
+          </div>
+        }
+      </dl>
+    </div>
+  }
+
   @if (mostrarModalCalculoNoVigente()) {
     <app-message-box
       mode="modal"

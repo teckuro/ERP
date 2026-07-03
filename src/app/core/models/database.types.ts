@@ -3122,6 +3122,7 @@ export type Database = {
           created_at: string
           dias_trabajados: number | null
           estado: string
+          estado_revision: string | null
           fecha_ingreso: string | null
           id_calculo_periodo: number
           id_contrato: number | null
@@ -3146,6 +3147,7 @@ export type Database = {
           created_at?: string
           dias_trabajados?: number | null
           estado?: string
+          estado_revision?: string | null
           fecha_ingreso?: string | null
           id_calculo_periodo: number
           id_contrato?: number | null
@@ -3170,6 +3172,7 @@ export type Database = {
           created_at?: string
           dias_trabajados?: number | null
           estado?: string
+          estado_revision?: string | null
           fecha_ingreso?: string | null
           id_calculo_periodo?: number
           id_contrato?: number | null
@@ -5888,6 +5891,43 @@ export type Database = {
       _validar_clave_preferencia_ui: {
         Args: { p_clave: string }
         Returns: string
+      }
+      actualizar_estado_revision_liquidacion_trabajador: {
+        Args: {
+          p_estado_revision: string
+          p_id_liquidacion_trabajador: number
+        }
+        Returns: {
+          base_imponible: number
+          base_tributable: number
+          cargo: string | null
+          centro_costo: string | null
+          created_at: string
+          dias_trabajados: number | null
+          estado: string
+          estado_revision: string | null
+          fecha_ingreso: string | null
+          id_calculo_periodo: number
+          id_contrato: number | null
+          id_liquidacion_periodo: number
+          id_liquidacion_trabajador: number
+          id_persona: number | null
+          liquido_pagar: number
+          metadata: Json
+          nombre_trabajador: string
+          observaciones: Json
+          rut: string | null
+          total_aportes_empleador_referencia: number
+          total_descuentos: number
+          total_haberes: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_liquidacion_trabajador"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       actualizar_maximo_paso_completado_nomina: {
         Args: { p_nomina_id: string; p_paso: string }
