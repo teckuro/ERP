@@ -127,6 +127,31 @@ export function metaIncluye(fila: FilaBandejaNomina, ...partes: string[]): boole
   return partes.every((parte) => meta.includes(parte.toLowerCase()));
 }
 
+export function esFilaAnticipo(fila: FilaBandejaNomina): boolean {
+  return metaIncluye(fila, 'Anticipo')
+    && !metaIncluye(fila, 'Extraordinaria')
+    && !metaIncluye(fila, 'Pago extraordinario');
+}
+
+export function esFilaExtraordinaria(fila: FilaBandejaNomina): boolean {
+  return metaIncluye(fila, 'Extraordinaria') || metaIncluye(fila, 'Pago extraordinario');
+}
+
+export function relocarFilaBandeja(
+  filas: FilaBandejaNomina[],
+  ref: Pick<FilaBandejaNomina, 'periodo' | 'empresa' | 'meta'>,
+): FilaBandejaNomina | undefined {
+  return filas.find(
+    (f) => f.periodo === ref.periodo && f.empresa === ref.empresa && f.meta === ref.meta,
+  );
+}
+
+export async function refrescarBandejaNominas(page: Page): Promise<FilaBandejaNomina[]> {
+  await mostrarTodasLasNominas(page);
+  await esperarBandejaLista(page);
+  return listarFilasBandeja(page);
+}
+
 export function esMensualLegalSinAnticipos(fila: FilaBandejaNomina): boolean {
   return fila.meta.trim().length === 0;
 }
@@ -235,14 +260,30 @@ export async function paginarDotacionSiguiente(page: Page): Promise<void> {
 
 export async function esperarBandejaLista(page: Page): Promise<void> {
   await page.waitForLoadState('networkidle');
-  const filas = page.locator('section.adm-nom__page tr.data-grid-row');
-  const vacio = page.getByText(/Aún no hay nóminas|Sin resultados con los filtros actuales/);
-  const error = page.locator('.adm-nom__state--error');
-  await expect(filas.first().or(vacio).or(error)).toBeVisible({ timeout: 60_000 });
-  if (await error.isVisible()) {
-    const msg = (await error.innerText()).trim();
-    throw new Error(`Bandeja en error: ${msg}`);
+  const loading = page.locator('.adm-nom__grid-shell app-workspace-loading');
+  if (await loading.count() > 0) {
+    await expect(loading).toBeHidden({ timeout: NOMINAS_E2E_TIMEOUT_MS });
   }
+
+  const error = page.locator('.adm-nom__state--error');
+  const filas = page.locator('section.adm-nom__page tr.data-grid-row');
+  const deadline = Date.now() + 60_000;
+  while (Date.now() < deadline) {
+    if (await error.isVisible()) {
+      const msg = (await error.innerText()).trim();
+      throw new Error(`Bandeja en error: ${msg}`);
+    }
+    if ((await filas.count()) > 0) {
+      await expect(filas.first()).toBeVisible();
+      return;
+    }
+    const vacio = page.getByText(/Aún no hay nóminas|Sin resultados con los filtros actuales/);
+    if (await vacio.first().isVisible()) {
+      return;
+    }
+    await page.waitForTimeout(250);
+  }
+  throw new Error('Bandeja no alcanzó estado listo (filas, vacío o error) en 60s.');
 }
 
 export function agruparFilasPorPeriodo(

@@ -8,6 +8,8 @@ import {
   e2eNominaDotacionMinima,
   e2eNominaPartialCredentialsReady,
   esperarBandejaLista,
+  esFilaAnticipo,
+  esFilaExtraordinaria,
   esMensualLegalSinAnticipos,
   extraerNominaPeriodoId,
   filasConMeta,
@@ -25,6 +27,8 @@ import {
   mostrarTodasLasNominas,
   nominasAdminGeneradorCredentialsReady,
   paginarDotacionSiguiente,
+  refrescarBandejaNominas,
+  relocarFilaBandeja,
   volverAdministradorNominas,
   withFalloTemporalBandeja,
 } from './helpers/nominas-admin-generador-e2e';
@@ -191,24 +195,23 @@ test.describe('F20 — Certificación operativa (matriz E2E)', () => {
     const filas = await listarFilasBandeja(page);
     const porPeriodo = agruparFilasPorPeriodo(filas);
     const periodoMixto = [...porPeriodo.entries()].find(([, grupo]) => {
-      const tieneAnticipo = grupo.some((f) => metaIncluyeLocal(f, 'Anticipo'));
-      const tieneExtra = grupo.some(
-        (f) => metaIncluyeLocal(f, 'Extraordinaria') || metaIncluyeLocal(f, 'Pago extraordinario'),
-      );
+      const tieneAnticipo = grupo.some((f) => esFilaAnticipo(f));
+      const tieneExtra = grupo.some((f) => esFilaExtraordinaria(f));
       return tieneAnticipo && tieneExtra;
     });
     test.skip(!periodoMixto, 'Requiere mismo período con anticipo y extraordinaria en BD.');
 
     const [, grupo] = periodoMixto!;
-    const anticipo = grupo.find((f) => metaIncluyeLocal(f, 'Anticipo'))!;
-    const extra = grupo.find(
-      (f) => metaIncluyeLocal(f, 'Extraordinaria') || metaIncluyeLocal(f, 'Pago extraordinario'),
-    )!;
+    const anticipo = grupo.find((f) => esFilaAnticipo(f))!;
+    const extra = grupo.find((f) => esFilaExtraordinaria(f))!;
+    expect(anticipo.meta).not.toBe(extra.meta);
 
     const idAnticipo = await abrirGeneradorDesdeFila(page, anticipo);
     await volverAdministradorNominas(page);
-    await mostrarTodasLasNominas(page);
-    const idExtra = await abrirGeneradorDesdeFila(page, extra);
+    const filasRefresh = await refrescarBandejaNominas(page);
+    const extraRefresh = relocarFilaBandeja(filasRefresh, extra);
+    expect(extraRefresh, 'La fila extraordinaria debe seguir en bandeja tras volver.').toBeTruthy();
+    const idExtra = await abrirGeneradorDesdeFila(page, extraRefresh!);
     expect(idAnticipo).not.toBe(idExtra);
   });
 
@@ -326,6 +329,8 @@ test.describe('F20 — Certificación operativa (matriz E2E)', () => {
       await listadoFallido;
       await errorVisible;
       await page.getByRole('button', { name: 'Reintentar' }).click();
+      await expect(page.locator('.adm-nom__state--error')).toBeHidden({ timeout: 60_000 });
+      await mostrarTodasLasNominas(page);
       await esperarBandejaLista(page);
     });
   });
