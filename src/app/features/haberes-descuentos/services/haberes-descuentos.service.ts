@@ -73,6 +73,10 @@ export class HaberesDescuentosService {
     return this.repository.listarContratosPorPersona(idPersona);
   }
 
+  listarReglasCalculoConcepto(idConcepto: number) {
+    return this.repository.listarReglasCalculoConcepto(idConcepto);
+  }
+
   /**
    * Opciones del selector de asignaciones: misma regla que el catálogo Conceptos (`esConceptoAsignable`).
    * @param fechaReferencia fecha civil de referencia (por defecto hoy), alineada al listado de conceptos.

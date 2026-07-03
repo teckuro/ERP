@@ -32,6 +32,7 @@ describe('LiquidacionesOficialesContainer', () => {
     generarLiquidaciones: ReturnType<typeof vi.fn>;
     obtenerDetalleTrabajador: ReturnType<typeof vi.fn>;
     listarTrabajadoresLiquidacion: ReturnType<typeof vi.fn>;
+    guardarEstadoRevisionTrabajador: ReturnType<typeof vi.fn>;
   };
   let nominaService: {
     obtenerNomina: ReturnType<typeof vi.fn>;
@@ -54,6 +55,7 @@ describe('LiquidacionesOficialesContainer', () => {
       generarLiquidaciones: vi.fn(),
       obtenerDetalleTrabajador: vi.fn().mockResolvedValue([]),
       listarTrabajadoresLiquidacion: vi.fn().mockResolvedValue(opts.trabajadoresLiquidacion ?? []),
+      guardarEstadoRevisionTrabajador: vi.fn().mockResolvedValue({}),
     };
     nominaService = {
       obtenerNomina: vi.fn().mockResolvedValue(opts.nomina ?? null),

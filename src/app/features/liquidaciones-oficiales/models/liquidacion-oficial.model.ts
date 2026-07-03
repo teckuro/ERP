@@ -1,5 +1,7 @@
 export type LiquidacionOficialEstado = 'generada';
 
+import type { LiquidacionAccionUiEstado } from '../rules/liquidaciones-acciones-ui.rules';
+
 export type LiquidacionesPeriodoEstadoUi =
   | 'no_disponible'
   | 'lista_para_generar'
@@ -40,6 +42,8 @@ export interface LiquidacionTrabajador {
   totalAportesEmpleadorReferencia: number;
   liquidoPagar: number;
   estado: LiquidacionOficialEstado;
+  /** Estado de revisión RRHH (autorización, pago, documento). */
+  estadoRevision?: LiquidacionAccionUiEstado | null;
   observaciones: unknown[];
   metadata: Record<string, unknown>;
 }

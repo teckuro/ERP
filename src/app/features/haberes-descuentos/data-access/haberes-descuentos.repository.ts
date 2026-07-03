@@ -7,6 +7,7 @@ import {
   ConceptoMantenimientoFila,
   ConceptoMantenimientoPayload,
   ContratoResumenPersona,
+  ReglaConceptoCalculoFila,
   HaberDescuentoAsignacionCierrePayload,
   HaberDescuentoAsignacionListado,
   HaberDescuentoAsignacionPayload,
@@ -629,5 +630,23 @@ export class HaberesDescuentosRepository {
 
   async desactivarAsignacion(idAsignacion: number): Promise<void> {
     await this.cerrarAsignacion(idAsignacion, { estado: false, vigenciaFin: null });
+  }
+
+  async listarReglasCalculoConcepto(idConcepto: number): Promise<ReglaConceptoCalculoFila[]> {
+    const { data, error } = await this.supabase
+      .from('regla_concepto_calculo')
+      .select('id_regla_concepto_calculo, codigo_regla, base_calculo, calculo_automatico, activo')
+      .eq('id_concepto', idConcepto)
+      .order('codigo_regla', { ascending: true });
+    if (error) {
+      throw new Error(error.message);
+    }
+    return (data ?? []).map((row) => ({
+      idReglaConceptoCalculo: Number(row.id_regla_concepto_calculo),
+      codigoRegla: row.codigo_regla,
+      baseCalculo: row.base_calculo ?? null,
+      calculoAutomatico: Boolean(row.calculo_automatico),
+      activo: Boolean(row.activo),
+    }));
   }
 }

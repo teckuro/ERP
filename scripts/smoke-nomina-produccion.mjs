@@ -32,6 +32,8 @@ const RPC_NOMINA = [
   'generar_liquidaciones_nomina',
   'resumen_calculo_nomina',
   'listar_calculo_trabajadores_nomina',
+  'erp_nomina_permiso_efectivo',
+  'actualizar_estado_revision_liquidacion_trabajador',
 ];
 
 /** UUID ficticio: solo para comprobar que la RPC está registrada (error de negocio = OK). */
@@ -42,6 +44,11 @@ const RPC_SMOKE_ARGS = {
   generar_liquidaciones_nomina: { p_id_nomina_periodo: SMOKE_NOMINA_ID },
   resumen_calculo_nomina: { p_nomina_id: SMOKE_NOMINA_ID },
   listar_calculo_trabajadores_nomina: { p_nomina_id: SMOKE_NOMINA_ID },
+  erp_nomina_permiso_efectivo: { p_permiso: 'nomina.validar' },
+  actualizar_estado_revision_liquidacion_trabajador: {
+    p_id_liquidacion_trabajador: 0,
+    p_estado_revision: 'autorizada',
+  },
 };
 
 function fail(msg) {

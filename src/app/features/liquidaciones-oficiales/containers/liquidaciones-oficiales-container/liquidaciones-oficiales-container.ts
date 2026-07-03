@@ -66,6 +66,11 @@ import {
 
 } from '../../rules/liquidaciones-acciones-ui.rules';
 
+import {
+  fusionarEstadosRevisionLiquidacion,
+  guardarEstadoRevisionLiquidacion,
+} from '../../rules/liquidaciones-estado-revision.storage';
+
 import { LiquidacionesOficialesService } from '../../services/liquidaciones-oficiales.service';
 
 import { NominaPeriodoService } from '../../../nomina-mensual/services/nomina-periodo.service';
@@ -394,7 +399,7 @@ export class LiquidacionesOficialesContainer {
 
 
 
-  readonly resumenFlujoTrabajadores = computed(() => resumirEstadosLiquidacionUi(this.estadosAccionTrabajador()));
+  readonly resumenEstadoTrabajadores = computed(() => resumirEstadosLiquidacionUi(this.estadosAccionTrabajador()));
 
   readonly filtrosTrabajadoresLiquidacion = computed(() =>
 
@@ -408,7 +413,7 @@ export class LiquidacionesOficialesContainer {
 
   );
 
-  readonly estadoFlujoTrabajadorSeleccionado = computed(() => {
+  readonly estadoTrabajadorSeleccionado = computed(() => {
 
     const trabajador = this.trabajadorSeleccionado();
 
@@ -896,7 +901,12 @@ export class LiquidacionesOficialesContainer {
 
       this.trabajadoresLiquidacion.set(trabajadores);
 
-      this.estadosAccionTrabajador.set(inicializarEstadosLiquidacionUi(trabajadores));
+      this.estadosAccionTrabajador.set(
+        fusionarEstadosRevisionLiquidacion(
+          idLiquidacionPeriodo,
+          inicializarEstadosLiquidacionUi(trabajadores),
+        ),
+      );
 
       this.feedbackAccionTrabajador.set(null);
 
@@ -923,29 +933,36 @@ export class LiquidacionesOficialesContainer {
 
 
   ejecutarAccionTrabajador(event: LiquidacionAccionUiEvent): void {
-
-    const estadoActual = this.estadosAccionTrabajador()[event.idLiquidacionTrabajador] ?? 'pendiente_autorizar';
-
+    const trabajador = this.trabajadoresLiquidacion().find(
+      (fila) => fila.idLiquidacionTrabajador === event.idLiquidacionTrabajador,
+    );
+    const estadoActual = this.estadosAccionTrabajador()[event.idLiquidacionTrabajador]
+      ?? estadoInicialLiquidacionUi(trabajador);
     const estadoSiguiente = siguienteEstadoLiquidacionUi(estadoActual, event.tipo);
-
     if (estadoSiguiente === estadoActual) return;
 
     this.estadosAccionTrabajador.update((actual) => ({
-
       ...actual,
-
       [event.idLiquidacionTrabajador]: estadoSiguiente,
-
     }));
 
+    const idVersion = this.versionLiquidacionActivaId();
+    if (idVersion) {
+      guardarEstadoRevisionLiquidacion(idVersion, event.idLiquidacionTrabajador, estadoSiguiente);
+    }
+
     this.feedbackAccionTrabajador.set({
-
       mensaje: this.mensajeAccionTrabajador(estadoSiguiente),
-
       tono: this.tonoFeedbackAccionTrabajador(estadoSiguiente),
-
     });
 
+    void this.service.guardarEstadoRevisionTrabajador(event.idLiquidacionTrabajador, estadoSiguiente)
+      .catch(() => {
+        this.feedbackAccionTrabajador.set({
+          mensaje: 'Estado guardado en esta sesión. No se pudo sincronizar con el servidor.',
+          tono: 'review',
+        });
+      });
   }
 
 
@@ -955,24 +972,15 @@ export class LiquidacionesOficialesContainer {
     switch (estado) {
 
       case 'autorizada':
-
-        return 'Liquidación autorizada en esta revisión visual.';
-
+        return 'Liquidación autorizada. Puede continuar con el registro de pago.';
       case 'pago_registrado':
-
-        return 'Pago registrado en el flujo visual de la grilla.';
-
+        return 'Pago registrado. Puede enviar el documento al trabajador.';
       case 'documento_enviado':
-
-        return 'Documento marcado como enviado en esta revisión visual.';
-
+        return 'Documento marcado como enviado.';
       case 'rectificacion_solicitada':
-
         return 'Rectificación solicitada: corrige desde Nómina mensual o una futura reliquidación antes de emitir una nueva versión.';
-
       default:
-
-        return 'Flujo visual actualizado.';
+        return 'Estado actualizado.';
 
     }
 

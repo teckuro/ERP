@@ -20,7 +20,7 @@ import {
   type LiquidacionAccionUiEstado,
 } from '../rules/liquidaciones-acciones-ui.rules';
 
-const ESTADOS_FLUJO_TRABAJADOR: LiquidacionAccionUiEstado[] = [
+const ESTADOS_REVISION_TRABAJADOR: LiquidacionAccionUiEstado[] = [
   'pendiente_autorizar',
   'autorizada',
   'pago_registrado',
@@ -177,8 +177,8 @@ export const COLUMNAS_TRABAJADORES_LIQUIDACION: DataGridColumn<LiquidacionTrabaj
     priorityResponsive: 'primary',
   },
   {
-    id: 'flujo',
-    header: 'Flujo',
+    id: 'estado',
+    header: 'Estado',
     width: '10rem',
     minWidth: '9rem',
     sortable: false,
@@ -315,7 +315,7 @@ export function crearFiltrosSeleccionNominaLiquidacion(
   return filtros;
 }
 
-/** Filtros de la grilla de trabajadores liquidados (búsqueda + estado de flujo visual). */
+/** Filtros de la grilla de trabajadores liquidados (búsqueda + estado de revisión). */
 export function crearFiltrosTrabajadoresLiquidacion(
   estadosAccion: Record<number, LiquidacionAccionUiEstado>,
 ): DataGridFilter<LiquidacionTrabajador>[] {
@@ -339,13 +339,13 @@ export function crearFiltrosTrabajadoresLiquidacion(
       },
     },
     {
-      id: 'estadoFlujo',
-      label: 'Estado de flujo',
+      id: 'estadoTrabajador',
+      label: 'Estado',
       field: 'idLiquidacionTrabajador',
       type: 'select',
       operator: 'equals',
       emptyLabel: 'Todos los estados',
-      options: ESTADOS_FLUJO_TRABAJADOR.map((estado) => ({
+      options: ESTADOS_REVISION_TRABAJADOR.map((estado) => ({
         label: buildLiquidacionAccionUiView(estado).estadoLabel,
         value: estado,
       })),

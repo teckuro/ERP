@@ -2,7 +2,7 @@
 
 ## Estado (Fase 9)
 
-**Fase fuerte del producto en curso:** la **documentación** Fase 9 incluye diagnóstico, contrato funcional y **decisiones operativas** ([`decisiones-operativas.md`](./decisiones-operativas.md)). **Fase 9.2A** dejó el **listado base** del catálogo (columnas, filtros, regla `esConceptoAsignable`, vacíos). **Fase 9.2B** añadió **detalle** al **Revisar** (modal), motivos de no asignabilidad/resumen, vigencia `INVALIDO` si fechas incoherentes, y **blindaje de acciones** (`concepto-acciones.rules.ts` + deshabilitado en grilla). **Fase 9.2C** alineó **Haberes y descuentos** al listado de asignables del catálogo (`HaberesDescuentosService.listarConceptos` + validación al guardar con `esConceptoAsignable`). Siguen brechas de **permisos/JWT**, **CRUD completo alineado a roles**, **reglas de cálculo en UI**, **E2E visual estable** y **RLS** según diagnóstico §8 y decisiones §2 / §10.
+**Fase fuerte del producto en curso:** la **documentación** Fase 9 incluye diagnóstico, contrato funcional y **decisiones operativas** ([`decisiones-operativas.md`](./decisiones-operativas.md)). **CONC-02 núcleo cerrado** (permisos JWT, RLS, reglas en UI): [`conc-02-cierre.md`](./conc-02-cierre.md).
 
 ## Orden de lectura
 

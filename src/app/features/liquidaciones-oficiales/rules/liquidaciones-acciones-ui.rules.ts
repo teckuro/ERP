@@ -7,6 +7,26 @@ export type LiquidacionAccionUiEstado =
   | 'documento_enviado'
   | 'rectificacion_solicitada';
 
+export const METADATA_ESTADO_REVISION_KEY = 'estadoRevision';
+
+const ESTADOS_REVISION_VALIDOS: readonly LiquidacionAccionUiEstado[] = [
+  'pendiente_autorizar',
+  'autorizada',
+  'pago_registrado',
+  'documento_enviado',
+  'rectificacion_solicitada',
+];
+
+export function parseEstadoRevisionMetadata(
+  metadata: Record<string, unknown> | null | undefined,
+): LiquidacionAccionUiEstado | null {
+  const raw = metadata?.[METADATA_ESTADO_REVISION_KEY];
+  if (typeof raw !== 'string') return null;
+  return ESTADOS_REVISION_VALIDOS.includes(raw as LiquidacionAccionUiEstado)
+    ? (raw as LiquidacionAccionUiEstado)
+    : null;
+}
+
 export type LiquidacionAccionUiTipo =
   | 'autorizar'
   | 'registrar_pago'
@@ -45,8 +65,19 @@ export interface LiquidacionAccionUiResumen {
 }
 
 export function estadoInicialLiquidacionUi(
-  trabajador: Pick<LiquidacionTrabajador, 'estado'> | null | undefined,
+  trabajador:
+    | Pick<LiquidacionTrabajador, 'estado'>
+    | Pick<LiquidacionTrabajador, 'estado' | 'estadoRevision' | 'metadata'>
+    | null
+    | undefined,
 ): LiquidacionAccionUiEstado {
+  if (trabajador && 'estadoRevision' in trabajador && trabajador.estadoRevision) {
+    return trabajador.estadoRevision;
+  }
+  const desdeMetadata = trabajador && 'metadata' in trabajador
+    ? parseEstadoRevisionMetadata(trabajador.metadata)
+    : null;
+  if (desdeMetadata) return desdeMetadata;
   return trabajador?.estado === 'generada' ? 'pendiente_autorizar' : 'pendiente_autorizar';
 }
 

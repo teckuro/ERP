@@ -39,9 +39,9 @@ describe('LiquidacionDetallePanelComponent', () => {
     fixture = TestBed.createComponent(LiquidacionDetallePanelComponent);
   });
 
-  it('muestra chip de flujo y cuadratura cuando hay trabajador', () => {
+  it('muestra chip de estado y cuadratura cuando hay trabajador', () => {
     fixture.componentInstance.trabajador = crearTrabajador();
-    fixture.componentInstance.estadoFlujo = { label: 'Pendiente de autorizar', tono: 'review' };
+    fixture.componentInstance.estadoTrabajador = { label: 'Pendiente de autorizar', tono: 'review' };
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;

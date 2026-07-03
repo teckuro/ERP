@@ -12,6 +12,7 @@ import type {
   LiquidacionesEstadoPeriodo,
   LiquidacionTrabajador,
 } from '../models/liquidacion-oficial.model';
+import type { LiquidacionAccionUiEstado } from '../rules/liquidaciones-acciones-ui.rules';
 import {
   clasificarAdvertenciasLiquidacion,
   determinarEstadoLiquidaciones,
@@ -77,6 +78,13 @@ export class LiquidacionesOficialesService {
 
   listarTrabajadoresLiquidacion(idLiquidacionPeriodo: number): Promise<LiquidacionTrabajador[]> {
     return this.liquidaciones.obtenerLiquidacionesTrabajadores(idLiquidacionPeriodo);
+  }
+
+  guardarEstadoRevisionTrabajador(
+    idLiquidacionTrabajador: number,
+    estadoRevision: LiquidacionAccionUiEstado,
+  ): Promise<LiquidacionTrabajador> {
+    return this.liquidaciones.actualizarEstadoRevisionTrabajador(idLiquidacionTrabajador, estadoRevision);
   }
 
   private async metadataUsuarioResponsable(): Promise<Record<string, unknown>> {

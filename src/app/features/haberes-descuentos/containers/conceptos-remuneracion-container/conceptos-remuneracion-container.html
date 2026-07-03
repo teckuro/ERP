@@ -209,6 +209,26 @@
             </dl>
           </section>
 
+          <section class="cr-detalle-block" aria-labelledby="cr-det-h-reglas">
+            <h3 id="cr-det-h-reglas" class="cr-detalle-h">Reglas de cálculo</h3>
+            @if (cargandoReglasDetalle()) {
+              <p class="cr-detalle-motivo">Cargando reglas…</p>
+            } @else if (reglasCalculoDetalle().length === 0) {
+              <p class="cr-detalle-motivo">Sin reglas de cálculo registradas para este concepto.</p>
+            } @else {
+              <ul class="cr-detalle-reglas">
+                @for (regla of reglasCalculoDetalle(); track regla.idReglaConceptoCalculo) {
+                  <li>
+                    <strong>{{ regla.codigoRegla }}</strong>
+                    · {{ regla.baseCalculo || 'Base no definida' }}
+                    · {{ regla.calculoAutomatico ? 'Automático' : 'Manual' }}
+                    · {{ regla.activo ? 'Activa' : 'Inactiva' }}
+                  </li>
+                }
+              </ul>
+            }
+          </section>
+
           <section class="cr-detalle-block cr-detalle-block--last" aria-labelledby="cr-det-h-act">
             <h3 id="cr-det-h-act" class="cr-detalle-h">Acciones y protección (v1)</h3>
             <ul class="cr-detalle-acciones">

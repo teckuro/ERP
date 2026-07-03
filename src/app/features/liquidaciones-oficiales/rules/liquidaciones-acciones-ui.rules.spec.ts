@@ -14,7 +14,7 @@ describe('liquidaciones-acciones-ui.rules', () => {
     expect(estadoInicialLiquidacionUi({ estado: 'generada' })).toBe('pendiente_autorizar');
   });
 
-  it('avanza el flujo visual por trabajador en orden', () => {
+  it('avanza el estado por trabajador en orden', () => {
     const autorizada = siguienteEstadoLiquidacionUi('pendiente_autorizar', 'autorizar');
     const pagada = siguienteEstadoLiquidacionUi(autorizada, 'registrar_pago');
     const enviada = siguienteEstadoLiquidacionUi(pagada, 'enviar_documento');
@@ -47,7 +47,23 @@ describe('liquidaciones-acciones-ui.rules', () => {
     expect(enviada.secondaryActions.map((a) => a.tipo)).toEqual(['solicitar_rectificacion']);
   });
 
-  it('inicializa y resume estados visuales por trabajador', () => {
+  it('respeta estadoRevision persistido en metadata o en el trabajador', () => {
+    expect(
+      estadoInicialLiquidacionUi({
+        estado: 'generada',
+        estadoRevision: 'pago_registrado',
+        metadata: {},
+      }),
+    ).toBe('pago_registrado');
+    expect(
+      estadoInicialLiquidacionUi({
+        estado: 'generada',
+        metadata: { estadoRevision: 'autorizada' },
+      }),
+    ).toBe('autorizada');
+  });
+
+  it('inicializa y resume estados por trabajador', () => {
     const trabajadores = [
       trabajador(1),
       trabajador(2),

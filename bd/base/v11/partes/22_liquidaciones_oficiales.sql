@@ -150,6 +150,31 @@ CREATE TABLE IF NOT EXISTS public.nomina_liquidacion_trabajador (
     CONSTRAINT nomina_liquidacion_trabajador_estado_chk CHECK (estado IN ('generada'))
 );
 
+ALTER TABLE public.nomina_liquidacion_trabajador
+    ADD COLUMN IF NOT EXISTS estado_revision TEXT;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'nomina_liquidacion_trabajador_estado_revision_chk'
+          AND conrelid = 'public.nomina_liquidacion_trabajador'::REGCLASS
+    ) THEN
+        ALTER TABLE public.nomina_liquidacion_trabajador
+            ADD CONSTRAINT nomina_liquidacion_trabajador_estado_revision_chk CHECK (
+                estado_revision IS NULL
+                OR estado_revision IN (
+                    'pendiente_autorizar',
+                    'autorizada',
+                    'pago_registrado',
+                    'documento_enviado',
+                    'rectificacion_solicitada'
+                )
+            );
+    END IF;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_nomina_liquidacion_trabajador_periodo
     ON public.nomina_liquidacion_trabajador(id_liquidacion_periodo);
 
@@ -219,4 +244,23 @@ BEGIN
             );
         END IF;
     END LOOP;
+
+    EXECUTE 'GRANT UPDATE ON TABLE public.nomina_liquidacion_trabajador TO authenticated';
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_policies
+        WHERE schemaname = 'public'
+          AND tablename = 'nomina_liquidacion_trabajador'
+          AND policyname = 'nomina_liquidacion_update_authenticated'
+    ) THEN
+        EXECUTE $policy$
+            CREATE POLICY nomina_liquidacion_update_authenticated
+                ON public.nomina_liquidacion_trabajador
+                FOR UPDATE
+                TO authenticated
+                USING (auth.role() = 'authenticated')
+                WITH CHECK (auth.role() = 'authenticated')
+        $policy$;
+    END IF;
 END $$;

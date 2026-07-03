@@ -2,6 +2,10 @@ import { Injectable, isDevMode } from '@angular/core';
 
 import type { Database, Json } from '../../../core/models/database.types';
 import { injectSupabase } from '../../../core/services/supabase.service';
+import {
+  parseEstadoRevisionMetadata,
+  type LiquidacionAccionUiEstado,
+} from '../rules/liquidaciones-acciones-ui.rules';
 import type {
   GenerarLiquidacionesParams,
   LiquidacionConcepto,
@@ -50,6 +54,61 @@ export class LiquidacionesOficialesRepository {
     return (data ?? []).map(mapTrabajadorRow);
   }
 
+  async actualizarEstadoRevisionTrabajador(
+    idLiquidacionTrabajador: number,
+    estadoRevision: string,
+  ): Promise<LiquidacionTrabajador> {
+    const rpcResult = await rpcSinTipar(
+      this.supabase,
+      'actualizar_estado_revision_liquidacion_trabajador',
+      {
+        p_id_liquidacion_trabajador: idLiquidacionTrabajador,
+        p_estado_revision: estadoRevision,
+      },
+    );
+
+    if (!rpcResult.error && rpcResult.data) {
+      return mapTrabajadorRow(rpcResult.data as LiquidacionTrabajadorRow);
+    }
+
+    const rpcMissing =
+      rpcResult.error?.code === 'PGRST202'
+      || (rpcResult.error?.message ?? '').toLowerCase().includes('could not find the function');
+
+    if (!rpcMissing) {
+      throw new Error('No se pudo guardar el estado de revisión del trabajador.');
+    }
+
+    const { data: actual, error: readError } = await this.supabase
+      .from('nomina_liquidacion_trabajador')
+      .select('*')
+      .eq('id_liquidacion_trabajador', idLiquidacionTrabajador)
+      .single();
+    if (readError || !actual) {
+      throw new Error('No se pudo consultar la liquidación del trabajador.');
+    }
+
+    const metadata = {
+      ...parseRecord(actual.metadata),
+      estadoRevision: estadoRevision,
+    };
+
+    const { data, error } = await this.supabase
+      .from('nomina_liquidacion_trabajador')
+      .update({
+        metadata,
+        ...( { estado_revision: estadoRevision } as Record<string, unknown> ),
+      })
+      .eq('id_liquidacion_trabajador', idLiquidacionTrabajador)
+      .select('*')
+      .single();
+
+    if (error || !data) {
+      throw new Error('No se pudo guardar el estado de revisión del trabajador.');
+    }
+    return mapTrabajadorRow(data);
+  }
+
   async obtenerDetalleTrabajador(idLiquidacionTrabajador: number): Promise<LiquidacionConcepto[]> {
     const { data, error } = await this.supabase
       .from('nomina_liquidacion_concepto')
@@ -91,6 +150,14 @@ function mapPeriodoRow(row: LiquidacionPeriodoRow): LiquidacionPeriodo {
   };
 }
 
+function parseEstadoRevisionDesdeColumna(
+  row: LiquidacionTrabajadorRow,
+): LiquidacionAccionUiEstado | null {
+  const raw = (row as LiquidacionTrabajadorRow & { estado_revision?: string | null }).estado_revision;
+  if (typeof raw !== 'string' || !raw.trim()) return null;
+  return parseEstadoRevisionMetadata({ estadoRevision: raw });
+}
+
 function mapTrabajadorRow(row: LiquidacionTrabajadorRow): LiquidacionTrabajador {
   return {
     idLiquidacionTrabajador: row.id_liquidacion_trabajador,
@@ -109,6 +176,9 @@ function mapTrabajadorRow(row: LiquidacionTrabajadorRow): LiquidacionTrabajador 
     totalAportesEmpleadorReferencia: Number(row.total_aportes_empleador_referencia ?? 0),
     liquidoPagar: Number(row.liquido_pagar ?? 0),
     estado: 'generada',
+    estadoRevision:
+      parseEstadoRevisionDesdeColumna(row)
+      ?? parseEstadoRevisionMetadata(parseRecord(row.metadata)),
     observaciones: parseArray(row.observaciones),
     metadata: parseRecord(row.metadata),
   };
@@ -151,4 +221,22 @@ function logRpcError(params: GenerarLiquidacionesParams, error: unknown): void {
     idCalculoPeriodo: params.idCalculoPeriodo,
     error,
   });
+}
+
+type RpcSinTiparResultado = {
+  data: unknown;
+  error: { code?: string; message?: string } | null;
+};
+
+/** RPC aún no presente en database.types — tipado local hasta regenerar tipos. */
+async function rpcSinTipar(
+  client: ReturnType<typeof injectSupabase>,
+  nombre: string,
+  args: Record<string, unknown>,
+): Promise<RpcSinTiparResultado> {
+  const rpc = client.rpc as unknown as (
+    fn: string,
+    params: Record<string, unknown>,
+  ) => Promise<RpcSinTiparResultado>;
+  return rpc(nombre, args);
 }

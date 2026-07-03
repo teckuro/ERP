@@ -4,14 +4,14 @@
       <div>
         <div class="liq-detail-panel__title-row">
           <h3>{{ trabajador.nombreTrabajador }}</h3>
-          @if (estadoFlujo; as flujo) {
+          @if (estadoTrabajador; as estado) {
             <span
               class="liq-detail-panel__chip"
-              [class.liq-detail-panel__chip--review]="flujo.tono === 'review'"
-              [class.liq-detail-panel__chip--ok]="flujo.tono === 'ok'"
-              [class.liq-detail-panel__chip--danger]="flujo.tono === 'danger'"
+              [class.liq-detail-panel__chip--review]="estado.tono === 'review'"
+              [class.liq-detail-panel__chip--ok]="estado.tono === 'ok'"
+              [class.liq-detail-panel__chip--danger]="estado.tono === 'danger'"
             >
-              {{ flujo.label }}
+              {{ estado.label }}
             </span>
           }
         </div>

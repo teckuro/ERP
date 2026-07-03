@@ -29,6 +29,11 @@ import {
 } from '../rules/proceso-mensual-borrador-snapshot.rules';
 import { esSnapshotParametrosBase } from '../../nomina-mensual-v2/mappers/nomina-parametros-base.mapper';
 import type { NominaCalculoParametroSnapshot } from '../models/proceso-mensual.model';
+import {
+  diffEntreVersionesConsecutivas,
+  snapshotsAResumenesComparables,
+  type DiffCalculoVersionResultado,
+} from '../rules/nomina-calculo-version-diff.rules';
 
 type Tables = Database['public']['Tables'];
 type NominaCalculoPeriodoRow = Tables['nomina_calculo_periodo']['Row'];
@@ -275,6 +280,15 @@ export class NominaCalculoSnapshotRepository {
       throw new Error(`No fue posible listar snapshots de la nómina: ${error.message}`);
     }
     return (data ?? []).map(mapPeriodoRow);
+  }
+
+  /** F09: diffs entre recálculos consecutivos de una nómina (excluye snapshots de parámetros). */
+  async obtenerDiffsVersionesCalculoNomina(
+    nominaPeriodoId: string,
+  ): Promise<DiffCalculoVersionResultado[]> {
+    const snapshots = await this.listarSnapshotsNomina(nominaPeriodoId);
+    const resumenes = snapshotsAResumenesComparables(snapshots);
+    return diffEntreVersionesConsecutivas(resumenes);
   }
 
   /**

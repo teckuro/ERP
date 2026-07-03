@@ -1,9 +1,9 @@
 <div class="liq-page">
-  <header class="liq-toolbar" aria-label="Selección de nómina origen">
+  <header class="liq-toolbar" aria-label="Nómina seleccionada">
     <div class="liq-toolbar__fields">
       @if (etiquetaNominaActiva(); as etiqueta) {
         <div class="liq-toolbar__field">
-          <span>Nómina origen</span>
+          <span>Nómina Seleccionada</span>
           <div class="liq-nomina-trigger">
             <button
               type="button"
@@ -15,9 +15,9 @@
             </button>
             <button
               type="button"
-              class="liq-icon-btn"
-              title="Cambiar nómina origen"
-              aria-label="Cambiar nómina origen"
+              class="liq-nomina-trigger__icon"
+              title="Cambiar nómina seleccionada"
+              aria-label="Cambiar nómina seleccionada"
               [disabled]="cargandoNominasLista()"
               (click)="abrirModalSeleccionNomina()"
             >
@@ -232,27 +232,27 @@
             </p>
           }
 
-          @let flujo = resumenFlujoTrabajadores();
-          <dl class="liq-flujo-resumen" aria-label="Resumen del flujo por trabajador">
+          @let resumenEstado = resumenEstadoTrabajadores();
+          <dl class="liq-estado-resumen" aria-label="Resumen del estado por trabajador">
             <div>
               <dt>Pendientes de autorizar</dt>
-              <dd>{{ flujo.pendientesAutorizar }}</dd>
+              <dd>{{ resumenEstado.pendientesAutorizar }}</dd>
             </div>
             <div>
               <dt>Autorizadas</dt>
-              <dd>{{ flujo.autorizadas }}</dd>
+              <dd>{{ resumenEstado.autorizadas }}</dd>
             </div>
             <div>
               <dt>Pagos registrados</dt>
-              <dd>{{ flujo.pagosRegistrados }}</dd>
+              <dd>{{ resumenEstado.pagosRegistrados }}</dd>
             </div>
             <div>
               <dt>Documentos enviados</dt>
-              <dd>{{ flujo.documentosEnviados }}</dd>
+              <dd>{{ resumenEstado.documentosEnviados }}</dd>
             </div>
-            <div [class.liq-flujo-resumen__danger]="flujo.rectificacionesSolicitadas > 0">
+            <div [class.liq-estado-resumen__danger]="resumenEstado.rectificacionesSolicitadas > 0">
               <dt>Rectificaciones</dt>
-              <dd>{{ flujo.rectificacionesSolicitadas }}</dd>
+              <dd>{{ resumenEstado.rectificacionesSolicitadas }}</dd>
             </div>
           </dl>
 
@@ -300,7 +300,7 @@
                     {{ fila.rut || '—' }}
                   </ng-template>
 
-                  <ng-template appDataGridCell="flujo" let-fila="row">
+                  <ng-template appDataGridCell="estado" let-fila="row">
                     @let accionView = viewTrabajador(fila);
                     <span
                       class="liq-trabajadores-grid__state"
@@ -383,7 +383,7 @@
                 <app-liquidacion-detalle-panel
                   [trabajador]="trabajadorSeleccionado()"
                   [conceptos]="conceptosDetalle()"
-                  [estadoFlujo]="estadoFlujoTrabajadorSeleccionado()"
+                  [estadoTrabajador]="estadoTrabajadorSeleccionado()"
                 />
               }
             </aside>

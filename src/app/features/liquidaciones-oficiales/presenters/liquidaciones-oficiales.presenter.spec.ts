@@ -41,7 +41,7 @@ describe('liquidaciones-oficiales.presenter', () => {
     )).toBe(false);
   });
 
-  it('crearFiltrosTrabajadoresLiquidacion filtra por búsqueda y estado de flujo', () => {
+  it('crearFiltrosTrabajadoresLiquidacion filtra por búsqueda y estado', () => {
     const trabajador: LiquidacionTrabajador = {
       idLiquidacionTrabajador: 5,
       idPersona: 1,
@@ -65,14 +65,14 @@ describe('liquidaciones-oficiales.presenter', () => {
     const filtros = crearFiltrosTrabajadoresLiquidacion({ 5: 'autorizada' });
 
     expect(filtros.some((f) => f.id === 'busqueda')).toBe(true);
-    expect(filtros.some((f) => f.id === 'estadoFlujo')).toBe(true);
+    expect(filtros.some((f) => f.id === 'estadoTrabajador')).toBe(true);
 
     const busqueda = filtros.find((f) => f.id === 'busqueda');
-    const estadoFlujo = filtros.find((f) => f.id === 'estadoFlujo');
+    const estadoTrabajador = filtros.find((f) => f.id === 'estadoTrabajador');
 
     expect(busqueda?.predicate?.(trabajador, 'ana')).toBe(true);
     expect(busqueda?.predicate?.(trabajador, 'beta')).toBe(false);
-    expect(estadoFlujo?.predicate?.(trabajador, 'autorizada')).toBe(true);
-    expect(estadoFlujo?.predicate?.(trabajador, 'pendiente_autorizar')).toBe(false);
+    expect(estadoTrabajador?.predicate?.(trabajador, 'autorizada')).toBe(true);
+    expect(estadoTrabajador?.predicate?.(trabajador, 'pendiente_autorizar')).toBe(false);
   });
 });

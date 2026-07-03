@@ -128,13 +128,13 @@ La confirmacion fue reemplazada por modal/MsgBox estandar durante UX-COMERCIAL-0
 - Tras seleccionar, la pantalla principal muestra origen, versiones y trabajadores liquidados.
 - **Entrada sin nómina:** grilla inline filtrable (sin modal automático ni botón intermedio); el modal queda solo para «Cambiar» nómina.
 
-## Revisión guiada y acta de generación (F18c flujos)
+## Revisión guiada y acta de generación (F18c)
 
-- Sobre la grilla de trabajadores: franja de contadores del flujo visual (autorización, pago, documento, rectificación).
-- Filtros DG: búsqueda por nombre/RUT/cargo y select por estado de flujo.
-- Panel lateral: chip de flujo, cuadratura de totales y placeholder accionable.
+- Sobre la grilla de trabajadores: franja de contadores por **estado** (autorización, pago, documento, rectificación).
+- Filtros DG: búsqueda por nombre/RUT/cargo y select por **Estado**.
+- Panel lateral: chip de estado, cuadratura de totales y placeholder accionable.
 - Generar/Regenerar: confirmación MessageBox con secciones de acta; evidencia de versión creada tras la acción.
-- Las acciones de flujo (autorizar, pago, documento) siguen siendo visuales; sin persistencia en esta fase.
+- Acciones por trabajador (autorizar → pago → documento → rectificación): transiciones operativas con persistencia en servidor (`actualizar_estado_revision_liquidacion_trabajador`) y respaldo local por sesión.
 
 ## ERP-NOIA-BITACORA-OPERATIVA-00 - Lectura de modulo
 

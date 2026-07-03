@@ -60,4 +60,92 @@ describe('LiquidacionesOficialesRepository', () => {
       periodo: '2026-04',
     })).rejects.toThrow('No se pudieron generar las liquidaciones oficiales. No se realizaron cambios parciales.');
   });
+
+  it('persiste estado revisión vía RPC cuando está disponible', async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: {
+        id_liquidacion_trabajador: 12,
+        id_liquidacion_periodo: 1,
+        id_calculo_periodo: 15,
+        nombre_trabajador: 'Ana Pérez',
+        estado_revision: 'autorizada',
+        metadata: { estadoRevision: 'autorizada' },
+        base_imponible: 0,
+        base_tributable: 0,
+        total_haberes: 0,
+        total_descuentos: 0,
+        total_aportes_empleador_referencia: 0,
+        liquido_pagar: 0,
+        observaciones: [],
+      },
+      error: null,
+    });
+
+    TestBed.configureTestingModule({
+      providers: [
+        LiquidacionesOficialesRepository,
+        { provide: SUPABASE_CLIENT, useValue: { rpc } },
+      ],
+    });
+
+    const repository = TestBed.inject(LiquidacionesOficialesRepository);
+    const result = await repository.actualizarEstadoRevisionTrabajador(12, 'autorizada');
+
+    expect(rpc).toHaveBeenCalledWith('actualizar_estado_revision_liquidacion_trabajador', {
+      p_id_liquidacion_trabajador: 12,
+      p_estado_revision: 'autorizada',
+    });
+    expect(result.estadoRevision).toBe('autorizada');
+    expect(result.idLiquidacionTrabajador).toBe(12);
+  });
+
+  it('hace fallback a UPDATE directo si la RPC no está desplegada', async () => {
+    const single = vi.fn().mockResolvedValue({
+      data: {
+        id_liquidacion_trabajador: 12,
+        id_liquidacion_periodo: 1,
+        id_calculo_periodo: 15,
+        nombre_trabajador: 'Ana Pérez',
+        metadata: {},
+        base_imponible: 0,
+        base_tributable: 0,
+        total_haberes: 0,
+        total_descuentos: 0,
+        total_aportes_empleador_referencia: 0,
+        liquido_pagar: 0,
+        observaciones: [],
+      },
+      error: null,
+    });
+    const updateChain = {
+      eq: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single,
+        }),
+      }),
+    };
+    const from = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({ single }),
+      }),
+      update: vi.fn().mockReturnValue(updateChain),
+    });
+    const rpc = vi.fn().mockResolvedValue({
+      data: null,
+      error: { code: 'PGRST202', message: 'Could not find the function' },
+    });
+
+    TestBed.configureTestingModule({
+      providers: [
+        LiquidacionesOficialesRepository,
+        { provide: SUPABASE_CLIENT, useValue: { rpc, from } },
+      ],
+    });
+
+    const repository = TestBed.inject(LiquidacionesOficialesRepository);
+    const result = await repository.actualizarEstadoRevisionTrabajador(12, 'pago_registrado');
+
+    expect(from).toHaveBeenCalledWith('nomina_liquidacion_trabajador');
+    expect(result.nombreTrabajador).toBe('Ana Pérez');
+  });
 });

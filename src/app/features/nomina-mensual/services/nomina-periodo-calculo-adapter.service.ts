@@ -21,6 +21,7 @@ import { NominaPeriodoService } from './nomina-periodo.service';
 import { NominaPlantillaCicloService } from './nomina-plantilla-ciclo.service';
 import { ProcesoMensualService } from './proceso-mensual.service';
 import { calcularTotalesRectificacionVista } from '../rules/proceso-mensual-motor-rectificacion.rules';
+import { validarAlcanceMotorPiloto } from '../rules/nomina-motor-01-acotado.rules';
 
 export interface ResultadoCalculoNominaPeriodo {
   resultado: MotorCalculoPeriodoResultado;
@@ -46,6 +47,9 @@ export class NominaPeriodoCalculoAdapterService {
     const idEmpresaNumerico = Number.isFinite(idEmpresa) ? idEmpresa : null;
 
     const trabajadorIds = nomina.trabajadorIds.map(Number).filter(Number.isFinite);
+    const alcance = validarAlcanceMotorPiloto(trabajadorIds);
+    if (!alcance.ok) throw new Error(alcance.mensaje);
+
     const opcionesMotor = { nominaPeriodoId };
 
     let resultado: MotorCalculoPeriodoResultado;

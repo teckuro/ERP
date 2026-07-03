@@ -9,7 +9,25 @@
 
 ---
 
-## 2026-07-03 — Liquidaciones: acción única de búsqueda + vacío a alto completo
+## 2026-07-03 — Plan diagnóstico global (certificación, BKL-06, CONC-02, MOTOR-00)
+
+- **Ola 7:** `cert:ola7`, doc [`smoke-certificacion-ola7.md`](./modulos/nomina-mensual/smoke-certificacion-ola7.md).
+- **BKL-06:** permisos en `transicionar_nomina_periodo` (SQL).
+- **Liquidaciones:** RPC `actualizar_estado_revision_liquidacion_trabajador` + sync servidor.
+- **F09:** diff versiones + golden fixture (`nomina-calculo-version-diff.rules.ts`).
+- **CONC-02:** RLS concepto, reglas en UI, APORTE solo admin.
+- **Docs:** MOTOR-00/01, plan salidas externas, alineación `roadmap-operativo.md`.
+
+---
+
+- **Copy:** columna DG «Flujo» → **«Estado»**; filtro «Estado de flujo» → **«Estado»**;
+  franja `liq-estado-resumen`; chip lateral `estadoTrabajador`.
+- **Funcional:** autorizar, registrar pago, enviar documento y solicitar rectificación
+  actualizan estado, contadores, filtro y feedback; persistencia local por versión
+  (`liquidaciones-estado-revision.storage.ts`).
+- **Contraste:** NOIA — lenguaje operativo RRHH, sin copy «visual»; sin SQL/RLS global.
+
+---
 
 - **Deduplicación:** sin nómina activa la toolbar ya no muestra disparador de búsqueda
   (solo título de la pantalla + enlace administrador); la única entrada es «Buscar nómina»
@@ -3233,4 +3251,9 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - Entrada y modal nómina: `arrow-right` / `check-circle` para abrir o seleccionar.
 - Toolbar: `search` (cambiar nómina), `refresh-cw` / `file-check-2` (regenerar/generar).
 - Patrón visual `liq-row-action` alineado al administrador de nóminas.
+- **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-03 - Liquidaciones: selector nómina toolbar compacto
+
+- Disparador «Nómina origen» unificado: etiqueta a la izquierda e icono `search` anclado a la derecha en el mismo control (sin salto de línea).
 - **Sin tocar**: estilos globales, SQL, motor.

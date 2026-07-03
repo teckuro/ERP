@@ -57,7 +57,7 @@
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 10px;
-  align-items: flex-end;
+  align-items: center;
   padding: 8px 10px;
   border: 1px solid var(--erp-border);
   border-radius: 6px;
@@ -69,13 +69,16 @@
   flex-wrap: wrap;
   gap: 10px;
   align-items: flex-end;
+  flex: 1 1 auto;
   min-width: 0;
 }
 
 .liq-toolbar__field {
   display: grid;
   gap: 4px;
-  min-width: min(100%, 18rem);
+  min-width: min(100%, 24rem);
+  flex: 1 1 16rem;
+  max-width: 32rem;
 }
 
 .liq-toolbar__field span {
@@ -127,27 +130,35 @@
 
 .liq-nomina-trigger {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: center;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  min-width: 0;
+  border: 1px solid var(--erp-border);
+  border-radius: 6px;
+  background: var(--erp-surface);
+  overflow: hidden;
 }
 
 .liq-nomina-trigger__value {
   flex: 1 1 auto;
-  min-width: min(100%, 16rem);
-  min-height: 30px;
-  border: 1px solid var(--erp-border);
-  background: var(--erp-surface);
+  min-width: 0;
+  min-height: 32px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   color: var(--erp-ink);
   padding: 0 10px;
   font-size: 12px;
   font-weight: 600;
   text-align: left;
   cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .liq-nomina-trigger__value:hover:not(:disabled) {
-  border-color: var(--erp-ink);
+  background: var(--erp-surface-soft);
 }
 
 .liq-nomina-trigger__value:disabled {
@@ -155,22 +166,40 @@
   cursor: not-allowed;
 }
 
-.liq-nomina-trigger__change {
-  min-height: 30px;
-  border: 1px solid var(--erp-border);
-  background: var(--erp-bg);
-  color: var(--erp-ink);
-  padding: 0 10px;
-  font-size: 12px;
-  font-weight: 650;
+.liq-nomina-trigger__icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  min-height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid var(--erp-border);
+  border-radius: 0;
+  background: var(--erp-surface-soft);
+  color: var(--erp-muted);
   cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
 }
 
-.liq-nomina-trigger__change:hover:not(:disabled) {
-  border-color: var(--erp-ink);
+.liq-nomina-trigger__icon lucide-icon {
+  width: 14px;
+  height: 14px;
 }
 
-.liq-nomina-trigger__change:disabled {
+.liq-nomina-trigger__icon:hover:not(:disabled) {
+  background: var(--erp-surface);
+  color: var(--erp-primary);
+}
+
+.liq-nomina-trigger__icon:focus-visible {
+  outline: 2px solid var(--erp-primary);
+  outline-offset: -2px;
+}
+
+.liq-nomina-trigger__icon:disabled {
   opacity: 0.65;
   cursor: not-allowed;
 }
@@ -653,7 +682,7 @@
 
 /* ---- Zona de trabajo ---- */
 
-.liq-flujo-resumen {
+.liq-estado-resumen {
   display: flex;
   flex-wrap: wrap;
   gap: 0;
@@ -664,7 +693,7 @@
   overflow: hidden;
 }
 
-.liq-flujo-resumen div {
+.liq-estado-resumen div {
   display: grid;
   gap: 2px;
   flex: 1 1 8rem;
@@ -674,23 +703,23 @@
   background: transparent;
 }
 
-.liq-flujo-resumen div:last-child {
+.liq-estado-resumen div:last-child {
   border-right: 0;
 }
 
-.liq-flujo-resumen__danger dd {
+.liq-estado-resumen__danger dd {
   color: var(--erp-danger);
   font-weight: 800;
 }
 
-.liq-flujo-resumen dt {
+.liq-estado-resumen dt {
   margin: 0;
   color: var(--erp-muted);
   font-size: 0.6875rem;
   font-weight: 700;
 }
 
-.liq-flujo-resumen dd {
+.liq-estado-resumen dd {
   margin: 0;
   color: var(--erp-ink);
   font-size: 0.875rem;

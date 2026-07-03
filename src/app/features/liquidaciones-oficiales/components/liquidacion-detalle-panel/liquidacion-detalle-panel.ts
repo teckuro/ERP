@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import type { LiquidacionConcepto, LiquidacionTrabajador } from '../../models/liquidacion-oficial.model';
 
-export interface EstadoFlujoDetalleUi {
+export interface EstadoTrabajadorDetalleUi {
   label: string;
   tono: 'pending' | 'review' | 'ok' | 'danger';
 }
@@ -21,7 +21,7 @@ const TOLERANCIA_CUADRATURA_PESOS = 1;
 export class LiquidacionDetallePanelComponent {
   @Input() trabajador: LiquidacionTrabajador | null = null;
   @Input() conceptos: LiquidacionConcepto[] = [];
-  @Input() estadoFlujo: EstadoFlujoDetalleUi | null = null;
+  @Input() estadoTrabajador: EstadoTrabajadorDetalleUi | null = null;
 
   haberes(): LiquidacionConcepto[] {
     return this.conceptos.filter((c) => c.tipo === 'haber');
