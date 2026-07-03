@@ -28,9 +28,21 @@ const TABLAS_NOMINA = [
 
 const RPC_NOMINA = [
   'obtener_feature_gates_nomina',
-  'cerrar_nomina_operativa',
-  'generar_liquidaciones_oficiales',
+  'cerrar_nomina',
+  'generar_liquidaciones_nomina',
+  'resumen_calculo_nomina',
+  'listar_calculo_trabajadores_nomina',
 ];
+
+/** UUID ficticio: solo para comprobar que la RPC está registrada (error de negocio = OK). */
+const SMOKE_NOMINA_ID = '00000000-0000-0000-0000-000000000001';
+
+const RPC_SMOKE_ARGS = {
+  cerrar_nomina: { p_nomina_id: SMOKE_NOMINA_ID, p_motivo: 'smoke' },
+  generar_liquidaciones_nomina: { p_id_nomina_periodo: SMOKE_NOMINA_ID },
+  resumen_calculo_nomina: { p_nomina_id: SMOKE_NOMINA_ID },
+  listar_calculo_trabajadores_nomina: { p_nomina_id: SMOKE_NOMINA_ID },
+};
 
 function fail(msg) {
   console.error(`[smoke nomina] FAIL: ${msg}`);
@@ -105,22 +117,16 @@ async function main() {
   ok(`Feature gates → ${JSON.stringify(gates ?? {})}`);
 
   for (const rpc of RPC_NOMINA.slice(1)) {
-    const res = await fetch(`${supabaseUrl}/rest/v1/rpc/${rpc}`, {
-      method: 'POST',
-      headers: {
-        apikey: supabaseAnonKey,
-        Authorization: `Bearer ${(await client.auth.getSession()).data.session?.access_token ?? supabaseAnonKey}`,
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal',
-      },
-      body: '{}',
-    });
-    // Solo verificamos que la RPC existe (4xx de negocio es aceptable; 404/PGRST202 no).
-    if (res.status === 404) {
-      fail(`RPC ${rpc} no encontrada`);
+    const args = RPC_SMOKE_ARGS[rpc] ?? {};
+    const { error } = await client.rpc(rpc, args);
+    const missing =
+      error?.code === 'PGRST202'
+      || (error?.message ?? '').toLowerCase().includes('could not find the function');
+    if (missing) {
+      fail(`RPC ${rpc} no encontrada → ${error?.message ?? error?.code}`);
       process.exit(1);
     }
-    ok(`RPC ${rpc} registrada (HTTP ${res.status})`);
+    ok(`RPC ${rpc} registrada${error ? ` (${error.code ?? 'negocio'}: ${error.message})` : ''}`);
   }
 
   const { count, error: countErr } = await client
