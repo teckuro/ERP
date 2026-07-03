@@ -141,6 +141,18 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
 
   readonly calculoNoVigente = computed(() => esCalculoNoVigente(this.nomina()?.evidenciaCalculo));
 
+  private readonly calculoNoVigenteAvisoCerrado = signal(false);
+
+  readonly mostrarModalCalculoNoVigente = computed(
+    () => this.calculoNoVigente() && !this.calculoNoVigenteAvisoCerrado(),
+  );
+
+  private readonly resetAvisoCalculoNoVigente = effect(() => {
+    if (!this.calculoNoVigente()) {
+      this.calculoNoVigenteAvisoCerrado.set(false);
+    }
+  });
+
   readonly versionCalculo = computed(() => this.nomina()?.evidenciaCalculo?.versionCalculo ?? 0);
 
   readonly statsCabecera = computed<StatsCalculoCabecera>(() =>
@@ -403,6 +415,10 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
 
   async avanzar(): Promise<ResultadoAvancePaso> {
     return this.puedeContinuar();
+  }
+
+  cerrarModalCalculoNoVigente(): void {
+    this.calculoNoVigenteAvisoCerrado.set(true);
   }
 
   cerrarHintExpandDesglose(): void {

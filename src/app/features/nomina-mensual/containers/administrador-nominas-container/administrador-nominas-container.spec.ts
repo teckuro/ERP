@@ -4,22 +4,6 @@ import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { LucideAngularModule } from 'lucide-angular';
-import {
-  ArrowRight,
-  Calculator,
-  Eye,
-  History,
-  Lock,
-  Minus,
-  Receipt,
-  RefreshCw,
-  Repeat,
-  GitBranch,
-  Settings,
-  ShieldCheck,
-  Trash2,
-  Users,
-} from 'lucide-angular/src/icons';
 
 import type { EventoAuditoriaNomina, NominaPeriodoResumen } from '../../models/nomina-periodo.models';
 import { crearNominaResumen } from '../../models/nomina-periodo.models';
@@ -30,6 +14,7 @@ import { NominaFeatureGatesService } from '../../services/nomina-feature-gates.s
 import { AuthService } from '../../../../core/auth/auth.service';
 import { DataGridComponent } from '../../../../shared/components/ui/data-grid/data-grid.component';
 import { AdministradorNominasContainer } from './administrador-nominas-container';
+import { ADMIN_NOMINAS_LUCIDE_ICONS } from './lucide/admin-nominas-lucide.icons';
 
 function resumenMock(overrides: Partial<NominaPeriodoResumen> = {}): NominaPeriodoResumen {
   return crearNominaResumen({
@@ -86,22 +71,7 @@ function configurar(opts: {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
     providers: [
-      importProvidersFrom(LucideAngularModule.pick({
-        ArrowRight,
-        Calculator,
-        Eye,
-        History,
-        Lock,
-        Minus,
-        Receipt,
-        RefreshCw,
-        Repeat,
-        GitBranch,
-        Settings,
-        ShieldCheck,
-        Trash2,
-        Users,
-      })),
+      importProvidersFrom(LucideAngularModule.pick(ADMIN_NOMINAS_LUCIDE_ICONS)),
       { provide: Router, useValue: { navigate } },
       { provide: NominaPeriodoService, useValue: opts.servicio },
       { provide: AuthService, useValue: authService },
@@ -201,21 +171,25 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     expect(cmp.puedeReabrirFila(cmp.resumenes()[1]!)).toBe(false);
   });
 
-  it('Test 36 — abrirResumen llama servicio.obtenerResumenValidacionNomina', async () => {
+  it('Test 36 — abrirResumen abre de inmediato y carga resumen desde el servicio', async () => {
     configurar({ servicio });
     const fixture = TestBed.createComponent(AdministradorNominasContainer);
     const cmp = fixture.componentInstance;
     await cmp.cargarResumenes();
     const fila = cmp.resumenes()[0]!;
 
-    await cmp.abrirResumen(fila);
-    expect(servicio.obtenerResumenValidacionNomina).toHaveBeenCalledWith(fila.id);
-    expect(cmp.resumenSeleccionado()).not.toBeNull();
+    const promesa = cmp.abrirResumen(fila);
     expect(cmp.nominaSeleccionada()?.id).toBe(fila.id);
+    expect(cmp.resumenLoading()).toBe(true);
+    await promesa;
+    expect(servicio.obtenerResumenValidacionNomina).toHaveBeenCalledWith(fila.id);
+    expect(cmp.resumenLoading()).toBe(false);
+    expect(cmp.resumenSeleccionado()).not.toBeNull();
+    expect(cmp.resumenError()).toBeNull();
 
     cmp.cerrarResumen();
-    expect(cmp.resumenSeleccionado()).toBeNull();
     expect(cmp.nominaSeleccionada()).toBeNull();
+    expect(cmp.resumenSeleccionado()).toBeNull();
   });
 
   it('Test 37 — abrirGenerador navega a la ruta del generador sin query params cuando no hay contexto', async () => {

@@ -28,8 +28,8 @@ const ETIQUETA_PROXIMO_PASO: Record<string, string> = {
  * Mapa de paso del flujo → nombre de icono lucide (kebab-case).
  *
  * Se usa en la celda "Siguiente acción" para reforzar visualmente la naturaleza
- * del paso sin agregar otra columna. Todos los iconos están registrados en
- * `app.config.ts` vía `LucideAngularModule.pick`.
+ * del paso sin agregar otra columna. Iconos registrados en `lucide/admin-nominas-lucide.icons.ts`
+ * e integrados en `app.config.ts` vía `LucideAngularModule.pick`.
  */
 const ICONO_PROXIMO_PASO: Record<string, string> = {
   parametros: 'settings',

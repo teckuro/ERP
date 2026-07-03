@@ -2,15 +2,18 @@
   variant="info"
   mode="modal"
   width="lg"
-  eyebrow="Bitácora"
-  title="Historial administrativo"
-  [message]="contexto()"
+  eyebrow="Historial administrativo"
+  [title]="tituloModal()"
   (dismiss)="cerrarModal()"
 >
   <div class="adm-nom-historial">
+    @if (!cargando() && !error() && filas().length > 0) {
+      <p class="adm-nom-historial__resumen">{{ contextoFranja().resumen }}</p>
+    }
+
     @if (cargando()) {
       <div class="adm-nom-historial__empty">
-        <lucide-icon name="loader-circle" aria-hidden="true"></lucide-icon>
+        <lucide-icon name="loader-circle" class="adm-nom-historial__spin" aria-hidden="true"></lucide-icon>
         <strong>Cargando historial</strong>
         <span>Consultando los movimientos registrados para esta nómina.</span>
       </div>
@@ -30,19 +33,26 @@
       <ol class="adm-nom-historial__timeline">
         @for (fila of filas(); track trackFila($index, fila)) {
           <li class="adm-nom-historial__item">
-            <span class="adm-nom-historial__marker" aria-hidden="true"></span>
+            <span
+              class="adm-nom-historial__icon"
+              [class]="'adm-nom-historial__icon--' + fila.tono"
+              aria-hidden="true"
+            >
+              <lucide-icon [name]="fila.icono"></lucide-icon>
+            </span>
             <div class="adm-nom-historial__body">
-              <strong>{{ fila.accion }}</strong>
-              <span>{{ fila.usuario }}</span>
+              <div class="adm-nom-historial__row">
+                <strong>{{ fila.accion }}</strong>
+                <time [title]="fila.fechaLarga">{{ fila.fechaCorta }}</time>
+              </div>
+              <span class="adm-nom-historial__usuario">{{ fila.usuario }}</span>
               @if (fila.motivo) {
                 <p class="adm-nom-historial__motivo">{{ fila.motivo }}</p>
               }
-              <em [title]="fila.fechaLarga">{{ fila.fechaCorta }}</em>
             </div>
           </li>
         }
       </ol>
     }
-
   </div>
 </app-message-box>

@@ -51,11 +51,13 @@
 
       @if (rehidratacionError(); as errorRehidratacion) {
         <app-message-box
-          mode="inline"
+          mode="modal"
           variant="warning"
+          width="md"
           title="Reanudación parcial"
           [message]="errorRehidratacion"
-          [dismissible]="true"
+          primaryLabel="Entendido"
+          (action)="rehidratacionError.set(null)"
           (dismiss)="rehidratacionError.set(null)"
         />
       }

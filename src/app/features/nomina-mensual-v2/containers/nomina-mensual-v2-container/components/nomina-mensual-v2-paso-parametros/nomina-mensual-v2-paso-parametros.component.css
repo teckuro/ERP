@@ -16,6 +16,7 @@
  */
 
 .nmv2-paso-parametros {
+  position: relative;
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;

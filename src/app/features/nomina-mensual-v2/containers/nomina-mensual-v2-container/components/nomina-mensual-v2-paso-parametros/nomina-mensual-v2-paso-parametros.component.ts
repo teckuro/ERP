@@ -18,6 +18,7 @@ import { LucideAngularModule } from 'lucide-angular';
 
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
 import type { MessageBoxSection } from '../../../../../../shared/components/ui/feedback/message-box/message-box.types';
+import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { PeriodoActivoService } from '../../../../../../core/services/periodo-activo.service';
 import type { PayrollStepId } from '../../../../models/nomina-mensual-v2.models';
 import type {
@@ -79,7 +80,7 @@ const coloresDonutPorTono: Record<DonutTonoPresentacion, string> = {
 @Component({
   selector: 'app-nomina-mensual-v2-paso-parametros',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, MessageBoxComponent],
+  imports: [CommonModule, LucideAngularModule, MessageBoxComponent, WorkspaceLoadingComponent],
   templateUrl: './nomina-mensual-v2-paso-parametros.component.html',
   styleUrls: ['./nomina-mensual-v2-paso-parametros.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

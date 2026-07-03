@@ -47,7 +47,7 @@ export class AdminNominasModalHistorialNominaComponent {
   readonly resolverUsuario = input<((usuarioId: string | undefined) => string | null) | null>(null);
   readonly cerrar = output<void>();
 
-  readonly contexto = computed(() => {
+  readonly tituloModal = computed(() => {
     const n = this.nomina();
     return `${n.empresaNombre} · ${n.periodo}`;
   });
@@ -58,6 +58,17 @@ export class AdminNominasModalHistorialNominaComponent {
       this.eventos(),
       resolver ?? undefined,
     );
+  });
+
+  readonly contextoFranja = computed(() => {
+    const filas = this.filas();
+    const total = filas.length;
+    const ultimo = filas[0]?.fechaCorta ?? null;
+    let resumen = total === 0 ? 'Sin movimientos' : `${total} movimiento${total === 1 ? '' : 's'}`;
+    if (ultimo) {
+      resumen += ` · último ${ultimo}`;
+    }
+    return { resumen };
   });
 
   cerrarModal(): void {

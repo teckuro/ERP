@@ -91,21 +91,28 @@
     </div>
   </header>
 
-  @if (calculoNoVigente()) {
+  @if (mostrarModalCalculoNoVigente()) {
     <app-message-box
-      mode="inline"
+      mode="modal"
       variant="warning"
+      width="md"
       [title]="'Cálculo no vigente'"
       [message]="mensajeCalculoNoVigente"
+      primaryLabel="Entendido"
+      (action)="cerrarModalCalculoNoVigente()"
+      (dismiss)="cerrarModalCalculoNoVigente()"
     ></app-message-box>
   }
 
   @if (error(); as msg) {
     <app-message-box
-      mode="inline"
+      mode="modal"
       variant="danger"
+      width="md"
+      title="No fue posible continuar"
       [message]="msg"
-      [dismissible]="true"
+      primaryLabel="Entendido"
+      (action)="error.set(null)"
       (dismiss)="error.set(null)"
     ></app-message-box>
   }
@@ -148,7 +155,7 @@
         [expandHint]="expandHintGrilla()"
         (expandHintDismiss)="cerrarHintExpandDesglose()"
         [rowExpansionKey]="rowKeyTrabajador"
-        [loading]="(cargando() || calculando()) && calculoDisponible()"
+        [loading]="(cargando() || calculando()) && calculoDisponible() && !preparacionExterna()"
         loadingLabel="Procesando cálculo…"
         [gridHeight]="'100%'"
         className="paso-calc__data-grid"
@@ -438,15 +445,6 @@
         (imprimirSolicitado)="imprimirPreview()"
       ></app-liquidacion-preview-modal>
     }
-  }
-
-  @if (calculando()) {
-    <app-workspace-loading
-      class="paso-calc__procesando"
-      [fill]="true"
-      title="Procesando cálculo"
-      message="Estamos ejecutando el motor con los datos actuales del período. Esto puede tardar unos segundos."
-    />
   }
   }
 </section>

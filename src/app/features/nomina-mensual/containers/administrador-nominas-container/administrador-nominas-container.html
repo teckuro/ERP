@@ -271,12 +271,14 @@
   </app-message-box>
 }
 
-@if (resumenSeleccionado(); as resumen) {
+@if (nominaSeleccionada(); as nomina) {
   <app-admin-nominas-modal-resumen-nomina
-    [nomina]="nominaSeleccionada()"
-    [resumen]="resumen"
+    [nomina]="nomina"
+    [resumen]="resumenSeleccionado()"
+    [cargando]="resumenLoading()"
+    [error]="resumenError()"
     [totalesRectificacion]="totalesRectificacionSeleccionada()"
-    (abrirGenerador)="abrirGenerador(nominaSeleccionada()!); cerrarResumen()"
+    (abrirGenerador)="abrirGenerador(nomina); cerrarResumen()"
     (consultarOriginal)="consultarOriginalDesdeResumen()"
     (cerrar)="cerrarResumen()"
   />

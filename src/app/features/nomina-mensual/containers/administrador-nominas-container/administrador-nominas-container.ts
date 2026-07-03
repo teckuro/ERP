@@ -129,6 +129,8 @@ export class AdministradorNominasContainer {
   readonly rectificacionOrigen = signal<NominaPeriodoResumen | null>(null);
   readonly cadenaRectificacionOrigen = signal<NominaPeriodoResumen | null>(null);
   readonly resumenSeleccionado = signal<ResumenValidacionNomina | null>(null);
+  readonly resumenLoading = signal(false);
+  readonly resumenError = signal<string | null>(null);
   readonly totalesRectificacionSeleccionada = signal<TotalesRectificacionVista | null>(null);
   readonly nominaSeleccionada = signal<NominaPeriodoResumen | null>(null);
   readonly cargando = signal(false);
@@ -328,6 +330,9 @@ export class AdministradorNominasContainer {
 
   async abrirResumen(fila: NominaPeriodoResumen): Promise<void> {
     this.nominaSeleccionada.set(fila);
+    this.resumenSeleccionado.set(null);
+    this.resumenError.set(null);
+    this.resumenLoading.set(true);
     this.totalesRectificacionSeleccionada.set(null);
     try {
       const [resumen, totales] = await Promise.all([
@@ -339,19 +344,14 @@ export class AdministradorNominasContainer {
       if (this.nominaSeleccionada()?.id !== fila.id) return;
       this.resumenSeleccionado.set(resumen);
       this.totalesRectificacionSeleccionada.set(totales);
-    } catch {
+    } catch (err) {
       if (this.nominaSeleccionada()?.id !== fila.id) return;
-      this.resumenSeleccionado.set({
-        totalTrabajadores: fila.totalTrabajadores,
-        listosParaCalculo: 0,
-        conIncidenciasCriticas: fila.totalIncidenciasCriticas,
-        conAdvertencias: fila.totalAdvertencias,
-        conMovimientosEspeciales: 0,
-        puedeCalcular: false,
-        puedeCerrar: false,
-        incidenciasCriticas: [],
-        advertencias: [],
-      });
+      const mensaje = err instanceof Error ? err.message : 'No fue posible cargar el resumen.';
+      this.resumenError.set(mensaje);
+    } finally {
+      if (this.nominaSeleccionada()?.id === fila.id) {
+        this.resumenLoading.set(false);
+      }
     }
   }
 
@@ -390,6 +390,8 @@ export class AdministradorNominasContainer {
 
   cerrarResumen(): void {
     this.resumenSeleccionado.set(null);
+    this.resumenLoading.set(false);
+    this.resumenError.set(null);
     this.nominaSeleccionada.set(null);
     this.totalesRectificacionSeleccionada.set(null);
   }

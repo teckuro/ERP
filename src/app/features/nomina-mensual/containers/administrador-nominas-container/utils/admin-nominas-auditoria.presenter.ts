@@ -4,7 +4,7 @@
  * Convierte los `EventoAuditoriaNomina` (enum técnico) en filas legibles para
  * RRHH: acción humana, usuario resuelto (cuando aplica), fecha formateada y
  * motivo cuando la BD lo registró. No expone IDs internos ni nombres de
- * tablas/funciones.
+ * tablas/funciones. Iconos: ver `lucide/admin-nominas-lucide.icons.ts` (registro en `app.config.ts`).
  *
  * Documento rector: `docs/codex/modulos/nomina-mensual/roadmap-admin-generador-operativo-100.md` §F17.
  */
@@ -30,6 +30,31 @@ export function etiquetaAccionAuditoria(accion: EventoAuditoriaNomina['accion'])
   return ETIQUETA_ACCION[accion] ?? 'Movimiento registrado';
 }
 
+export type TonoHistorialEvento = 'neutral' | 'ok' | 'warning' | 'danger';
+
+/** Icono lucide y tono visual por acción técnica (sin exponer el enum al usuario). */
+const VISUAL_ACCION: Record<
+  EventoAuditoriaNomina['accion'],
+  { icono: string; tono: TonoHistorialEvento }
+> = {
+  creada: { icono: 'list-plus', tono: 'neutral' },
+  dotacion_confirmada: { icono: 'users', tono: 'neutral' },
+  movimientos_actualizados: { icono: 'arrow-left-right', tono: 'neutral' },
+  calculo_invalidado: { icono: 'circle-alert', tono: 'warning' },
+  calculada: { icono: 'calculator', tono: 'neutral' },
+  validada: { icono: 'circle-check', tono: 'ok' },
+  aprobada: { icono: 'circle-check', tono: 'ok' },
+  liquidada: { icono: 'file-check', tono: 'ok' },
+  cerrada: { icono: 'lock', tono: 'ok' },
+  reabierta: { icono: 'refresh-cw', tono: 'warning' },
+  anulada: { icono: 'octagon-x', tono: 'danger' },
+};
+
+const VISUAL_DEFAULT: { icono: string; tono: TonoHistorialEvento } = {
+  icono: 'history',
+  tono: 'neutral',
+};
+
 /** Vista lista para renderizar: una fila por evento, ya ordenada desc. */
 export interface FilaHistorialAdministrativo {
   id: string;
@@ -38,6 +63,8 @@ export interface FilaHistorialAdministrativo {
   fechaCorta: string;
   fechaLarga: string;
   motivo: string | null;
+  icono: string;
+  tono: TonoHistorialEvento;
 }
 
 /**
@@ -93,6 +120,7 @@ export function mapearHistorialAdministrativo(
     const usuario = usuarioResuelto && usuarioResuelto.trim().length > 0
       ? usuarioResuelto
       : 'Usuario no informado';
+    const visual = VISUAL_ACCION[evento.accion] ?? VISUAL_DEFAULT;
     return {
       id: evento.id,
       accion: etiquetaAccionAuditoria(evento.accion),
@@ -100,6 +128,8 @@ export function mapearHistorialAdministrativo(
       fechaCorta: formatearFechaHoraCorta(evento.createdAt),
       fechaLarga: formatearFechaHoraLarga(evento.createdAt),
       motivo: evento.motivo && evento.motivo.trim().length > 0 ? evento.motivo : null,
+      icono: visual.icono,
+      tono: visual.tono,
     };
   });
 }

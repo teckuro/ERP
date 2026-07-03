@@ -61,19 +61,25 @@
 
   @if (error(); as msg) {
     <app-message-box
-      mode="inline"
+      mode="modal"
       variant="danger"
+      width="md"
+      title="No fue posible continuar"
       [message]="msg"
-      [dismissible]="true"
+      primaryLabel="Entendido"
+      (action)="descartarError()"
       (dismiss)="descartarError()"
     ></app-message-box>
   }
   @if (mensaje(); as msg) {
     <app-message-box
-      mode="inline"
+      mode="modal"
       variant="info"
+      width="md"
+      title="Aviso"
       [message]="msg"
-      [dismissible]="true"
+      primaryLabel="Entendido"
+      (action)="descartarMensaje()"
       (dismiss)="descartarMensaje()"
     ></app-message-box>
   }

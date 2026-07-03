@@ -3083,7 +3083,40 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **Tests**: redirects de rutas + liquidaciones + flow-nav en verde.
 - **Sin tocar**: estilos globales, SQL, motor productivo.
 
-## 2026-07-02 - Nómina: un solo loading por pantalla
+## 2026-07-02 - Generador v2: loading unificado y paso Cierre rediseñado
+
+- **Parámetros**: un solo `app-workspace-loading` (sin MessageBox loading + skeleton duplicado); contenido oculto mientras carga.
+- **Cálculo**: recalcular usa solo skeleton de grilla + CTA shell (sin overlay full-step encima).
+- **Cierre**: layout 2 columnas (checklist | operaciones), franja de métricas, botón Refrescar, iconos lucide, bloques con separador en lugar de cards apiladas; `aria-busy` al ejecutar acciones.
+- **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-02 - Generador v2: MessageBox en modal (no inline)
+
+- **Contenedor v2**: aviso de reanudación parcial (`rehidratacionError`) pasa a `mode="modal"`.
+- **Pasos Cálculo / Movimientos / Validación**: errores, avisos y confirmaciones usan `app-message-box mode="modal"` con backdrop NOIA; se eliminan títulos inline (`noia-msgbox__title--inline`).
+- **Cálculo no vigente**: modal con ack local (`mostrarModalCalculoNoVigente`) porque el estado es `computed`.
+- **Sin tocar**: estilos globales, `message-box.component` compartido, SQL, motor.
+
+## 2026-07-02 - Administrador nóminas: historial y resumen rediseñados
+
+- **Historial administrativo**: franja de contexto (chip estado + conteo/último movimiento); timeline con icono y tono por acción; fila compacta acción+fecha y usuario debajo; spinner unificado.
+- **Ver resumen**: situación operativa en cabecera junto al chip; franja de métricas compacta con tono en críticas/advertencias; observaciones unificadas en una lista; comparación rectificación con separador `border-top`.
+- **Sin tocar**: estilos globales, SQL, motor, contratos de datos.
+
+## 2026-07-02 - Administrador nóminas: afinado modales historial y resumen
+
+- **Historial**: título con empresa·periodo (sin message duplicado); iconos registrados vía `LucideAngularModule.pick`; mapa de iconos alineado al catálogo global (`arrow-left-right`, `refresh-cw`, `octagon-x`, `list-plus`).
+- **Resumen**: quitado chip de estado (ya en grilla); métricas únicas (`listos/total`, mov. especiales); sección «A revisar» con detalle de mensajes sin repetir conteos; iconos explícitos en `pick`.
+- **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-02 - Ver resumen: apertura inmediata y MessageBox modal
+
+- **Fix funcional**: el modal se monta al clic (antes esperaba el fetch); spinner `variant="loading"`; errores visibles con `variant="danger"`.
+- **Shell**: `app-message-box mode="modal"` (z-index 13000, foco y backdrop NOIA) en lugar de backdrop propio z-index 50.
+- **Contenido**: chip estado + trabajadores; situación operativa; métricas `listos/total`; observaciones detalladas; acciones en footer del MessageBox.
+- **Iconos**: catálogo `admin-nominas-lucide.icons.ts` integrado en `app.config.ts`.
+- **Sin tocar**: estilos globales, SQL, motor.
+
 
 - **Administrador nóminas / plantillas**: quitado `app-workspace-loading` del contenedor; la grilla usa `[loading]` nativo (skeleton).
 - **Generador v2**: overlay único de apertura (`generadorPreparando`) — fase 1 cabecera sin montar pasos; fase 2 overlay sobre workspace hasta rehidratación + carga inicial del paso activo. Input `preparacionExterna` suprime modal/skeleton/grilla loading de pasos durante esa apertura.

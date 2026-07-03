@@ -164,12 +164,14 @@
 
 @if (confirmarValidacionVisible()) {
   <app-message-box
-    tone="warning"
+    mode="modal"
+    variant="decision"
+    width="md"
+    eyebrow="Validación"
     title="Validar nómina"
     message="Confirmas que revisaste incidencias y decisiones registradas. La nómina pasará a estado validada."
     [primaryLabel]="validando() ? 'Validando…' : 'Validar nómina'"
     secondaryLabel="Cancelar"
-    [dismissible]="!validando()"
     [disableClose]="validando()"
     (action)="confirmarValidacion()"
     (secondary)="confirmarValidacionVisible.set(false)"

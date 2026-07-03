@@ -18,6 +18,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/message-box.component';
 import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 
@@ -63,7 +64,7 @@ interface ChecklistItem {
 @Component({
   selector: 'app-nomina-mensual-v2-paso-cierre',
   standalone: true,
-  imports: [CommonModule, FormsModule, MessageBoxComponent, WorkspaceLoadingComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule, MessageBoxComponent, WorkspaceLoadingComponent],
   templateUrl: './nomina-mensual-v2-paso-cierre.component.html',
   styleUrl: './nomina-mensual-v2-paso-cierre.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -215,6 +216,19 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
     this.liquidaciones().length > 0 ? 'Regenerar liquidaciones' : 'Generar liquidaciones',
   );
 
+  readonly metricasCierre = computed(() => {
+    const items = this.checklist();
+    const cumplidos = items.filter((i) => i.cumplido).length;
+    return {
+      cumplidos,
+      total: items.length,
+      pendientes: items.length - cumplidos,
+      liquidaciones: this.filasLiquidaciones().length,
+      sinLiquidacion: this.trabajadoresSinLiquidacion(),
+      trabajadores: this.nomina()?.trabajadorIds.length ?? this.resumen()?.totalTrabajadores ?? 0,
+    };
+  });
+
   constructor() {
     effect(() => {
       const id = this.nominaPeriodoId();
@@ -244,6 +258,11 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
     } finally {
       this.cargando.set(false);
     }
+  }
+
+  recargar(): void {
+    const id = this.nominaPeriodoId();
+    if (id && !this.cargando()) void this.cargar(id);
   }
 
   async aprobarNomina(): Promise<void> {

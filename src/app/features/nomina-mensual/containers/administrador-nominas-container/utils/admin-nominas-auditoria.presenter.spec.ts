@@ -68,4 +68,15 @@ describe('admin-nominas-auditoria.presenter — etiquetas y mapper', () => {
     expect(filas[0].fechaCorta).toMatch(/\d{2}\/\d{2}\/\d{4}\s\d{2}:\d{2}/);
     expect(filas[0].fechaLarga.length).toBeGreaterThan(0);
   });
+
+  it('Test 4 — cada fila expone icono y tono según la acción', () => {
+    const filas = mapearHistorialAdministrativo([
+      eventoMock({ id: 'cerr', accion: 'cerrada' }),
+      eventoMock({ id: 'reab', accion: 'reabierta' }),
+      eventoMock({ id: 'anu', accion: 'anulada' }),
+    ]);
+    expect(filas.find((f) => f.id === 'cerr')).toMatchObject({ icono: 'lock', tono: 'ok' });
+    expect(filas.find((f) => f.id === 'reab')).toMatchObject({ icono: 'refresh-cw', tono: 'warning' });
+    expect(filas.find((f) => f.id === 'anu')).toMatchObject({ icono: 'octagon-x', tono: 'danger' });
+  });
 });

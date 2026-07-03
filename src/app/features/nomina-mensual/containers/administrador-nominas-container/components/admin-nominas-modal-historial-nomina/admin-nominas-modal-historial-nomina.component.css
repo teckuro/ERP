@@ -1,12 +1,17 @@
 /* Historial administrativo del Administrador de Nóminas (F17 piloto).
-   Patrón visual gemelo al modal de trazabilidad V2: timeline compacta, sin
-   cards decorativas, sin sombras fuertes. Solo bordes/fondos del manual NOIA. */
+   Timeline compacta con iconos por evento, franja de contexto y sin cards decorativas. */
 
 .adm-nom-historial {
   display: grid;
   gap: 12px;
   min-height: 0;
   color: #0f172a;
+}
+
+.adm-nom-historial__resumen {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: #64748b;
 }
 
 .adm-nom-historial__empty {
@@ -24,6 +29,16 @@
   width: 20px;
   height: 20px;
   color: #475569;
+}
+
+.adm-nom-historial__spin {
+  animation: adm-nom-historial-spin 0.9s linear infinite;
+}
+
+@keyframes adm-nom-historial-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .adm-nom-historial__empty strong {
@@ -56,8 +71,8 @@
 
 .adm-nom-historial__item {
   display: grid;
-  grid-template-columns: 18px minmax(0, 1fr);
-  gap: 8px;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
   padding: 10px 0;
   border-bottom: 1px solid #eef2f7;
 }
@@ -70,13 +85,40 @@
   border-bottom: 0;
 }
 
-.adm-nom-historial__marker {
-  width: 8px;
-  height: 8px;
-  margin: 5px auto 0;
-  border-radius: 999px;
-  background: #2563eb;
-  box-shadow: 0 0 0 3px #eff6ff;
+.adm-nom-historial__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  flex-shrink: 0;
+}
+
+.adm-nom-historial__icon lucide-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.adm-nom-historial__icon--ok {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+
+.adm-nom-historial__icon--warning {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+}
+
+.adm-nom-historial__icon--danger {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
 }
 
 .adm-nom-historial__body {
@@ -85,17 +127,30 @@
   min-width: 0;
 }
 
-.adm-nom-historial__body strong {
+.adm-nom-historial__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.adm-nom-historial__row strong {
   font-size: 13px;
   font-weight: 600;
   color: #0f172a;
   line-height: 1.3;
 }
 
-.adm-nom-historial__body span,
-.adm-nom-historial__body em {
+.adm-nom-historial__row time {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.adm-nom-historial__usuario {
   font-size: 12px;
-  font-style: normal;
   color: #64748b;
   line-height: 1.3;
 }
@@ -109,31 +164,4 @@
   border: 1px solid #e4e9f2;
   border-radius: 6px;
   color: #334155;
-}
-
-.adm-nom-historial__footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding-top: 4px;
-}
-
-.adm-nom-historial__btn {
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid transparent;
-}
-
-.adm-nom-historial__btn--primary {
-  border-color: var(--erp-color-primary, #0f172a);
-  background: var(--erp-color-primary, #0f172a);
-  color: #fff;
-}
-
-.adm-nom-historial__btn--primary:hover {
-  background: var(--erp-color-primary-hover, #1e293b);
-  border-color: var(--erp-color-primary-hover, #1e293b);
 }
