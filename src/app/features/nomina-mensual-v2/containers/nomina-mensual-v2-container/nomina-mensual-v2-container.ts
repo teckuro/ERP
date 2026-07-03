@@ -16,6 +16,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
+import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { NominaPeriodoService } from '../../../nomina-mensual/services/nomina-periodo.service';
 import { NominaMensualCapabilitiesService } from '../../../nomina-mensual/services/nomina-mensual-capabilities.service';
@@ -63,6 +64,7 @@ import { construirContextoGeneradorNomina } from '../../presenters/nomina-genera
   standalone: true,
   imports: [
     MessageBoxComponent,
+    WorkspaceLoadingComponent,
     NominaMensualV2StepperComponent,
     NominaMensualV2PasoParametrosComponent,
     NominaMensualV2PasoDotacionComponent,
@@ -107,6 +109,30 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   readonly nominaPeriodoId = signal<string | null>(null);
   readonly nominaCargada = signal<NominaPeriodo | null>(null);
   readonly nominaCargaEstado = signal<'idle' | 'loading' | 'ready' | 'not_found' | 'error'>('idle');
+
+  /**
+   * Apertura desde administrador (flecha): mantiene un solo overlay hasta que
+   * la cabecera, la rehidratación y la carga inicial del paso activo terminen.
+   */
+  private readonly preparacionInicialActiva = signal(false);
+
+  /** Cabecera de nómina en curso, antes de montar pasos. */
+  readonly generadorEnCargaCabecera = computed(
+    () => this.nominaCargaEstado() === 'loading' && !!this.nominaPeriodoId(),
+  );
+
+  readonly generadorPreparando = computed(() => {
+    if (this.generadorEnCargaCabecera()) return true;
+    if (!this.preparacionInicialActiva()) return false;
+    if (this.nominaCargaEstado() !== 'ready') return true;
+    if (!this.pasoVisitadoRehidratado()) return true;
+    return this.pasoActivoEnCargaInicial();
+  });
+
+  /** Overlay sobre el workspace ya montado (fase 2 de la apertura). */
+  readonly preparacionOverlayActiva = computed(
+    () => this.generadorPreparando() && this.nominaCargaEstado() === 'ready',
+  );
 
   /** Trabajador a abrir en detalle al saltar desde Validación → Dotación. */
   readonly trabajadorDetalleDotacion = signal<string | null>(null);
@@ -244,10 +270,17 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       const id = this.nominaPeriodoId();
       if (!id) {
         this.pasoVisitadoRehidratado.set(false);
+        this.preparacionInicialActiva.set(false);
         return;
       }
       if (this.pasoVisitadoRehidratado()) return;
       void this.aplicarRehidratacionPasoVisitado(id);
+    }, { allowSignalWrites: true });
+
+    effect(() => {
+      if (!this.preparacionInicialActiva()) return;
+      if (this.generadorPreparando()) return;
+      this.preparacionInicialActiva.set(false);
     }, { allowSignalWrites: true });
 
     // Guardado del paso al cambiar. Sólo escribe después de que la
@@ -333,11 +366,28 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     this.ultimoNominaIdCargado = null;
     this.orquestador.vincularTrazabilidadService(this.trazabilidadService);
     this.sincronizarHandoffDesdeQueryParams(this.route.snapshot.queryParamMap);
+
+    const idInicial = this.route.snapshot.paramMap.get('nominaPeriodoId');
+    if (idInicial) {
+      this.nominaPeriodoId.set(idInicial);
+      this.nominaCargaEstado.set('loading');
+      this.preparacionInicialActiva.set(true);
+    }
+
     this.route.paramMap.subscribe((params) => {
       const id = params.get('nominaPeriodoId');
       this.nominaPeriodoId.set(id);
-      if (id && id !== this.ultimoNominaIdCargado) {
+      if (!id) {
+        this.nominaCargaEstado.set('idle');
+        this.nominaCargada.set(null);
+        this.preparacionInicialActiva.set(false);
+        return;
+      }
+      if (id !== this.ultimoNominaIdCargado) {
         this.ultimoNominaIdCargado = id;
+        this.nominaCargada.set(null);
+        this.nominaCargaEstado.set('loading');
+        this.preparacionInicialActiva.set(true);
         void this.cargarNominaProductiva(id);
       }
     });
@@ -756,7 +806,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     // `accesoBaseService.resolverAccionShellParametros` ya define su
     // `disabled`.
     const completitud = this.pasoActualCompleto();
-    const nominaCargando = this.nominaCargaEstado() === 'loading' && !!this.nominaPeriodoId();
+    const nominaCargando = this.generadorPreparando();
     const sinPermisoCierre = paso === 'closure' && !this.nominaCapabilities.puedeAccionesAdminNomina();
     const disabledPorContenido = paso !== 'parameters' && !completitud.ok;
     const tooltipPorContenido = sinPermisoCierre
@@ -789,11 +839,50 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
           || disabledPorContenido
           || nominaCargando
           || sinPermisoCierre,
-        loading: paso === 'parameters' ? parametrosValidando : operacionEnCurso,
+        loading: nominaCargando
+          || (paso === 'parameters' ? parametrosValidando : operacionEnCurso),
         actionId: `nomina-mensual-v2-${paso}`,
         tooltip: tooltipPorContenido,
       },
     };
+  }
+
+  private pasoActivoEnCargaInicial(): boolean {
+    const paso = this.currentStep();
+    switch (paso) {
+      case 'parameters': {
+        const componente = this.pasoParametros();
+        if (!componente) return true;
+        return componente.parametrosLoading() || componente.parametrosValidando();
+      }
+      case 'dotacion': {
+        const componente = this.pasoDotacion();
+        if (!componente) return true;
+        return componente.loading();
+      }
+      case 'movements': {
+        const componente = this.pasoMovimientos();
+        if (!componente) return true;
+        return componente.loading() && componente.filasTrabajadores().length === 0;
+      }
+      case 'calculation': {
+        const componente = this.pasoCalculo();
+        if (!componente) return true;
+        return componente.cargando() && !componente.calculoDisponible();
+      }
+      case 'validation': {
+        const componente = this.pasoValidacion();
+        if (!componente) return true;
+        return componente.cargando();
+      }
+      case 'closure': {
+        const componente = this.pasoCierre();
+        if (!componente) return true;
+        return componente.cargando();
+      }
+      default:
+        return false;
+    }
   }
 
   private pasoOperacionEnCurso(): boolean {

@@ -65,6 +65,7 @@ export class NominaMensualV2PasoValidacionComponent implements PasoNominaPort {
   private readonly servicio = inject(NominaPeriodoService);
 
   readonly nominaPeriodoId = input<string | null>(null);
+  readonly preparacionExterna = input(false);
   readonly verEnDotacionSolicitado = output<string>();
   readonly validacionCompletada = output<void>();
 

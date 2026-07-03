@@ -20,8 +20,7 @@
       </div>
     }
 
-    @if (!cargando() || resumenes().length > 0) {
-      <app-data-grid
+    <app-data-grid
         title=""
         [columns]="columnas"
         [rows]="resumenesOrdenados()"
@@ -35,6 +34,8 @@
         [selectable]="false"
         [trackBy]="trackResumen"
         [persistenceKey]="persistenceKey"
+        [loading]="cargando()"
+        loadingLabel="Cargando nóminas…"
         toolbarLayout="operativa"
         [gridHeight]="'100%'"
         emptyTitle="Aún no hay nóminas"
@@ -217,14 +218,6 @@
       </ng-template>
 
       </app-data-grid>
-    }
-    @if (cargando()) {
-      <app-workspace-loading
-        [fill]="true"
-        title="Cargando nóminas"
-        message="Estamos actualizando la bandeja de trabajo."
-      />
-    }
   </div>
 </section>
 

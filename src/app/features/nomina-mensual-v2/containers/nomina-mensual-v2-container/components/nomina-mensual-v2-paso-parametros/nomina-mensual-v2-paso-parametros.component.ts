@@ -102,6 +102,7 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   readonly fechaFinNomina = input<string | null>(null);
   readonly empresaIdNomina = input<string | null>(null);
   readonly tipoNomina = input<TipoNomina>('mensual');
+  readonly preparacionExterna = input(false);
 
   readonly contextoParametros = computed((): NominaParametrosContext | null => {
     const id = this.nominaPeriodoId();
@@ -149,6 +150,9 @@ export class NominaMensualV2PasoParametrosComponent implements OnInit {
   readonly permisosRecargaBase = computed(() => this.accesoBaseService.resolverPermisos());
 
   readonly parametrosCargaOverlay = computed((): ParametrosCargaOverlayPresentacion | null => {
+    if (this.preparacionExterna() && !this.parametrosRedirigiendo()) {
+      return null;
+    }
     if (this.parametrosRedirigiendo()) {
       return {
         titulo: 'Abriendo parámetros',

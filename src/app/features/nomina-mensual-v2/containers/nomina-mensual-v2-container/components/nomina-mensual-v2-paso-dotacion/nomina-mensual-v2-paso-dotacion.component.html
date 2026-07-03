@@ -64,7 +64,7 @@
       [bulkSelectAllFiltered]="true"
       [bulkActions]="accionesMasivas"
       [bulkActionLoading]="aplicandoMasiva()"
-      [loading]="loading()"
+      [loading]="loading() && !preparacionExterna()"
       loadingLabel="Cargando dotación…"
       [trackBy]="trackFila"
       [persistenceKey]="persistenceKey"

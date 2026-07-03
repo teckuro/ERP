@@ -3082,3 +3082,13 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **Liquidaciones**: gateway al administrador sin `nominaPeriodoId`; eliminada UI por período global.
 - **Tests**: redirects de rutas + liquidaciones + flow-nav en verde.
 - **Sin tocar**: estilos globales, SQL, motor productivo.
+
+## 2026-07-02 - Nómina: un solo loading por pantalla
+
+- **Administrador nóminas / plantillas**: quitado `app-workspace-loading` del contenedor; la grilla usa `[loading]` nativo (skeleton).
+- **Generador v2**: overlay único de apertura (`generadorPreparando`) — fase 1 cabecera sin montar pasos; fase 2 overlay sobre workspace hasta rehidratación + carga inicial del paso activo. Input `preparacionExterna` suprime modal/skeleton/grilla loading de pasos durante esa apertura.
+- **Pasos Movimientos / Dotación**: solo loading de `app-data-grid` (sin overlay duplicado).
+- **Pasos Validación / Cierre / Cálculo (carga inicial)**: solo `app-workspace-loading`; contenido oculto hasta terminar; recálculo usa skeleton de grilla.
+- **Paso Cálculo — recalcular**: botón primario (`is-primary`) + overlay `app-workspace-loading` mientras `calculando()`; fix RPC `resumen_calculo_nomina` (columna `id_calculo_periodo` calificada).
+- **Preview liquidación (paso Cálculo)**: modal más ancho (`max-width: 1180px`), altura acotada al viewport; scroll en la hoja del documento y fallback en el backdrop.
+- **Sin tocar**: estilos globales, SQL, motor.

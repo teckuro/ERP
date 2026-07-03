@@ -1,11 +1,11 @@
 <section class="paso-calc" aria-labelledby="paso-calc-title">
-  @if (cargando() && !calculoDisponible()) {
+  @if (cargando() && !calculoDisponible() && !preparacionExterna()) {
     <app-workspace-loading
       [fill]="true"
-      title="Procesando cálculo"
-      message="Estamos generando líquidos, descuentos y aportes del período."
+      title="Cargando cálculo"
+      message="Estamos consultando el estado del cálculo del período."
     />
-  }
+  } @else {
 
   <header class="paso-calc__head">
     <div class="paso-calc__copy">
@@ -71,15 +71,18 @@
       <div class="paso-calc__toolbar">
         <button
           type="button"
-          class="paso-calc__btn is-ghost"
+          class="paso-calc__btn is-primary"
           (click)="calcular()"
           [disabled]="!puedeCalcular()"
+          [attr.aria-busy]="calculando()"
           [attr.title]="
             puedeCalcular()
               ? calculoDisponible()
                 ? 'Vuelve a procesar el cálculo con los datos actuales.'
                 : 'Procesa el cálculo del período.'
-              : 'Resuelve los bloqueos de pre-validación para poder calcular.'
+              : calculando()
+                ? 'Procesando el cálculo del período.'
+                : 'Resuelve los bloqueos de pre-validación para poder calcular.'
           "
         >
           {{ textoCtaCalculo() }}
@@ -95,10 +98,6 @@
       [title]="'Cálculo no vigente'"
       [message]="mensajeCalculoNoVigente"
     ></app-message-box>
-  }
-
-  @if (cargando()) {
-    <p class="paso-calc__placeholder">Cargando estado de la nómina…</p>
   }
 
   @if (error(); as msg) {
@@ -119,7 +118,7 @@
     }
   }
 
-  @if (!calculoDisponible() && !cargando()) {
+  @if (!calculoDisponible() && !cargando() && !calculando()) {
     <div class="paso-calc__vacio" role="status">
       <p class="paso-calc__vacio-title">Aún no has procesado el cálculo</p>
       <p class="paso-calc__vacio-desc">
@@ -149,7 +148,7 @@
         [expandHint]="expandHintGrilla()"
         (expandHintDismiss)="cerrarHintExpandDesglose()"
         [rowExpansionKey]="rowKeyTrabajador"
-        [loading]="cargando()"
+        [loading]="(cargando() || calculando()) && calculoDisponible()"
         loadingLabel="Procesando cálculo…"
         [gridHeight]="'100%'"
         className="paso-calc__data-grid"
@@ -439,5 +438,15 @@
         (imprimirSolicitado)="imprimirPreview()"
       ></app-liquidacion-preview-modal>
     }
+  }
+
+  @if (calculando()) {
+    <app-workspace-loading
+      class="paso-calc__procesando"
+      [fill]="true"
+      title="Procesando cálculo"
+      message="Estamos ejecutando el motor con los datos actuales del período. Esto puede tardar unos segundos."
+    />
+  }
   }
 </section>

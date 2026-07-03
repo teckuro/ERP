@@ -1,12 +1,11 @@
 <section class="paso-val" aria-labelledby="paso-val-title">
-  @if (cargando()) {
+  @if (cargando() && !preparacionExterna()) {
     <app-workspace-loading
       [fill]="true"
       title="Cargando resumen de validación"
       message="Estamos recopilando incidencias críticas y advertencias del período."
     />
-  }
-
+  } @else {
   <header class="paso-val__head">
     <div class="paso-val__copy">
       <p class="paso-val__eyebrow">Paso 5 · Validación</p>
@@ -160,6 +159,7 @@
       }
     }
   </footer>
+  }
 </section>
 
 @if (confirmarValidacionVisible()) {

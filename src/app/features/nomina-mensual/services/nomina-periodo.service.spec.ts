@@ -118,6 +118,8 @@ interface RepoMock {
   eliminarMovimiento: ReturnType<typeof vi.fn>;
   listarIncidencias: ReturnType<typeof vi.fn>;
   reemplazarIncidencias: ReturnType<typeof vi.fn>;
+  sincronizarIncidenciasNomina: ReturnType<typeof vi.fn>;
+  cerrarNominaRpc: ReturnType<typeof vi.fn>;
   listarEventosAuditoria: ReturnType<typeof vi.fn>;
   registrarEventoAuditoria: ReturnType<typeof vi.fn>;
   listarDotacionPaginada: ReturnType<typeof vi.fn>;
@@ -162,6 +164,8 @@ function repoMock(): RepoMock {
     eliminarMovimiento: vi.fn().mockResolvedValue(undefined),
     listarIncidencias: vi.fn().mockResolvedValue([]),
     reemplazarIncidencias: vi.fn().mockResolvedValue(undefined),
+    sincronizarIncidenciasNomina: vi.fn().mockResolvedValue(undefined),
+    cerrarNominaRpc: vi.fn().mockResolvedValue(undefined),
     listarEventosAuditoria: vi.fn().mockResolvedValue([]),
     registrarEventoAuditoria: vi.fn(),
     listarDotacionPaginada: vi.fn().mockResolvedValue({ filas: [], total: 0 }),
@@ -429,14 +433,7 @@ describe('NominaPeriodoService', () => {
     }));
     const service = configurar({ repo });
     await service.cerrarNomina('nom-1', { motivo: 'cierre regular' });
-    expect(repo.transicionarEstado).toHaveBeenCalledWith(
-      'nom-1',
-      expect.objectContaining({ estadoEsperado: 'aprobada', estadoDestino: 'cerrada' }),
-    );
-    expect(repo.transicionarEstado).toHaveBeenCalledWith(
-      'nom-1',
-      expect.objectContaining({ motivo: 'cierre regular' }),
-    );
+    expect(repo.cerrarNominaRpc).toHaveBeenCalledWith('nom-1', 'cierre regular');
   });
 
   it('eliminarNomina delega en repo.eliminarNomina sin filtro de estado', async () => {

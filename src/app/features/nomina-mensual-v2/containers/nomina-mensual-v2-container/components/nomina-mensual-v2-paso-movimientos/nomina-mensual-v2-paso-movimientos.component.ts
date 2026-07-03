@@ -50,7 +50,6 @@ import {
   type DataGridServerQuery,
 } from '../../../../../../shared/components/ui/data-grid';
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
-import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import {
   COLUMNAS_MOVIMIENTOS_POR_TRABAJADOR,
   etiquetaEstadoItem,
@@ -98,7 +97,6 @@ const RESUMEN_MOVIMIENTOS_VACIO: ResumenMovimientosNomina = {
     DataGridCellDirective,
     DataGridRowDetailDirective,
     MessageBoxComponent,
-    WorkspaceLoadingComponent,
     LucideAngularModule,
   ],
   templateUrl: './nomina-mensual-v2-paso-movimientos.component.html',
@@ -112,6 +110,7 @@ export class NominaMensualV2PasoMovimientosComponent implements PasoNominaPort {
   private readonly haberesDescuentos = inject(HaberesDescuentosService);
 
   readonly nominaPeriodoId = input<string | null>(null);
+  readonly preparacionExterna = input(false);
 
   readonly loading = signal(false);
   /** Hay una acción de cambio masivo en curso (cargar pendientes globales). */

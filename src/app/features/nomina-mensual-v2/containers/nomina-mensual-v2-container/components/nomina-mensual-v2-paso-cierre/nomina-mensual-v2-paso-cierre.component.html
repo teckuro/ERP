@@ -1,11 +1,11 @@
 <section class="paso-cierre" aria-labelledby="paso-cierre-title">
-  @if (cargando()) {
+  @if (cargando() && !preparacionExterna()) {
     <app-workspace-loading
       [fill]="true"
       title="Cargando checklist de cierre"
       message="Estamos verificando los pasos previos antes de habilitar el cierre operativo."
     />
-  }
+  } @else {
 
   <header class="paso-cierre__head">
     <div class="paso-cierre__copy">
@@ -254,6 +254,7 @@
       </span>
     }
   </footer>
+  }
 </section>
 
 @if (confirmarGeneracionLiquidacionesVisible()) {

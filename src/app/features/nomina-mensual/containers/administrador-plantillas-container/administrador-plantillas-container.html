@@ -13,8 +13,7 @@
 
   <div class="adm-plant__grid-shell" aria-labelledby="adm-plant-grid-title">
     <h2 id="adm-plant-grid-title" class="sr-only">Listado de plantillas</h2>
-    @if (!cargandoServicio() || plantillas().length > 0) {
-      <app-data-grid
+    <app-data-grid
         title=""
         [columns]="columnas"
         [rows]="plantillasOrdenadas()"
@@ -28,6 +27,8 @@
         [selectable]="false"
         [trackBy]="trackPlantilla"
         [persistenceKey]="persistenceKey"
+        [loading]="cargandoServicio()"
+        loadingLabel="Cargando plantillas…"
         toolbarLayout="operativa"
         [gridHeight]="'100%'"
         emptyTitle="Aún no hay plantillas"
@@ -141,14 +142,6 @@
           </div>
         </ng-template>
       </app-data-grid>
-    }
-    @if (cargandoServicio()) {
-      <app-workspace-loading
-        [fill]="true"
-        title="Cargando plantillas"
-        message="Estamos consultando las plantillas de la empresa activa."
-      />
-    }
   </div>
 </section>
 

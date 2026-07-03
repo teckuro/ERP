@@ -77,6 +77,7 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   readonly formatearFechaLiquidacion = formatearFechaLiquidacion;
 
   readonly nominaPeriodoId = input<string | null>(null);
+  readonly preparacionExterna = input(false);
   readonly nominaCabeceraCambiada = output<NominaCabeceraCambiadaEvent>();
 
   readonly nomina = signal<NominaPeriodo | null>(null);

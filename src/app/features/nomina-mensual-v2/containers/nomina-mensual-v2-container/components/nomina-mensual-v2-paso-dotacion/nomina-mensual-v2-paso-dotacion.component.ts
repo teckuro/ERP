@@ -86,6 +86,7 @@ export class NominaMensualV2PasoDotacionComponent implements PasoNominaPort {
 
   readonly nominaPeriodoId = input<string | null>(null);
   readonly trabajadorDetalleInicial = input<string | null>(null);
+  readonly preparacionExterna = input(false);
   readonly detalleInicialConsumido = output<void>();
 
   readonly loading = signal(false);

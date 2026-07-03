@@ -1,12 +1,4 @@
 <section class="paso-mov" aria-labelledby="paso-mov-title">
-  @if (loading() && filasTrabajadores().length === 0) {
-    <app-workspace-loading
-      [fill]="true"
-      title="Cargando movimientos"
-      message="Estamos preparando la grilla del período."
-    />
-  }
-
   <header class="paso-mov__head">
     <div class="paso-mov__copy">
       <p class="paso-mov__eyebrow">Paso 3 · Movimientos</p>
@@ -106,7 +98,7 @@
       [collapseRowLabel]="'Ocultar movimientos'"
       [rowExpansionKey]="rowKeyTrabajador"
       [trackBy]="trackByTrabajador"
-      [loading]="loading()"
+      [loading]="loading() && !preparacionExterna()"
       loadingLabel="Cargando movimientos…"
       [gridHeight]="'100%'"
       className="paso-mov__data-grid"

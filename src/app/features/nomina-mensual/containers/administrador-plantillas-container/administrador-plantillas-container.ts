@@ -23,7 +23,6 @@ import { LucideAngularModule } from 'lucide-angular';
 import { DataGridComponent } from '../../../../shared/components/ui/data-grid/data-grid.component';
 import { DataGridCellDirective } from '../../../../shared/components/ui/data-grid/data-grid.directives';
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
-import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
 import { NominaPlantillaCicloService } from '../../services/nomina-plantilla-ciclo.service';
@@ -55,7 +54,6 @@ type AccionEliminar = { plantilla: NominaPlantillaCiclo };
     DataGridComponent,
     DataGridCellDirective,
     MessageBoxComponent,
-    WorkspaceLoadingComponent,
     AdminPlantillasModalEditorComponent,
     AdminPlantillasModalPreviewComponent,
   ],

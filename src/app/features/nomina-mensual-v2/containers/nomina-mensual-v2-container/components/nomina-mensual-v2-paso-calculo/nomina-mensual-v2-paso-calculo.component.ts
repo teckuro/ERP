@@ -99,6 +99,7 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   private readonly trazabilidadService = inject(NominaMensualV2TrazabilidadService);
 
   readonly nominaPeriodoId = input<string | null>(null);
+  readonly preparacionExterna = input(false);
   readonly nominaCabeceraCambiada = output<void>();
 
   readonly nomina = signal<NominaPeriodo | null>(null);

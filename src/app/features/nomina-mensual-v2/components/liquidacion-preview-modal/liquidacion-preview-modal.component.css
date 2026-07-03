@@ -10,7 +10,7 @@
   align-items: flex-start;
   justify-content: center;
   z-index: 60;
-  padding: 32px 16px;
+  padding: 16px;
   overflow-y: auto;
 }
 
@@ -19,7 +19,8 @@
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(15, 23, 42, 0.12);
   width: 100%;
-  max-width: 920px;
+  max-width: min(1180px, calc(100vw - 32px));
+  max-height: min(calc(100vh - 32px), calc(100dvh - 32px));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -39,6 +40,7 @@
   background: #ffffff;
   border-bottom: 1px solid #e2e8f0;
   flex-wrap: wrap;
+  flex: 0 0 auto;
 }
 
 .liq-preview__chrome-copy {
@@ -130,8 +132,8 @@
 
 .liq-preview__sheet {
   background: #ffffff;
-  margin: 18px;
-  padding: 28px 32px;
+  margin: 0 16px 16px;
+  padding: 28px 36px;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
   display: flex;
@@ -140,6 +142,12 @@
   font-size: 13px;
   color: #0f172a;
   line-height: 1.45;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .liq-preview__doc-head {
