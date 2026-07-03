@@ -2,11 +2,33 @@
   @if (trabajador) {
     <header class="liq-detail-panel__header">
       <div>
-        <h3>{{ trabajador.nombreTrabajador }}</h3>
+        <div class="liq-detail-panel__title-row">
+          <h3>{{ trabajador.nombreTrabajador }}</h3>
+          @if (estadoFlujo; as flujo) {
+            <span
+              class="liq-detail-panel__chip"
+              [class.liq-detail-panel__chip--review]="flujo.tono === 'review'"
+              [class.liq-detail-panel__chip--ok]="flujo.tono === 'ok'"
+              [class.liq-detail-panel__chip--danger]="flujo.tono === 'danger'"
+            >
+              {{ flujo.label }}
+            </span>
+          }
+        </div>
         <p>{{ trabajador.rut || 'RUT no disponible' }}</p>
       </div>
       <strong>{{ money(trabajador.liquidoPagar) }}</strong>
     </header>
+
+    <p class="liq-detail-panel__cuadratura">
+      Haberes − Descuentos = Líquido:
+      <strong>{{ money(trabajador.totalHaberes) }} − {{ money(trabajador.totalDescuentos) }} = {{ money(trabajador.liquidoPagar) }}</strong>
+    </p>
+    @if (!cuadraturaOk()) {
+      <p class="liq-detail-panel__alert liq-detail-panel__alert--review">
+        Revisar con nómina mensual: los totales no cuadran.
+      </p>
+    }
 
     <dl class="liq-detail-panel__metrics">
       <div><dt>Base imponible</dt><dd>{{ money(trabajador.baseImponible) }}</dd></div>
@@ -49,9 +71,9 @@
       Origen: nómina mensual aprobada. No hay recálculo ni edición manual de montos.
     </p>
   } @else {
-    <div class="liq-detail-panel__placeholder">
-      <strong>Selecciona un trabajador</strong>
-      <span>El detalle se carga desde la liquidación oficial interna del período.</span>
+    <div class="liq-detail-panel__placeholder" aria-label="Detalle pendiente de selección">
+      <strong>Selecciona un trabajador en la grilla</strong>
+      <span>El detalle de haberes, descuentos y totales se carga al elegir una fila.</span>
     </div>
   }
 </section>

@@ -75,6 +75,10 @@ export class LiquidacionesOficialesService {
     return this.liquidaciones.obtenerDetalleTrabajador(idLiquidacionTrabajador);
   }
 
+  listarTrabajadoresLiquidacion(idLiquidacionPeriodo: number): Promise<LiquidacionTrabajador[]> {
+    return this.liquidaciones.obtenerLiquidacionesTrabajadores(idLiquidacionPeriodo);
+  }
+
   private async metadataUsuarioResponsable(): Promise<Record<string, unknown>> {
     const user = this.auth.currentUser() ?? (await this.auth.getSession())?.user ?? null;
     const usuario = resolverUsuarioResponsableActual(user);

@@ -3,6 +3,13 @@ import { CommonModule } from '@angular/common';
 
 import type { LiquidacionConcepto, LiquidacionTrabajador } from '../../models/liquidacion-oficial.model';
 
+export interface EstadoFlujoDetalleUi {
+  label: string;
+  tono: 'pending' | 'review' | 'ok' | 'danger';
+}
+
+const TOLERANCIA_CUADRATURA_PESOS = 1;
+
 @Component({
   selector: 'app-liquidacion-detalle-panel',
   standalone: true,
@@ -14,6 +21,7 @@ import type { LiquidacionConcepto, LiquidacionTrabajador } from '../../models/li
 export class LiquidacionDetallePanelComponent {
   @Input() trabajador: LiquidacionTrabajador | null = null;
   @Input() conceptos: LiquidacionConcepto[] = [];
+  @Input() estadoFlujo: EstadoFlujoDetalleUi | null = null;
 
   haberes(): LiquidacionConcepto[] {
     return this.conceptos.filter((c) => c.tipo === 'haber');
@@ -21,6 +29,12 @@ export class LiquidacionDetallePanelComponent {
 
   descuentos(): LiquidacionConcepto[] {
     return this.conceptos.filter((c) => c.tipo !== 'haber');
+  }
+
+  cuadraturaOk(): boolean {
+    if (!this.trabajador) return true;
+    const esperado = this.trabajador.totalHaberes - this.trabajador.totalDescuentos;
+    return Math.abs(esperado - this.trabajador.liquidoPagar) <= TOLERANCIA_CUADRATURA_PESOS;
   }
 
   money(value: number): string {

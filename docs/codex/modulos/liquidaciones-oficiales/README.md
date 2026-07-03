@@ -120,6 +120,22 @@ La confirmacion fue reemplazada por modal/MsgBox estandar durante UX-COMERCIAL-0
 - `Que falta ahora` no muestra identificadores ni versionado tecnico. Solo estado, pendiente, advertencias y siguiente accion.
 - La trazabilidad queda al final en un disclosure secundario con etiquetas de negocio (`Referencia interna`, `Version interna`).
 - Salidas externas siguen fuera de alcance: sin PDF, firma, envio, Previred, LRE, banco ni contabilidad.
+
+## Selector de nómina (F18c UX)
+
+- La elección de nómina origen se hace mediante modal con `app-data-grid` filtrable (no select nativo ni segundo selector de período).
+- El período global del shell sigue siendo la referencia; el modal lista solo nóminas liquidadas o cerradas con comprobantes.
+- Tras seleccionar, la pantalla principal muestra origen, versiones y trabajadores liquidados.
+- **Entrada sin nómina:** grilla inline filtrable (sin modal automático ni botón intermedio); el modal queda solo para «Cambiar» nómina.
+
+## Revisión guiada y acta de generación (F18c flujos)
+
+- Sobre la grilla de trabajadores: franja de contadores del flujo visual (autorización, pago, documento, rectificación).
+- Filtros DG: búsqueda por nombre/RUT/cargo y select por estado de flujo.
+- Panel lateral: chip de flujo, cuadratura de totales y placeholder accionable.
+- Generar/Regenerar: confirmación MessageBox con secciones de acta; evidencia de versión creada tras la acción.
+- Las acciones de flujo (autorizar, pago, documento) siguen siendo visuales; sin persistencia en esta fase.
+
 ## ERP-NOIA-BITACORA-OPERATIVA-00 - Lectura de modulo
 
 Liquidaciones oficiales queda alineado a [`NOIA / Bitacora Operativa`](../../diseno/bitacora-operativa-noia.md) como `Acta de salida interna` del periodo.

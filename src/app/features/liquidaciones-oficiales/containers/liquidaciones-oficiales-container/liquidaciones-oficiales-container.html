@@ -1,92 +1,469 @@
 <div class="liq-page">
-  @if (modoNominaInterna()) {
-    <section class="liq-nomina-interna" aria-label="Liquidaciones de la nómina">
-      <header class="liq-nomina-interna__head">
-        <div>
-          <p class="liq-nomina-interna__eyebrow">Nómina · {{ nominaInterna()?.empresaNombre ?? 'Cargando…' }}</p>
-          <h2>Liquidaciones internas · {{ nominaInterna()?.periodo ?? periodoActivo.etiqueta() }}</h2>
-          <p class="liq-nomina-interna__copy">
-            @if (soloLecturaInterna()) {
-              Evidencia congelada por cierre. Solo consulta.
-            } @else {
-              Historial de versiones materializadas desde el cálculo aprobado.
-            }
-          </p>
-        </div>
-        <div class="liq-nomina-interna__actions">
-          <button type="button" class="liq-secondary-link" (click)="volverAdministradorNomina()">
-            Volver al administrador
-          </button>
-          @if (puedeRegenerarInterna()) {
-            <app-button
-              variant="outline"
-              size="sm"
-              [disabled]="regenerandoInterna() || cargandoNominaInterna()"
-              (click)="solicitarRegeneracionInterna()"
+  <header class="liq-toolbar" aria-label="Selección de nómina origen">
+    <div class="liq-toolbar__fields">
+      @if (etiquetaNominaActiva(); as etiqueta) {
+        <div class="liq-toolbar__field">
+          <span>Nómina origen</span>
+          <div class="liq-nomina-trigger">
+            <button
+              type="button"
+              class="liq-nomina-trigger__value"
+              [disabled]="cargandoNominasLista()"
+              (click)="abrirModalSeleccionNomina()"
             >
-              {{ liquidacionesInternas().length > 0 ? 'Regenerar' : 'Generar' }}
-            </app-button>
-          }
-        </div>
-      </header>
-
-      @if (cargandoNominaInterna()) {
-        <p class="liq-empty-inline">Cargando liquidaciones de la nómina…</p>
-      } @else if (filasLiquidacionesInternas().length > 0) {
-        @if (trabajadoresSinLiquidacionInterna() > 0) {
-          <p class="liq-status-note liq-status-note--review">
-            {{ trabajadoresSinLiquidacionInterna() }} trabajador(es) en dotación aún sin liquidación en la versión vigente.
-          </p>
-        }
-        <div class="liq-nomina-interna__table-wrap">
-          <table class="liq-nomina-interna__table">
-            <thead>
-              <tr>
-                <th scope="col">Versión</th>
-                <th scope="col">Estado</th>
-                <th scope="col">Trabajadores</th>
-                <th scope="col">Líquido</th>
-                <th scope="col">Generada</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (fila of filasLiquidacionesInternas(); track fila.idLiquidacionPeriodo) {
-                <tr [class.is-vigente]="fila.clasificacion === 'vigente'">
-                  <td>v{{ fila.version }}</td>
-                  <td>{{ fila.etiquetaClasificacion }}</td>
-                  <td>{{ fila.totalTrabajadores }}</td>
-                  <td>{{ money(fila.totalLiquido) }}</td>
-                  <td>{{ formatearFechaLiquidacion(fila.fechaGeneracion) }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
+              {{ etiqueta }}
+            </button>
+            <button
+              type="button"
+              class="liq-icon-btn"
+              title="Cambiar nómina origen"
+              aria-label="Cambiar nómina origen"
+              [disabled]="cargandoNominasLista()"
+              (click)="abrirModalSeleccionNomina()"
+            >
+              <lucide-icon name="search" aria-hidden="true"></lucide-icon>
+            </button>
+          </div>
         </div>
       } @else {
-        <p class="liq-empty-inline">Esta nómina aún no tiene liquidaciones generadas.</p>
+        <div class="liq-toolbar__lead">
+          <strong>Liquidaciones por nómina</strong>
+          <span>Comprobantes internos materializados desde nóminas confirmadas.</span>
+        </div>
+      }
+
+      @if (nominaInterna() && filasLiquidacionesInternas().length > 1) {
+        <label class="liq-toolbar__field">
+          <span>Versión</span>
+          <select
+            class="liq-toolbar__select"
+            [value]="versionLiquidacionActivaId()"
+            [disabled]="cargandoNominaInterna()"
+            (change)="cambiarVersionSeleccionada($event)"
+          >
+            @for (fila of filasLiquidacionesInternas(); track fila.idLiquidacionPeriodo) {
+              <option [value]="fila.idLiquidacionPeriodo">
+                {{ etiquetaOpcionVersionLiquidacion(fila) }}
+              </option>
+            }
+          </select>
+        </label>
+      }
+    </div>
+
+    <div class="liq-toolbar__actions">
+      <a class="liq-secondary-link" [routerLink]="rutaAdministradorNominas" [queryParams]="volverNominaQuery()">
+        Administrador de nóminas
+      </a>
+      @if (nominaInterna() && puedeRegenerarInterna()) {
+        <button
+          type="button"
+          class="liq-icon-btn"
+          [disabled]="regenerandoInterna() || cargandoNominaInterna()"
+          [title]="liquidacionesInternas().length > 0 ? 'Regenerar liquidaciones' : 'Generar liquidaciones'"
+          [attr.aria-label]="liquidacionesInternas().length > 0 ? 'Regenerar liquidaciones' : 'Generar liquidaciones'"
+          (click)="solicitarRegeneracionInterna()"
+        >
+          <lucide-icon
+            [name]="liquidacionesInternas().length > 0 ? 'refresh-cw' : 'file-check-2'"
+            aria-hidden="true"
+          ></lucide-icon>
+        </button>
+      }
+    </div>
+  </header>
+
+  @if (error()) {
+    <p class="liq-status-note liq-status-note--error">{{ error() }}</p>
+  }
+
+  <div class="liq-body">
+    @if (contextoOrigen(); as origen) {
+      <section class="liq-origen" role="status" aria-label="Origen de las liquidaciones">
+      <div class="liq-origen__main">
+        <p class="liq-origen__eyebrow">Origen · Nómina mensual</p>
+        <strong class="liq-origen__title">{{ origen.empresa }} · {{ origen.periodo }}</strong>
+        <span class="liq-origen__meta">
+          <span class="liq-origen__chip liq-origen__chip--{{ origen.estadoVariant }}">{{ origen.estadoLabel }}</span>
+          @if (origen.versionLabel) {
+            <span class="liq-origen__chip">{{ origen.versionLabel }}</span>
+          }
+          <span class="liq-origen__note">
+            @if (origen.soloLectura) {
+              Evidencia congelada por cierre. Solo consulta.
+            } @else {
+              Materializada desde el cálculo aprobado. Sin recálculo.
+            }
+          </span>
+        </span>
+      </div>
+      @if (filaVersionActiva(); as version) {
+        <dl class="liq-origen__metrics">
+          <div>
+            <dt>Trabajadores</dt>
+            <dd>{{ version.totalTrabajadores }}</dd>
+          </div>
+          <div>
+            <dt>Líquido total</dt>
+            <dd>{{ money(version.totalLiquido) }}</dd>
+          </div>
+          <div>
+            <dt>Generada</dt>
+            <dd>{{ formatearFechaLiquidacion(version.fechaGeneracion) }}</dd>
+          </div>
+        </dl>
       }
     </section>
-  } @else {
-    <section class="liq-empty-gateway" aria-label="Acceso a liquidaciones">
-      <h2>Liquidaciones por nómina</h2>
-      <p>
-        Abre liquidaciones desde el administrador de nóminas. Cada consulta queda vinculada a una nómina concreta.
-      </p>
-      <a class="liq-link-button liq-link-button--primary" [routerLink]="rutaAdministradorNominas">
-        Ir al administrador de nóminas
-      </a>
+    } @else if (cargandoNominasLista()) {
+    <section class="liq-entrada liq-entrada--loading" aria-label="Cargando nóminas">
+      <p class="liq-entrada__loading">Cargando nóminas con liquidaciones…</p>
     </section>
-  }
+  } @else if (nominasConLiquidaciones().length > 0) {
+    <section class="liq-entrada" aria-label="Selección de nómina origen">
+      <header class="liq-entrada__head">
+        <h2 class="liq-entrada__title">Selecciona la nómina origen</h2>
+        <p class="liq-entrada__hint">Nóminas liquidadas o cerradas con comprobantes. Haz clic en una fila para abrir sus liquidaciones.</p>
+      </header>
+      <div class="liq-entrada__grid-wrap">
+        <app-data-grid
+          title=""
+          [columns]="columnasSeleccionNomina"
+          [rows]="nominasParaModal()"
+          [filters]="filtrosSeleccionNomina()"
+          [filtersEnabled]="true"
+          [filtersCollapsible]="false"
+          filterChipsDisplay="whenFiltersHidden"
+          headerCountDisplay="text"
+          headerCountNoun="nóminas"
+          [headerShowActiveFiltersCount]="true"
+          [loading]="false"
+          [trackBy]="trackNominaOption"
+          [persistenceKey]="persistenciaSeleccionNomina"
+          toolbarLayout="operativa"
+          [gridHeight]="'100%'"
+          emptyTitle="Sin nóminas con liquidaciones"
+          emptyDescription="No hay nóminas liquidadas o cerradas con comprobantes para consultar."
+          emptyTitleWhenFiltered="Sin resultados con los filtros actuales"
+          emptyDescriptionWhenFiltered="Cambia o limpia los filtros para ampliar la búsqueda."
+          className="liq-entrada__grid"
+          cardClassName="liq-entrada__grid-card"
+        >
+          <ng-template appDataGridCell="periodo" let-fila="row">
+            <button type="button" class="liq-entrada__row-hit" (click)="seleccionarNominaDesdeEntrada(fila)">
+              <span class="liq-entrada__periodo">{{ fila.periodo }}</span>
+            </button>
+          </ng-template>
+
+          <ng-template appDataGridCell="empresa" let-fila="row">
+            <button type="button" class="liq-entrada__row-hit" (click)="seleccionarNominaDesdeEntrada(fila)">
+              <span class="liq-entrada__empresa">{{ fila.empresaNombre }}</span>
+              <small>{{ fila.totalTrabajadores }} trabajador(es)</small>
+            </button>
+          </ng-template>
+
+          <ng-template appDataGridCell="estado" let-fila="row">
+            @let badge = estadoNominaToBadge(fila.estado);
+            <button type="button" class="liq-entrada__row-hit liq-entrada__row-hit--center" (click)="seleccionarNominaDesdeEntrada(fila)">
+              <span class="liq-entrada__chip" [class]="'liq-entrada__chip--' + badge.variant">
+                <span class="liq-entrada__chip-dot" aria-hidden="true"></span>
+                {{ badge.label }}
+              </span>
+            </button>
+          </ng-template>
+
+          <ng-template appDataGridCell="trabajadores" let-fila="row">
+            <button type="button" class="liq-entrada__row-hit liq-entrada__row-hit--num" (click)="seleccionarNominaDesdeEntrada(fila)">
+              {{ fila.totalTrabajadores }}
+            </button>
+          </ng-template>
+
+          <ng-template appDataGridCell="acciones" let-fila="row">
+            <button
+              type="button"
+              class="liq-row-action liq-row-action--primary"
+              [title]="'Abrir liquidaciones de ' + fila.empresaNombre + ' · ' + fila.periodo"
+              [attr.aria-label]="'Abrir liquidaciones de ' + fila.empresaNombre + ' · ' + fila.periodo"
+              (click)="seleccionarNominaDesdeEntrada(fila); $event.stopPropagation()"
+            >
+              <lucide-icon name="arrow-right" aria-hidden="true"></lucide-icon>
+            </button>
+          </ng-template>
+        </app-data-grid>
+      </div>
+    </section>
+  } @else {
+    <section class="liq-seleccion-prompt" aria-label="Sin nóminas disponibles">
+      <div class="liq-seleccion-prompt__body">
+        <strong>No hay nóminas liquidadas o cerradas con comprobantes disponibles.</strong>
+        <span>Genera liquidaciones desde una nómina aprobada en el administrador.</span>
+        <a class="liq-link-button liq-link-button--primary" [routerLink]="rutaAdministradorNominas">
+          Ir al administrador de nóminas
+        </a>
+      </div>
+    </section>
+    }
+
+    @if (nominaInterna()) {
+    <div class="liq-operativa">
+    @if (trabajadoresSinLiquidacionInterna() > 0) {
+      <p class="liq-status-note liq-status-note--review">
+        {{ trabajadoresSinLiquidacionInterna() }} trabajador(es) en dotación aún sin liquidación en la versión vigente.
+      </p>
+    }
+
+    @if (cargandoNominaInterna()) {
+      <p class="liq-empty-inline">Cargando liquidaciones de la nómina…</p>
+    } @else if (filasLiquidacionesInternas().length > 0) {
+      @if (filaVersionActiva(); as version) {
+        <section class="liq-workers-zone" aria-label="Detalle por trabajador">
+          @if (evidenciaRegeneracion(); as evidencia) {
+            <p class="liq-status-note liq-status-note--success">{{ evidencia }}</p>
+          }
+
+          @if (feedbackAccionTrabajador(); as feedback) {
+            <p
+              class="liq-status-note"
+              [class.liq-status-note--review]="feedback.tono === 'review'"
+              [class.liq-status-note--info]="feedback.tono === 'info'"
+              [class.liq-status-note--success]="feedback.tono === 'success'"
+              [class.liq-status-note--error]="feedback.tono === 'danger'"
+            >
+              {{ feedback.mensaje }}
+            </p>
+          }
+
+          @let flujo = resumenFlujoTrabajadores();
+          <dl class="liq-flujo-resumen" aria-label="Resumen del flujo por trabajador">
+            <div>
+              <dt>Pendientes de autorizar</dt>
+              <dd>{{ flujo.pendientesAutorizar }}</dd>
+            </div>
+            <div>
+              <dt>Autorizadas</dt>
+              <dd>{{ flujo.autorizadas }}</dd>
+            </div>
+            <div>
+              <dt>Pagos registrados</dt>
+              <dd>{{ flujo.pagosRegistrados }}</dd>
+            </div>
+            <div>
+              <dt>Documentos enviados</dt>
+              <dd>{{ flujo.documentosEnviados }}</dd>
+            </div>
+            <div [class.liq-flujo-resumen__danger]="flujo.rectificacionesSolicitadas > 0">
+              <dt>Rectificaciones</dt>
+              <dd>{{ flujo.rectificacionesSolicitadas }}</dd>
+            </div>
+          </dl>
+
+          <div class="liq-workspace">
+            <div class="liq-grid-block liq-grid-block--grow">
+              <div class="liq-grid-block__head">
+                <h2 class="liq-grid-block__title">Trabajadores liquidados</h2>
+                <p class="liq-grid-block__meta">v{{ version.version }} · {{ version.etiquetaClasificacion }}</p>
+              </div>
+              <div class="liq-grid-block__wrap liq-grid-block__wrap--tall">
+                <app-data-grid
+                  title=""
+                  [columns]="columnasTrabajadores"
+                  [rows]="trabajadoresLiquidacion()"
+                  [filters]="filtrosTrabajadoresLiquidacion()"
+                  [filtersEnabled]="true"
+                  [loading]="cargandoTrabajadoresLiquidacion()"
+                  loadingLabel="Cargando trabajadores…"
+                  [trackBy]="trackTrabajador"
+                  [persistenceKey]="persistenciaTrabajadores"
+                  headerCountDisplay="text"
+                  headerCountNoun="trabajadores"
+                  toolbarLayout="operativa"
+                  [gridHeight]="'100%'"
+                  emptyTitle="Sin trabajadores liquidados"
+                  emptyDescription="Cuando exista una versión materializada, aquí aparecerá el listado por trabajador."
+                  className="liq-trabajadores-grid"
+                  cardClassName="liq-trabajadores-grid__card"
+                >
+                  <ng-template appDataGridCell="trabajador" let-fila="row">
+                    <button
+                      type="button"
+                      class="liq-trabajadores-grid__worker"
+                      [class.is-selected]="esTrabajadorSeleccionado(fila)"
+                      (click)="verDetalleTrabajador(fila)"
+                    >
+                      <span>{{ fila.nombreTrabajador }}</span>
+                      @if (fila.cargo || fila.centroCosto) {
+                        <small>{{ fila.cargo || fila.centroCosto }}</small>
+                      }
+                    </button>
+                  </ng-template>
+
+                  <ng-template appDataGridCell="rut" let-fila="row">
+                    {{ fila.rut || '—' }}
+                  </ng-template>
+
+                  <ng-template appDataGridCell="flujo" let-fila="row">
+                    @let accionView = viewTrabajador(fila);
+                    <span
+                      class="liq-trabajadores-grid__state"
+                      [class.liq-trabajadores-grid__state--pending]="accionView.estadoTone === 'pending'"
+                      [class.liq-trabajadores-grid__state--review]="accionView.estadoTone === 'review'"
+                      [class.liq-trabajadores-grid__state--ok]="accionView.estadoTone === 'ok'"
+                      [class.liq-trabajadores-grid__state--danger]="accionView.estadoTone === 'danger'"
+                    >
+                      {{ accionView.estadoLabel }}
+                    </span>
+                  </ng-template>
+
+                  <ng-template appDataGridCell="haberes" let-fila="row">
+                    {{ money(fila.totalHaberes) }}
+                  </ng-template>
+
+                  <ng-template appDataGridCell="descuentos" let-fila="row">
+                    {{ money(fila.totalDescuentos) }}
+                  </ng-template>
+
+                  <ng-template appDataGridCell="liquido" let-fila="row">
+                    <strong>{{ money(fila.liquidoPagar) }}</strong>
+                  </ng-template>
+
+                  <ng-template appDataGridCell="acciones" let-fila="row">
+                    @let accionView = viewTrabajador(fila);
+                    <div class="liq-row-actions" (click)="$event.stopPropagation()">
+                      @if (accionView.primaryAction; as primary) {
+                        <button
+                          type="button"
+                          class="liq-row-action"
+                          [class.liq-row-action--primary]="primary.tone === 'primary'"
+                          [class.liq-row-action--danger]="primary.tone === 'danger'"
+                          [title]="primary.label"
+                          [attr.aria-label]="primary.ariaLabel"
+                          (click)="ejecutarAccionTrabajadorDg(fila, primary)"
+                        >
+                          <lucide-icon [name]="primary.icon" aria-hidden="true"></lucide-icon>
+                        </button>
+                      }
+                      @for (secondary of accionView.secondaryActions; track secondary.tipo) {
+                        <button
+                          type="button"
+                          class="liq-row-action liq-row-action--danger"
+                          [title]="secondary.label"
+                          [attr.aria-label]="secondary.ariaLabel"
+                          (click)="ejecutarAccionTrabajadorDg(fila, secondary)"
+                        >
+                          <lucide-icon [name]="secondary.icon" aria-hidden="true"></lucide-icon>
+                        </button>
+                      }
+                      <button
+                        type="button"
+                        class="liq-row-action"
+                        title="Ver detalle de liquidación"
+                        [attr.aria-label]="'Ver detalle de ' + fila.nombreTrabajador"
+                        (click)="verDetalleTrabajador(fila)"
+                      >
+                        <lucide-icon name="eye" aria-hidden="true"></lucide-icon>
+                      </button>
+                      <button
+                        type="button"
+                        class="liq-row-action"
+                        [title]="accionView.pdfLabel"
+                        [attr.aria-label]="accionView.pdfLabel"
+                        disabled
+                      >
+                        <lucide-icon name="file-text" aria-hidden="true"></lucide-icon>
+                      </button>
+                    </div>
+                  </ng-template>
+                </app-data-grid>
+              </div>
+            </div>
+
+            <aside class="liq-section liq-section--detail">
+              @if (cargandoDetalle()) {
+                <p class="liq-empty-inline">Cargando detalle…</p>
+              } @else {
+                <app-liquidacion-detalle-panel
+                  [trabajador]="trabajadorSeleccionado()"
+                  [conceptos]="conceptosDetalle()"
+                  [estadoFlujo]="estadoFlujoTrabajadorSeleccionado()"
+                />
+              }
+            </aside>
+          </div>
+        </section>
+      }
+
+      <details class="liq-versiones-historial">
+        <summary>Historial de versiones ({{ filasLiquidacionesInternas().length }})</summary>
+        <div class="liq-versiones-historial__wrap">
+          <app-data-grid
+            title=""
+            [columns]="columnasVersiones"
+            [rows]="filasLiquidacionesInternas()"
+            [filtersEnabled]="false"
+            [loading]="false"
+            [trackBy]="trackVersion"
+            [persistenceKey]="persistenciaVersiones"
+            headerCountDisplay="text"
+            headerCountNoun="versiones"
+            toolbarLayout="operativa"
+            [gridHeight]="'auto'"
+            emptyTitle="Sin versiones"
+            emptyDescription="Aún no hay liquidaciones generadas para esta nómina."
+            className="liq-versiones-grid"
+            cardClassName="liq-versiones-grid__card"
+          >
+            <ng-template appDataGridCell="version" let-fila="row">
+              <span
+                class="liq-versiones-grid__version"
+                [class.is-active]="fila.idLiquidacionPeriodo === versionLiquidacionActivaId()"
+              >
+                v{{ fila.version }}
+              </span>
+            </ng-template>
+
+            <ng-template appDataGridCell="clasificacion" let-fila="row">
+              <span
+                class="liq-versiones-grid__badge"
+                [class.liq-versiones-grid__badge--success]="fila.tono === 'success'"
+                [class.liq-versiones-grid__badge--warning]="fila.tono === 'warning'"
+              >
+                {{ fila.etiquetaClasificacion }}
+              </span>
+            </ng-template>
+
+            <ng-template appDataGridCell="liquido" let-fila="row">
+              {{ money(fila.totalLiquido) }}
+            </ng-template>
+
+            <ng-template appDataGridCell="generada" let-fila="row">
+              {{ formatearFechaLiquidacion(fila.fechaGeneracion) }}
+            </ng-template>
+          </app-data-grid>
+        </div>
+      </details>
+    } @else {
+      <p class="liq-empty-inline">Esta nómina aún no tiene liquidaciones generadas.</p>
+    }
+    </div>
+    }
+  </div>
+
+  <app-liquidaciones-modal-seleccion-nomina
+    [abierto]="modalSeleccionNominaAbierto()"
+    [nominas]="nominasParaModal()"
+    [cargando]="cargandoNominasLista()"
+    [error]="error()"
+    [nominaSeleccionadaId]="nominaPeriodoId()"
+    (cerrar)="cerrarModalSeleccionNomina()"
+    (seleccionar)="onNominaSeleccionadaEnModal($event)"
+  />
 
   @if (confirmacionRegeneracionInternaVisible()) {
     <app-message-box
       variant="warning"
       mode="modal"
       title="{{ liquidacionesInternas().length > 0 ? 'Regenerar liquidaciones' : 'Generar liquidaciones' }}"
-      message="{{ liquidacionesInternas().length > 0
-        ? 'Se creará una nueva versión. La anterior quedará como superada.'
-        : 'Se materializarán comprobantes internos por trabajador.' }}"
-      detail="No se recalculan montos en este paso."
+      message="Confirma la materialización de comprobantes internos desde la nómina aprobada."
+      [sections]="seccionesConfirmacionRegeneracionInterna()"
       secondaryLabel="Cancelar"
       primaryLabel="{{ regenerandoInterna() ? 'Procesando…' : (liquidacionesInternas().length > 0 ? 'Regenerar' : 'Generar') }}"
       [dismissible]="!regenerandoInterna()"

@@ -28,6 +28,72 @@
   line-height: 1.25;
 }
 
+.liq-detail-panel__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.liq-detail-panel__chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 7px;
+  border: 1px solid var(--erp-border, #dadfd7);
+  border-radius: 4px;
+  background: var(--erp-surface, #ffffff);
+  color: var(--erp-ink, #243b53);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.liq-detail-panel__chip--review {
+  border-color: var(--erp-review-border, #d4a72c);
+  background: var(--erp-review-soft, #fff8e6);
+}
+
+.liq-detail-panel__chip--ok {
+  border-color: var(--erp-ok-border, #2f855a);
+  background: var(--erp-ok-soft, #edf7f1);
+}
+
+.liq-detail-panel__chip--danger {
+  border-color: var(--erp-danger-border, #c53030);
+  background: var(--erp-danger-soft, #fff5f5);
+}
+
+.liq-detail-panel__cuadratura {
+  margin: 0;
+  border: 1px solid var(--erp-border, #dadfd7);
+  background: var(--erp-surface-soft, #fafaf7);
+  padding: 8px 10px;
+  color: var(--erp-muted, #647084);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.liq-detail-panel__cuadratura strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--erp-ink, #243b53);
+  font-size: 0.8125rem;
+}
+
+.liq-detail-panel__alert {
+  margin: 0;
+  border: 1px solid var(--erp-border, #dadfd7);
+  padding: 8px 10px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.liq-detail-panel__alert--review {
+  border-color: var(--erp-review-border, #d4a72c);
+  background: var(--erp-review-soft, #fff8e6);
+  color: var(--erp-ink, #243b53);
+}
+
 .liq-detail-panel__header p {
   margin: 2px 0 0;
   color: var(--erp-muted, #647084);
@@ -127,9 +193,13 @@
 
 .liq-detail-panel__placeholder {
   display: grid;
-  gap: 4px;
-  min-height: 96px;
+  gap: 6px;
+  min-height: 10rem;
   align-content: center;
+  justify-items: center;
+  text-align: center;
+  border: 1px dashed var(--erp-border-strong, #c5cbc2);
+  background: var(--erp-bg, #f6f7f4);
 }
 
 .liq-detail-panel__placeholder strong {

@@ -9,6 +9,63 @@
 
 ---
 
+## 2026-07-03 — Liquidaciones: acción única de búsqueda + vacío a alto completo
+
+- **Deduplicación:** sin nómina activa la toolbar ya no muestra disparador de búsqueda
+  (solo título de la pantalla + enlace administrador); la única entrada es «Buscar nómina»
+  en el estado vacío.
+- **Layout:** prompt de selección con `flex: 1` centrado, cubre el alto restante de la página.
+- **Contraste:** NOIA — una acción principal por zona, sin duplicidad de acciones.
+
+---
+
+## 2026-07-03 — Liquidaciones: rediseño general de la vista
+
+- **Jerarquía:** trabajadores liquidados pasan a ser el bloque principal; historial
+  de versiones baja a disclosure plegado (selector de versión sigue en toolbar,
+  solo visible con más de una versión).
+- **Franja origen:** eyebrow + título empresa·período, chips de estado/versión y
+  métricas rápidas (trabajadores, líquido, fecha) de la versión activa.
+- **Vacíos:** prompt punteado con acción única (buscar nómina / ir al administrador);
+  se eliminan bloques duplicados.
+- **CSS:** limpieza de reglas huérfanas (hero, gateway, tabla interna legacy);
+  responsive toolbar/origen en columna bajo 720 px.
+- **Contraste:** NOIA (una acción principal por zona, disclosure para trazabilidad,
+  densidad compacta, sin cards decorativas).
+
+---
+
+## 2026-07-03 — Liquidaciones: modal búsqueda de nómina origen
+
+- **Toolbar:** disparador «Buscar nómina» / etiqueta activa + «Cambiar»; sin select nativo.
+- **Modal:** `app-message-box` ancho + `app-data-grid` filtrable (período, empresa, estado, trabajadores).
+- **Flujo:** seleccionar fila cierra modal y carga vista inferior (origen, versiones, trabajadores).
+- **Contraste:** patrón historial admin + filtros tipo incluir trabajadores; tokens locales `liq-seleccion-nomina__*`.
+
+---
+
+## 2026-07-03 — Liquidaciones: select origen + DataGrid sistema
+
+- **Toolbar:** selects superiores «Nómina origen» y «Versión»; enlace al administrador.
+- **Contexto:** franja de origen (empresa, período, estado, versión activa).
+- **Grillas:** `app-data-grid` para historial de versiones y trabajadores liquidados;
+  panel de detalle lateral conservado.
+- **Contraste:** patrón DG administrador/historial, densidad compacta, tokens locales `liq-*`.
+
+---
+
+## 2026-07-03 — Liquidaciones: listado de entrada y detalle por trabajador
+
+- **Gateway** (`/remuneraciones/liquidaciones` sin query): tabla de nóminas
+  liquidadas/cerradas con acción «Ver liquidaciones»; enlace al administrador.
+- **Modo nómina:** filas de versión seleccionables; grilla de trabajadores +
+  panel de detalle cableados (`liquidaciones-trabajadores-grid`,
+  `liquidacion-detalle-panel`).
+- **Contraste:** densidad compacta, copy RRHH, tokens locales `liq-gateway__*`,
+  sin cards decorativas ni estilos globales.
+
+---
+
 ## 2026-07-03 — Administrador: Ver resumen solo en cierre / liquidaciones
 
 - **Visibilidad:** acción «Ver resumen» solo en nómina `cerrada`, `liquidada` o con
@@ -3147,4 +3204,33 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **Pasos Validación / Cierre / Cálculo (carga inicial)**: solo `app-workspace-loading`; contenido oculto hasta terminar; recálculo usa skeleton de grilla.
 - **Paso Cálculo — recalcular**: botón primario (`is-primary`) + overlay `app-workspace-loading` mientras `calculando()`; fix RPC `resumen_calculo_nomina` (columna `id_calculo_periodo` calificada).
 - **Preview liquidación (paso Cálculo)**: modal más ancho (`max-width: 1180px`), altura acotada al viewport; scroll en la hoja del documento y fallback en el backdrop.
+- **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-03 - Liquidaciones oficiales: flujos guiados (acta)
+
+- **Revisión por trabajador**: franja compacta de contadores de flujo (`Pendientes de autorizar`, `Autorizadas`, `Pagos registrados`, `Documentos enviados`, `Rectificaciones` con tono danger si > 0); filtros DG de búsqueda y estado de flujo; feedback de acción con tono (`info`/`review`/`success`/`danger`).
+- **Detalle lateral**: chip de estado de flujo, línea de cuadratura `Haberes − Descuentos = Líquido` con nota `--review` si no cuadra; placeholder punteado accionable.
+- **Generar/Regenerar**: MessageBox con secciones de acta (qué se hará / condición / qué queda registrado / qué sigue); evidencia success post-acción sobre la grilla.
+- **Limpieza**: eliminado flujo legacy por período en container y componente huérfano `liquidaciones-trabajadores-grid`.
+- **Sin tocar**: estilos globales, SQL, motor, servicios de negocio productivos.
+
+## 2026-07-03 - Liquidaciones: entrada inline y paleta más clara
+
+- **Entrada**: grilla de nóminas visible al ingresar (sin auto-modal ni botón «Buscar nómina»); modal solo al cambiar nómina con una ya seleccionada.
+- **Visual**: fondos blancos, bordes `slate` más limpios, franja de flujo unificada, bloque de trabajo con contenedor definido; menos capas grises apiladas.
+- **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-03 - Liquidaciones: grilla a alto completo y selección sobria
+
+- **Layout**: cadena flex a `height: 100%` para que la tabla principal (entrada o trabajadores) ocupe el espacio disponible.
+- **Selección nómina**: filas clicables con hover; chips con punto de color y borde neutro; acción «Revisar» secundaria.
+- **Bordes**: sin acentos de color en contenedores; estados con texto/punto en lugar de marcos verdes/ámbar/rojos.
+- **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-03 - Liquidaciones: acciones como iconos con title
+
+- Grilla trabajadores: botones icono (`check-circle`, `dollar-sign`, `send`, `repeat`, `eye`, `file-text`) con `title` y `aria-label` específicos por acción.
+- Entrada y modal nómina: `arrow-right` / `check-circle` para abrir o seleccionar.
+- Toolbar: `search` (cambiar nómina), `refresh-cw` / `file-check-2` (regenerar/generar).
+- Patrón visual `liq-row-action` alineado al administrador de nóminas.
 - **Sin tocar**: estilos globales, SQL, motor.

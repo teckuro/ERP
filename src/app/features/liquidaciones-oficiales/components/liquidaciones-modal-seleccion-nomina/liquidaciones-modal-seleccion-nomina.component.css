@@ -1,0 +1,157 @@
+/* Modal búsqueda nómina — ancho casi viewport, grilla acoplada (patrón historial admin). */
+
+app-liquidaciones-modal-seleccion-nomina app-message-box.message-box-host-modal {
+  padding: 0.75rem 1rem;
+  align-items: stretch;
+}
+
+.liq-seleccion-nomina-msgbox.noia-msgbox--modal {
+  width: min(100%, calc(100vw - 2rem)) !important;
+  max-width: min(100%, calc(100vw - 2rem)) !important;
+  height: min(92vh, 56rem);
+  max-height: min(92vh, 56rem);
+  margin-inline: auto;
+}
+
+.liq-seleccion-nomina-msgbox .noia-msgbox__slot--modal:not(:empty) {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.liq-seleccion-nomina {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.liq-seleccion-nomina__grid-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+.liq-seleccion-nomina__grid {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.liq-seleccion-nomina__grid-card {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.liq-seleccion-nomina__empty {
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #647084;
+}
+
+.liq-seleccion-nomina__empty--attention {
+  border: 1px solid #e2b8b3;
+  background: #fff1ee;
+  color: #9f2f2f;
+}
+
+.liq-seleccion-nomina__empty strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #243b53;
+}
+
+.liq-seleccion-nomina__periodo.is-active {
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+.liq-seleccion-nomina__empresa {
+  font-size: 12px;
+}
+
+.liq-seleccion-nomina__chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 7px;
+  border: 1px solid #dadfd7;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.liq-seleccion-nomina__chip--success {
+  border-color: #b9d2b2;
+  background: #f1f7ed;
+}
+
+.liq-seleccion-nomina__chip--warning {
+  border-color: #dfc383;
+  background: #fff8e7;
+}
+
+.liq-seleccion-nomina__chip--danger {
+  border-color: #e2b8b3;
+  background: #fff1ee;
+}
+
+.liq-seleccion-nomina__chip--neutral,
+.liq-seleccion-nomina__chip--default,
+.liq-seleccion-nomina__chip--info {
+  background: #f6f7f4;
+}
+
+.liq-seleccion-nomina__btn {
+  min-height: 26px;
+  border: 1px solid #1e3a8a;
+  background: #1e3a8a;
+  color: #ffffff;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.liq-row-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 5px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.liq-row-action lucide-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.liq-row-action--primary {
+  background: #1e3a8a;
+  color: #fff;
+  border-color: #1e3a8a;
+}
+
+.liq-row-action.is-active {
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: #047857;
+}
