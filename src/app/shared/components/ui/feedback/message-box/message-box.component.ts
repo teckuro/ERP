@@ -88,6 +88,8 @@ export class MessageBoxComponent implements AfterViewInit, OnDestroy {
   @Input() sections: readonly MessageBoxSection[] = [];
   @Input() actions: MessageBoxAction[] = [];
   @Input() width: MessageBoxWidth = 'md';
+  /** Clase opcional en el panel (`section`) para modales con layout propio. */
+  @Input() panelClass = '';
   @Input() disableClose = false;
   @Input() initialFocus: 'primary' | 'secondary' | 'close' = 'primary';
 
@@ -154,6 +156,10 @@ export class MessageBoxComponent implements AfterViewInit, OnDestroy {
       if (this.resolvedVariant() === 'loading') {
         classes.push('noia-msgbox--loading');
       }
+    }
+    const extra = this.panelClass.trim();
+    if (extra) {
+      classes.push(extra);
     }
     return classes;
   }

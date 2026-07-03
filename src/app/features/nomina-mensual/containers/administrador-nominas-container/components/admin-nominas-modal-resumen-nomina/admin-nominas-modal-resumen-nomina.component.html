@@ -2,7 +2,7 @@
   [variant]="variantModal()"
   mode="modal"
   width="lg"
-  eyebrow="Resumen de nómina"
+  eyebrow="Resumen del cierre"
   [title]="tituloModal()"
   [message]="mensajeModal()"
   [actions]="acciones()"
@@ -10,46 +10,46 @@
   (actionSelect)="onAction($event)"
 >
   <div class="adm-nom-resumen">
-    <div class="adm-nom-resumen__contexto" aria-label="Contexto de la nómina">
-      <span
-        class="adm-nom-resumen__chip"
-        [class]="'adm-nom-resumen__chip--' + contextoNomina().estado.variant"
-      >
-        <span class="adm-nom-resumen__chip-dot" aria-hidden="true"></span>
-        {{ contextoNomina().estado.label }}
-      </span>
-      <span class="adm-nom-resumen__meta">
-        {{ contextoNomina().trabajadores }} trabajador@if (contextoNomina().trabajadores !== 1) {es}
-      </span>
-    </div>
-
     @if (!cargando() && !error() && resumen(); as r) {
+      <div class="adm-nom-resumen__contexto" aria-label="Contexto del período">
+        <span
+          class="adm-nom-resumen__chip"
+          [class]="'adm-nom-resumen__chip--' + contextoNomina().estado.variant"
+        >
+          <span class="adm-nom-resumen__chip-dot" aria-hidden="true"></span>
+          {{ contextoNomina().estado.label }}
+        </span>
+        @if (contextoNomina().rango) {
+          <span class="adm-nom-resumen__meta">{{ contextoNomina().rango }}</span>
+        }
+        @if (contextoNomina().meta) {
+          <span class="adm-nom-resumen__meta">{{ contextoNomina().meta }}</span>
+        }
+      </div>
+
       @if (situacion(); as s) {
         <p
           class="adm-nom-resumen__situacion"
           [class.adm-nom-resumen__situacion--ok]="s.tono === 'ok'"
           [class.adm-nom-resumen__situacion--pendiente]="s.tono === 'pendiente'"
-          [class.adm-nom-resumen__situacion--bloqueada]="s.tono === 'bloqueada'"
+          [class.adm-nom-resumen__situacion--info]="s.tono === 'info'"
         >
           <lucide-icon [name]="situacionIcono()" aria-hidden="true"></lucide-icon>
           <span>{{ s.texto }}</span>
         </p>
       }
 
-      @if (metricas().length > 0) {
-        <ul class="adm-nom-resumen__metricas" aria-label="Indicadores operativos">
-          @for (m of metricas(); track m.id) {
-            <li
-              [class.is-ok]="m.tone === 'ok'"
-              [class.is-warning]="m.tone === 'warning'"
-              [class.is-danger]="m.tone === 'danger'"
-            >
-              <strong>{{ m.display }}</strong>
-              <small>{{ m.label }}</small>
+      <section class="adm-nom-resumen__block" aria-labelledby="adm-nom-resumen-totales">
+        <h3 id="adm-nom-resumen-totales" class="adm-nom-resumen__block-title">Totales del período</h3>
+        <ul class="adm-nom-resumen__indicadores">
+          @for (item of indicadores(); track item.id) {
+            <li [class.is-strong]="item.destacado">
+              <span class="adm-nom-resumen__indicador-label">{{ item.label }}</span>
+              <strong>{{ item.valor }}</strong>
             </li>
           }
         </ul>
-      }
+      </section>
 
       @if (esRectificacion() && comparativaRectificacion().length > 0) {
         <section class="adm-nom-resumen__block" aria-labelledby="adm-nom-resumen-rect">
@@ -68,7 +68,7 @@
 
       <section class="adm-nom-resumen__block" aria-labelledby="adm-nom-resumen-obs">
         @if (totalObservaciones() > 0) {
-          <h3 id="adm-nom-resumen-obs" class="adm-nom-resumen__block-title">A revisar</h3>
+          <h3 id="adm-nom-resumen-obs" class="adm-nom-resumen__block-title">Observaciones del cierre</h3>
           <ul class="adm-nom-resumen__lista">
             @for (obs of observaciones(); track obs.id) {
               <li class="adm-nom-resumen__item" [class]="'adm-nom-resumen__item--' + obs.tono">
@@ -78,10 +78,10 @@
             }
           </ul>
         } @else {
-          <h3 id="adm-nom-resumen-obs" class="adm-nom-resumen__block-title">A revisar</h3>
+          <h3 id="adm-nom-resumen-obs" class="adm-nom-resumen__block-title">Observaciones del cierre</h3>
           <p class="adm-nom-resumen__sin-observaciones">
             <lucide-icon name="circle-check" aria-hidden="true"></lucide-icon>
-            Sin observaciones registradas en esta nómina.
+            Sin observaciones registradas en el cierre de esta nómina.
           </p>
         }
       </section>

@@ -1,8 +1,8 @@
 /**
  * Modal "Resumen de nómina" del Administrador (F2).
  *
- * Read-only. Shell `app-message-box` modal (z-index y foco del sistema NOIA).
- * Apertura inmediata con estado de carga; el contenedor inyecta datos al terminar.
+ * Solo para nóminas cerradas o con liquidaciones emitidas. Resumen ejecutivo
+ * del cierre: totales, fechas clave y observaciones. Shell MessageBox modal lg.
  */
 
 import { CommonModule } from '@angular/common';
@@ -25,30 +25,33 @@ import type {
   NominaPeriodoResumen,
   ResumenValidacionNomina,
 } from '../../../../models/nomina-periodo.models';
+import { tieneLiquidaciones } from '../../../../rules/admin-nominas.rules';
 import type { TotalesRectificacionVista } from '../../../../rules/proceso-mensual-motor-rectificacion.rules';
 import {
-  etiquetaAccionResumen,
   esNominaRectificacion,
+  formatearMonedaClp,
   puedeConsultarOriginal,
 } from '../../../../rules/nomina-rectificacion-ui.rules';
 import { prepararComparativaRectificacion } from '../../../../presenters/nomina-rectificacion-ui.presenter';
 import {
   estadoNominaToBadge,
-  proximoPasoToLabel,
+  etiquetaMetaNomina,
+  formatearActualizadaCompleta,
+  formatearRangoLegal,
 } from '../../utils/admin-nominas-presentacion.util';
-
-interface MetricaResumenView {
-  id: string;
-  label: string;
-  display: string;
-  tone: 'neutral' | 'ok' | 'warning' | 'danger';
-}
 
 interface ObservacionResumenView {
   id: string;
   mensaje: string;
   tono: 'danger' | 'warning';
   icono: string;
+}
+
+interface IndicadorResumenView {
+  id: string;
+  label: string;
+  valor: string;
+  destacado?: boolean;
 }
 
 @Component({
@@ -67,7 +70,7 @@ export class AdminNominasModalResumenNominaComponent {
   readonly error = input<string | null>(null);
   readonly totalesRectificacion = input<TotalesRectificacionVista | null>(null);
   readonly cerrar = output<void>();
-  readonly abrirGenerador = output<void>();
+  readonly verLiquidaciones = output<void>();
   readonly consultarOriginal = output<void>();
 
   readonly tituloModal = computed(() => {
@@ -83,20 +86,29 @@ export class AdminNominasModalResumenNominaComponent {
 
   readonly mensajeModal = computed(() => {
     if (this.cargando()) {
-      return 'Consultando validación y observaciones de la nómina.';
+      return 'Consultando totales y observaciones del cierre.';
     }
     if (this.error()) {
       return this.error()!;
     }
-    return `Siguiente paso recomendado: ${proximoPasoToLabel(this.nomina().proximoPaso)}`;
+    const n = this.nomina();
+    if (n.estado === 'cerrada') {
+      return 'Período cerrado. Revisa totales, fechas y liquidaciones asociadas.';
+    }
+    if (n.estado === 'liquidada') {
+      return 'Liquidaciones emitidas. Pendiente el cierre administrativo del período.';
+    }
+    return 'Resumen del período para consulta y liquidaciones.';
   });
 
   readonly contextoNomina = computed(() => {
     const n = this.nomina();
+    const meta = etiquetaMetaNomina(n);
     return {
       estado: estadoNominaToBadge(n.estado),
+      rango: formatearRangoLegal(n.fechaInicio, n.fechaFin),
+      meta,
       trabajadores: n.totalTrabajadores,
-      siguiente: proximoPasoToLabel(n.proximoPaso),
     };
   });
 
@@ -104,32 +116,66 @@ export class AdminNominasModalResumenNominaComponent {
 
   readonly puedeConsultarOriginal = computed(() => puedeConsultarOriginal(this.nomina()));
 
-  readonly etiquetaAccionPrimaria = computed(() => etiquetaAccionResumen(this.nomina()));
+  readonly puedeVerLiquidaciones = computed(() => {
+    const n = this.nomina();
+    return tieneLiquidaciones(n.estado) && !!n.evidenciaCalculo?.idCalculoPeriodo;
+  });
 
   readonly comparativaRectificacion = computed(() => {
     const totales = this.totalesRectificacion();
     return totales ? prepararComparativaRectificacion(totales) : [];
   });
 
-  readonly metricas = computed<MetricaResumenView[]>(() => {
-    const r = this.resumen();
-    if (!r) return [];
-    const items: MetricaResumenView[] = [
+  readonly indicadores = computed<IndicadorResumenView[]>(() => {
+    const n = this.nomina();
+    const items: IndicadorResumenView[] = [
       {
-        id: 'listos',
-        label: 'Listos para cálculo',
-        display: `${r.listosParaCalculo} / ${r.totalTrabajadores}`,
-        tone: r.listosParaCalculo < r.totalTrabajadores ? 'warning' : 'ok',
+        id: 'trabajadores',
+        label: 'Trabajadores',
+        valor: String(n.totalTrabajadores),
+      },
+      {
+        id: 'haberes',
+        label: 'Total haberes',
+        valor: formatearMonedaClp(n.totalHaberes),
+      },
+      {
+        id: 'descuentos',
+        label: 'Total descuentos',
+        valor: formatearMonedaClp(n.totalDescuentos),
+      },
+      {
+        id: 'liquido',
+        label: 'Líquido a pago',
+        valor: formatearMonedaClp(n.totalLiquido),
+        destacado: true,
       },
     ];
-    if (r.conMovimientosEspeciales > 0) {
+
+    if (n.fechaPago) {
       items.push({
-        id: 'especiales',
-        label: 'Movimientos especiales',
-        display: String(r.conMovimientosEspeciales),
-        tone: 'warning',
+        id: 'fecha-pago',
+        label: 'Fecha de pago',
+        valor: formatearFechaCorta(n.fechaPago),
       });
     }
+    if (n.closedAt) {
+      items.push({
+        id: 'cierre',
+        label: 'Cierre registrado',
+        valor: formatearActualizadaCompleta(n.closedAt),
+      });
+    }
+
+    const evidencia = n.evidenciaCalculo;
+    if (evidencia?.versionCalculo) {
+      items.push({
+        id: 'version',
+        label: 'Versión de cálculo',
+        valor: `v${evidencia.versionCalculo}`,
+      });
+    }
+
     return items;
   });
 
@@ -154,31 +200,29 @@ export class AdminNominasModalResumenNominaComponent {
   readonly totalObservaciones = computed(() => this.observaciones().length);
 
   readonly situacionIcono = computed(() => {
-    const tono = this.situacion()?.tono;
-    if (!tono) return 'clock';
-    if (tono === 'bloqueada') return 'circle-alert';
-    if (tono === 'pendiente') return 'clock';
-    return 'circle-check';
+    const estado = this.nomina().estado;
+    if (estado === 'cerrada') return 'circle-check';
+    if (estado === 'liquidada') return 'receipt';
+    return 'info';
   });
 
-  readonly situacion = computed<{ tono: 'ok' | 'pendiente' | 'bloqueada'; texto: string } | null>(() => {
-    const r = this.resumen();
-    if (!r) return null;
-    if (!r.puedeCalcular) {
+  readonly situacion = computed<{ tono: 'ok' | 'pendiente' | 'info'; texto: string }>(() => {
+    const n = this.nomina();
+    if (n.estado === 'cerrada') {
       return {
-        tono: 'bloqueada',
-        texto: 'Hay incidencias críticas bloqueantes. Resuélvelas antes de calcular.',
+        tono: 'ok',
+        texto: 'Nómina cerrada. Los montos quedaron registrados para consulta y liquidaciones.',
       };
     }
-    if (!r.puedeCerrar) {
+    if (n.estado === 'liquidada') {
       return {
         tono: 'pendiente',
-        texto: 'Lista para calcular. Falta el resultado para habilitar el cierre.',
+        texto: 'Liquidaciones generadas. Completa el cierre del período cuando corresponda.',
       };
     }
     return {
-      tono: 'ok',
-      texto: 'Lista para calcular y cerrar.',
+      tono: 'info',
+      texto: 'Resumen disponible para revisión del cierre y liquidaciones.',
     };
   });
 
@@ -193,12 +237,14 @@ export class AdminNominasModalResumenNominaComponent {
         value: 'original',
       });
     }
-    items.push({
-      label: this.etiquetaAccionPrimaria(),
-      role: 'primary',
-      align: 'right',
-      value: 'generador',
-    });
+    if (this.puedeVerLiquidaciones()) {
+      items.push({
+        label: 'Ver liquidaciones',
+        role: 'primary',
+        align: 'right',
+        value: 'liquidaciones',
+      });
+    }
     return items;
   });
 
@@ -207,12 +253,18 @@ export class AdminNominasModalResumenNominaComponent {
   }
 
   onAction(value: string): void {
-    if (value === 'generador') {
-      this.abrirGenerador.emit();
+    if (value === 'liquidaciones') {
+      this.verLiquidaciones.emit();
       return;
     }
     if (value === 'original') {
       this.consultarOriginal.emit();
     }
   }
+}
+
+function formatearFechaCorta(iso: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  if (!match) return iso;
+  return `${match[3]}/${match[2]}/${match[1]}`;
 }

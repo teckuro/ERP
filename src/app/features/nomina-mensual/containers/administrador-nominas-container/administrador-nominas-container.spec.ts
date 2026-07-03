@@ -176,7 +176,8 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     const fixture = TestBed.createComponent(AdministradorNominasContainer);
     const cmp = fixture.componentInstance;
     await cmp.cargarResumenes();
-    const fila = cmp.resumenes()[0]!;
+    const fila = resumenMock({ id: 'nom-cerrada', estado: 'cerrada', proximoPaso: 'liquidaciones' });
+    cmp.resumenes.set([fila]);
 
     const promesa = cmp.abrirResumen(fila);
     expect(cmp.nominaSeleccionada()?.id).toBe(fila.id);
@@ -190,6 +191,19 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     cmp.cerrarResumen();
     expect(cmp.nominaSeleccionada()).toBeNull();
     expect(cmp.resumenSeleccionado()).toBeNull();
+  });
+
+  it('Test 36b — abrirResumen no abre modal en estados previos al cierre', async () => {
+    configurar({ servicio });
+    const fixture = TestBed.createComponent(AdministradorNominasContainer);
+    const cmp = fixture.componentInstance;
+    await cmp.cargarResumenes();
+    const fila = cmp.resumenes()[0]!;
+
+    await cmp.abrirResumen(fila);
+
+    expect(cmp.nominaSeleccionada()).toBeNull();
+    expect(servicio.obtenerResumenValidacionNomina).not.toHaveBeenCalled();
   });
 
   it('Test 37 — abrirGenerador navega a la ruta del generador sin query params cuando no hay contexto', async () => {

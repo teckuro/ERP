@@ -74,6 +74,7 @@ import {
   puedeReabrir,
   puedeReabrirConPermiso,
   puedeCrearRectificacion,
+  puedeVerResumenNomina,
   tieneLiquidaciones,
 } from '../../rules/admin-nominas.rules';
 import type { TotalesRectificacionVista } from '../../rules/proceso-mensual-motor-rectificacion.rules';
@@ -239,6 +240,10 @@ export class AdministradorNominasContainer {
   puedeReabrir = puedeReabrir;
   tieneLiquidaciones = tieneLiquidaciones;
 
+  puedeVerResumenFila(fila: NominaPeriodoResumen): boolean {
+    return puedeVerResumenNomina(fila);
+  }
+
   puedeEliminarFila(fila: NominaPeriodoResumen): boolean {
     return puedeEliminarConPermiso(fila.estado, this.capabilities.esAdmin());
   }
@@ -329,6 +334,7 @@ export class AdministradorNominasContainer {
   }
 
   async abrirResumen(fila: NominaPeriodoResumen): Promise<void> {
+    if (!puedeVerResumenNomina(fila)) return;
     this.nominaSeleccionada.set(fila);
     this.resumenSeleccionado.set(null);
     this.resumenError.set(null);

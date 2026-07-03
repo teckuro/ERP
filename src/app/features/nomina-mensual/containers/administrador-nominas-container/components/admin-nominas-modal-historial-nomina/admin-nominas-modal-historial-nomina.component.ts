@@ -1,13 +1,7 @@
 /**
  * Modal "Historial administrativo" del Administrador de Nóminas (F17 piloto).
  *
- * Lectura-only: lista cronológica de movimientos de `evento_auditoria_nomina`
- * para una nómina específica, en lenguaje operativo. Reutiliza el patrón
- * visual del modal de trazabilidad del Generador V2 (`app-message-box` modo
- * modal con timeline compacta) para mantener identidad NOIA y evitar cards
- * decorativas.
- *
- * NOIA-ADM-NOM-HISTORIAL-01.
+ * Lectura-only: bitácora en `app-data-grid` a altura completa dentro de MessageBox modal.
  */
 
 import {
@@ -20,11 +14,16 @@ import {
 } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 
+import {
+  DataGridCellDirective,
+  DataGridComponent,
+} from '../../../../../../shared/components/ui/data-grid';
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
 import type {
   EventoAuditoriaNomina,
   NominaPeriodoResumen,
 } from '../../../../models/nomina-periodo.models';
+import { COLUMNAS_HISTORIAL_ADMIN } from '../../presenters/admin-nominas-historial.presenter';
 import {
   mapearHistorialAdministrativo,
   type FilaHistorialAdministrativo,
@@ -33,7 +32,12 @@ import {
 @Component({
   selector: 'app-admin-nominas-modal-historial-nomina',
   standalone: true,
-  imports: [MessageBoxComponent, LucideAngularModule],
+  imports: [
+    MessageBoxComponent,
+    LucideAngularModule,
+    DataGridComponent,
+    DataGridCellDirective,
+  ],
   templateUrl: './admin-nominas-modal-historial-nomina.component.html',
   styleUrl: './admin-nominas-modal-historial-nomina.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -47,9 +51,16 @@ export class AdminNominasModalHistorialNominaComponent {
   readonly resolverUsuario = input<((usuarioId: string | undefined) => string | null) | null>(null);
   readonly cerrar = output<void>();
 
+  readonly columnas = COLUMNAS_HISTORIAL_ADMIN;
+
   readonly tituloModal = computed(() => {
     const n = this.nomina();
     return `${n.empresaNombre} · ${n.periodo}`;
+  });
+
+  readonly subtituloModal = computed(() => {
+    const n = this.nomina();
+    return `Trazabilidad de cambios de estado y movimientos administrativos del período ${n.periodo}.`;
   });
 
   readonly filas = computed<FilaHistorialAdministrativo[]>(() => {
@@ -58,17 +69,6 @@ export class AdminNominasModalHistorialNominaComponent {
       this.eventos(),
       resolver ?? undefined,
     );
-  });
-
-  readonly contextoFranja = computed(() => {
-    const filas = this.filas();
-    const total = filas.length;
-    const ultimo = filas[0]?.fechaCorta ?? null;
-    let resumen = total === 0 ? 'Sin movimientos' : `${total} movimiento${total === 1 ? '' : 's'}`;
-    if (ultimo) {
-      resumen += ` · último ${ultimo}`;
-    }
-    return { resumen };
   });
 
   cerrarModal(): void {

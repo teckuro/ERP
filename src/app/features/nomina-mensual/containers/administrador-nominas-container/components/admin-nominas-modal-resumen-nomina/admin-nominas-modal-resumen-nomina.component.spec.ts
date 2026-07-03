@@ -13,9 +13,19 @@ function nominaMock() {
     empresaNombre: 'Constructora Andes Ltda.',
     periodo: '2026-06',
     tipo: 'mensual',
-    estado: 'calculada',
+    estado: 'cerrada',
     totalTrabajadores: 24,
-    proximoPaso: 'validacion',
+    totalHaberes: 12_500_000,
+    totalDescuentos: 2_100_000,
+    totalLiquido: 10_400_000,
+    fechaPago: '2026-06-30',
+    closedAt: '2026-06-28T18:00:00Z',
+    proximoPaso: 'liquidaciones',
+    evidenciaCalculo: {
+      idCalculoPeriodo: 42,
+      versionCalculo: 3,
+      calculoVigente: true,
+    },
   });
 }
 
@@ -66,33 +76,36 @@ function resumenBloqueado(): ResumenValidacionNomina {
 }
 
 describe('AdminNominasModalResumenNominaComponent', () => {
-  it('Test 28 — métricas muestra listos/total y movimientos especiales sin repetir conteos de la grilla', () => {
+  it('Test 28 — indicadores expone totales del período y versión de cálculo', () => {
     const fixture = TestBed.createComponent(AdminNominasModalResumenNominaComponent);
     fixture.componentRef.setInput('nomina', nominaMock());
     fixture.componentRef.setInput('resumen', resumenOk());
-    const metricas = fixture.componentInstance.metricas();
-    expect(metricas.map((m) => m.id)).toEqual(['listos', 'especiales']);
-    expect(metricas.find((m) => m.id === 'listos')?.display).toBe('22 / 24');
-    expect(metricas.find((m) => m.id === 'listos')?.tone).toBe('warning');
-    expect(metricas.find((m) => m.id === 'especiales')?.display).toBe('1');
+    const indicadores = fixture.componentInstance.indicadores();
+    expect(indicadores.map((m) => m.id)).toContain('liquido');
+    expect(indicadores.find((m) => m.id === 'liquido')?.destacado).toBe(true);
+    expect(indicadores.find((m) => m.id === 'version')?.valor).toBe('v3');
   });
 
-  it('Test 29 — situacion es tono "ok" cuando puedeCalcular Y puedeCerrar', () => {
+  it('Test 29 — situacion es tono "ok" cuando la nómina está cerrada', () => {
     const fixture = TestBed.createComponent(AdminNominasModalResumenNominaComponent);
     fixture.componentRef.setInput('nomina', nominaMock());
     fixture.componentRef.setInput('resumen', resumenOk());
     const situacion = fixture.componentInstance.situacion();
-    expect(situacion?.tono).toBe('ok');
-    expect(situacion?.texto.toLowerCase()).toContain('lista');
+    expect(situacion.tono).toBe('ok');
+    expect(situacion.texto.toLowerCase()).toContain('cerrada');
   });
 
-  it('Test 30 — situacion es "bloqueada" cuando hay críticas y puedeCalcular es false', () => {
+  it('Test 30 — situacion es pendiente cuando la nómina está liquidada', () => {
     const fixture = TestBed.createComponent(AdminNominasModalResumenNominaComponent);
-    fixture.componentRef.setInput('nomina', nominaMock());
-    fixture.componentRef.setInput('resumen', resumenBloqueado());
+    fixture.componentRef.setInput('nomina', crearNominaResumen({
+      ...nominaMock(),
+      estado: 'liquidada',
+      proximoPaso: 'cierre',
+    }));
+    fixture.componentRef.setInput('resumen', resumenOk());
     const situacion = fixture.componentInstance.situacion();
-    expect(situacion?.tono).toBe('bloqueada');
-    expect(situacion?.texto.toLowerCase()).toContain('crítica');
+    expect(situacion.tono).toBe('pendiente');
+    expect(situacion.texto.toLowerCase()).toContain('liquidaciones');
   });
 
   it('Test 31 — variantModal usa loading mientras carga y danger ante error', () => {
@@ -116,13 +129,11 @@ describe('AdminNominasModalResumenNominaComponent', () => {
     expect(cerrado).toBe(true);
   });
 
-  it('Test 33 — metricas omite movimientos especiales cuando el conteo es cero', () => {
+  it('Test 33 — mensajeModal describe el cierre cuando la nómina está cerrada', () => {
     const fixture = TestBed.createComponent(AdminNominasModalResumenNominaComponent);
     fixture.componentRef.setInput('nomina', nominaMock());
-    fixture.componentRef.setInput('resumen', resumenBloqueado());
-    const metricas = fixture.componentInstance.metricas();
-    expect(metricas.map((m) => m.id)).toEqual(['listos']);
-    expect(metricas[0].display).toBe('23 / 24');
+    fixture.componentRef.setInput('resumen', resumenOk());
+    expect(fixture.componentInstance.mensajeModal().toLowerCase()).toContain('cerrado');
   });
 
   it('Test 34 — observaciones unifica críticas y advertencias en una sola lista', () => {
@@ -140,7 +151,7 @@ describe('AdminNominasModalResumenNominaComponent', () => {
     expect(obsBloq[0].tono).toBe('danger');
   });
 
-  it('Test 35 — acciones expone CTA primaria solo cuando hay resumen cargado', () => {
+  it('Test 35 — acciones expone Ver liquidaciones cuando hay cálculo vigente', () => {
     const fixture = TestBed.createComponent(AdminNominasModalResumenNominaComponent);
     fixture.componentRef.setInput('nomina', nominaMock());
     fixture.componentRef.setInput('cargando', true);
@@ -149,6 +160,6 @@ describe('AdminNominasModalResumenNominaComponent', () => {
     fixture.componentRef.setInput('cargando', false);
     fixture.componentRef.setInput('resumen', resumenOk());
     const acciones = fixture.componentInstance.acciones();
-    expect(acciones.some((a) => a.value === 'generador')).toBe(true);
+    expect(acciones.some((a) => a.value === 'liquidaciones')).toBe(true);
   });
 });

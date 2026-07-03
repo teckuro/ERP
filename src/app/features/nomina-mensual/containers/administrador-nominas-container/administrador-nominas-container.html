@@ -132,15 +132,17 @@
 
       <ng-template appDataGridCell="acciones" let-fila>
         <div class="adm-nom__row-actions" (click)="$event.stopPropagation()">
-          <button
-            type="button"
-            class="adm-nom__row-action"
-            (click)="abrirResumen(fila)"
-            title="Ver resumen"
-            [attr.aria-label]="'Ver resumen de ' + fila.empresaNombre + ' ' + fila.periodo"
-          >
-            <lucide-icon name="eye" aria-hidden="true"></lucide-icon>
-          </button>
+          @if (puedeVerResumenFila(fila)) {
+            <button
+              type="button"
+              class="adm-nom__row-action"
+              (click)="abrirResumen(fila)"
+              title="Ver resumen"
+              [attr.aria-label]="'Ver resumen de ' + fila.empresaNombre + ' ' + fila.periodo"
+            >
+              <lucide-icon name="eye" aria-hidden="true"></lucide-icon>
+            </button>
+          }
           @if (puedeEliminarFila(fila)) {
             <button
               type="button"
@@ -278,7 +280,7 @@
     [cargando]="resumenLoading()"
     [error]="resumenError()"
     [totalesRectificacion]="totalesRectificacionSeleccionada()"
-    (abrirGenerador)="abrirGenerador(nomina); cerrarResumen()"
+    (verLiquidaciones)="verLiquidaciones(nomina); cerrarResumen()"
     (consultarOriginal)="consultarOriginalDesdeResumen()"
     (cerrar)="cerrarResumen()"
   />

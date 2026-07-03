@@ -19,7 +19,7 @@
  * Documento rector: `docs/codex/modulos/nomina-mensual/arquitectura-administrador-generador.md`.
  */
 
-import type { EstadoNomina } from '../models/nomina-periodo.models';
+import type { EstadoNomina, NominaPeriodoResumen } from '../models/nomina-periodo.models';
 
 export type AccionAdminNomina =
   | 'abrir-generador'
@@ -91,12 +91,31 @@ export function puedeCrearRectificacion(args: {
   return args.estado === 'cerrada' && args.gateRectificacion && args.puedeEscribir;
 }
 
+/** Nómina cerrada o con liquidaciones emitidas: resumen ejecutivo del período. */
+export function puedeVerResumenNomina(
+  fila: Pick<NominaPeriodoResumen, 'estado' | 'proximoPaso'>,
+): boolean {
+  return (
+    fila.estado === 'cerrada'
+    || fila.estado === 'liquidada'
+    || fila.proximoPaso === 'liquidaciones'
+  );
+}
+
 /**
- * Lista de acciones disponibles según el estado. `abrir-generador` y
- * `ver-resumen` siempre están disponibles. Las demás dependen del estado.
+ * Lista de acciones disponibles según el estado. `abrir-generador` siempre está
+ * disponible. `ver-resumen` solo en cierre / liquidaciones (ver
+ * `puedeVerResumenNomina`). Las demás dependen del estado.
  */
-export function accionesDisponibles(estado: EstadoNomina): AccionAdminNomina[] {
-  const acciones: AccionAdminNomina[] = ['abrir-generador', 'ver-resumen'];
+export function accionesDisponibles(
+  estado: EstadoNomina,
+  proximoPaso?: NominaPeriodoResumen['proximoPaso'],
+): AccionAdminNomina[] {
+  const acciones: AccionAdminNomina[] = ['abrir-generador'];
+
+  if (puedeVerResumenNomina({ estado, proximoPaso })) {
+    acciones.push('ver-resumen');
+  }
 
   if (puedeEliminar(estado)) {
     acciones.push('eliminar');

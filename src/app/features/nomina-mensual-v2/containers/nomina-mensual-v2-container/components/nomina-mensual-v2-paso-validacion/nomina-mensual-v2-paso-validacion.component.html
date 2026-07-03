@@ -125,7 +125,7 @@
                   <span class="paso-val__justificacion-label">Justificación</span>
                   <textarea
                     rows="2"
-                    [value]="justificaciones()[inc.id] ?? ''"
+                    [value]="justificaciones()[inc.id]"
                     (input)="setJustificacion(inc.id, $any($event.target).value)"
                     placeholder="Motivo operativo para continuar"
                   ></textarea>

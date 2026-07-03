@@ -9,6 +9,29 @@
 
 ---
 
+## 2026-07-03 — Administrador: Ver resumen solo en cierre / liquidaciones
+
+- **Visibilidad:** acción «Ver resumen» solo en nómina `cerrada`, `liquidada` o con
+  paso `liquidaciones`; regla `puedeVerResumenNomina` en `admin-nominas.rules.ts`.
+- **Modal:** resumen ejecutivo del cierre (totales, fechas, observaciones,
+  rectificación); MessageBox `lg` ampliado localmente; CTA «Ver liquidaciones».
+- **Contraste:** `arquitectura-administrador-generador.md`, copy RRHH, sin métricas
+  de validación duplicadas de la grilla.
+
+---
+
+## 2026-07-03 — Administrador Nómina: modales Historial y Resumen (F17)
+
+- **Historial:** modal casi a ancho de viewport (`calc(100vw - 2rem)`); grilla a
+  altura completa sin franja de contexto ni cabecera de panel; slot sin padding.
+- **Resumen:** sin DataGrid ni franja de contexto (estado/trabajadores ya en grilla principal);
+  sin métricas duplicadas; conserva situación operativa, comparación rectificación,
+  lista «A revisar» y acciones en footer del MessageBox.
+- **Contraste:** patrón dg en modal (`nomina-mensual-v2-modal-incluir-trabajadores`),
+  `noia-ui-manual.md`, densidad compacta, copy RRHH.
+
+---
+
 ## 2026-07-02 — F17 Rectificación diferencial (Admin + Generador)
 
 - **Administrador:** acción fila «Crear rectificación» (nómina cerrada + gate); modal motivo + checklist trabajadores; MessageBox confirmación; reutiliza clases `adm-nom-modal__*`.

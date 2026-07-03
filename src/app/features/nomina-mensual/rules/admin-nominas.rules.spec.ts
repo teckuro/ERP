@@ -5,6 +5,7 @@ import {
   accionesDisponibles,
   puedeEliminar,
   puedeReabrir,
+  puedeVerResumenNomina,
   tieneLiquidaciones,
 } from './admin-nominas.rules';
 
@@ -65,12 +66,32 @@ describe('admin-nominas.rules — guardas por estado', () => {
   });
 });
 
+describe('admin-nominas.rules — puedeVerResumenNomina', () => {
+  it('habilita resumen solo en cerrada, liquidada o paso liquidaciones', () => {
+    expect(puedeVerResumenNomina({ estado: 'cerrada', proximoPaso: 'liquidaciones' })).toBe(true);
+    expect(puedeVerResumenNomina({ estado: 'liquidada', proximoPaso: 'cierre' })).toBe(true);
+    expect(puedeVerResumenNomina({ estado: 'borrador', proximoPaso: 'parametros' })).toBe(false);
+    expect(puedeVerResumenNomina({ estado: 'calculada', proximoPaso: 'validacion' })).toBe(false);
+    expect(puedeVerResumenNomina({ estado: 'aprobada', proximoPaso: 'cierre' })).toBe(false);
+  });
+});
+
 describe('admin-nominas.rules — accionesDisponibles', () => {
-  it('todas las filas incluyen "abrir-generador" y "ver-resumen"', () => {
+  it('todas las filas incluyen "abrir-generador"', () => {
     for (const estado of TODOS_ESTADOS) {
       const acciones = accionesDisponibles(estado);
       expect(acciones).toContain('abrir-generador');
-      expect(acciones).toContain('ver-resumen');
+    }
+  });
+
+  it('ver-resumen solo en cerrada o liquidada', () => {
+    for (const estado of TODOS_ESTADOS) {
+      const acciones = accionesDisponibles(estado);
+      if (estado === 'cerrada' || estado === 'liquidada') {
+        expect(acciones).toContain('ver-resumen');
+      } else {
+        expect(acciones).not.toContain('ver-resumen');
+      }
     }
   });
 

@@ -1,4 +1,9 @@
-/* Contenido del modal resumen (shell en app-message-box). */
+/* Modal resumen de cierre — ancho ampliado sobre lg del MessageBox. */
+
+app-admin-nominas-modal-resumen-nomina .noia-msgbox--modal.noia-msgbox--lg {
+  width: min(100%, 52rem);
+  max-height: min(88vh, 48rem);
+}
 
 .adm-nom-resumen {
   display: grid;
@@ -101,58 +106,10 @@
   color: #1e40af;
 }
 
-.adm-nom-resumen__situacion--bloqueada {
-  background: #fef2f2;
-  border-color: #fecaca;
-  color: #991b1b;
-}
-
-.adm-nom-resumen__metricas {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 8px;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.adm-nom-resumen__metricas li {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px 12px;
+.adm-nom-resumen__situacion--info {
   background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-}
-
-.adm-nom-resumen__metricas li.is-ok {
-  background: #ecfdf5;
-  border-color: #a7f3d0;
-}
-
-.adm-nom-resumen__metricas li.is-warning {
-  background: #fffbeb;
-  border-color: #fde68a;
-}
-
-.adm-nom-resumen__metricas li.is-danger {
-  background: #fef2f2;
-  border-color: #fecaca;
-}
-
-.adm-nom-resumen__metricas strong {
-  font-size: 16px;
-  font-weight: 700;
-  color: #0f172a;
-  font-variant-numeric: tabular-nums;
-}
-
-.adm-nom-resumen__metricas small {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #64748b;
+  border-color: #e2e8f0;
+  color: #334155;
 }
 
 .adm-nom-resumen__block {
@@ -170,6 +127,44 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: #6b7280;
+}
+
+.adm-nom-resumen__indicadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.adm-nom-resumen__indicadores li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.adm-nom-resumen__indicadores li.is-strong {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.adm-nom-resumen__indicador-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.adm-nom-resumen__indicadores strong {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
 }
 
 .adm-nom-resumen__lista {
