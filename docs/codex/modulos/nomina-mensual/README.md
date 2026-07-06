@@ -470,11 +470,21 @@ El alta mensual y el alta recurrente son formularios separados. El modal mensual
 
 ## Pruebas del motor y limpieza de período
 
-Antes de probar **generar nómina → F5 → confirmar** en un período de desarrollo, limpiar snapshots y liquidaciones de ese período:
+Antes de probar **generar nómina → F5 → confirmar** en un período de desarrollo, limpiar liquidaciones, snapshots y nóminas del generador V2.
+
+**Un período** (p. ej. 2026-05):
 
 ```bash
 psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -v periodo=2026-05 -f bd/scripts/limpiar-nominas-mensuales.sql
 ```
+
+**BD piloto completa** (todos los períodos; incluye `nomina_periodo`, movimientos, consolidaciones):
+
+```bash
+npm run limpiar:nominas-bd:force
+```
+
+El script [`bd/scripts/limpiar-nominas-mensuales.sql`](../../../../bd/scripts/limpiar-nominas-mensuales.sql) borra: liquidaciones oficiales, snapshots de cálculo, parámetros congelados, diagnóstico, consolidaciones y cabeceras del administrador/generador V2. **No** toca empleados, novedades ni catálogos LRE/Previred.
 
 **Tests unitarios (sin BD):**
 

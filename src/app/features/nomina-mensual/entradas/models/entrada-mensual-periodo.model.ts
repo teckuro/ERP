@@ -2,6 +2,7 @@ export const ENTRADA_MENSUAL_ORIGENES = [
   'recurrente',
   'novedad_mensual',
   'legacy_movimiento_variable',
+  'movimiento_nomina',
 ] as const;
 
 export type EntradaMensualOrigen = (typeof ENTRADA_MENSUAL_ORIGENES)[number];

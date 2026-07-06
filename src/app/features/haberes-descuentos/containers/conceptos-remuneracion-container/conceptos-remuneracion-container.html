@@ -7,8 +7,8 @@
   </header>
 
   <p class="cr-note">
-    Alta y eliminación física desde el listado no están habilitadas en esta fase; use la acción «Revisar» para ver
-    reglas, exportación LRE y bloqueos. Los conceptos automáticos o de sistema siguen protegidos salvo perfil administrador.
+    Los administradores de remuneraciones pueden crear conceptos nuevos con código LRE asignado. Use «Revisar» para ver
+    reglas, exportación LRE y bloqueos. Los conceptos de sistema siguen protegidos salvo perfil administrador.
   </p>
 
   @if (mostrarFranjaLre()) {
@@ -24,7 +24,7 @@
   <div class="cr-grid-wrap">
     <app-data-grid
       title="Conceptos"
-      primaryActionLabel=""
+      [primaryActionLabel]="puedeCrearConcepto() ? 'Nuevo concepto' : ''"
       (primaryAction)="abrirNuevoConcepto()"
       [filtersCollapsible]="true"
       [rows]="catalogoFilas()"

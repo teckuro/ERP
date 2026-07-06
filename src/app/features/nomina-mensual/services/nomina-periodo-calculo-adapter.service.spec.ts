@@ -20,6 +20,7 @@ describe('NominaPeriodoCalculoAdapterService', () => {
         naturaleza: 'liquidacion_legal',
         tipo: 'mensual',
       }),
+      listarMovimientos: vi.fn().mockResolvedValue([]),
       registrarCalculo: vi.fn().mockResolvedValue(undefined),
     };
     const resultado = {
@@ -61,7 +62,9 @@ describe('NominaPeriodoCalculoAdapterService', () => {
 
     expect(motor.generarCalculoPeriodo).toHaveBeenCalledWith('2026-06', [10, 11], {
       nominaPeriodoId: 'nom-1',
+      movimientosNomina: [],
     });
+    expect(nominas.listarMovimientos).toHaveBeenCalledWith('nom-1');
     expect(motor.guardarSnapshotPreliminar).toHaveBeenCalledWith('2026-06', {
       idEmpresa: 42,
       nominaPeriodoId: 'nom-1',

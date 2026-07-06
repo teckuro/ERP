@@ -9,6 +9,15 @@
 
 ---
 
+## 2026-07-06 — Conceptos remuneración: alta habilitada (admin)
+
+- **Grilla:** botón primario «Nuevo concepto» visible para perfil administrador de remuneraciones.
+- **Modal:** modo alta con formulario vacío; título «Nuevo concepto»; validación exige código LRE en haberes/descuentos nuevos.
+- **Copy:** nota operativa actualizada (ya no indica alta bloqueada).
+- **Contraste:** mismo modal `cr-catalog-dialog`; sin cambios globales.
+
+---
+
 ## 2026-07-05 — Conceptos remuneración: estado LRE y cierre catálogo
 
 - **Menú conceptos:** chips semánticos LRE (listo, requiere código, pendiente normativo, deriva, no exportable); columna `Cód. motor`; franja pendientes + enlace a export LRE; detalle con exportación LRE y nota normativa; validación al guardar sin catálogo; empty state alineado a fase sin alta.

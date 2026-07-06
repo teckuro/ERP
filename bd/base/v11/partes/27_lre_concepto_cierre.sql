@@ -37,6 +37,35 @@ SET id_catalogo_lre = l.id_catalogo_lre,
 FROM catalogo_lre l
 WHERE c.codigo = 'BONO' AND l.codigo_lre = '2113';
 
+-- Variantes de código en BD (motor/legacy) → mismo catálogo LRE que HORAS_EXTRAS / IMPUESTO_RENTA.
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre,
+    estrategia_lre = 'DIRECTO',
+    requiere_exportacion_lre = TRUE,
+    codigo_motor = COALESCE(c.codigo_motor, 'HORA_EXTRA')
+FROM catalogo_lre l
+WHERE c.codigo = 'HORAS_EXTRA' AND l.codigo_lre = '2102';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre,
+    estrategia_lre = 'DIRECTO',
+    requiere_exportacion_lre = TRUE,
+    codigo_motor = COALESCE(c.codigo_motor, 'IMPUESTO_UNICO')
+FROM catalogo_lre l
+WHERE c.codigo = 'IMPUESTO_UNICO' AND l.codigo_lre = '3161';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre,
+    estrategia_lre = 'DIRECTO',
+    requiere_exportacion_lre = TRUE
+FROM catalogo_lre l
+WHERE c.codigo IN ('HORAS_EXTRAS', 'IMPUESTO_RENTA')
+  AND l.codigo_lre IN ('2102', '3161')
+  AND (
+    (c.codigo = 'HORAS_EXTRAS' AND l.codigo_lre = '2102')
+    OR (c.codigo = 'IMPUESTO_RENTA' AND l.codigo_lre = '3161')
+  );
+
 -- Alias motor: código interno ERP vs código emitido por el motor de nómina.
 WITH alias_motor(codigo_concepto, codigo_motor_emitido) AS (
     VALUES

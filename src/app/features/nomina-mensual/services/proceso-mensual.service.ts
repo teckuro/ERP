@@ -24,6 +24,8 @@ import {
   type ParametrosEstadoVisual,
 } from '../../parametros-generales/rules/parametros-completitud.rules';
 
+import type { MovimientoNomina } from '../models/movimiento-nomina.models';
+import { aplicarMovimientosNominaAlMotor } from '../rules/nomina-movimientos-motor.rules';
 import type { EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
 import { LiquidacionesOficialesRepository } from '../../liquidaciones-oficiales/data-access/liquidaciones-oficiales.repository';
 import { EntradasMensualesPeriodoService } from '../entradas/services/entradas-mensuales-periodo.service';
@@ -230,7 +232,10 @@ export class ProcesoMensualService {
   async generarCalculoPeriodo(
     periodo: string,
     trabajadorIds?: readonly number[],
-    opciones: { nominaPeriodoId?: string | null } = {},
+    opciones: {
+      nominaPeriodoId?: string | null;
+      movimientosNomina?: readonly MovimientoNomina[];
+    } = {},
   ): Promise<MotorCalculoPeriodoResultado> {
     const p = periodo.trim();
     // F09: con nómina el resultado en memoria se aísla por nominaPeriodoId
@@ -1069,6 +1074,10 @@ export class ProcesoMensualService {
   private async construirInputMotorPeriodo(
     periodo: string,
     trabajadorIds?: readonly number[],
+    opciones: {
+      nominaPeriodoId?: string | null;
+      movimientosNomina?: readonly MovimientoNomina[];
+    } = {},
   ): Promise<MotorCalculoInput> {
     const [prevalidacion, parametrosPeriodo, catalogos, empleadosListado, recurrentes] = await Promise.all([
       this.ejecutarPrevalidaciones(periodo),
@@ -1100,6 +1109,29 @@ export class ProcesoMensualService {
     const fichas = await Promise.all(aptos.map((e) => this.empleados.obtenerPorId(e.id)));
     const trabajadores = fichas.filter((f): f is NonNullable<typeof f> => f != null).map(trabajadorSnapshotDesdeFicha);
 
+    let recurrentesFiltrados = alcance
+      ? recurrentes.filter((fila) => alcance.has(fila.asignacion.idPersona))
+      : recurrentes;
+
+    let entradasPeriodo = asArray(prevalidacion.entradasMensuales).filter(
+      (entrada) => !alcance || alcance.has(entrada.idPersona),
+    );
+
+    if (opciones.movimientosNomina?.length) {
+      const movimientosAlcance = opciones.movimientosNomina.filter((movimiento) => {
+        const idPersona = Number(movimiento.trabajadorId);
+        return Number.isFinite(idPersona) && (!alcance || alcance.has(idPersona));
+      });
+      const fusion = aplicarMovimientosNominaAlMotor({
+        periodo,
+        entradasCanonicas: entradasPeriodo,
+        recurrentes: recurrentesFiltrados,
+        movimientos: movimientosAlcance,
+      });
+      entradasPeriodo = fusion.entradasFusionadas;
+      recurrentesFiltrados = fusion.recurrentesFiltrados;
+    }
+
     return {
       periodo,
       preNomina,
@@ -1107,14 +1139,8 @@ export class ProcesoMensualService {
       parametrosPeriodo,
       catalogos,
       trabajadores,
-      recurrentes: alcance
-        ? recurrentes.filter((fila) => alcance.has(fila.asignacion.idPersona))
-        : recurrentes,
-      entradasMensuales: construirEntradasMensualesMotor(
-        asArray(prevalidacion.entradasMensuales).filter(
-          (entrada) => !alcance || alcance.has(entrada.idPersona),
-        ),
-      ),
+      recurrentes: recurrentesFiltrados,
+      entradasMensuales: construirEntradasMensualesMotor(entradasPeriodo),
       empresaLey16744: resolveEmpresaMutualSnapshot(empresaRow, periodo),
     };
   }

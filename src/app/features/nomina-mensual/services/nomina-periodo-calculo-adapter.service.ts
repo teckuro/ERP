@@ -51,7 +51,10 @@ export class NominaPeriodoCalculoAdapterService {
     const alcance = validarAlcanceMotorPiloto(trabajadorIds);
     if (!alcance.ok) throw new Error(alcance.mensaje);
 
-    const opcionesMotor = { nominaPeriodoId };
+    const opcionesMotor = {
+      nominaPeriodoId,
+      movimientosNomina: await this.nominas.listarMovimientos(nominaPeriodoId),
+    };
 
     let resultado: MotorCalculoPeriodoResultado;
     if (nomina.naturaleza === 'anticipo') {

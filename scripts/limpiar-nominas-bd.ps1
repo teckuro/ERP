@@ -65,6 +65,51 @@ where c.periodo = '$safePeriod';
   return [int](Invoke-PsqlScalar $DatabaseUrl $sql)
 }
 
+function Get-MovimientosNominaCount($DatabaseUrl, $Period) {
+  if (-not (Test-TableExists $DatabaseUrl "movimiento_nomina")) {
+    return $null
+  }
+  if (-not (Test-TableExists $DatabaseUrl "nomina_periodo")) {
+    return Get-Count $DatabaseUrl "movimiento_nomina" "" $Period
+  }
+  if ([string]::IsNullOrWhiteSpace($Period)) {
+    $sql = "select count(*)::text from public.movimiento_nomina;"
+  } else {
+    $safePeriod = $Period.Replace("'", "''")
+    $sql = @"
+select count(*)::text
+from public.movimiento_nomina m
+join public.nomina_periodo n on n.id = m.id_nomina_periodo
+where n.periodo = '$safePeriod';
+"@
+  }
+  return [int](Invoke-PsqlScalar $DatabaseUrl $sql)
+}
+
+function Get-ConsolidacionCount($DatabaseUrl, $Period) {
+  if (-not (Test-TableExists $DatabaseUrl "nomina_consolidacion")) {
+    return $null
+  }
+  if (-not (Test-TableExists $DatabaseUrl "nomina_periodo")) {
+    return Get-Count $DatabaseUrl "nomina_consolidacion" "" $Period
+  }
+  if ([string]::IsNullOrWhiteSpace($Period)) {
+    $sql = "select count(*)::text from public.nomina_consolidacion;"
+  } else {
+    $safePeriod = $Period.Replace("'", "''")
+    $sql = @"
+select count(*)::text
+from public.nomina_consolidacion c
+where exists (
+  select 1 from public.nomina_periodo n
+  where n.periodo = '$safePeriod'
+    and (n.id = c.id_nomina_origen or n.id = c.id_nomina_destino)
+);
+"@
+  }
+  return [int](Invoke-PsqlScalar $DatabaseUrl $sql)
+}
+
 if ($TodosLosPeriodos) {
   $Periodo = ""
 }
@@ -115,13 +160,16 @@ $scopeLabel = if ([string]::IsNullOrWhiteSpace($Periodo)) { "TODOS los periodos"
 Write-Host ""
 Write-Host "Limpieza nómina mensual en BD" -ForegroundColor Cyan
 Write-Host "Alcance    : $scopeLabel"
-Write-Host "Tablas     : nomina_liquidacion_*, nomina_calculo_*, nomina_calculo_parametro (+ diagnostico si existe)"
+Write-Host "Tablas     : nomina_liquidacion_*, nomina_calculo_*, nomina_periodo (+ segmentos/movimientos), consolidacion, diagnostico"
 Write-Host ""
 
 $before = @{
   Snapshots = Get-Count $resolvedDbUrl "nomina_calculo_periodo" "periodo" $Periodo
   ParametrosCongelados = Get-ParametrosCongeladosCount $resolvedDbUrl $Periodo
   Liquidaciones = Get-Count $resolvedDbUrl "nomina_liquidacion_periodo" "periodo" $Periodo
+  Nominas = Get-Count $resolvedDbUrl "nomina_periodo" "periodo" $Periodo
+  Movimientos = Get-MovimientosNominaCount $resolvedDbUrl $Periodo
+  Consolidaciones = Get-ConsolidacionCount $resolvedDbUrl $Periodo
 }
 $before.Diagnostico = Get-Count $resolvedDbUrl "nomina_periodo_diagnostico" "periodo" $Periodo
 
@@ -131,13 +179,23 @@ if ($null -ne $before.ParametrosCongelados) {
   Write-Host "  nomina_calculo_parametro    : $($before.ParametrosCongelados) (parametros congelados)"
 }
 Write-Host "  nomina_liquidacion_periodo  : $($before.Liquidaciones)"
+Write-Host "  nomina_periodo              : $($before.Nominas)"
+if ($null -ne $before.Movimientos) {
+  Write-Host "  movimiento_nomina           : $($before.Movimientos)"
+}
+if ($null -ne $before.Consolidaciones) {
+  Write-Host "  nomina_consolidacion        : $($before.Consolidaciones)"
+}
 if ($null -ne $before.Diagnostico) {
   Write-Host "  nomina_periodo_diagnostico  : $($before.Diagnostico)"
 }
 
 $diagBefore = if ($null -ne $before.Diagnostico) { $before.Diagnostico } else { 0 }
 $paramBefore = if ($null -ne $before.ParametrosCongelados) { $before.ParametrosCongelados } else { 0 }
-if ($before.Snapshots -eq 0 -and $before.Liquidaciones -eq 0 -and $diagBefore -eq 0 -and $paramBefore -eq 0) {
+$movBefore = if ($null -ne $before.Movimientos) { $before.Movimientos } else { 0 }
+$consBefore = if ($null -ne $before.Consolidaciones) { $before.Consolidaciones } else { 0 }
+$nominasBefore = if ($null -ne $before.Nominas) { $before.Nominas } else { 0 }
+if ($before.Snapshots -eq 0 -and $before.Liquidaciones -eq 0 -and $diagBefore -eq 0 -and $paramBefore -eq 0 -and $nominasBefore -eq 0 -and $movBefore -eq 0 -and $consBefore -eq 0) {
   Write-Host ""
   Write-Host "No hay registros de nomina mensual en ese alcance. Nada que limpiar." -ForegroundColor Yellow
   exit 0
@@ -170,6 +228,9 @@ $after = @{
   Snapshots = Get-Count $resolvedDbUrl "nomina_calculo_periodo" "periodo" $Periodo
   ParametrosCongelados = Get-ParametrosCongeladosCount $resolvedDbUrl $Periodo
   Liquidaciones = Get-Count $resolvedDbUrl "nomina_liquidacion_periodo" "periodo" $Periodo
+  Nominas = Get-Count $resolvedDbUrl "nomina_periodo" "periodo" $Periodo
+  Movimientos = Get-MovimientosNominaCount $resolvedDbUrl $Periodo
+  Consolidaciones = Get-ConsolidacionCount $resolvedDbUrl $Periodo
 }
 $after.Diagnostico = Get-Count $resolvedDbUrl "nomina_periodo_diagnostico" "periodo" $Periodo
 
@@ -180,6 +241,13 @@ if ($null -ne $after.ParametrosCongelados) {
   Write-Host "  nomina_calculo_parametro    : $($after.ParametrosCongelados) (parametros congelados)"
 }
 Write-Host "  nomina_liquidacion_periodo  : $($after.Liquidaciones)"
+Write-Host "  nomina_periodo              : $($after.Nominas)"
+if ($null -ne $after.Movimientos) {
+  Write-Host "  movimiento_nomina           : $($after.Movimientos)"
+}
+if ($null -ne $after.Consolidaciones) {
+  Write-Host "  nomina_consolidacion        : $($after.Consolidaciones)"
+}
 if ($null -ne $after.Diagnostico) {
   Write-Host "  nomina_periodo_diagnostico  : $($after.Diagnostico)"
 }

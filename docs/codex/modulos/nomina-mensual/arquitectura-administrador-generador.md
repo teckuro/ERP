@@ -430,6 +430,13 @@ El sufijo `mock-adapter` y `calculo-adapter` es obligatorio para evitar confusi�
 
 Reemplaza los 8 pasos actuales (`parameters / scope / employees / movements / calculation / validation / approval / payslips`). La unificación `scope + employees → Dotación` y la eliminación de `approval / payslips` (absorbidos por `Validación / Cierre`) se aplica en **F3**, no en F1.
 
+### Paso Movimientos ↔ motor (LIQ-F15-FIX / CADENA-DATOS-01)
+
+- `movimiento_nomina` es fuente de verdad cuando el cálculo corre con `nominaPeriodoId` (generador V2).
+- Movimientos **manuales** aplicados se fusionan al motor como entradas `origen: movimiento_nomina` (`nomina-movimientos-motor.rules.ts`).
+- Recurrentes **omitidos** en la nómina excluyen la asignación del motor (`filtrarRecurrentesPorMovimientos`).
+- Novedades canónicas aprobadas siguen entrando vía `EntradasMensualesPeriodoService`; deduplicación persona×concepto×monto prioriza la novedad.
+
 ## 4. Routing definitivo
 
 ```txt

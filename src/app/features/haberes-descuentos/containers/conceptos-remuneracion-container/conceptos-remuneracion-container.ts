@@ -158,6 +158,10 @@ export class ConceptosRemuneracionContainer implements OnInit {
     return r ? this.accionesConcepto(r) : null;
   });
 
+  readonly puedeCrearConcepto = computed(
+    () => this.permisosRemuneraciones.esAdministradorRemuneraciones(),
+  );
+
   readonly puedeEditarConceptoCatalogo = computed(
     () => this.permisosRemuneraciones.esAdministradorRemuneraciones(),
   );
@@ -470,12 +474,35 @@ export class ConceptosRemuneracionContainer implements OnInit {
   }
 
   abrirNuevoConcepto(): void {
-    this.modalMsg.set({
-      variant: 'info',
-      title: 'Alta no disponible',
-      message:
-        'El alta de conceptos no está habilitada en esta fase del producto. Se prioriza trazabilidad del catálogo y alineación de perfiles.',
-    });
+    if (!this.puedeCrearConcepto()) {
+      this.modalMsg.set({
+        variant: 'info',
+        title: 'Alta no disponible',
+        message: 'Solo el perfil administrador de remuneraciones puede crear conceptos nuevos.',
+      });
+      return;
+    }
+    this.catalogEditId.set(null);
+    this.catalogRowSnapshot.set(null);
+    this.catCodigo.set('');
+    this.catCodigoMotor.set('');
+    this.catNombre.set('');
+    this.catTipo.set('HABER');
+    this.catNaturaleza.set('IMPONIBLE');
+    this.catIdCatalogoLre.set(null);
+    this.catImponible.set(true);
+    this.catTributable.set(true);
+    this.catAfectaAfp.set(true);
+    this.catAfectaSalud.set(true);
+    this.catAfectaAfc.set(true);
+    this.catAfectaSis.set(false);
+    this.catAfectaLiquido.set(true);
+    this.catVigente.set(true);
+    this.catVigenciaInicio.set('');
+    this.catVigenciaFin.set('');
+    this.catOrdenImpresion.set(100);
+    this.catCalculoAutomatico.set(false);
+    this.catalogDialogAbierto.set(true);
   }
 
   editarConceptoRow(row: CatalogoGridRow): void {
@@ -563,7 +590,7 @@ export class ConceptosRemuneracionContainer implements OnInit {
     const snap = this.catalogRowSnapshot();
     if (
       snap?.calculoAutomatico &&
-      !this.puedeEditarConceptoCatalogo &&
+      !this.puedeEditarConceptoCatalogo() &&
       this.catCalculoAutomatico() !== snap.calculoAutomatico
     ) {
       this.mostrarErrorValidacion('No puede modificarse el modo de cálculo de este concepto.');
@@ -574,6 +601,16 @@ export class ConceptosRemuneracionContainer implements OnInit {
         this.mostrarErrorValidacion('La vigencia fin debe ser mayor o igual a la vigencia inicio.');
         return;
       }
+    }
+    if (
+      editId == null
+      && this.catIdCatalogoLre() == null
+      && (this.catTipo() === 'HABER' || this.catTipo() === 'DESCUENTO')
+    ) {
+      this.mostrarErrorValidacion(
+        'Asigne un código del catálogo LRE para que el concepto pueda exportarse al libro de remuneraciones.',
+      );
+      return;
     }
     if (
       snap

@@ -169,6 +169,7 @@ async function verificarDirectosSinLre(client) {
   ok('Sin conceptos DIRECTO exportables huérfanos críticos');
 }
 
+async function verificarLiquidacionConLre(client) {
   const { data: periodo, error: perErr } = await client
     .from('nomina_liquidacion_periodo')
     .select('id_liquidacion_periodo, periodo')
