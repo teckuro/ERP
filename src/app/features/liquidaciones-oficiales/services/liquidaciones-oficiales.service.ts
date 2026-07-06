@@ -54,6 +54,9 @@ export class LiquidacionesOficialesService {
     };
   }
 
+  /**
+   * @deprecated Flujo activo: generador V2 paso Cierre + `NominaPeriodoService.generarLiquidacionesNomina`.
+   */
   async generarLiquidaciones(periodo: string): Promise<LiquidacionesEstadoPeriodo> {
     const estado = await this.consultarEstadoPeriodo(periodo);
     if (!estado.snapshot?.idCalculoPeriodo) {

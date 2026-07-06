@@ -222,11 +222,11 @@ export function iconoAccionRecomendadaLiquidacion(tipo: LiquidacionAccionRecomen
     case 'exportar_previred':
       return 'upload';
     case 'solo_consulta':
-      return 'lock';
+      return 'lock-keyhole';
     case 'regenerar_reabierta':
       return 'refresh-cw';
     case 'sin_comprobantes':
-      return 'calculator';
+      return 'clipboard-list';
     case 'revision_completa':
       return 'check-circle';
     default:

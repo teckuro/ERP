@@ -7,14 +7,18 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle,
+  ClipboardList,
   DollarSign,
   Eye,
   FileCheck2,
   FileText,
+  ListChecks,
+  LockKeyhole,
   RefreshCw,
   Repeat,
   Search,
   Send,
+  Upload,
 } from 'lucide-angular/src/icons';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { of } from 'rxjs';
@@ -75,14 +79,18 @@ describe('LiquidacionesOficialesContainer', () => {
             ArrowLeft,
             ArrowRight,
             CheckCircle,
+            ClipboardList,
             DollarSign,
             Eye,
             FileCheck2,
             FileText,
+            ListChecks,
+            LockKeyhole,
             RefreshCw,
             Repeat,
             Search,
             Send,
+            Upload,
           }),
         ),
         PeriodoActivoService,
@@ -311,7 +319,7 @@ describe('LiquidacionesOficialesContainer', () => {
         nomina: crearNomina({
           id: 'nom-99',
           empresaNombre: 'Acme',
-          estado: 'liquidada',
+          estado: 'reabierta',
           trabajadorIds: ['1'],
           evidenciaCalculo: { idCalculoPeriodo: 10, versionCalculo: 1, calculoVigente: true },
         }),
@@ -351,6 +359,7 @@ describe('LiquidacionesOficialesContainer', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
+    expect(fixture.componentInstance.puedeRegenerarInterna()).toBe(true);
     await fixture.componentInstance.confirmarRegeneracionInterna();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -366,7 +375,7 @@ describe('LiquidacionesOficialesContainer', () => {
       {
         nomina: crearNomina({
           id: 'nom-99',
-          estado: 'liquidada',
+          estado: 'reabierta',
           evidenciaCalculo: { idCalculoPeriodo: 10, versionCalculo: 1, calculoVigente: true },
         }),
         liquidacionesNomina: [
@@ -396,5 +405,40 @@ describe('LiquidacionesOficialesContainer', () => {
       'Qué queda registrado',
       'Qué sigue',
     ]);
+  });
+
+  it('no regenera liquidaciones cuando la nómina está liquidada', async () => {
+    await configurar(
+      { nominaPeriodoId: 'nom-99', periodo: '2026-04' },
+      {
+        nomina: crearNomina({
+          id: 'nom-99',
+          estado: 'liquidada',
+          evidenciaCalculo: { idCalculoPeriodo: 10, versionCalculo: 1, calculoVigente: true },
+        }),
+        liquidacionesNomina: [
+          {
+            idLiquidacionPeriodo: 1,
+            idNominaPeriodo: 'nom-99',
+            periodo: '2026-04',
+            version: 1,
+            estado: 'generada',
+            activo: true,
+            idLiquidacionReemplazada: null,
+            fechaGeneracion: '2026-04-01T00:00:00Z',
+            totalTrabajadores: 1,
+            totalHaberes: 100,
+            totalDescuentos: 10,
+            totalLiquido: 90,
+          },
+        ],
+      },
+    );
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.puedeRegenerarInterna()).toBe(false);
+    await fixture.componentInstance.confirmarRegeneracionInterna();
+    expect(nominaService.generarLiquidacionesNomina).not.toHaveBeenCalled();
   });
 });
