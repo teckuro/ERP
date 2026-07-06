@@ -17,7 +17,20 @@
         </div>
         <p>{{ trabajador.rut || 'RUT no disponible' }}</p>
       </div>
-      <strong>{{ money(trabajador.liquidoPagar) }}</strong>
+      <div class="liq-detail-panel__header-actions">
+        @if (permitirExpandir && trabajador) {
+          <button
+            type="button"
+            class="liq-detail-panel__open-full"
+            title="Ver detalle ampliado"
+            aria-label="Ver detalle ampliado"
+            (click)="expandirDetalle.emit()"
+          >
+            <lucide-icon name="panel-right-open" aria-hidden="true"></lucide-icon>
+          </button>
+        }
+        <strong>{{ money(trabajador.liquidoPagar) }}</strong>
+      </div>
     </header>
 
     <p class="liq-detail-panel__cuadratura">
@@ -39,7 +52,10 @@
 
     <div class="liq-detail-panel__concepts">
       <section aria-label="Haberes del trabajador">
-        <h4>Haberes</h4>
+        <h4>
+          <lucide-icon name="trending-up" aria-hidden="true"></lucide-icon>
+          Haberes
+        </h4>
         <ul>
           @for (concepto of haberes(); track concepto.idLiquidacionConcepto) {
             <li>
@@ -53,7 +69,10 @@
       </section>
 
       <section aria-label="Descuentos del trabajador">
-        <h4>Descuentos y referencias</h4>
+        <h4>
+          <lucide-icon name="trending-down" aria-hidden="true"></lucide-icon>
+          Descuentos
+        </h4>
         <ul>
           @for (concepto of descuentos(); track concepto.idLiquidacionConcepto) {
             <li>
@@ -72,8 +91,8 @@
     </p>
   } @else {
     <div class="liq-detail-panel__placeholder" aria-label="Detalle pendiente de selección">
-      <strong>Seleccione un trabajador en la grilla</strong>
-      <span>El detalle de haberes, descuentos y totales se carga al elegir una fila.</span>
+      <strong>Seleccione un trabajador</strong>
+      <span class="liq-sr-only">El detalle de haberes, descuentos y totales se carga al elegir una fila.</span>
     </div>
   }
 </section>

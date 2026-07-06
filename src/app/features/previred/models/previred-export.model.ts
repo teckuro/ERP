@@ -34,7 +34,22 @@ export interface PreviredBorradorExport {
   listoParaEnvio: boolean;
 }
 
-export type PreviredCanalExportacion = 'csv_borrador' | 'archivo_oficial_rem_v1';
+export type PreviredCanalExportacion =
+  | 'csv_borrador'
+  | 'archivo_oficial_rem_v1'
+  | 'archivo_oficial_105_posicion';
+
+export interface PreviredArchivo105Resumen {
+  formato: string;
+  periodo: string;
+  contenido: string;
+  totalTrabajadores: number;
+  totalLineas: number;
+  listoParaEnvio105: boolean;
+  conceptosSinCampoArchivo: number;
+  trabajadoresSinDatos: number;
+  advertencias: PreviredAdvertencia[];
+}
 
 export interface PreviredExportacionRegistro {
   idPreviredExportacion: number;

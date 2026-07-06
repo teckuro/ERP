@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LucideAngularModule } from 'lucide-angular';
 
 import type { LiquidacionConcepto, LiquidacionTrabajador } from '../../models/liquidacion-oficial.model';
 
@@ -14,7 +15,7 @@ const TOLERANCIA_CUADRATURA_PESOS = 1;
   selector: 'app-liquidacion-detalle-panel',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: './liquidacion-detalle-panel.html',
   styleUrl: './liquidacion-detalle-panel.css',
 })
@@ -22,6 +23,9 @@ export class LiquidacionDetallePanelComponent {
   @Input() trabajador: LiquidacionTrabajador | null = null;
   @Input() conceptos: LiquidacionConcepto[] = [];
   @Input() estadoTrabajador: EstadoTrabajadorDetalleUi | null = null;
+  @Input() permitirExpandir = true;
+
+  @Output() expandirDetalle = new EventEmitter<void>();
 
   haberes(): LiquidacionConcepto[] {
     return this.conceptos.filter((c) => c.tipo === 'haber');

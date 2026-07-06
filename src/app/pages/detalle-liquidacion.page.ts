@@ -61,7 +61,7 @@ function etiquetaCanalEmision(canal: LiquidacionEmision['canal']): string {
         </div>
         <a class="liq-det-page__back" [routerLink]="rutaListado()" [queryParams]="queryListado()">
           <lucide-icon name="arrow-left" aria-hidden="true"></lucide-icon>
-          Volver a liquidaciones
+          {{ etiquetaVolver() }}
         </a>
       </header>
 
@@ -71,21 +71,13 @@ function etiquetaCanalEmision(canal: LiquidacionEmision['canal']): string {
           title="Cargando liquidación"
           message="Estamos consultando el comprobante del trabajador."
         />
-      } @else if (error(); as mensaje) {
-        <app-message-box
-          variant="danger"
-          title="No se pudo cargar"
-          [message]="mensaje"
-          primaryLabel="Volver a liquidaciones"
-          (action)="volverListado()"
-        />
+      } @else if (error()) {
+        <p class="liq-det-page__meta" role="status">No se pudo cargar el comprobante.</p>
       } @else if (trabajador(); as fila) {
         @if (soloLectura()) {
-          <app-message-box
-            variant="info"
-            title="Solo consulta"
-            message="La nómina está cerrada o anulada. Puede revisar e imprimir, pero no modificar estados."
-          />
+          <p class="liq-det-page__note" role="status">
+            Nómina cerrada o anulada. Puede revisar e imprimir, pero no modificar estados.
+          </p>
         }
 
         @if (ultimaEmision(); as emision) {
@@ -97,12 +89,24 @@ function etiquetaCanalEmision(canal: LiquidacionEmision['canal']): string {
 
         <div class="liq-det-page__actions">
           @if (accionView().primaryAction; as primary) {
-            <button type="button" class="liq-det-page__btn is-primary" (click)="ejecutarAccion(primary)">
-              {{ primary.label }}
+            <button
+              type="button"
+              class="liq-det-page__icon-btn is-primary"
+              [title]="primary.ariaLabel"
+              [attr.aria-label]="primary.ariaLabel"
+              (click)="ejecutarAccion(primary)"
+            >
+              <lucide-icon [name]="primary.icon" aria-hidden="true"></lucide-icon>
             </button>
           }
-          <button type="button" class="liq-det-page__btn" (click)="abrirPreview()">
-            Ver e imprimir
+          <button
+            type="button"
+            class="liq-det-page__icon-btn"
+            title="Ver e imprimir"
+            aria-label="Ver e imprimir"
+            (click)="abrirPreview()"
+          >
+            <lucide-icon name="file-text" aria-hidden="true"></lucide-icon>
           </button>
         </div>
 
@@ -133,6 +137,21 @@ function etiquetaCanalEmision(canal: LiquidacionEmision['canal']): string {
           (cerrar)="cerrarPreview()"
           (imprimirSolicitado)="imprimirPreview()"
         ></app-liquidacion-preview-modal>
+      }
+
+      @if (error(); as mensaje) {
+        <app-message-box
+          mode="modal"
+          variant="danger"
+          title="No se pudo cargar"
+          [message]="mensaje"
+          secondaryLabel="Cerrar"
+          primaryLabel="Volver a liquidaciones"
+          [dismissible]="true"
+          (secondary)="volverListado()"
+          (dismiss)="volverListado()"
+          (action)="volverListado()"
+        />
       }
     </section>
   `,
@@ -190,24 +209,45 @@ function etiquetaCanalEmision(canal: LiquidacionEmision['canal']): string {
         font-size: 12px;
         color: #475569;
       }
+      .liq-det-page__note {
+        margin: 0;
+        padding: 8px 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        background: #f8fafc;
+        font-size: 12px;
+        color: #475569;
+      }
       .liq-det-page__actions {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
       }
-      .liq-det-page__btn {
-        padding: 7px 12px;
+      .liq-det-page__icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        padding: 0;
         border: 1px solid #e2e8f0;
         border-radius: 5px;
         background: #fff;
-        font-size: 13px;
-        font-weight: 600;
+        color: #334155;
         cursor: pointer;
       }
-      .liq-det-page__btn.is-primary {
+      .liq-det-page__icon-btn lucide-icon {
+        width: 16px;
+        height: 16px;
+      }
+      .liq-det-page__icon-btn.is-primary {
         border-color: #1e3a8a;
         background: #1e3a8a;
         color: #fff;
+      }
+      .liq-det-page__icon-btn:focus-visible {
+        outline: 2px solid #1e3a8a;
+        outline-offset: 1px;
       }
     `,
   ],
@@ -282,6 +322,12 @@ export class DetalleLiquidacionPage {
     return typeof nominaPeriodoId === 'string' && nominaPeriodoId.trim()
       ? { nominaPeriodoId: nominaPeriodoId.trim() }
       : {};
+  }
+
+  etiquetaVolver(): string {
+    return this.queryListado()['nominaPeriodoId']
+      ? 'Volver al listado de trabajadores'
+      : 'Volver a liquidaciones';
   }
 
   volverListado(): void {

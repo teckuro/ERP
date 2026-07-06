@@ -1,0 +1,66 @@
+@if (abierto() && trabajador(); as fila) {
+  <div
+    class="liq-det-modal__backdrop"
+    role="presentation"
+    (click)="onBackdropClick()"
+  >
+    <section
+      class="liq-det-modal"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="'Detalle de liquidación · ' + fila.nombreTrabajador"
+      (click)="onDialogClick($event)"
+    >
+      <header class="liq-det-modal__head">
+        <div>
+          <p class="liq-det-modal__eyebrow">Liquidación por trabajador</p>
+          <h2 class="liq-det-modal__title">{{ fila.nombreTrabajador }}</h2>
+        </div>
+        <button
+          type="button"
+          class="liq-det-modal__close"
+          title="Cerrar"
+          aria-label="Cerrar detalle ampliado"
+          (click)="cerrar.emit()"
+        >
+          <lucide-icon name="x" aria-hidden="true"></lucide-icon>
+        </button>
+      </header>
+
+      <div class="liq-det-modal__body">
+        <app-liquidacion-detalle-panel
+          [trabajador]="fila"
+          [conceptos]="conceptos()"
+          [estadoTrabajador]="estadoTrabajador()"
+          [permitirExpandir]="false"
+        />
+      </div>
+
+      @if (accionView(); as view) {
+        <footer class="liq-det-modal__foot">
+          @if (view.primaryAction; as primary) {
+            <button
+              type="button"
+              class="liq-det-modal__icon-btn is-primary"
+              [title]="primary.ariaLabel"
+              [attr.aria-label]="primary.ariaLabel"
+              (click)="ejecutarAccion.emit(primary)"
+            >
+              <lucide-icon [name]="primary.icon" aria-hidden="true"></lucide-icon>
+            </button>
+          }
+          <button
+            type="button"
+            class="liq-det-modal__icon-btn"
+            [disabled]="view.pdfDisabled || pdfCargando()"
+            [title]="view.pdfLabel"
+            [attr.aria-label]="view.pdfLabel"
+            (click)="abrirPreview.emit()"
+          >
+            <lucide-icon name="file-text" aria-hidden="true"></lucide-icon>
+          </button>
+        </footer>
+      }
+    </section>
+  </div>
+}

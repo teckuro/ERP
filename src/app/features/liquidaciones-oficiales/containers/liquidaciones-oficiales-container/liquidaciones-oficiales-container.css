@@ -30,13 +30,13 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   min-height: 0;
   height: 100%;
   overflow: hidden;
   background: var(--erp-bg);
   color: var(--erp-ink);
-  padding: 10px 12px 12px;
+  padding: 8px 10px 10px;
   box-sizing: border-box;
 }
 
@@ -44,7 +44,7 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   min-height: 0;
   overflow: hidden;
   position: relative;
@@ -63,9 +63,9 @@
   flex: 0 0 auto;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 10px;
+  gap: 6px;
   align-items: center;
-  padding: 8px 10px;
+  padding: 6px 8px;
   border: 1px solid var(--erp-border);
   border-radius: 6px;
   background: var(--erp-surface);
@@ -74,18 +74,24 @@
 .liq-toolbar__fields {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  align-items: flex-end;
+  gap: 6px;
+  align-items: center;
   flex: 1 1 auto;
   min-width: 0;
 }
 
 .liq-toolbar__field {
   display: grid;
-  gap: 4px;
-  min-width: min(100%, 24rem);
-  flex: 1 1 16rem;
-  max-width: 32rem;
+  gap: 2px;
+  min-width: min(100%, 20rem);
+  flex: 1 1 14rem;
+  max-width: 28rem;
+}
+
+.liq-toolbar__field--compact {
+  flex: 0 1 9rem;
+  min-width: 7rem;
+  max-width: 11rem;
 }
 
 .liq-toolbar__field span {
@@ -115,7 +121,7 @@
 }
 
 .liq-toolbar__select {
-  min-height: 30px;
+  min-height: 28px;
   border: 1px solid var(--erp-border);
   background: var(--erp-surface);
   color: var(--erp-ink);
@@ -149,13 +155,13 @@
 .liq-nomina-trigger__value {
   flex: 1 1 auto;
   min-width: 0;
-  min-height: 32px;
+  min-height: 28px;
   border: 0;
   border-radius: 0;
   background: transparent;
   color: var(--erp-ink);
-  padding: 0 10px;
-  font-size: 12px;
+  padding: 0 8px;
+  font-size: 11px;
   font-weight: 600;
   text-align: left;
   cursor: pointer;
@@ -178,8 +184,8 @@
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  min-height: 32px;
+  width: 28px;
+  min-height: 28px;
   margin: 0;
   padding: 0;
   border: 0;
@@ -298,9 +304,9 @@
   flex: 0 0 auto;
   flex-wrap: wrap;
   justify-content: space-between;
-  align-items: stretch;
-  gap: 12px;
-  padding: 10px 12px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
   border: 1px solid var(--erp-border);
   border-radius: 6px;
   background: var(--erp-surface);
@@ -308,50 +314,35 @@
 
 .liq-origen__main {
   display: grid;
-  gap: 4px;
+  gap: 0;
   min-width: 0;
   align-content: center;
 }
 
-.liq-origen__eyebrow {
-  margin: 0;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--erp-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.liq-origen__title {
-  font-size: 0.9375rem;
-  font-weight: 750;
-  line-height: 1.25;
-}
-
-.liq-origen__meta {
+.liq-origen__row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
-  color: var(--erp-muted);
+  min-width: 0;
 }
 
-.liq-origen__note {
-  font-size: 12px;
-  color: var(--erp-muted);
+.liq-origen__title {
+  font-size: 0.8125rem;
+  font-weight: 750;
+  line-height: 1.2;
 }
 
 .liq-origen__chip {
   display: inline-flex;
   align-items: center;
-  min-height: 20px;
-  padding: 0 7px;
+  min-height: 18px;
+  padding: 0 6px;
   border-radius: 4px;
   border: 1px solid var(--erp-border);
   background: var(--erp-surface-soft);
   color: var(--erp-ink);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
 }
 
@@ -366,32 +357,39 @@
 .liq-origen__metrics {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 4px;
   margin: 0;
 }
 
 .liq-origen__metrics div {
-  display: grid;
-  gap: 2px;
-  min-width: 7rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
   border: 1px solid var(--erp-border);
   border-radius: 4px;
   background: var(--erp-surface-soft);
-  padding: 6px 10px;
+  padding: 3px 7px;
 }
 
 .liq-origen__metrics dt {
+  display: inline-flex;
+  align-items: center;
   margin: 0;
   color: var(--erp-muted);
-  font-size: 0.6875rem;
-  font-weight: 700;
+}
+
+.liq-origen__metrics dt lucide-icon {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
 }
 
 .liq-origen__metrics dd {
   margin: 0;
   color: var(--erp-ink);
-  font-size: 0.875rem;
-  font-weight: 750;
+  font-size: 0.75rem;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -401,7 +399,7 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
   min-height: 0;
   overflow: hidden;
 }
@@ -493,10 +491,9 @@
   color: var(--erp-ink);
 }
 
-.liq-entrada__row-hit small {
-  color: var(--erp-muted);
-  font-size: 11px;
-  font-weight: 500;
+:host ::ng-deep .liq-entrada__col-action {
+  width: 2.75rem;
+  padding-inline: 4px;
 }
 
 .liq-entrada__chip {
@@ -549,10 +546,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   padding: 0;
-  border-radius: 5px;
+  border-radius: 4px;
   border: 1px solid var(--erp-border);
   background: var(--erp-surface);
   color: var(--erp-ink);
@@ -580,15 +577,15 @@
 
 .liq-icon-btn lucide-icon,
 .liq-row-action lucide-icon {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
 }
 
 .liq-row-actions {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .liq-row-action--primary {
@@ -764,111 +761,16 @@
   color: #ffffff;
 }
 
-/* ---- Franja acción recomendada ---- */
-
-.liq-franja {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding: 8px 12px;
-  border: 1px solid var(--erp-border);
-  border-radius: 6px;
-  background: var(--erp-surface-soft);
-}
-
-.liq-franja[data-tono='pendiente'] {
-  background: var(--erp-review-soft);
-  border-color: var(--erp-review-border);
-}
-
-.liq-franja[data-tono='listo'] {
-  background: var(--erp-ok-soft);
-  border-color: var(--erp-ok-border);
-}
-
-.liq-franja[data-tono='warning'] {
-  background: #fff7ed;
-  border-color: #fed7aa;
-}
-
-.liq-franja[data-tono='cerrada'] {
-  background: var(--erp-surface-soft);
-  border-color: var(--erp-border-strong);
-}
-
-.liq-franja__icon {
-  flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  color: var(--erp-muted);
-}
-
-.liq-franja__copy {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.liq-franja__kicker {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--erp-muted);
-}
-
-.liq-franja__title {
-  font-size: 0.8125rem;
-  font-weight: 650;
-  color: var(--erp-ink);
-}
-
-.liq-franja__detalle {
-  font-size: 0.75rem;
-  color: var(--erp-muted);
-  line-height: 1.4;
-}
-
-.liq-franja__btn {
-  flex: 0 0 auto;
-  padding: 6px 12px;
-  border: 1px solid var(--erp-primary);
-  border-radius: 5px;
-  background: var(--erp-primary);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.liq-franja__btn:hover {
-  background: var(--erp-primary-hover);
-  border-color: var(--erp-primary-hover);
-}
-
-.liq-filtro-activo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border: 1px solid var(--erp-border);
-  border-radius: 6px;
-  background: var(--erp-surface);
-  font-size: 0.75rem;
-  color: var(--erp-muted);
-}
-
-.liq-filtro-activo__clear {
-  border: none;
-  background: transparent;
-  color: var(--erp-primary);
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
+.liq-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
   padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .liq-version-diff-wrap {
@@ -882,38 +784,6 @@
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
-}
-
-.liq-estado-resumen__hit {
-  border: none;
-  background: transparent;
-  padding: 0;
-  font: inherit;
-  font-weight: 700;
-  color: inherit;
-  cursor: pointer;
-}
-
-.liq-estado-resumen__hit:disabled {
-  cursor: default;
-  opacity: 0.45;
-}
-
-.liq-estado-resumen__hit:not(:disabled):hover {
-  color: var(--erp-primary);
-}
-
-.liq-row-action--labeled {
-  width: auto;
-  min-width: 2rem;
-  padding: 0 8px;
-  gap: 4px;
-}
-
-.liq-row-action--labeled span {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  white-space: nowrap;
 }
 
 .liq-versiones-grid__version-hit {
@@ -934,7 +804,7 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   min-height: 0;
   overflow: hidden;
   position: relative;
@@ -942,63 +812,19 @@
 
 /* ---- Zona de trabajo ---- */
 
-.liq-estado-resumen {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
-  margin: 0;
-  border: 1px solid var(--erp-border);
-  border-radius: 6px;
-  background: var(--erp-surface);
-  overflow: hidden;
-}
-
-.liq-estado-resumen div {
-  display: grid;
-  gap: 2px;
-  flex: 1 1 8rem;
-  min-width: 7rem;
-  padding: 8px 12px;
-  border-right: 1px solid var(--erp-border);
-  background: transparent;
-}
-
-.liq-estado-resumen div:last-child {
-  border-right: 0;
-}
-
-.liq-estado-resumen__danger dd {
-  color: var(--erp-danger);
-  font-weight: 800;
-}
-
-.liq-estado-resumen dt {
-  margin: 0;
-  color: var(--erp-muted);
-  font-size: 0.6875rem;
-  font-weight: 700;
-}
-
-.liq-estado-resumen dd {
-  margin: 0;
-  color: var(--erp-ink);
-  font-size: 0.875rem;
-  font-weight: 750;
-}
-
 .liq-workers-zone {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   min-height: 0;
   overflow: hidden;
 }
 
 .liq-workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 260px);
+  gap: 6px;
   align-items: stretch;
   flex: 1 1 auto;
   min-height: 0;
@@ -1008,7 +834,7 @@
   border: 1px solid var(--erp-border);
   border-radius: 6px;
   background: var(--erp-surface);
-  padding: 10px 12px;
+  padding: 8px;
   min-height: 0;
 }
 
@@ -1016,7 +842,7 @@
   position: sticky;
   top: 0;
   min-width: 0;
-  min-height: 12rem;
+  min-height: 8rem;
   max-height: 100%;
   overflow: auto;
 }
@@ -1024,7 +850,7 @@
 .liq-grid-block {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -1038,21 +864,23 @@
   flex: 0 0 auto;
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px;
-  padding: 0 2px;
+  align-items: center;
+  gap: 4px;
+  padding: 0 1px;
 }
 
 .liq-grid-block__title {
   margin: 0;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 650;
   color: var(--erp-ink);
+  line-height: 1.2;
 }
 
 .liq-grid-block__meta {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 500;
   color: var(--erp-muted);
 }
 

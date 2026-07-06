@@ -9,14 +9,30 @@
 
 ---
 
-## 2026-07-06 — Liquidaciones: usabilidad RRHH (franja, congelamiento, guía)
+## 2026-07-06 — Liquidaciones: MessageBox en modal (sin inline)
 
-- **Franja `liq-franja`:** acción recomendada (patrón Paso Cierre) según nómina, pendientes y continuidad desde cierre.
+- **Cambio:** avisos, errores, feedback y vacíos intermedios usan `mode="modal"` (overlay delante de la pantalla).
+- **Detalle trabajador:** error en modal; aviso solo consulta como nota local (sin MessageBox inline).
+- **Contraste:** patrón `message-box-host-modal` existente; sin cambios globales.
+
+---
+
+## 2026-07-06 — Liquidaciones: pulido revisión RRHH (sin franja guía)
+
+- **Retirado:** franja `liq-franja` / acción recomendada dinámica (duplicaba contadores y origen).
+- **Mantiene:** solo lectura en nómina cerrada/anulada, contadores clicables → filtro grilla, copy «Marcar pago/entregado», detalle en ruta, vacíos con CTA.
+- **Acta vacía:** kicker «Siguiente paso» en lugar de «Acción recomendada».
+- **Archivos:** `liquidaciones-oficiales-container.*`, `liquidaciones-vacio.rules.ts`; sin globales.
+
+---
+
+## 2026-07-06 — Liquidaciones: usabilidad RRHH (congelamiento, filtros, detalle)
+
 - **Solo lectura real:** nómina cerrada/anulada oculta autorizar/pago/documento; mantiene ver e imprimir.
 - **Contadores clicables:** filtran grilla por estado de revisión; chip «Filtrando» con limpiar.
 - **Copy:** «Marcar pago», «Marcar entregado», «Ver e imprimir»; vacíos intermedios con CTA al generador.
 - **Detalle:** `/remuneraciones/liquidaciones/:id` operativo por trabajador; última emisión visible.
-- **Archivos:** `liquidaciones-oficiales-container.*`, `liquidaciones-accion-recomendada.rules.ts`, `detalle-liquidacion.page.ts`, CSS local; sin globales.
+- **Archivos:** `liquidaciones-oficiales-container.*`, `detalle-liquidacion.page.ts`, CSS local; sin globales.
 
 ---
 
@@ -167,6 +183,14 @@
 - **Errores:** mensajes RRHH vía `mensajeErrorSupabaseParaUsuario` (incl. clave anon incompleta en `app-config.json`); validación temprana en `runtime-config.ts`.
 - **Copy:** sin JSON crudo de Supabase; «Revisar antes de exportar», «Sin nóminas exportables».
 - **Contraste:** patrón `liquidaciones-oficiales-container`; CSS local `prev-*` y `lre-*`; sin cards decorativas ni cambios globales.
+
+---
+
+## 2026-07-06 — PREVIRED-02 archivo oficial 105 campos (portal Previred)
+
+- **Pantalla:** CTA principal «Descargar archivo Previred (105 campos)» cuando `listoParaEnvio105`; CSV borrador secundario.
+- **Copy:** «Listo para Previred» en chip/resumen; advertencias de ficha (sexo, RUT) sin términos técnicos.
+- **Contraste:** formato documentado en `formato-archivo-105-posicion-reforma.md`; REM-v1 pasa a descarga interna secundaria.
 
 ---
 
@@ -3516,12 +3540,29 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **Copy**: Paso 5 · Cierre; lenguaje RRHH orientado a la secuencia aprobar → liquidar → cerrar.
 - **Sin tocar**: estilos globales, SQL, motor, servicios de negocio.
 
-## 2026-07-06 - Generador V2 paso Cierre: densidad iconográfica
+## 2026-07-06 - Liquidaciones entrada: solo datos relevantes
 
-- **Menos copy visible**: subtítulos, detalles de checklist y hints retirados; contexto en `title`/`aria-label`.
-- **Iconos**: franja de acción, stats, checklist, liquidaciones, alertas y botones secundarios (refresh, detalle, reabrir).
-- **Checklist**: al 100% muestra una sola fila resumen; si hay pendientes, solo esas filas.
+- **Grilla selección nómina:** Período, Empresa, Estado, Líquido total y botón abrir; sin columna Trabajadores duplicada ni subtítulo instructivo.
+- **Toolbar:** visible solo con nómina abierta (no en pantalla de selección).
+- **Sin tocar:** estilos globales, SQL, motor.
+
+## 2026-07-06 - Liquidaciones oficiales: compactación operativa
+
+- **Origen**: una sola fila título + chips; métricas icono+valor inline; nota contextual solo en `title`.
+- **Toolbar/grilla**: labels visibles retirados (`sr-only`); título grilla en una línea; gaps y paddings reducidos.
+- **Contadores/acciones**: celdas y botones más bajos (24–26px).
+- **Panel lateral**: columna más angosta (220–260px) y placeholder más bajo.
 - **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-06 - Liquidaciones oficiales: densidad iconográfica
+
+- **Toolbar**: export Previred, administrador de nóminas y regenerar como `liq-icon-btn` con `title`/`aria-label`.
+- **Origen**: métricas del lote con icono + abreviatura (`Trab.`, `Líq.`, `Gen.`).
+- **Contadores**: strip icon+count filtrable retirado (2026-07-06); filtro por estado solo en grilla DG.
+- **Grilla**: acciones por fila solo icono (sin ojo); PDF `file-text`; detalle vía nombre o panel.
+- **Panel lateral**: botón ampliar abre modal de detalle (sin salir de liquidaciones); acciones e impresión en el modal.
+- **Detalle página**: botones de acción e impresión icon-only.
+- **Sin tocar**: estilos globales, SQL, motor, servicios.
 
 ## 2026-07-06 - Generador V2 paso Cierre: densidad iconográfica
 

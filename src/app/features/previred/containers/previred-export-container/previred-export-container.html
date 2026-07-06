@@ -41,7 +41,7 @@
       >
         Liquidaciones oficiales
       </a>
-      @if (puedeDescargarArchivo() && puedeDescargarCsv()) {
+      @if (puedeDescargarArchivo105() && puedeDescargarCsv()) {
         <button
           type="button"
           class="sal-ext-secondary-btn"
@@ -192,10 +192,10 @@
               <dd>{{ resumen.sinMapeo }}</dd>
             </div>
           }
-          @if (resumen.listoParaEnvio) {
+          @if (resumen.listoParaEnvio || (archivo105()?.listoParaEnvio105)) {
             <div class="sal-ext-resumen__ok">
               <dt>Estado</dt>
-              <dd>Listo para envío</dd>
+              <dd>{{ archivo105()?.listoParaEnvio105 ? 'Listo para Previred' : 'Listo para envío' }}</dd>
             </div>
           }
         </dl>

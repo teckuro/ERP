@@ -154,7 +154,7 @@ La confirmacion fue reemplazada por modal/MsgBox estandar durante UX-COMERCIAL-0
 - La elección de nómina origen se hace mediante modal con `app-data-grid` filtrable (no select nativo ni segundo selector de período).
 - El período global del shell sigue siendo la referencia; el modal lista solo nóminas liquidadas o cerradas con comprobantes.
 - Tras seleccionar, la pantalla principal muestra origen, versiones y trabajadores liquidados.
-- **Entrada sin nómina:** grilla inline filtrable (sin modal automático ni botón intermedio); el modal queda solo para «Cambiar» nómina.
+- **Entrada sin nómina:** grilla inline filtrable (sin modal automático ni botón intermedio); columnas Período, Empresa, Estado, Líquido y abrir; sin toolbar duplicado ni títulos redundantes.
 
 ## Enlace a exportación Previred (2026-07-05)
 
@@ -164,11 +164,17 @@ La confirmacion fue reemplazada por modal/MsgBox estandar durante UX-COMERCIAL-0
 
 ## Revisión guiada y acta de generación (F18c)
 
-- Sobre la grilla de trabajadores: franja de contadores por **estado** (autorización, pago, documento, rectificación).
+- Sobre la grilla de trabajadores: filtros DG por búsqueda y **Estado** (sin barra de contadores por estado).
 - Filtros DG: búsqueda por nombre/RUT/cargo y select por **Estado**.
 - Panel lateral: chip de estado, cuadratura de totales y placeholder accionable.
 - Generar/Regenerar: confirmación MessageBox con secciones de acta; evidencia de versión creada tras la acción.
 - Acciones por trabajador (autorizar → pago → documento → rectificación): transiciones operativas con persistencia en servidor (`actualizar_estado_revision_liquidacion_trabajador`) y respaldo local por sesión.
+
+### Icon-first RRHH (2026-07-06)
+
+- Toolbar, métricas de origen y acciones de fila priorizan iconos Lucide con `title`/`aria-label`; el detalle largo queda en tooltip o pantalla completa.
+- Sin botón ojo en grilla: detalle por click en nombre (panel lateral), ampliar en modal o PDF en modal. Ruta `/remuneraciones/liquidaciones/:id` solo para acceso directo.
+- Página de detalle por trabajador: acciones primarias e impresión como botones icon-only.
 
 ## ERP-NOIA-BITACORA-OPERATIVA-00 - Lectura de modulo
 

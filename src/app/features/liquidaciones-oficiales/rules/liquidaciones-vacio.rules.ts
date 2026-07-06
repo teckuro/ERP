@@ -50,7 +50,7 @@ export function construirActaVaciaLiquidaciones(
     return {
       escenario,
       chipLabel: 'Sin nóminas',
-      kicker: 'Acción recomendada',
+      kicker: 'Siguiente paso',
       title: 'Aún no hay liquidaciones materializadas',
       description:
         'Cree y cierre una nómina mensual en el administrador. Aquí aparecerán los comprobantes cuando esté lista. No recalcula montos.',

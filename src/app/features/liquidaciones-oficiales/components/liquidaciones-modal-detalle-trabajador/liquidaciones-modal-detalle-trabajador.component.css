@@ -1,0 +1,119 @@
+.liq-det-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.liq-det-modal {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 42rem);
+  max-height: min(92vh, 40rem);
+  border: 1px solid var(--erp-border, #e2e8f0);
+  border-radius: 8px;
+  background: var(--erp-surface, #ffffff);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
+}
+
+.liq-det-modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--erp-border, #e2e8f0);
+  background: var(--erp-surface-soft, #f8fafc);
+}
+
+.liq-det-modal__eyebrow {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--erp-muted, #64748b);
+}
+
+.liq-det-modal__title {
+  margin: 2px 0 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--erp-ink, #1e293b);
+  line-height: 1.25;
+}
+
+.liq-det-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--erp-border, #e2e8f0);
+  border-radius: 4px;
+  background: var(--erp-surface, #ffffff);
+  color: var(--erp-muted, #64748b);
+  cursor: pointer;
+}
+
+.liq-det-modal__close lucide-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.liq-det-modal__close:hover {
+  background: var(--erp-surface-soft, #f8fafc);
+  color: var(--erp-ink, #1e293b);
+}
+
+.liq-det-modal__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 10px 12px;
+  overflow: auto;
+}
+
+.liq-det-modal__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--erp-border, #e2e8f0);
+  background: var(--erp-surface-soft, #f8fafc);
+}
+
+.liq-det-modal__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--erp-border, #e2e8f0);
+  border-radius: 4px;
+  background: var(--erp-surface, #ffffff);
+  color: var(--erp-ink, #334155);
+  cursor: pointer;
+}
+
+.liq-det-modal__icon-btn lucide-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.liq-det-modal__icon-btn.is-primary {
+  border-color: var(--erp-primary, #1e3a8a);
+  background: var(--erp-primary, #1e3a8a);
+  color: #ffffff;
+}
+
+.liq-det-modal__icon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

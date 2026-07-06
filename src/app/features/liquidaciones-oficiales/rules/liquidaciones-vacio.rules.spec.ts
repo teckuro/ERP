@@ -14,7 +14,7 @@ describe('liquidaciones-vacio.rules', () => {
     expect(acta.chipLabel).toBe('Sin nóminas');
     expect(acta.primaryLabel).toBe('Crear nómina en administrador');
     expect(acta.primaryFilled).toBe(true);
-    expect(acta.kicker).toBe('Acción recomendada');
+    expect(acta.kicker).toBe('Siguiente paso');
   });
 
   it('solo nóminas en borrador resuelve nominas_en_preparacion', () => {

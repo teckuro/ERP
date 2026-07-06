@@ -18,6 +18,7 @@ import { DataGridComponent } from '../../../../shared/components/ui/data-grid/da
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import type { NominaPeriodoResumen } from '../../../nomina-mensual/models/nomina-periodo.models';
 import type {
+  PreviredArchivo105Resumen,
   PreviredBorradorExport,
   PreviredExportacionRegistro,
 } from '../../models/previred-export.model';
@@ -34,7 +35,11 @@ import {
   descargarCsvPrevired,
   puedeDescargarBorradorPrevired,
 } from '../../rules/previred-export.rules';
-import { PreviredExportService } from '../../services/previred-export.service';
+import {
+  PreviredExportService,
+  descargarArchivo105Previred,
+  puedeDescargarArchivo105Previred,
+} from '../../services/previred-export.service';
 import { mensajeErrorSupabaseParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
 import { SeleccionNominaExportableModalComponent } from '../../../remuneraciones-salidas/components/seleccion-nomina-exportable-modal/seleccion-nomina-exportable-modal.component';
 import {
@@ -74,6 +79,7 @@ export class PreviredExportContainer {
   readonly nominasExportables = signal<readonly NominaPeriodoResumen[]>([]);
   readonly nominaSeleccionadaId = signal<string | null>(null);
   readonly borrador = signal<PreviredBorradorExport | null>(null);
+  readonly archivo105 = signal<PreviredArchivo105Resumen | null>(null);
   readonly ultimaExportacion = signal<PreviredExportacionRegistro | null>(null);
   readonly cargandoNominas = signal(false);
   readonly cargandoBorrador = signal(false);
@@ -127,7 +133,12 @@ export class PreviredExportContainer {
   );
 
   readonly puedeDescargarCsv = computed(() => puedeDescargarBorradorPrevired(this.borrador()));
-  readonly puedeDescargarArchivo = computed(() => puedeDescargarArchivoOficialPrevired(this.borrador()));
+  readonly puedeDescargarArchivo105 = computed(() =>
+    puedeDescargarArchivo105Previred(this.archivo105()),
+  );
+  readonly puedeDescargarArchivoRem = computed(() =>
+    puedeDescargarArchivoOficialPrevired(this.borrador()),
+  );
 
   readonly cargaInicial = computed(
     () => this.cargandoNominas() || (this.cargandoBorrador() && !this.borrador()),
@@ -144,9 +155,14 @@ export class PreviredExportContainer {
 
   readonly seccionesAdvertencia = computed((): MessageBoxSection[] => {
     const borrador = this.borrador();
-    if (!borrador?.advertencias.length) return [];
+    const archivo = this.archivo105();
+    const advertencias = [
+      ...(borrador?.advertencias ?? []),
+      ...(archivo?.advertencias ?? []),
+    ];
+    if (!advertencias.length) return [];
 
-    return borrador.advertencias.map((advertencia) => ({
+    return advertencias.map((advertencia) => ({
       title: advertencia.nivel === 'bloqueo' ? 'No se puede exportar' : 'Revisar antes de exportar',
       tone: advertencia.nivel === 'bloqueo' ? 'danger' : 'attention',
       items: [advertencia.mensaje],
@@ -173,7 +189,8 @@ export class PreviredExportContainer {
     bindShellPageContext(
       destroyRef,
       () => {
-        const archivo = this.puedeDescargarArchivo();
+        const archivo105 = this.puedeDescargarArchivo105();
+        const archivoRem = this.puedeDescargarArchivoRem();
         const csv = this.puedeDescargarCsv();
         return {
           breadcrumbs: [
@@ -184,38 +201,53 @@ export class PreviredExportContainer {
             ? { label: 'Cargando…', tone: 'neutral' }
             : this.borrador()
               ? {
-                  label: this.borrador()!.listoParaEnvio
-                    ? 'Listo para envío'
-                    : `${this.borrador()!.lineas.length} línea(s)`,
-                  tone: this.borrador()!.listoParaEnvio
+                  label: archivo105
+                    ? 'Listo para Previred'
+                    : this.borrador()!.listoParaEnvio
+                      ? 'Listo para envío'
+                      : `${this.borrador()!.lineas.length} línea(s)`,
+                  tone: archivo105
                     ? 'success'
-                    : csv
-                      ? 'warning'
-                      : 'danger',
+                    : this.borrador()!.listoParaEnvio
+                      ? 'success'
+                      : csv
+                        ? 'warning'
+                        : 'danger',
                 }
               : this.nominasExportables().length === 0
                 ? { label: this.emptyVm().chipLabel, tone: 'neutral' }
                 : { label: 'Sin nómina', tone: 'neutral' },
-          primaryAction: archivo
+          primaryAction: archivo105
             ? {
-                label: 'Descargar archivo Previred',
-                actionId: 'previred:descargar-archivo',
+                label: 'Descargar archivo Previred (105 campos)',
+                actionId: 'previred:descargar-archivo-105',
                 disabled: this.cargandoBorrador() || this.registrandoDescarga(),
                 loading: this.registrandoDescarga(),
               }
-            : csv
+            : archivoRem
               ? {
-                  label: 'Descargar CSV',
-                  actionId: 'previred:descargar-csv',
+                  label: 'Descargar archivo interno REM',
+                  actionId: 'previred:descargar-archivo-rem',
                   disabled: this.cargandoBorrador() || this.registrandoDescarga(),
                   loading: this.registrandoDescarga(),
                 }
-              : undefined,
+              : csv
+                ? {
+                    label: 'Descargar CSV',
+                    actionId: 'previred:descargar-csv',
+                    disabled: this.cargandoBorrador() || this.registrandoDescarga(),
+                    loading: this.registrandoDescarga(),
+                  }
+                : undefined,
         };
       },
       {
         onPrimaryAction: () => {
-          if (this.puedeDescargarArchivo()) {
+          if (this.puedeDescargarArchivo105()) {
+            void this.descargarArchivo105();
+            return;
+          }
+          if (this.puedeDescargarArchivoRem()) {
             void this.descargarArchivoOficial();
             return;
           }
@@ -302,26 +334,36 @@ export class PreviredExportContainer {
   async descargarBorradorCsv(): Promise<void> {
     const borrador = this.borrador();
     if (!borrador || !this.puedeDescargarCsv()) return;
-    await this.ejecutarDescarga(borrador, 'csv_borrador', () => descargarCsvPrevired(borrador));
+    await this.ejecutarDescarga(borrador, 'csv_borrador', null, () => descargarCsvPrevired(borrador));
+  }
+
+  async descargarArchivo105(): Promise<void> {
+    const borrador = this.borrador();
+    const archivo = this.archivo105();
+    if (!borrador || !archivo || !this.puedeDescargarArchivo105()) return;
+    await this.ejecutarDescarga(borrador, 'archivo_oficial_105_posicion', archivo, () => {
+      descargarArchivo105Previred(archivo);
+    });
   }
 
   async descargarArchivoOficial(): Promise<void> {
     const borrador = this.borrador();
-    if (!borrador || !this.puedeDescargarArchivo()) return;
-    await this.ejecutarDescarga(borrador, 'archivo_oficial_rem_v1', () => {
+    if (!borrador || !this.puedeDescargarArchivoRem()) return;
+    await this.ejecutarDescarga(borrador, 'archivo_oficial_rem_v1', null, () => {
       descargarArchivoOficialPrevired(borrador);
     });
   }
 
   private async ejecutarDescarga(
     borrador: PreviredBorradorExport,
-    canal: 'csv_borrador' | 'archivo_oficial_rem_v1',
+    canal: 'csv_borrador' | 'archivo_oficial_rem_v1' | 'archivo_oficial_105_posicion',
+    archivo105: PreviredArchivo105Resumen | null,
     descargar: () => void,
   ): Promise<void> {
     this.registrandoDescarga.set(true);
     this.feedbackDescarga.set(null);
     try {
-      const registro = await this.service.registrarDescarga(borrador, canal);
+      const registro = await this.service.registrarDescarga(borrador, canal, { archivo105 });
       this.ultimaExportacion.set(registro);
       descargar();
     } catch {
@@ -342,6 +384,7 @@ export class PreviredExportContainer {
     this.errorCarga.set(null);
     if (!opts?.preserveBorrador) {
       this.borrador.set(null);
+      this.archivo105.set(null);
       this.ultimaExportacion.set(null);
     }
     try {
@@ -354,6 +397,7 @@ export class PreviredExportContainer {
         return;
       }
       this.borrador.set(resultado.borrador);
+      this.archivo105.set(resultado.archivo105);
       this.avisoFaseBd.set(
         resultado.fasePreviredDesplegada
           ? null

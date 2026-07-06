@@ -6,19 +6,21 @@ import { LucideAngularModule } from 'lucide-angular';
 import {
   ArrowLeft,
   ArrowRight,
+  Banknote,
+  CalendarClock,
   CheckCircle,
-  ClipboardList,
   DollarSign,
-  Eye,
   FileCheck2,
   FileText,
-  ListChecks,
-  LockKeyhole,
+  LayoutDashboard,
   RefreshCw,
+  PanelRightOpen,
   Repeat,
   Search,
   Send,
   Upload,
+  Users,
+  X,
 } from 'lucide-angular/src/icons';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { of } from 'rxjs';
@@ -78,19 +80,21 @@ describe('LiquidacionesOficialesContainer', () => {
           LucideAngularModule.pick({
             ArrowLeft,
             ArrowRight,
+            Banknote,
+            CalendarClock,
             CheckCircle,
-            ClipboardList,
             DollarSign,
-            Eye,
             FileCheck2,
             FileText,
-            ListChecks,
-            LockKeyhole,
+            LayoutDashboard,
             RefreshCw,
             Repeat,
             Search,
             Send,
             Upload,
+            Users,
+            PanelRightOpen,
+            X,
           }),
         ),
         PeriodoActivoService,
@@ -132,10 +136,9 @@ describe('LiquidacionesOficialesContainer', () => {
     expect(nominaService.listarResumenes).toHaveBeenCalled();
     expect(service.consultarEstadoPeriodo).not.toHaveBeenCalled();
     expect(fixture.componentInstance.nominasConLiquidaciones().length).toBe(1);
-    expect(fixture.nativeElement.textContent).toContain('Liquidaciones por nómina');
     expect(fixture.componentInstance.modalSeleccionNominaAbierto()).toBe(false);
-    expect(fixture.nativeElement.textContent).toContain('Selecciona la nómina origen');
     expect(fixture.nativeElement.querySelector('[aria-label^="Abrir liquidaciones"]')).toBeTruthy();
+    expect(fixture.nativeElement.textContent).toContain('Empresa de prueba');
   });
 
   it('cerrar modal y abrir desde disparador', async () => {
@@ -251,11 +254,40 @@ describe('LiquidacionesOficialesContainer', () => {
     expect(service.listarTrabajadoresLiquidacion).toHaveBeenCalledWith(1);
     expect(fixture.componentInstance.modoNominaInterna()).toBe(true);
     expect(fixture.nativeElement.textContent).toContain('Historial de versiones');
-    expect(fixture.nativeElement.textContent).toContain('Trabajadores liquidados');
+    expect(fixture.nativeElement.textContent).toContain('Trabajadores');
     expect(fixture.nativeElement.textContent).toContain('Ana Pérez');
-    expect(fixture.nativeElement.textContent).toContain('Pendientes de autorizar');
-    expect(fixture.nativeElement.textContent).toContain('Rectificaciones');
+    expect(fixture.nativeElement.querySelector('[title="Administrador de nóminas"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('[aria-label="Ver detalle"]')).toBeNull();
     expect(service.consultarEstadoPeriodo).not.toHaveBeenCalled();
+  });
+
+  it('toolbar icon-first expone export Previred con title accesible', async () => {
+    await configurar(
+      { nominaPeriodoId: 'nom-99', periodo: '2026-04' },
+      {
+        nomina: crearNomina({ id: 'nom-99', estado: 'liquidada', trabajadorIds: ['1'] }),
+        liquidacionesNomina: [
+          {
+            idLiquidacionPeriodo: 1,
+            idNominaPeriodo: 'nom-99',
+            periodo: '2026-04',
+            version: 1,
+            estado: 'generada',
+            activo: true,
+            idLiquidacionReemplazada: null,
+            fechaGeneracion: '2026-04-01T00:00:00Z',
+            totalTrabajadores: 1,
+            totalHaberes: 100,
+            totalDescuentos: 10,
+            totalLiquido: 90,
+          },
+        ],
+      },
+    );
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[title="Exportar Previred"]')).toBeTruthy();
   });
 
   it('feedback de acción de trabajador incluye tono según estado', async () => {

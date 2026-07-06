@@ -1,5 +1,8 @@
+import { importProvidersFrom } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { LucideAngularModule } from 'lucide-angular';
+import { PanelRightOpen, TrendingDown, TrendingUp } from 'lucide-angular/src/icons';
 
 import type { LiquidacionTrabajador } from '../../models/liquidacion-oficial.model';
 import { LiquidacionDetallePanelComponent } from './liquidacion-detalle-panel';
@@ -34,6 +37,15 @@ describe('LiquidacionDetallePanelComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [LiquidacionDetallePanelComponent],
+      providers: [
+        importProvidersFrom(
+          LucideAngularModule.pick({
+            PanelRightOpen,
+            TrendingDown,
+            TrendingUp,
+          }),
+        ),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LiquidacionDetallePanelComponent);
@@ -64,6 +76,25 @@ describe('LiquidacionDetallePanelComponent', () => {
 
   it('placeholder accionable sin trabajador seleccionado', () => {
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Selecciona un trabajador en la grilla');
+    expect(fixture.nativeElement.textContent).toContain('Seleccione un trabajador');
+  });
+
+  it('emite expandirDetalle al pulsar ampliar', () => {
+    fixture.componentInstance.trabajador = crearTrabajador();
+    fixture.detectChanges();
+
+    const emitSpy = vi.spyOn(fixture.componentInstance.expandirDetalle, 'emit');
+    const boton = fixture.nativeElement.querySelector('[aria-label="Ver detalle ampliado"]');
+    expect(boton).toBeTruthy();
+    boton.click();
+    expect(emitSpy).toHaveBeenCalled();
+  });
+
+  it('oculta botón ampliar cuando permitirExpandir es false', () => {
+    fixture.componentInstance.trabajador = crearTrabajador();
+    fixture.componentInstance.permitirExpandir = false;
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[aria-label="Ver detalle ampliado"]')).toBeNull();
   });
 });
