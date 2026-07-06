@@ -202,13 +202,36 @@ CREATE TABLE IF NOT EXISTS public.nomina_liquidacion_concepto (
 CREATE INDEX IF NOT EXISTS idx_nomina_liquidacion_concepto_trabajador
     ON public.nomina_liquidacion_concepto(id_liquidacion_trabajador, orden);
 
+-- LIQ-01b: historial de emisiones formales por trabajador.
+CREATE TABLE IF NOT EXISTS public.nomina_liquidacion_emision (
+    id_liquidacion_emision BIGSERIAL PRIMARY KEY,
+    id_liquidacion_trabajador BIGINT NOT NULL REFERENCES public.nomina_liquidacion_trabajador(id_liquidacion_trabajador) ON DELETE CASCADE,
+    id_liquidacion_periodo BIGINT NOT NULL REFERENCES public.nomina_liquidacion_periodo(id_liquidacion_periodo) ON DELETE CASCADE,
+    version_liquidacion INTEGER NOT NULL DEFAULT 1,
+    usuario_id UUID NULL,
+    usuario_label TEXT NOT NULL,
+    canal TEXT NOT NULL DEFAULT 'vista_oficial',
+    emitido_en TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata JSONB NOT NULL DEFAULT '{}'::JSONB,
+    CONSTRAINT nomina_liquidacion_emision_canal_chk CHECK (
+        canal IN ('vista_oficial', 'impresion_navegador')
+    )
+);
+
+CREATE INDEX IF NOT EXISTS idx_nomina_liquidacion_emision_trabajador
+    ON public.nomina_liquidacion_emision(id_liquidacion_trabajador, emitido_en DESC);
+
+CREATE INDEX IF NOT EXISTS idx_nomina_liquidacion_emision_periodo
+    ON public.nomina_liquidacion_emision(id_liquidacion_periodo, emitido_en DESC);
+
 DO $$
 DECLARE
     liquidacion_table TEXT;
     liquidacion_tables TEXT[] := ARRAY[
         'nomina_liquidacion_periodo',
         'nomina_liquidacion_trabajador',
-        'nomina_liquidacion_concepto'
+        'nomina_liquidacion_concepto',
+        'nomina_liquidacion_emision'
     ];
 BEGIN
     EXECUTE 'GRANT USAGE ON SCHEMA public TO authenticated';

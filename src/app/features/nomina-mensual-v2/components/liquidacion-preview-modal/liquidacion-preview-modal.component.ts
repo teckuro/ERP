@@ -66,9 +66,20 @@ export class LiquidacionPreviewModalComponent {
   readonly empresa = input.required<LiquidacionPreviewEmpresa>();
   readonly nomina = input.required<LiquidacionPreviewNomina>();
   readonly trabajadorMeta = input<LiquidacionPreviewTrabajadorMeta | null>(null);
+  /** `oficial` = liquidación materializada; `preliminar` = preview del generador. */
+  readonly modoEmision = input<'preliminar' | 'oficial'>('preliminar');
 
   readonly cerrar = output<void>();
   readonly imprimirSolicitado = output<void>();
+
+  readonly chromeEyebrow = computed(() =>
+    this.modoEmision() === 'oficial' ? 'Liquidación oficial' : 'Previsualización',
+  );
+  readonly chromeSubtitle = computed(() =>
+    this.modoEmision() === 'oficial'
+      ? 'Documento materializado desde la liquidación oficial. Imprima o guarde como PDF desde el navegador.'
+      : 'Vista previa del documento que se entregará al trabajador. Aún no es oficial; el PDF final se genera al cerrar la nómina.',
+  );
 
   readonly subtotalHaberesImponibles = computed(() =>
     sumar(this.liquidacion().haberesImponibles.map((h) => h.monto)),

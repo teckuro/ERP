@@ -7,13 +7,12 @@
   <div class="liq-preview__modal">
     <header class="liq-preview__chrome">
       <div class="liq-preview__chrome-copy">
-        <p class="liq-preview__chrome-eyebrow">Previsualización</p>
+        <p class="liq-preview__chrome-eyebrow">{{ chromeEyebrow() }}</p>
         <h2 id="liq-preview-title" class="liq-preview__chrome-title">
           Liquidación de remuneraciones
         </h2>
         <p class="liq-preview__chrome-subtitle">
-          Vista previa del documento que se entregará al trabajador. Aún no es oficial; el PDF
-          final se genera al cerrar la nómina.
+          {{ chromeSubtitle() }}
         </p>
       </div>
       <div class="liq-preview__chrome-actions">

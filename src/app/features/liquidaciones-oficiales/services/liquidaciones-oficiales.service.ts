@@ -10,6 +10,8 @@ import type { NominaCalculoPeriodoSnapshot } from '../../nomina-mensual/models/p
 import { LiquidacionesOficialesRepository } from '../data-access/liquidaciones-oficiales.repository';
 import type {
   LiquidacionesEstadoPeriodo,
+  LiquidacionEmision,
+  LiquidacionEmisionCanal,
   LiquidacionTrabajador,
 } from '../models/liquidacion-oficial.model';
 import type { LiquidacionAccionUiEstado } from '../rules/liquidaciones-acciones-ui.rules';
@@ -85,6 +87,14 @@ export class LiquidacionesOficialesService {
     estadoRevision: LiquidacionAccionUiEstado,
   ): Promise<LiquidacionTrabajador> {
     return this.liquidaciones.actualizarEstadoRevisionTrabajador(idLiquidacionTrabajador, estadoRevision);
+  }
+
+  async registrarEmisionLiquidacionTrabajador(
+    idLiquidacionTrabajador: number,
+    canal: LiquidacionEmisionCanal,
+  ): Promise<LiquidacionEmision> {
+    const metadata = await this.metadataUsuarioResponsable();
+    return this.liquidaciones.emitirLiquidacionTrabajador(idLiquidacionTrabajador, canal, metadata);
   }
 
   private async metadataUsuarioResponsable(): Promise<Record<string, unknown>> {

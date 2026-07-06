@@ -9,6 +9,31 @@
 
 ---
 
+## 2026-07-05 — LIQ-01c diff versiones liquidación
+
+- **Pantalla:** Liquidaciones oficiales → selector de versión (≥2 versiones).
+- **UI:** franja compacta `liq-version-diff` con totales anterior → actual y delta.
+- **Contraste:** patrón F09 diff recálculo; CSS local en container.
+
+---
+
+## 2026-07-05 — LIQ-01b auditoría emisión liquidación
+
+- **Pantalla:** Liquidaciones oficiales → Ver liquidación / Imprimir.
+- **Comportamiento:** RPC `emitir_liquidacion_trabajador` persiste usuario, versión y canal; feedback review si falla sync.
+- **Sin cambio visual** en grilla; trazabilidad en BD.
+
+---
+
+## 2026-07-05 — LIQ-01a PDF liquidación oficial por trabajador
+
+- **Pantalla:** Liquidaciones oficiales → grilla trabajadores (`liquidaciones-oficiales-container`).
+- **UI:** botón «Ver liquidación» habilitado; reutiliza `liquidacion-preview-modal` en modo `oficial` (imprimir / guardar PDF desde navegador).
+- **Copy:** «Liquidación oficial» + «Documento materializado desde la liquidación oficial…»; sin recálculo ni términos técnicos.
+- **Contraste:** patrón preview existente del Generador; CSS del modal sin cambios globales; mapper local `liquidaciones-preview.mapper.ts`.
+
+---
+
 ## 2026-07-03 — F09 diff recálculo en paso Cálculo (Generador V2)
 
 - **Pantalla:** Generador → Paso 4 Cálculo (`nomina-mensual-v2-paso-calculo`).

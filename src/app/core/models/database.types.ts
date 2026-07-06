@@ -2988,6 +2988,57 @@ export type Database = {
           },
         ]
       }
+      nomina_liquidacion_emision: {
+        Row: {
+          canal: string
+          emitido_en: string
+          id_liquidacion_emision: number
+          id_liquidacion_periodo: number
+          id_liquidacion_trabajador: number
+          metadata: Json
+          usuario_id: string | null
+          usuario_label: string
+          version_liquidacion: number
+        }
+        Insert: {
+          canal?: string
+          emitido_en?: string
+          id_liquidacion_emision?: number
+          id_liquidacion_periodo: number
+          id_liquidacion_trabajador: number
+          metadata?: Json
+          usuario_id?: string | null
+          usuario_label: string
+          version_liquidacion?: number
+        }
+        Update: {
+          canal?: string
+          emitido_en?: string
+          id_liquidacion_emision?: number
+          id_liquidacion_periodo?: number
+          id_liquidacion_trabajador?: number
+          metadata?: Json
+          usuario_id?: string | null
+          usuario_label?: string
+          version_liquidacion?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_liquidacion_emision_id_liquidacion_periodo_fkey"
+            columns: ["id_liquidacion_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_liquidacion_periodo"
+            referencedColumns: ["id_liquidacion_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_liquidacion_emision_id_liquidacion_trabajador_fkey"
+            columns: ["id_liquidacion_trabajador"]
+            isOneToOne: false
+            referencedRelation: "nomina_liquidacion_trabajador"
+            referencedColumns: ["id_liquidacion_trabajador"]
+          },
+        ]
+      }
       nomina_liquidacion_periodo: {
         Row: {
           activo: boolean
@@ -5925,6 +5976,30 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "nomina_liquidacion_trabajador"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      emitir_liquidacion_trabajador: {
+        Args: {
+          p_canal?: string
+          p_id_liquidacion_trabajador: number
+          p_metadata?: Json
+        }
+        Returns: {
+          canal: string
+          emitido_en: string
+          id_liquidacion_emision: number
+          id_liquidacion_periodo: number
+          id_liquidacion_trabajador: number
+          metadata: Json
+          usuario_id: string | null
+          usuario_label: string
+          version_liquidacion: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_liquidacion_emision"
           isOneToOne: true
           isSetofReturn: false
         }

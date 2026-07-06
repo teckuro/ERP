@@ -148,4 +148,40 @@ describe('LiquidacionesOficialesRepository', () => {
     expect(from).toHaveBeenCalledWith('nomina_liquidacion_trabajador');
     expect(result.nombreTrabajador).toBe('Ana Pérez');
   });
+
+  it('registra emisión formal vía RPC emitir_liquidacion_trabajador', async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: {
+        id_liquidacion_emision: 99,
+        id_liquidacion_trabajador: 12,
+        id_liquidacion_periodo: 3,
+        version_liquidacion: 2,
+        usuario_id: 'user-1',
+        usuario_label: 'rrhh@empresa.cl',
+        canal: 'vista_oficial',
+        emitido_en: '2026-07-05T12:00:00.000Z',
+        metadata: { origen: 'test' },
+      },
+      error: null,
+    });
+
+    TestBed.configureTestingModule({
+      providers: [
+        LiquidacionesOficialesRepository,
+        { provide: SUPABASE_CLIENT, useValue: { rpc } },
+      ],
+    });
+
+    const repository = TestBed.inject(LiquidacionesOficialesRepository);
+    const result = await repository.emitirLiquidacionTrabajador(12, 'vista_oficial', { origen: 'test' });
+
+    expect(rpc).toHaveBeenCalledWith('emitir_liquidacion_trabajador', {
+      p_id_liquidacion_trabajador: 12,
+      p_canal: 'vista_oficial',
+      p_metadata: { origen: 'test' },
+    });
+    expect(result.idLiquidacionEmision).toBe(99);
+    expect(result.versionLiquidacion).toBe(2);
+    expect(result.canal).toBe('vista_oficial');
+  });
 });

@@ -17,6 +17,8 @@ export interface FilaBandejaNomina {
   periodo: string;
   empresa: string;
   meta: string;
+  /** Rango legal (p. ej. 01–15/07/2026) — distingue cortes del mismo período. */
+  rango: string;
   estado: string;
   proximoPaso: string;
   trabajadores: number;
@@ -100,6 +102,8 @@ export async function listarFilasBandeja(page: Page): Promise<FilaBandejaNomina[
     const periodo = (await periodoCell.locator('.adm-nom__cell-periodo').innerText()).trim();
     const metaLocator = periodoCell.locator('.adm-nom__cell-meta').first();
     const meta = (await metaLocator.count()) > 0 ? (await metaLocator.innerText()).trim() : '';
+    const rangoLocator = periodoCell.locator('.adm-nom__cell-meta--rango');
+    const rango = (await rangoLocator.count()) > 0 ? (await rangoLocator.innerText()).trim() : '';
     const empresa = (await tds.nth(2).innerText()).trim();
     const estado = (await tds.nth(3).innerText()).trim();
     const proximoPaso = (await tds.nth(4).innerText()).trim();
@@ -111,6 +115,7 @@ export async function listarFilasBandeja(page: Page): Promise<FilaBandejaNomina[
       periodo,
       empresa,
       meta,
+      rango,
       estado,
       proximoPaso,
       trabajadores,
@@ -139,11 +144,28 @@ export function esFilaExtraordinaria(fila: FilaBandejaNomina): boolean {
 
 export function relocarFilaBandeja(
   filas: FilaBandejaNomina[],
-  ref: Pick<FilaBandejaNomina, 'periodo' | 'empresa' | 'meta'>,
+  ref: Pick<FilaBandejaNomina, 'periodo' | 'empresa' | 'meta' | 'rango'>,
 ): FilaBandejaNomina | undefined {
   return filas.find(
-    (f) => f.periodo === ref.periodo && f.empresa === ref.empresa && f.meta === ref.meta,
+    (f) =>
+      f.periodo === ref.periodo
+      && f.empresa === ref.empresa
+      && f.meta === ref.meta
+      && f.rango === ref.rango,
   );
+}
+
+/** Filas únicas por período + meta + rango legal (evita duplicar el mismo corte). */
+export function filasDistintasPorCorte(filas: FilaBandejaNomina[]): FilaBandejaNomina[] {
+  const vistas = new Set<string>();
+  const out: FilaBandejaNomina[] = [];
+  for (const fila of filas) {
+    const clave = `${fila.periodo}|${fila.empresa}|${fila.meta}|${fila.rango}`;
+    if (vistas.has(clave)) continue;
+    vistas.add(clave);
+    out.push(fila);
+  }
+  return out;
 }
 
 export async function refrescarBandejaNominas(page: Page): Promise<FilaBandejaNomina[]> {
@@ -213,13 +235,74 @@ const ETIQUETA_PASO: Record<PasoGenerador, RegExp> = {
   closure: /Cierre/i,
 };
 
+export function elegirCandidataCalculoOla7(filas: FilaBandejaNomina[]): FilaBandejaNomina | undefined {
+  const abiertas = filas.filter(
+    (f) => esMensualLegalSinAnticipos(f) && !f.estado.includes('Cerrada') && !f.estado.includes('Anulada'),
+  );
+  const preferidas = abiertas.filter((f) => /c[aá]lculo|movimientos|validaci/i.test(f.proximoPaso));
+  return preferidas[0] ?? abiertas[0];
+}
+
+const ORDEN_PASOS_GENERADOR: PasoGenerador[] = [
+  'parameters',
+  'dotacion',
+  'movements',
+  'calculation',
+  'validation',
+  'closure',
+];
+
+/** Confirma el modal uniforme al retroceder en el generador (pasos 2..5). */
+export async function confirmarModalRetrocesoGenerador(page: Page): Promise<boolean> {
+  const modal = page.locator('section.noia-msgbox[role="dialog"]').filter({
+    has: page.locator('h2.noia-msgbox__title', { hasText: /^Volver a / }),
+  });
+  try {
+    await modal.waitFor({ state: 'visible', timeout: 4_000 });
+  } catch {
+    return false;
+  }
+  await modal.locator('button.noia-msgbox__action', { hasText: 'Continuar' }).click();
+  await expect(modal).toBeHidden({ timeout: 10_000 });
+  return true;
+}
+
 export async function irPasoGenerador(page: Page, paso: PasoGenerador): Promise<void> {
-  const pasoBtn = page
-    .locator('nav.nomina-stepper')
-    .getByRole('button', { name: ETIQUETA_PASO[paso] })
-    .and(page.locator(':not([disabled])'));
-  await expect(pasoBtn.first()).toBeVisible();
-  await pasoBtn.first().click();
+  const destIdx = ORDEN_PASOS_GENERADOR.indexOf(paso);
+
+  for (let intento = 0; intento < 8; intento += 1) {
+    const actual = (await leerPasoActual(page)) as PasoGenerador;
+    if (actual === paso) return;
+
+    const actualIdx = ORDEN_PASOS_GENERADOR.indexOf(actual);
+    if (actualIdx < 0) {
+      throw new Error(`Paso generador desconocido: ${actual}`);
+    }
+
+    if (actualIdx > destIdx) {
+      const pasoBtn = page
+        .locator('nav.nomina-stepper')
+        .getByRole('button', { name: ETIQUETA_PASO[paso] })
+        .and(page.locator(':not([disabled])'));
+      if ((await pasoBtn.count()) > 0) {
+        await pasoBtn.first().click();
+      } else {
+        const back = page.locator('button.nmv2-stepper__back');
+        await expect(back).toBeVisible();
+        await back.click();
+      }
+      await confirmarModalRetrocesoGenerador(page);
+    } else {
+      const siguiente = ORDEN_PASOS_GENERADOR[actualIdx + 1];
+      const nextBtn = page
+        .locator('nav.nomina-stepper')
+        .getByRole('button', { name: ETIQUETA_PASO[siguiente] })
+        .and(page.locator(':not([disabled])'));
+      await expect(nextBtn.first()).toBeVisible();
+      await nextBtn.first().click();
+    }
+  }
+
   await expect(locatorGeneradorShell(page)).toHaveAttribute('data-step', paso, { timeout: 15_000 });
 }
 

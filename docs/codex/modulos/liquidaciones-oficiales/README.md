@@ -59,10 +59,9 @@ RPC generar_liquidaciones_oficiales
 ## Fuera de alcance v1
 
 ```txt
-PDF
 firma
 recepcion
-envio
+envio masivo
 portal trabajador
 Previred
 LRE operativo
@@ -73,6 +72,22 @@ anulacion
 rectificacion
 reliquidacion
 ```
+
+## LIQ-01a (2026-07-05)
+
+- PDF / vista imprimible por trabajador desde grilla liquidaciones (`Ver liquidación`)
+- Sin recálculo; snapshot materializado (`nomina_liquidacion_concepto`)
+
+## LIQ-01b (2026-07-05)
+
+- Auditoría de emisión en `nomina_liquidacion_emision` + RPC `emitir_liquidacion_trabajador`
+- Registro automático al abrir vista oficial e imprimir desde navegador
+- `ultimaEmision` en metadata del trabajador para consulta rápida
+
+## LIQ-01c (2026-07-05)
+
+- Franja `liq-version-diff` al cambiar versión (totales vs versión anterior)
+- Reglas y presenter reutilizando patrón F09 diff recálculo
 
 ## Evidencia real/controlada
 

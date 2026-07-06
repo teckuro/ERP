@@ -36,13 +36,13 @@ describe('liquidaciones-acciones-ui.rules', () => {
     expect(siguienteEstadoLiquidacionUi('documento_enviado', 'enviar_documento')).toBe('documento_enviado');
   });
 
-  it('expone acciones y PDF deshabilitado para la grilla', () => {
+  it('expone acciones y PDF habilitado para la grilla', () => {
     const pendiente = buildLiquidacionAccionUiView('pendiente_autorizar');
     const enviada = buildLiquidacionAccionUiView('documento_enviado');
 
     expect(pendiente.primaryAction?.tipo).toBe('autorizar');
-    expect(pendiente.pdfDisabled).toBe(true);
-    expect(pendiente.pdfLabel).toBe('PDF pendiente de implementación');
+    expect(pendiente.pdfDisabled).toBe(false);
+    expect(pendiente.pdfLabel).toBe('Ver liquidación');
     expect(enviada.primaryAction).toBeNull();
     expect(enviada.secondaryActions.map((a) => a.tipo)).toEqual(['solicitar_rectificacion']);
   });

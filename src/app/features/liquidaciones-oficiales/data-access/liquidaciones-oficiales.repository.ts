@@ -9,6 +9,8 @@ import {
 import type {
   GenerarLiquidacionesParams,
   LiquidacionConcepto,
+  LiquidacionEmision,
+  LiquidacionEmisionCanal,
   LiquidacionPeriodo,
   LiquidacionTrabajador,
 } from '../models/liquidacion-oficial.model';
@@ -17,6 +19,7 @@ type Tables = Database['public']['Tables'];
 type LiquidacionPeriodoRow = Tables['nomina_liquidacion_periodo']['Row'];
 type LiquidacionTrabajadorRow = Tables['nomina_liquidacion_trabajador']['Row'];
 type LiquidacionConceptoRow = Tables['nomina_liquidacion_concepto']['Row'];
+type LiquidacionEmisionRow = Tables['nomina_liquidacion_emision']['Row'];
 
 const ERROR_GENERAR =
   'No se pudieron generar las liquidaciones oficiales. No se realizaron cambios parciales.';
@@ -108,6 +111,22 @@ export class LiquidacionesOficialesRepository {
     return mapTrabajadorRow(actualizado);
   }
 
+  async emitirLiquidacionTrabajador(
+    idLiquidacionTrabajador: number,
+    canal: LiquidacionEmisionCanal,
+    metadata?: Record<string, unknown>,
+  ): Promise<LiquidacionEmision> {
+    const { data, error } = await this.supabase.rpc('emitir_liquidacion_trabajador', {
+      p_id_liquidacion_trabajador: idLiquidacionTrabajador,
+      p_canal: canal,
+      p_metadata: (metadata ?? {}) as Json,
+    });
+    if (error || !data) {
+      throw new Error('No se pudo registrar la emisión de la liquidación.');
+    }
+    return mapEmisionRow(data as LiquidacionEmisionRow);
+  }
+
   async obtenerDetalleTrabajador(idLiquidacionTrabajador: number): Promise<LiquidacionConcepto[]> {
     const { data, error } = await this.supabase
       .from('nomina_liquidacion_concepto')
@@ -179,6 +198,20 @@ function mapTrabajadorRow(row: LiquidacionTrabajadorRow): LiquidacionTrabajador 
       parseEstadoRevisionDesdeColumna(row)
       ?? parseEstadoRevisionMetadata(parseRecord(row.metadata)),
     observaciones: parseArray(row.observaciones),
+    metadata: parseRecord(row.metadata),
+  };
+}
+
+function mapEmisionRow(row: LiquidacionEmisionRow): LiquidacionEmision {
+  return {
+    idLiquidacionEmision: row.id_liquidacion_emision,
+    idLiquidacionTrabajador: row.id_liquidacion_trabajador,
+    idLiquidacionPeriodo: row.id_liquidacion_periodo,
+    versionLiquidacion: Number(row.version_liquidacion ?? 1),
+    usuarioId: row.usuario_id ?? null,
+    usuarioLabel: row.usuario_label,
+    canal: row.canal as LiquidacionEmisionCanal,
+    emitidoEn: row.emitido_en,
     metadata: parseRecord(row.metadata),
   };
 }

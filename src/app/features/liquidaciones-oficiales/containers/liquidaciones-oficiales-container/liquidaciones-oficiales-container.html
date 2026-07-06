@@ -216,6 +216,29 @@
     } @else if (filasLiquidacionesInternas().length > 0) {
       @if (filaVersionActiva(); as version) {
         <section class="liq-workers-zone" aria-label="Detalle por trabajador">
+          @if (diffVersionLiquidacionActiva(); as diff) {
+            <div class="liq-version-diff" role="status" [attr.aria-label]="diff.titulo">
+              <p class="liq-version-diff__title">{{ diff.titulo }}</p>
+              <dl class="liq-version-diff__grid">
+                @for (campo of diff.campos; track campo.id) {
+                  <div class="liq-version-diff__item">
+                    <dt>{{ campo.label }}</dt>
+                    <dd>
+                      <span class="liq-version-diff__valor">{{ campo.anterior }}</span>
+                      <span class="liq-version-diff__arrow" aria-hidden="true">→</span>
+                      <span class="liq-version-diff__valor is-strong">{{ campo.actual }}</span>
+                      <span
+                        class="liq-version-diff__delta"
+                        [class.is-positive]="campo.deltaPositivo"
+                        [class.is-negative]="!campo.deltaPositivo && campo.delta !== '0' && campo.delta !== '+0'"
+                      >{{ campo.delta }}</span>
+                    </dd>
+                  </div>
+                }
+              </dl>
+            </div>
+          }
+
           @if (evidenciaRegeneracion(); as evidencia) {
             <p class="liq-status-note liq-status-note--success">{{ evidencia }}</p>
           }
@@ -364,9 +387,10 @@
                       <button
                         type="button"
                         class="liq-row-action"
+                        [disabled]="accionView.pdfDisabled || previewPdfCargando()"
                         [title]="accionView.pdfLabel"
                         [attr.aria-label]="accionView.pdfLabel"
-                        disabled
+                        (click)="abrirPreviewPdf(fila)"
                       >
                         <lucide-icon name="file-text" aria-hidden="true"></lucide-icon>
                       </button>
@@ -471,5 +495,29 @@
       (dismiss)="cancelarRegeneracionInterna()"
       (action)="confirmarRegeneracionInterna()"
     ></app-message-box>
+  }
+
+  @if (previewPdfTrabajador(); as trabajadorPdf) {
+    @if (previewPdfLiquidacion(); as liqPdf) {
+      <app-liquidacion-preview-modal
+        modoEmision="oficial"
+        [liquidacion]="liqPdf"
+        [empresa]="{
+          razonSocial: nominaInterna()?.empresaNombre || 'Empleador',
+          rut: null,
+          direccion: null,
+        }"
+        [nomina]="{
+          periodo: nominaInterna()?.periodo || liqPdf.periodo,
+          fechaPago: nominaInterna()?.fechaPago || null,
+        }"
+        [trabajadorMeta]="{
+          cargo: trabajadorPdf.cargo,
+          diasTrabajados: trabajadorPdf.diasTrabajados,
+        }"
+        (cerrar)="cerrarPreviewPdf()"
+        (imprimirSolicitado)="imprimirPreviewPdf()"
+      ></app-liquidacion-preview-modal>
+    }
   }
 </div>

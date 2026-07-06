@@ -7,14 +7,17 @@ import {
   assertCierreInmutable,
   e2eNominaDotacionMinima,
   e2eNominaPartialCredentialsReady,
+  elegirCandidataCalculoOla7,
   esperarBandejaLista,
   esFilaAnticipo,
   esFilaExtraordinaria,
   esMensualLegalSinAnticipos,
   extraerNominaPeriodoId,
   filasConMeta,
+  filasDistintasPorCorte,
   filasPorEstado,
   irPasoDotacion,
+  irPasoGenerador,
   irPasoValidacion,
   leerPasoActual,
   leerTotalDotacion,
@@ -155,6 +158,19 @@ test.describe('F20 — Certificación operativa (matriz E2E)', () => {
     await expect(page.getByLabel('Generador de nómina')).toBeVisible();
   });
 
+  test('OLA7-smoke: paso Cálculo accesible con CTA calcular/recalcular', async ({ page }) => {
+    const filas = await listarFilasBandeja(page);
+    const candidata = elegirCandidataCalculoOla7(filas);
+    test.skip(!candidata, 'Requiere nómina mensual abierta al generador en BD.');
+
+    await abrirGeneradorDesdeFila(page, candidata!);
+    await irPasoGenerador(page, 'calculation');
+    await expect(page.locator('section.paso-calc')).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: /Calcular nómina|Recalcular|Calculando/ }),
+    ).toBeVisible();
+  });
+
   test('F20-02: mensual con anticipo semanal expone meta en bandeja', async ({ page }) => {
     const filas = await listarFilasBandeja(page);
     const anticipoSemanal = filasConMeta(filas, 'Anticipo', 'Semanal')[0];
@@ -165,19 +181,29 @@ test.describe('F20 — Certificación operativa (matriz E2E)', () => {
   });
 
   test('F20-03: mismo período admite dos anticipos quincenales distintos', async ({ page }) => {
-    const filas = await listarFilasBandeja(page);
+    const filas = filasDistintasPorCorte(await listarFilasBandeja(page));
     const quincenales = filasConMeta(filas, 'Anticipo', 'Quincenal');
     test.skip(quincenales.length < 2, 'Requiere ≥2 nóminas Anticipo · Quincenal en BD.');
 
     const porPeriodo = agruparFilasPorPeriodo(quincenales);
-    const par = [...porPeriodo.entries()].find(([, grupo]) => grupo.length >= 2);
-    test.skip(!par, 'Requiere ≥2 anticipos quincenales del mismo período.');
+    const par = [...porPeriodo.entries()].find(([, grupo]) => {
+      const distintas = filasDistintasPorCorte(grupo);
+      return distintas.length >= 2 && distintas.some((f) => f.rango.length > 0);
+    });
+    test.skip(!par, 'Requiere ≥2 anticipos quincenales del mismo período con rangos legales distintos.');
 
     const [, grupo] = par!;
-    const idA = await abrirGeneradorDesdeFila(page, grupo[0]!);
+    const distintas = filasDistintasPorCorte(grupo);
+    const refA = distintas[0]!;
+    const refB = distintas[1]!;
+    test.skip(refA.rango === refB.rango, 'Los dos cortes quincenales deben tener rango legal distinto.');
+
+    const idA = await abrirGeneradorDesdeFila(page, refA);
     await volverAdministradorNominas(page);
-    await mostrarTodasLasNominas(page);
-    const idB = await abrirGeneradorDesdeFila(page, grupo[1]!);
+    const filasRefresh = await refrescarBandejaNominas(page);
+    const filaB = relocarFilaBandeja(filasRefresh, refB);
+    expect(filaB, 'La segunda nómina quincenal debe seguir visible en bandeja.').toBeTruthy();
+    const idB = await abrirGeneradorDesdeFila(page, filaB!);
     expect(idA).not.toBe(idB);
   });
 

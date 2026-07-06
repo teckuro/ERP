@@ -110,8 +110,8 @@ export function buildLiquidacionAccionUiView(estado: LiquidacionAccionUiEstado):
         estadoTone: 'review',
         primaryAction: accion('autorizar', 'Autorizar', 'check-circle', 'Autorizar liquidación'),
         secondaryActions: [],
-        pdfLabel: 'PDF pendiente de implementación',
-        pdfDisabled: true,
+        pdfLabel: 'Ver liquidación',
+        pdfDisabled: false,
       };
     case 'autorizada':
       return {
@@ -120,8 +120,8 @@ export function buildLiquidacionAccionUiView(estado: LiquidacionAccionUiEstado):
         estadoTone: 'ok',
         primaryAction: accion('registrar_pago', 'Registrar pago', 'dollar-sign', 'Registrar pago de liquidación'),
         secondaryActions: [rectificacionAction()],
-        pdfLabel: 'PDF pendiente de implementación',
-        pdfDisabled: true,
+        pdfLabel: 'Ver liquidación',
+        pdfDisabled: false,
       };
     case 'pago_registrado':
       return {
@@ -130,8 +130,8 @@ export function buildLiquidacionAccionUiView(estado: LiquidacionAccionUiEstado):
         estadoTone: 'ok',
         primaryAction: accion('enviar_documento', 'Enviar documento', 'send', 'Enviar documento de liquidación'),
         secondaryActions: [rectificacionAction()],
-        pdfLabel: 'PDF pendiente de implementación',
-        pdfDisabled: true,
+        pdfLabel: 'Ver liquidación',
+        pdfDisabled: false,
       };
     case 'documento_enviado':
       return {
@@ -140,8 +140,8 @@ export function buildLiquidacionAccionUiView(estado: LiquidacionAccionUiEstado):
         estadoTone: 'ok',
         primaryAction: null,
         secondaryActions: [rectificacionAction()],
-        pdfLabel: 'PDF pendiente de implementación',
-        pdfDisabled: true,
+        pdfLabel: 'Ver liquidación',
+        pdfDisabled: false,
       };
     case 'rectificacion_solicitada':
       return {
@@ -150,8 +150,8 @@ export function buildLiquidacionAccionUiView(estado: LiquidacionAccionUiEstado):
         estadoTone: 'danger',
         primaryAction: null,
         secondaryActions: [],
-        pdfLabel: 'PDF pendiente de implementación',
-        pdfDisabled: true,
+        pdfLabel: 'Ver liquidación',
+        pdfDisabled: false,
       };
   }
 }

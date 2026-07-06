@@ -807,6 +807,75 @@
   min-height: 0;
 }
 
+/* ---- Diff entre versiones de liquidación (LIQ-01c) ---- */
+
+.liq-version-diff {
+  margin: 0 0 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--erp-border);
+  border-radius: var(--erp-radius-sm, 4px);
+  background: var(--erp-surface-soft);
+}
+
+.liq-version-diff__title {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--erp-text);
+}
+
+.liq-version-diff__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.5rem 1rem;
+  margin: 0;
+}
+
+.liq-version-diff__item {
+  margin: 0;
+}
+
+.liq-version-diff__item dt {
+  margin: 0 0 0.15rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--erp-muted);
+}
+
+.liq-version-diff__item dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.35rem;
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+.liq-version-diff__valor.is-strong {
+  font-weight: 600;
+}
+
+.liq-version-diff__arrow {
+  color: var(--erp-muted);
+  font-size: 0.75rem;
+}
+
+.liq-version-diff__delta {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--erp-muted);
+}
+
+.liq-version-diff__delta.is-positive {
+  color: var(--erp-success, #166534);
+}
+
+.liq-version-diff__delta.is-negative {
+  color: var(--erp-danger, #b91c1c);
+}
+
 /* ---- Historial de versiones (disclosure) ---- */
 
 .liq-versiones-historial {

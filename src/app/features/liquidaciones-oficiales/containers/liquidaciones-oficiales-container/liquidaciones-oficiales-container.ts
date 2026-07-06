@@ -105,6 +105,16 @@ import { estadoNominaToBadge } from '../../../nomina-mensual/containers/administ
 
 import { LiquidacionDetallePanelComponent } from '../../components/liquidacion-detalle-panel/liquidacion-detalle-panel';
 
+import { LiquidacionPreviewModalComponent } from '../../../nomina-mensual-v2/components/liquidacion-preview-modal/liquidacion-preview-modal.component';
+
+import type { LiquidacionCalculada } from '../../../nomina-mensual/models/proceso-mensual.model';
+
+import { mapLiquidacionOficialAPreview } from '../../rules/liquidaciones-preview.mapper';
+
+import { diffVersionLiquidacionConAnterior } from '../../rules/liquidaciones-version-diff.rules';
+
+import { presentarDiffVersionLiquidacion } from '../../presenters/liquidaciones-version-diff.presenter';
+
 import { LiquidacionesModalSeleccionNominaComponent } from '../../components/liquidaciones-modal-seleccion-nomina/liquidaciones-modal-seleccion-nomina.component';
 
 import {
@@ -168,6 +178,8 @@ export type LiquidacionFeedbackAccionUi = {
     DataGridCellDirective,
 
     LiquidacionDetallePanelComponent,
+
+    LiquidacionPreviewModalComponent,
 
     LiquidacionesModalSeleccionNominaComponent,
 
@@ -319,6 +331,12 @@ export class LiquidacionesOficialesContainer {
 
   });
 
+  readonly diffVersionLiquidacionActiva = computed(() =>
+    presentarDiffVersionLiquidacion(
+      diffVersionLiquidacionConAnterior(this.filasLiquidacionesInternas(), this.filaVersionActiva()),
+    ),
+  );
+
   readonly nominaResumenActiva = computed(() => {
 
     const id = this.nominaPeriodoId();
@@ -394,6 +412,12 @@ export class LiquidacionesOficialesContainer {
   readonly estadosAccionTrabajador = signal<Record<number, LiquidacionAccionUiEstado>>({});
 
   readonly feedbackAccionTrabajador = signal<LiquidacionFeedbackAccionUi | null>(null);
+
+  readonly previewPdfTrabajador = signal<LiquidacionTrabajador | null>(null);
+
+  readonly previewPdfLiquidacion = signal<LiquidacionCalculada | null>(null);
+
+  readonly previewPdfCargando = signal(false);
 
   readonly evidenciaRegeneracion = signal<string | null>(null);
 
@@ -1070,6 +1094,67 @@ export class LiquidacionesOficialesContainer {
 
     return this.trabajadorSeleccionado()?.idLiquidacionTrabajador === trabajador.idLiquidacionTrabajador;
 
+  }
+
+  async abrirPreviewPdf(trabajador: LiquidacionTrabajador): Promise<void> {
+    const periodo = this.nominaInterna()?.periodo;
+    if (!periodo) return;
+
+    this.previewPdfTrabajador.set(trabajador);
+    this.previewPdfLiquidacion.set(null);
+    this.previewPdfCargando.set(true);
+    this.error.set(null);
+
+    try {
+      let conceptos = this.conceptosDetalle();
+      const mismoDetalle =
+        this.trabajadorSeleccionado()?.idLiquidacionTrabajador === trabajador.idLiquidacionTrabajador
+        && conceptos.length > 0;
+      if (!mismoDetalle) {
+        conceptos = await this.service.obtenerDetalleTrabajador(trabajador.idLiquidacionTrabajador);
+      }
+      if (!conceptos.length) {
+        this.error.set('No hay conceptos materializados para generar la liquidación.');
+        this.previewPdfTrabajador.set(null);
+        return;
+      }
+      this.previewPdfLiquidacion.set(
+        mapLiquidacionOficialAPreview({ trabajador, conceptos, periodo }),
+      );
+      void this.registrarEmisionSegura(trabajador.idLiquidacionTrabajador, 'vista_oficial');
+    } catch {
+      this.error.set('No se pudo preparar la liquidación para imprimir.');
+      this.previewPdfTrabajador.set(null);
+    } finally {
+      this.previewPdfCargando.set(false);
+    }
+  }
+
+  cerrarPreviewPdf(): void {
+    this.previewPdfTrabajador.set(null);
+    this.previewPdfLiquidacion.set(null);
+  }
+
+  imprimirPreviewPdf(): void {
+    const trabajador = this.previewPdfTrabajador();
+    if (trabajador) {
+      void this.registrarEmisionSegura(trabajador.idLiquidacionTrabajador, 'impresion_navegador');
+    }
+    if (typeof window !== 'undefined') {
+      window.print();
+    }
+  }
+
+  private registrarEmisionSegura(
+    idLiquidacionTrabajador: number,
+    canal: 'vista_oficial' | 'impresion_navegador',
+  ): void {
+    void this.service.registrarEmisionLiquidacionTrabajador(idLiquidacionTrabajador, canal).catch(() => {
+      this.feedbackAccionTrabajador.set({
+        mensaje: 'La liquidación se muestra, pero no se registró la emisión en el servidor.',
+        tono: 'review',
+      });
+    });
   }
 
 

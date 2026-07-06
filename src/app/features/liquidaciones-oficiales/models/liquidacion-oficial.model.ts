@@ -10,6 +10,20 @@ export type LiquidacionesPeriodoEstadoUi =
   | 'generadas_con_advertencias'
   | 'error';
 
+export type LiquidacionEmisionCanal = 'vista_oficial' | 'impresion_navegador';
+
+export interface LiquidacionEmision {
+  idLiquidacionEmision: number;
+  idLiquidacionTrabajador: number;
+  idLiquidacionPeriodo: number;
+  versionLiquidacion: number;
+  usuarioId: string | null;
+  usuarioLabel: string;
+  canal: LiquidacionEmisionCanal;
+  emitidoEn: string;
+  metadata: Record<string, unknown>;
+}
+
 export interface LiquidacionPeriodo {
   idLiquidacionPeriodo: number;
   idCalculoPeriodo: number;
