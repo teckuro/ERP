@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
@@ -11,6 +12,7 @@ import {
   DataGridFilter,
 } from '../../../../shared/components/ui/data-grid';
 import { MessageBoxComponent, MessageBoxVariant } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
+import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { SearchSelectComponent, SearchSelectOption } from '../../../../shared/components/ui/forms/search-select.component';
 import { ErpPermisosRemuneracionesService } from '../../../../core/auth/erp-permisos-remuneraciones.service';
 import { HaberesDescuentosService } from '../../services/haberes-descuentos.service';
@@ -29,6 +31,14 @@ import {
   type VigenciaConceptoPeriodo,
 } from '../../rules/concepto-asignabilidad.rules';
 import {
+  clasificarEstadoLreConcepto,
+  contarConceptosPendientesExportacionLre,
+  etiquetaEstadoLreConcepto,
+  filtroLreDesdeEstado,
+  type ConceptoLreEstadoUi,
+  type ConceptoLreFiltroUi,
+} from '../../rules/concepto-lre-estado.rules';
+import {
   evaluarConceptoAccionesPermitidas,
   tituloAccionConcepto,
   type ConceptoAccionesPermitidas,
@@ -40,7 +50,8 @@ type CatalogoGridRow = ConceptoMantenimientoFila & {
   filtroVigenciaPeriodo: VigenciaConceptoPeriodo;
   filtroAsignable: 'SI' | 'NO';
   filtroOrigen: 'SISTEMA' | 'USUARIO';
-  filtroLre: 'CON' | 'SIN';
+  filtroLre: ConceptoLreFiltroUi;
+  estadoLre: ConceptoLreEstadoUi;
   esAsignableCatalogo: boolean;
 };
 
@@ -72,11 +83,13 @@ function etiquetaNaturalezaFn(n: string | null): string {
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     FormsModule,
     LucideAngularModule,
     DataGridComponent,
     DataGridCellDirective,
     MessageBoxComponent,
+    WorkspaceLoadingComponent,
     SearchSelectComponent,
   ],
   templateUrl: './conceptos-remuneracion-container.html',
@@ -149,6 +162,12 @@ export class ConceptosRemuneracionContainer implements OnInit {
     () => this.permisosRemuneraciones.esAdministradorRemuneraciones(),
   );
 
+  readonly pendientesExportacionLre = computed(() =>
+    contarConceptosPendientesExportacionLre(this.catalogoFilas()),
+  );
+
+  readonly mostrarFranjaLre = computed(() => this.pendientesExportacionLre() > 0);
+
   private opcionesAccionesConcepto() {
     return {
       puedeEditarModoAdmin: this.puedeEditarConceptoCatalogo(),
@@ -179,6 +198,14 @@ export class ConceptosRemuneracionContainer implements OnInit {
       id: 'tipo',
       header: 'Tipo',
       field: 'tipo',
+      type: 'text',
+      sortable: true,
+      filterable: false,
+    },
+    {
+      id: 'codigoMotor',
+      header: 'Cód. motor',
+      field: 'codigoMotor',
       type: 'text',
       sortable: true,
       filterable: false,
@@ -301,8 +328,11 @@ export class ConceptosRemuneracionContainer implements OnInit {
       operator: 'equals',
       emptyLabel: 'Todos',
       options: [
-        { label: 'Con LRE', value: 'CON' },
-        { label: 'Sin LRE', value: 'SIN' },
+        { label: 'Con código LRE', value: 'CON' },
+        { label: 'Requiere código LRE', value: 'SIN' },
+        { label: 'Pendiente normativo', value: 'PENDIENTE' },
+        { label: 'Deriva operativa', value: 'DERIVA' },
+        { label: 'No exportable', value: 'NO_EXPORTA' },
       ],
     },
   ];
@@ -311,6 +341,24 @@ export class ConceptosRemuneracionContainer implements OnInit {
 
   etiquetaTipo = etiquetaTipoConcepto;
   etiquetaNaturaleza = etiquetaNaturalezaFn;
+  etiquetaEstadoLre = etiquetaEstadoLreConcepto;
+
+  claseChipEstadoLre(estado: ConceptoLreEstadoUi): string {
+    switch (estado) {
+      case 'directo_con_codigo':
+        return 'cr-lre-chip cr-lre-chip--ok';
+      case 'requiere_asignacion':
+        return 'cr-lre-chip cr-lre-chip--warn';
+      case 'pendiente_normativo':
+        return 'cr-lre-chip cr-lre-chip--pending';
+      case 'deriva_operativa':
+        return 'cr-lre-chip cr-lre-chip--derive';
+      case 'no_exportable':
+        return 'cr-lre-chip cr-lre-chip--muted';
+      default:
+        return 'cr-lre-chip';
+    }
+  }
 
   ngOnInit(): void {
     void this.cargarCatalogoLre();
@@ -348,12 +396,14 @@ export class ConceptosRemuneracionContainer implements OnInit {
         rows.map((r) => {
           const periodo = clasificarVigenciaConcepto(r, ref);
           const asignable = esConceptoAsignable(r, ref);
+          const estadoLre = clasificarEstadoLreConcepto(r);
           return {
             ...r,
             filtroVigenciaPeriodo: periodo,
             filtroAsignable: asignable ? 'SI' : 'NO',
             filtroOrigen: r.esSistema ? 'SISTEMA' : 'USUARIO',
-            filtroLre: r.idCatalogoLre == null ? 'SIN' : 'CON',
+            filtroLre: filtroLreDesdeEstado(estadoLre),
+            estadoLre,
             esAsignableCatalogo: asignable,
             busquedaCatalogo: [r.nombre, r.codigo, r.codigoMotor ?? '', r.codigoLre ?? '', r.nombreLre ?? '']
               .join(' ')
@@ -524,6 +574,15 @@ export class ConceptosRemuneracionContainer implements OnInit {
         this.mostrarErrorValidacion('La vigencia fin debe ser mayor o igual a la vigencia inicio.');
         return;
       }
+    }
+    if (
+      snap
+      && (snap.estrategiaLre ?? 'DIRECTO') === 'DIRECTO'
+      && snap.requiereExportacionLre
+      && this.catIdCatalogoLre() == null
+    ) {
+      this.mostrarErrorValidacion('Asigne un código del catálogo LRE antes de guardar este concepto exportable.');
+      return;
     }
     const payload = this.armarPayloadConcepto();
     try {

@@ -371,6 +371,23 @@
   font-size: 0.8125rem;
 }
 
+.noia-msgbox__body--inline {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.noia-msgbox__detail--inline {
+  margin: 0;
+  color: #475569;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.noia-msgbox__body--inline .noia-msgbox__section {
+  padding: 0.5rem 0.625rem;
+}
+
 .noia-msgbox__inline-actions {
   display: flex;
   flex-wrap: wrap;

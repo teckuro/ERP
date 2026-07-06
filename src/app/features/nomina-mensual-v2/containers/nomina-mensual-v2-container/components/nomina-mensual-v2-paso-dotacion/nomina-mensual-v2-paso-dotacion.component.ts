@@ -28,6 +28,7 @@ import {
   type DataGridBulkActionOption,
   type DataGridServerQuery,
 } from '../../../../../../shared/components/ui/data-grid';
+import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import type {
   DetalleTrabajadorNomina,
   DotacionResumenNomina,
@@ -71,6 +72,7 @@ const RESUMEN_VACIO: DotacionResumenNomina = {
     FormsModule,
     DataGridComponent,
     DataGridCellDirective,
+    WorkspaceLoadingComponent,
     NominaMensualV2ModalIncluirTrabajadoresComponent,
   ],
   templateUrl: './nomina-mensual-v2-paso-dotacion.component.html',

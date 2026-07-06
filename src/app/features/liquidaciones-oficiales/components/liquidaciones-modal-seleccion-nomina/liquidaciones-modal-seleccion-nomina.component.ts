@@ -1,45 +1,25 @@
 /**
  * Modal de búsqueda de nómina origen para Liquidaciones (F18c).
+ * Delega en el componente compartido de salidas exportables.
  */
 
 import {
   ChangeDetectionStrategy,
   Component,
-  ViewEncapsulation,
-  computed,
   input,
   output,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { LucideAngularModule } from 'lucide-angular';
 
-import {
-  DataGridCellDirective,
-  DataGridComponent,
-} from '../../../../shared/components/ui/data-grid';
-import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import type { NominaPeriodoResumen } from '../../../nomina-mensual/models/nomina-periodo.models';
-import { estadoNominaToBadge } from '../../../nomina-mensual/containers/administrador-nominas-container/utils/admin-nominas-presentacion.util';
-import {
-  COLUMNAS_SELECCION_NOMINA_LIQUIDACION,
-  PERSISTENCIA_GRILLA_SELECCION_NOMINA_LIQ,
-  crearFiltrosSeleccionNominaLiquidacion,
-} from '../../presenters/liquidaciones-oficiales.presenter';
+import { SeleccionNominaExportableModalComponent } from '../../../remuneraciones-salidas/components/seleccion-nomina-exportable-modal/seleccion-nomina-exportable-modal.component';
+import { PERSISTENCIA_GRILLA_SELECCION_NOMINA_LIQ } from '../../presenters/liquidaciones-oficiales.presenter';
 
 @Component({
   selector: 'app-liquidaciones-modal-seleccion-nomina',
   standalone: true,
-  imports: [
-    CommonModule,
-    LucideAngularModule,
-    MessageBoxComponent,
-    DataGridComponent,
-    DataGridCellDirective,
-  ],
+  imports: [SeleccionNominaExportableModalComponent],
   templateUrl: './liquidaciones-modal-seleccion-nomina.component.html',
-  styleUrl: './liquidaciones-modal-seleccion-nomina.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None,
 })
 export class LiquidacionesModalSeleccionNominaComponent {
   readonly abierto = input(false);
@@ -51,11 +31,7 @@ export class LiquidacionesModalSeleccionNominaComponent {
   readonly cerrar = output<void>();
   readonly seleccionar = output<NominaPeriodoResumen>();
 
-  readonly columnas = COLUMNAS_SELECCION_NOMINA_LIQUIDACION;
   readonly persistenciaKey = PERSISTENCIA_GRILLA_SELECCION_NOMINA_LIQ;
-  readonly estadoNominaToBadge = estadoNominaToBadge;
-
-  readonly filtros = computed(() => crearFiltrosSeleccionNominaLiquidacion(this.nominas()));
 
   cerrarModal(): void {
     this.cerrar.emit();
@@ -69,6 +45,4 @@ export class LiquidacionesModalSeleccionNominaComponent {
     const activa = this.nominaSeleccionadaId();
     return !!activa && fila.id === activa;
   }
-
-  trackNomina = (_index: number, fila: NominaPeriodoResumen): string => fila.id;
 }

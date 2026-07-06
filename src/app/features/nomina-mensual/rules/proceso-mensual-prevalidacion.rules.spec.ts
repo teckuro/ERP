@@ -342,6 +342,9 @@ describe('proceso-mensual-prevalidacion.rules', () => {
           vigenciaInicio: null,
           vigenciaFin: null,
           ordenImpresion: 0,
+          estrategiaLre: 'DIRECTO',
+          requiereExportacionLre: true,
+          observacionNormativaLre: null,
         }],
       }),
     );

@@ -118,6 +118,19 @@ describe('proceso-mensual-snapshot.rules', () => {
     expect(conceptos.some((c) => c.tipo === 'cotizacion' && c.afectaLiquido === false)).toBe(true);
   });
 
+  it('asigna codigoLreSnapshot según catálogo oficial', () => {
+    const conceptos = mapResultadoMotorToSnapshotPayload({ resultado: resultado(), fechaGeneracion: 'now' }).trabajadores[0].conceptos;
+    const sueldo = conceptos.find((c) => c.nombreConceptoSnapshot === 'Sueldo base');
+    const afp = conceptos.find((c) => c.nombreConceptoSnapshot === 'AFP');
+    const impuesto = conceptos.find((c) => c.tipo === 'impuesto');
+    const sis = conceptos.find((c) => c.nombreConceptoSnapshot.includes('SIS'));
+
+    expect(sueldo?.codigoLreSnapshot).toBe('2101');
+    expect(afp?.codigoLreSnapshot).toBe('3141');
+    expect(impuesto?.codigoLreSnapshot).toBe('3161');
+    expect(sis?.codigoLreSnapshot).toBeNull();
+  });
+
   it('guarda issues de periodo y trabajador', () => {
     const snapshot = mapResultadoMotorToSnapshotPayload({ resultado: resultado(), fechaGeneracion: 'now' });
     expect(snapshot.trabajadores[0].issues.some((i) => i.codigo === 'IMPUESTO_CALCULADO')).toBe(true);

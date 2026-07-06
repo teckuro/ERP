@@ -125,6 +125,8 @@ export function calcularTrabajador(args: {
         origen: 'haber_recurrente',
         imponible: a.imponible,
         tributable: a.tributable,
+        codigoLre: a.codigoLre,
+        idConcepto: a.idConcepto,
       };
       if (a.imponible || naturaleza === 'IMPONIBLE') {
         haberesImponibles.push(linea);
@@ -136,7 +138,14 @@ export function calcularTrabajador(args: {
         pushIssue(issues, 'CONCEPTO_SIN_CLASIFICACION', 'BLOQUEO', 'Haber recurrente sin clasificacion imponible/no imponible.', 'concepto', a.idConcepto, 'naturaleza');
       }
     } else if (tipo === 'DESCUENTO') {
-      descuentosVoluntarios.push({ codigo: a.codigoConcepto, descripcion: a.nombreConcepto, monto, origen: 'descuento_recurrente' });
+      descuentosVoluntarios.push({
+        codigo: a.codigoConcepto,
+        descripcion: a.nombreConcepto,
+        monto,
+        origen: 'descuento_recurrente',
+        codigoLre: a.codigoLre,
+        idConcepto: a.idConcepto,
+      });
     }
   }
 

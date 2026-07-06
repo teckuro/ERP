@@ -25,6 +25,7 @@ import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/m
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
+import { mensajeErrorSupabaseParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
 import { NominaPeriodoService } from '../../services/nomina-periodo.service';
 import { NominaPeriodoCalculoAdapterService } from '../../services/nomina-periodo-calculo-adapter.service';
 import { NominaMensualCapabilitiesService } from '../../services/nomina-mensual-capabilities.service';
@@ -270,8 +271,9 @@ export class AdministradorNominasContainer {
       const lista = await this.servicio.listarResumenes();
       this.resumenes.set(lista);
     } catch (err) {
-      const mensaje = err instanceof Error ? err.message : 'No fue posible cargar las nóminas.';
-      this.errorCarga.set(mensaje);
+      this.errorCarga.set(
+        mensajeErrorSupabaseParaUsuario(err, 'cargar las nóminas'),
+      );
     } finally {
       this.cargando.set(false);
     }
@@ -511,7 +513,9 @@ export class AdministradorNominasContainer {
       this.errorAccion.set(null);
       await this.cargarResumenes();
     } catch (error) {
-      this.errorAccion.set(error instanceof Error ? error.message : 'No fue posible completar la acción.');
+      this.errorAccion.set(
+        mensajeErrorSupabaseParaUsuario(error, 'completar la acción'),
+      );
     } finally {
       this.ejecutandoAccion.set(false);
     }

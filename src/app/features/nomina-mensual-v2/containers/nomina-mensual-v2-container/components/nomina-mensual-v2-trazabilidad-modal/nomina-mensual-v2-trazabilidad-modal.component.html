@@ -87,11 +87,12 @@
           <div class="nmv2-trace-modal">
             @if (muestraDatosParametrosGuardados(detalle)) {
               @if (valoresParametrosBaseLoading()) {
-                <div class="nmv2-trace-modal__empty">
-                  <lucide-icon name="loader-circle" aria-hidden="true"></lucide-icon>
-                  <strong>Cargando datos guardados</strong>
-                  <span>Consultando los valores guardados para este período.</span>
-                </div>
+                <app-message-box
+                  variant="loading"
+                  mode="inline"
+                  title="Cargando datos guardados"
+                  message="Consultando los valores guardados para este período."
+                />
               } @else if (valoresParametrosBaseError()) {
                 <div class="nmv2-trace-modal__empty nmv2-trace-modal__empty--attention">
                   <lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon>

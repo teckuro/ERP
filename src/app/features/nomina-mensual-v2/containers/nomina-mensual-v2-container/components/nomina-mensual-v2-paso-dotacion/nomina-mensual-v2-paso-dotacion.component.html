@@ -129,7 +129,11 @@
         >&times;</button>
       </header>
       @if (detalleLoading()) {
-        <p class="paso-dotacion__placeholder">Cargando…</p>
+        <app-workspace-loading
+          [fill]="false"
+          title="Cargando detalle"
+          message="Estamos consultando movimientos e incidencias del trabajador."
+        />
       } @else if (detalleTrabajador(); as det) {
         @if (detalleTrabajadorIdentidad(); as id) {
           <p class="paso-dotacion__detalle-meta">

@@ -131,6 +131,39 @@
         {{ message || detail }}
       </p>
     }
+    @if (hasBodyContent()) {
+      <div
+        class="noia-msgbox__body noia-msgbox__body--inline"
+        [class.noia-msgbox__body--two-blocks]="useTwoBlockLayout()"
+        [id]="bodyId"
+      >
+        @if (detail && (message || title)) {
+          <p class="noia-msgbox__detail noia-msgbox__detail--inline">{{ detail }}</p>
+        }
+
+        @for (section of normalizedSections(); track sectionTrack(section)) {
+          <article
+            class="noia-msgbox__section"
+            [ngClass]="sectionToneClass(section.tone)"
+            [attr.aria-label]="section.title"
+          >
+            @if (section.title) {
+              <h3 class="noia-msgbox__section-title">{{ section.title }}</h3>
+            }
+            @if (section.text) {
+              <p class="noia-msgbox__section-text">{{ section.text }}</p>
+            }
+            @if (section.items.length) {
+              <ul class="noia-msgbox__section-list">
+                @for (item of section.items; track item) {
+                  <li>{{ item }}</li>
+                }
+              </ul>
+            }
+          </article>
+        }
+      </div>
+    }
   }
 
   <div class="noia-msgbox__slot" [class.noia-msgbox__slot--modal]="mode === 'modal'">

@@ -108,7 +108,12 @@
           <div class="adm-nom-modal__field">
             <label for="adm-nom-modal-corte" class="adm-nom-modal__label">Corte del anticipo</label>
             @if (cargandoCortes()) {
-              <p class="adm-nom-modal__hint">Cargando cortes del período…</p>
+              <app-message-box
+                variant="loading"
+                mode="inline"
+                title="Cargando cortes"
+                message="Estamos consultando los cortes del período seleccionado."
+              />
             } @else if (cortesDisponibles().length === 0) {
               <p class="adm-nom-modal__hint adm-nom-modal__hint--error">
                 No hay plantilla activa ni cortes para este período. Revise Plantillas de ciclo.
@@ -225,7 +230,12 @@
 
         <div class="adm-nom-modal__lista" role="tabpanel">
           @if (tabUsaPaginacion() && cargandoTabPreview()) {
-            <p class="adm-nom-modal__vacio">Cargando trabajadores…</p>
+            <app-message-box
+              variant="loading"
+              mode="inline"
+              title="Cargando trabajadores"
+              message="Estamos clasificando la dotación de la vista previa."
+            />
           }
           @switch (tabActiva()) {
             @case ('incluidos') {

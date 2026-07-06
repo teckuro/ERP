@@ -81,6 +81,9 @@ function mapConceptoMantenimiento(row: ConceptoWithLre): ConceptoMantenimientoFi
     vigenciaFin: row.vigencia_fin,
     ordenImpresion: row.orden_impresion,
     calculoAutomatico: row.calculo_automatico,
+    estrategiaLre: row.estrategia_lre ?? 'DIRECTO',
+    requiereExportacionLre: row.requiere_exportacion_lre !== false,
+    observacionNormativaLre: row.observacion_normativa_lre ?? null,
   };
 }
 
@@ -269,6 +272,9 @@ export class HaberesDescuentosRepository {
         vigencia_fin,
         orden_impresion,
         calculo_automatico,
+        estrategia_lre,
+        requiere_exportacion_lre,
+        observacion_normativa_lre,
         id_catalogo_lre,
         catalogo_lre (
           id_catalogo_lre,

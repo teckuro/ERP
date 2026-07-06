@@ -1,9 +1,11 @@
 <section class="adm-nom__page" aria-label="Administrador de nóminas">
   @if (errorCarga(); as error) {
-    <div class="adm-nom__state adm-nom__state--error" role="alert">
-      <span>{{ error }}</span>
-      <button type="button" class="adm-nom__row-action" (click)="cargarResumenes()">Reintentar</button>
-    </div>
+    <app-message-box
+      variant="danger"
+      [sections]="[{ title: 'No se pudo cargar', text: error }]"
+      primaryLabel="Reintentar"
+      (action)="cargarResumenes()"
+    />
   }
 
   <div class="adm-nom__grid-shell" aria-labelledby="adm-nom-grid-title">

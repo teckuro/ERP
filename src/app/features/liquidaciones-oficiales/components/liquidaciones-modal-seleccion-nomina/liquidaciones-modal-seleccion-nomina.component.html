@@ -1,91 +1,13 @@
-@if (abierto()) {
-  <app-message-box
-    variant="info"
-    mode="modal"
-    width="lg"
-    panelClass="liq-seleccion-nomina-msgbox"
-    eyebrow="Liquidaciones"
-    title="Buscar nómina"
-    message="Solo nóminas liquidadas o cerradas con comprobantes disponibles."
-    (dismiss)="cerrarModal()"
-  >
-    <div class="liq-seleccion-nomina">
-      @if (error(); as err) {
-        <div class="liq-seleccion-nomina__empty liq-seleccion-nomina__empty--attention" role="alert">
-          <strong>No fue posible cargar las nóminas</strong>
-          <span>{{ err }}</span>
-        </div>
-      } @else {
-        <div class="liq-seleccion-nomina__grid-wrap">
-          <app-data-grid
-            title=""
-            [columns]="columnas"
-            [rows]="nominas()"
-            [filters]="filtros()"
-            [filtersEnabled]="true"
-            [filtersCollapsible]="false"
-            filterChipsDisplay="whenFiltersHidden"
-            headerCountDisplay="text"
-            headerCountNoun="nóminas"
-            [headerShowActiveFiltersCount]="true"
-            [loading]="cargando()"
-            loadingLabel="Cargando nóminas…"
-            [trackBy]="trackNomina"
-            [persistenceKey]="persistenciaKey"
-            toolbarLayout="operativa"
-            [gridHeight]="'100%'"
-            emptyTitle="Sin nóminas con liquidaciones"
-            emptyDescription="No hay nóminas liquidadas o cerradas con comprobantes para consultar."
-            emptyTitleWhenFiltered="Sin resultados con los filtros actuales"
-            emptyDescriptionWhenFiltered="Cambia o limpia los filtros para ampliar la búsqueda."
-            className="liq-seleccion-nomina__grid"
-            cardClassName="liq-seleccion-nomina__grid-card"
-          >
-            <ng-template appDataGridCell="periodo" let-fila="row">
-              <span
-                class="liq-seleccion-nomina__periodo"
-                [class.is-active]="esNominaActiva(fila)"
-              >
-                {{ fila.periodo }}
-              </span>
-            </ng-template>
-
-            <ng-template appDataGridCell="empresa" let-fila="row">
-              <span class="liq-seleccion-nomina__empresa">{{ fila.empresaNombre }}</span>
-            </ng-template>
-
-            <ng-template appDataGridCell="estado" let-fila="row">
-              @let badge = estadoNominaToBadge(fila.estado);
-              <span class="liq-seleccion-nomina__chip" [class]="'liq-seleccion-nomina__chip--' + badge.variant">
-                {{ badge.label }}
-              </span>
-            </ng-template>
-
-            <ng-template appDataGridCell="trabajadores" let-fila="row">
-              {{ fila.totalTrabajadores }}
-            </ng-template>
-
-            <ng-template appDataGridCell="acciones" let-fila="row">
-              <button
-                type="button"
-                class="liq-row-action"
-                [class.liq-row-action--primary]="!esNominaActiva(fila)"
-                [class.is-active]="esNominaActiva(fila)"
-                [title]="esNominaActiva(fila) ? 'Nómina seleccionada' : 'Seleccionar nómina'"
-                [attr.aria-label]="esNominaActiva(fila)
-                  ? ('Nómina seleccionada: ' + fila.empresaNombre + ' · ' + fila.periodo)
-                  : ('Seleccionar nómina ' + fila.empresaNombre + ' · ' + fila.periodo)"
-                (click)="seleccionarNomina(fila)"
-              >
-                <lucide-icon
-                  [name]="esNominaActiva(fila) ? 'check-circle' : 'arrow-right'"
-                  aria-hidden="true"
-                ></lucide-icon>
-              </button>
-            </ng-template>
-          </app-data-grid>
-        </div>
-      }
-    </div>
-  </app-message-box>
-}
+<app-seleccion-nomina-exportable-modal
+  [abierto]="abierto()"
+  [nominas]="nominas()"
+  [cargando]="cargando()"
+  [error]="error()"
+  [nominaSeleccionadaId]="nominaSeleccionadaId()"
+  eyebrow="Liquidaciones"
+  titulo="Buscar nómina"
+  mensaje="Solo nóminas liquidadas o cerradas con comprobantes disponibles."
+  [persistenceKey]="persistenciaKey"
+  (cerrar)="cerrarModal()"
+  (seleccionar)="seleccionarNomina($event)"
+/>

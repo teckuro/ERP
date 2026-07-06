@@ -27,7 +27,10 @@ export interface RegistrarExportacionPreviredParams {
 export class PreviredExportRepository {
   private readonly supabase = injectSupabase();
 
-  async listarCatalogoPrevired(): Promise<CatalogoPreviredEntrada[]> {
+  async listarCatalogoPrevired(): Promise<{
+    entradas: CatalogoPreviredEntrada[];
+    tablaDesplegada: boolean;
+  }> {
     const { data, error } = await this.supabase
       .from('catalogo_previred')
       .select('codigo_lre, codigo_previred, glosa_previred')
@@ -35,16 +38,21 @@ export class PreviredExportRepository {
       .order('codigo_lre', { ascending: true });
 
     if (error) {
-      if (esTablaInexistente(error)) return [];
+      if (esTablaInexistente(error)) {
+        return { entradas: [], tablaDesplegada: false };
+      }
       throw new Error('No se pudo consultar el catálogo Previred.');
     }
 
-    return (data ?? []).map(mapCatalogoRow);
+    return {
+      entradas: (data ?? []).map(mapCatalogoRow),
+      tablaDesplegada: true,
+    };
   }
 
   async obtenerUltimaExportacion(
     idLiquidacionPeriodo: number,
-  ): Promise<PreviredExportacionRegistro | null> {
+  ): Promise<{ registro: PreviredExportacionRegistro | null; tablaDesplegada: boolean }> {
     const { data, error } = await this.supabase
       .from('nomina_previred_exportacion')
       .select('*')
@@ -54,11 +62,16 @@ export class PreviredExportRepository {
       .maybeSingle();
 
     if (error) {
-      if (esTablaInexistente(error)) return null;
+      if (esTablaInexistente(error)) {
+        return { registro: null, tablaDesplegada: false };
+      }
       throw new Error('No se pudo consultar el historial de exportación Previred.');
     }
 
-    return data ? mapExportacionRow(data) : null;
+    return {
+      registro: data ? mapExportacionRow(data) : null,
+      tablaDesplegada: true,
+    };
   }
 
   async registrarExportacion(
@@ -116,7 +129,20 @@ function mapExportacionRow(row: PreviredExportacionRow): PreviredExportacionRegi
   };
 }
 
-function esTablaInexistente(error: { code?: string; message?: string }): boolean {
+function esTablaInexistente(error: {
+  code?: string;
+  message?: string;
+  status?: number;
+  statusCode?: number;
+}): boolean {
   const msg = (error.message ?? '').toLowerCase();
-  return error.code === '42P01' || msg.includes('does not exist') || msg.includes('could not find the table');
+  const status = error.status ?? error.statusCode;
+  return (
+    error.code === '42P01'
+    || error.code === 'PGRST205'
+    || status === 404
+    || msg.includes('does not exist')
+    || msg.includes('could not find the table')
+    || msg.includes('schema cache')
+  );
 }

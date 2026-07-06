@@ -183,4 +183,19 @@ describe('MessageBoxComponent', () => {
     fixture.detectChanges();
     expect(fixture.componentInstance.normalizedSections().length).toBe(3);
   });
+
+  it('renderiza secciones en modo inline', () => {
+    const fixture = TestBed.createComponent(MessageBoxComponent);
+    fixture.componentInstance.mode = 'inline';
+    fixture.componentInstance.variant = 'danger';
+    fixture.componentInstance.sections = [
+      { title: 'No se pudo cargar', text: 'Revise la conexión con el servidor.' },
+    ];
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('No se pudo cargar');
+    expect(el.textContent).toContain('Revise la conexión con el servidor.');
+    expect(el.querySelector('.noia-msgbox__body--inline')).not.toBeNull();
+  });
 });

@@ -220,6 +220,9 @@ export interface LineaLiquidacionCalculada {
   origen: string;
   imponible?: boolean;
   tributable?: boolean;
+  codigoMotor?: string | null;
+  codigoLre?: string | null;
+  idConcepto?: number | null;
 }
 
 export interface TrabajadorMotorCalculoSnapshot {

@@ -237,7 +237,11 @@
             </div>
           </header>
           @if (estaCargandoItemsDeFila(fila.trabajadorId) || (fila.itemsCargados === false && fila.cuentaItems)) {
-            <p class="paso-mov__detalle-empty" role="status">Cargando movimientos del trabajador…</p>
+            <app-workspace-loading
+              [fill]="false"
+              title="Cargando movimientos"
+              message="Estamos consultando los movimientos del trabajador seleccionado."
+            />
           } @else if (fila.items.length === 0) {
             <p class="paso-mov__detalle-empty">
               Este trabajador no tiene movimientos configurados ni manuales. Usa

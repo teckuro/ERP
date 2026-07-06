@@ -24,6 +24,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
+import { mensajeErrorSupabaseParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
 import { formatRutParts } from '../../../empleados/utils/empleado-rut';
 import { EmpresaFormComponent } from '../../components/empresa-form/empresa-form.component';
@@ -143,7 +144,7 @@ export class FichaEmpresaContainer implements OnInit {
       }
     } catch (error) {
       this.mensajeError.set(
-        error instanceof Error ? error.message : 'No se pudo cargar la ficha de empresa.',
+        mensajeErrorSupabaseParaUsuario(error, 'cargar la ficha de empresa'),
       );
     } finally {
       this.cargando.set(false);
@@ -193,7 +194,7 @@ export class FichaEmpresaContainer implements OnInit {
       this.rutCompleto.set(formatRutParts({ rut: guardada.rut, dv: guardada.dv }));
     } catch (error) {
       this.mensajeError.set(
-        error instanceof Error ? error.message : 'No se pudo guardar la empresa.',
+        mensajeErrorSupabaseParaUsuario(error, 'guardar la empresa'),
       );
     } finally {
       this.guardando.set(false);

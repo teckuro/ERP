@@ -17,6 +17,7 @@ import type {
   NominaSnapshotCompletoView,
 } from '../models/proceso-mensual.model';
 import type { ParametroGeneral } from '../../parametros-generales/models/parametro-general.model';
+import { resolverCodigoLreLinea } from '../../lre/rules/concepto-lre-resolucion.rules';
 
 const VERSION_MOTOR_SNAPSHOT = 'MOTOR-03B';
 
@@ -253,7 +254,11 @@ function mapConcepto(
     idConcepto: null,
     tipo,
     nombreConceptoSnapshot: linea.descripcion,
-    codigoLreSnapshot: null,
+    codigoLreSnapshot: resolverCodigoLreLinea({
+      codigoLre: linea.codigoLre,
+      codigo: linea.codigo,
+      codigoMotor: linea.codigoMotor,
+    }),
     monto: linea.monto,
     imponible: linea.imponible === true,
     tributable: linea.tributable === true,

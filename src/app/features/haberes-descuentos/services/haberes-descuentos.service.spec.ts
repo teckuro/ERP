@@ -35,6 +35,9 @@ function filaBase(over: Partial<ConceptoMantenimientoFila> = {}): ConceptoManten
     vigenciaFin: null,
     ordenImpresion: 0,
     calculoAutomatico: false,
+    estrategiaLre: 'DIRECTO',
+    requiereExportacionLre: true,
+    observacionNormativaLre: null,
     ...over,
   };
 }

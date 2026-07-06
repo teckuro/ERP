@@ -143,6 +143,12 @@ La confirmacion fue reemplazada por modal/MsgBox estandar durante UX-COMERCIAL-0
 - Tras seleccionar, la pantalla principal muestra origen, versiones y trabajadores liquidados.
 - **Entrada sin nómina:** grilla inline filtrable (sin modal automático ni botón intermedio); el modal queda solo para «Cambiar» nómina.
 
+## Enlace a exportación Previred (2026-07-05)
+
+- Con nómina liquidada o cerrada y comprobantes materializados, el toolbar muestra **Exportar Previred** (nivel nómina, no por fila de trabajador).
+- La revisión por trabajador y conceptos permanece en esta pantalla; Previred concentra resumen de exportabilidad y descarga del archivo.
+- Navegación inversa: Previred → «Liquidaciones oficiales» con `nominaPeriodoId` en query.
+
 ## Revisión guiada y acta de generación (F18c)
 
 - Sobre la grilla de trabajadores: franja de contadores por **estado** (autorización, pago, documento, rectificación).

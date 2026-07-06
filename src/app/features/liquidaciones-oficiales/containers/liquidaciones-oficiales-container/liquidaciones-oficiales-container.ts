@@ -30,9 +30,14 @@ import { LucideAngularModule } from 'lucide-angular';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 
+import { mensajeErrorSupabaseParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
+
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
+import type { MessageBoxVariant } from '../../../../shared/components/ui/feedback/message-box/message-box.types';
 
 import type { MessageBoxSection } from '../../../../shared/components/ui/feedback/message-box/message-box.types';
+
+import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 
 import { DataGridComponent } from '../../../../shared/components/ui/data-grid/data-grid.component';
 
@@ -142,6 +147,7 @@ import {
 } from '../../presenters/liquidaciones-oficiales.presenter';
 
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
+import { rutaPreviredNomina } from '../../../remuneraciones-salidas/presenters/salida-externa-layout.presenter';
 
 
 
@@ -172,6 +178,8 @@ export type LiquidacionFeedbackAccionUi = {
     LucideAngularModule,
 
     MessageBoxComponent,
+
+    WorkspaceLoadingComponent,
 
     DataGridComponent,
 
@@ -363,6 +371,16 @@ export class LiquidacionesOficialesContainer {
 
   });
 
+  readonly puedeExportarPrevired = computed(() => {
+    const nomina = this.nominaInterna();
+    const id = this.nominaPeriodoId();
+    if (!nomina || !id) return false;
+    if (nomina.estado !== 'liquidada' && nomina.estado !== 'cerrada') return false;
+    return this.filasLiquidacionesInternas().length > 0;
+  });
+
+  readonly rutaPrevired = computed(() => rutaPreviredNomina(this.nominaPeriodoId()));
+
   readonly contextoOrigen = computed(() => {
 
     const nomina = this.nominaInterna();
@@ -392,6 +410,18 @@ export class LiquidacionesOficialesContainer {
     };
 
   });
+
+  readonly cargaNominasInicial = computed(
+    () => this.cargandoNominasLista() && !this.contextoOrigen(),
+  );
+
+  readonly cargaNominaInternaInicial = computed(
+    () => this.cargandoNominaInterna() && this.filasLiquidacionesInternas().length === 0,
+  );
+
+  readonly cargaNominaInternaOverlay = computed(
+    () => this.cargandoNominaInterna() && this.filasLiquidacionesInternas().length > 0,
+  );
 
 
 
@@ -617,7 +647,9 @@ export class LiquidacionesOficialesContainer {
 
       this.nominasConLiquidaciones.set([]);
 
-      this.error.set(error instanceof Error ? error.message : 'No fue posible cargar el listado de nóminas.');
+      this.error.set(
+        mensajeErrorSupabaseParaUsuario(error, 'cargar el listado de nóminas'),
+      );
 
     } finally {
 
@@ -625,6 +657,37 @@ export class LiquidacionesOficialesContainer {
 
     }
 
+  }
+
+
+
+  reintentarCarga(): void {
+
+    this.error.set(null);
+
+    if (this.nominaPeriodoId()) {
+
+      void this.cargarNominaInterna();
+
+      return;
+
+    }
+
+    void this.cargarNominasLista();
+
+  }
+
+  variantFeedbackAccionTrabajador(tono: LiquidacionFeedbackAccionUi['tono']): MessageBoxVariant {
+    switch (tono) {
+      case 'review':
+        return 'warning';
+      case 'danger':
+        return 'danger';
+      case 'success':
+        return 'success';
+      default:
+        return 'info';
+    }
   }
 
 
@@ -667,7 +730,9 @@ export class LiquidacionesOficialesContainer {
 
       if (this.nominaPeriodoId() !== id) return;
 
-      this.error.set(error instanceof Error ? error.message : 'No fue posible cargar liquidaciones de la nómina.');
+      this.error.set(
+        mensajeErrorSupabaseParaUsuario(error, 'cargar las liquidaciones de la nómina'),
+      );
 
     } finally {
 
@@ -793,7 +858,9 @@ export class LiquidacionesOficialesContainer {
 
     } catch (error) {
 
-      this.error.set(error instanceof Error ? error.message : 'No fue posible regenerar liquidaciones.');
+      this.error.set(
+        mensajeErrorSupabaseParaUsuario(error, 'regenerar las liquidaciones'),
+      );
 
     } finally {
 
@@ -940,7 +1007,9 @@ export class LiquidacionesOficialesContainer {
 
       this.trabajadoresLiquidacion.set([]);
 
-      this.error.set(error instanceof Error ? error.message : 'No fue posible cargar trabajadores liquidados.');
+      this.error.set(
+        mensajeErrorSupabaseParaUsuario(error, 'cargar los trabajadores liquidados'),
+      );
 
     } finally {
 
@@ -1050,7 +1119,11 @@ export class LiquidacionesOficialesContainer {
 
       .then((conceptos) => this.conceptosDetalle.set(conceptos))
 
-      .catch(() => this.error.set('No se pudo consultar el detalle del trabajador.'))
+      .catch((err) =>
+        this.error.set(
+          mensajeErrorSupabaseParaUsuario(err, 'consultar el detalle del trabajador'),
+        ),
+      )
 
       .finally(() => this.cargandoDetalle.set(false));
 

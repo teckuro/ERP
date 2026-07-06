@@ -1,36 +1,219 @@
-<div class="lre-page">
-  <header class="lre-toolbar">
-    <label class="lre-field">
-      <span>Nómina con liquidación</span>
-      <select
-        class="lre-select"
-        [ngModel]="nominaId()"
-        (ngModelChange)="onNominaChange($event)"
-        [disabled]="cargando() || nominas().length === 0"
+<div class="sal-ext-page">
+  <header class="sal-ext-toolbar" aria-label="Libro de remuneraciones electrónico">
+    <div class="sal-ext-toolbar__fields">
+      <div class="sal-ext-toolbar__lead">
+        <strong>Libro de remuneraciones</strong>
+        <span>Borrador CSV desde liquidaciones oficiales materializadas. Sin recálculo.</span>
+      </div>
+
+      <div class="sal-ext-toolbar__field">
+        <span>Nómina con liquidación</span>
+        <div class="sal-ext-nomina-trigger">
+          <button
+            type="button"
+            class="sal-ext-nomina-trigger__value"
+            data-testid="lre:abrir-modal-nomina"
+            [disabled]="cargandoNominas() || nominas().length === 0"
+            (click)="abrirModalNomina()"
+          >
+            {{ etiquetaNominaActiva() }}
+          </button>
+          <button
+            type="button"
+            class="sal-ext-nomina-trigger__icon"
+            title="Buscar nómina"
+            aria-label="Buscar nómina"
+            [disabled]="cargandoNominas() || nominas().length === 0"
+            (click)="abrirModalNomina()"
+          >
+            <lucide-icon name="search" aria-hidden="true"></lucide-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sal-ext-toolbar__actions">
+      <a
+        class="sal-ext-secondary-link"
+        [routerLink]="rutaLiquidaciones().path"
+        [queryParams]="rutaLiquidaciones().queryParams"
       >
-        @for (n of nominas(); track n.id) {
-          <option [ngValue]="n.id">{{ n.periodo }} · {{ n.empresaNombre }}</option>
-        }
-      </select>
-    </label>
+        Liquidaciones oficiales
+      </a>
+      @if (puedeDescargar()) {
+        <button
+          type="button"
+          class="sal-ext-secondary-btn"
+          data-testid="lre:descargar-csv"
+          [disabled]="cargandoBorrador()"
+          (click)="descargar()"
+        >
+          CSV borrador
+        </button>
+      }
+      <button
+        type="button"
+        class="sal-ext-icon-btn"
+        title="Actualizar borrador"
+        aria-label="Actualizar borrador"
+        [disabled]="!nominaId() || cargandoBorrador()"
+        (click)="recargarBorrador()"
+      >
+        <lucide-icon name="refresh-cw" aria-hidden="true"></lucide-icon>
+      </button>
+    </div>
   </header>
 
-  @if (error()) {
-    <p class="lre-error">{{ error() }}</p>
-  }
-
-  @if (borrador(); as b) {
-    <div class="lre-resumen">
-      <span>{{ etiquetaPeriodoDesdeYm(b.periodo) }}</span>
-      <span>· {{ b.lineas.length }} línea(s)</span>
-      @if (b.conceptosSinCodigoLre > 0) {
-        <span class="lre-warn">{{ b.conceptosSinCodigoLre }} sin código LRE</span>
+  <div class="sal-ext-body">
+    @if (cargaInicial()) {
+      <app-workspace-loading
+        [fill]="true"
+        title="Cargando libro de remuneraciones"
+        message="Estamos consultando las nóminas con liquidación oficial materializada."
+      />
+    } @else if (error()) {
+      <app-message-box
+        variant="danger"
+        [sections]="[{ title: 'No se pudo cargar', text: error()! }]"
+        primaryLabel="Reintentar"
+        (action)="reintentarCarga()"
+      />
+    } @else if (nominas().length === 0) {
+      <app-message-box
+        variant="blocked"
+        [sections]="[
+          {
+            title: 'Sin nóminas exportables',
+            text: 'No hay nóminas liquidadas o cerradas con liquidación oficial. Genere liquidaciones antes de exportar.',
+          },
+        ]"
+      />
+    } @else if (borrador(); as datos) {
+      @if (datos.conceptosSinCodigoLre > 0) {
+        <div class="sal-ext-feedback">
+          <app-message-box
+            variant="warning"
+            [sections]="[
+              {
+                title: 'Revisar antes de exportar',
+                text:
+                  datos.conceptosSinCodigoLre +
+                  ' concepto(s) sin código LRE no se incluyen en el borrador. Complete el catálogo antes del envío oficial.',
+              },
+            ]"
+          />
+        </div>
       }
-    </div>
-    @if (b.lineas.length) {
-      <div class="lre-grid">
-        <app-data-grid [columns]="columnas" [rows]="b.lineas" emptyTitle="Sin líneas" />
-      </div>
+
+      @if (contextoOrigen(); as origen) {
+        <section class="sal-ext-origen" role="status" aria-label="Origen del borrador">
+          <div class="sal-ext-origen__main">
+            <p class="sal-ext-origen__eyebrow">{{ origen.eyebrow }}</p>
+            <strong class="sal-ext-origen__title">{{ origen.titulo }}</strong>
+            <span class="sal-ext-origen__meta">
+              <span class="sal-ext-origen__chip sal-ext-origen__chip--{{ origen.estadoVariant }}">
+                {{ origen.estadoLabel }}
+              </span>
+              <span class="sal-ext-origen__chip">{{ origen.versionLabel }}</span>
+              <span class="sal-ext-origen__note">{{ origen.nota }}</span>
+            </span>
+          </div>
+          <dl class="sal-ext-origen__metrics">
+            @for (metrica of origen.metricas; track metrica.label) {
+              <div>
+                <dt>{{ metrica.label }}</dt>
+                <dd>{{ metrica.value }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+      }
+
+      <dl class="sal-ext-resumen" aria-label="Resumen del borrador">
+        <div>
+          <dt>Líneas</dt>
+          <dd>{{ datos.lineas.length }}</dd>
+        </div>
+        <div>
+          <dt>Trabajadores</dt>
+          <dd>{{ datos.totalTrabajadores }}</dd>
+        </div>
+        <div>
+          <dt>Versión liquidación</dt>
+          <dd>v{{ datos.versionLiquidacion }}</dd>
+        </div>
+        @if (datos.conceptosSinCodigoLre > 0) {
+          <div class="sal-ext-resumen__danger">
+            <dt>Sin código LRE</dt>
+            <dd>{{ datos.conceptosSinCodigoLre }}</dd>
+          </div>
+        }
+        @if (datos.listoParaEnvio) {
+          <div class="sal-ext-resumen__ok">
+            <dt>Estado</dt>
+            <dd>Listo para envío</dd>
+          </div>
+        }
+      </dl>
+
+      @if (datos.lineas.length) {
+        <section class="sal-ext-grid-block sal-ext-grid-block--grow" aria-label="Vista previa líneas LRE">
+          <div class="sal-ext-grid-block__head">
+            <h2 class="sal-ext-grid-block__title">Líneas exportables</h2>
+            <p class="sal-ext-grid-block__meta">
+              {{ etiquetaPeriodoDesdeYm(datos.periodo) }} · {{ datos.empresaNombre }}
+            </p>
+          </div>
+          <div class="sal-ext-grid-block__wrap">
+            <app-data-grid
+              title=""
+              [columns]="columnas"
+              [rows]="datos.lineas"
+              [persistenceKey]="persistenciaGrilla"
+              [filtersEnabled]="true"
+              toolbarLayout="operativa"
+              headerCountDisplay="text"
+              headerCountNoun="líneas"
+              [gridHeight]="'100%'"
+              emptyTitle="No hay líneas para mostrar."
+              className="lre-lineas-grid"
+              cardClassName="lre-lineas-grid__card"
+            />
+          </div>
+        </section>
+      } @else {
+        <app-message-box
+          variant="blocked"
+          [sections]="[
+            {
+              title: 'Sin líneas exportables',
+              text: 'La liquidación no tiene conceptos con código LRE asignado. Revise el catálogo de conceptos.',
+            },
+          ]"
+        />
+      }
     }
-  }
+    @if (cargaBorradorOverlay()) {
+      <app-workspace-loading
+        class="sal-ext-body__overlay"
+        [fill]="true"
+        title="Actualizando borrador"
+        message="Estamos refrescando las líneas exportables de la nómina seleccionada."
+      />
+    }
+  </div>
+
+  <app-seleccion-nomina-exportable-modal
+    [abierto]="modalNominaAbierto()"
+    [nominas]="nominasParaModal()"
+    [cargando]="cargandoNominas()"
+    [error]="error()"
+    [nominaSeleccionadaId]="nominaId()"
+    eyebrow="Libro de remuneraciones"
+    titulo="Buscar nómina"
+    mensaje="Solo nóminas liquidadas o cerradas con liquidación oficial."
+    [persistenceKey]="persistenciaSeleccionNomina"
+    (cerrar)="cerrarModalNomina()"
+    (seleccionar)="onNominaSeleccionadaEnModal($event)"
+  />
 </div>

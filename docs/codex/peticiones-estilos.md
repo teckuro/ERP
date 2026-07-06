@@ -9,6 +9,61 @@
 
 ---
 
+## 2026-07-05 — Conceptos remuneración: estado LRE y cierre catálogo
+
+- **Menú conceptos:** chips semánticos LRE (listo, requiere código, pendiente normativo, deriva, no exportable); columna `Cód. motor`; franja pendientes + enlace a export LRE; detalle con exportación LRE y nota normativa; validación al guardar sin catálogo; empty state alineado a fase sin alta.
+- **Repository:** lectura `estrategia_lre`, `requiere_exportacion_lre`, `observacion_normativa_lre`.
+- **Reglas:** `concepto-lre-estado.rules.ts`, `concepto-lre-resolucion.rules.ts` (prioridad BD > motor > mapa).
+- **Motor/snapshot:** `codigoLre`/`idConcepto` en líneas recurrentes; snapshot usa resolver unificado.
+- **BD:** `27_lre_concepto_cierre.sql` (BONO, alias `codigo_motor`).
+- **Contraste:** chips `hd-chip` / `cr-lre-*` locales; sin cambios globales.
+
+---
+
+## 2026-07-05 — MessageBox inline: secciones visibles + Previred export-only ajustes
+
+- **MessageBox:** modo `inline` ahora renderiza `sections` (antes solo modal; cajas vacías en Previred/Liquidaciones).
+- **Previred:** errores/avisos con `title` + `message`; vista previa abierta por defecto; CTA «Buscar nómina» sin selección; modal auto al query inválido.
+- **Contraste:** `message-box.component.spec.ts` (inline sections); sin cambios globales de tema.
+
+---
+
+
+- **Previred:** pantalla de exportación (origen, resumen, advertencias, auditoría, descarga); grilla de movimientos en `<details>` colapsado «Vista previa del archivo»; lectura de `nominaPeriodoId` por query.
+- **Liquidaciones:** link toolbar «Exportar Previred» cuando nómina liquidada/cerrada con comprobantes materializados.
+- **Presenter:** `rutaPreviredNomina` en `salida-externa-layout.presenter.ts`.
+- **Contraste:** revisión por trabajador permanece en Liquidaciones; sin duplicar grilla principal en Previred.
+
+---
+
+
+- **Layout compartido:** `remuneraciones-salida-layout.css` con bloques `sal-ext-*` (toolbar, origen, resumen, grilla, auditoría, trigger nómina).
+- **Modal nómina:** `seleccion-nomina-exportable-modal` reutilizado en Previred, LRE y Liquidaciones (wrapper fino en `liquidaciones-modal-seleccion-nomina`).
+- **Previred / LRE:** franja origen desde liquidación oficial, selector nómina por modal+grilla, link «Liquidaciones oficiales», MessageBox blocked sin líneas (paridad LRE).
+- **Liquidaciones:** avisos inline (`feedbackAccionTrabajador`, pendientes dotación, evidencia regeneración) migrados a `app-message-box`; entrada vacía con MessageBox blocked + CTA administrador.
+- **Presenter:** `salida-externa-layout.presenter.ts` + spec para etiquetas, origen y rutas.
+- **Contraste:** patrón `liquidaciones-oficiales-container`; sin cards decorativas ni cambios globales.
+
+---
+
+
+- **Loading:** `app-workspace-loading` en Previred, LRE, Liquidaciones (inicial, overlay recarga, detalle trabajador), Movimientos variables, Conceptos remuneración, modales admin nóminas y subcargas Generador V2 (dotación, movimientos, cálculo, trazabilidad).
+- **Errores:** `mensajeErrorSupabaseParaUsuario` en Liquidaciones, Administrador nóminas, Empresas y Empleados; MessageBox danger con Reintentar donde aplica.
+- **Core:** `erp-supabase-user-message.spec.ts`; validación `app-config.json` sin JSON crudo al usuario.
+- **Contraste:** `ui-form-guidelines.md` §Loading; sin cambios globales.
+
+---
+
+## 2026-07-05 — Previred y LRE: paridad visual Liquidaciones + errores API amigables
+
+- **Pantallas:** `/remuneraciones/previred`, `/remuneraciones/lre`.
+- **UI:** toolbar con lead operativo, resumen `dl` tipo `liq-estado-resumen`, bloque grilla con título/meta, MessageBox para vacíos/errores/advertencias, botón refrescar, CSV secundario en toolbar.
+- **Errores:** mensajes RRHH vía `mensajeErrorSupabaseParaUsuario` (incl. clave anon incompleta en `app-config.json`); validación temprana en `runtime-config.ts`.
+- **Copy:** sin JSON crudo de Supabase; «Revisar antes de exportar», «Sin nóminas exportables».
+- **Contraste:** patrón `liquidaciones-oficiales-container`; CSS local `prev-*` y `lre-*`; sin cards decorativas ni cambios globales.
+
+---
+
 ## 2026-07-05 — PREVIRED-01c archivo oficial PREVIRED-REM-v1
 
 - **Pantalla:** CTA «Descargar archivo Previred» cuando listo para envío; «CSV borrador» secundario en toolbar.

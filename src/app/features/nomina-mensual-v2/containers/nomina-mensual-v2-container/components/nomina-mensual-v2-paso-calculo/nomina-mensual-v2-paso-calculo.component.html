@@ -274,7 +274,11 @@
         <ng-template appDataGridRowDetail let-fila let-collapse="collapse">
           <div class="paso-calc__detalle">
             @if (estaCargandoDetalleFila(fila.trabajadorId)) {
-              <p class="paso-calc__placeholder">Cargando desglose…</p>
+              <app-workspace-loading
+                [fill]="false"
+                title="Cargando desglose"
+                message="Estamos consultando el detalle de cálculo del trabajador."
+              />
             } @else {
             <header class="paso-calc__detalle-head">
               <div class="paso-calc__detalle-head-info">

@@ -795,6 +795,82 @@
   padding-left: 1.1rem;
 }
 
+.cr-lre-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin: 0;
+  border-bottom: 1px solid #fde68a;
+  background: #fffbeb;
+  padding: 10px 14px;
+  font-size: 0.8125rem;
+  color: #92400e;
+}
+
+.cr-lre-banner p {
+  margin: 0;
+}
+
+.cr-lre-banner__link {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #b45309;
+  text-decoration: none;
+}
+
+.cr-lre-banner__link:hover {
+  text-decoration: underline;
+}
+
+.cr-lre-chip {
+  display: inline-block;
+  margin-right: 0.35rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.cr-lre-chip--ok {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.cr-lre-chip--warn {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.cr-lre-chip--pending {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+}
+
+.cr-lre-chip--derive {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+.cr-lre-chip--muted {
+  border-color: #e2e8f0;
+  background: #f8fafc;
+  color: #94a3b8;
+}
+
+.cr-codigo-motor {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-family: ui-monospace, monospace;
+}
+
 .hd-chip--vig-invalid {
   background: #fffbeb;
   color: #92400e;

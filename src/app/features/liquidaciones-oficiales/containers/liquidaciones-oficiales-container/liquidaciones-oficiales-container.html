@@ -52,6 +52,16 @@
     </div>
 
     <div class="liq-toolbar__actions">
+      @if (puedeExportarPrevired()) {
+        <a
+          class="liq-secondary-link"
+          data-testid="liquidaciones:exportar-previred"
+          [routerLink]="rutaPrevired().path"
+          [queryParams]="rutaPrevired().queryParams"
+        >
+          Exportar Previred
+        </a>
+      }
       <a class="liq-secondary-link" [routerLink]="rutaAdministradorNominas" [queryParams]="volverNominaQuery()">
         Administrador de nóminas
       </a>
@@ -73,8 +83,14 @@
     </div>
   </header>
 
-  @if (error()) {
-    <p class="liq-status-note liq-status-note--error">{{ error() }}</p>
+  @if (error(); as mensaje) {
+    <app-message-box
+      variant="danger"
+      title="No se pudo cargar"
+      [message]="mensaje"
+      primaryLabel="Reintentar"
+      (action)="reintentarCarga()"
+    />
   }
 
   <div class="liq-body">
@@ -114,9 +130,13 @@
         </dl>
       }
     </section>
-    } @else if (cargandoNominasLista()) {
+    } @else if (cargaNominasInicial()) {
     <section class="liq-entrada liq-entrada--loading" aria-label="Cargando nóminas">
-      <p class="liq-entrada__loading">Cargando nóminas con liquidaciones…</p>
+      <app-workspace-loading
+        [fill]="true"
+        title="Cargando liquidaciones"
+        message="Estamos consultando las nóminas con comprobantes materializados."
+      />
     </section>
   } @else if (nominasConLiquidaciones().length > 0) {
     <section class="liq-entrada" aria-label="Selección de nómina origen">
@@ -193,26 +213,43 @@
     </section>
   } @else {
     <section class="liq-seleccion-prompt" aria-label="Sin nóminas disponibles">
-      <div class="liq-seleccion-prompt__body">
-        <strong>No hay nóminas liquidadas o cerradas con comprobantes disponibles.</strong>
-        <span>Genera liquidaciones desde una nómina aprobada en el administrador.</span>
-        <a class="liq-link-button liq-link-button--primary" [routerLink]="rutaAdministradorNominas">
-          Ir al administrador de nóminas
-        </a>
-      </div>
+      <app-message-box
+        variant="blocked"
+        [sections]="[
+          {
+            title: 'Sin nóminas disponibles',
+            text: 'No hay nóminas liquidadas o cerradas con comprobantes disponibles. Genere liquidaciones desde una nómina aprobada en el administrador.',
+          },
+        ]"
+      />
+      <a class="liq-link-button liq-link-button--primary" [routerLink]="rutaAdministradorNominas">
+        Ir al administrador de nóminas
+      </a>
     </section>
     }
 
     @if (nominaInterna()) {
     <div class="liq-operativa">
     @if (trabajadoresSinLiquidacionInterna() > 0) {
-      <p class="liq-status-note liq-status-note--review">
-        {{ trabajadoresSinLiquidacionInterna() }} trabajador(es) en dotación aún sin liquidación en la versión vigente.
-      </p>
+      <app-message-box
+        variant="warning"
+        [sections]="[
+          {
+            title: 'Pendientes de liquidación',
+            text:
+              trabajadoresSinLiquidacionInterna() +
+              ' trabajador(es) en dotación aún sin liquidación en la versión vigente.',
+          },
+        ]"
+      />
     }
 
-    @if (cargandoNominaInterna()) {
-      <p class="liq-empty-inline">Cargando liquidaciones de la nómina…</p>
+    @if (cargaNominaInternaInicial()) {
+      <app-workspace-loading
+        [fill]="true"
+        title="Cargando liquidaciones de la nómina"
+        message="Estamos materializando los comprobantes de la nómina seleccionada."
+      />
     } @else if (filasLiquidacionesInternas().length > 0) {
       @if (filaVersionActiva(); as version) {
         <section class="liq-workers-zone" aria-label="Detalle por trabajador">
@@ -240,19 +277,17 @@
           }
 
           @if (evidenciaRegeneracion(); as evidencia) {
-            <p class="liq-status-note liq-status-note--success">{{ evidencia }}</p>
+            <app-message-box
+              variant="success"
+              [sections]="[{ text: evidencia }]"
+            />
           }
 
           @if (feedbackAccionTrabajador(); as feedback) {
-            <p
-              class="liq-status-note"
-              [class.liq-status-note--review]="feedback.tono === 'review'"
-              [class.liq-status-note--info]="feedback.tono === 'info'"
-              [class.liq-status-note--success]="feedback.tono === 'success'"
-              [class.liq-status-note--error]="feedback.tono === 'danger'"
-            >
-              {{ feedback.mensaje }}
-            </p>
+            <app-message-box
+              [variant]="variantFeedbackAccionTrabajador(feedback.tono)"
+              [sections]="[{ text: feedback.mensaje }]"
+            />
           }
 
           @let resumenEstado = resumenEstadoTrabajadores();
@@ -402,7 +437,11 @@
 
             <aside class="liq-section liq-section--detail">
               @if (cargandoDetalle()) {
-                <p class="liq-empty-inline">Cargando detalle…</p>
+                <app-workspace-loading
+                  [fill]="true"
+                  title="Cargando detalle"
+                  message="Estamos consultando los conceptos del trabajador seleccionado."
+                />
               } @else {
                 <app-liquidacion-detalle-panel
                   [trabajador]="trabajadorSeleccionado()"
@@ -466,6 +505,14 @@
       </details>
     } @else {
       <p class="liq-empty-inline">Esta nómina aún no tiene liquidaciones generadas.</p>
+    }
+    @if (cargaNominaInternaOverlay()) {
+      <app-workspace-loading
+        class="liq-operativa__overlay"
+        [fill]="true"
+        title="Actualizando liquidaciones"
+        message="Estamos refrescando las versiones materializadas de la nómina."
+      />
     }
     </div>
     }

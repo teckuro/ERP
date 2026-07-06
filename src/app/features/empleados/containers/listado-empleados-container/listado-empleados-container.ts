@@ -9,6 +9,7 @@ import {
   DataGridBulkActionEvent,
   DataGridBulkActionResult,
 } from '../../../../shared/components/ui/data-grid';
+import { mensajeErrorSupabaseParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
 @Component({
   selector: 'app-listado-empleados',
   imports: [CommonModule, TablaEmpleadosComponent],
@@ -36,8 +37,10 @@ export class ListadoEmpleadosContainer {
 
     try {
       this.empleados.set(await this.empleadosService.listar());
-    } catch {
-      this.mensajeError.set('No se pudo cargar el listado de empleados.');
+    } catch (err) {
+      this.mensajeError.set(
+        mensajeErrorSupabaseParaUsuario(err, 'cargar el listado de empleados'),
+      );
     } finally {
       this.cargando.set(false);
     }

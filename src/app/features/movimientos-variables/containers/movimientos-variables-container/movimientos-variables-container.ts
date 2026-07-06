@@ -18,10 +18,8 @@ import {
   DataGridCellDirective,
   DataGridComponent,
 } from '../../../../shared/components/ui/data-grid';
-import {
-  MessageBoxComponent,
-  MessageBoxVariant,
-} from '../../../../shared/components/ui/feedback/message-box/message-box.component';
+import { MessageBoxComponent, MessageBoxVariant } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
+import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import {
   RecordBreadcrumbComponent,
   RecordBreadcrumbItem,
@@ -58,6 +56,7 @@ import {
     DataGridComponent,
     DataGridCellDirective,
     MessageBoxComponent,
+    WorkspaceLoadingComponent,
     MovimientoVariableAltaDialogComponent,
     MovimientoVariableAnularDialogComponent,
   ],

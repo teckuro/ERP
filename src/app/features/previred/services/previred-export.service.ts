@@ -18,6 +18,11 @@ import type {
 import { PREVIRED_FORMATO_ARCHIVO_OFICIAL } from '../rules/previred-archivo-oficial.rules';
 import { construirBorradorPrevired } from '../rules/previred-export.rules';
 
+export interface PreviredBorradorCargaResult {
+  borrador: PreviredBorradorExport;
+  fasePreviredDesplegada: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PreviredExportService {
   private readonly liquidaciones = inject(LiquidacionesOficialesRepository);
@@ -32,7 +37,7 @@ export class PreviredExportService {
 
   async construirBorradorDesdeNomina(
     nominaPeriodoId: string,
-  ): Promise<PreviredBorradorExport | null> {
+  ): Promise<PreviredBorradorCargaResult | null> {
     const nomina = await this.nominaService.obtenerCabeceraNomina(nominaPeriodoId);
     if (!nomina) return null;
 
@@ -57,18 +62,24 @@ export class PreviredExportService {
       })),
     );
 
-    return construirBorradorPrevired({
-      periodo: nomina.periodo,
-      empresaNombre: nomina.empresaNombre,
-      idNominaPeriodo: nomina.id,
-      idLiquidacionPeriodo: liquidacion.idLiquidacionPeriodo,
-      versionLiquidacion: liquidacion.version,
-      trabajadores: detalles,
-      catalogoPrevired,
-    });
+    return {
+      borrador: construirBorradorPrevired({
+        periodo: nomina.periodo,
+        empresaNombre: nomina.empresaNombre,
+        idNominaPeriodo: nomina.id,
+        idLiquidacionPeriodo: liquidacion.idLiquidacionPeriodo,
+        versionLiquidacion: liquidacion.version,
+        trabajadores: detalles,
+        catalogoPrevired: catalogoPrevired.entradas,
+      }),
+      fasePreviredDesplegada: catalogoPrevired.tablaDesplegada,
+    };
   }
 
-  obtenerUltimaExportacion(idLiquidacionPeriodo: number): Promise<PreviredExportacionRegistro | null> {
+  async obtenerUltimaExportacion(idLiquidacionPeriodo: number): Promise<{
+    registro: PreviredExportacionRegistro | null;
+    tablaDesplegada: boolean;
+  }> {
     return this.previredRepo.obtenerUltimaExportacion(idLiquidacionPeriodo);
   }
 

@@ -1,6 +1,7 @@
 {
   "supabaseUrl": "https://YOUR_PROJECT_REF.supabase.co",
   "supabaseAnonKey": "YOUR_SUPABASE_ANON_KEY",
-  "asistentePreguntorFunction": "super-service"
+  "asistentePreguntorFunction": "super-service",
+  "_nota": "Copie este archivo a app-config.json. La clave anon public del Dashboard suele tener 200+ caracteres y empezar por eyJ."
 }
 

@@ -30,6 +30,7 @@ import {
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
+import { mensajeErrorSupabaseParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
 import type { EmpresaListadoFila } from '../../models/empresa.model';
 import { EmpresasService } from '../../services/empresas.service';
@@ -106,7 +107,7 @@ export class ListadoEmpresasContainer implements OnInit {
       this.filas.set(await this.empresasService.listar());
     } catch (error) {
       this.mensajeError.set(
-        error instanceof Error ? error.message : 'No se pudo cargar el listado de empresas.',
+        mensajeErrorSupabaseParaUsuario(error, 'cargar el listado de empresas'),
       );
     } finally {
       this.cargando.set(false);

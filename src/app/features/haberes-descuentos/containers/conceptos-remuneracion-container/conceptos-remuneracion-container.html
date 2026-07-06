@@ -8,8 +8,18 @@
 
   <p class="cr-note">
     Alta y eliminación física desde el listado no están habilitadas en esta fase; use la acción «Revisar» para ver
-    reglas y bloqueos. Los conceptos automáticos o de sistema siguen protegidos salvo perfil administrador.
+    reglas, exportación LRE y bloqueos. Los conceptos automáticos o de sistema siguen protegidos salvo perfil administrador.
   </p>
+
+  @if (mostrarFranjaLre()) {
+    <section class="cr-lre-banner" role="status" aria-label="Pendientes exportación LRE">
+      <p>
+        <strong>{{ pendientesExportacionLre() }}</strong>
+        concepto(s) requieren código LRE antes de exportar el libro de remuneraciones.
+      </p>
+      <a routerLink="/remuneraciones/lre" class="cr-lre-banner__link">Ir a exportación LRE</a>
+    </section>
+  }
 
   <div class="cr-grid-wrap">
     <app-data-grid
@@ -29,7 +39,7 @@
       cardClassName="erp-fullscreen-grid-card"
       (refresh)="refrescar()"
       emptyTitle="No hay conceptos de remuneración registrados."
-      emptyDescription="Crea o carga el catálogo maestro antes de asignar haberes o descuentos."
+      emptyDescription="El catálogo maestro se carga desde parámetros del sistema. El alta directa no está habilitada en esta fase."
       emptyTitleWhenFiltered="No hay conceptos que coincidan con los filtros."
       emptyDescriptionWhenFiltered="Ajusta la búsqueda o limpia filtros para ver más resultados."
     >
@@ -44,11 +54,15 @@
           <span class="hd-chip hd-chip--neutral">{{ etiquetaTipo(row.tipo) }}</span>
         }
       </ng-template>
+      <ng-template appDataGridCell="codigoMotor" let-row>
+        <span class="cr-codigo-motor">{{ row.codigoMotor?.trim() || '—' }}</span>
+      </ng-template>
       <ng-template appDataGridCell="lreCelda" let-row>
-        @if (row.idCatalogoLre == null) {
-          <span class="cr-lre-empty">LRE no asignado</span>
-        } @else {
-          <span class="cr-lre-val">{{ row.codigoLre ?? '—' }} · {{ (row.nombreLre ?? '').trim() || '—' }}</span>
+        <span [class]="claseChipEstadoLre(row.estadoLre)">
+          {{ etiquetaEstadoLre(row.estadoLre) }}
+        </span>
+        @if (row.codigoLre) {
+          <span class="cr-lre-val">{{ row.codigoLre }} · {{ (row.nombreLre ?? '').trim() || '—' }}</span>
         }
       </ng-template>
       <ng-template appDataGridCell="vigenciaPeriodo" let-row>
@@ -108,15 +122,6 @@
           >
             <lucide-icon class="h-4 w-4" [img]="editIcon"></lucide-icon>
           </button>
-          <button
-            type="button"
-            class="hd-action-btn hd-action-btn--danger"
-            [attr.title]="tituloAccion(row, 'eliminar')"
-            [disabled]="!accionesConcepto(row).puedeEliminar"
-            (click)="pedirEliminarConcepto(row)"
-          >
-            Eliminar
-          </button>
         </div>
       </ng-template>
     </app-data-grid>
@@ -148,18 +153,24 @@
             <dl class="cr-detalle-dl">
               <div><dt>Nombre</dt><dd>{{ dRow.nombre }}</dd></div>
               <div><dt>Código</dt><dd>{{ dRow.codigo }}</dd></div>
+              <div><dt>Código motor</dt><dd>{{ dRow.codigoMotor?.trim() || '—' }}</dd></div>
               <div><dt>Tipo</dt><dd>{{ etiquetaTipo(dRow.tipo) }}</dd></div>
               <div><dt>Descripción</dt><dd class="cr-detalle-muted">No aplica en catálogo (solo nombre y código).</dd></div>
               <div>
-                <dt>LRE</dt>
+                <dt>Exportación LRE</dt>
                 <dd>
-                  @if (dRow.idCatalogoLre == null) {
-                    <span class="cr-lre-empty">LRE no asignado</span>
-                  } @else {
-                    {{ dRow.codigoLre ?? '—' }} · {{ (dRow.nombreLre ?? '').trim() || '—' }}
+                  <span [class]="claseChipEstadoLre(dRow.estadoLre)">{{ etiquetaEstadoLre(dRow.estadoLre) }}</span>
+                  @if (dRow.codigoLre) {
+                    <span class="cr-lre-val">{{ dRow.codigoLre }} · {{ (dRow.nombreLre ?? '').trim() || '—' }}</span>
                   }
                 </dd>
               </div>
+              @if (dRow.observacionNormativaLre?.trim()) {
+                <div class="cr-detalle-sublist">
+                  <span class="cr-detalle-sublist-k">Nota normativa</span>
+                  <p class="cr-detalle-motivo">{{ dRow.observacionNormativaLre }}</p>
+                </div>
+              }
             </dl>
           </section>
 
@@ -212,7 +223,11 @@
           <section class="cr-detalle-block" aria-labelledby="cr-det-h-reglas">
             <h3 id="cr-det-h-reglas" class="cr-detalle-h">Reglas de cálculo</h3>
             @if (cargandoReglasDetalle()) {
-              <p class="cr-detalle-motivo">Cargando reglas…</p>
+              <app-workspace-loading
+                [fill]="false"
+                title="Cargando reglas"
+                message="Estamos consultando las reglas de cálculo del concepto."
+              />
             } @else if (reglasCalculoDetalle().length === 0) {
               <p class="cr-detalle-motivo">Sin reglas de cálculo registradas para este concepto.</p>
             } @else {

@@ -59,6 +59,9 @@ function concepto(overrides: Partial<ConceptoMantenimientoFila> = {}): ConceptoM
     vigenciaInicio: null,
     vigenciaFin: null,
     ordenImpresion: 0,
+    estrategiaLre: 'DIRECTO',
+    requiereExportacionLre: true,
+    observacionNormativaLre: null,
     ...overrides,
   };
 }

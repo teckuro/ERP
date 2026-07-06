@@ -29,8 +29,12 @@
     </div>
   </header>
 
-  @if (catalogosLoading()) {
-    <span class="text-xs text-gray-500">Cargando catalogos...</span>
+  @if (catalogosLoading() && filas().length === 0) {
+    <app-workspace-loading
+      [fill]="false"
+      title="Cargando catálogos"
+      message="Estamos preparando empleados y conceptos asignables del período."
+    />
   }
 
   <div class="mv-grid-wrap">
@@ -40,7 +44,8 @@
       [columns]="columns"
       [filters]="filters"
       [filtersEnabled]="true"
-      [loading]="gridLoading()"
+      [loading]="gridLoading() || catalogosLoading()"
+      loadingLabel="Cargando movimientos del mes…"
       [showExportAction]="false"
       [selectable]="false"
       [trackBy]="trackMvRow"

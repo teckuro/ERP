@@ -226,6 +226,16 @@ describe('proceso-mensual-motor.rules', () => {
     expect(liq.baseImponiblePrevisional).toBe(900000);
   });
 
+  it('haber recurrente propaga codigoLre e idConcepto del catálogo', () => {
+    const liq = generarCalculoPreliminarPeriodo(
+      input({ recurrentes: [recurrente({ codigoLre: '2111', idConcepto: 42 })] }),
+      'now',
+    ).liquidaciones[0];
+    const bono = liq.haberesImponibles.find((h) => h.codigo === 'BONO');
+    expect(bono?.codigoLre).toBe('2111');
+    expect(bono?.idConcepto).toBe(42);
+  });
+
   it('haber no imponible recurrente no suma a base imponible', () => {
     const liq = generarCalculoPreliminarPeriodo(input({ recurrentes: [recurrente({ imponible: false, naturalezaConcepto: 'NO_IMPONIBLE' })] }), 'now').liquidaciones[0];
     expect(liq.baseImponiblePrevisional).toBe(800000);

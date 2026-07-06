@@ -67,6 +67,9 @@ export interface ConceptoMantenimientoFila {
   vigenciaFin: string | null;
   ordenImpresion: number;
   calculoAutomatico: boolean;
+  estrategiaLre: string;
+  requiereExportacionLre: boolean;
+  observacionNormativaLre: string | null;
 }
 
 export interface ConceptoMantenimientoPayload {

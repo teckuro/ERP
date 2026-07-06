@@ -27,6 +27,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 
+import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { EmpresaActivaService } from '../../../../../../core/services/empresa-activa.service';
 import { NominaFeatureGatesService } from '../../../../services/nomina-feature-gates.service';
 import { NominaPlantillaCicloService } from '../../../../services/nomina-plantilla-ciclo.service';
@@ -82,7 +83,7 @@ function etiquetaPeriodoLegible(periodo: string): string {
 @Component({
   selector: 'app-admin-nominas-modal-nueva-nomina',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, MessageBoxComponent],
   templateUrl: './admin-nominas-modal-nueva-nomina.component.html',
   styleUrl: './admin-nominas-modal-nueva-nomina.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
