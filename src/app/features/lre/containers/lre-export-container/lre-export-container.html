@@ -1,0 +1,36 @@
+<div class="lre-page">
+  <header class="lre-toolbar">
+    <label class="lre-field">
+      <span>Nómina con liquidación</span>
+      <select
+        class="lre-select"
+        [ngModel]="nominaId()"
+        (ngModelChange)="onNominaChange($event)"
+        [disabled]="cargando() || nominas().length === 0"
+      >
+        @for (n of nominas(); track n.id) {
+          <option [ngValue]="n.id">{{ n.periodo }} · {{ n.empresaNombre }}</option>
+        }
+      </select>
+    </label>
+  </header>
+
+  @if (error()) {
+    <p class="lre-error">{{ error() }}</p>
+  }
+
+  @if (borrador(); as b) {
+    <div class="lre-resumen">
+      <span>{{ etiquetaPeriodoDesdeYm(b.periodo) }}</span>
+      <span>· {{ b.lineas.length }} línea(s)</span>
+      @if (b.conceptosSinCodigoLre > 0) {
+        <span class="lre-warn">{{ b.conceptosSinCodigoLre }} sin código LRE</span>
+      }
+    </div>
+    @if (b.lineas.length) {
+      <div class="lre-grid">
+        <app-data-grid [columns]="columnas" [rows]="b.lineas" emptyTitle="Sin líneas" />
+      </div>
+    }
+  }
+</div>

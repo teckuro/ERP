@@ -33,6 +33,7 @@ export const SHELL_NAV_SECTIONS: ShellNavSection[] = [
       },
       { path: '/remuneraciones/liquidaciones', label: 'Liquidaciones', icon: 'file-check-2' },
       { path: '/remuneraciones/previred', label: 'Previred', icon: 'upload' },
+      { path: '/remuneraciones/lre', label: 'Libro remuneraciones', icon: 'file-text' },
       { path: '/parametros', label: 'Parámetros', icon: 'settings' },
     ],
   },
