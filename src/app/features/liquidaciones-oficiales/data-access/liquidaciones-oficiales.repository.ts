@@ -155,7 +155,9 @@ function mapPeriodoRow(row: LiquidacionPeriodoRow): LiquidacionPeriodo {
   return {
     idLiquidacionPeriodo: row.id_liquidacion_periodo,
     idCalculoPeriodo: row.id_calculo_periodo,
+    idNominaPeriodo: row.id_nomina_periodo ?? null,
     periodo: row.periodo,
+    version: Number(row.version ?? 1),
     estado: 'generada',
     fechaGeneracion: row.fecha_generacion,
     usuarioGeneracionId: row.usuario_generacion_id ?? null,

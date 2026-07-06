@@ -9,6 +9,32 @@
 
 ---
 
+## 2026-07-05 — PREVIRED-01c archivo oficial PREVIRED-REM-v1
+
+- **Pantalla:** CTA «Descargar archivo Previred» cuando listo para envío; «CSV borrador» secundario en toolbar.
+- **UI:** sin cambios globales; botón secundario `prev-secondary-btn`.
+- **Contraste:** validación bloqueante vía `listoParaEnvio`; formato documentado en `formato-archivo-rem-v1.md`.
+
+---
+
+## 2026-07-05 — PREVIRED-01b catálogo y auditoría exportación
+
+- **Pantalla:** Previred → descarga CSV con registro en BD.
+- **UI:** franja última exportación (usuario, fecha, versión, líneas); chip «Listo para envío» cuando no hay pendientes de mapeo.
+- **Copy:** «mapeo provisional», «Listo para envío oficial»; sin nombres de RPC visibles.
+- **Contraste:** patrón auditoría LIQ-01b; CSS local `prev-audit`.
+
+---
+
+## 2026-07-05 — PREVIRED-01a borrador exportación Previred
+
+- **Pantalla:** `/remuneraciones/previred` → `previred-export-container`.
+- **UI:** toolbar con selector de nómina liquidada, resumen de líneas, grilla preview y CTA header «Descargar CSV».
+- **Copy:** lenguaje RRHH («Revisar antes de exportar», «sin código de movimiento»); sin términos técnicos de BD/RPC.
+- **Contraste:** patrón toolbar + grilla de Liquidaciones; CSS local `prev-*`; sin cards decorativas.
+
+---
+
 ## 2026-07-05 — LIQ-01c diff versiones liquidación
 
 - **Pantalla:** Liquidaciones oficiales → selector de versión (≥2 versiones).

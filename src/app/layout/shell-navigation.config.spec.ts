@@ -11,6 +11,7 @@ describe('shell-navigation.config', () => {
       '/empleados',
       '/remuneraciones/nominas',
       '/remuneraciones/liquidaciones',
+      '/remuneraciones/previred',
       '/parametros',
     ]);
     expect(gestion?.items.map((i) => i.path)).toContain('/remuneraciones/novedades-mensuales');

@@ -47,6 +47,13 @@ export const SHELL_ROUTE_CONTEXT_ENTRIES: readonly ShellRouteContextEntry[] = [
     ],
   },
   {
+    match: '/remuneraciones/previred',
+    breadcrumbs: [
+      { label: 'Remuneraciones', path: '/remuneraciones/nominas' },
+      { label: 'Previred' },
+    ],
+  },
+  {
     match: '/remuneraciones/movimientos-variables',
     breadcrumbs: [
       { label: 'Remuneraciones', path: '/remuneraciones/nominas' },

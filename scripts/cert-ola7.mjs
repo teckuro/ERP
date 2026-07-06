@@ -25,6 +25,7 @@ run('Unit gate nómina', 'npm', ['run', 'test:gate:nominas:unit']);
 run('Smoke producción', 'node', [path.join(__dirname, 'smoke-nomina-produccion.mjs')]);
 run('Smoke liquidaciones estado', 'node', [path.join(__dirname, 'smoke-liquidaciones-estado-revision.mjs')]);
 run('Smoke liquidaciones emisión', 'node', [path.join(__dirname, 'smoke-liquidaciones-emision.mjs')]);
+run('Smoke previred exportación', 'node', [path.join(__dirname, 'smoke-previred-exportacion.mjs')]);
 
 const e2eOn =
   Boolean(process.env['E2E_SUPABASE_AUTH_EMAIL'])
@@ -33,6 +34,7 @@ const e2eOn =
 if (process.env['NOMINA_GATE_E2E'] === '1' && e2eOn) {
   run('Playwright F20', 'npm', ['run', 'test:gate:nominas:e2e']);
   run('Playwright liquidaciones estado', 'npm', ['run', 'test:e2e:liquidaciones']);
+  run('Playwright previred exportación', 'npm', ['run', 'test:e2e:previred']);
 } else if (process.env['NOMINA_GATE_E2E'] === '1') {
   console.warn('[cert ola7] NOMINA_GATE_E2E=1 pero faltan credenciales E2E en .env — E2E omitido.');
 } else {

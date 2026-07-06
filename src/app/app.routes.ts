@@ -117,6 +117,10 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/liquidaciones.page').then((m) => m.LiquidacionesPage),
           },
           {
+            path: 'previred',
+            loadComponent: () => import('./pages/previred.page').then((m) => m.PreviredPage),
+          },
+          {
             path: 'liquidaciones-oficiales',
             pathMatch: 'full',
             redirectTo: 'liquidaciones',

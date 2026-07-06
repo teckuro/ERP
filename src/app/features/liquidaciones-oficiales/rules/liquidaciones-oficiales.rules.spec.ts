@@ -40,7 +40,9 @@ describe('liquidaciones-oficiales.rules', () => {
     const liquidacion = {
       idLiquidacionPeriodo: 1,
       idCalculoPeriodo: 15,
+      idNominaPeriodo: null,
       periodo: '2026-04',
+      version: 1,
       estado: 'generada' as const,
       fechaGeneracion: '2026-05-10T10:00:00.000Z',
       usuarioGeneracionId: '00000000-0000-0000-0000-000000000001',

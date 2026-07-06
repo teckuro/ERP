@@ -97,6 +97,15 @@ yarn-error.log
 /docs/codex/modulos/liquidaciones-oficiales/*
 !/docs/codex/modulos/liquidaciones-oficiales/README.md
 !/docs/codex/modulos/liquidaciones-oficiales/contrato-general.md
+!/docs/codex/modulos/previred/
+/docs/codex/modulos/previred/*
+!/docs/codex/modulos/previred/README.md
+!/docs/codex/modulos/previred/PREVIRED-01-contrato-fase.md
+!/docs/codex/modulos/previred/formato-archivo-rem-v1.md
+!/docs/codex/modulos/lre/
+/docs/codex/modulos/lre/*
+!/docs/codex/modulos/lre/README.md
+!/docs/codex/modulos/lre/LRE-01-contrato-fase.md
 !/docs/codex/modulos/remuneraciones/
 /docs/codex/modulos/remuneraciones/*
 !/docs/codex/modulos/remuneraciones/movimientos-remuneracion-simple.md
@@ -123,6 +132,8 @@ src/app/supabase
 !/tests/nominas-admin-generador.e2e.spec.ts
 !/tests/helpers/
 !/tests/helpers/nominas-admin-generador-e2e.ts
+!/tests/helpers/previred-exportacion-e2e.ts
+!/tests/previred-exportacion.e2e.spec.ts
 !/tests/nomina-mensual.e2e.spec.ts
 !/tests/empleados-nomina-error-fixtures.spec.ts
 /test-results

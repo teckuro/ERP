@@ -27,7 +27,9 @@ export interface LiquidacionEmision {
 export interface LiquidacionPeriodo {
   idLiquidacionPeriodo: number;
   idCalculoPeriodo: number;
+  idNominaPeriodo: string | null;
   periodo: string;
+  version: number;
   estado: LiquidacionOficialEstado;
   fechaGeneracion: string;
   usuarioGeneracionId: string | null;

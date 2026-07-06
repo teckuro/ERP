@@ -373,6 +373,39 @@ export type Database = {
         }
         Relationships: []
       }
+      catalogo_previred: {
+        Row: {
+          codigo_lre: string
+          codigo_previred: string
+          created_at: string
+          glosa_previred: string | null
+          id_catalogo_previred: number
+          metadata: Json
+          updated_at: string
+          vigente: boolean
+        }
+        Insert: {
+          codigo_lre: string
+          codigo_previred: string
+          created_at?: string
+          glosa_previred?: string | null
+          id_catalogo_previred?: number
+          metadata?: Json
+          updated_at?: string
+          vigente?: boolean
+        }
+        Update: {
+          codigo_lre?: string
+          codigo_previred?: string
+          created_at?: string
+          glosa_previred?: string | null
+          id_catalogo_previred?: number
+          metadata?: Json
+          updated_at?: string
+          vigente?: boolean
+        }
+        Relationships: []
+      }
       ccaf_entidad: {
         Row: {
           codigo: string
@@ -3036,6 +3069,72 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "nomina_liquidacion_trabajador"
             referencedColumns: ["id_liquidacion_trabajador"]
+          },
+        ]
+      }
+      nomina_previred_exportacion: {
+        Row: {
+          canal: string
+          conceptos_sin_codigo: number
+          conceptos_sin_mapeo: number
+          exportado_en: string
+          id_liquidacion_periodo: number
+          id_nomina_periodo: string | null
+          id_previred_exportacion: number
+          metadata: Json
+          periodo: string
+          total_lineas: number
+          total_trabajadores: number
+          usuario_id: string | null
+          usuario_label: string
+          version_liquidacion: number
+        }
+        Insert: {
+          canal?: string
+          conceptos_sin_codigo?: number
+          conceptos_sin_mapeo?: number
+          exportado_en?: string
+          id_liquidacion_periodo: number
+          id_nomina_periodo?: string | null
+          id_previred_exportacion?: number
+          metadata?: Json
+          periodo: string
+          total_lineas?: number
+          total_trabajadores?: number
+          usuario_id?: string | null
+          usuario_label: string
+          version_liquidacion?: number
+        }
+        Update: {
+          canal?: string
+          conceptos_sin_codigo?: number
+          conceptos_sin_mapeo?: number
+          exportado_en?: string
+          id_liquidacion_periodo?: number
+          id_nomina_periodo?: string | null
+          id_previred_exportacion?: number
+          metadata?: Json
+          periodo?: string
+          total_lineas?: number
+          total_trabajadores?: number
+          usuario_id?: string | null
+          usuario_label?: string
+          version_liquidacion?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_previred_exportacion_id_liquidacion_periodo_fkey"
+            columns: ["id_liquidacion_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_liquidacion_periodo"
+            referencedColumns: ["id_liquidacion_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_previred_exportacion_id_nomina_periodo_fkey"
+            columns: ["id_nomina_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_periodo"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -6000,6 +6099,40 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "nomina_liquidacion_emision"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      registrar_exportacion_previred: {
+        Args: {
+          p_canal?: string
+          p_conceptos_sin_codigo?: number
+          p_conceptos_sin_mapeo?: number
+          p_id_liquidacion_periodo: number
+          p_id_nomina_periodo?: string | null
+          p_metadata?: Json
+          p_total_lineas?: number
+          p_total_trabajadores?: number
+        }
+        Returns: {
+          canal: string
+          conceptos_sin_codigo: number
+          conceptos_sin_mapeo: number
+          exportado_en: string
+          id_liquidacion_periodo: number
+          id_nomina_periodo: string | null
+          id_previred_exportacion: number
+          metadata: Json
+          periodo: string
+          total_lineas: number
+          total_trabajadores: number
+          usuario_id: string | null
+          usuario_label: string
+          version_liquidacion: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_previred_exportacion"
           isOneToOne: true
           isSetofReturn: false
         }

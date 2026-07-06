@@ -16,7 +16,7 @@
 | Documentación | [`estado-fases/docs.md`](./estado-fases/docs.md) | 3 | Nomenclatura, DOCS-AUDIT, seeds documentales |
 | Liquidaciones oficiales | [`estado-fases/liquidaciones.md`](./estado-fases/liquidaciones.md) | 1 | `LIQ-OFICIAL-01`, validación BD `LIQ-DB-APPLY-01` |
 | UX comercial / transversal | [`estado-fases/ux-comercial.md`](./estado-fases/ux-comercial.md) | 1 | `REM-UX-FLOWS-01 V2` (periodo activo global) |
-| LRE / Previred | [`estado-fases/lre-previred.md`](./estado-fases/lre-previred.md) | 1 | `LRE-CONCEPT-RULES-01` (parcial, SQL pendiente de aplicar) |
+| LRE / Previred | [`estado-fases/lre-previred.md`](./estado-fases/lre-previred.md) | 4 | `PREVIRED-01`, `LRE-CONCEPT-RULES-01` (parcial) |
 | Roadmap y orden | [`estado-fases/orden.md`](./estado-fases/orden.md) | 10 | `ORDEN-01` + secciones 1–9 (propósito, fases cerradas, pendientes, criterios) |
 
 **Total**: 111 bloques H2 distribuidos.

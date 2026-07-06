@@ -1,0 +1,118 @@
+<div class="prev-page">
+  <header class="prev-toolbar" aria-label="Selección de nómina">
+    <div class="prev-toolbar__fields">
+      <label class="prev-toolbar__field">
+        <span>Nómina con liquidación</span>
+        <select
+          class="prev-toolbar__select"
+          [disabled]="cargandoNominas() || nominasExportables().length === 0"
+          [ngModel]="nominaSeleccionadaId()"
+          (ngModelChange)="onNominaChange($event)"
+        >
+          @if (nominasExportables().length === 0) {
+            <option [ngValue]="null">Sin nóminas disponibles</option>
+          }
+          @for (nomina of nominasExportables(); track nomina.id) {
+            <option [ngValue]="nomina.id">{{ etiquetaOpcionNominaPrevired(nomina) }}</option>
+          }
+        </select>
+      </label>
+
+      @if (borrador(); as datos) {
+        <div class="prev-toolbar__meta">
+          <span>{{ etiquetaPeriodoDesdeYm(datos.periodo) }}</span>
+          <span class="prev-toolbar__sep">·</span>
+          <span>{{ datos.empresaNombre }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="prev-toolbar__actions">
+      @if (puedeDescargarArchivo() && puedeDescargarCsv()) {
+        <button
+          type="button"
+          class="prev-secondary-btn"
+          data-testid="previred:descargar-csv"
+          [disabled]="registrandoDescarga() || cargandoBorrador()"
+          (click)="descargarBorradorCsv()"
+        >
+          CSV borrador
+        </button>
+      }
+      <button
+        type="button"
+        class="prev-icon-btn"
+        title="Actualizar borrador"
+        aria-label="Actualizar borrador"
+        [disabled]="!nominaSeleccionadaId() || cargandoBorrador()"
+        (click)="recargarBorrador()"
+      >
+        <lucide-icon name="refresh-cw" aria-hidden="true"></lucide-icon>
+      </button>
+    </div>
+  </header>
+
+  @if (errorCarga()) {
+    <p class="prev-status-note prev-status-note--error">{{ errorCarga() }}</p>
+  }
+
+  <div class="prev-body">
+    @if (cargandoNominas() || cargandoBorrador()) {
+      <p class="prev-status-note">Preparando borrador de exportación…</p>
+    } @else if (nominasExportables().length === 0) {
+      <app-message-box
+        variant="blocked"
+        [sections]="[
+          {
+            title: 'Sin nóminas exportables',
+            text: 'No hay nóminas liquidadas o cerradas con liquidación oficial. Genere liquidaciones antes de exportar a Previred.',
+          },
+        ]"
+      />
+    } @else if (seccionesAdvertencia().length > 0) {
+      <app-message-box variant="warning" [sections]="seccionesAdvertencia()" />
+    }
+
+    @if (feedbackDescarga()) {
+      <p class="prev-status-note prev-status-note--review">{{ feedbackDescarga() }}</p>
+    }
+
+    @if (ultimaExportacion(); as exportacion) {
+      <div class="prev-audit" aria-label="Última exportación registrada">
+        <span>Última exportación: {{ formatearFechaExportacionPrevired(exportacion.exportadoEn) }}</span>
+        <span class="prev-toolbar__sep">·</span>
+        <span>{{ exportacion.usuarioLabel }}</span>
+        <span class="prev-toolbar__sep">·</span>
+        <span>v{{ exportacion.versionLiquidacion }} · {{ exportacion.totalLineas }} línea(s)</span>
+      </div>
+    }
+
+    @if (resumenBorrador(); as resumen) {
+      <div class="prev-resumen" aria-label="Resumen del borrador">
+        <span><strong>{{ resumen.lineas }}</strong> línea(s)</span>
+        <span><strong>{{ resumen.trabajadores }}</strong> trabajador(es)</span>
+        <span>versión liquidación <strong>v{{ resumen.version }}</strong></span>
+        @if (resumen.sinCodigo > 0) {
+          <span class="prev-resumen__warn">{{ resumen.sinCodigo }} sin código</span>
+        }
+        @if (resumen.sinMapeo > 0) {
+          <span class="prev-resumen__warn">{{ resumen.sinMapeo }} mapeo provisional</span>
+        }
+        @if (resumen.listoParaEnvio) {
+          <span class="prev-resumen__ok">Listo para envío oficial</span>
+        }
+      </div>
+    }
+
+    @if (borrador()?.lineas?.length) {
+      <div class="prev-grid-wrap">
+        <app-data-grid
+          [columns]="columnas"
+          [rows]="borrador()!.lineas"
+          [persistenceKey]="persistenciaGrilla"
+          emptyTitle="No hay líneas para mostrar."
+        />
+      </div>
+    }
+  </div>
+</div>

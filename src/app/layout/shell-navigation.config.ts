@@ -32,6 +32,7 @@ export const SHELL_NAV_SECTIONS: ShellNavSection[] = [
         icon: 'clipboard-list',
       },
       { path: '/remuneraciones/liquidaciones', label: 'Liquidaciones', icon: 'file-check-2' },
+      { path: '/remuneraciones/previred', label: 'Previred', icon: 'upload' },
       { path: '/parametros', label: 'Parámetros', icon: 'settings' },
     ],
   },
