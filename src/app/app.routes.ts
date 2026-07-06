@@ -107,10 +107,8 @@ export const routes: Routes = [
           },
           {
             path: 'plantillas-ciclos',
-            loadComponent: () =>
-              import(
-                './features/nomina-mensual/containers/administrador-plantillas-container/administrador-plantillas-container'
-              ).then((m) => m.AdministradorPlantillasContainer),
+            pathMatch: 'full',
+            redirectTo: 'nominas',
           },
           {
             path: 'liquidaciones',

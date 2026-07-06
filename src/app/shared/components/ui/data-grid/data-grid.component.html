@@ -600,7 +600,7 @@
                         aria-label="Seleccionar registros visibles"
                         [checked]="allPageRowsSelected"
                         [indeterminate]="somePageRowsSelected && !allPageRowsSelected"
-                        [disabled]="loading"
+                        [disabled]="loading || selectablePagedRows.length === 0"
                         (change)="togglePageSelection($event)"
                       />
                     </th>
@@ -710,13 +710,19 @@
                       @if (selectable) {
                         <td
                           class="data-grid-selection-cell w-11 border-b border-r border-neutral-100 transition-colors"
-                          [class.bg-blue-50]="isRowSelected(row)"
+                          [class.bg-blue-50]="isRowSelectionCheckboxChecked(row)"
+                          [class.data-grid-selection-cell--locked]="isRowSelectionDisabledFor(row)"
                         >
                           <input
-                            class="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                            class="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
                             type="checkbox"
-                            [attr.aria-label]="'Seleccionar registro ' + (absoluteIndex(rowIndex) + 1)"
-                            [checked]="isRowSelected(row)"
+                            [attr.aria-label]="
+                              isRowSelectionLockedCheckedFor(row)
+                                ? 'Selección bloqueada'
+                                : 'Seleccionar registro ' + (absoluteIndex(rowIndex) + 1)
+                            "
+                            [checked]="isRowSelectionCheckboxChecked(row)"
+                            [disabled]="isRowSelectionCheckboxDisabled(row)"
                             (click)="$event.stopPropagation()"
                             (change)="toggleRowSelection(row, $event)"
                           />
@@ -869,14 +875,15 @@
                       <span class="data-grid-mobile-counter">N° {{ absoluteIndex(rowIndex) + 1 }}</span>
                     }
                     @if (selectable) {
-                      <label class="data-grid-mobile-select">
+                      <label class="data-grid-mobile-select" [class.is-locked]="isRowSelectionDisabledFor(row)">
                         <input
-                          class="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                          class="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
                           type="checkbox"
-                          [checked]="isRowSelected(row)"
+                          [checked]="isRowSelectionCheckboxChecked(row)"
+                          [disabled]="isRowSelectionCheckboxDisabled(row)"
                           (change)="toggleRowSelection(row, $event)"
                         />
-                        <span>Seleccionar registro</span>
+                        <span>{{ isRowSelectionLockedCheckedFor(row) ? 'Selección bloqueada' : 'Seleccionar registro' }}</span>
                       </label>
                     }
 

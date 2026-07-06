@@ -81,15 +81,17 @@ function filaMock(parcial: Partial<FilaTrabajadorMovimientos> = {}): FilaTrabaja
   };
 }
 
-function configurarTestBed(servicio: Record<string, unknown>): void {
+function configurarTestBed(
+  servicio: Record<string, unknown>,
+  haberesDescuentos: Record<string, unknown> = {
+    listarConceptos: vi.fn().mockResolvedValue(CONCEPTOS_CATALOGO_MOCK),
+  },
+): void {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
     providers: [
       { provide: NominaPeriodoService, useValue: servicio },
-      {
-        provide: HaberesDescuentosService,
-        useValue: { listarConceptos: vi.fn().mockResolvedValue(CONCEPTOS_CATALOGO_MOCK) },
-      },
+      { provide: HaberesDescuentosService, useValue: haberesDescuentos },
     ],
   });
 }
@@ -345,7 +347,12 @@ describe('NominaMensualV2PasoMovimientosComponent (UI unificada)', () => {
       expect(servicio['agregarMovimientoManual']).not.toHaveBeenCalled();
 
       cmp.conceptosCatalogo.set(CONCEPTOS_CATALOGO_MOCK);
-      cmp.actualizarConceptoManual('9');
+      cmp.confirmarConceptoDesdePicker({
+        origen: 'catalogo',
+        conceptoId: 9,
+        categoria: 'haber',
+        tipo: 'BONO',
+      });
       await cmp.crearMovimientoManual();
 
       expect(servicio['agregarMovimientoManual']).toHaveBeenCalledWith(
@@ -363,16 +370,21 @@ describe('NominaMensualV2PasoMovimientosComponent (UI unificada)', () => {
       expect(cmp.mensaje()).toMatch(/manual/);
     });
 
-    it('cambiar a ausencia fija el tipo operativo y no exige concepto', async () => {
+    it('selección operativa de ausencia no exige concepto de catálogo', async () => {
       configurarTestBed(servicio);
       const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
       fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
       const cmp = fixture.componentInstance;
       cmp.abrirModalManual('tr-1');
-      cmp.actualizarCategoriaManual('ausencia');
+      cmp.confirmarConceptoDesdePicker({
+        origen: 'operativo',
+        categoria: 'ausencia',
+        tipo: 'AUSENCIA',
+      });
 
       expect(cmp.categoriaRequiereConcepto()).toBe(false);
       expect(cmp.puedeGuardarManual()).toBe(true);
+      expect(cmp.resumenConceptoManual()?.nombre).toContain('Ausencia');
 
       await cmp.crearMovimientoManual();
       expect(servicio['agregarMovimientoManual']).toHaveBeenCalledWith(
@@ -380,17 +392,29 @@ describe('NominaMensualV2PasoMovimientosComponent (UI unificada)', () => {
       );
     });
 
-    it('conceptosParaCategoria filtra por familia haber/descuento', () => {
+    it('confirmarConceptoDesdePicker sincroniza categoría desde el catálogo', () => {
       configurarTestBed(servicio);
       const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
       const cmp = fixture.componentInstance;
-      cmp.conceptosCatalogo.set(CONCEPTOS_CATALOGO_MOCK);
 
-      cmp.actualizarCategoriaManual('haber');
-      expect(cmp.conceptosParaCategoria().map((c) => c.codigo)).toEqual(['BONO']);
+      cmp.confirmarConceptoDesdePicker({
+        origen: 'catalogo',
+        conceptoId: 12,
+        categoria: 'descuento',
+        tipo: 'PRESTAMO',
+      });
+      expect(cmp.borradorManual().categoria).toBe('descuento');
+      expect(cmp.borradorManual().tipo).toBe('PRESTAMO');
+      expect(cmp.modalConceptoAbierto()).toBe(false);
+    });
 
-      cmp.actualizarCategoriaManual('descuento');
-      expect(cmp.conceptosParaCategoria().map((c) => c.codigo)).toEqual(['PRESTAMO']);
+    it('abrirModalConcepto abre el picker de catálogo', () => {
+      configurarTestBed(servicio);
+      const fixture = TestBed.createComponent(NominaMensualV2PasoMovimientosComponent);
+      const cmp = fixture.componentInstance;
+
+      cmp.abrirModalConcepto();
+      expect(cmp.modalConceptoAbierto()).toBe(true);
     });
 
     it('crearMovimientoManual no llama al servicio si no hay trabajadorId', async () => {

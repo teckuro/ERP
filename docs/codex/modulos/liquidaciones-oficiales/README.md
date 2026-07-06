@@ -89,6 +89,19 @@ reliquidacion
 - Franja `liq-version-diff` al cambiar versión (totales vs versión anterior)
 - Reglas y presenter reutilizando patrón F09 diff recálculo
 
+## Estado vacío (2026-07-06)
+
+Pantalla sin comprobantes materializados usa acta contextual (`liquidaciones-vacio.rules.ts`):
+
+| Escenario | Chip | CTA |
+|-----------|------|-----|
+| Sin nóminas | Sin nóminas | Crear nómina en administrador |
+| En preparación | Nóminas en preparación | Ir al administrador de nóminas |
+| Sin comprobantes | Sin liquidaciones | Ir al administrador de nóminas |
+
+- Toolbar oculto en vacío; una acción principal en `app-message-box` (`variant="info"`).
+- Layout `.liq-acta-vacia`: columna, ancho máx. 40rem, sin borde dashed.
+
 ## Evidencia real/controlada
 
 ```txt

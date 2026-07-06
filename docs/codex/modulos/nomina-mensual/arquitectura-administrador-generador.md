@@ -211,8 +211,8 @@ Las nuevas RPC que se construyan en F05 en adelante deben:
 | Container | `src/app/features/nomina-mensual/containers/administrador-plantillas-container/` |
 | Modal editor | `…/components/admin-plantillas-modal-editor/` |
 | Modal preview | `…/components/admin-plantillas-modal-preview/` |
-| Ruta | `/remuneraciones/plantillas-ciclos` |
-| Menú lateral | Sección **Gestión** → "Plantillas de ciclos" (`calendar-days`) |
+| Ruta | `/remuneraciones/plantillas-ciclos` → redirige a `nominas` (UI F03 diferida) |
+| Menú lateral | ~~Sección **Gestión** → "Plantillas de ciclos"~~ retirado del menú hasta nueva fase |
 
 ### Restricciones honradas
 
@@ -332,10 +332,13 @@ Devuelve `idNominaPeriodo`, `estado`, `versionEstado`, `siguientePaso`
 - `services/nomina-periodo.service.ts` orquesta el flujo: `crearNominaPeriodo`
   pasa a ser un wrapper que invoca preview + confirm; ya no se popula la
   dotación desde el cliente.
-- `admin-nominas-modal-nueva-nomina` es un wizard de 2 pasos
-  (`configuración → vista previa`) con tabs incluidos/excluidos/conflictos y
-  alerta NOIA para bloqueantes. El error `40001` se interpreta como "vuelve a
-  configurar".
+- `admin-nominas-modal-nueva-nomina` es un formulario de un paso: configuración
+  (período y empresa; solo mensual por ahora). Al confirmar ejecuta preview RPC (F04) en
+  segundo plano para obtener `fingerprint` y luego `confirmarCreacion` (F05).
+  Sin pantalla intermedia de vista previa; los bloqueos se muestran inline en
+  el mismo modal.
+- **UX 2026-07-06:** aviso de nómina existente en bandeja, `app-periodo-mensual-input`
+  y copy de anticipación antes de confirmar (`nomina-creacion-ui.rules.ts` parcial).
 
 ### Handoff Administrador → Generador V2
 

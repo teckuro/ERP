@@ -1,0 +1,109 @@
+<div class="sel-conc__backdrop" role="presentation" aria-hidden="true"></div>
+<section
+  class="sel-conc"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="sel-conc-title"
+  (click)="$event.stopPropagation()"
+>
+  <header class="sel-conc__head">
+    <div class="sel-conc__copy">
+      <p class="sel-conc__eyebrow">Catálogo del período</p>
+      <h2 id="sel-conc-title" class="sel-conc__title">Elegir concepto y categoría</h2>
+      <p class="sel-conc__subtitle">
+        Busca por nombre o código. La categoría se define al elegir el concepto.
+      </p>
+    </div>
+    <button
+      type="button"
+      class="sel-conc__close"
+      (click)="cerrarModal()"
+      aria-label="Cerrar"
+    >
+      <lucide-icon [img]="closeIcon" aria-hidden="true"></lucide-icon>
+    </button>
+  </header>
+
+  <div class="sel-conc__toolbar">
+    <label class="sel-conc__search">
+      <span class="sel-conc__search-label">Buscar</span>
+      <input
+        type="search"
+        [value]="busqueda()"
+        placeholder="Nombre o código del concepto"
+        (input)="actualizarBusqueda($any($event.target).value)"
+        [disabled]="cargando()"
+      />
+    </label>
+    <div class="sel-conc__filtros" role="group" aria-label="Filtrar por categoría">
+      @for (filtro of filtrosCategoria; track filtro.id) {
+        <button
+          type="button"
+          class="sel-conc__filtro"
+          [class.is-active]="filtroCategoria() === filtro.id"
+          (click)="actualizarFiltroCategoria(filtro.id)"
+        >
+          {{ filtro.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="sel-conc__stats" role="status">
+    <span>{{ totalCatalogo() }} conceptos asignables</span>
+    @if (itemsVisibles().length !== totalCatalogo()) {
+      <span aria-hidden="true">·</span>
+      <span>{{ itemsVisibles().length }} visibles</span>
+    }
+  </div>
+
+  <div class="sel-conc__list-wrap">
+    @if (cargando()) {
+      <p class="sel-conc__empty">Cargando conceptos del período…</p>
+    } @else if (itemsVisibles().length === 0) {
+      <p class="sel-conc__empty">
+        No hay conceptos que coincidan. Revise el catálogo o la vigencia del período.
+      </p>
+    } @else {
+      <ul class="sel-conc__list">
+        @for (item of itemsVisibles(); track trackItem($index, item)) {
+          <li>
+            <button
+              type="button"
+              class="sel-conc__item"
+              [class.is-selected]="itemSeleccionado(item)"
+              [attr.data-categoria]="item.categoria"
+              (click)="seleccionarItem(item)"
+            >
+              <span class="sel-conc__item-main">
+                <span class="sel-conc__item-nombre">{{ item.nombre }}</span>
+                @if (item.origen === 'catalogo') {
+                  <span class="sel-conc__item-codigo">{{ item.codigo }}</span>
+                }
+              </span>
+              <span class="sel-conc__item-aside">
+                <span class="sel-conc__pill" [attr.data-categoria]="item.categoria">
+                  {{ etiquetaCategoria(item.categoria) }}
+                </span>
+                @if (item.origen === 'catalogo' && (item.imponible || item.tributable)) {
+                  <span class="sel-conc__item-meta">
+                    @if (item.imponible) { imponible }
+                    @if (item.imponible && item.tributable) { · }
+                    @if (item.tributable) { tributable }
+                  </span>
+                }
+              </span>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+  <footer class="sel-conc__footer">
+    <p class="sel-conc__footnote">
+      Selecciona una fila para confirmar concepto y categoría en el movimiento.
+    </p>
+    <button type="button" class="sel-conc__cancel" (click)="cerrarModal()">Volver</button>
+  </footer>
+</section>

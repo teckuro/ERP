@@ -88,6 +88,8 @@ import {
 
   formatearFechaLiquidacion,
 
+  liquidacionReferenciaCobertura,
+
   liquidacionVigente,
 
   prepararFilasLiquidacionesInternas,
@@ -102,9 +104,11 @@ import {
 
   nominasConLiquidacionesDisponibles,
 
-  puedeRegenerarLiquidacionesInternas,
+  puedeRegenerarDesdePantallaLiquidaciones,
 
 } from '../../../nomina-mensual/rules/nomina-liquidaciones-internas-ui.rules';
+
+import { tieneLiquidaciones } from '../../../nomina-mensual/rules/admin-nominas.rules';
 
 import { estadoNominaToBadge } from '../../../nomina-mensual/containers/administrador-nominas-container/utils/admin-nominas-presentacion.util';
 
@@ -148,6 +152,11 @@ import {
 
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import { rutaPreviredNomina } from '../../../remuneraciones-salidas/presenters/salida-externa-layout.presenter';
+import { construirActaVaciaLiquidaciones } from '../../rules/liquidaciones-vacio.rules';
+import {
+  construirAccionRecomendadaLiquidaciones,
+  iconoAccionRecomendadaLiquidacion,
+} from '../../rules/liquidaciones-accion-recomendada.rules';
 
 
 
@@ -225,6 +234,11 @@ export class LiquidacionesOficialesContainer {
 
   });
 
+  readonly origenDesdeCierre = computed(() => {
+    const params = this.queryParams() as Record<string, unknown>;
+    return params['origen'] === 'cierre';
+  });
+
   readonly modoNominaInterna = computed(() => !!this.nominaPeriodoId());
 
   readonly nominaInterna = signal<NominaPeriodo | null>(null);
@@ -238,6 +252,8 @@ export class LiquidacionesOficialesContainer {
   readonly confirmacionRegeneracionInternaVisible = signal(false);
 
   readonly nominasConLiquidaciones = signal<readonly NominaPeriodoResumen[]>([]);
+
+  readonly resumenesNomina = signal<readonly NominaPeriodoResumen[]>([]);
 
   readonly nominasParaModal = computed(() => [...this.nominasConLiquidaciones()]);
 
@@ -293,7 +309,7 @@ export class LiquidacionesOficialesContainer {
 
   readonly puedeRegenerarInterna = computed(() =>
 
-    puedeRegenerarLiquidacionesInternas(
+    puedeRegenerarDesdePantallaLiquidaciones(
 
       this.nominaInterna()?.estado ?? 'borrador',
 
@@ -303,19 +319,39 @@ export class LiquidacionesOficialesContainer {
 
   );
 
+  readonly filtroEstadoRevisionActivo = signal<LiquidacionAccionUiEstado | null>(null);
+
+  readonly historialVersionesAbierto = signal(false);
+
   readonly trabajadoresSinLiquidacionInterna = computed(() => {
 
-    const vigente = this.filasLiquidacionesInternas().find((f) => f.clasificacion === 'vigente');
+    const filas = this.filasLiquidacionesInternas();
+
+    const referencia = liquidacionReferenciaCobertura(filas);
+
+    const dotacionIds = this.nominaInterna()?.trabajadorIds.length ?? 0;
+
+    const totalNomina = dotacionIds > 0
+      ? dotacionIds
+      : (referencia?.totalTrabajadores ?? 0);
 
     return calcularTrabajadoresSinLiquidacion(
 
-      this.nominaInterna()?.trabajadorIds.length ?? 0,
+      totalNomina,
 
-      vigente?.totalTrabajadores,
+      referencia?.totalTrabajadores,
+
+      { hayLotesMaterializados: filas.length > 0 },
 
     );
 
   });
+
+  readonly nominaInternaConEstadoLiquidado = computed(() =>
+
+    tieneLiquidaciones(this.nominaInterna()?.estado ?? 'borrador'),
+
+  );
 
   readonly versionLiquidacionActivaId = computed(() => {
 
@@ -423,7 +459,13 @@ export class LiquidacionesOficialesContainer {
     () => this.cargandoNominaInterna() && this.filasLiquidacionesInternas().length > 0,
   );
 
+  readonly mostrarToolbar = computed(
+    () => !!this.nominaInterna() || this.nominasConLiquidaciones().length > 0,
+  );
 
+  readonly actaVacia = computed(() =>
+    construirActaVaciaLiquidaciones(this.resumenesNomina(), this.nominasConLiquidaciones()),
+  );
 
   readonly periodoSeleccionado = computed(() => this.periodoActivo.getPeriodo());
 
@@ -455,6 +497,36 @@ export class LiquidacionesOficialesContainer {
 
   readonly resumenEstadoTrabajadores = computed(() => resumirEstadosLiquidacionUi(this.estadosAccionTrabajador()));
 
+  readonly accionRecomendada = computed(() =>
+    construirAccionRecomendadaLiquidaciones({
+      tieneNominaSeleccionada: !!this.nominaInterna(),
+      nominasElegiblesCount: this.nominasConLiquidaciones().length,
+      origenDesdeCierre: this.origenDesdeCierre(),
+      estadoNomina: this.nominaInterna()?.estado ?? null,
+      calculoVigente: this.nominaInterna()?.evidenciaCalculo?.calculoVigente ?? false,
+      hayVersionesMaterializadas: this.filasLiquidacionesInternas().length > 0,
+      resumenEstados: this.resumenEstadoTrabajadores(),
+      puedeExportarPrevired: this.puedeExportarPrevired(),
+      trabajadoresSinLiquidacion: this.trabajadoresSinLiquidacionInterna(),
+    }),
+  );
+
+  readonly iconoAccionRecomendadaLiquidacion = iconoAccionRecomendadaLiquidacion;
+
+  readonly trabajadoresLiquidacionFiltrados = computed(() => {
+    const filtro = this.filtroEstadoRevisionActivo();
+    if (!filtro) return this.trabajadoresLiquidacion();
+    return this.trabajadoresLiquidacion().filter(
+      (fila) => this.estadoUiTrabajador(fila) === filtro,
+    );
+  });
+
+  readonly etiquetaFiltroEstadoActivo = computed(() => {
+    const filtro = this.filtroEstadoRevisionActivo();
+    if (!filtro) return null;
+    return buildLiquidacionAccionUiView(filtro).estadoLabel;
+  });
+
   readonly filtrosTrabajadoresLiquidacion = computed(() =>
 
     crearFiltrosTrabajadoresLiquidacion(this.estadosAccionTrabajador()),
@@ -478,8 +550,6 @@ export class LiquidacionesOficialesContainer {
     return { label: view.estadoLabel, tono: view.estadoTone };
 
   });
-
-
 
   constructor() {
 
@@ -515,7 +585,7 @@ export class LiquidacionesOficialesContainer {
 
                 ? 'Cargando…'
 
-                : `${this.nominasConLiquidaciones().length} nómina(s)`,
+                : this.actaVacia().chipLabel,
 
               tone: 'neutral',
 
@@ -641,9 +711,13 @@ export class LiquidacionesOficialesContainer {
 
       const resumenes = await this.nominaService.listarResumenes();
 
+      this.resumenesNomina.set(resumenes);
+
       this.nominasConLiquidaciones.set(nominasConLiquidacionesDisponibles(resumenes));
 
     } catch (error) {
+
+      this.resumenesNomina.set([]);
 
       this.nominasConLiquidaciones.set([]);
 
@@ -882,6 +956,78 @@ export class LiquidacionesOficialesContainer {
 
   }
 
+  irAdministradorNominas(): void {
+    this.volverAdministradorNomina();
+  }
+
+  irAlGeneradorNomina(): void {
+    const id = this.nominaPeriodoId();
+    if (!id) {
+      void this.router.navigate([this.rutaAdministradorNominas], {
+        queryParams: this.volverNominaQuery(),
+      });
+      return;
+    }
+    void this.router.navigate(['/remuneraciones/nominas', id, 'generador'], {
+      queryParams: { paso: 'cierre' },
+    });
+  }
+
+  aplicarFiltroEstadoRevision(estado: LiquidacionAccionUiEstado): void {
+    this.filtroEstadoRevisionActivo.set(estado);
+  }
+
+  limpiarFiltroEstadoRevision(): void {
+    this.filtroEstadoRevisionActivo.set(null);
+  }
+
+  filtrarPorResumenEstado(estado: LiquidacionAccionUiEstado): void {
+    if (this.filtroEstadoRevisionActivo() === estado) {
+      this.limpiarFiltroEstadoRevision();
+      return;
+    }
+    this.aplicarFiltroEstadoRevision(estado);
+  }
+
+  ejecutarAccionRecomendada(): void {
+    const accion = this.accionRecomendada();
+    if (!accion?.ejecutable) return;
+
+    switch (accion.tipo) {
+      case 'continuidad_cierre':
+      case 'revisar_pendientes_autorizar':
+      case 'revisar_pendientes_pago':
+      case 'revisar_pendientes_documento':
+        if (accion.filtroEstadoRevision) {
+          this.aplicarFiltroEstadoRevision(accion.filtroEstadoRevision as LiquidacionAccionUiEstado);
+        }
+        break;
+      case 'exportar_previred': {
+        const ruta = this.rutaPrevired();
+        void this.router.navigate([ruta.path], { queryParams: ruta.queryParams });
+        break;
+      }
+      case 'regenerar_reabierta':
+        this.solicitarRegeneracionInterna();
+        break;
+      case 'sin_comprobantes':
+        this.irAlGeneradorNomina();
+        break;
+      default:
+        break;
+    }
+  }
+
+  abrirDetalleTrabajadorEnRuta(trabajador: LiquidacionTrabajador): void {
+    void this.router.navigate(['/remuneraciones/liquidaciones', trabajador.idLiquidacionTrabajador], {
+      queryParams: this.nominaPeriodoId() ? { nominaPeriodoId: this.nominaPeriodoId() } : {},
+    });
+  }
+
+  seleccionarVersionDesdeHistorial(idLiquidacionPeriodo: number): void {
+    this.seleccionarVersionLiquidacion(idLiquidacionPeriodo);
+  }
+
 
 
   abrirModalSeleccionNomina(): void {
@@ -999,6 +1145,9 @@ export class LiquidacionesOficialesContainer {
         ),
       );
 
+      this.filtroEstadoRevisionActivo.set(null);
+      this.historialVersionesAbierto.set(this.filasLiquidacionesInternas().length > 1);
+
       this.feedbackAccionTrabajador.set(null);
 
     } catch (error) {
@@ -1026,6 +1175,7 @@ export class LiquidacionesOficialesContainer {
 
 
   ejecutarAccionTrabajador(event: LiquidacionAccionUiEvent): void {
+    if (this.soloLecturaInterna()) return;
     const trabajador = this.trabajadoresLiquidacion().find(
       (fila) => fila.idLiquidacionTrabajador === event.idLiquidacionTrabajador,
     );
@@ -1067,9 +1217,9 @@ export class LiquidacionesOficialesContainer {
       case 'autorizada':
         return 'Liquidación autorizada. Puede continuar con el registro de pago.';
       case 'pago_registrado':
-        return 'Pago registrado. Puede enviar el documento al trabajador.';
+        return 'Pago marcado como registrado. Puede marcar la entrega del documento.';
       case 'documento_enviado':
-        return 'Documento marcado como enviado.';
+        return 'Documento marcado como entregado.';
       case 'rectificacion_solicitada':
         return 'Rectificación solicitada: corrige desde Nómina mensual o una futura reliquidación antes de emitir una nueva versión.';
       default:
@@ -1143,7 +1293,9 @@ export class LiquidacionesOficialesContainer {
 
   viewTrabajador(trabajador: LiquidacionTrabajador) {
 
-    return buildLiquidacionAccionUiView(this.estadoUiTrabajador(trabajador));
+    return buildLiquidacionAccionUiView(this.estadoUiTrabajador(trabajador), {
+      soloLectura: this.soloLecturaInterna(),
+    });
 
   }
 

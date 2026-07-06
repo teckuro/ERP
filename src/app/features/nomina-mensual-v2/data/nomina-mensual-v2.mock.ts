@@ -7,6 +7,5 @@ export const payrollSteps: PayrollStep[] = [
   { id: 'dotacion', number: 2, title: 'Dotación', subtitle: 'Revisar' },
   { id: 'movements', number: 3, title: 'Movimientos', subtitle: 'Registrar' },
   { id: 'calculation', number: 4, title: 'Cálculo', subtitle: 'Procesar' },
-  { id: 'validation', number: 5, title: 'Validación', subtitle: 'Verificar' },
-  { id: 'closure', number: 6, title: 'Cierre', subtitle: 'Autorizar' },
+  { id: 'closure', number: 5, title: 'Cierre', subtitle: 'Autorizar' },
 ];

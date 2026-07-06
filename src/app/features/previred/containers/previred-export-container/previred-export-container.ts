@@ -43,6 +43,7 @@ import {
   etiquetaNominaActivaSalidaExport,
   rutaLiquidacionesNomina,
 } from '../../../remuneraciones-salidas/presenters/salida-externa-layout.presenter';
+import { construirEmptySalidaExterna } from '../../../remuneraciones-salidas/rules/salida-externa-vacio.rules';
 
 @Component({
   selector: 'app-previred-export-container',
@@ -135,6 +136,12 @@ export class PreviredExportContainer {
     () => this.cargandoBorrador() && !!this.borrador(),
   );
 
+  readonly emptyVm = computed(() => construirEmptySalidaExterna('previred'));
+
+  readonly mostrarToolbar = computed(
+    () => !this.cargaInicial() && !this.errorCarga() && this.nominasExportables().length > 0,
+  );
+
   readonly seccionesAdvertencia = computed((): MessageBoxSection[] => {
     const borrador = this.borrador();
     if (!borrador?.advertencias.length) return [];
@@ -186,7 +193,9 @@ export class PreviredExportContainer {
                       ? 'warning'
                       : 'danger',
                 }
-              : { label: 'Sin nómina', tone: 'neutral' },
+              : this.nominasExportables().length === 0
+                ? { label: this.emptyVm().chipLabel, tone: 'neutral' }
+                : { label: 'Sin nómina', tone: 'neutral' },
           primaryAction: archivo
             ? {
                 label: 'Descargar archivo Previred',

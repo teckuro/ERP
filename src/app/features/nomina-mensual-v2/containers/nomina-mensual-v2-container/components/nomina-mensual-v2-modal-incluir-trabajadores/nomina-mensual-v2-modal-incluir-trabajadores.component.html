@@ -56,6 +56,8 @@
       headerCountNoun="trabajadores"
       [headerShowActiveFiltersCount]="true"
       [selectable]="true"
+      [isRowSelectionDisabled]="filaSeleccionBloqueada"
+      [isRowSelectionLockedChecked]="filaSeleccionBloqueada"
       selectionLabel="trabajadores"
       [bulkActions]="accionesMasivas"
       [bulkActionLoading]="aplicando()"
@@ -89,8 +91,8 @@
 
   <footer class="incluir-modal__footer">
     <p class="incluir-modal__footnote" aria-live="polite">
-      Marca trabajadores con el checkbox y usa “Incluir seleccionados” para
-      agregarlos a la dotación.
+      Marca trabajadores elegibles con la casilla. Quienes ya están en la nómina
+      aparecen con la selección bloqueada.
     </p>
     <button
       type="button"

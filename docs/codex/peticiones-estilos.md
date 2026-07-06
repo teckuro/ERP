@@ -9,6 +9,103 @@
 
 ---
 
+## 2026-07-06 — Liquidaciones: usabilidad RRHH (franja, congelamiento, guía)
+
+- **Franja `liq-franja`:** acción recomendada (patrón Paso Cierre) según nómina, pendientes y continuidad desde cierre.
+- **Solo lectura real:** nómina cerrada/anulada oculta autorizar/pago/documento; mantiene ver e imprimir.
+- **Contadores clicables:** filtran grilla por estado de revisión; chip «Filtrando» con limpiar.
+- **Copy:** «Marcar pago», «Marcar entregado», «Ver e imprimir»; vacíos intermedios con CTA al generador.
+- **Detalle:** `/remuneraciones/liquidaciones/:id` operativo por trabajador; última emisión visible.
+- **Archivos:** `liquidaciones-oficiales-container.*`, `liquidaciones-accion-recomendada.rules.ts`, `detalle-liquidacion.page.ts`, CSS local; sin globales.
+
+---
+
+## 2026-07-06 — Modal Nueva nómina: shell de pasos restaurado
+
+- **Header:** eyebrow + indicador `1 Configuración · 2 Vista previa` (paso 2 pendiente; confirmación directa sin pantalla intermedia).
+- **Período:** hint legible bajo el picker cuando el valor es válido.
+- **Contraste:** estilos locales `.adm-nom-modal__steps`; sin globales ni SQL.
+
+---
+
+## 2026-07-06 — Creación nómina: fix motivo_cierre + mensajes de error
+
+- **BD:** migración `motivo_cierre` en `nomina_periodo` (fallo en `transicionar_nomina_periodo` al confirmar).
+- **Script:** `npm run apply:nomina-motivo-cierre-bd`.
+- **Modal:** recupera cabecera por id tras confirmar; mensajes RRHH sin texto duplicado.
+- **Contraste:** sin estilos globales.
+
+---
+
+## 2026-07-06 — Menú: sin Plantillas de ciclos (diferido)
+
+- **Menú lateral:** eliminado ítem «Plantillas de ciclos» (sección Gestión).
+- **Ruta:** `/remuneraciones/plantillas-ciclos` redirige al Administrador de nóminas.
+- **Error creación:** mensaje RRHH sin referencia a ciclos ni comandos npm.
+- **BD:** `npm run reparar:plantilla-mes-bd` reactivó MES; limpieza de nóminas ahora asegura MES al final.
+- **Contraste:** sin estilos globales; pantalla F03 queda en código pero fuera de navegación.
+
+---
+
+## 2026-07-06 — Modal Nueva nómina: solo mensual (sin ciclos)
+
+- **Alcance UI:** tipo fijo «Mensual» (texto de contexto); eliminados selector de tipo, corte de anticipo y dependencia de plantillas de ciclo en el modal.
+- **Creación:** siempre `tipo: mensual`; errores vía mensaje RRHH (`mensajeErrorSupabaseParaUsuario`).
+- **Contraste:** sin estilos globales, SQL ni motor.
+
+---
+
+## 2026-07-06 — Modal Nueva nómina: sin vista previa (creación directa)
+
+- **Flujo:** un solo paso de configuración; CTA «Confirmar y abrir generador» (preview RPC solo en backend).
+- **Eliminado UI:** wizard paso 2, tabs incluidos/excluidos/conflictos, búsqueda, paginación y handoff del modal.
+- **Bloqueos:** conflictos o dotación vacía se muestran como error inline en el formulario.
+- **Contraste:** CSS local `.adm-nom-modal__*` reducido; sin globales ni SQL.
+
+---
+
+## 2026-07-06 — Periodo mensual: select de año inline en panel de meses
+
+- **Panel único de meses:** select de año + grilla 3×4 siempre visibles en el mismo contenedor.
+- **Año:** desplegable con búsqueda bajo el select; al elegir año se cierra solo el desplegable y el panel de meses sigue abierto.
+- **Contraste:** revertido wizard `1 · Año / 2 · Mes`; estilos locales; sin globales ni SQL.
+
+---
+
+## 2026-07-06 — Periodo mensual: ancho del select y búsqueda de año
+
+- **Panel:** mismo ancho que el campo/select del formulario (`width: 100%`, padding 8px 10px).
+- **Año:** trigger tipo select; al pulsarlo, vista con búsqueda y lista filtrable de años; «Volver a meses» regresa a la grilla 3×4.
+- **Contraste:** estilos locales del componente; sin estilos globales ni SQL.
+
+---
+
+## 2026-07-06 — Periodo mensual input: panel calendario 3×4
+
+- **Panel:** navegación de año con flechas y grilla 3×4 de meses (abreviaturas ENER…DIC); mes seleccionado con fondo azul y texto blanco, como referencia de picker compacto.
+- **Modal Nueva nómina:** mantiene trigger integrado; overflow visible al abrir para no recortar el panel.
+- **Contraste:** estilos locales del componente; sin estilos globales ni SQL.
+
+---
+
+## 2026-07-06 — Periodo mensual input (shared) + modal Nueva nómina
+
+- **Nuevo:** `app-periodo-mensual-input` — trigger tipo campo (icono calendario + etiqueta + chevron) y panel desplegable con meses agrupados por año en grilla 3 columnas; patrón alineado al selector de período del shell.
+- **Modal Nueva nómina:** reemplaza `input type="month"` nativo por el componente compartido (misma altura y borde que campos del modal).
+- **Contraste:** patrón alineado al selector de período del shell; sin estilos globales ni SQL.
+
+---
+
+## 2026-07-06 — Modal Nueva nómina: wizard y preview (Administrador)
+
+- **Wizard:** eyebrow «Creación de nómina», indicador `1 Configuración · 2 Vista previa`, período legible bajo el input.
+- **Paso 1:** aviso inline si ya hay nómina en bandeja (idempotencia F05); bloque anticipación antes de confirmar.
+- **Paso 2:** búsqueda nombre/RUT (RPC `p_busqueda`), actas vacías por tab, franja handoff al generador.
+- **Rules:** `nomina-creacion-ui.rules.ts` (duplicado bandeja, handoff, empty tabs).
+- **Contraste:** CSS local `.adm-nom-modal__*`; sin cambios globales ni SQL.
+
+---
+
 ## 2026-07-06 — Conceptos remuneración: alta habilitada (admin)
 
 - **Grilla:** botón primario «Nuevo concepto» visible para perfil administrador de remuneraciones.
@@ -3372,12 +3469,63 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 ## 2026-07-03 - Liquidaciones: acciones como iconos con title
 
 - Grilla trabajadores: botones icono (`check-circle`, `dollar-sign`, `send`, `repeat`, `eye`, `file-text`) con `title` y `aria-label` específicos por acción.
+
+## 2026-07-06 - Liquidaciones: acta vacía contextual
+
+- **Vacío**: tres escenarios vía `liquidaciones-vacio.rules.ts`; chip shell en lenguaje RRHH.
+- **Layout**: patrón `data-grid-state` (icono, kicker mayúsculas, título, texto, botón borde); fondo `#fafaf7`; toolbar oculto sin elegibles.
+- **Previred / LRE**: mismo patrón en `.sal-ext-empty` (`salida-externa-vacio.rules.ts`); toolbar oculto sin nóminas exportables; CTA a liquidaciones oficiales.
+- **Sin tocar**: estilos globales, SQL, motor.
 - Entrada y modal nómina: `arrow-right` / `check-circle` para abrir o seleccionar.
 - Toolbar: `search` (cambiar nómina), `refresh-cw` / `file-check-2` (regenerar/generar).
 - Patrón visual `liq-row-action` alineado al administrador de nóminas.
 - **Sin tocar**: estilos globales, SQL, motor.
 
-## 2026-07-03 - Liquidaciones: selector nómina toolbar compacto
+## 2026-07-06 - Dotación · Agregar trabajadores: casilla bloqueada si ya está en nómina
 
-- Disparador «Nómina origen» unificado: etiqueta a la izquierda e icono `search` anclado a la derecha en el mismo control (sin salto de línea).
+- **Data grid (opt-in)**: inputs `isRowSelectionDisabled` e `isRowSelectionLockedChecked` deshabilitan la casilla y la muestran marcada sin incluirla en la selección masiva.
+- **Modal incluir trabajadores**: filas `yaEnNomina` quedan con check bloqueado; el selector de página solo afecta elegibles.
+- **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-06 - Generador V2 paso Movimientos: modal de concepto y categoría
+
+- **Picker dedicado** (`nomina-mensual-v2-modal-seleccion-concepto`): lista buscable del catálogo del período con chip de categoría (Haber, Descuento, Ausencia, Informativo); selección en una fila confirma nombre + categoría.
+- **Modal manual**: campo resumen + botón «Elegir concepto y categoría» en lugar de selects separados en el formulario.
+- **Sin tocar**: estilos globales, SQL, motor, servicios de negocio productivos.
+
+## 2026-07-06 - Generador V2 paso Movimientos: selector de conceptos del catálogo
+
+- **Modal manual**: reemplazo del `<select>` nativo por `app-search-select` alimentado con `HaberesDescuentosService.listarConceptos` (misma regla asignable que Asignaciones y Movimientos del mes).
+- **Vigencia**: el catálogo se resuelve con `fechaInicioNomina` del período, no con la fecha del día.
+- **UX**: etiqueta `Nombre (código)`, hint imponible/tributable y aviso si no hay conceptos vigentes para la categoría.
+- **Sin tocar**: estilos globales, SQL, motor, servicios de negocio productivos.
+
+## 2026-07-06 - Generador V2: paso Validación absorbido por Cierre
+
+- **Stepper**: 5 pasos (Parámetros → Dotación → Movimientos → Cálculo → Cierre); se retira el paso Validación de la UI.
+- **Flujo**: desde Cálculo, CTA «Continuar al cierre»; la transición `calculada → validada` ocurre en backend al avanzar (dotación solo admite personal apto).
+- **Cierre**: checklist sin ítem «Validación completada»; bloqueos de incidencias siguen en el resumen del paso Cierre.
+- **Legacy**: `ultimo_paso_visitado` / `maximo_paso_completado` con valor `validation` se normalizan a `closure`.
+- **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-06 - Generador V2 paso Cierre: rediseño operativo NOIA
+
+- **Franja de acción recomendada**: guía contextual (aprobar, conciliar, generar liquidaciones o cerrar desde shell) con botón primario cuando aplica.
+- **Checklist**: panel con barra de avance, ítems pendientes resaltados y métricas inline (patrón dotación).
+- **Detalle**: bloques separados para liquidaciones y motivo de cierre; se retira footer redundante.
+- **Copy**: Paso 5 · Cierre; lenguaje RRHH orientado a la secuencia aprobar → liquidar → cerrar.
+- **Sin tocar**: estilos globales, SQL, motor, servicios de negocio.
+
+## 2026-07-06 - Generador V2 paso Cierre: densidad iconográfica
+
+- **Menos copy visible**: subtítulos, detalles de checklist y hints retirados; contexto en `title`/`aria-label`.
+- **Iconos**: franja de acción, stats, checklist, liquidaciones, alertas y botones secundarios (refresh, detalle, reabrir).
+- **Checklist**: al 100% muestra una sola fila resumen; si hay pendientes, solo esas filas.
+- **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-06 - Generador V2 paso Cierre: densidad iconográfica
+
+- **Menos copy visible**: subtítulos, detalles de checklist y hints retirados; contexto en `title`/`aria-label`.
+- **Iconos**: franja de acción, stats, checklist, liquidaciones, alertas y botones secundarios (refresh, detalle, reabrir).
+- **Checklist**: al 100% muestra una sola fila resumen; si hay pendientes, solo esas filas.
 - **Sin tocar**: estilos globales, SQL, motor.

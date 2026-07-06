@@ -101,7 +101,26 @@ export function siguienteEstadoLiquidacionUi(
   return estado;
 }
 
-export function buildLiquidacionAccionUiView(estado: LiquidacionAccionUiEstado): LiquidacionAccionUiView {
+export interface LiquidacionAccionUiViewOpts {
+  soloLectura?: boolean;
+}
+
+export function buildLiquidacionAccionUiView(
+  estado: LiquidacionAccionUiEstado,
+  opts?: LiquidacionAccionUiViewOpts,
+): LiquidacionAccionUiView {
+  const view = buildLiquidacionAccionUiViewEditable(estado);
+  if (opts?.soloLectura !== true) return view;
+  return {
+    ...view,
+    primaryAction: null,
+    secondaryActions: [],
+    pdfLabel: 'Ver e imprimir',
+    pdfDisabled: false,
+  };
+}
+
+function buildLiquidacionAccionUiViewEditable(estado: LiquidacionAccionUiEstado): LiquidacionAccionUiView {
   switch (estado) {
     case 'pendiente_autorizar':
       return {
@@ -110,7 +129,7 @@ export function buildLiquidacionAccionUiView(estado: LiquidacionAccionUiEstado):
         estadoTone: 'review',
         primaryAction: accion('autorizar', 'Autorizar', 'check-circle', 'Autorizar liquidación'),
         secondaryActions: [],
-        pdfLabel: 'Ver liquidación',
+        pdfLabel: 'Ver e imprimir',
         pdfDisabled: false,
       };
     case 'autorizada':
@@ -118,9 +137,14 @@ export function buildLiquidacionAccionUiView(estado: LiquidacionAccionUiEstado):
         estado,
         estadoLabel: 'Autorizada',
         estadoTone: 'ok',
-        primaryAction: accion('registrar_pago', 'Registrar pago', 'dollar-sign', 'Registrar pago de liquidación'),
+        primaryAction: accion(
+          'registrar_pago',
+          'Marcar pago',
+          'dollar-sign',
+          'Marcar pago registrado',
+        ),
         secondaryActions: [rectificacionAction()],
-        pdfLabel: 'Ver liquidación',
+        pdfLabel: 'Ver e imprimir',
         pdfDisabled: false,
       };
     case 'pago_registrado':
@@ -128,19 +152,24 @@ export function buildLiquidacionAccionUiView(estado: LiquidacionAccionUiEstado):
         estado,
         estadoLabel: 'Pago registrado',
         estadoTone: 'ok',
-        primaryAction: accion('enviar_documento', 'Enviar documento', 'send', 'Enviar documento de liquidación'),
+        primaryAction: accion(
+          'enviar_documento',
+          'Marcar entregado',
+          'send',
+          'Marcar documento entregado',
+        ),
         secondaryActions: [rectificacionAction()],
-        pdfLabel: 'Ver liquidación',
+        pdfLabel: 'Ver e imprimir',
         pdfDisabled: false,
       };
     case 'documento_enviado':
       return {
         estado,
-        estadoLabel: 'Documento enviado',
+        estadoLabel: 'Documento entregado',
         estadoTone: 'ok',
         primaryAction: null,
         secondaryActions: [rectificacionAction()],
-        pdfLabel: 'Ver liquidación',
+        pdfLabel: 'Ver e imprimir',
         pdfDisabled: false,
       };
     case 'rectificacion_solicitada':
@@ -150,7 +179,7 @@ export function buildLiquidacionAccionUiView(estado: LiquidacionAccionUiEstado):
         estadoTone: 'danger',
         primaryAction: null,
         secondaryActions: [],
-        pdfLabel: 'Ver liquidación',
+        pdfLabel: 'Ver e imprimir',
         pdfDisabled: false,
       };
   }

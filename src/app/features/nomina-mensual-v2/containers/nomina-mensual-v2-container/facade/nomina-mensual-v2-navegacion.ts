@@ -23,11 +23,12 @@ export { ORDEN_PASOS_NOMINA };
  * con la razón humana que el container publica como `ayudaAvance`.
  *
  * Híbrido acotado:
- *  - Dotación / Validación / Cierre: terminal — `avanzar()` ejecuta la acción
- *    real (confirmar / aprobar / abrir modal de cierre).
+ *  - Dotación / Cierre: terminal — `avanzar()` ejecuta la acción real
+ *    (confirmar / abrir modal de cierre).
  *  - Movimientos / Cálculo: navegacional — `avanzar()` sólo valida que el paso
  *    esté en estado vigente; las acciones operativas (`Aplicar recurrentes`,
  *    `Calcular nómina`) permanecen como botones inline.
+ *    Al salir de Cálculo hacia Cierre, el container auto-valida si corresponde.
  */
 export type ResultadoAvancePaso = { ok: true } | { ok: false; razon: string };
 
@@ -35,9 +36,9 @@ export type ResultadoAvancePaso = { ok: true } | { ok: false; razon: string };
 export const RAZON_CIERRE_MODAL_PENDIENTE =
   'Revisa el resumen y confirma el cierre en el diálogo.';
 
-/** Respuesta de `avanzar()` en validación cuando el modal de confirmación quedó abierto. */
+/** @deprecated Paso Validación absorbido por Cierre; conservado por compatibilidad de copy. */
 export const RAZON_VALIDACION_MODAL_PENDIENTE =
-  'Revisa incidencias y confirma la validación en el diálogo.';
+  'Revisa el resumen y confirma el cierre en el diálogo.';
 
 /** Pasos cuyo “completo” exige acción terminal confirmada (no auto-persistir al visitar). */
 export function pasoExcluidoAutoPersistenciaCompletado(paso: PayrollStepId): boolean {
@@ -222,15 +223,12 @@ export function indiceUltimoPasoCompletadoPorEstado(estado: EstadoNomina | null)
     case 'calculada':
       return ORDEN_PASOS_NOMINA.indexOf('calculation');
     case 'validada':
-      return ORDEN_PASOS_NOMINA.indexOf('validation');
     case 'aprobada':
-      return ORDEN_PASOS_NOMINA.indexOf('validation');
     case 'liquidada':
-      return ORDEN_PASOS_NOMINA.indexOf('validation');
+    case 'reabierta':
+      return ORDEN_PASOS_NOMINA.indexOf('calculation');
     case 'cerrada':
       return ORDEN_PASOS_NOMINA.indexOf('closure');
-    case 'reabierta':
-      return ORDEN_PASOS_NOMINA.indexOf('validation');
     case 'anulada':
       return -1;
   }
@@ -257,7 +255,7 @@ export function indiceMaximoPasoAccesible(estado: EstadoNomina | null): number {
     case 'en_revision':
       return ORDEN_PASOS_NOMINA.indexOf('calculation');
     case 'calculada':
-      return ORDEN_PASOS_NOMINA.indexOf('validation');
+      return ORDEN_PASOS_NOMINA.indexOf('closure');
     case 'validada':
     case 'aprobada':
     case 'liquidada':
@@ -310,8 +308,6 @@ export function obtenerEtiquetaBrevePaso(paso: PayrollStepId): string {
       return 'Movimientos';
     case 'calculation':
       return 'Cálculo';
-    case 'validation':
-      return 'Validación';
     case 'closure':
       return 'Cierre';
   }
@@ -384,8 +380,6 @@ export function obtenerTituloPaso(paso: PayrollStepId): string {
       return 'Movimientos del período';
     case 'calculation':
       return 'Cálculo de la nómina';
-    case 'validation':
-      return 'Validación previa al cierre';
     case 'closure':
       return 'Cierre y liquidaciones';
   }
@@ -400,9 +394,7 @@ export function obtenerSubtituloPaso(paso: PayrollStepId): string {
     case 'movements':
       return 'Recurrentes aplicados, movimientos manuales y omisiones del mes.';
     case 'calculation':
-      return 'Procesa el cálculo y revisa el desglose por trabajador antes de validar.';
-    case 'validation':
-      return 'Resumen de incidencias y guardias antes de cerrar la nómina.';
+      return 'Procesa el cálculo y revisa el desglose por trabajador antes de cerrar.';
     case 'closure':
       return 'Aprueba el cierre operativo y genera las liquidaciones del período.';
   }
@@ -417,9 +409,7 @@ export function obtenerEtiquetaAccionPrincipal(paso: PayrollStepId): string {
     case 'movements':
       return 'Continuar al cálculo';
     case 'calculation':
-      return 'Continuar a validación';
-    case 'validation':
-      return 'Validar para cierre';
+      return 'Continuar al cierre';
     case 'closure':
       return 'Cerrar nómina';
   }
@@ -435,8 +425,6 @@ export function obtenerIconoPaso(stepId: PayrollStepId): string {
       return 'list-plus';
     case 'calculation':
       return 'calculator';
-    case 'validation':
-      return 'shield-check';
     case 'closure':
       return 'lock';
   }

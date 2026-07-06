@@ -118,6 +118,67 @@ describe('NominaMensualV2PasoCierreComponent (CIE-ENUM-01)', () => {
     expect(cmp.estadoLabel(undefined)).toBe('');
   });
 
+  it('accionRecomendada prioriza aprobación en estado validada', () => {
+    const fixture = TestBed.createComponent(NominaMensualV2PasoCierreComponent);
+    const cmp = fixture.componentInstance;
+
+    cmp.nomina.set(
+      nominaMock({
+        estado: 'validada',
+        trabajadorIds: ['t1', 't2'],
+        evidenciaCalculo: { versionCalculo: 1, calculoVigente: true, idCalculoPeriodo: 10 },
+      }),
+    );
+    cmp.resumen.set({
+      totalTrabajadores: 2,
+      listosParaCalculo: 2,
+      conIncidenciasCriticas: 0,
+      conAdvertencias: 0,
+      conMovimientosEspeciales: 0,
+      puedeCalcular: true,
+      puedeValidar: true,
+      puedeCerrar: false,
+      calculoVigente: true,
+      incidenciasCriticas: [],
+      advertencias: [],
+    });
+
+    const accion = cmp.accionRecomendada();
+    expect(accion?.tipo).toBe('aprobar');
+    expect(accion?.ejecutable).toBe(true);
+  });
+
+  it('checklistVista resume en una fila cuando todo está cumplido', () => {
+    const fixture = TestBed.createComponent(NominaMensualV2PasoCierreComponent);
+    const cmp = fixture.componentInstance;
+
+    cmp.nomina.set(
+      nominaMock({
+        estado: 'liquidada',
+        trabajadorIds: ['t1', 't2', 't3'],
+        evidenciaCalculo: { versionCalculo: 1, calculoVigente: true, idCalculoPeriodo: 10 },
+      }),
+    );
+    cmp.resumen.set({
+      totalTrabajadores: 3,
+      listosParaCalculo: 3,
+      conIncidenciasCriticas: 0,
+      conAdvertencias: 0,
+      conMovimientosEspeciales: 0,
+      puedeCalcular: true,
+      puedeValidar: true,
+      puedeCerrar: true,
+      calculoVigente: true,
+      incidenciasCriticas: [],
+      advertencias: [],
+    });
+    cmp.liquidaciones.set([liquidacionMock()]);
+
+    expect(cmp.checklistVista()).toEqual([
+      expect.objectContaining({ id: 'resumen', cumplido: true }),
+    ]);
+  });
+
   it('calculoNoVigente sólo se activa con versionCalculo>0 y calculoVigente=false', () => {
     const fixture = TestBed.createComponent(NominaMensualV2PasoCierreComponent);
     const cmp = fixture.componentInstance;

@@ -148,6 +148,16 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   @Input() selectable = false;
   @Input() selectionLabel = 'registros';
   /**
+   * Opt-in: filas cuya casilla no puede marcarse/desmarcarse (p. ej. ya incluidas
+   * en nómina). No altera grillas existentes si no se provee.
+   */
+  @Input() isRowSelectionDisabled: ((row: T) => boolean) | null = null;
+  /**
+   * Opt-in: filas bloqueadas que se muestran marcadas sin entrar al set de
+   * selección activa (p. ej. trabajador ya en dotación).
+   */
+  @Input() isRowSelectionLockedChecked: ((row: T) => boolean) | null = null;
+  /**
    * Habilita filas expandibles. Cuando es true Y el consumidor proyecta un
    * `<ng-template appDataGridRowDetail>` dentro del `<app-data-grid>`, cada
    * fila gana un chevron al inicio que abre un panel de detalle inline.
@@ -473,15 +483,27 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get selectedRows(): T[] {
-    return this.rows.filter((row, index) => this.selectedRowKeys.has(this.rowKey(row, index)));
+    return this.rows.filter(
+      (row, index) =>
+        !this.isRowSelectionDisabledFor(row) &&
+        this.selectedRowKeys.has(this.rowKey(row, index)),
+    );
+  }
+
+  get selectablePagedRows(): T[] {
+    return this.pagedRows.filter((row) => !this.isRowSelectionDisabledFor(row));
   }
 
   get allPageRowsSelected(): boolean {
-    return this.pagedRows.length > 0 && this.pagedRows.every((row, index) => this.selectedRowKeys.has(this.rowKey(row, this.absoluteIndex(index))));
+    const selectable = this.selectablePagedRows;
+    return (
+      selectable.length > 0 &&
+      selectable.every((row) => this.selectedRowKeys.has(this.rowKey(row)))
+    );
   }
 
   get somePageRowsSelected(): boolean {
-    return this.pagedRows.some((row, index) => this.selectedRowKeys.has(this.rowKey(row, this.absoluteIndex(index))));
+    return this.selectablePagedRows.some((row) => this.selectedRowKeys.has(this.rowKey(row)));
   }
 
   get hasActiveFilters(): boolean {
@@ -647,7 +669,28 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     return this.selectedRowKeys.has(this.rowKey(row));
   }
 
+  isRowSelectionDisabledFor(row: T): boolean {
+    return this.isRowSelectionDisabled?.(row) ?? false;
+  }
+
+  isRowSelectionLockedCheckedFor(row: T): boolean {
+    return this.isRowSelectionLockedChecked?.(row) ?? false;
+  }
+
+  isRowSelectionCheckboxChecked(row: T): boolean {
+    return this.isRowSelectionLockedCheckedFor(row) || this.isRowSelected(row);
+  }
+
+  isRowSelectionCheckboxDisabled(row: T): boolean {
+    return this.loading || this.isRowSelectionDisabledFor(row);
+  }
+
   toggleRowSelection(row: T, event: Event): void {
+    if (this.isRowSelectionDisabledFor(row)) {
+      (event.target as HTMLInputElement).checked = this.isRowSelectionCheckboxChecked(row);
+      return;
+    }
+
     const checked = (event.target as HTMLInputElement).checked;
     const key = this.rowKey(row);
 
@@ -662,8 +705,8 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   togglePageSelection(event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
 
-    this.pagedRows.forEach((row, index) => {
-      const key = this.rowKey(row, this.absoluteIndex(index));
+    this.selectablePagedRows.forEach((row) => {
+      const key = this.rowKey(row);
 
       if (checked) {
         this.selectedRowKeys.add(key);
@@ -1891,7 +1934,13 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   private pruneSelection(): void {
     const availableKeys = new Set(this.rows.map((row, index) => this.rowKey(row, index)));
-    this.selectedRowKeys = new Set([...this.selectedRowKeys].filter((key) => availableKeys.has(key)));
+    this.selectedRowKeys = new Set(
+      [...this.selectedRowKeys].filter((key) => {
+        if (!availableKeys.has(key)) return false;
+        const row = this.rows.find((item, index) => this.rowKey(item, index) === key);
+        return row != null && !this.isRowSelectionDisabledFor(row);
+      }),
+    );
     this.pruneExpansion();
   }
 

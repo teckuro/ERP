@@ -78,6 +78,14 @@ export class LiquidacionesOficialesService {
     return this.liquidaciones.obtenerDetalleTrabajador(idLiquidacionTrabajador);
   }
 
+  obtenerTrabajadorLiquidacion(idLiquidacionTrabajador: number) {
+    return this.liquidaciones.obtenerTrabajadorLiquidacion(idLiquidacionTrabajador);
+  }
+
+  obtenerUltimaEmisionTrabajador(idLiquidacionTrabajador: number) {
+    return this.liquidaciones.obtenerUltimaEmisionTrabajador(idLiquidacionTrabajador);
+  }
+
   listarTrabajadoresLiquidacion(idLiquidacionPeriodo: number): Promise<LiquidacionTrabajador[]> {
     return this.liquidaciones.obtenerLiquidacionesTrabajadores(idLiquidacionPeriodo);
   }

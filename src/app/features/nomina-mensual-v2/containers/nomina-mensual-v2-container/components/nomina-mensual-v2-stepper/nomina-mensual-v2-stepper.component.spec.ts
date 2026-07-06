@@ -128,7 +128,7 @@ describe('NominaMensualV2StepperComponent — advertencia y bitácora por paso (
 
   it('renderiza triangle-alert en paso calculation con cálculo no vigente', () => {
     const fixture = TestBed.createComponent(NominaMensualV2StepperComponent);
-    fixture.componentRef.setInput('pasoActual', 'validation' as PayrollStepId);
+    fixture.componentRef.setInput('pasoActual', 'closure' as PayrollStepId);
     fixture.componentRef.setInput('steps', pasosBase());
     fixture.componentRef.setInput('nomina', {
       estado: 'validada',
@@ -147,7 +147,7 @@ describe('NominaMensualV2StepperComponent — advertencia y bitácora por paso (
 
   it('tooltipPaso expone MENSAJE_CALCULO_NO_VIGENTE en advertencia', () => {
     const fixture = TestBed.createComponent(NominaMensualV2StepperComponent);
-    fixture.componentRef.setInput('pasoActual', 'validation' as PayrollStepId);
+    fixture.componentRef.setInput('pasoActual', 'closure' as PayrollStepId);
     fixture.componentRef.setInput('steps', pasosBase());
     fixture.componentRef.setInput('nomina', {
       estado: 'validada',

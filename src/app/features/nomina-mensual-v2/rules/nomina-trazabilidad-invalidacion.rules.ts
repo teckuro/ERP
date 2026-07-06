@@ -1,14 +1,8 @@
 import type { PayrollStepId } from '../models/nomina-mensual-v2.models';
+import { ORDEN_PASOS_NOMINA } from '../models/nomina-mensual-v2.models';
 import type { TipoEventoTrazabilidadNomina } from '../models/nomina-trazabilidad.models';
 
-const ORDEN_PASOS: PayrollStepId[] = [
-  'parameters',
-  'dotacion',
-  'movements',
-  'calculation',
-  'validation',
-  'closure',
-];
+const ORDEN_PASOS: PayrollStepId[] = [...ORDEN_PASOS_NOMINA];
 
 export function pasosPosterioresA(paso: PayrollStepId): PayrollStepId[] {
   const idx = ORDEN_PASOS.indexOf(paso);

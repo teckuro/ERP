@@ -45,6 +45,7 @@ import {
 import type { NominaCabeceraCambiadaEvent } from '../../../../models/nomina-cabecera-cambiada.models';
 import {
   formatearFechaLiquidacion,
+  liquidacionReferenciaCobertura,
   liquidacionVigente,
   prepararFilasLiquidacionesInternas,
 } from '../../../../../nomina-mensual/presenters/nomina-liquidaciones-internas.presenter';
@@ -59,6 +60,27 @@ interface ChecklistItem {
   label: string;
   cumplido: boolean;
   detalle: string;
+}
+
+type TonoFranjaCierre = 'listo' | 'pendiente' | 'bloqueo' | 'cerrada' | 'warning';
+
+type TipoAccionRecomendadaCierre =
+  | 'aprobar'
+  | 'liquidaciones'
+  | 'conciliacion'
+  | 'cierre_shell'
+  | 'reabrir'
+  | 'recalcular'
+  | 'espera'
+  | 'ninguna';
+
+interface VistaAccionRecomendadaCierre {
+  kicker: string;
+  titulo: string;
+  detalle: string;
+  tono: TonoFranjaCierre;
+  tipo: TipoAccionRecomendadaCierre;
+  ejecutable: boolean;
 }
 
 @Component({
@@ -132,20 +154,14 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
         detalle: 'El cálculo del período está guardado y vigente.',
       },
       {
-        id: 'validacion',
-        label: 'Validación completada',
-        cumplido:
-          ['validada', 'aprobada', 'liquidada', 'cerrada'].includes(n.estado)
-          && r.conIncidenciasCriticas === 0,
-        detalle: `${r.conIncidenciasCriticas} críticas · ${r.conAdvertencias} advertencias.`,
-      },
-      {
         id: 'aprobacion',
         label: 'Aprobación registrada',
         cumplido: ['aprobada', 'liquidada', 'cerrada'].includes(n.estado),
         detalle: n.estado === 'validada'
           ? 'Pendiente de aprobación para continuar con liquidaciones.'
-          : 'Aprobación operativa registrada.',
+          : n.estado === 'calculada'
+            ? 'Continúa desde Cálculo para validar y cerrar.'
+            : 'Aprobación operativa registrada.',
       },
     ];
 
@@ -206,12 +222,19 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
       !this.calculoNoVigente(),
     ) && this.puedeGenerarLiquidaciones(),
   );
-  readonly trabajadoresSinLiquidacion = computed(() =>
-    calcularTrabajadoresSinLiquidacion(
-      this.nomina()?.trabajadorIds.length ?? this.resumen()?.totalTrabajadores ?? 0,
-      this.liquidacionVigente()?.totalTrabajadores,
-    ),
-  );
+  readonly trabajadoresSinLiquidacion = computed(() => {
+    const filas = this.filasLiquidaciones();
+    const referencia = liquidacionReferenciaCobertura(filas);
+    const dotacionIds = this.nomina()?.trabajadorIds.length ?? 0;
+    const totalNomina = dotacionIds > 0
+      ? dotacionIds
+      : (this.resumen()?.totalTrabajadores ?? referencia?.totalTrabajadores ?? 0);
+    return calcularTrabajadoresSinLiquidacion(
+      totalNomina,
+      referencia?.totalTrabajadores,
+      { hayLotesMaterializados: filas.length > 0 },
+    );
+  });
   readonly etiquetaAccionLiquidaciones = computed(() =>
     this.liquidaciones().length > 0 ? 'Regenerar liquidaciones' : 'Generar liquidaciones',
   );
@@ -228,6 +251,208 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
       trabajadores: this.nomina()?.trabajadorIds.length ?? this.resumen()?.totalTrabajadores ?? 0,
     };
   });
+
+  readonly checklistPendientes = computed(() => this.checklist().filter((item) => !item.cumplido));
+
+  readonly progresoChecklist = computed(() => {
+    const { cumplidos, total } = this.metricasCierre();
+    if (total <= 0) return 0;
+    return Math.round((cumplidos / total) * 100);
+  });
+
+  readonly accionRecomendada = computed((): VistaAccionRecomendadaCierre | null => {
+    const n = this.nomina();
+    if (!n) return null;
+
+    if (this.cerrada()) {
+      return {
+        kicker: '',
+        titulo: 'Nómina cerrada',
+        detalle: this.puedeAccionesAdmin()
+          ? 'Reabrir con motivo para editar de nuevo.'
+          : 'Reapertura reservada a administración.',
+        tono: 'cerrada',
+        tipo: this.puedeAccionesAdmin() ? 'reabrir' : 'ninguna',
+        ejecutable: this.puedeAccionesAdmin(),
+      };
+    }
+
+    if (this.calculoNoVigente()) {
+      return {
+        kicker: '',
+        titulo: 'Recalcula en el paso Cálculo',
+        detalle: this.mensajeCalculoNoVigente,
+        tono: 'warning',
+        tipo: 'recalcular',
+        ejecutable: false,
+      };
+    }
+
+    if (this.esMensualConsolidadora() && this.consolidaciones().length > 0) {
+      return {
+        kicker: '',
+        titulo: `Conciliar ${this.consolidaciones().length} origen(es)`,
+        detalle: 'Anticipos o extraordinarias pendientes.',
+        tono: 'pendiente',
+        tipo: 'conciliacion',
+        ejecutable: this.puedeConsolidar(),
+      };
+    }
+
+    if (n.estado === 'validada' && this.puedeAprobar()) {
+      return {
+        kicker: '',
+        titulo: 'Aprobar nómina',
+        detalle: 'Antes de generar liquidaciones.',
+        tono: 'pendiente',
+        tipo: 'aprobar',
+        ejecutable: true,
+      };
+    }
+
+    if (
+      ['aprobada', 'liquidada'].includes(n.estado)
+      && this.liquidaciones().length === 0
+      && this.puedeRegenerarLiquidaciones()
+    ) {
+      return {
+        kicker: '',
+        titulo: 'Generar liquidaciones',
+        detalle: 'Desde el cálculo aprobado.',
+        tono: 'pendiente',
+        tipo: 'liquidaciones',
+        ejecutable: true,
+      };
+    }
+
+    if (this.todoCumplido()) {
+      if (!this.puedeCerrar()) {
+        return {
+          kicker: '',
+          titulo: 'Sin permiso de cierre',
+          detalle: 'Requisitos listos; rol sin cierre operativo.',
+          tono: 'bloqueo',
+          tipo: 'ninguna',
+          ejecutable: false,
+        };
+      }
+      return {
+        kicker: '',
+        titulo: 'Listo para cerrar',
+        detalle: 'Usa Cerrar nómina en la cabecera.',
+        tono: 'listo',
+        tipo: 'cierre_shell',
+        ejecutable: false,
+      };
+    }
+
+    const pendiente = this.checklistPendientes()[0];
+    if (pendiente) {
+      return {
+        kicker: '',
+        titulo: pendiente.label,
+        detalle: pendiente.detalle,
+        tono: 'pendiente',
+        tipo: 'espera',
+        ejecutable: false,
+      };
+    }
+
+    return null;
+  });
+
+  readonly checklistVista = computed(() => {
+    const items = this.checklist();
+    const pendientes = items.filter((item) => !item.cumplido);
+    if (pendientes.length === 0 && items.length > 0) {
+      return [{ id: 'resumen', label: `${items.length} requisitos listos`, cumplido: true, detalle: '' }];
+    }
+    return pendientes;
+  });
+
+  iconoAccionRecomendada(tipo: TipoAccionRecomendadaCierre): string {
+    switch (tipo) {
+      case 'aprobar':
+        return 'badge-check';
+      case 'liquidaciones':
+        return 'receipt';
+      case 'conciliacion':
+        return 'layers';
+      case 'cierre_shell':
+        return 'lock';
+      case 'reabrir':
+        return 'lock-open';
+      case 'recalcular':
+        return 'calculator';
+      case 'espera':
+        return 'circle-dashed';
+      default:
+        return 'info';
+    }
+  }
+
+  iconoChecklistItem(id: string): string {
+    switch (id) {
+      case 'parametros':
+        return 'settings-2';
+      case 'dotacion':
+        return 'users';
+      case 'movimientos':
+        return 'list-plus';
+      case 'calculo':
+        return 'calculator';
+      case 'aprobacion':
+        return 'badge-check';
+      case 'conciliacion':
+        return 'layers';
+      case 'liquidaciones':
+        return 'receipt';
+      case 'resumen':
+        return 'circle-check';
+      default:
+        return 'circle';
+    }
+  }
+
+  iconoEstadoChecklist(cumplido: boolean): string {
+    return cumplido ? 'circle-check' : 'circle-dashed';
+  }
+
+  etiquetaBotonAccionRecomendada(): string {
+    const accion = this.accionRecomendada();
+    if (!accion) return 'Continuar';
+    switch (accion.tipo) {
+      case 'aprobar':
+        return this.ejecutando() ? '…' : 'Aprobar';
+      case 'liquidaciones':
+        return this.ejecutando() ? '…' : (this.liquidaciones().length > 0 ? 'Regenerar' : 'Generar');
+      case 'conciliacion':
+        return this.ejecutando() ? '…' : 'Conciliar';
+      case 'reabrir':
+        return 'Reabrir';
+      default:
+        return 'Continuar';
+    }
+  }
+
+  ejecutarAccionRecomendada(): void {
+    const accion = this.accionRecomendada();
+    if (!accion?.ejecutable) return;
+    switch (accion.tipo) {
+      case 'aprobar':
+        this.solicitarAprobacion();
+        break;
+      case 'liquidaciones':
+        this.solicitarGeneracionLiquidaciones();
+        break;
+      case 'conciliacion':
+        void this.aplicarConsolidaciones();
+        break;
+      case 'reabrir':
+        this.abrirReaperturaModal();
+        break;
+    }
+  }
 
   constructor() {
     effect(() => {
@@ -345,6 +570,7 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
       queryParams: {
         periodo: nomina.periodo,
         nominaPeriodoId: id,
+        origen: 'cierre',
         idCalculoPeriodo: nomina.evidenciaCalculo.idCalculoPeriodo,
       },
     });

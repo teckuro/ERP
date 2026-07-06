@@ -299,3 +299,54 @@ describe('DataGridComponent · expand anclado e hint', () => {
     expect(hints.length).toBe(1);
   });
 });
+
+describe('DataGridComponent selección bloqueada (opt-in)', () => {
+  interface Row {
+    id: number;
+    locked: boolean;
+  }
+
+  const columns: DataGridColumn<Row>[] = [{ id: 'id', header: 'Id', field: 'id' }];
+  const rows: Row[] = [
+    { id: 1, locked: false },
+    { id: 2, locked: true },
+  ];
+
+  it('no permite seleccionar filas bloqueadas y las muestra marcadas', () => {
+    const fixture = TestBed.createComponent(DataGridComponent<Row>);
+    const component = fixture.componentInstance;
+    component.columns = columns;
+    component.rows = rows;
+    component.selectable = true;
+    component.isRowSelectionDisabled = (row) => row.locked;
+    component.isRowSelectionLockedChecked = (row) => row.locked;
+    fixture.detectChanges();
+
+    const locked = rows[1]!;
+    const enabled = rows[0]!;
+
+    expect(component.isRowSelectionCheckboxChecked(locked)).toBe(true);
+    expect(component.isRowSelectionCheckboxDisabled(locked)).toBe(true);
+
+    component.toggleRowSelection(locked, { target: { checked: false } } as unknown as Event);
+    expect(component.isRowSelected(locked)).toBe(false);
+    expect(component.isRowSelectionCheckboxChecked(locked)).toBe(true);
+
+    component.toggleRowSelection(enabled, { target: { checked: true } } as unknown as Event);
+    expect(component.selectedRows).toEqual([enabled]);
+  });
+
+  it('seleccionar página ignora filas bloqueadas', () => {
+    const fixture = TestBed.createComponent(DataGridComponent<Row>);
+    const component = fixture.componentInstance;
+    component.columns = columns;
+    component.rows = rows;
+    component.selectable = true;
+    component.isRowSelectionDisabled = (row) => row.locked;
+    component.isRowSelectionLockedChecked = (row) => row.locked;
+    fixture.detectChanges();
+
+    component.togglePageSelection({ target: { checked: true } } as unknown as Event);
+    expect(component.selectedRows.map((row) => row.id)).toEqual([1]);
+  });
+});

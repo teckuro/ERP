@@ -40,8 +40,7 @@ export interface RecomputarTrazabilidadResult {
 const EVENTOS_PERSISTIDOS_POR_PASO: Partial<Record<PayrollStepId, readonly TipoEventoTrazabilidadNomina[]>> = {
   parameters: ['PARAMETROS_CONGELADOS', 'PARAMETROS_VALIDADOS', 'SNAPSHOT_INVALIDADO'],
   calculation: ['CALCULO_EJECUTADO', 'SNAPSHOT_INVALIDADO'],
-  validation: ['PRENOMINA_VALIDADA', 'SNAPSHOT_INVALIDADO'],
-  closure: ['PRENOMINA_APROBADA', 'RECALCULO_SOLICITADO', 'LIQUIDACIONES_GENERADAS'],
+  closure: ['PRENOMINA_VALIDADA', 'PRENOMINA_APROBADA', 'RECALCULO_SOLICITADO', 'LIQUIDACIONES_GENERADAS'],
 };
 
 @Injectable({ providedIn: 'root' })

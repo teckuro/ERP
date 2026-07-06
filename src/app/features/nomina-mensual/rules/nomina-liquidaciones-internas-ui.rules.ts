@@ -18,13 +18,28 @@ export function puedeRegenerarLiquidacionesInternas(
   return ['aprobada', 'liquidada', 'reabierta'].includes(estadoNomina);
 }
 
-/** Trabajadores en dotación que aún no aparecen en la liquidación vigente. */
+/** Pantalla Liquidaciones: regenerar solo en nómina reabierta (consulta primaria). */
+export function puedeRegenerarDesdePantallaLiquidaciones(
+  estadoNomina: EstadoNomina,
+  calculoVigente: boolean,
+): boolean {
+  if (esLiquidacionesSoloLectura(estadoNomina)) return false;
+  if (!calculoVigente) return false;
+  return estadoNomina === 'reabierta';
+}
+
+/**
+ * Trabajadores en dotación que aún no tienen comprobante en la versión de referencia.
+ * Si no hay lotes materializados, devuelve 0 (el vacío de lotes se comunica aparte).
+ */
 export function calcularTrabajadoresSinLiquidacion(
   totalNomina: number,
-  totalLiquidacionVigente: number | null | undefined,
+  totalLiquidacionReferencia: number | null | undefined,
+  opts?: { hayLotesMaterializados?: boolean },
 ): number {
-  if (totalLiquidacionVigente == null) return totalNomina;
-  return Math.max(0, totalNomina - totalLiquidacionVigente);
+  if (!opts?.hayLotesMaterializados) return 0;
+  if (totalLiquidacionReferencia == null) return totalNomina;
+  return Math.max(0, totalNomina - totalLiquidacionReferencia);
 }
 
 /** Nóminas con liquidaciones consultables (liquidada o cerrada con cálculo vigente). */

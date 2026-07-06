@@ -42,9 +42,16 @@ describe('liquidaciones-acciones-ui.rules', () => {
 
     expect(pendiente.primaryAction?.tipo).toBe('autorizar');
     expect(pendiente.pdfDisabled).toBe(false);
-    expect(pendiente.pdfLabel).toBe('Ver liquidación');
+    expect(pendiente.pdfLabel).toBe('Ver e imprimir');
     expect(enviada.primaryAction).toBeNull();
     expect(enviada.secondaryActions.map((a) => a.tipo)).toEqual(['solicitar_rectificacion']);
+  });
+
+  it('oculta transiciones en solo lectura', () => {
+    const view = buildLiquidacionAccionUiView('pendiente_autorizar', { soloLectura: true });
+    expect(view.primaryAction).toBeNull();
+    expect(view.secondaryActions).toEqual([]);
+    expect(view.pdfLabel).toBe('Ver e imprimir');
   });
 
   it('respeta estadoRevision persistido en metadata o en el trabajador', () => {

@@ -71,7 +71,6 @@ describe('rowToNominaPeriodoResumen', () => {
       'dotacion',
       'movements',
       'calculation',
-      'validation',
       'closure',
     ] as const;
     for (const v of valores) {
@@ -83,6 +82,14 @@ describe('rowToNominaPeriodoResumen', () => {
       expect(resumen.ultimoPasoVisitado).toBe(v);
       expect(resumen.pasoVisitadoAt).toBe('2026-06-05T12:00:00.000Z');
     }
+  });
+
+  it('normaliza el paso legacy validation a closure', () => {
+    const resumen = rowToNominaPeriodoResumen({
+      ...FILA_BASE,
+      ultimo_paso_visitado: 'validation',
+    });
+    expect(resumen.ultimoPasoVisitado).toBe('closure');
   });
 
   it('degrada a null cuando la BD trae un valor desconocido (defensa frente a legacy)', () => {
@@ -160,7 +167,7 @@ describe('ensamblarNominaPeriodo', () => {
       movimientos: [],
       incidencias: [],
     });
-    expect(nomina.maximoPasoCompletado).toBe('validation');
+    expect(nomina.maximoPasoCompletado).toBe('closure');
     expect(nomina.maximoPasoCompletadoAt).toBe('2026-06-05T10:00:00.000Z');
   });
 });

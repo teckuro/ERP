@@ -29,7 +29,6 @@ import { NominaMensualV2PasoCalculoComponent } from './components/nomina-mensual
 import { NominaMensualV2PasoCierreComponent } from './components/nomina-mensual-v2-paso-cierre/nomina-mensual-v2-paso-cierre.component';
 import { NominaMensualV2PasoDotacionComponent } from './components/nomina-mensual-v2-paso-dotacion/nomina-mensual-v2-paso-dotacion.component';
 import { NominaMensualV2PasoMovimientosComponent } from './components/nomina-mensual-v2-paso-movimientos/nomina-mensual-v2-paso-movimientos.component';
-import { NominaMensualV2PasoValidacionComponent } from './components/nomina-mensual-v2-paso-validacion/nomina-mensual-v2-paso-validacion.component';
 import { NominaMensualV2PasoParametrosComponent } from './components/nomina-mensual-v2-paso-parametros/nomina-mensual-v2-paso-parametros.component';
 import { NominaMensualV2StepperComponent } from './components/nomina-mensual-v2-stepper/nomina-mensual-v2-stepper.component';
 import {
@@ -70,7 +69,6 @@ import { construirContextoGeneradorNomina } from '../../presenters/nomina-genera
     NominaMensualV2PasoDotacionComponent,
     NominaMensualV2PasoMovimientosComponent,
     NominaMensualV2PasoCalculoComponent,
-    NominaMensualV2PasoValidacionComponent,
     NominaMensualV2PasoCierreComponent,
     NominaMensualV2OverlaysComponent,
     NominaMensualV2TrazabilidadModalComponent,
@@ -98,7 +96,6 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   private readonly pasoDotacion = viewChild(NominaMensualV2PasoDotacionComponent);
   private readonly pasoMovimientos = viewChild(NominaMensualV2PasoMovimientosComponent);
   private readonly pasoCalculo = viewChild(NominaMensualV2PasoCalculoComponent);
-  private readonly pasoValidacion = viewChild(NominaMensualV2PasoValidacionComponent);
   private readonly pasoCierre = viewChild(NominaMensualV2PasoCierreComponent);
   private tokenInicializacionPeriodo = 0;
   private ultimoPeriodoInicializado: string | null = null;
@@ -178,7 +175,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   /**
    * Diagnóstico de "completitud" del paso activo. Para `parameters` se
    * deriva de la bandera del orquestador (`parametrosPreparados`); para los
-   * pasos 2-6 se delega en el `PasoNominaPort.puedeContinuar()` del
+   * pasos 2-5 se delega en el `PasoNominaPort.puedeContinuar()` del
    * ViewChild correspondiente.
    *
    * Si el ViewChild aún no está montado, devuelve `{ok:false}` con razón
@@ -545,27 +542,13 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       event.trazabilidad?.tipo === 'reapertura'
       && this.currentStep() === 'closure'
     ) {
-      this.irAPaso('validation');
+      this.irAPaso('calculation');
     }
   }
 
   manejarVerEnDotacion(trabajadorId: string): void {
     this.trabajadorDetalleDotacion.set(trabajadorId);
     this.intentarIrAPaso('dotacion');
-  }
-
-  async manejarValidacionCompletada(): Promise<void> {
-    this.orquestador.establecerAyudaAvance(null);
-    this.orquestador.registrarEventoTrazabilidad(
-      this.trazabilidadService.crearEventoLocal({
-        paso: 'validation',
-        tipoEvento: 'PRENOMINA_VALIDADA',
-        descripcion: 'Pre-nómina validada para cierre.',
-        integridad: { estadoIntegridad: 'registrado' },
-      }),
-    );
-    await this.marcarPasoCompletadoYRefrescarNomina('validation');
-    this.irAPaso('closure');
   }
 
   limpiarTrabajadorDetalleDotacion(): void {
@@ -770,8 +753,6 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
         return this.pasoMovimientos() ?? null;
       case 'calculation':
         return this.pasoCalculo() ?? null;
-      case 'validation':
-        return this.pasoValidacion() ?? null;
       case 'closure':
         return this.pasoCierre() ?? null;
       default:
@@ -800,7 +781,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     const currentIndex = ORDEN_PASOS_NOMINA.indexOf(paso);
     const ctxNomina = this.contextoNomina();
 
-    // Para los pasos 2..6 (`PasoNominaPort`) el CTA queda deshabilitado con
+    // Para los pasos 2..5 (`PasoNominaPort`) el CTA queda deshabilitado con
     // tooltip cuando el paso no está poblado correctamente. Parámetros
     // mantiene su rama propia (modales de acceso/diferencias) y la matriz
     // `accesoBaseService.resolverAccionShellParametros` ya define su
@@ -870,11 +851,6 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
         if (!componente) return true;
         return componente.cargando() && !componente.calculoDisponible();
       }
-      case 'validation': {
-        const componente = this.pasoValidacion();
-        if (!componente) return true;
-        return componente.cargando();
-      }
       case 'closure': {
         const componente = this.pasoCierre();
         if (!componente) return true;
@@ -894,8 +870,6 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
         return this.pasoMovimientos()?.aplicando() ?? false;
       case 'calculation':
         return this.pasoCalculo()?.calculando() ?? false;
-      case 'validation':
-        return this.pasoValidacion()?.validando() ?? false;
       case 'closure':
         return this.pasoCierre()?.ejecutando() ?? false;
       default:
@@ -906,7 +880,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   /**
    * Handler del CTA del shell (AG-NAV-03). Para `parameters` mantiene el flujo
    * existente vía orquestador (modales de acceso/diferencias). Para los pasos
-   * 2 a 6 delega en `ejecutarAvancePaso` (función pura del facade) que invoca
+   * 2 a 5 delega en `ejecutarAvancePaso` (función pura del facade) que invoca
    * `avanzar()` del paso activo. Si el comando responde `{ok:true}` y existe
    * un paso siguiente, navega; si responde `{ok:false}` publica la razón en
    * `ayudaAvance`. `closure` no navega (paso terminal).
@@ -958,19 +932,54 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
           integridad: { estadoIntegridad: 'registrado' },
         }),
       );
-    } else if (pasoActivo === 'validation') {
+    }
+    if (pasoActivo === 'calculation' && siguientePaso === 'closure') {
+      const autoValidacion = await this.autoValidarAntesDeCierre();
+      if (!autoValidacion.ok) {
+        this.orquestador.establecerAyudaAvance(autoValidacion.razon, 'bloqueo');
+        return;
+      }
+    }
+    await this.marcarPasoCompletadoYRefrescarNomina(pasoActivo);
+    if (siguientePaso) {
+      this.irAPaso(siguientePaso);
+    }
+  }
+
+  /**
+   * Transición silenciosa calculada → validada al pasar de Cálculo a Cierre.
+   * La dotación solo admite personal apto; el paso Validación ya no existe en UI.
+   */
+  private async autoValidarAntesDeCierre(): Promise<ResultadoAvancePaso> {
+    const id = this.nominaPeriodoId();
+    if (!id) {
+      return { ok: false, razon: 'No hay nómina activa.' };
+    }
+    const nomina = this.nominaCargada();
+    if (!nomina) {
+      return { ok: false, razon: 'Cargando la nómina.' };
+    }
+    if (['validada', 'aprobada', 'liquidada', 'cerrada'].includes(nomina.estado)) {
+      return { ok: true };
+    }
+    if (nomina.estado !== 'calculada') {
+      return { ok: false, razon: 'La nómina no está lista para cerrar.' };
+    }
+    try {
+      await this.nominaPeriodoService.validarNomina(id);
       this.orquestador.registrarEventoTrazabilidad(
         this.trazabilidadService.crearEventoLocal({
-          paso: 'validation',
+          paso: 'closure',
           tipoEvento: 'PRENOMINA_VALIDADA',
           descripcion: 'Pre-nómina validada para cierre.',
           integridad: { estadoIntegridad: 'registrado' },
         }),
       );
-    }
-    await this.marcarPasoCompletadoYRefrescarNomina(pasoActivo);
-    if (siguientePaso) {
-      this.irAPaso(siguientePaso);
+      await this.refrescarNominaCargada(id);
+      return { ok: true };
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : 'No fue posible validar la nómina.';
+      return { ok: false, razon: mensaje };
     }
   }
 

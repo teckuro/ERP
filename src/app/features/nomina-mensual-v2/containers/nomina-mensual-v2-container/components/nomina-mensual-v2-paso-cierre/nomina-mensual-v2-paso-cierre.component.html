@@ -2,18 +2,14 @@
   @if (cargando() && !preparacionExterna()) {
     <app-workspace-loading
       [fill]="true"
-      title="Cargando checklist de cierre"
-      message="Estamos verificando los pasos previos antes de habilitar el cierre operativo."
+      title="Cargando cierre"
+      message="Verificando requisitos del período."
     />
   } @else {
   <header class="paso-cierre__head">
     <div class="paso-cierre__copy">
-      <p class="paso-cierre__eyebrow">Paso 6 · Cierre</p>
-      <h2 id="paso-cierre-title" class="paso-cierre__title">Cierre operativo y liquidaciones</h2>
-      <p class="paso-cierre__subtitle">
-        Revisa la checklist, aprueba si corresponde y cierra desde la acción principal del shell.
-        Tras el cierre la nómina queda bloqueada hasta reabrir con motivo.
-      </p>
+      <p class="paso-cierre__eyebrow">Paso 5 · Cierre</p>
+      <h2 id="paso-cierre-title" class="paso-cierre__title">Cierre y liquidaciones</h2>
     </div>
     <div class="paso-cierre__head-actions">
       @if (nomina(); as n) {
@@ -23,48 +19,93 @@
       }
       <button
         type="button"
-        class="paso-cierre__btn is-ghost"
+        class="paso-cierre__btn-icon"
         (click)="recargar()"
         [disabled]="cargando() || ejecutando()"
+        aria-label="Refrescar"
+        title="Refrescar"
       >
-        Refrescar
+        <lucide-icon name="refresh-cw" aria-hidden="true"></lucide-icon>
       </button>
     </div>
   </header>
 
+  @if (accionRecomendada(); as accion) {
+    <div
+      class="paso-cierre__franja"
+      [attr.data-tono]="accion.tono"
+      role="status"
+      [attr.title]="accion.detalle"
+      [attr.aria-label]="accion.titulo + '. ' + accion.detalle"
+    >
+      <lucide-icon
+        class="paso-cierre__franja-icon"
+        [name]="iconoAccionRecomendada(accion.tipo)"
+        aria-hidden="true"
+      ></lucide-icon>
+      <strong class="paso-cierre__franja-title">{{ accion.titulo }}</strong>
+      @if (accion.ejecutable) {
+        <button
+          type="button"
+          class="paso-cierre__btn is-primary"
+          [disabled]="ejecutando()"
+          (click)="ejecutarAccionRecomendada()"
+          [attr.title]="accion.detalle"
+        >
+          <lucide-icon [name]="iconoAccionRecomendada(accion.tipo)" aria-hidden="true"></lucide-icon>
+          {{ etiquetaBotonAccionRecomendada() }}
+        </button>
+      } @else if (accion.tipo === 'cierre_shell') {
+        <span class="paso-cierre__franja-badge" title="Acción en la cabecera">
+          <lucide-icon name="arrow-up" aria-hidden="true"></lucide-icon>
+        </span>
+      }
+    </div>
+  }
+
   @if (calculoNoVigente()) {
     <p class="paso-cierre__alert is-warning" role="status">
+      <lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon>
       {{ mensajeCalculoNoVigente }}
     </p>
   }
   @if (error(); as msg) {
-    <p class="paso-cierre__alert is-error" role="alert">{{ msg }}</p>
+    <p class="paso-cierre__alert is-error" role="alert">
+      <lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon>
+      {{ msg }}
+    </p>
   }
   @if (mensaje(); as msg) {
-    <p class="paso-cierre__alert is-info" role="status">{{ msg }}</p>
+    <p class="paso-cierre__alert is-info" role="status">
+      <lucide-icon name="info" aria-hidden="true"></lucide-icon>
+      {{ msg }}
+    </p>
   }
 
   @if (metricasCierre(); as m) {
-    <ul class="paso-cierre__metrics" aria-label="Resumen de cierre">
-      <li>
+    <div class="paso-cierre__stats" role="group" aria-label="Resumen de cierre">
+      <span class="paso-cierre__stat" title="Checklist">
+        <lucide-icon name="list-checks" aria-hidden="true"></lucide-icon>
         <strong>{{ m.cumplidos }}/{{ m.total }}</strong>
-        <small>checklist lista</small>
-      </li>
-      <li>
+      </span>
+      <span class="paso-cierre__stat" title="Dotación">
+        <lucide-icon name="users" aria-hidden="true"></lucide-icon>
         <strong>{{ m.trabajadores }}</strong>
-        <small>en dotación</small>
-      </li>
-      <li>
+      </span>
+      <span class="paso-cierre__stat" title="Versiones de liquidación">
+        <lucide-icon name="receipt" aria-hidden="true"></lucide-icon>
         <strong>{{ m.liquidaciones }}</strong>
-        <small>versiones liquidación</small>
-      </li>
-      @if (m.sinLiquidacion > 0) {
-        <li class="is-warning">
+      </span>
+      @if (m.liquidaciones > 0 && m.sinLiquidacion > 0) {
+        <span
+          class="paso-cierre__stat is-warning"
+          [attr.title]="m.sinLiquidacion + ' trabajador(es) sin comprobante en la versión vigente'"
+        >
+          <lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon>
           <strong>{{ m.sinLiquidacion }}</strong>
-          <small>sin liquidación</small>
-        </li>
+        </span>
       }
-    </ul>
+    </div>
   }
 
   <div
@@ -72,49 +113,81 @@
     [class.paso-cierre__workspace--busy]="ejecutando()"
     [attr.aria-busy]="ejecutando()"
   >
-    @if (checklist().length > 0) {
-      <section class="paso-cierre__col" aria-labelledby="paso-cierre-check-title">
-        <h3 id="paso-cierre-check-title" class="paso-cierre__col-title">Checklist de cierre</h3>
+    @if (checklistVista().length > 0) {
+      <section class="paso-cierre__col paso-cierre__col--checklist" aria-labelledby="paso-cierre-check-title">
+        <div class="paso-cierre__col-head">
+          <h3 id="paso-cierre-check-title" class="paso-cierre__col-title">
+            <lucide-icon name="list-checks" aria-hidden="true"></lucide-icon>
+            Requisitos
+          </h3>
+          <span class="paso-cierre__col-meta">{{ progresoChecklist() }}%</span>
+        </div>
+        <div
+          class="paso-cierre__progress"
+          role="progressbar"
+          [attr.aria-valuenow]="progresoChecklist()"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-label]="'Avance ' + progresoChecklist() + ' por ciento'"
+        >
+          <span class="paso-cierre__progress-bar" [style.width.%]="progresoChecklist()"></span>
+        </div>
         <ul class="paso-cierre__check">
-          @for (item of checklist(); track item.id) {
-            <li class="paso-cierre__check-item" [class.is-cumplido]="item.cumplido">
+          @for (item of checklistVista(); track item.id) {
+            <li
+              class="paso-cierre__check-item"
+              [class.is-cumplido]="item.cumplido"
+              [class.is-pendiente]="!item.cumplido"
+              [attr.title]="item.detalle || null"
+            >
               <lucide-icon
                 class="paso-cierre__check-icon"
-                [name]="item.cumplido ? 'circle-check' : 'circle'"
+                [name]="iconoChecklistItem(item.id)"
                 aria-hidden="true"
               ></lucide-icon>
-              <div class="paso-cierre__check-body">
-                <strong>{{ item.label }}</strong>
-                <small>{{ item.detalle }}</small>
-              </div>
+              <span class="paso-cierre__check-label">{{ item.label }}</span>
+              <lucide-icon
+                class="paso-cierre__check-estado"
+                [name]="iconoEstadoChecklist(item.cumplido)"
+                aria-hidden="true"
+              ></lucide-icon>
             </li>
           }
         </ul>
       </section>
     }
 
-    <section class="paso-cierre__col" aria-labelledby="paso-cierre-ops-title">
-      <h3 id="paso-cierre-ops-title" class="paso-cierre__col-title">Operaciones de cierre</h3>
+    <section class="paso-cierre__col paso-cierre__col--detalle" aria-labelledby="paso-cierre-ops-title">
+      <h3 id="paso-cierre-ops-title" class="paso-cierre__col-title">
+        <lucide-icon name="receipt" aria-hidden="true"></lucide-icon>
+        Liquidaciones
+      </h3>
 
       @if (cerrada() && liquidacionVigente(); as acta) {
         <div class="paso-cierre__block paso-cierre__block--acta">
-          <p class="paso-cierre__block-lead">
-            Nómina cerrada el {{ formatearFechaLiquidacion(nomina()?.closedAt ?? nomina()?.updatedAt ?? '') }}.
-            Liquidación v{{ acta.version }} congelada como evidencia.
-          </p>
           <dl class="paso-cierre__liq-resumen">
-            <div><dt>Trabajadores</dt><dd>{{ acta.totalTrabajadores }}</dd></div>
-            <div><dt>Líquido</dt><dd>${{ acta.totalLiquido | number:'1.0-0' }}</dd></div>
+            <div>
+              <dt><lucide-icon name="lock" aria-hidden="true"></lucide-icon> Cierre</dt>
+              <dd>{{ formatearFechaLiquidacion(nomina()?.closedAt ?? nomina()?.updatedAt ?? '') }}</dd>
+            </div>
+            <div>
+              <dt><lucide-icon name="users" aria-hidden="true"></lucide-icon></dt>
+              <dd>{{ acta.totalTrabajadores }}</dd>
+            </div>
+            <div>
+              <dt><lucide-icon name="banknote" aria-hidden="true"></lucide-icon></dt>
+              <dd>${{ acta.totalLiquido | number:'1.0-0' }}</dd>
+            </div>
           </dl>
         </div>
       }
 
       @if (esMensualConsolidadora() && consolidaciones().length > 0 && !cerrada()) {
         <div class="paso-cierre__block">
-          <h4 class="paso-cierre__block-title">Conciliación pendiente</h4>
-          <p class="paso-cierre__block-copy">
-            Incorpora anticipos o extraordinarias del mismo período antes de aprobar.
-          </p>
+          <h4 class="paso-cierre__block-title">
+            <lucide-icon name="layers" aria-hidden="true"></lucide-icon>
+            Conciliación
+          </h4>
           <ul class="paso-cierre__origenes">
             @for (c of consolidaciones(); track c.id) {
               <li class="paso-cierre__origen">
@@ -123,66 +196,51 @@
               </li>
             }
           </ul>
-          @if (puedeConsolidar()) {
-            <button
-              type="button"
-              class="paso-cierre__btn is-secondary"
-              [disabled]="ejecutando()"
-              (click)="aplicarConsolidaciones()"
-            >
-              {{ ejecutando() ? 'Aplicando…' : 'Aplicar conciliación' }}
-            </button>
-          }
         </div>
       }
 
       @if (filasLiquidaciones().length > 0 || !cerrada()) {
         <div class="paso-cierre__block">
           <div class="paso-cierre__block-head">
-            <div>
-              <h4 class="paso-cierre__block-title">Liquidaciones internas</h4>
-              <p class="paso-cierre__block-copy">
-                @if (soloLecturaLiquidaciones()) {
-                  Solo consulta; evidencia congelada por cierre.
-                } @else {
-                  Materializadas desde el cálculo aprobado. Regenerar crea una versión nueva.
-                }
-              </p>
-            </div>
+            @if (liquidacionVigente(); as vigente) {
+              <dl class="paso-cierre__liq-resumen">
+                <div>
+                  <dt><lucide-icon name="file-check-2" aria-hidden="true"></lucide-icon> v{{ vigente.version }}</dt>
+                  <dd>{{ vigente.etiquetaClasificacion }}</dd>
+                </div>
+                <div>
+                  <dt><lucide-icon name="users" aria-hidden="true"></lucide-icon></dt>
+                  <dd>{{ vigente.totalTrabajadores }}</dd>
+                </div>
+                <div>
+                  <dt><lucide-icon name="banknote" aria-hidden="true"></lucide-icon></dt>
+                  <dd>${{ vigente.totalLiquido | number:'1.0-0' }}</dd>
+                </div>
+              </dl>
+            }
             @if (filasLiquidaciones().length > 0) {
-              <button type="button" class="paso-cierre__btn is-ghost" (click)="verLiquidacionesCompletas()">
-                Ver detalle por trabajador
+              <button
+                type="button"
+                class="paso-cierre__btn-icon"
+                (click)="verLiquidacionesCompletas()"
+                aria-label="Ver detalle por trabajador"
+                title="Ver detalle por trabajador"
+              >
+                <lucide-icon name="external-link" aria-hidden="true"></lucide-icon>
               </button>
             }
           </div>
-
-          @if (liquidacionVigente(); as vigente) {
-            <dl class="paso-cierre__liq-resumen">
-              <div>
-                <dt>Versión vigente</dt>
-                <dd>v{{ vigente.version }} · {{ vigente.etiquetaClasificacion }}</dd>
-              </div>
-              <div>
-                <dt>Trabajadores</dt>
-                <dd>{{ vigente.totalTrabajadores }}</dd>
-              </div>
-              <div>
-                <dt>Líquido</dt>
-                <dd>${{ vigente.totalLiquido | number:'1.0-0' }}</dd>
-              </div>
-            </dl>
-          }
 
           @if (filasLiquidaciones().length > 0) {
             <div class="paso-cierre__liq-table-wrap">
               <table class="paso-cierre__liq-table">
                 <thead>
                   <tr>
-                    <th scope="col">Versión</th>
+                    <th scope="col">Ver.</th>
                     <th scope="col">Estado</th>
-                    <th scope="col">Trabajadores</th>
-                    <th scope="col">Líquido</th>
-                    <th scope="col">Generada</th>
+                    <th scope="col"><span class="paso-cierre__sr-only">Trabajadores</span><lucide-icon name="users" aria-hidden="true"></lucide-icon></th>
+                    <th scope="col"><span class="paso-cierre__sr-only">Líquido</span><lucide-icon name="banknote" aria-hidden="true"></lucide-icon></th>
+                    <th scope="col">Fecha</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -203,83 +261,54 @@
               </table>
             </div>
           } @else {
-            <p class="paso-cierre__block-copy">Aún no hay liquidaciones generadas.</p>
+            <p class="paso-cierre__empty">
+              <lucide-icon name="receipt" aria-hidden="true"></lucide-icon>
+              Sin liquidaciones
+            </p>
+          }
+
+          @if (
+            !cerrada()
+            && puedeGenerarLiquidaciones()
+            && ['aprobada', 'liquidada'].includes(nomina()?.estado ?? '')
+            && accionRecomendada()?.tipo !== 'liquidaciones'
+          ) {
+            <button
+              type="button"
+              class="paso-cierre__btn is-secondary"
+              [disabled]="ejecutando() || !puedeRegenerarLiquidaciones()"
+              (click)="solicitarGeneracionLiquidaciones()"
+            >
+              <lucide-icon name="refresh-cw" aria-hidden="true"></lucide-icon>
+              {{ ejecutando() ? '…' : (liquidaciones().length > 0 ? 'Regenerar' : 'Generar') }}
+            </button>
           }
         </div>
       }
 
-      @if (!cerrada() && (nomina()?.estado === 'validada' || nomina()?.estado === 'aprobada' || nomina()?.estado === 'liquidada')) {
-        <div class="paso-cierre__block paso-cierre__block--actions">
-          <div class="paso-cierre__acciones">
-            @if (puedeAprobar()) {
-              <button
-                type="button"
-                class="paso-cierre__btn is-secondary"
-                [disabled]="ejecutando()"
-                (click)="solicitarAprobacion()"
-              >
-                Aprobar nómina
-              </button>
-            }
-            @if (puedeGenerarLiquidaciones() && ['aprobada', 'liquidada'].includes(nomina()?.estado ?? '')) {
-              <button
-                type="button"
-                class="paso-cierre__btn is-secondary"
-                [disabled]="ejecutando() || !puedeRegenerarLiquidaciones()"
-                (click)="solicitarGeneracionLiquidaciones()"
-              >
-                {{ ejecutando() ? 'Generando…' : etiquetaAccionLiquidaciones() }}
-              </button>
-            }
-          </div>
-        </div>
-      }
-
       @if (!cerrada()) {
-        <label class="paso-cierre__field paso-cierre__field--wide">
-          Motivo del cierre (opcional)
-          <input
-            type="text"
-            [value]="motivoCierre()"
-            (input)="motivoCierre.set($any($event.target).value)"
-            placeholder="Ej.: cierre del período, sin observaciones"
-          />
-        </label>
-      } @else if (puedeAccionesAdmin()) {
-        <button type="button" class="paso-cierre__btn is-ghost" (click)="abrirReaperturaModal()">
-          Reabrir nómina
+        <div class="paso-cierre__block paso-cierre__block--motivo">
+          <label class="paso-cierre__field paso-cierre__field--wide">
+            <span class="paso-cierre__field-label">
+              <lucide-icon name="message-square" aria-hidden="true"></lucide-icon>
+              Motivo (opcional)
+            </span>
+            <input
+              type="text"
+              [value]="motivoCierre()"
+              (input)="motivoCierre.set($any($event.target).value)"
+              placeholder="Cierre del período"
+            />
+          </label>
+        </div>
+      } @else if (puedeAccionesAdmin() && accionRecomendada()?.tipo !== 'reabrir') {
+        <button type="button" class="paso-cierre__btn is-secondary" (click)="abrirReaperturaModal()">
+          <lucide-icon name="lock-open" aria-hidden="true"></lucide-icon>
+          Reabrir
         </button>
-      } @else {
-        <p class="paso-cierre__footer-hint">
-          La reapertura requiere rol de administración de remuneraciones.
-        </p>
       }
     </section>
   </div>
-
-  <footer class="paso-cierre__footer" aria-live="polite">
-    @if (cerrada()) {
-      <span class="paso-cierre__footer-hint">
-        Nómina cerrada. Para volver a editar, usa Reabrir nómina.
-      </span>
-    } @else if (calculoNoVigente()) {
-      <span class="paso-cierre__footer-hint is-warning">
-        Recalcula antes de cerrar. La acción principal del shell quedará bloqueada.
-      </span>
-    } @else if (!puedeCerrar()) {
-      <span class="paso-cierre__footer-hint is-warning">
-        El cierre operativo está reservado a administración de remuneraciones.
-      </span>
-    } @else if (todoCumplido()) {
-      <span class="paso-cierre__footer-hint">
-        Checklist lista. Usa la acción principal del shell para cerrar la nómina.
-      </span>
-    } @else {
-      <span class="paso-cierre__footer-hint is-warning">
-        Completa los ítems pendientes de la checklist antes de cerrar.
-      </span>
-    }
-  </footer>
   }
 </section>
 

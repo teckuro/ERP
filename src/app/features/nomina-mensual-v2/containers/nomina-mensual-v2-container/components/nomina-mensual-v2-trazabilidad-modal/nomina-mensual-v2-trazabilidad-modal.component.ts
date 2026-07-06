@@ -103,8 +103,6 @@ export class NominaMensualV2TrazabilidadModalComponent {
         return 'Movimientos';
       case 'calculation':
         return 'Cálculo';
-      case 'validation':
-        return 'Validación';
       case 'closure':
         return 'Cierre';
     }

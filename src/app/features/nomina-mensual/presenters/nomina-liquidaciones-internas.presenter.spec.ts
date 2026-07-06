@@ -4,6 +4,7 @@ import type { NominaLiquidacionResumen } from '../models/nomina-consolidacion.mo
 import {
   clasificarLiquidacionInterna,
   formatearFechaLiquidacion,
+  liquidacionReferenciaCobertura,
   liquidacionVigente,
   prepararFilasLiquidacionesInternas,
 } from './nomina-liquidaciones-internas.presenter';
@@ -47,6 +48,12 @@ describe('nomina-liquidaciones-internas.presenter', () => {
     expect(
       clasificarLiquidacionInterna(liq({ version: 1 }), { nominaCerrada: false, versionMaxima: 2 }),
     ).toBe('superada');
+  });
+
+  it('usa la última versión como referencia cuando no hay vigente (nómina cerrada)', () => {
+    const filas = prepararFilasLiquidacionesInternas([liq({ totalTrabajadores: 4 })], 'cerrada');
+    expect(liquidacionVigente(filas)).toBeNull();
+    expect(liquidacionReferenciaCobertura(filas)?.totalTrabajadores).toBe(4);
   });
 
   it('formatea fecha de generación', () => {

@@ -45,7 +45,7 @@ export function proximoPasoNomina(estado: EstadoNomina): PasoSiguienteNomina {
     case 'dotacion_generada': return 'dotacion';
     case 'en_revision':
     case 'reabierta': return 'movimientos';
-    case 'calculada': return 'validacion';
+    case 'calculada': return 'cierre';
     case 'validada': return 'cierre';
     case 'aprobada': return 'cierre';
     case 'liquidada': return 'cierre';

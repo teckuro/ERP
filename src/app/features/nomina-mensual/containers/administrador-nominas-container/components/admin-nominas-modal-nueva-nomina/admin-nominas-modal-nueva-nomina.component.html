@@ -6,27 +6,27 @@
 >
   <div
     class="adm-nom-modal"
-    [class.adm-nom-modal--wide]="paso() === 'preview'"
     role="dialog"
     aria-modal="true"
     aria-labelledby="adm-nom-modal-nueva-title"
   >
     <header class="adm-nom-modal__head">
       <div>
-        <h2 id="adm-nom-modal-nueva-title" class="adm-nom-modal__title">
-          @if (paso() === 'configuracion') {
-            Nueva nómina
-          } @else {
-            Vista previa
-          }
-        </h2>
-        <p class="adm-nom-modal__subtitle">
-          @if (paso() === 'configuracion') {
-            Indica el período a procesar. La fecha de pago y el cierre se configuran en el generador.
-          } @else {
-            {{ empresaContexto() }} · {{ etiquetaPeriodo() }}
-          }
-        </p>
+        <p class="adm-nom-modal__eyebrow">Creación de nómina</p>
+        <nav class="adm-nom-modal__steps" aria-label="Pasos del asistente">
+          <span
+            class="adm-nom-modal__step adm-nom-modal__step--active"
+            aria-current="step"
+          >
+            1 Configuración
+          </span>
+          <span class="adm-nom-modal__step-sep" aria-hidden="true">·</span>
+          <span class="adm-nom-modal__step adm-nom-modal__step--pending">
+            2 Vista previa
+          </span>
+        </nav>
+        <h2 id="adm-nom-modal-nueva-title" class="adm-nom-modal__title">Nueva nómina</h2>
+        <p class="adm-nom-modal__subtitle">{{ subtituloConfiguracion() }}</p>
       </div>
       <button
         type="button"
@@ -38,325 +38,94 @@
       </button>
     </header>
 
-    @if (paso() === 'configuracion') {
-      <form
-        class="adm-nom-modal__body"
-        (submit)="$event.preventDefault(); generarPreview()"
-      >
+    <form
+      class="adm-nom-modal__body"
+      (submit)="$event.preventDefault(); crearNomina()"
+    >
+      <div class="adm-nom-modal__field adm-nom-modal__field--periodo">
+        <span id="adm-nom-modal-periodo-label" class="adm-nom-modal__label">Período</span>
+        <app-periodo-mensual-input
+          id="adm-nom-modal-periodo"
+          [value]="periodo()"
+          [invalid]="!periodoEsValido()"
+          panelHint="Período de liquidación mensual a procesar."
+          (valueChange)="setPeriodo($event)"
+        />
+        @if (!periodoEsValido()) {
+          <small class="adm-nom-modal__hint adm-nom-modal__hint--error">
+            Indica un período válido (formato AAAA-MM).
+          </small>
+        } @else {
+          <small class="adm-nom-modal__hint">{{ etiquetaPeriodo() }}</small>
+        }
+      </div>
+
+      @if (multiplesEmpresas()) {
         <div class="adm-nom-modal__field">
-          <label for="adm-nom-modal-periodo" class="adm-nom-modal__label">Período</label>
-          <input
-            id="adm-nom-modal-periodo"
-            type="month"
+          <label for="adm-nom-modal-empresa" class="adm-nom-modal__label">Empresa</label>
+          <select
+            id="adm-nom-modal-empresa"
             class="adm-nom-modal__input"
-            [value]="periodo()"
-            (input)="setPeriodo($any($event.target).value)"
+            [value]="empresaId()"
+            (change)="setEmpresa($any($event.target).value)"
             required
-          />
-          @if (!periodoEsValido()) {
-            <small class="adm-nom-modal__hint adm-nom-modal__hint--error">
-              Indica un período válido (formato AAAA-MM).
-            </small>
-          }
+          >
+            @if (empresas().length === 0) {
+              <option value="" disabled>No hay empresas disponibles</option>
+            }
+            @for (empresa of empresas(); track empresa.id) {
+              <option [value]="empresa.id">{{ empresa.nombre }}</option>
+            }
+          </select>
         </div>
-
-        @if (multiplesEmpresas()) {
-          <div class="adm-nom-modal__field">
-            <label for="adm-nom-modal-empresa" class="adm-nom-modal__label">Empresa</label>
-            <select
-              id="adm-nom-modal-empresa"
-              class="adm-nom-modal__input"
-              [value]="empresaId()"
-              (change)="setEmpresa($any($event.target).value)"
-              required
-            >
-              @if (empresas().length === 0) {
-                <option value="" disabled>No hay empresas disponibles</option>
-              }
-              @for (empresa of empresas(); track empresa.id) {
-                <option [value]="empresa.id">{{ empresa.nombre }}</option>
-              }
-            </select>
-          </div>
-        } @else if (empresaContexto()) {
-          <p class="adm-nom-modal__contexto">
-            <span class="adm-nom-modal__contexto-label">Empresa</span>
-            <span class="adm-nom-modal__contexto-valor">{{ empresaContexto() }}</span>
-          </p>
-        }
-
-        <p class="adm-nom-modal__contexto adm-nom-modal__contexto--tipo">
-          <span class="adm-nom-modal__contexto-label">Tipo</span>
-          @if (mostrarSelectorTipo()) {
-            <select
-              class="adm-nom-modal__input adm-nom-modal__input--inline"
-              [value]="tipo()"
-              (change)="setTipo($any($event.target).value)"
-            >
-              @for (opcion of tiposNomina(); track opcion.id) {
-                <option [value]="opcion.id">{{ opcion.label }}</option>
-              }
-            </select>
-            <span class="adm-nom-modal__contexto-hint">{{ descripcionTipoSeleccionado() }}</span>
-          } @else {
-            <span class="adm-nom-modal__contexto-valor">{{ etiquetaTipoSeleccionado() }}</span>
-            <span class="adm-nom-modal__contexto-hint">{{ descripcionTipoSeleccionado() }}</span>
-          }
+      } @else if (empresaContexto()) {
+        <p class="adm-nom-modal__contexto">
+          <span class="adm-nom-modal__contexto-label">Empresa</span>
+          <span class="adm-nom-modal__contexto-valor">{{ empresaContexto() }}</span>
         </p>
+      }
 
-        @if (requiereCorte()) {
-          <div class="adm-nom-modal__field">
-            <label for="adm-nom-modal-corte" class="adm-nom-modal__label">Corte del anticipo</label>
-            @if (cargandoCortes()) {
-              <app-message-box
-                variant="loading"
-                mode="inline"
-                title="Cargando cortes"
-                message="Estamos consultando los cortes del período seleccionado."
-              />
-            } @else if (cortesDisponibles().length === 0) {
-              <p class="adm-nom-modal__hint adm-nom-modal__hint--error">
-                No hay plantilla activa ni cortes para este período. Revise Plantillas de ciclo.
-              </p>
-            } @else {
-              <select
-                id="adm-nom-modal-corte"
-                class="adm-nom-modal__input"
-                [value]="codigoCiclo()"
-                (change)="setCodigoCiclo($any($event.target).value)"
-                required
-              >
-                <option value="" disabled>Seleccione un corte</option>
-                @for (corte of cortesDisponibles(); track corte.codigoCiclo) {
-                  <option [value]="corte.codigoCiclo">
-                    {{ corte.notas || corte.codigoCiclo }}
-                    ({{ corte.fechaInicio }} – {{ corte.fechaFin }})
-                  </option>
-                }
-              </select>
-            }
-          </div>
-        }
+      <p class="adm-nom-modal__contexto adm-nom-modal__contexto--tipo">
+        <span class="adm-nom-modal__contexto-label">Tipo</span>
+        <span class="adm-nom-modal__contexto-valor">Mensual</span>
+        <span class="adm-nom-modal__contexto-hint">Liquidación legal del mes calendario.</span>
+      </p>
 
-        @if (error()) {
-          <div class="adm-nom-modal__error" role="alert">{{ error() }}</div>
-        }
+      @if (avisoNominaExistente(); as aviso) {
+        <app-message-box
+          variant="info"
+          mode="inline"
+          [title]="aviso.title"
+          [message]="aviso.message"
+          [detail]="aviso.detail"
+        />
+      }
 
-        <footer class="adm-nom-modal__foot">
-          <button
-            type="button"
-            class="adm-nom-modal__btn"
-            (click)="cerrarModal()"
-            [disabled]="cargandoPreview()"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            class="adm-nom-modal__btn adm-nom-modal__btn--primary"
-            [disabled]="!puedeAvanzarPreview()"
-          >
-            {{ cargandoPreview() ? 'Generando…' : 'Ver vista previa' }}
-          </button>
-        </footer>
-      </form>
-    } @else if (paso() === 'preview' && preview(); as preview) {
-      <section class="adm-nom-modal__body adm-nom-modal__body--preview">
-        <div class="adm-nom-modal__totales" aria-live="polite">
-          <div class="adm-nom-modal__total">
-            <span class="adm-nom-modal__total-numero">{{ preview.totales.incluidos }}</span>
-            <span class="adm-nom-modal__total-label">Incluidos</span>
-          </div>
-          <div class="adm-nom-modal__total adm-nom-modal__total--secondary">
-            <span class="adm-nom-modal__total-numero">{{ preview.totales.excluidos }}</span>
-            <span class="adm-nom-modal__total-label">Excluidos</span>
-          </div>
-          @if (preview.totales.conflictos > 0) {
-            <div class="adm-nom-modal__total adm-nom-modal__total--danger">
-              <span class="adm-nom-modal__total-numero">{{ preview.totales.conflictos }}</span>
-              <span class="adm-nom-modal__total-label">Bloqueantes</span>
-            </div>
-          }
-        </div>
+      <p class="adm-nom-modal__resumen">
+        Al confirmar se creará la dotación inicial y abrirá el generador en el paso recomendado.
+      </p>
 
-        @if (!preview.puedeCrear) {
-          <div class="adm-nom-modal__alerta" role="alert">
-            @if (preview.totales.conflictos > 0) {
-              <strong>No se puede crear todavía.</strong>
-              Revisa los bloqueantes en la pestaña Conflictos.
-            } @else {
-              <strong>Sin trabajadores incluidos.</strong>
-              Verifica contratos vigentes y fichas aptas en Empleados.
-            }
-          </div>
-        }
+      @if (error()) {
+        <div class="adm-nom-modal__error" role="alert">{{ error() }}</div>
+      }
 
-        <div class="adm-nom-modal__tabs" role="tablist">
-          <button
-            type="button"
-            class="adm-nom-modal__tab"
-            [class.adm-nom-modal__tab--active]="tabActiva() === 'incluidos'"
-            role="tab"
-            [attr.aria-selected]="tabActiva() === 'incluidos'"
-            (click)="setTab('incluidos')"
-          >
-            Incluidos
-            <span class="adm-nom-modal__tab-count">{{ preview.totales.incluidos }}</span>
-          </button>
-          <button
-            type="button"
-            class="adm-nom-modal__tab"
-            [class.adm-nom-modal__tab--active]="tabActiva() === 'excluidos'"
-            role="tab"
-            [attr.aria-selected]="tabActiva() === 'excluidos'"
-            (click)="setTab('excluidos')"
-          >
-            Excluidos
-            <span class="adm-nom-modal__tab-count">{{ preview.totales.excluidos }}</span>
-          </button>
-          <button
-            type="button"
-            class="adm-nom-modal__tab"
-            [class.adm-nom-modal__tab--active]="tabActiva() === 'conflictos'"
-            [class.adm-nom-modal__tab--danger]="preview.totales.conflictos > 0"
-            role="tab"
-            [attr.aria-selected]="tabActiva() === 'conflictos'"
-            (click)="setTab('conflictos')"
-          >
-            Conflictos
-            <span class="adm-nom-modal__tab-count">{{ preview.totales.conflictos }}</span>
-          </button>
-        </div>
-
-        <div class="adm-nom-modal__lista" role="tabpanel">
-          @if (tabUsaPaginacion() && cargandoTabPreview()) {
-            <app-message-box
-              variant="loading"
-              mode="inline"
-              title="Cargando trabajadores"
-              message="Estamos clasificando la dotación de la vista previa."
-            />
-          }
-          @switch (tabActiva()) {
-            @case ('incluidos') {
-              @if (preview.totales.incluidos === 0) {
-                <p class="adm-nom-modal__vacio">No hay trabajadores que cumplan los criterios.</p>
-              } @else if (!cargandoTabPreview()) {
-                <ul class="adm-nom-modal__lista-items">
-                  @for (fila of filasPreviewPagina(); track fila.idPersona) {
-                    <li class="adm-nom-modal__lista-item">
-                      <div class="adm-nom-modal__lista-principal">
-                        <strong>{{ fila.nombre }}</strong>
-                        <span class="adm-nom-modal__lista-meta">{{ fila.rut }}</span>
-                      </div>
-                      @if ('cargo' in fila && fila.cargo) {
-                        <span class="adm-nom-modal__lista-aux">{{ fila.cargo }}</span>
-                      }
-                    </li>
-                  }
-                </ul>
-                @if (totalPaginasPreview() > 1) {
-                  <nav class="adm-nom-modal__paginacion" aria-label="Paginación de incluidos">
-                    <button
-                      type="button"
-                      class="adm-nom-modal__btn"
-                      (click)="irPaginaPreviewAnterior()"
-                      [disabled]="paginaPreview() <= 1"
-                    >
-                      Anterior
-                    </button>
-                    <span class="adm-nom-modal__paginacion-info">{{ rangoPreviewVisible() }}</span>
-                    <button
-                      type="button"
-                      class="adm-nom-modal__btn"
-                      (click)="irPaginaPreviewSiguiente()"
-                      [disabled]="paginaPreview() >= totalPaginasPreview()"
-                    >
-                      Siguiente
-                    </button>
-                  </nav>
-                }
-              }
-            }
-            @case ('excluidos') {
-              @if (preview.totales.excluidos === 0) {
-                <p class="adm-nom-modal__vacio">Sin exclusiones registradas.</p>
-              } @else if (!cargandoTabPreview()) {
-                <ul class="adm-nom-modal__lista-items">
-                  @for (fila of filasPreviewPagina(); track fila.idPersona) {
-                    <li class="adm-nom-modal__lista-item">
-                      <div class="adm-nom-modal__lista-principal">
-                        <strong>{{ fila.nombre }}</strong>
-                        <span class="adm-nom-modal__lista-meta">{{ fila.rut }}</span>
-                      </div>
-                      @if ('motivoHumano' in fila) {
-                        <span class="adm-nom-modal__lista-motivo">{{ fila.motivoHumano }}</span>
-                      }
-                    </li>
-                  }
-                </ul>
-                @if (totalPaginasPreview() > 1) {
-                  <nav class="adm-nom-modal__paginacion" aria-label="Paginación de excluidos">
-                    <button
-                      type="button"
-                      class="adm-nom-modal__btn"
-                      (click)="irPaginaPreviewAnterior()"
-                      [disabled]="paginaPreview() <= 1"
-                    >
-                      Anterior
-                    </button>
-                    <span class="adm-nom-modal__paginacion-info">{{ rangoPreviewVisible() }}</span>
-                    <button
-                      type="button"
-                      class="adm-nom-modal__btn"
-                      (click)="irPaginaPreviewSiguiente()"
-                      [disabled]="paginaPreview() >= totalPaginasPreview()"
-                    >
-                      Siguiente
-                    </button>
-                  </nav>
-                }
-              }
-            }
-            @case ('conflictos') {
-              @if (preview.conflictos.length === 0) {
-                <p class="adm-nom-modal__vacio">Sin conflictos detectados.</p>
-              } @else {
-                <ul class="adm-nom-modal__lista-items">
-                  @for (fila of preview.conflictos; track fila.motivo) {
-                    <li class="adm-nom-modal__lista-item adm-nom-modal__lista-item--danger">
-                      <strong>{{ fila.motivoHumano }}</strong>
-                    </li>
-                  }
-                </ul>
-              }
-            }
-          }
-        </div>
-
-        @if (error()) {
-          <div class="adm-nom-modal__error" role="alert">{{ error() }}</div>
-        }
-
-        <footer class="adm-nom-modal__foot">
-          <button
-            type="button"
-            class="adm-nom-modal__btn"
-            (click)="volverAConfiguracion()"
-            [disabled]="guardando()"
-          >
-            Volver
-          </button>
-          <button
-            type="button"
-            class="adm-nom-modal__btn adm-nom-modal__btn--primary"
-            (click)="confirmar()"
-            [disabled]="!puedeConfirmar()"
-          >
-            {{ guardando() ? 'Creando…' : 'Confirmar y abrir generador' }}
-          </button>
-        </footer>
-      </section>
-    }
+      <footer class="adm-nom-modal__foot">
+        <button
+          type="button"
+          class="adm-nom-modal__btn"
+          (click)="cerrarModal()"
+          [disabled]="guardando()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="adm-nom-modal__btn adm-nom-modal__btn--primary"
+          [disabled]="!puedeCrear()"
+        >
+          {{ guardando() ? 'Creando…' : 'Confirmar y abrir generador' }}
+        </button>
+      </footer>
+    </form>
   </div>
 </div>

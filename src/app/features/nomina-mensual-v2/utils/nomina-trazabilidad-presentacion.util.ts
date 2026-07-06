@@ -72,10 +72,8 @@ export function obtenerTituloAccionPaso(resumen: ResumenAuditoriaPasoNomina | un
       return 'Dotación confirmada';
     case 'movements':
       return 'Movimientos aplicados';
-    case 'validation':
-      return 'Prenómina validada';
     case 'closure':
-      return resumen.estado === 'aprobado' ? 'Nómina cerrada' : 'Pendiente de cierre';
+      return resumen.estado === 'aprobado' ? 'Nómina cerrada' : 'Prenómina validada';
     case 'calculation':
       return 'Cálculo ejecutado';
     default:
@@ -117,10 +115,8 @@ export function verboResponsablePaso(paso: PayrollStepId, estado: EstadoAuditori
       return 'Confirmado por';
     case 'movements':
       return 'Aplicado por';
-    case 'validation':
-      return 'Validado por';
     case 'closure':
-      return estado === 'aprobado' ? 'Cerrado por' : 'Revisado por';
+      return estado === 'aprobado' ? 'Cerrado por' : 'Validado por';
     default:
       return 'Registrado por';
   }

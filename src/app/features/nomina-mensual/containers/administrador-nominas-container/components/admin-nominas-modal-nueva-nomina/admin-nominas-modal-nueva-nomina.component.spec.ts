@@ -3,8 +3,6 @@ import { signal } from '@angular/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { EmpresaActivaService } from '../../../../../../core/services/empresa-activa.service';
-import { NominaFeatureGatesService } from '../../../../services/nomina-feature-gates.service';
-import { NominaPlantillaCicloService } from '../../../../services/nomina-plantilla-ciclo.service';
 import { NominaPeriodoService } from '../../../../services/nomina-periodo.service';
 import type { NominaPeriodoResumen } from '../../../../models/nomina-periodo.models';
 import { crearNominaResumen } from '../../../../models/nomina-periodo.models';
@@ -62,9 +60,7 @@ function configurar(opts: {
   confirmar?: ReturnType<typeof vi.fn>;
   listar?: ReturnType<typeof vi.fn>;
   preview?: ReturnType<typeof vi.fn>;
-  previewPagina?: ReturnType<typeof vi.fn>;
   empresaSnap?: { idEmpresa: number; nombre: string; razonSocial: string; rut: string; dv: string } | null;
-  gates?: { anticipos: boolean; extraordinaria: boolean };
 } = {}) {
   const empresaSnap = opts.empresaSnap === undefined
     ? { idEmpresa: 7, nombre: 'Demo', razonSocial: 'Demo S.A.', rut: '76', dv: 'K' }
@@ -87,10 +83,7 @@ function configurar(opts: {
       reutilizada: false,
     }),
     previsualizarCreacion: opts.preview ?? vi.fn().mockResolvedValue(previewMock()),
-    listarPreviewCreacionTrabajadores: opts.previewPagina ?? vi.fn().mockResolvedValue({
-      filas: [{ idPersona: 10, rut: '1-1', nombre: 'Ana Pérez', cargo: 'Analista' }],
-      total: 1,
-    }),
+    obtenerCabeceraNomina: vi.fn().mockResolvedValue(resumenMock()),
     listarResumenes: opts.listar ?? vi.fn().mockResolvedValue([resumenMock()]),
   };
   TestBed.resetTestingModule();
@@ -98,21 +91,6 @@ function configurar(opts: {
     providers: [
       { provide: NominaPeriodoService, useValue: servicio },
       { provide: EmpresaActivaService, useValue: empresaActiva },
-      {
-        provide: NominaFeatureGatesService,
-        useValue: {
-          gates: () => opts.gates ?? { anticipos: false, extraordinaria: false, rectificacion: false },
-          cargar: vi.fn().mockResolvedValue(opts.gates ?? { anticipos: false, extraordinaria: false, rectificacion: false }),
-        },
-      },
-      {
-        provide: NominaPlantillaCicloService,
-        useValue: {
-          refrescar: vi.fn().mockResolvedValue([]),
-          plantillasActivas: () => [],
-          previsualizarCortes: vi.fn().mockResolvedValue([]),
-        },
-      },
     ],
   });
   return { servicio, empresaActiva };
@@ -123,59 +101,48 @@ function crearComponente(): AdminNominasModalNuevaNominaComponent {
   return fixture.componentInstance;
 }
 
-describe('AdminNominasModalNuevaNominaComponent (F04 — wizard 2 pasos)', () => {
+describe('AdminNominasModalNuevaNominaComponent (F04 — creación directa)', () => {
   beforeEach(() => {
     configurar();
   });
 
-  it('Test 23 — inicializa con período actual, empresa preseleccionada y paso configuración', () => {
+  it('Test 23 — inicializa con período actual, empresa preseleccionada y formulario listo', () => {
     const cmp = crearComponente();
     expect(cmp.periodo()).toMatch(/^\d{4}-(0[1-9]|1[0-2])$/);
     expect(cmp.empresaId()).toBe('7');
-    expect(cmp.tipo()).toBe('mensual');
-    expect(cmp.paso()).toBe('configuracion');
-    expect(cmp.puedeAvanzarPreview()).toBe(true);
+    expect(cmp.puedeCrear()).toBe(true);
   });
 
-  it('Test 24 — período inválido bloquea avanzar al preview', () => {
+  it('Test 24 — período inválido bloquea crear', () => {
     const cmp = crearComponente();
     cmp.setPeriodo('2026/06');
     expect(cmp.periodoEsValido()).toBe(false);
-    expect(cmp.puedeAvanzarPreview()).toBe(false);
+    expect(cmp.puedeCrear()).toBe(false);
     cmp.setPeriodo('2026-06');
-    expect(cmp.puedeAvanzarPreview()).toBe(true);
+    expect(cmp.puedeCrear()).toBe(true);
   });
 
-  it('Test 25a — generarPreview invoca el servicio y avanza al paso preview', async () => {
+  it('Test 25 — crearNomina invoca preview + confirmación F05 y emite (creada)', async () => {
     const { servicio } = configurar();
     const cmp = crearComponente();
     cmp.setPeriodo('2026-07');
-    await cmp.generarPreview();
+
+    let emitido: NominaCreadaEvento | null = null;
+    cmp.creada.subscribe((r) => { emitido = r; });
+    await cmp.crearNomina();
+
     expect(servicio.previsualizarCreacion).toHaveBeenCalledWith({
       periodo: '2026-07',
       tipo: 'mensual',
       codigoCiclo: null,
     });
-    expect(cmp.paso()).toBe('preview');
-    expect(cmp.preview()?.totales.incluidos).toBe(1);
-  });
-
-  it('Test 25b — confirmar usa RPC F05 (fingerprint) y emite (creada)', async () => {
-    const { servicio } = configurar();
-    const cmp = crearComponente();
-    cmp.setPeriodo('2026-07');
-    await cmp.generarPreview();
-
-    let emitido: NominaCreadaEvento | null = null;
-    cmp.creada.subscribe((r) => { emitido = r; });
-    await cmp.confirmar();
-
     expect(servicio.confirmarCreacion).toHaveBeenCalledWith({
       periodo: '2026-07',
       tipo: 'mensual',
       fingerprint: 'fp-abc',
       codigoCiclo: '2026-07-MES',
     });
+    expect(servicio.obtenerCabeceraNomina).toHaveBeenCalledWith('nom-creado');
     expect(emitido).not.toBeNull();
     expect(emitido!.resumen.id).toBe('nom-creado');
     expect(emitido!.siguientePaso).toBe('dotacion');
@@ -183,19 +150,7 @@ describe('AdminNominasModalNuevaNominaComponent (F04 — wizard 2 pasos)', () =>
     expect(emitido!.reutilizada).toBe(false);
   });
 
-  it('expone solo mensual cuando los feature gates están apagados', () => {
-    const cmp = crearComponente();
-    expect(cmp.tiposNomina().map((tipo) => tipo.id)).toEqual(['mensual']);
-  });
-
-  it('bloquea preview de quincenal sin corte seleccionado', () => {
-    configurar({ gates: { anticipos: true, extraordinaria: false } });
-    const cmp = crearComponente();
-    cmp.setTipo('quincenal');
-    expect(cmp.puedeAvanzarPreview()).toBe(false);
-  });
-
-  it('Test 26 — cerrarModal emite (cerrar) cuando no está guardando ni cargando', () => {
+  it('Test 26 — cerrarModal emite (cerrar) cuando no está guardando', () => {
     const cmp = crearComponente();
     let cerrado = false;
     cmp.cerrar.subscribe(() => { cerrado = true; });
@@ -203,12 +158,13 @@ describe('AdminNominasModalNuevaNominaComponent (F04 — wizard 2 pasos)', () =>
     expect(cerrado).toBe(true);
   });
 
-  it('Test 27 — generarPreview con período inválido NO llama al servicio', async () => {
+  it('Test 27 — crearNomina con período inválido NO llama al servicio', async () => {
     const { servicio } = configurar();
     const cmp = crearComponente();
     cmp.setPeriodo('invalido');
-    await cmp.generarPreview();
+    await cmp.crearNomina();
     expect(servicio.previsualizarCreacion).not.toHaveBeenCalled();
+    expect(servicio.confirmarCreacion).not.toHaveBeenCalled();
   });
 
   it('Test 28 — error del servicio en preview se expone en error()', async () => {
@@ -216,66 +172,52 @@ describe('AdminNominasModalNuevaNominaComponent (F04 — wizard 2 pasos)', () =>
     configurar({ preview });
     const cmp = crearComponente();
     cmp.setPeriodo('2026-07');
-    await cmp.generarPreview();
-    expect(cmp.error()).toBe('falla preview');
-    expect(cmp.cargandoPreview()).toBe(false);
-    expect(cmp.paso()).toBe('configuracion');
+    await cmp.crearNomina();
+    expect(cmp.error()).toContain('crear la nómina');
+    expect(cmp.guardando()).toBe(false);
   });
 
   it('Test 29 — guardando=true durante la creación bloquea cerrarModal', async () => {
-    let resolverPromesa: ((r: unknown) => void) | null = null;
-    const confirmar = vi.fn().mockImplementation(() => new Promise<unknown>((res) => {
-      resolverPromesa = res;
-    }));
+    const confirmar = vi.fn().mockImplementation(() => new Promise(() => undefined));
     configurar({ confirmar });
     const cmp = crearComponente();
     cmp.setPeriodo('2026-07');
-    await cmp.generarPreview();
 
     let cerradoCount = 0;
     cmp.cerrar.subscribe(() => { cerradoCount += 1; });
 
-    const promesa = cmp.confirmar();
+    void cmp.crearNomina();
+    await Promise.resolve();
     expect(cmp.guardando()).toBe(true);
     cmp.cerrarModal();
     expect(cerradoCount).toBe(0);
-
-    resolverPromesa!({
-      idNominaPeriodo: 'nom-creado',
-      estado: 'dotacion_generada',
-      versionEstado: 1,
-      codigoCiclo: '2026-07-MES',
-      fechaInicio: '2026-07-01',
-      fechaFin: '2026-07-31',
-      totalTrabajadores: 1,
-      siguientePaso: 'parameters',
-      reutilizada: false,
-    });
-    await promesa;
-    expect(cmp.guardando()).toBe(false);
   });
 
-  it('Test 30 — preview con conflictos bloquea confirmar y abre tab Conflictos', async () => {
+  it('Test 30 — preview con conflictos bloquea confirmar y muestra error', async () => {
     const preview = vi.fn().mockResolvedValue(previewMock({
       conflictos: [{ motivo: 'duplicidad_nomina', motivoHumano: 'Ya existe', detalle: null }],
       totales: { incluidos: 1, excluidos: 0, conflictos: 1 },
       puedeCrear: false,
     }));
-    configurar({ preview });
+    const confirmar = vi.fn();
+    configurar({ preview, confirmar });
     const cmp = crearComponente();
     cmp.setPeriodo('2026-07');
-    await cmp.generarPreview();
-    expect(cmp.tabActiva()).toBe('conflictos');
-    expect(cmp.puedeConfirmar()).toBe(false);
+    await cmp.crearNomina();
+    expect(cmp.error()).toContain('Ya existe');
+    expect(confirmar).not.toHaveBeenCalled();
   });
 
-  it('Test 31 — cambiar período en paso preview vuelve a configuración y limpia preview', async () => {
-    const cmp = crearComponente();
+  it('detecta nómina existente en bandeja para el mismo período', () => {
+    const fixture = TestBed.createComponent(AdminNominasModalNuevaNominaComponent);
+    fixture.componentRef.setInput('empresasDisponibles', [
+      resumenMock({ id: 'nom-existente', periodo: '2026-07', empresaId: '7', estado: 'borrador' }),
+    ]);
+    const cmp = fixture.componentInstance;
     cmp.setPeriodo('2026-07');
-    await cmp.generarPreview();
-    expect(cmp.paso()).toBe('preview');
-    cmp.setPeriodo('2026-08');
-    expect(cmp.paso()).toBe('configuracion');
-    expect(cmp.preview()).toBeNull();
+    cmp.empresaId.set('7');
+
+    expect(cmp.avisoNominaExistente()?.title).toContain('Ya hay una nómina');
+    expect(cmp.avisoNominaExistente()?.detail).toContain('reutilizará');
   });
 });

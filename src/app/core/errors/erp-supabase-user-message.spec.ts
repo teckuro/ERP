@@ -47,8 +47,26 @@ describe('mensajeErrorSupabaseParaUsuario', () => {
     expect(msg).toContain('conexión');
   });
 
+  it('traduce plantilla mensual faltante sin jerga técnica', () => {
+    const msg = mensajeErrorSupabaseParaUsuario(
+      new Error('previsualizar_creacion_nomina: la empresa 1 no tiene plantilla mensual MES activa'),
+      'crear la nómina',
+    );
+    expect(msg).toContain('configuración base');
+    expect(msg).not.toContain('Plantillas de ciclos');
+    expect(msg).not.toContain('npm run');
+  });
+
   it('usa mensaje genérico con contexto', () => {
     const msg = mensajeErrorSupabaseParaUsuario(new Error('Algo raro'), 'cargar nóminas');
-    expect(msg).toContain('cargar nóminas');
+    expect(msg).toBe('No se pudo cargar nóminas. Intente de nuevo o contacte a soporte.');
+  });
+
+  it('traduce columna BD faltante', () => {
+    const msg = mensajeErrorSupabaseParaUsuario(
+      { code: '42703', message: 'column "motivo_cierre" does not exist' },
+      'crear la nómina',
+    );
+    expect(msg).toContain('desactualizado');
   });
 });

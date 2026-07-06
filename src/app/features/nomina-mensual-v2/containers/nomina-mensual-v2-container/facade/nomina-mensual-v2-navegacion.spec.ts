@@ -48,14 +48,13 @@ function nominaConEstado(
   });
 }
 
-describe('nomina-mensual-v2-navegacion (F3 fusion — 6 pasos)', () => {
-  it('expone exactamente 6 pasos en el orden definido por la fase F3', () => {
+describe('nomina-mensual-v2-navegacion (F3 fusion — 5 pasos)', () => {
+  it('expone exactamente 5 pasos en el orden definido por la fase F3', () => {
     expect(ORDEN_PASOS_NOMINA).toEqual([
       'parameters',
       'dotacion',
       'movements',
       'calculation',
-      'validation',
       'closure',
     ]);
   });
@@ -81,7 +80,7 @@ describe('nomina-mensual-v2-navegacion (F3 fusion — 6 pasos)', () => {
 
   it('expone copy navegacional del CTA en pasos puente (Movimientos y Cálculo)', () => {
     expect(obtenerEtiquetaAccionPrincipal('movements')).toBe('Continuar al cálculo');
-    expect(obtenerEtiquetaAccionPrincipal('calculation')).toBe('Continuar a validación');
+    expect(obtenerEtiquetaAccionPrincipal('calculation')).toBe('Continuar al cierre');
   });
 
   it('detecta retroceso al paso Parametros desde Dotación', () => {
@@ -136,15 +135,14 @@ describe('indiceUltimoPasoCompletado / obtenerEstadoPaso desde evidencia (AG-NAV
   it('estado calculada con cálculo vigente: calculation queda completed', () => {
     const n = nominaConEstado('calculada', true);
     expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('calculation'));
-    expect(obtenerEstadoPaso('movements', 'validation', n)).toBe('completed');
-    expect(obtenerEstadoPaso('calculation', 'validation', n)).toBe('completed');
+    expect(obtenerEstadoPaso('movements', 'closure', n)).toBe('completed');
+    expect(obtenerEstadoPaso('calculation', 'closure', n)).toBe('completed');
   });
 
-  it('estado validada con cálculo vigente: validation queda completed (F13)', () => {
+  it('estado validada con cálculo vigente: calculation queda completed (F13)', () => {
     const n = nominaConEstado('validada', true);
-    expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('validation'));
+    expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('calculation'));
     expect(obtenerEstadoPaso('calculation', 'closure', n)).toBe('completed');
-    expect(obtenerEstadoPaso('validation', 'closure', n)).toBe('completed');
     expect(obtenerEstadoPaso('closure', 'closure', n)).toBe('active');
   });
 
@@ -153,17 +151,17 @@ describe('indiceUltimoPasoCompletado / obtenerEstadoPaso desde evidencia (AG-NAV
     expect(obtenerEstadoPaso('calculation', 'closure', n)).toBe('warning');
   });
 
-  it('estado aprobada: validation queda completed, closure pending', () => {
+  it('estado aprobada: calculation queda completed, closure active', () => {
     const n = nominaConEstado('aprobada', true);
-    expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('validation'));
-    expect(obtenerEstadoPaso('validation', 'closure', n)).toBe('completed');
+    expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('calculation'));
+    expect(obtenerEstadoPaso('calculation', 'closure', n)).toBe('completed');
     expect(obtenerEstadoPaso('closure', 'closure', n)).toBe('active');
   });
 
-  it('estado liquidada: validation queda completed y closure pendiente', () => {
+  it('estado liquidada: calculation queda completed y closure pendiente', () => {
     const n = nominaConEstado('liquidada', true);
-    expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('validation'));
-    expect(obtenerEstadoPaso('validation', 'closure', n)).toBe('completed');
+    expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('calculation'));
+    expect(obtenerEstadoPaso('calculation', 'closure', n)).toBe('completed');
     expect(obtenerEstadoPaso('closure', 'parameters', n)).toBe('pending');
   });
 
@@ -181,8 +179,8 @@ describe('indiceUltimoPasoCompletado / obtenerEstadoPaso desde evidencia (AG-NAV
 
   it('estado reabierta: closure vuelve a pending (cierre deshecho)', () => {
     const n = nominaConEstado('reabierta', true);
-    expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('validation'));
-    expect(obtenerEstadoPaso('validation', 'parameters', n)).toBe('completed');
+    expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('calculation'));
+    expect(obtenerEstadoPaso('calculation', 'parameters', n)).toBe('completed');
     expect(obtenerEstadoPaso('closure', 'parameters', n)).toBe('pending');
   });
 
@@ -210,7 +208,7 @@ describe('indiceUltimoPasoCompletado / obtenerEstadoPaso desde evidencia (AG-NAV
       ...nominaConEstado('reabierta', true),
       maximoPasoCompletado: 'closure',
     });
-    expect(indiceUltimoPasoCompletado(n)).toBe(4);
+    expect(indiceUltimoPasoCompletado(n)).toBe(ORDEN_PASOS_NOMINA.indexOf('calculation'));
     expect(obtenerEstadoPaso('closure', 'parameters', n)).toBe('pending');
   });
 
@@ -267,8 +265,8 @@ describe('indiceMaximoPasoAccesible — restringe rehidratación a pasos alcanza
     expect(indiceMaximoPasoAccesible('en_revision')).toBe(ORDEN_PASOS_NOMINA.indexOf('calculation'));
   });
 
-  it('calculada permite hasta validation; validada abre cierre (F14)', () => {
-    expect(indiceMaximoPasoAccesible('calculada')).toBe(ORDEN_PASOS_NOMINA.indexOf('validation'));
+  it('calculada permite hasta closure; validada abre cierre (F14)', () => {
+    expect(indiceMaximoPasoAccesible('calculada')).toBe(ORDEN_PASOS_NOMINA.indexOf('closure'));
     expect(indiceMaximoPasoAccesible('validada')).toBe(ORDEN_PASOS_NOMINA.indexOf('closure'));
   });
 
@@ -302,8 +300,7 @@ describe('ejecutarAvancePaso — delegación del CTA del shell (AG-NAV-03)', () 
   it('cuando el paso retorna ok:true, expone el siguiente paso del orden definido', async () => {
     expect((await ejecutarAvancePaso('dotacion', paso({ ok: true }))).siguientePaso).toBe('movements');
     expect((await ejecutarAvancePaso('movements', paso({ ok: true }))).siguientePaso).toBe('calculation');
-    expect((await ejecutarAvancePaso('calculation', paso({ ok: true }))).siguientePaso).toBe('validation');
-    expect((await ejecutarAvancePaso('validation', paso({ ok: true }))).siguientePaso).toBe('closure');
+    expect((await ejecutarAvancePaso('calculation', paso({ ok: true }))).siguientePaso).toBe('closure');
   });
 
   it('en closure (paso terminal), ok:true no expone siguientePaso', async () => {
@@ -371,13 +368,12 @@ describe('tooltipPasoNoAccesible / obtenerEtiquetaBrevePaso', () => {
     expect(obtenerEtiquetaBrevePaso('dotacion')).toBe('Dotación');
     expect(obtenerEtiquetaBrevePaso('movements')).toBe('Movimientos');
     expect(obtenerEtiquetaBrevePaso('calculation')).toBe('Cálculo');
-    expect(obtenerEtiquetaBrevePaso('validation')).toBe('Validación');
     expect(obtenerEtiquetaBrevePaso('closure')).toBe('Cierre');
   });
 
   it('tooltipPasoNoAccesible cita el paso anterior', () => {
     expect(tooltipPasoNoAccesible('movements')).toBe('Completa Dotación para continuar.');
-    expect(tooltipPasoNoAccesible('validation')).toBe('Completa Cálculo para continuar.');
+    expect(tooltipPasoNoAccesible('closure')).toBe('Completa Cálculo para continuar.');
   });
 
   it('tooltipPasoNoAccesible para el primer paso devuelve mensaje genérico', () => {

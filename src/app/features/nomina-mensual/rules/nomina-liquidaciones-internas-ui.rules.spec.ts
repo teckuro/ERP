@@ -4,6 +4,7 @@ import {
   calcularTrabajadoresSinLiquidacion,
   esLiquidacionesSoloLectura,
   nominasConLiquidacionesDisponibles,
+  puedeRegenerarDesdePantallaLiquidaciones,
   puedeRegenerarLiquidacionesInternas,
 } from './nomina-liquidaciones-internas-ui.rules';
 import { crearNominaResumen } from '../models/nomina-periodo.models';
@@ -21,10 +22,17 @@ describe('nomina-liquidaciones-internas-ui.rules', () => {
     expect(puedeRegenerarLiquidacionesInternas('cerrada', true)).toBe(false);
   });
 
+  it('solo permite regenerar en pantalla Liquidaciones para reabierta', () => {
+    expect(puedeRegenerarDesdePantallaLiquidaciones('reabierta', true)).toBe(true);
+    expect(puedeRegenerarDesdePantallaLiquidaciones('aprobada', true)).toBe(false);
+    expect(puedeRegenerarDesdePantallaLiquidaciones('liquidada', true)).toBe(false);
+  });
+
   it('calcula trabajadores sin liquidación', () => {
-    expect(calcularTrabajadoresSinLiquidacion(10, 8)).toBe(2);
-    expect(calcularTrabajadoresSinLiquidacion(10, null)).toBe(10);
-    expect(calcularTrabajadoresSinLiquidacion(5, 7)).toBe(0);
+    expect(calcularTrabajadoresSinLiquidacion(10, 8, { hayLotesMaterializados: true })).toBe(2);
+    expect(calcularTrabajadoresSinLiquidacion(10, null, { hayLotesMaterializados: true })).toBe(10);
+    expect(calcularTrabajadoresSinLiquidacion(5, 7, { hayLotesMaterializados: true })).toBe(0);
+    expect(calcularTrabajadoresSinLiquidacion(10, null)).toBe(0);
   });
 
   it('filtra nóminas liquidadas o cerradas con cálculo', () => {

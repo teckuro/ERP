@@ -175,13 +175,12 @@ describe('admin-nominas-presentacion.util — desgloseIncidencias', () => {
 });
 
 describe('admin-nominas-presentacion.util — sub-renglón "Avance"', () => {
-  it('Test 31 — etiquetaMaximoPasoCompletado cubre los 6 PayrollStepId', () => {
+  it('Test 31 — etiquetaMaximoPasoCompletado cubre los 5 PayrollStepId', () => {
     const pares: Array<[PayrollStepId, string]> = [
       ['parameters', 'Parámetros'],
       ['dotacion', 'Dotación'],
       ['movements', 'Movimientos'],
       ['calculation', 'Cálculo'],
-      ['validation', 'Validación'],
       ['closure', 'Cierre'],
     ];
     for (const [paso, etiqueta] of pares) {
@@ -223,7 +222,7 @@ describe('admin-nominas-presentacion.util — sub-renglón "Avance"', () => {
   it('Test 36 — mostrarEnCurso es true cuando proximoPaso es sin_accion y hay paso completado', () => {
     const fila = crearNominaResumen({
       proximoPaso: 'sin_accion',
-      maximoPasoCompletado: 'validation',
+      maximoPasoCompletado: 'closure',
     });
     expect(mostrarEnCurso(fila)).toBe(true);
   });

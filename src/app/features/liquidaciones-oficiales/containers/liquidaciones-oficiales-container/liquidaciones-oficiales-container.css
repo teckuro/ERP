@@ -640,42 +640,294 @@
   background: #f1f5f9;
 }
 
-/* ---- Prompt de vacío (sin nóminas) ---- */
+/* ---- Acta vacía (patrón data-grid-state) ---- */
 
-.liq-seleccion-prompt {
+.liq-acta-vacia {
   display: flex;
   flex: 1 1 auto;
+  align-items: stretch;
+  justify-content: stretch;
+  min-height: 0;
+  width: 100%;
+  overflow: auto;
+}
+
+.liq-acta-vacia__panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 0;
-  padding: 24px 16px;
-  border: 1px dashed var(--erp-border-strong);
+  width: 100%;
+  min-height: 100%;
+  gap: 0.65rem;
+  padding: 2rem 1.65rem;
+  text-align: center;
+  background: #fafaf7;
+  box-sizing: border-box;
+}
+
+.liq-acta-vacia__mark {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  place-items: center;
+  border: 1px solid #daddd6;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #647084;
+}
+
+.liq-acta-vacia__mark lucide-icon {
+  display: inline-flex;
+  width: 1.15rem;
+  height: 1.15rem;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.liq-acta-vacia__kicker,
+.liq-acta-vacia__title,
+.liq-acta-vacia__text {
+  margin: 0;
+}
+
+.liq-acta-vacia__kicker {
+  color: #647084;
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.liq-acta-vacia__title {
+  max-width: 28rem;
+  color: #172033;
+  font-size: 0.96rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.liq-acta-vacia__text {
+  max-width: 32rem;
+  color: #647084;
+  font-size: 0.82rem;
+  font-weight: 450;
+  line-height: 1.45;
+}
+
+.liq-acta-vacia__action {
+  display: inline-flex;
+  height: 2.1rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+  border: 1px solid #daddd6;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #4b5563;
+  padding: 0 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.liq-acta-vacia__action:hover {
+  border-color: #c7d0c4;
+  background: #fafaf7;
+  color: #172033;
+}
+
+.liq-acta-vacia__action:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+}
+
+.liq-acta-vacia__action--primary {
+  border-color: var(--erp-primary);
+  background: var(--erp-primary);
+  color: #ffffff;
+}
+
+.liq-acta-vacia__action--primary:hover {
+  border-color: var(--erp-primary-hover);
+  background: var(--erp-primary-hover);
+  color: #ffffff;
+}
+
+/* ---- Franja acción recomendada ---- */
+
+.liq-franja {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  border: 1px solid var(--erp-border);
   border-radius: 6px;
   background: var(--erp-surface-soft);
 }
 
-.liq-seleccion-prompt__body {
+.liq-franja[data-tono='pendiente'] {
+  background: var(--erp-review-soft);
+  border-color: var(--erp-review-border);
+}
+
+.liq-franja[data-tono='listo'] {
+  background: var(--erp-ok-soft);
+  border-color: var(--erp-ok-border);
+}
+
+.liq-franja[data-tono='warning'] {
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.liq-franja[data-tono='cerrada'] {
+  background: var(--erp-surface-soft);
+  border-color: var(--erp-border-strong);
+}
+
+.liq-franja__icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--erp-muted);
+}
+
+.liq-franja__copy {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  max-width: 34rem;
-  text-align: center;
+  gap: 2px;
+  min-width: 0;
 }
 
-.liq-seleccion-prompt strong {
-  font-size: 0.9375rem;
-  font-weight: 750;
+.liq-franja__kicker {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--erp-muted);
 }
 
-.liq-seleccion-prompt span {
+.liq-franja__title {
   font-size: 0.8125rem;
+  font-weight: 650;
+  color: var(--erp-ink);
+}
+
+.liq-franja__detalle {
+  font-size: 0.75rem;
   color: var(--erp-muted);
   line-height: 1.4;
 }
 
-.liq-seleccion-prompt .liq-link-button {
-  margin-top: 4px;
+.liq-franja__btn {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  border: 1px solid var(--erp-primary);
+  border-radius: 5px;
+  background: var(--erp-primary);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.liq-franja__btn:hover {
+  background: var(--erp-primary-hover);
+  border-color: var(--erp-primary-hover);
+}
+
+.liq-filtro-activo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--erp-border);
+  border-radius: 6px;
+  background: var(--erp-surface);
+  font-size: 0.75rem;
+  color: var(--erp-muted);
+}
+
+.liq-filtro-activo__clear {
+  border: none;
+  background: transparent;
+  color: var(--erp-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.liq-version-diff-wrap {
+  border: 1px solid var(--erp-border);
+  border-radius: 6px;
+  background: var(--erp-surface);
+}
+
+.liq-version-diff-wrap summary {
+  padding: 8px 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.liq-estado-resumen__hit {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: inherit;
+  cursor: pointer;
+}
+
+.liq-estado-resumen__hit:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.liq-estado-resumen__hit:not(:disabled):hover {
+  color: var(--erp-primary);
+}
+
+.liq-row-action--labeled {
+  width: auto;
+  min-width: 2rem;
+  padding: 0 8px;
+  gap: 4px;
+}
+
+.liq-row-action--labeled span {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.liq-versiones-grid__version-hit {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--erp-primary);
+  cursor: pointer;
+}
+
+.liq-versiones-grid__version-hit.is-active {
+  text-decoration: underline;
 }
 
 .liq-operativa {

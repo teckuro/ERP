@@ -137,6 +137,28 @@ export class LiquidacionesOficialesRepository {
     return (data ?? []).map(mapConceptoRow);
   }
 
+  async obtenerTrabajadorLiquidacion(idLiquidacionTrabajador: number): Promise<LiquidacionTrabajador | null> {
+    const { data, error } = await this.supabase
+      .from('nomina_liquidacion_trabajador')
+      .select('*')
+      .eq('id_liquidacion_trabajador', idLiquidacionTrabajador)
+      .maybeSingle();
+    if (error) throw new Error('No se pudo consultar la liquidación del trabajador.');
+    return data ? mapTrabajadorRow(data) : null;
+  }
+
+  async obtenerUltimaEmisionTrabajador(idLiquidacionTrabajador: number): Promise<LiquidacionEmision | null> {
+    const { data, error } = await this.supabase
+      .from('nomina_liquidacion_emision')
+      .select('*')
+      .eq('id_liquidacion_trabajador', idLiquidacionTrabajador)
+      .order('emitido_en', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw new Error('No se pudo consultar la última emisión de la liquidación.');
+    return data ? mapEmisionRow(data as LiquidacionEmisionRow) : null;
+  }
+
   async generarLiquidacionesOficiales(params: GenerarLiquidacionesParams): Promise<LiquidacionPeriodo> {
     const { data, error } = await this.supabase.rpc('generar_liquidaciones_oficiales', {
       p_id_calculo_periodo: params.idCalculoPeriodo,

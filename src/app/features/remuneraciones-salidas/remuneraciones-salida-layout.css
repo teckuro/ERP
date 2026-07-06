@@ -227,6 +227,119 @@
   z-index: 10;
 }
 
+/* ---- Empty state (patrón data-grid-state / liquidaciones) ---- */
+
+.sal-ext-empty {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: stretch;
+  justify-content: stretch;
+  min-height: 0;
+  width: 100%;
+  overflow: auto;
+}
+
+.sal-ext-empty__panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 100%;
+  gap: 0.65rem;
+  padding: 2rem 1.65rem;
+  text-align: center;
+  background: #fafaf7;
+  box-sizing: border-box;
+}
+
+.sal-ext-empty__mark {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  place-items: center;
+  border: 1px solid #daddd6;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #647084;
+}
+
+.sal-ext-empty__mark lucide-icon {
+  display: inline-flex;
+  width: 1.15rem;
+  height: 1.15rem;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.sal-ext-empty__kicker,
+.sal-ext-empty__title,
+.sal-ext-empty__text {
+  margin: 0;
+}
+
+.sal-ext-empty__kicker {
+  color: #647084;
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.sal-ext-empty__title {
+  max-width: 28rem;
+  color: #172033;
+  font-size: 0.96rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.sal-ext-empty__text {
+  max-width: 32rem;
+  color: #647084;
+  font-size: 0.82rem;
+  font-weight: 450;
+  line-height: 1.45;
+}
+
+.sal-ext-empty__action {
+  display: inline-flex;
+  height: 2.1rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+  border: 1px solid #daddd6;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #4b5563;
+  padding: 0 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.sal-ext-empty__action:hover {
+  border-color: #c7d0c4;
+  background: #fafaf7;
+  color: #172033;
+}
+
+.sal-ext-empty__action:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+}
+
 .sal-ext-feedback {
   display: flex;
   flex-direction: column;

@@ -94,6 +94,8 @@ export class NominaMensualV2ModalIncluirTrabajadoresComponent {
   readonly totalElegibles = computed(() => this.resumen().elegibles);
   readonly totalYaEnNomina = computed(() => this.resumen().yaEnNomina);
   readonly filtros = computed(() => FILTROS_INCLUIR_TRABAJADORES([]));
+  /** Bloquea la casilla de quienes ya están en la dotación del período. */
+  readonly filaSeleccionBloqueada = (fila: FilaTrabajadorElegible): boolean => fila.yaEnNomina;
 
   constructor() {
     effect(() => {

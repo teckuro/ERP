@@ -68,6 +68,13 @@ export function liquidacionVigente(
   return filas.find((fila) => fila.clasificacion === 'vigente') ?? null;
 }
 
+/** Versión de referencia para medir cobertura de trabajadores (vigente o última materializada). */
+export function liquidacionReferenciaCobertura(
+  filas: readonly FilaLiquidacionInterna[],
+): FilaLiquidacionInterna | null {
+  return liquidacionVigente(filas) ?? filas[0] ?? null;
+}
+
 export function formatearFechaLiquidacion(iso: string): string {
   if (!iso) return '';
   const fecha = new Date(iso);

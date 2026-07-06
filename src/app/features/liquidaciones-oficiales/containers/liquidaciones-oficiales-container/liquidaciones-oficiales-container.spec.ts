@@ -165,13 +165,33 @@ describe('LiquidacionesOficialesContainer', () => {
     expect(fixture.componentInstance.modalSeleccionNominaAbierto()).toBe(false);
   });
 
-  it('sin nóminas elegibles muestra estado vacío', async () => {
+  it('sin nóminas elegibles muestra acta vacía sin_nominas', async () => {
     await configurar();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('No hay nóminas liquidadas o cerradas');
-    expect(fixture.nativeElement.textContent).toContain('Ir al administrador de nóminas');
+    expect(fixture.nativeElement.textContent).toContain('Aún no hay liquidaciones materializadas');
+    expect(fixture.nativeElement.textContent).toContain('Crear nómina en administrador');
+    expect(fixture.nativeElement.textContent).not.toContain('Liquidaciones por nómina');
+    expect(fixture.componentInstance.actaVacia().escenario).toBe('sin_nominas');
+  });
+
+  it('con nóminas en preparación muestra acta contextual', async () => {
+    await configurar(
+      {},
+      {
+        resumenes: [
+          crearNominaResumen({ id: 'nom-b', estado: 'borrador', periodo: '2026-06' }),
+        ],
+      },
+    );
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.actaVacia().escenario).toBe('nominas_en_preparacion');
+    expect(fixture.componentInstance.actaVacia().chipLabel).toBe('Nóminas en preparación');
+    expect(fixture.nativeElement.textContent).toContain('Aún no hay comprobantes listos');
+    expect(fixture.nativeElement.textContent).toContain('en preparación');
   });
 
   it('con nominaPeriodoId carga liquidaciones internas y trabajadores de la versión vigente', async () => {

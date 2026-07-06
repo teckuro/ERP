@@ -67,13 +67,6 @@ export const SHELL_ROUTE_CONTEXT_ENTRIES: readonly ShellRouteContextEntry[] = [
       { label: 'Movimientos' },
     ],
   },
-  {
-    match: '/remuneraciones/plantillas-ciclos',
-    breadcrumbs: [
-      { label: 'Remuneraciones', path: '/remuneraciones/nominas' },
-      { label: 'Plantillas de ciclos' },
-    ],
-  },
   { match: '/parametros', breadcrumbs: [{ label: 'Parámetros' }] },
   { match: '/empresas/nueva', breadcrumbs: [{ label: 'Empresas', path: '/empresas' }, { label: 'Nueva empresa' }] },
   { match: '/empresas', breadcrumbs: [{ label: 'Empresas' }] },

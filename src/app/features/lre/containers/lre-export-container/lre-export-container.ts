@@ -31,6 +31,7 @@ import {
   etiquetaNominaActivaSalidaExport,
   rutaLiquidacionesNomina,
 } from '../../../remuneraciones-salidas/presenters/salida-externa-layout.presenter';
+import { construirEmptySalidaExterna } from '../../../remuneraciones-salidas/rules/salida-externa-vacio.rules';
 
 @Component({
   selector: 'app-lre-export-container',
@@ -106,6 +107,12 @@ export class LreExportContainer {
     () => this.cargandoBorrador() && !!this.borrador(),
   );
 
+  readonly emptyVm = computed(() => construirEmptySalidaExterna('lre'));
+
+  readonly mostrarToolbar = computed(
+    () => !this.cargaInicial() && !this.error() && this.nominas().length > 0,
+  );
+
   constructor() {
     const destroyRef = inject(DestroyRef);
 
@@ -127,7 +134,9 @@ export class LreExportContainer {
                     : `${borrador.lineas.length} línea(s)`,
                   tone: borrador.listoParaEnvio ? 'success' : 'warning',
                 }
-              : { label: 'Sin nómina', tone: 'neutral' },
+              : this.nominas().length === 0
+                ? { label: this.emptyVm().chipLabel, tone: 'neutral' }
+                : { label: 'Sin nómina', tone: 'neutral' },
           primaryAction: this.puedeDescargar()
             ? {
                 label: 'Descargar CSV LRE',

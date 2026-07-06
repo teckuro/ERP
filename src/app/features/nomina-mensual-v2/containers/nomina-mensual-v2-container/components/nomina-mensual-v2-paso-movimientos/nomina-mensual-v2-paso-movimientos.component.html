@@ -358,7 +358,7 @@
               }
             </h3>
             <p class="paso-mov__modal-subtitle">
-              Bonos extra, descuentos puntuales, ausencias e informativos del mes.
+              Elija trabajador, concepto y categoría desde el catálogo del período, luego indique monto y glosa.
             </p>
           </div>
           <button
@@ -420,45 +420,33 @@
               </select>
             </label>
           }
-          <div class="paso-mov__modal-row">
-            <label class="paso-mov__field">
-              Categoría
-              <select
-                [value]="borradorManual().categoria"
-                (change)="actualizarCategoriaManual($any($event.target).value)"
-              >
-                <option value="haber">Haber</option>
-                <option value="descuento">Descuento</option>
-                <option value="ausencia">Ausencia</option>
-                <option value="informativo">Informativo</option>
-              </select>
-            </label>
-            @if (categoriaRequiereConcepto()) {
-              <label class="paso-mov__field">
-                Concepto del catálogo
-                <select
-                  [value]="borradorManual().conceptoId ?? ''"
-                  (change)="actualizarConceptoManual($any($event.target).value)"
-                  required
-                >
-                  <option value="">
-                    {{ cargandoConceptos() ? 'Cargando conceptos…' : 'Selecciona un concepto' }}
-                  </option>
-                  @for (concepto of conceptosParaCategoria(); track concepto.idConcepto) {
-                    <option [value]="concepto.idConcepto">{{ concepto.nombre }}</option>
-                  }
-                </select>
-              </label>
-            } @else {
-              <label class="paso-mov__field">
-                Registro operativo
-                <input
-                  type="text"
-                  [value]="borradorManual().categoria === 'ausencia' ? 'Ausencia del período' : 'Informativo del período'"
-                  disabled
-                />
-              </label>
+          <div class="paso-mov__concepto-block">
+            <span class="paso-mov__field-label">Concepto y categoría</span>
+            <button
+              type="button"
+              class="paso-mov__concepto-trigger"
+              (click)="abrirModalConcepto()"
+              [disabled]="aplicando()"
+            >
+              @if (resumenConceptoManual(); as resumen) {
+                <span class="paso-mov__concepto-trigger-main">{{ resumen.nombre }}</span>
+                <span class="paso-mov__concepto-trigger-pill">{{ resumen.categoriaEtiqueta }}</span>
+              } @else {
+                <span class="paso-mov__concepto-trigger-placeholder">
+                  {{ cargandoConceptos() ? 'Cargando catálogo…' : 'Elegir concepto y categoría' }}
+                </span>
+              }
+            </button>
+            @if (resumenConceptoManual()) {
+              <button
+                type="button"
+                class="paso-mov__link"
+                (click)="limpiarConceptoManual()"
+                [disabled]="aplicando()"
+              >Cambiar selección</button>
             }
+          </div>
+          <div class="paso-mov__modal-row">
             <label class="paso-mov__field">
               Monto
               <input
@@ -495,6 +483,17 @@
         </form>
       </div>
     </div>
+  }
+
+  @if (modalConceptoAbierto()) {
+    <app-nomina-mensual-v2-modal-seleccion-concepto
+      [conceptos]="conceptosCatalogo()"
+      [cargando]="cargandoConceptos()"
+      [seleccionActualId]="borradorManual().conceptoId ?? null"
+      [categoriaActual]="borradorManual().categoria"
+      (seleccionar)="confirmarConceptoDesdePicker($event)"
+      (cerrar)="cerrarModalConcepto()"
+    />
   }
 
   <footer class="paso-mov__footer" aria-live="polite">

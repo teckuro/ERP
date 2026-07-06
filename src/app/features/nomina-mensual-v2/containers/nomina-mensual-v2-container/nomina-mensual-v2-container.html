@@ -114,6 +114,7 @@
             @case ('movements') {
               <app-nomina-mensual-v2-paso-movimientos
                 [nominaPeriodoId]="nominaPeriodoId()"
+                [fechaInicioNomina]="nominaCargada()?.fechaInicio ?? null"
                 [preparacionExterna]="preparacionOverlayActiva()"
               />
             }
@@ -122,14 +123,6 @@
                 [nominaPeriodoId]="nominaPeriodoId()"
                 [preparacionExterna]="preparacionOverlayActiva()"
                 (nominaCabeceraCambiada)="manejarNominaCabeceraCambiada()"
-              />
-            }
-            @case ('validation') {
-              <app-nomina-mensual-v2-paso-validacion
-                [nominaPeriodoId]="nominaPeriodoId()"
-                [preparacionExterna]="preparacionOverlayActiva()"
-                (verEnDotacionSolicitado)="manejarVerEnDotacion($event)"
-                (validacionCompletada)="manejarValidacionCompletada()"
               />
             }
             @case ('closure') {

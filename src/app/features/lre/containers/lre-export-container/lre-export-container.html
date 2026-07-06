@@ -1,4 +1,5 @@
 <div class="sal-ext-page">
+  @if (mostrarToolbar()) {
   <header class="sal-ext-toolbar" aria-label="Libro de remuneraciones electrónico">
     <div class="sal-ext-toolbar__fields">
       <div class="sal-ext-toolbar__lead">
@@ -63,6 +64,7 @@
       </button>
     </div>
   </header>
+  }
 
   <div class="sal-ext-body">
     @if (cargaInicial()) {
@@ -79,15 +81,23 @@
         (action)="reintentarCarga()"
       />
     } @else if (nominas().length === 0) {
-      <app-message-box
-        variant="blocked"
-        [sections]="[
-          {
-            title: 'Sin nóminas exportables',
-            text: 'No hay nóminas liquidadas o cerradas con liquidación oficial. Genere liquidaciones antes de exportar.',
-          },
-        ]"
-      />
+      <section class="sal-ext-empty" aria-label="Sin nóminas exportables">
+        <div class="sal-ext-empty__panel">
+          <div class="sal-ext-empty__mark" aria-hidden="true">
+            <lucide-icon [name]="emptyVm().icon" aria-hidden="true"></lucide-icon>
+          </div>
+          <p class="sal-ext-empty__kicker">{{ emptyVm().kicker }}</p>
+          <h2 class="sal-ext-empty__title">{{ emptyVm().title }}</h2>
+          <p class="sal-ext-empty__text">{{ emptyVm().description }}</p>
+          <a
+            class="sal-ext-empty__action"
+            [routerLink]="rutaLiquidaciones().path"
+            [queryParams]="rutaLiquidaciones().queryParams"
+          >
+            {{ emptyVm().primaryLabel }}
+          </a>
+        </div>
+      </section>
     } @else if (borrador(); as datos) {
       @if (datos.conceptosSinCodigoLre > 0) {
         <div class="sal-ext-feedback">

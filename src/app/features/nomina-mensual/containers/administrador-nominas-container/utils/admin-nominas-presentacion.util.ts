@@ -158,7 +158,6 @@ const ETIQUETA_PASO_COMPLETADO: Record<PayrollStepId, string> = {
   dotacion: 'Dotación',
   movements: 'Movimientos',
   calculation: 'Cálculo',
-  validation: 'Validación',
   closure: 'Cierre',
 };
 
@@ -173,7 +172,6 @@ const STEP_A_PROXIMO: Record<PayrollStepId, NominaPeriodoResumen['proximoPaso']>
   dotacion: 'dotacion',
   movements: 'movimientos',
   calculation: 'calculo',
-  validation: 'validacion',
   closure: 'cierre',
 };
 

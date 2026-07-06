@@ -253,3 +253,13 @@ if ($null -ne $after.Diagnostico) {
 }
 Write-Host ""
 Write-Host "Listo. Recarga la pantalla de Nómina mensual en el ERP." -ForegroundColor Green
+
+$repairSql = Join-Path $PSScriptRoot "..\bd\scripts\reparar-plantilla-mes-nomina.sql"
+if (Test-Path -LiteralPath $repairSql) {
+  Write-Host ""
+  Write-Host "Asegurando plantilla mensual MES activa por empresa..." -ForegroundColor Cyan
+  & psql $resolvedDbUrl -v ON_ERROR_STOP=1 -f $repairSql
+  if ($LASTEXITCODE -ne 0) {
+    Fail "Fallo reparar plantilla MES. Revisa el mensaje de psql arriba."
+  }
+}

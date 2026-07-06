@@ -24,7 +24,6 @@ const TITULOS_PASO: Record<PayrollStepId, string> = {
   dotacion: 'Dotación',
   movements: 'Movimientos',
   calculation: 'Cálculo',
-  validation: 'Validación',
   closure: 'Cierre',
 };
 
@@ -74,7 +73,7 @@ export function mapSnapshotsToEventosTrazabilidad(
     eventos.push({
       idEvento: `srv-gen-${idSnapshot ?? snapshot.fechaGeneracion}`,
       periodo: snapshot.periodo,
-      paso: snapshot.estado === 'borrador' ? 'calculation' : 'validation',
+      paso: snapshot.estado === 'borrador' ? 'calculation' : 'closure',
       tipoEvento: snapshot.estado === 'borrador' ? 'CALCULO_EJECUTADO' : 'PRENOMINA_VALIDADA',
       usuarioId: usuarioSnapshot.id,
       usuarioNombre: usuarioSnapshot.nombre,
@@ -140,7 +139,7 @@ export function mapSnapshotsToEventosTrazabilidad(
       eventos.push({
         idEvento: `srv-anul-${idSnapshot}-${snapshot.anulacion.fecha}`,
         periodo: snapshot.periodo,
-        paso: 'validation',
+        paso: 'calculation',
         tipoEvento: 'SNAPSHOT_INVALIDADO',
         usuarioId: snapshot.anulacion.usuarioId,
         usuarioNombre: snapshot.anulacion.usuarioLabel || 'Usuario no disponible en esta sesion',
@@ -208,7 +207,7 @@ export function buildAuditoriaPorPaso(
 ): Partial<Record<PayrollStepId, ResumenAuditoriaPasoNomina>> {
   const resultado: Partial<Record<PayrollStepId, ResumenAuditoriaPasoNomina>> = {};
   const pasos: PayrollStepId[] = [
-    'parameters', 'dotacion', 'movements', 'calculation', 'validation', 'closure',
+    'parameters', 'dotacion', 'movements', 'calculation', 'closure',
   ];
 
   for (const paso of pasos) {

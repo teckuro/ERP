@@ -27,16 +27,17 @@ const PASOS_VALIDOS: ReadonlySet<string> = new Set<PayrollStepId>([
   'dotacion',
   'movements',
   'calculation',
-  'validation',
   'closure',
 ]);
 
 /**
  * Convierte un valor crudo de `ultimo_paso_visitado` (BD) a `PayrollStepId`.
  * Devuelve `null` si el valor es nulo, vacío o desconocido (no rompe la UI).
+ * El paso legacy `validation` se normaliza a `closure`.
  */
 export function parsePayrollStepId(raw: string | null | undefined): PayrollStepId | null {
   if (!raw) return null;
+  if (raw === 'validation') return 'closure';
   return PASOS_VALIDOS.has(raw) ? (raw as PayrollStepId) : null;
 }
 

@@ -23,7 +23,7 @@ export function buildEventosTrazabilidadMock(periodo: string): EventoTrazabilida
     {
       idEvento: `${base}-val`,
       periodo,
-      paso: 'validation',
+      paso: 'closure',
       tipoEvento: 'PRENOMINA_VALIDADA',
       usuarioId: null,
       usuarioNombre: 'RRHH',

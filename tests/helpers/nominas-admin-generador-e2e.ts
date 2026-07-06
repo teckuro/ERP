@@ -10,7 +10,6 @@ export type PasoGenerador =
   | 'dotacion'
   | 'movements'
   | 'calculation'
-  | 'validation'
   | 'closure';
 
 export interface FilaBandejaNomina {
@@ -231,7 +230,6 @@ const ETIQUETA_PASO: Record<PasoGenerador, RegExp> = {
   dotacion: /Dotaci/i,
   movements: /Movimientos/i,
   calculation: /C[aá]lculo/i,
-  validation: /Validaci/i,
   closure: /Cierre/i,
 };
 
@@ -248,7 +246,6 @@ const ORDEN_PASOS_GENERADOR: PasoGenerador[] = [
   'dotacion',
   'movements',
   'calculation',
-  'validation',
   'closure',
 ];
 
@@ -316,9 +313,9 @@ export async function irPasoDotacion(page: Page): Promise<void> {
   await expect(page.getByRole('group', { name: 'Resumen de dotación' })).toBeVisible();
 }
 
+/** @deprecated Paso Validación absorbido por Cierre. */
 export async function irPasoValidacion(page: Page): Promise<void> {
-  await irPasoGenerador(page, 'validation');
-  await expect(page.locator('section.paso-val')).toBeVisible();
+  await irPasoCierre(page);
 }
 
 export async function irPasoCierre(page: Page): Promise<void> {

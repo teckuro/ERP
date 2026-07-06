@@ -360,6 +360,14 @@
         padding: 0.6rem var(--data-grid-padding-inline);
       }
 
+      .data-grid-selection-cell--locked {
+        background: #f8fafc;
+      }
+
+      .data-grid-selection-cell--locked input[type='checkbox']:disabled {
+        cursor: not-allowed;
+      }
+
       .data-grid-skel-cell {
         padding: var(--data-grid-padding-skel) var(--data-grid-padding-inline);
       }
