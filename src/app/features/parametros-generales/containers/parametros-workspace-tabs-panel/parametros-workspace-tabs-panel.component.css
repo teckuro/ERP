@@ -1,0 +1,145 @@
+/* Estilos del panel de tabs (áreas + subtabs + contenedor del tab body) del
+   workspace de Parámetros. Encapsulación None coherente con el container. */
+
+app-parametros-workspace-tabs-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.parametros-area-tabs,
+.parametros-subtabs {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  background: transparent;
+  gap: 4px;
+  scrollbar-width: none;
+  scroll-padding-inline: 10px;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  flex: 0 0 auto;
+}
+
+.parametros-area-tabs::-webkit-scrollbar,
+.parametros-subtabs::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.parametros-area-tabs {
+  align-items: stretch;
+  padding: 4px 12px 0;
+}
+
+.parametros-subtabs {
+  align-items: center;
+  padding: 4px 12px 6px;
+  border-bottom: 1px solid var(--prm-line, #e5e7eb);
+}
+
+.parametros-area-tab,
+.parametros-subtab {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #475569;
+  cursor: pointer;
+  font-weight: 650;
+  line-height: 1.15;
+  white-space: nowrap;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.parametros-area-tab {
+  min-height: 30px;
+  padding: 0 12px;
+  background: transparent;
+  font-size: 0.76rem;
+}
+
+.parametros-subtab {
+  min-height: 26px;
+  padding: 0 10px;
+  background: #ffffff;
+  font-size: 0.72rem;
+}
+
+.parametros-area-tab:hover:not(.parametros-area-tab--active),
+.parametros-subtab:hover:not(.parametros-subtab--active) {
+  border-color: #e5e7eb;
+  background: #ffffff;
+  color: var(--prm-ink, #111827);
+}
+
+.parametros-area-tab:focus-visible,
+.parametros-subtab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.parametros-area-tab--active {
+  border-color: #cbd5e1;
+  background: #ffffff;
+  color: var(--prm-ink, #111827);
+  box-shadow: inset 0 0 0 1px #eef2f7;
+}
+
+.parametros-subtab--active {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  color: var(--prm-ink, #111827);
+}
+
+.parametros-tab-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* El scroll va en .tab-panel para no desplazar toda la tarjeta (tabs + barra de periodo). */
+.parametros-tab-body > * {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+@media (max-width: 760px) {
+  .parametros-area-tabs,
+  .parametros-subtabs {
+    padding-inline: 8px;
+    scroll-padding-inline: 8px;
+  }
+
+  .parametros-area-tab {
+    min-height: 32px;
+    padding-inline: 10px;
+    font-size: 0.72rem;
+  }
+
+  .parametros-subtab {
+    min-height: 28px;
+    padding-inline: 9px;
+    font-size: 0.7rem;
+  }
+}

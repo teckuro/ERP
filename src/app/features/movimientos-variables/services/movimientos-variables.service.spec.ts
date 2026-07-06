@@ -44,6 +44,7 @@ function empleadoFichaDetalleBase(over: Partial<EmpleadoFichaDetalle> = {}): Emp
     departamento: 'Dept',
     fechaIngreso: '2026-01-01',
     sueldoBase: 1_000_000,
+    monedaContrato: null,
     estado: 'activo',
     estadoFicha: 'VALIDO',
     aptoParaRemuneraciones: true,

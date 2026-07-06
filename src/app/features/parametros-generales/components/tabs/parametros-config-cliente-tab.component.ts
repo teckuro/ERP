@@ -7,7 +7,7 @@ import {
   SearchSelectComponent,
   SearchSelectOption,
   SearchSelectValue,
-} from '../../../../shared/components/ui/search-select.component';
+} from '../../../../shared/components/ui/forms/search-select.component';
 import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.model';
 
 @Component({
@@ -15,26 +15,7 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, SearchSelectComponent],
   template: `
-    <form class="tab-panel parametros-tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
-      <section class="param-pending-notice" aria-label="Estado configuracion cliente">
-        <div>
-          <h2>
-            @if (hasClienteConfig) {
-              Configuracion cliente del periodo.
-            } @else {
-              Configuracion cliente pendiente.
-            }
-          </h2>
-          <p>
-            @if (hasClienteConfig) {
-              La configuracion pertenece a {{ periodoLabel }} y puede guardarse parcial durante el mes.
-            } @else {
-              Usa Modificar para crear una configuracion inicial para {{ periodoLabel }}.
-            }
-          </p>
-        </div>
-      </section>
-
+    <form class="tab-panel parametros-tab-panel parametros-form" [formGroup]="form" (ngSubmit)="enviarFormulario?.()">
       <section class="param-group parametros-section-card" aria-labelledby="gratificacion-title">
         <h2 id="gratificacion-title">Gratificacion</h2>
         <div class="field-grid parametros-form-grid field-grid--gratificacion">
@@ -58,12 +39,15 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
             </span>
           </label>
 
-          <label class="param-checkbox-inline">
+          <label
+            class="param-checkbox-inline"
+            [class.param-checkbox-inline--locked]="!editable"
+          >
             <input type="checkbox" formControlName="gratificacion" (click)="onReadonlyToggle($event)" />
             <span>Con gratificacion</span>
           </label>
-          <label class="param-checkbox-inline">
-            <input type="checkbox" checked disabled />
+          <label class="param-checkbox-inline param-checkbox-inline--locked">
+            <input type="checkbox" checked disabled aria-disabled="true" title="Valor normativo fijo" />
             <span>Tope legal</span>
           </label>
         </div>
@@ -96,10 +80,18 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
         </div>
       </section>
 
-      <section class="param-group parametros-section-card parametros-config-card param-group--ccaf-current" aria-labelledby="ccaf-title">
+      <section
+        class="param-group parametros-section-card parametros-config-card param-group--ccaf-current"
+        aria-labelledby="ccaf-title"
+      >
         <h2 id="ccaf-title">CCAF y mutual</h2>
-        <p class="param-section-lead">Seleccion usada como referencia para el periodo activo.</p>
-        <div class="field-grid parametros-form-grid parametros-form-grid-compact field-grid--ccaf field-grid--ccaf-compact" aria-label="Configuracion CCAF y mutual">
+        <p class="param-section-lead">
+          Caja de compensacion, organismo mutual y tasa base usados como referencia para el periodo activo.
+        </p>
+        <div
+          class="field-grid parametros-form-grid parametros-form-grid-compact field-grid--ccaf field-grid--ccaf-compact"
+          aria-label="Configuracion CCAF y mutual"
+        >
           <label class="param-field">
             <span>Caja de compensacion</span>
             <app-search-select
@@ -118,10 +110,10 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
             <span>Mutual de Seguridad</span>
             <app-search-select
               class="param-field-search-select"
-              [ngModel]="selectedMutualId"
+              [ngModel]="selectedOrganismoLey16744Id"
               [ngModelOptions]="{ standalone: true }"
-              (ngModelChange)="seleccionarMutual?.($event)"
-              [options]="mutualSelectOptions"
+              (ngModelChange)="seleccionarOrganismoLey16744?.($event)"
+              [options]="organismosLeySelectOptions"
               [disabled]="!editable"
               placeholder="Sin mutual seleccionada"
               searchPlaceholder="Buscar mutual"
@@ -131,7 +123,13 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
           <label class="param-field">
             <span>Porcentaje</span>
             <span class="unit-field unit-field--suffix" data-unit="%">
-              <input class="param-input text-right" type="text" [value]="percentLabel === '-' ? '-' : percentLabel" readonly />
+              <input
+                class="param-input text-right"
+                type="number"
+                step="0.01"
+                [value]="selectedLey16744CotizacionBasica"
+                readonly
+              />
             </span>
           </label>
         </div>
@@ -167,14 +165,14 @@ export class ParametrosConfigClienteTabComponent {
   @Input() hasClienteConfig = false;
   @Input() periodoLabel = 'este periodo';
   @Input() selectedCcafId: number | null = null;
-  @Input() selectedMutualId: number | null = null;
-  @Input() percentLabel = '-';
+  @Input() selectedOrganismoLey16744Id: number | null = null;
+  @Input() selectedLey16744CotizacionBasica: number | null = null;
   @Input() fechaActualizacionLabel: string | null = null;
-  @Input() onSubmit: (() => void) | null = null;
+  @Input() enviarFormulario: (() => void) | null = null;
   @Input() bloquearSiLectura: ((event: Event) => void) | null = null;
   @Input() setDescuentosBaseFn: ((value: boolean) => void) | null = null;
   @Input() seleccionarCcaf: ((value: SearchSelectValue) => void) | null = null;
-  @Input() seleccionarMutual: ((value: SearchSelectValue) => void) | null = null;
+  @Input() seleccionarOrganismoLey16744: ((value: SearchSelectValue) => void) | null = null;
 
   get ccafSelectOptions(): SearchSelectOption<number | null>[] {
     return [
@@ -186,12 +184,12 @@ export class ParametrosConfigClienteTabComponent {
     ];
   }
 
-  get mutualSelectOptions(): SearchSelectOption<number | null>[] {
+  get organismosLeySelectOptions(): SearchSelectOption<number | null>[] {
     return [
       { value: null, label: 'Sin mutual seleccionada' },
-      ...this.catalogos.organismosLey16744.map((mutual) => ({
-        value: mutual.idOrganismoAdministradorLey16744,
-        label: mutual.nombre,
+      ...this.catalogos.organismosLey16744.map((organismo) => ({
+        value: organismo.idOrganismoAdministradorLey16744,
+        label: organismo.nombre,
       })),
     ];
   }

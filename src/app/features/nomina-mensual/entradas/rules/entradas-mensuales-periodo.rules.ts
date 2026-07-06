@@ -11,6 +11,10 @@ import type {
   ResumenEntradasMensualesPeriodo,
 } from '../models/entrada-mensual-periodo.model';
 
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
+}
+
 export function validarPeriodoEntradaMensual(periodo: string | null | undefined): boolean {
   if (typeof periodo !== 'string') return false;
   const value = periodo.trim();
@@ -215,7 +219,7 @@ export function normalizarEntradaRecurrente(
 export function construirResumenEntradas(
   entradas: readonly EntradaMensualPeriodo[],
 ): ResumenEntradasMensualesPeriodo {
-  return entradas.reduce<ResumenEntradasMensualesPeriodo>(
+  return asArray(entradas).reduce<ResumenEntradasMensualesPeriodo>(
     (acc, entrada) => {
       acc.total += 1;
       if (entrada.origen === 'recurrente') acc.recurrentes += 1;
@@ -227,7 +231,7 @@ export function construirResumenEntradas(
       if (entrada.estado === 'rechazada') acc.rechazadas += 1;
       if (entrada.estado === 'anulada') acc.anuladas += 1;
       if (entradaBloqueaProceso(entrada)) acc.bloqueantes += 1;
-      if (entrada.warnings.length > 0) acc.conWarnings += 1;
+      if (asArray(entrada.warnings).length > 0) acc.conWarnings += 1;
       if (puedeEntrarAPreNomina(entrada)) acc.aptasPreNomina += 1;
       return acc;
     },

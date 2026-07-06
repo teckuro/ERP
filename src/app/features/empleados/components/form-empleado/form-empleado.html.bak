@@ -110,18 +110,33 @@
           <app-message-box
             mode="modal"
             variant="error"
-            [title]="
-              isBasicMode() ? 'No fue posible registrar la ficha' : 'No fue posible registrar el empleado'
-            "
-            [message]="
-              isBasicMode()
-                ? message
-                : 'Ocurrió un problema al intentar guardar la ficha avanzada.'
-            "
-            [detail]="isBasicMode() ? '' : message"
+            [modalHeadlineSplit]="true"
+            [title]="errorModalTitle()"
+            [message]="errorModalMessage()"
             primaryLabel="Aceptar"
             (action)="dismissErrorMessage()"
-          ></app-message-box>
+          >
+            <div
+              class="basic-success-followup error-followup"
+              role="region"
+              aria-labelledby="save-error-detail-title"
+            >
+              <div class="basic-success-followup__panel error-followup__panel">
+                <h3 class="basic-success-followup__title" id="save-error-detail-title">Qué revisar</h3>
+                <p class="basic-success-followup__text">{{ normalizedErrorMessage(message) }}</p>
+              </div>
+              <div class="basic-success-followup__panel error-followup__panel">
+                <h3 class="basic-success-followup__title">Acción recomendada</h3>
+                <p class="basic-success-followup__text">{{ errorRecommendedAction(message) }}</p>
+              </div>
+              @if (errorSuggestedStep(message); as suggestedStep) {
+                <div class="basic-success-followup__meta error-followup__meta">
+                  <span class="basic-success-followup__meta-label">Paso sugerido</span>
+                  <span class="basic-success-followup__meta-value">{{ suggestedStep }}</span>
+                </div>
+              }
+            </div>
+          </app-message-box>
         } @else if (successMessage(); as message) {
           <app-message-box
             mode="modal"
@@ -295,7 +310,7 @@
                               >
                                 Anterior
                               </button>
-                              @if (activeWizardStep() !== 8) {
+                              @if (activeWizardStep() !== summaryWizardStepIndex()) {
                                 <button
                                   type="button"
                                   class="form-action-button form-action-button--primary advanced-step-nav-btn advanced-step-nav-btn--primary"
@@ -328,7 +343,7 @@
                               attemptedWizardSteps().has(activeWizardStep())
                             ) {
                               Hay datos obligatorios pendientes o con error en esta etapa.
-                            } @else if (activeWizardStep() === 8) {
+                            } @else if (activeWizardStep() === summaryWizardStepIndex()) {
                               @if (isHonorariosMode()) {
                                 Puedes guardar el avance como borrador. La finalización de honorarios queda pendiente de habilitación.
                               } @else if (wizardMapPendingCount() + wizardMapErrorCount() > 0) {
@@ -550,6 +565,26 @@
                       [advancedGridLayout]="true"
                     ></app-empleado-bancario>
                   </div>
+                } @else if (activeWizardStep() === perfilLaboralWizardStepIndex()) {
+                  <div class="step-panel step-panel--perfil-laboral">
+                    @if (isHonorariosMode()) {
+                      <div class="wizard-na-panel wizard-na-panel--honorarios" role="status">
+                        <h3 class="wizard-na-title">No aplica para honorarios</h3>
+                        <p class="wizard-na-text">
+                          Las condiciones especiales de trabajadores dependientes no se declaran para boleta de honorarios en esta fase.
+                        </p>
+                      </div>
+                    } @else {
+                      <app-empleado-perfil-laboral
+                        [formGroup]="form.controls.perfilLaboral"
+                        [fechaNacimiento]="form.controls.datosPersonales.controls.fechaNacimiento.value"
+                        [fechaIngreso]="form.controls.contrato.controls.fechaIngreso.value"
+                        [relacionLaboral]="form.controls.contrato.controls.relacionLaboral.value"
+                        [tipoTrabajadorLabel]="selectedTipoTrabajadorLabel()"
+                        [autoDetectedConditions]="perfilLaboralAutoDetections()"
+                      ></app-empleado-perfil-laboral>
+                    }
+                  </div>
                 } @else {
                   <div class="step-panel step-panel--resumen">
                     <app-card className="resumen-card">
@@ -587,7 +622,75 @@
                             <dt>Sucursal</dt>
                             <dd>{{ sucursalVisible() }}</dd>
                           </div>
+                          @if (!isHonorariosMode()) {
+                            <div class="resumen-dl-row">
+                              <dt>Revisión administrativa</dt>
+                              <dd>{{ perfilLaboralResumenLabel() }}</dd>
+                            </div>
+                            <div class="resumen-dl-row">
+                              <dt>Condiciones especiales</dt>
+                              <dd>{{ condicionesPerfilResumenLabel() }}</dd>
+                            </div>
+                          }
                         </dl>
+                        <section class="contract-diagnosis-panel" aria-label="Diagnóstico contractual del alta">
+                          <div class="contract-diagnosis-panel__head">
+                            <div>
+                              <span class="contract-diagnosis-panel__eyebrow">Revisión del alta</span>
+                              <h4>Diagnóstico contractual</h4>
+                              <p>{{ diagnosticoContractualDescripcion() }}</p>
+                            </div>
+                            <span>{{ diagnosticoContractualBadge() }}</span>
+                          </div>
+                          <div class="contract-diagnosis-case" role="status">
+                            <strong>Caso detectado</strong>
+                            <span>{{ diagnosticoContractualCasoLabel() }}</span>
+                          </div>
+                          <div class="contract-diagnosis-grid">
+                            @for (row of diagnosticoContractualRows(); track row.label) {
+                              <article
+                                class="contract-diagnosis-card"
+                                [class.is-derived]="row.tone === 'derived'"
+                                [class.is-na]="row.tone === 'not_applicable'"
+                                [class.is-review]="row.tone === 'review' || row.tone === 'warning' || row.tone === 'blocked'"
+                              >
+                                <span>{{ row.estado }}</span>
+                                <strong>{{ row.label }}</strong>
+                                <p>{{ row.motivo }}</p>
+                              </article>
+                            }
+                          </div>
+                        </section>
+                        @if (!isHonorariosMode()) {
+                          <section class="coherence-summary-panel" aria-label="Coherencia administrativa del alta">
+                            <div class="coherence-summary-panel__head">
+                              <h4>Coherencia administrativa</h4>
+                              <span>
+                                {{
+                                  coherenciaResumenItems().length === 0
+                                    ? 'Sin revisiones'
+                                    : coherenciaResumenItems().length + ' punto(s) a revisar'
+                                }}
+                              </span>
+                            </div>
+                            <div class="coherence-summary-grid">
+                              @for (row of coherenciaStatusRows(); track row.label) {
+                                <article class="coherence-summary-card" [class.is-warning]="row.tone === 'warning'" [class.is-review]="row.tone === 'review'">
+                                  <strong>{{ row.label }}</strong>
+                                  <p>{{ row.detail }}</p>
+                                </article>
+                              }
+                            </div>
+                            @if (coherenciaResumenItems().length > 0) {
+                              <ul class="coherence-summary-list">
+                                @for (item of coherenciaResumenItems(); track item) {
+                                  <li>{{ item }}</li>
+                                }
+                              </ul>
+                            }
+                          </section>
+                        }
+
                         <h4 class="resumen-checklist-title">Estado por etapa</h4>
                         <ul class="resumen-checklist">
                           @for (row of advancedReviewRows(); track row.stepIndex) {
@@ -607,7 +710,7 @@
                               <div class="resumen-checklist-actions">
                                 <span class="resumen-checklist-state">{{ wizardStepUiLabel(row.kind) }}</span>
                                 @if (
-                                  row.stepIndex < 8 &&
+                                  row.stepIndex < summaryWizardStepIndex() &&
                                   row.kind !== 'completo' &&
                                   row.kind !== 'no-aplica'
                                 ) {
@@ -623,7 +726,7 @@
                             </li>
                           }
                         </ul>
-                        @if (activeWizardStep() === 8 && attemptedSave() && resumenPendientesNegocio().length > 0) {
+                        @if (activeWizardStep() === summaryWizardStepIndex() && attemptedSave() && resumenPendientesNegocio().length > 0) {
                           <div class="resumen-pendientes-negocio" role="alert">
                             <p class="resumen-pendientes-title">Pendientes para finalizar</p>
                             <ul class="resumen-pendientes-list">

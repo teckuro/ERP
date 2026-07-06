@@ -29,6 +29,19 @@ export function etiquetaPeriodoDesdeYm(ym: string): string {
   return `${MESES_ES[idx]} ${y}`;
 }
 
+/** Solo nombre del mes (ej. Mayo) para badges compactos. */
+export function mesCortoDesdeYm(ym: string): string {
+  const m = /^(\d{4})-(\d{2})$/.exec(ym?.trim() ?? '');
+  if (!m) {
+    return ym || '—';
+  }
+  const idx = Number(m[2]) - 1;
+  if (idx < 0 || idx > 11) {
+    return ym;
+  }
+  return MESES_ES[idx];
+}
+
 /** Primer día del mes en formato SQL (YYYY-MM-01). */
 export function primerDiaSqlDesdeYm(ym: string): string {
   if (!/^\d{4}-\d{2}$/.test(ym?.trim() ?? '')) {

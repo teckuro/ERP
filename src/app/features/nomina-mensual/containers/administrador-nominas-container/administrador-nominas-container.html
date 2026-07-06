@@ -1,0 +1,308 @@
+<section class="adm-nom__page" aria-label="Administrador de nóminas">
+  @if (errorCarga(); as error) {
+    <div class="adm-nom__state adm-nom__state--error" role="alert">
+      <span>{{ error }}</span>
+      <button type="button" class="adm-nom__row-action" (click)="cargarResumenes()">Reintentar</button>
+    </div>
+  }
+
+  <div class="adm-nom__grid-shell" aria-labelledby="adm-nom-grid-title">
+    <h2 id="adm-nom-grid-title" class="sr-only">Listado de nóminas</h2>
+
+    @if (resumenes().length > 0) {
+      <div class="adm-nom__kpis" role="status" aria-label="Resumen operativo de nóminas">
+        @for (item of kpis().items; track item.id) {
+          <div class="adm-nom__kpi" [class]="'adm-nom__kpi--' + item.tone">
+            <strong>{{ item.value }}</strong>
+            <small>{{ item.label }}</small>
+          </div>
+        }
+      </div>
+    }
+
+    <app-data-grid
+        title=""
+        [columns]="columnas"
+        [rows]="resumenesOrdenados()"
+        [filters]="filtros()"
+        [filtersEnabled]="true"
+        [filtersCollapsible]="false"
+        filterChipsDisplay="whenFiltersHidden"
+        headerCountDisplay="text"
+        headerCountNoun="nóminas"
+        [headerShowActiveFiltersCount]="true"
+        [selectable]="false"
+        [trackBy]="trackResumen"
+        [persistenceKey]="persistenceKey"
+        [loading]="cargando()"
+        loadingLabel="Cargando nóminas…"
+        toolbarLayout="operativa"
+        [gridHeight]="'100%'"
+        emptyTitle="Aún no hay nóminas"
+        emptyDescription="Crea la primera nómina del período desde la acción principal."
+        emptyTitleWhenFiltered="Sin resultados con los filtros actuales"
+        emptyDescriptionWhenFiltered="Cambia o limpia los filtros para ampliar la búsqueda."
+        className="adm-nom__grid"
+        cardClassName="adm-nom__grid-card"
+      >
+      <ng-template appDataGridCell="periodo" let-fila>
+        <div class="adm-nom__cell-periodo-wrap">
+          <span
+            class="adm-nom__cell-periodo"
+            [title]="tooltipAvanceFila(fila)"
+          >{{ fila.periodo }}</span>
+          @if (etiquetaMetaNomina(fila); as meta) {
+            <span class="adm-nom__cell-meta">{{ meta }}</span>
+            <span class="adm-nom__cell-meta adm-nom__cell-meta--rango">
+              {{ formatearRangoLegal(fila.fechaInicio, fila.fechaFin) }}
+            </span>
+          }
+          @if (etiquetaSublineaRectificacion(fila, resumenes()); as subRect) {
+            <span class="adm-nom__cell-meta adm-nom__cell-meta--rect">{{ subRect }}</span>
+          }
+          @if (fila.estado === 'cerrada'; as _) {
+            @if (etiquetaCadenaEnOriginal(conteoRectificaciones(fila)); as cadena) {
+              <button
+                type="button"
+                class="adm-nom__cell-link"
+                (click)="abrirCadenaRectificacion(fila); $event.stopPropagation()"
+              >{{ cadena }}</button>
+            }
+          }
+        </div>
+      </ng-template>
+
+      <ng-template appDataGridCell="empresa" let-fila>
+        <span class="adm-nom__cell-empresa-nombre">{{ fila.empresaNombre }}</span>
+      </ng-template>
+
+      <ng-template appDataGridCell="trabajadores" let-fila>
+        <span class="adm-nom__cell-num">{{ fila.totalTrabajadores }}</span>
+      </ng-template>
+
+      <ng-template appDataGridCell="estado" let-fila>
+        @let badge = estadoNominaToBadge(fila.estado);
+        <span class="adm-nom__chip" [class]="'adm-nom__chip--' + badge.variant">
+          <span class="adm-nom__chip-dot" aria-hidden="true"></span>
+          {{ badge.label }}
+        </span>
+      </ng-template>
+
+      <ng-template appDataGridCell="proximoPaso" let-fila>
+        <div class="adm-nom__next-step-wrapper">
+          <span
+            class="adm-nom__next-step"
+            [class.is-priority]="esFilaPrioritaria(fila)"
+            [attr.aria-label]="esFilaPrioritaria(fila)
+              ? proximoPasoToLabel(fila.proximoPaso) + ' (requiere atención)'
+              : null"
+          >
+            <lucide-icon
+              [name]="proximoPasoToIcon(fila.proximoPaso)"
+              class="adm-nom__next-step-icon"
+              aria-hidden="true"
+            ></lucide-icon>
+            <span class="adm-nom__next-step-label">{{ proximoPasoToLabel(fila.proximoPaso) }}</span>
+          </span>
+          @if (mostrarEnCurso(fila)) {
+            <span class="adm-nom__en-curso">
+              Avance: {{ etiquetaMaximoPasoCompletado(fila.maximoPasoCompletado) }}
+            </span>
+          }
+          @if (fila.totalIncidenciasCriticas > 0) {
+            <span
+              class="adm-nom__chip adm-nom__chip--danger adm-nom__chip--inline"
+              [title]="desgloseIncidencias(fila)"
+            >{{ fila.totalIncidenciasCriticas }} crítica@if (fila.totalIncidenciasCriticas !== 1) {s}</span>
+          } @else if (fila.totalAdvertencias > 0) {
+            <span
+              class="adm-nom__chip adm-nom__chip--warning adm-nom__chip--inline"
+              [title]="desgloseIncidencias(fila)"
+            >{{ fila.totalAdvertencias }} aviso@if (fila.totalAdvertencias !== 1) {s}</span>
+          }
+        </div>
+      </ng-template>
+
+      <ng-template appDataGridCell="actualizada" let-fila>
+        <span
+          class="adm-nom__cell-muted"
+          [title]="formatearActualizadaCompleta(fila.updatedAt)"
+        >{{ formatearActualizada(fila.updatedAt) }}</span>
+      </ng-template>
+
+      <ng-template appDataGridCell="acciones" let-fila>
+        <div class="adm-nom__row-actions" (click)="$event.stopPropagation()">
+          @if (puedeVerResumenFila(fila)) {
+            <button
+              type="button"
+              class="adm-nom__row-action"
+              (click)="abrirResumen(fila)"
+              title="Ver resumen"
+              [attr.aria-label]="'Ver resumen de ' + fila.empresaNombre + ' ' + fila.periodo"
+            >
+              <lucide-icon name="eye" aria-hidden="true"></lucide-icon>
+            </button>
+          }
+          @if (puedeEliminarFila(fila)) {
+            <button
+              type="button"
+              class="adm-nom__row-action adm-nom__row-action--danger"
+              title="Eliminar nómina"
+              [attr.aria-label]="'Eliminar nómina de ' + fila.empresaNombre + ' ' + fila.periodo"
+              (click)="solicitarAccion('eliminar', fila)"
+            >
+              <lucide-icon name="trash-2" aria-hidden="true"></lucide-icon>
+            </button>
+          }
+          @if (puedeReabrirFila(fila)) {
+            <button
+              type="button"
+              class="adm-nom__row-action"
+              title="Reabrir nómina"
+              [attr.aria-label]="'Reabrir nómina de ' + fila.empresaNombre + ' ' + fila.periodo"
+              (click)="solicitarAccion('reabrir', fila)"
+            >
+              <lucide-icon name="refresh-cw" aria-hidden="true"></lucide-icon>
+            </button>
+          }
+          @if (puedeCrearRectificacionFila(fila)) {
+            <button
+              type="button"
+              class="adm-nom__row-action"
+              title="Crear rectificación"
+              [attr.aria-label]="'Crear rectificación de ' + fila.empresaNombre + ' ' + fila.periodo"
+              (click)="abrirRectificacion(fila)"
+            >
+              <lucide-icon name="git-branch" aria-hidden="true"></lucide-icon>
+            </button>
+          }
+          @if (puedeConsultarOriginalFila(fila)) {
+            <button
+              type="button"
+              class="adm-nom__row-action"
+              title="Consultar cierre original"
+              [attr.aria-label]="'Consultar cierre original de ' + fila.empresaNombre + ' ' + fila.periodo"
+              (click)="consultarOriginal(fila)"
+            >
+              <lucide-icon name="lock" aria-hidden="true"></lucide-icon>
+            </button>
+          }
+          @if (tieneLiquidaciones(fila.estado) && fila.evidenciaCalculo?.idCalculoPeriodo) {
+            <button
+              type="button"
+              class="adm-nom__row-action"
+              title="Ver liquidaciones"
+              [attr.aria-label]="'Ver liquidaciones de ' + fila.empresaNombre + ' ' + fila.periodo"
+              (click)="verLiquidaciones(fila)"
+            >
+              <lucide-icon name="receipt" aria-hidden="true"></lucide-icon>
+            </button>
+          }
+          <button
+            type="button"
+            class="adm-nom__row-action"
+            (click)="abrirHistorial(fila)"
+            title="Ver historial administrativo"
+            [attr.aria-label]="'Ver historial administrativo de ' + fila.empresaNombre + ' ' + fila.periodo"
+          >
+            <lucide-icon name="history" aria-hidden="true"></lucide-icon>
+          </button>
+          <button
+            type="button"
+            class="adm-nom__row-action adm-nom__row-action--primary"
+            (click)="abrirGenerador(fila)"
+            [title]="etiquetaAccionPrimariaFila(fila)"
+            [attr.aria-label]="etiquetaAccionPrimariaFila(fila) + ' de ' + fila.empresaNombre + ' ' + fila.periodo"
+          >
+            <lucide-icon name="arrow-right" aria-hidden="true"></lucide-icon>
+          </button>
+        </div>
+      </ng-template>
+
+      </app-data-grid>
+  </div>
+</section>
+
+@if (modalNuevaAbierto()) {
+  <app-admin-nominas-modal-nueva-nomina
+    [empresasDisponibles]="resumenes()"
+    [periodoInicial]="periodoActivo.periodoYm()"
+    (creada)="onNominaCreada($event)"
+    (cerrar)="cerrarNuevaNomina()"
+  />
+}
+
+@if (rectificacionOrigen(); as origenRect) {
+  <app-admin-nominas-modal-rectificacion
+    [nominaOrigen]="origenRect"
+    (creada)="onRectificacionCreada($event)"
+    (cerrar)="cerrarRectificacion()"
+  />
+}
+
+@if (accionPendiente(); as accion) {
+  <app-message-box
+    mode="modal"
+    [variant]="accionMessageBoxVariant(accion.tipo)"
+    eyebrow="Acción administrativa"
+    [title]="accionTituloModal(accion.tipo)"
+    [message]="accion.nomina.empresaNombre + ' · ' + accion.nomina.periodo"
+    [detail]="accionDetalle(accion.tipo)"
+    [primaryLabel]="ejecutandoAccion() ? 'Procesando…' : (accion.tipo === 'eliminar' ? 'Eliminar definitivamente' : 'Confirmar')"
+    secondaryLabel="Cancelar"
+    [dismissible]="!ejecutandoAccion()"
+    [disableClose]="ejecutandoAccion()"
+    (action)="confirmarAccion()"
+    (secondary)="cancelarAccion()"
+  >
+    @if (accionRequiereMotivo(accion.tipo)) {
+      <label class="adm-nom__motivo">
+        <span class="adm-nom__motivo-label">Motivo obligatorio</span>
+        <textarea
+          rows="3"
+          [value]="motivoAccion()"
+          (input)="motivoAccion.set($any($event.target).value)"
+          [disabled]="ejecutandoAccion()"
+          aria-required="true"
+        ></textarea>
+      </label>
+    }
+    @if (errorAccion(); as error) {
+      <p class="adm-nom__motivo-error" role="alert">{{ error }}</p>
+    }
+  </app-message-box>
+}
+
+@if (nominaSeleccionada(); as nomina) {
+  <app-admin-nominas-modal-resumen-nomina
+    [nomina]="nomina"
+    [resumen]="resumenSeleccionado()"
+    [cargando]="resumenLoading()"
+    [error]="resumenError()"
+    [totalesRectificacion]="totalesRectificacionSeleccionada()"
+    (verLiquidaciones)="verLiquidaciones(nomina); cerrarResumen()"
+    (consultarOriginal)="consultarOriginalDesdeResumen()"
+    (cerrar)="cerrarResumen()"
+  />
+}
+
+@if (cadenaRectificacionOrigen(); as origenCadena) {
+  <app-admin-nominas-modal-cadena-rectificacion
+    [origen]="origenCadena"
+    [resumenes]="resumenes()"
+    (consultarOriginal)="onConsultarOriginalDesdeCadena()"
+    (abrirRectificacion)="onAbrirRectificacionDesdeCadena($event)"
+    (cerrar)="cerrarCadenaRectificacion()"
+  />
+}
+
+@if (historialNomina(); as nominaHistorial) {
+  <app-admin-nominas-modal-historial-nomina
+    [nomina]="nominaHistorial"
+    [eventos]="historialEventos()"
+    [cargando]="historialLoading()"
+    [error]="historialError()"
+    [resolverUsuario]="resolverUsuarioHistorial"
+    (cerrar)="cerrarHistorial()"
+  />
+}

@@ -1,0 +1,79 @@
+<div class="parametros-viewhead">
+  <div class="period-row parametros-period-band" aria-label="Período">
+    <div class="period-row__left parametros-period-left">
+      <div class="period-row__left-top">
+        <span class="period-label">Parámetros del período {{ ws.periodoGlobal.etiqueta() }}</span>
+        <span
+          class="period-chip"
+          role="status"
+          [attr.aria-label]="'Estado mensual: ' + ws.periodoEstadoChip()"
+          [ngClass]="ws.periodoEstadoChipClass()"
+          >{{ ws.periodoEstadoChip() }}</span
+        >
+      </div>
+      @if (ws.periodoContextoHint(); as hint) {
+        <p class="period-sync-hint parametros-period-sync">{{ hint }}</p>
+      }
+    </div>
+
+    <div class="parametros-period-right" aria-label="Estado mensual">
+      <div class="parametros-period-actions" aria-label="Acciones del período">
+        @if (!ws.hasAnySyncedData()) {
+          <app-tooltip preferredPlacement="top" [text]="ws.sincronizarTooltip()">
+            <app-button
+              variant="outline"
+              size="md"
+              className="erp-toolbar-button erp-action-button"
+              [disabled]="ws.parametrosUiBloqueada()"
+              (click)="ws.sincronizar()"
+            >
+              <lucide-icon icon class="h-4 w-4" name="refresh-cw"></lucide-icon>
+              Sincronizar
+            </app-button>
+          </app-tooltip>
+        }
+
+        @if (ws.generalesEditando()) {
+          <app-page-actions
+            [visibleActions]="['back', 'save']"
+            backLabel="Cancelar"
+            [saveLabel]="ws.saveLabel()"
+            [saveLoading]="ws.guardando()"
+            [saveDisabled]="
+              ws.guardando() ||
+              ws.isLoading() ||
+              ws.isLoadingPlantilla() ||
+              !ws.datosFormularioListos() ||
+              ws.form.invalid
+            "
+            (saveClick)="ws.guardar()"
+            (backClick)="ws.volverParametrosAction()"
+          ></app-page-actions>
+        } @else {
+          <app-page-actions
+            [visibleActions]="['edit']"
+            [editLabel]="ws.accionConfigClienteLabel()"
+            [editTooltip]="ws.modificarTooltipConsulta()"
+            [editDisabled]="ws.modificarDeshabilitado()"
+            [editLoading]="ws.modificarCargando()"
+            (editClick)="ws.editarParametros()"
+          ></app-page-actions>
+        }
+      </div>
+
+      <div class="parametros-period-right__status">
+        <p class="parametros-period-right__detail">{{ ws.periodoEstadoDetalle() }}</p>
+
+        @if (ws.periodoReferenciaAnterior()) {
+          <p class="parametros-period-right__ref">
+            Referencia disponible: {{ ws.periodoReferenciaAnteriorLabel() }} ({{ ws.periodoReferenciaAnterior() }})
+          </p>
+        }
+
+        @if (ws.periodoBandaPendienteVisible()) {
+          <p class="parametros-period-right__next">Acción recomendada: {{ ws.cierrePendientePrincipal() }}</p>
+        }
+      </div>
+    </div>
+  </div>
+</div>

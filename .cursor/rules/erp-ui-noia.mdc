@@ -1,0 +1,132 @@
+---
+description: NOIA / Bitácora Operativa - regla visual permanente del ERP
+alwaysApply: true
+---
+
+# ERP UI - NOIA / Bitácora Operativa
+
+Aplica a cambios visuales, componentes, pantallas, shell, formularios, tablas, estados vacíos y copy de interfaz.
+
+## 1. Lectura obligatoria
+
+Antes de modificar UI, leer:
+
+1. `docs/codex/contexto-rapido.md`
+2. `docs/codex/AGENTS.md`
+3. `docs/codex/diseno/noia-ui-manual.md`
+4. `docs/codex/diseno/noia-bases-sistema-referencia.md`
+5. `docs/codex/diseno/noia-ui-guardrails.md`
+6. `docs/codex/diseno/noia-antipatrones-ia.md`
+7. `docs/codex/diseno/noia-ui-review-checklist.md` al cerrar
+8. Documento del módulo o fase que corresponda
+
+Si el cambio toca shell/componentes base, leer también:
+
+- `docs/codex/diseno/erp-shell-bitacora-operativa-01.md`
+
+Si el cambio toca Creación avanzada de empleados, leer también:
+
+- `docs/codex/modulos/empleados/creacion-avanzada.md`
+
+## 2. Criterio NOIA
+
+`NOIA = No parecer IA`.
+
+La interfaz no debe sentirse genérica, decorativa, artificial ni como plantilla SaaS sin criterio de negocio.
+
+Cada pantalla o componente debe ayudar a responder:
+
+- qué está pasando;
+- qué falta;
+- qué está listo;
+- qué no aplica;
+- qué acción sigue;
+- qué queda trazado.
+
+## Sistema de decisión NOIA
+
+Antes de modificar UI, declarar:
+
+- tipo de pantalla;
+- usuario principal;
+- fuente de verdad;
+- qué puede editar;
+- qué no puede editar;
+- estado principal;
+- acción recomendada;
+- riesgo principal;
+- confirmación requerida;
+- patrón visual correcto.
+
+Si no se puede completar esta matriz, no implementar UI todavía. Leer documentación, proponer decisión o pedir aclaración.
+
+## Regla anti-card
+
+No resolver layouts con cards por defecto.
+
+Antes de usar una card, evaluar si corresponde una franja operativa, registro de bitácora, panel dividido, línea de estado, lista de revisión, bloque editorial, tabla contextual, MessageBox o disclosure.
+
+Card solo para entidad, resumen o decisión completa: debe tener identidad propia, estado propio, acción propia, resumen propio o decisión propia.
+
+## Orden de maquetación
+
+Ordenar, reducir, jerarquizar, reusar patrones existentes y crear solo si hace falta.
+
+## 3. Prohibiciones visuales
+
+Evitar salvo justificación explícita del documento de fase:
+
+- barras laterales fuertes tipo `border-left: 3px solid ...` como marcador visual;
+- gradientes decorativos;
+- sombras fuertes o decorativas;
+- cards repetidas sin jerarquía;
+- badges excesivos;
+- botones primarios azules para acciones secundarias;
+- textos técnicos visibles para RRHH;
+- hero cards comerciales en pantallas operativas;
+- paletas nuevas no documentadas;
+- fuentes nuevas;
+- cambios globales para resolver problemas locales.
+
+## 4. Preferencias visuales
+
+Usar:
+
+- bordes completos y neutros;
+- fondos suaves funcionales para info/warning/error/success;
+- radios contenidos;
+- densidad compacta y legible;
+- una acción principal por zona;
+- empty states con causa y acción;
+- tablas con filtros sobrios;
+- selección sin barra lateral fuerte;
+- copy administrativo, humano y claro para RRHH.
+
+## 5. Lenguaje visible
+
+Preferir lenguaje operativo:
+
+- `Revisar datos`
+- `Completar ficha`
+- `No requerido`
+- `Solo si aplica`
+- `Pendiente de revisión`
+- `Listo para continuar`
+- `Acción recomendada`
+
+Evitar lenguaje técnico como protagonista:
+
+- IDs internos;
+- nombres de funciones;
+- nombres de tablas;
+- payloads;
+- reglas del motor;
+- errores crudos de base de datos.
+
+## 6. Documentación
+
+Si hubo cambio visual:
+
+- actualizar `docs/codex/peticiones-estilos.md`;
+- actualizar el documento del módulo/fase si corresponde;
+- responder qué se contrastó con `docs/codex`.

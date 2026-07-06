@@ -1,0 +1,114 @@
+/*
+ * Estilos compartidos del módulo Empresas.
+ *
+ * Paleta alineada con NOIA: primary `#1e3a8a` (igual que el resto del shell);
+ * sin azules sueltos ni colores extravagantes. Reglas de página/header locales
+ * fueron retiradas: la cabecera ahora la publica el shell vía
+ * `bindShellPageContext`. Aquí solo viven los estilos del formulario y los
+ * primitivos visuales reutilizados por la ficha.
+ */
+
+.emp-form-shell {
+  --emp-ink: #111827;
+  --emp-muted: #6b7280;
+  --emp-line: #e5e7eb;
+  --emp-soft: #f8fafc;
+  --emp-primary: #1e3a8a;
+  --emp-primary-soft: #eef2ff;
+  --emp-danger: #b91c1c;
+
+  border: 1px solid var(--emp-line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 16px;
+}
+
+.emp-section + .emp-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--emp-line);
+}
+
+.emp-section h2 {
+  margin: 0 0 8px;
+  color: var(--emp-ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.emp-section-lead {
+  margin: 0 0 12px;
+  color: var(--emp-muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.emp-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
+}
+
+.emp-field-grid--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.emp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.emp-field span {
+  color: var(--emp-ink);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.emp-input {
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: var(--emp-ink);
+  font-size: 0.8125rem;
+}
+
+.emp-input:focus {
+  outline: 2px solid rgba(30, 58, 138, 0.2);
+  border-color: var(--emp-primary);
+}
+
+.emp-input--error {
+  border-color: var(--emp-danger);
+}
+
+.emp-field-error {
+  color: var(--emp-danger);
+  font-size: 0.6875rem;
+}
+
+.emp-checkbox-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  color: var(--emp-ink);
+  font-size: 0.8125rem;
+}
+
+.emp-mutual-panel {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--emp-line);
+  border-radius: 6px;
+  background: var(--emp-soft);
+}
+
+@media (max-width: 768px) {
+  .emp-form-shell .emp-field-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

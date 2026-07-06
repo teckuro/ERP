@@ -1,4 +1,4 @@
-import { SearchSelectOption } from '../../../shared/components/ui/search-select.component';
+import { SearchSelectOption } from '../../../shared/components/ui/forms/search-select.component';
 
 /**
  * Prepend a real empty choice (value null) so the first catalog row is never an implicit selection.

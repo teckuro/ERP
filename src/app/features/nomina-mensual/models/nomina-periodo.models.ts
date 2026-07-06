@@ -1,0 +1,627 @@
+/**
+ * Modelos centrales de Nómina mensual.
+ *
+ * Creados en `NOM-REBUILD-NOMINA-MENSUAL-01` (F1, 2026-06-03).
+ *
+ * Documento rector: `docs/codex/modulos/nomina-mensual/arquitectura-administrador-generador.md`.
+ *
+ * Arquitectura: Administrador (lista N nóminas) + Generador (1 nómina por id).
+ * - El Administrador consume `NominaPeriodoResumen[]` (solo resúmenes).
+ * - El Generador consume `NominaPeriodo` (la nómina completa).
+ * - La grilla de Dotación consume `FilaTrabajadorNominaResumen[]` (sin detalle).
+ * - El detalle completo se carga bajo demanda como `DetalleTrabajadorNomina`.
+ *
+ * Compartido entre `nomina-mensual/` (Admin) y `nomina-mensual-v2/` (Generador).
+ */
+
+import type { PayrollStepId } from '../../nomina-mensual-v2/models/nomina-mensual-v2.models';
+import type { MovimientoNomina } from './movimiento-nomina.models';
+
+/**
+ * Set canónico de pasos válidos del Generador. Se usa para sanear valores
+ * provenientes de BD que no encajen en `PayrollStepId` (defensa frente a
+ * migraciones tardías o datos legacy).
+ */
+const PASOS_VALIDOS: ReadonlySet<string> = new Set<PayrollStepId>([
+  'parameters',
+  'dotacion',
+  'movements',
+  'calculation',
+  'validation',
+  'closure',
+]);
+
+/**
+ * Convierte un valor crudo de `ultimo_paso_visitado` (BD) a `PayrollStepId`.
+ * Devuelve `null` si el valor es nulo, vacío o desconocido (no rompe la UI).
+ */
+export function parsePayrollStepId(raw: string | null | undefined): PayrollStepId | null {
+  if (!raw) return null;
+  return PASOS_VALIDOS.has(raw) ? (raw as PayrollStepId) : null;
+}
+
+export type EstadoNomina =
+  | 'borrador'
+  | 'dotacion_generada'
+  | 'en_revision'
+  | 'calculada'
+  | 'validada'
+  | 'aprobada'
+  | 'liquidada'
+  | 'cerrada'
+  | 'reabierta'
+  | 'anulada';
+
+export type TipoNomina = 'mensual' | 'quincenal' | 'semanal' | 'extraordinaria';
+
+export type NaturalezaNomina =
+  | 'liquidacion_legal'
+  | 'anticipo'
+  | 'pago_extraordinario'
+  | 'rectificacion';
+
+export interface IdentidadNominaMensual {
+  fechaInicio: string;
+  fechaFin: string;
+  naturaleza: 'liquidacion_legal';
+  codigoCiclo: string;
+}
+
+export function derivarIdentidadNominaMensual(periodo: string): IdentidadNominaMensual {
+  const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(periodo);
+  if (!match) {
+    throw new Error(`Periodo mensual invalido: ${periodo}.`);
+  }
+
+  const anio = Number(match[1]);
+  const mes = Number(match[2]);
+  const ultimoDia = new Date(Date.UTC(anio, mes, 0)).getUTCDate();
+
+  return {
+    fechaInicio: `${periodo}-01`,
+    fechaFin: `${periodo}-${String(ultimoDia).padStart(2, '0')}`,
+    naturaleza: 'liquidacion_legal',
+    codigoCiclo: `${periodo}-MES`,
+  };
+}
+
+export type PasoSiguienteNomina =
+  | 'parametros'
+  | 'dotacion'
+  | 'movimientos'
+  | 'calculo'
+  | 'validacion'
+  | 'cierre'
+  | 'liquidaciones'
+  | 'sin_accion';
+
+export interface EvidenciaCalculoNomina {
+  idCalculoPeriodo?: number;
+  versionCalculo: number;
+  calculadoAt?: string;
+  validadoAt?: string;
+  aprobadoAt?: string;
+  calculoVigente: boolean;
+}
+
+/**
+ * Resumen que carga el Administrador (bandeja de nóminas).
+ *
+ * Solo totales + estado + fechas — sin detalle. Diseñado para escalar a
+ * cientos de nóminas listadas sin penalizar la carga.
+ */
+export interface NominaPeriodoResumen {
+  id: string;
+  periodo: string;
+  empresaId: string;
+  empresaNombre: string;
+
+  tipo: TipoNomina;
+  estado: EstadoNomina;
+  fechaInicio: string;
+  fechaFin: string;
+  naturaleza: NaturalezaNomina;
+  codigoCiclo: string;
+  plantillaCicloId?: string;
+  nominaOrigenId?: string;
+  versionEstado: number;
+
+  totalTrabajadores: number;
+  totalSegmentos: number;
+  totalHaberes: number;
+  totalDescuentos: number;
+  totalLiquido: number;
+
+  totalIncidenciasCriticas: number;
+  totalAdvertencias: number;
+
+  fechaPago?: string;
+  proximoPaso?: PasoSiguienteNomina;
+  requiereAccion?: boolean;
+  ultimaActividad?: string;
+  evidenciaCalculo?: EvidenciaCalculoNomina;
+
+  /**
+   * Último paso del Generador visitado por el usuario. Metadata UX —
+   * independiente de la máquina de estados. Permite mostrar "En curso: X"
+   * en la bandeja y rehidratar el container al volver al generador.
+   */
+  ultimoPasoVisitado?: PayrollStepId | null;
+  pasoVisitadoAt?: string | null;
+  /**
+   * Máximo paso del Generador completado según criterio UI ("poblado
+   * correctamente"). Monótono creciente — no retrocede automáticamente.
+   * Es lo que la bandeja del Administrador muestra como "Avance: X" y lo
+   * que el container usa para bloquear el stepper hacia adelante.
+   */
+  maximoPasoCompletado?: PayrollStepId | null;
+  maximoPasoCompletadoAt?: string | null;
+
+  createdAt: string;
+  updatedAt: string;
+  closedAt?: string;
+}
+
+/**
+ * La nómina completa que carga el Generador para 1 `nominaPeriodoId`.
+ *
+ * Incluye segmentos, movimientos, incidencias y trazabilidad de eventos.
+ * El detalle por trabajador NO vive aquí: se carga bajo demanda con
+ * `obtenerDetalleTrabajador(nominaPeriodoId, trabajadorId)`.
+ */
+export interface NominaPeriodo {
+  id: string;
+  periodo: string;
+  empresaId: string;
+  empresaNombre: string;
+
+  tipo: TipoNomina;
+  estado: EstadoNomina;
+  fechaInicio: string;
+  fechaFin: string;
+  naturaleza: NaturalezaNomina;
+  codigoCiclo: string;
+  plantillaCicloId?: string;
+  nominaOrigenId?: string;
+  versionEstado: number;
+
+  segmentos: SegmentoNomina[];
+  movimientos: MovimientoNomina[];
+  incidencias: IncidenciaNomina[];
+
+  trabajadorIds: string[];
+
+  totalHaberes: number;
+  totalDescuentos: number;
+  totalLiquido: number;
+
+  fechaPago?: string;
+  evidenciaCalculo?: EvidenciaCalculoNomina;
+  ultimoPasoVisitado?: PayrollStepId | null;
+  pasoVisitadoAt?: string | null;
+  maximoPasoCompletado?: PayrollStepId | null;
+  maximoPasoCompletadoAt?: string | null;
+
+  eventosAuditoria?: EventoAuditoriaNomina[];
+
+  createdAt: string;
+  updatedAt: string;
+  closedAt?: string;
+}
+
+/**
+ * Grupo operativo dentro de una nómina. Reemplaza la idea de "Sub-base".
+ *
+ * Un trabajador NO puede estar duplicado en >1 segmento activo del mismo
+ * período (regla bloqueante, validada por `validarDuplicidadTrabajadorSegmento`).
+ * Antes del cálculo, los segmentos se consolidan en un único `ResultadoAlcanceNomina`.
+ */
+export interface SegmentoNomina {
+  id: string;
+  nominaPeriodoId: string;
+  nombre: string;
+
+  tipo?: 'planta' | 'honorarios' | 'centro_costo' | 'personalizada';
+
+  trabajadorIds: string[];
+
+  estado: 'borrador' | 'lista' | 'bloqueada';
+
+  totalTrabajadores: number;
+  totalIncidenciasCriticas: number;
+  totalAdvertencias: number;
+
+  ordinal: number;
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Segmento aún no persistido. `id` lo genera la BD (`gen_random_uuid()`). */
+export type SegmentoNominaNuevo = Omit<SegmentoNomina, 'id' | 'createdAt' | 'updatedAt'>;
+
+export interface IncidenciaNomina {
+  id: string;
+  nominaPeriodoId: string;
+
+  severidad: 'critica' | 'advertencia' | 'informativa';
+  tipo: string;
+  mensaje: string;
+
+  trabajadorId?: string;
+  segmentoId?: string;
+
+  bloqueante: boolean;
+
+  /** F13: decisión persistida sobre la incidencia (default `pendiente`). */
+  estadoDecision?: EstadoDecisionIncidencia;
+  justificacion?: string;
+  versionCalculoSnapshot?: number;
+  decididaAt?: string;
+}
+
+export type EstadoDecisionIncidencia =
+  | 'pendiente'
+  | 'resuelta'
+  | 'aceptada_justificada';
+
+/** Incidencia aún no persistida. `id` lo genera la BD. */
+export type IncidenciaNominaNueva = Omit<IncidenciaNomina, 'id'>;
+
+/**
+ * Resumen pre-cálculo y pre-cierre.
+ *
+ * Doble guardia:
+ * - `puedeCalcular === false` si hay al menos 1 incidencia bloqueante.
+ * - `puedeCerrar === false` si hay al menos 1 incidencia bloqueante.
+ *
+ * Las advertencias permiten continuar pero quedan visibles.
+ */
+export interface ResumenValidacionNomina {
+  totalTrabajadores: number;
+  listosParaCalculo: number;
+  conIncidenciasCriticas: number;
+  conAdvertencias: number;
+  conMovimientosEspeciales: number;
+
+  puedeCalcular: boolean;
+  puedeValidar?: boolean;
+  puedeCerrar: boolean;
+  calculoVigente?: boolean;
+  advertenciasPendientes?: number;
+
+  incidenciasCriticas: IncidenciaNomina[];
+  advertencias: IncidenciaNomina[];
+}
+
+export type EstadoTrabajadorNomina =
+  | 'listo'
+  | 'advertencia'
+  | 'critico'
+  | 'editado'
+  | 'omitido'
+  | 'bloqueado';
+
+/**
+ * Lo que carga la grilla de Dotación.
+ *
+ * Campos resumidos + contadores, SIN detalle. Diseñado para escalar a miles
+ * de trabajadores con paginación y filtros del lado servidor (cuando se
+ * conecte productivo).
+ */
+export interface FilaTrabajadorNominaResumen {
+  trabajadorId: string;
+  nombre: string;
+  rut: string;
+
+  cargo?: string;
+  centroCosto?: string;
+  segmentoId?: string;
+
+  estado: EstadoTrabajadorNomina;
+
+  totalIncidenciasCriticas: number;
+  totalAdvertencias: number;
+  totalMovimientos: number;
+
+  tieneDatosBancarios: boolean;
+  tieneDatosPrevisionales: boolean;
+}
+
+/**
+ * Detalle completo de 1 trabajador. Se carga bajo demanda al abrir fila /
+ * modal / drawer. NUNCA se carga junto a la grilla.
+ */
+export interface DetalleTrabajadorNomina {
+  trabajadorId: string;
+
+  contrato?: unknown;
+  datosBancarios?: unknown;
+  datosPrevisionales?: unknown;
+
+  movimientos: MovimientoNomina[];
+  incidencias: IncidenciaNomina[];
+}
+
+export interface FiltroRapidoDotacion {
+  estado?: EstadoTrabajadorNomina;
+  segmentoId?: string;
+  conIncidencias?: boolean;
+  conMovimientos?: boolean;
+  busqueda?: string;
+}
+
+/** Conteos agregados de dotación (RPC F07). */
+export interface DotacionResumenNomina {
+  total: number;
+  listos: number;
+  conAdvertencias: number;
+  conCriticos: number;
+  bloqueados: number;
+}
+
+export interface FiltroTrabajadoresElegiblesNomina {
+  busqueda?: string;
+  soloDisponibles?: boolean;
+  /** F07b: solo trabajadores que ya están en la nómina (resuelto en servidor). */
+  soloEnNomina?: boolean;
+}
+
+export interface ResumenTrabajadoresElegiblesNomina {
+  totalActivos: number;
+  elegibles: number;
+  yaEnNomina: number;
+}
+
+export interface PaginacionGrilla {
+  page: number;
+  pageSize: number;
+  total: number;
+}
+
+/** Filtros server-side del paso Cálculo (BKL-09). */
+export interface FiltroCalculoPorTrabajador {
+  busqueda?: string;
+  /** ok | aviso | bloqueo — alineado a chips de la grilla. */
+  estado?: string;
+}
+
+/** Stats globales del paso Cálculo desde cabecera de snapshot (BKL-09). */
+export interface ResumenCalculoNomina {
+  idCalculoPeriodo?: number;
+  trabajadoresCalculados: number;
+  totalHaberes: number;
+  totalDescuentos: number;
+  totalLiquido: number;
+  conAdvertencias: number;
+  conBloqueos: number;
+}
+
+/** Fila resumida del listado paginado de cálculo (BKL-09). */
+export interface FilaCalculoTrabajadorListado {
+  idCalculoTrabajador: number;
+  trabajadorId: string;
+  idPersona: number;
+  rut: string;
+  nombre: string;
+  estado: string;
+  sueldoBase: number;
+  totalHaberes: number;
+  totalDescuentos: number;
+  liquidoAPago: number;
+  baseImponiblePrevisional: number;
+  baseTributable: number;
+  cotizacionSis: number;
+  cotizacionSanna: number;
+  cotizacionLey16744: number;
+  cuentaIssues: number;
+  detalleCargado: boolean;
+}
+
+/**
+ * Trazabilidad de eventos críticos sobre la nómina (cierre, reapertura, etc.).
+ *
+ * Declarado en F1 como TODO para reservar el campo en `NominaPeriodo`.
+ * La emisión real (registro automático al disparar la acción) se implementa
+ * en F2 (Administrador) + F3 (Generador) cuando existan las UI.
+ *
+ * Sin trazabilidad, cerrar/reabrir nóminas es peligroso porque pierde la razón
+ * de la decisión.
+ */
+export interface EventoAuditoriaNomina {
+  id: string;
+  nominaPeriodoId: string;
+
+  accion:
+    | 'creada'
+    | 'dotacion_confirmada'
+    | 'movimientos_actualizados'
+    | 'calculo_invalidado'
+    | 'calculada'
+    | 'validada'
+    | 'aprobada'
+    | 'liquidada'
+    | 'cerrada'
+    | 'reabierta'
+    | 'anulada';
+
+  usuarioId?: string;
+  /** Nombre resuelto en servidor cuando está disponible (BKL-10). */
+  usuarioNombre?: string;
+  motivo?: string;
+
+  createdAt: string;
+}
+
+// ---------------------------------------------------------------------------
+// Helpers de creación (factories puras para tests y stories).
+// ---------------------------------------------------------------------------
+
+/** Crea un `NominaPeriodoResumen` con valores por defecto razonables. */
+export function crearNominaResumen(
+  overrides: Partial<NominaPeriodoResumen> = {},
+): NominaPeriodoResumen {
+  const ahora = new Date().toISOString();
+  const periodo = overrides.periodo ?? '2026-06';
+  const identidad = derivarIdentidadNominaMensual(periodo);
+  return {
+    id: 'nom-fixture-001',
+    periodo,
+    empresaId: 'emp-001',
+    empresaNombre: 'Empresa de prueba',
+    tipo: 'mensual',
+    estado: 'dotacion_generada',
+    ...identidad,
+    versionEstado: 0,
+    totalTrabajadores: 0,
+    totalSegmentos: 0,
+    totalHaberes: 0,
+    totalDescuentos: 0,
+    totalLiquido: 0,
+    totalIncidenciasCriticas: 0,
+    totalAdvertencias: 0,
+    proximoPaso: 'dotacion',
+    requiereAccion: true,
+    ultimaActividad: ahora,
+    evidenciaCalculo: {
+      versionCalculo: 0,
+      calculoVigente: false,
+    },
+    ultimoPasoVisitado: null,
+    pasoVisitadoAt: null,
+    maximoPasoCompletado: null,
+    maximoPasoCompletadoAt: null,
+    createdAt: ahora,
+    updatedAt: ahora,
+    ...overrides,
+  };
+}
+
+/**
+ * Crea un `NominaPeriodo` con estado inicial `dotacion_generada`.
+ *
+ * Estado inicial: la dotación ya se generó automáticamente desde trabajadores
+ * activos. El usuario aún no la revisó (`en_revision`) ni la calculó.
+ */
+export function crearNomina(overrides: Partial<NominaPeriodo> = {}): NominaPeriodo {
+  const ahora = new Date().toISOString();
+  const periodo = overrides.periodo ?? '2026-06';
+  const identidad = derivarIdentidadNominaMensual(periodo);
+  return {
+    id: 'nom-fixture-001',
+    periodo,
+    empresaId: 'emp-001',
+    empresaNombre: 'Empresa de prueba',
+    tipo: 'mensual',
+    estado: 'dotacion_generada',
+    ...identidad,
+    versionEstado: 0,
+    segmentos: [],
+    movimientos: [],
+    incidencias: [],
+    trabajadorIds: [],
+    totalHaberes: 0,
+    totalDescuentos: 0,
+    totalLiquido: 0,
+    evidenciaCalculo: {
+      versionCalculo: 0,
+      calculoVigente: false,
+    },
+    ultimoPasoVisitado: null,
+    pasoVisitadoAt: null,
+    maximoPasoCompletado: null,
+    maximoPasoCompletadoAt: null,
+    createdAt: ahora,
+    updatedAt: ahora,
+    ...overrides,
+  };
+}
+
+/** Crea un `SegmentoNomina` con ordinal calculado o explícito. */
+export function crearSegmento(
+  overrides: Partial<SegmentoNomina> & { nominaPeriodoId: string } = {
+    nominaPeriodoId: 'nom-fixture-001',
+  },
+): SegmentoNomina {
+  const ahora = new Date().toISOString();
+  const trabajadorIds = overrides.trabajadorIds ?? [];
+  return {
+    id: 'seg-fixture-001',
+    nombre: 'Planta',
+    tipo: 'planta',
+    estado: 'borrador',
+    totalIncidenciasCriticas: 0,
+    totalAdvertencias: 0,
+    ordinal: 1,
+    createdAt: ahora,
+    updatedAt: ahora,
+    ...overrides,
+    trabajadorIds,
+    totalTrabajadores: trabajadorIds.length,
+  };
+}
+
+/**
+ * Agrega un trabajador a un segmento, rechazando si ya está en otro segmento
+ * activo del mismo período (regla bloqueante de duplicidad).
+ *
+ * @returns `true` si se agregó. `false` si fue rechazado por duplicidad.
+ */
+export function agregarTrabajadorASegmento(
+  nomina: NominaPeriodo,
+  segmentoId: string,
+  trabajadorId: string,
+): boolean {
+  const yaEnOtroSegmento = nomina.segmentos.some(
+    (s) => s.id !== segmentoId && s.trabajadorIds.includes(trabajadorId),
+  );
+  if (yaEnOtroSegmento) {
+    return false;
+  }
+  const segmento = nomina.segmentos.find((s) => s.id === segmentoId);
+  if (!segmento) {
+    return false;
+  }
+  if (segmento.trabajadorIds.includes(trabajadorId)) {
+    return true;
+  }
+  segmento.trabajadorIds.push(trabajadorId);
+  segmento.totalTrabajadores = segmento.trabajadorIds.length;
+  return true;
+}
+
+/**
+ * Mueve un trabajador de un segmento a otro dentro de la misma nómina,
+ * preservando sus movimientos del período (los movimientos solo cambian
+ * de `segmentoId`, no se eliminan).
+ *
+ * @returns `true` si se movió, `false` si origen o destino no existen.
+ */
+export function moverTrabajadorEntreSegmentos(
+  nomina: NominaPeriodo,
+  trabajadorId: string,
+  segmentoDestinoId: string,
+): boolean {
+  const destino = nomina.segmentos.find((s) => s.id === segmentoDestinoId);
+  if (!destino) {
+    return false;
+  }
+  const origen = nomina.segmentos.find(
+    (s) => s.id !== segmentoDestinoId && s.trabajadorIds.includes(trabajadorId),
+  );
+  if (!origen) {
+    return false;
+  }
+  origen.trabajadorIds = origen.trabajadorIds.filter((id) => id !== trabajadorId);
+  origen.totalTrabajadores = origen.trabajadorIds.length;
+  if (!destino.trabajadorIds.includes(trabajadorId)) {
+    destino.trabajadorIds.push(trabajadorId);
+    destino.totalTrabajadores = destino.trabajadorIds.length;
+  }
+  for (const mov of nomina.movimientos) {
+    if (mov.trabajadorId === trabajadorId) {
+      mov.segmentoId = segmentoDestinoId;
+    }
+  }
+  return true;
+}

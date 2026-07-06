@@ -89,6 +89,8 @@ function asignacionListadoBase(
 
 function conceptoAsignable() {
   return {
+    codigo: 'BONO',
+    nombre: 'Bono',
     tipo: 'HABER',
     esSistema: false,
     calculoAutomatico: false,
@@ -149,6 +151,17 @@ describe('HaberesDescuentosService', () => {
     const aporte = filaBase({ idConcepto: 12, tipo: 'APORTE_EMPLEADOR' });
     const noVigente = filaBase({ idConcepto: 13, vigente: false });
     repository.listarConceptosMantenimiento.mockResolvedValue([ok, sistema, aporte, noVigente]);
+
+    const list = await service.listarConceptos(ref);
+
+    expect(list.map((c) => c.idConcepto)).toEqual([10]);
+  });
+
+  it('listarConceptos excluye conceptos reservados de sueldo base', async () => {
+    const ref = new Date(2026, 4, 15, 12, 0, 0, 0);
+    const ok = filaBase({ idConcepto: 10, codigo: 'BONO', nombre: 'Bono' });
+    const reservado = filaBase({ idConcepto: 11, codigo: 'SUELDO_BASE', nombre: 'Sueldo base' });
+    repository.listarConceptosMantenimiento.mockResolvedValue([ok, reservado]);
 
     const list = await service.listarConceptos(ref);
 
@@ -377,8 +390,26 @@ describe('HaberesDescuentosService', () => {
 
       const snap = await service.resolverSnapshotConceptoParaMovimientoVariableManual(10, refMayo2026);
 
-      expect(snap).toEqual({ tipo: 'HABER', calculoAutomatico: false, esSistema: false });
+      expect(snap).toEqual({
+        tipo: 'HABER',
+        calculoAutomatico: false,
+        esSistema: false,
+        codigo: 'BONO',
+        nombre: 'Bono',
+      });
       expect(repository.obtenerConceptoParaAsignacion).toHaveBeenCalledWith(10);
+    });
+
+    it('rechaza concepto reservado de sueldo base', async () => {
+      repository.obtenerConceptoParaAsignacion.mockResolvedValue({
+        ...conceptoAsignable(),
+        codigo: 'SUELDO_BASE',
+        nombre: 'Sueldo base',
+      });
+
+      await expect(service.resolverSnapshotConceptoParaMovimientoVariableManual(12, refMayo2026)).rejects.toThrow(
+        /ficha del trabajador/,
+      );
     });
 
     it('rechaza si el concepto no existe en catalogo', async () => {

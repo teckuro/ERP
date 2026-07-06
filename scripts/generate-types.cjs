@@ -15,8 +15,8 @@ const __outputFile = path.join(__outputDir, 'database.types.ts');
 fs.mkdirSync(__outputDir, { recursive: true });
 
 const __result = execSync(
-  `npx supabase gen types typescript --project-id ${__projectId}`,
-  { encoding: 'utf8' }
+  `npm exec -- supabase gen types typescript --project-id ${__projectId}`,
+  { encoding: 'utf8', shell: true }
 );
 
 fs.writeFileSync(__outputFile, __result, 'utf8');

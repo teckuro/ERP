@@ -1,573 +1,619 @@
-import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, OnInit, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AbstractControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { LucideAngularModule } from 'lucide-angular';
+﻿import { CommonModule } from "@angular/common";
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  Injector,
+  OnInit,
+  inject,
+} from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import {
+  AbstractControl,
+  ReactiveFormsModule,
+  Validators,
+} from "@angular/forms";
+import { ActivatedRoute, Router } from "@angular/router";
+import { LucideAngularModule } from "lucide-angular";
 
-import { BancarioComponent } from '../secciones/bancario/bancario';
-import { ContratoComponent } from '../secciones/contrato/contrato';
-import { DatosPersonalesComponent } from '../secciones/datos-personales/datos-personales';
-import { ContactoComponent } from '../secciones/contacto/contacto';
-import { PrevisionSaludComponent } from '../secciones/prevision-salud/prevision-salud';
-import { PerfilLaboralComponent } from '../secciones/perfil-laboral/perfil-laboral';
+import { BancarioComponent } from "../secciones/bancario/bancario";
+import { ContratoComponent } from "../secciones/contrato/contrato";
+import { DatosPersonalesComponent } from "../secciones/datos-personales/datos-personales";
+import { ContactoComponent } from "../secciones/contacto/contacto";
+import { PrevisionSaludComponent } from "../secciones/prevision-salud/prevision-salud";
+import { PerfilLaboralComponent } from "../secciones/perfil-laboral/perfil-laboral";
+import { AltaBitacoraConsoleComponent } from "../creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component";
 import {
   mapEmpleadoFormToPayload,
   mapEmpleadoFormToPayloadBasico,
   mapEmpleadoFormToPayloadBorrador,
-} from '../../mappers/empleado-form.mapper';
-import { validateBorradorAvanzadoFormMinimo } from '../../utils/empleado-borrador-form.validation';
-import { normalizarBorradorAvanzadoParaFormulario } from '../../utils/empleado-borrador-hidratacion';
+} from "../../mappers/empleado-form.mapper";
 import {
-  EMPTY_EMPLEADO_FORM_CATALOGOS,
-  EmpleadoFormCatalogos,
-} from '../../models/empleado-catalogos.model';
+  collectBorradorAvanzadoIssues,
+} from "../../utils/empleado-borrador-form.validation";
 import {
-  EMPLEADO_ADVANCED_WIZARD_LABELS,
-  EMPLEADO_ADVANCED_WIZARD_STEP_COUNT,
-  EMPLEADO_FORM_STEP_BLOCK_IDS,
-  EMPLEADO_FORM_TAB_ORDER,
-  EmpleadoFormTabId,
-} from '../../models/empleado-form.manifest';
-import { EmpleadoFormGroup } from '../../models/empleado-form.model';
+  buildFieldItemsFromRules,
+  mensajesNegocioDesdeReglas,
+  pesoOrdenValidacion,
+  sortReglasValidacion,
+} from "../../utils/empleado-alta-modal.presenter";
+import { normalizarBorradorAvanzadoParaFormulario } from "../../utils/empleado-borrador-hidratacion";
+import {
+  buscarControlPorRuta,
+  buscarPrimerControlNgInvalido,
+  enfocarElemento,
+  enfocarRutaControl as enfocarRutaControlDom,
+} from "../../utils/empleado-alta-foco.util";
+import {
+  etiquetasAsistenteAvanzadoEmpleado,
+  cantidadPasosAsistenteAvanzadoEmpleado,
+  etiquetaPasoHonorarios,
+  idsBloquesPasoFormularioEmpleado,
+  ordenPestanasFormularioEmpleado,
+} from "../../models/empleado-form.manifest";
+import { construirSnapshotValidacionFicha } from "../../rules/empleado-alta-ficha-snapshot.builder";
+import {
+  EmpleadoAltaModalOrquestador,
+  type DelegadoModalAltaEmpleado,
+} from "../../facade/empleado-alta-modal.orquestador";
+import { EmpleadoFormGroup } from "../../models/empleado-form.model";
 import {
   CONDICIONES_TRABAJADOR_UI,
   CondicionTrabajadorControlName,
-} from '../../models/empleado-perfil-laboral.model';
-import { RelacionLaboral } from '../../models/empleado.model';
-import { EmpleadosFormOrchestratorService } from '../../services/empleados-form-orchestrator.service';
-import { EmpleadosCatalogosService } from '../../services/empleados-catalogos.service';
+} from "../../models/empleado-perfil-laboral.model";
+import type {
+  ModalAccionAvanzada,
+  ItemCampoModalAccionAvanzada,
+  ReglaValidacionEvaluada,
+  FormEmpleadoModo,
+  ResumenValidacionGlobal,
+  DeteccionAutomaticaPerfilLaboral,
+  EstadoValidacionPaso,
+  ResumenValidacionPaso,
+  IdPestana,
+  ReglaValidacion,
+  SeveridadValidacion,
+  IdPasoValidacion,
+  VmConsolaBitacoraAlta,
+  RevisionNormativaBitacoraAlta,
+  GrupoMapaAsistente,
+  TipoUiPasoAsistente,
+} from "../../models/empleado-alta-avanzada.vm";
+import { RelacionLaboral } from "../../models/empleado.model";
+import { EmpleadoAltaAvanzadaPresentacionFacade } from "../../facade/empleado-alta-avanzada-presentacion.facade";
+import {
+  buscarTipoTrabajadorBase,
+  tipoTrabajadorBaseParaRelacion,
+} from "../../rules/empleado-tipo-trabajador-flow.rules";
+import {
+  calcularPorcentajeProgresoAsistenteAlta,
+  esPrimerPasoAsistenteAlta,
+  esUltimoPasoAsistenteAlta,
+  estaPasoAsistenteAltaEnRango,
+  resolverPasoSiguienteAsistenteAlta,
+  resolverPasoAnteriorAsistenteAlta,
+} from "../../rules/empleado-alta-wizard.rules";
+import {
+  AltaAplicabilidadCampo,
+  AltaAplicabilidadItem,
+  EstadoAplicabilidadAlta,
+  altaAplicabilidadStep,
+  evaluarAltaAplicabilidad,
+} from "../../rules/empleado-alta-aplicabilidad.rules";
+import {
+  AccionCoherenciaAlta,
+  InconsistenciaCoherenciaAlta,
+  EstadoCoherenciaAlta,
+  evaluarAltaCoherencia,
+} from "../../rules/empleado-alta-coherencia.rules";
+import {
+  buildAltaResumenEstadoPanel,
+  evaluarDiagnosticoFichaEmpleado,
+  diagnosticoItemDesdeFaltanteAlta,
+  mapDiagnosticoItemsToEvaluatedRules,
+  wizardStepDesdeFaltanteAlta,
+  type EmpleadoFichaValidacionSnapshot,
+} from '../../rules/empleado-alta-diagnostico.rules';
+import {
+  buildRevisionesNormativasConsola,
+  evaluarAltaValidacionesDesdeDiagnostico,
+} from '../../rules/empleado-alta-validacion-input';
+import type { AltaValidacionVisible } from '../../rules/empleado-alta-validaciones.rules';
+import type { FaltanteFichaEmpleado, FichaEstadoPanelVm } from '../../models/ficha-empleado.vm';
+import { EmpleadosFormOrchestratorService } from "../../services/empleados-form-orchestrator.service";
+import { EmpleadosCatalogosService } from "../../services/empleados-catalogos.service";
 import {
   EmpleadoReferenciaInvalidaError,
   EmpleadoRutDuplicadoError,
   EmpleadosService,
-} from '../../services/empleados.service';
+} from "../../services/empleados.service";
 import {
   CardComponent,
   CardContentComponent,
-} from '../../../../shared/components/ui/card.component';
-import { MessageBoxComponent, MessageBoxVariant } from '../../../../shared/components/ui/message-box.component';
-import { PageActionsComponent } from '../../../../shared/components/ui/page-actions.component';
+} from "../../../../shared/components/ui/primitives/card.component";
+import { MessageBoxComponent } from "../../../../shared/components/ui/feedback/message-box/message-box.component";
+import type { MessageBoxSection } from "../../../../shared/components/ui/feedback/message-box/message-box.component";
 import {
-  RecordBreadcrumbComponent,
-  RecordBreadcrumbItem,
-} from '../../../../shared/components/ui/record-breadcrumb.component';
+  buildMsgboxDiagnostico,
+  buildMsgboxErrorSimple,
+} from "../../../../shared/components/ui/feedback/message-box/message-box.builders";
+import { WorkspaceLoadingComponent } from "../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component";
+import { bindShellPageContext } from "../../../../layout/shell-page-context.binding";
 
-type TabId = EmpleadoFormTabId;
-type WizardStepUiKind =
-  | 'actual'
-  | 'completo'
-  | 'pendiente'
-  | 'errores'
-  | 'opcional'
-  | 'no-aplica';
-type ValidationStepId = TabId;
-type ValidationSeverity = 'error' | 'warning' | 'info';
-type StepValidationStatus = 'pending' | 'in-progress' | 'invalid' | 'complete';
-type FormEmpleadoModo = 'basico' | 'avanzado';
+const ordenPestanas: readonly IdPestana[] = [...ordenPestanasFormularioEmpleado];
 
-type AdvancedActionModalKind =
-  | 'next-step-review'
-  | 'draft-invalid'
-  | 'draft-success'
-  | 'finish-invalid'
-  | 'finish-confirm'
-  | 'honorarios-confirm'
-  | 'honorarios-finish-blocked';
-type AdvancedActionModalAction =
-  | 'dismiss'
-  | 'continue-next'
-  | 'focus-current-step'
-  | 'focus-draft-minimum'
-  | 'focus-first-blocking'
-  | 'execute-finish'
-  | 'confirm-honorarios'
-  | 'cancel-honorarios'
-  | 'save-honorarios-draft';
-
-interface AdvancedActionModal {
-  kind: AdvancedActionModalKind;
-  variant: MessageBoxVariant;
-  title: string;
-  message: string;
-  primaryLabel: string;
-  secondaryLabel?: string;
-  blockingItems: readonly string[];
-  warningItems: readonly string[];
-  infoItems: readonly string[];
-  targetStep?: number;
-  primaryAction: AdvancedActionModalAction;
-  secondaryAction?: AdvancedActionModalAction;
-}
-
-interface ValidationRule {
-  id: string;
-  stepId: ValidationStepId;
-  label: string;
-  severity: ValidationSeverity;
-  blocking: boolean;
-  sourcePath: string;
-  category?: string;
-  isApplicable: () => boolean;
-  isComplete: () => boolean;
-  isVisible?: () => boolean;
-}
-
-interface PerfilLaboralAutoDetection {
-  controlName: CondicionTrabajadorControlName;
-  reason: string;
-}
-
-interface EvaluatedValidationRule {
-  id: string;
-  stepId: ValidationStepId;
-  wizardStep: number;
-  label: string;
-  severity: ValidationSeverity;
-  blocking: boolean;
-  complete: boolean;
-  visible: boolean;
-  sourcePath: string;
-  category?: string;
-}
-
-interface StepValidationSummary {
-  stepId: ValidationStepId;
-  pending: number;
-  blockingPending: number;
-  warningsPending: number;
-  complete: number;
-  applicable: number;
-  status: StepValidationStatus;
-}
-
-interface GlobalValidationSummary {
-  blockingPending: number;
-  warningsPending: number;
-  completeSteps: number;
-  invalidSteps: number;
-  pendingTotal: number;
-}
-
-const TAB_ORDER: readonly TabId[] = [...EMPLEADO_FORM_TAB_ORDER];
-
-/** Mensajes de negocio al intentar finalizar con bloqueos (paso 9); no exponer detalle técnico de BD. */
-const MENSAJES_FINALIZAR_ALTA: Partial<Record<string, string>> = {
-  'contract.position': 'Ingresa el cargo o función que tendrá el trabajador.',
-  'honorarios.service': 'Ingresa el servicio o función que prestará la persona a honorarios.',
-  'honorarios.amount': 'Ingresa el monto bruto pactado para la boleta de honorarios.',
-  'honorarios.currency': 'Selecciona la moneda del monto bruto de honorarios.',
-  'contract.branch': 'Selecciona la sucursal u organización donde prestará servicios.',
-  'contract.worker-type': 'Selecciona el tipo de trabajador que corresponde al contrato.',
-  'contract.schedule-type': 'Selecciona el tipo de jornada pactada.',
-  'contract.contract-type': 'Selecciona el tipo de contrato laboral.',
-  'contract.start-date': 'Ingresa la fecha de ingreso del trabajador.',
-  'contract.document-date': 'Ingresa la fecha del contrato.',
-  'contract.end-date': 'Completa la fecha de término cuando el contrato no sea indefinido.',
-  'contract.salary': 'Ingresa un sueldo base válido para remuneraciones.',
-  'contract.currency': 'Selecciona la moneda de remuneración.',
-  'contract.weekly-hours': 'Completa las horas semanales pactadas.',
-  'contract.weekly-days': 'Completa los días semanales de trabajo.',
-  'prevision.regime': 'Selecciona el régimen previsional del trabajador.',
-  'prevision.afp': 'Selecciona la AFP cuando el régimen previsional sea AFP.',
-  'prevision.health': 'Selecciona la institución de salud del trabajador.',
-  'prevision.health-currency': 'Selecciona la moneda del plan de salud.',
-  'prevision.health-plan': 'Ingresa el valor del plan de salud.',
-  'prevision.apv-institution': 'Selecciona la institución APVI o desactiva APVI si no corresponde.',
-  'prevision.apv-currency': 'Selecciona la moneda APVI o desactiva APVI si no corresponde.',
-  'prevision.apv-amount': 'Ingresa el monto APVI o desactiva APVI si no corresponde.',
-  'prevision.apv-payment': 'Selecciona la forma de pago APVI o desactiva APVI si no corresponde.',
-  'prevision.apv-agreement': 'Completa el depósito convenido APVI o desactiva APVI si no corresponde.',
-  'prevision.ips-name': 'Ingresa la entidad o ex caja del régimen IPS.',
-  'prevision.ips-regime': 'Ingresa el régimen IPS que corresponde.',
-  'prevision.ips-rate': 'Ingresa la tasa IPS que corresponde.',
-  'prevision.health-ges': 'Ingresa el adicional Auge o GES del plan de salud.',
-  'prevision.account2-currency': 'Completa la moneda de Cuenta 2 AFP o deja Cuenta 2 sin monto.',
-  'prevision.account2-value': 'Completa el valor de Cuenta 2 AFP o deja Cuenta 2 sin monto.',
-  'bank.bank': 'Selecciona el banco para el pago por transferencia.',
-  'bank.account-type': 'Selecciona el tipo de cuenta bancaria.',
-  'bank.account-number': 'Ingresa una cuenta bancaria real y reemplaza cualquier dato temporal.',
-};
+/** Reglas de ficha ya cumplidas al cerrar el alta avanzada (estado activo y paso borrador). */
+const REGLAS_VALIDACION_EXCLUIDAS_AL_FINALIZAR_ALTA_AVANZADA = new Set([
+  "alta.basica",
+  "alta.avanzada",
+  "employee.status",
+]);
 
 @Component({
-  selector: 'app-form-empleado',
+  selector: "app-form-empleado",
   imports: [
     CommonModule,
     ReactiveFormsModule,
     LucideAngularModule,
     CardComponent,
     CardContentComponent,
-    RecordBreadcrumbComponent,
-    PageActionsComponent,
     MessageBoxComponent,
+    WorkspaceLoadingComponent,
     DatosPersonalesComponent,
     ContactoComponent,
     ContratoComponent,
     PerfilLaboralComponent,
     PrevisionSaludComponent,
     BancarioComponent,
+    AltaBitacoraConsoleComponent,
   ],
-  templateUrl: './form-empleado.html',
-  styleUrl: './form-empleado.css',
+  templateUrl: "./form-empleado.html",
+  styleUrls: [
+    "../../styles/empleado-expediente-tokens.css",
+    "./form-empleado.css",
+    "./form-empleado.wizard.css",
+    "./form-empleado.feedback.css",
+  ],
+  providers: [EmpleadoAltaAvanzadaPresentacionFacade, EmpleadoAltaModalOrquestador],
 })
-export class FormEmpleadoComponent implements OnInit {
+export class FormEmpleadoComponent implements OnInit, DelegadoModalAltaEmpleado {
   private readonly empleadosService = inject(EmpleadosService);
-  private readonly empleadosCatalogosService = inject(EmpleadosCatalogosService);
-  private readonly empleadosFormService = inject(EmpleadosFormOrchestratorService);
+  private readonly empleadosCatalogosService = inject(
+    EmpleadosCatalogosService,
+  );
+  private readonly empleadosFormService = inject(
+    EmpleadosFormOrchestratorService,
+  );
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly injector = inject(Injector);
+  private readonly presentacion = inject(EmpleadoAltaAvanzadaPresentacionFacade);
+  private readonly modalOrquestador = inject(EmpleadoAltaModalOrquestador);
   private suppressRelacionLaboralModal = false;
-  private previousRelacionLaboral: RelacionLaboral = 'CONTRATO';
+  private previousRelacionLaboral: RelacionLaboral = "CONTRATO";
+  private relacionLaboralRevertirHonorarios: RelacionLaboral = "CONTRATO";
 
-  readonly modo = signal<FormEmpleadoModo>('avanzado');
+  readonly modo = this.presentacion.modo;
   /** Creacion avanzada: indice de etapa 0..9 (10 pasos). */
-  readonly activeWizardStep = signal(0);
-  readonly isSaving = signal(false);
-  readonly attemptedSave = signal(false);
-  readonly errorMessage = signal<string | null>(null);
+  readonly pasoWizardActivo = this.presentacion.pasoWizardActivo;
+  readonly guardando = this.presentacion.guardando;
+  readonly intentoGuardado = this.presentacion.intentoGuardado;
+  readonly mensajeError = this.presentacion.mensajeError;
   /** RUT duplicado: modal estructurado (mismo layout que éxito básico, variante error). */
-  readonly duplicateRutModalRut = signal<string | null>(null);
+  readonly rutModalRutDuplicado = this.presentacion.rutModalRutDuplicado;
 
-  advancedStatusBadgeLabel(): string {
-    return 'Avanzada';
+  etiquetaEstadoAvanzado(): string {
+    return "Bitácora laboral";
   }
-  readonly successMessage = signal<string | null>(null);
+  readonly mensajeExito = this.presentacion.mensajeExito;
   /** Flujo que originó el último guardado exitoso (para el modal, sin depender solo de la ruta). */
-  readonly successFlow = signal<FormEmpleadoModo | null>(null);
-  readonly createdEmployeeId = signal<number | null>(null);
+  readonly flujoExito = this.presentacion.flujoExito;
+  readonly idEmpleadoCreado = this.presentacion.idEmpleadoCreado;
   /** Creación avanzada: id persona al actualizar borrador o null si es alta nueva. */
-  readonly borradorPersonaId = signal<number | null>(null);
-  readonly isSavingBorrador = signal(false);
-  readonly borradorFeedback = signal<string | null>(null);
-  readonly advancedActionModal = signal<AdvancedActionModal | null>(null);
-  readonly catalogos = signal<EmpleadoFormCatalogos>(EMPTY_EMPLEADO_FORM_CATALOGOS);
-  readonly perfilLaboralAutoDetections = signal<readonly PerfilLaboralAutoDetection[]>([]);
-  readonly isLoadingCatalogs = signal(true);
-  readonly catalogosError = signal<string | null>(null);
-  readonly completedTabs = signal<ReadonlySet<TabId>>(new Set());
-  readonly attemptedTabs = signal<ReadonlySet<TabId>>(new Set());
-  readonly visitedWizardSteps = signal<ReadonlySet<number>>(new Set([0]));
-  readonly attemptedWizardSteps = signal<ReadonlySet<number>>(new Set());
+  readonly borradorPersonaId = this.presentacion.borradorPersonaId;
+  readonly guardandoBorrador = this.presentacion.guardandoBorrador;
+  readonly retroalimentacionBorrador = this.presentacion.retroalimentacionBorrador;
+  readonly modalAccionAvanzada = this.presentacion.modalAccionAvanzada;
+  readonly catalogos = this.presentacion.catalogos;
+  readonly deteccionesAutomaticasPerfilLaboral = this.presentacion.deteccionesAutomaticasPerfilLaboral;
+  readonly decisionCoherenciaPendiente = this.presentacion.decisionCoherenciaPendiente;
+  readonly idsInconsistenciasCoherenciaReconocidas = this.presentacion.idsInconsistenciasCoherenciaReconocidas;
+  readonly consolaExpandRequest = this.presentacion.consolaExpandRequest;
+  readonly cargandoCatalogos = this.presentacion.cargandoCatalogos;
+  readonly catalogosError = this.presentacion.catalogosError;
+  readonly pestanasCompletadas = this.presentacion.pestanasCompletadas;
+  readonly pestanasIntentadas = this.presentacion.pestanasIntentadas;
+  readonly pasosAsistenteVisitados = this.presentacion.pasosAsistenteVisitados;
+  readonly pasosAsistenteIntentados = this.presentacion.pasosAsistenteIntentados;
   readonly form: EmpleadoFormGroup = this.empleadosFormService.createForm();
-  readonly totalSteps = EMPLEADO_ADVANCED_WIZARD_STEP_COUNT;
-  readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
-    { label: 'Empleados', link: '/empleados' },
-    { label: 'Creación de ficha' },
-  ];
-  readonly advancedWizardLabels = [...EMPLEADO_ADVANCED_WIZARD_LABELS];
-  readonly advancedWizardShortLabels: readonly string[] = [
-    'Datos personales',
-    'Domicilio',
-    'Contrato',
-    'Jornada',
-    'Asignaciones',
-    'Previsión y salud',
-    'APVI',
-    'Banco',
-    'Condiciones',
-    'Resumen',
+  readonly totalPasos = cantidadPasosAsistenteAvanzadoEmpleado;
+  readonly etiquetasAsistenteAvanzado = [...etiquetasAsistenteAvanzadoEmpleado];
+  readonly etiquetasCortasAsistenteAvanzado: readonly string[] = [
+    "Datos personales",
+    "Domicilio",
+    "Contrato",
+    "Jornada",
+    "Asignaciones",
+    "Previsión y salud",
+    "APVI",
+    "Banco",
+    "Condiciones",
+    "Resumen",
   ] as const;
 
-  readonly advancedWizardStepDescriptions: readonly string[] = [
-    'Registra la identidad legal, datos personales y contacto base del colaborador.',
-    'Registra la dirección particular del colaborador para mantener actualizada su información de contacto.',
-    'Define la relación laboral, fechas contractuales y ubicación organizacional del colaborador.',
-    'Define la jornada laboral, distribución de horario y remuneración base del colaborador.',
-    'Registra cargas, zona extrema y semana corrida cuando correspondan al contrato dependiente.',
-    'Define el régimen previsional y la institución de salud del trabajador.',
-    'Registra APVI solo si aplica.',
-    'Define banco, cuenta y forma de pago.',
-    'Confirma si existen condiciones laborales o previsionales especiales. Si no aplica, continúa sin declarar condiciones.',
-    'Revisa la información capturada antes de finalizar la creación de la ficha.',
+  readonly descripcionesPasosAsistenteAvanzado: readonly string[] = [
+    "Información legal mínima para abrir la ficha laboral y reconocer al colaborador.",
+    "Dirección particular y datos territoriales usados para mantener la ficha actualizada.",
+    "Vínculo contractual, fechas y organización donde quedará asociado el trabajador.",
+    "Jornada pactada y base de remuneración que alimentará los cálculos posteriores.",
+    "Beneficios o condiciones laborales que solo se registran cuando correspondan.",
+    "Régimen previsional e institución de salud que respaldan los descuentos del trabajador.",
+    "Registro APVI solo cuando el régimen previsional y la declaración del trabajador lo requieren.",
+    "Cuenta de abono que se usará para preparar pagos futuros.",
+    "Control administrativo de situaciones especiales antes de cerrar el alta.",
+    "Acta de revisión con datos principales, decisiones registradas y pendientes de cierre.",
+  ] as const;
+
+  readonly gruposMapaAsistente: readonly GrupoMapaAsistente[] = [
+    {
+      title: "Identidad",
+      description: "Apertura de ficha",
+      stepIndexes: [0, 1],
+    },
+    {
+      title: "Relación laboral",
+      description: "Contrato y jornada",
+      stepIndexes: [2, 3, 4],
+    },
+    {
+      title: "Pago y previsión",
+      description: "Cotizaciones y abono",
+      stepIndexes: [5, 6, 7],
+    },
+    {
+      title: "Revisión",
+      description: "Control y cierre",
+      stepIndexes: [8, 9],
+    },
   ] as const;
 
   /** Inventario de bloques por paso (manifest); referencia unica frente a templates de seccion. */
-  readonly stepBlockIds = EMPLEADO_FORM_STEP_BLOCK_IDS;
+  readonly idsBloquesPaso = idsBloquesPasoFormularioEmpleado;
+
+  constructor() {
+    bindShellPageContext(
+      this.destroyRef,
+      () => ({
+        breadcrumbs: [
+          { label: "Empleados", path: "/empleados" },
+          { label: this.tituloPagina() },
+        ],
+        statusChip: this.esModoBasico()
+          ? { label: "Ficha en proceso", tone: "neutral" }
+          : undefined,
+        primaryAction: {
+          label: this.etiquetaAccionPrimariaShell(),
+          disabled: this.accionPrimariaShellDeshabilitada(),
+          loading: this.cargandoAccionPrimariaShell(),
+          actionId: this.esModoBasico()
+            ? "empleado-alta-basica-guardar-borrador"
+            : "empleado-alta-avanzada-guardar",
+        },
+      }),
+      {
+        onPrimaryAction: () => this.ejecutarShellPrimaryAction(),
+      },
+    );
+  }
 
   async ngOnInit(): Promise<void> {
-    const modo = this.resolveModo();
+    const modo = this.resolverModo();
     this.modo.set(modo);
-    if (modo === 'avanzado') {
-      this.form.controls.contacto.controls.idComuna.addValidators(Validators.required);
-      this.form.controls.contacto.controls.idComuna.updateValueAndValidity({ emitEvent: false });
+    if (modo === "avanzado") {
+      this.form.controls.contacto.controls.idComuna.addValidators(
+        Validators.required,
+      );
+      this.form.controls.contacto.controls.idComuna.updateValueAndValidity({
+        emitEvent: false,
+      });
     }
-    this.empleadosFormService.configureFormBehavior(this.form, this.destroyRef, () =>
-      this.catalogos(),
+    this.empleadosFormService.configureFormBehavior(
+      this.form,
+      this.destroyRef,
+      () => this.catalogos(),
     );
-    this.configureRelacionLaboralUx();
-    this.configurePerfilLaboralAutodetection();
+    this.configurarUxRelacionLaboral();
+    this.configurarFlujoTipoTrabajador();
+    this.configurarAutodeteccionPerfilLaboral();
     await this.loadCatalogos();
-    if (this.modo() === 'avanzado') {
-      const rawId = this.route.snapshot.queryParamMap.get('idPersona');
+    if (this.modo() === "avanzado") {
+      const rawId = this.route.snapshot.queryParamMap.get("idPersona");
       const idPersona = rawId ? Number(rawId) : NaN;
-      const debeHidratarBorrador = Number.isInteger(idPersona) && idPersona >= 1;
+      const debeHidratarBorrador =
+        Number.isInteger(idPersona) && idPersona >= 1;
       if (debeHidratarBorrador) {
-        this.isLoadingCatalogs.set(true);
+        this.cargandoCatalogos.set(true);
       }
       try {
-        await this.loadContinuacionBorradorSiAplica();
-        this.applyPerfilLaboralAutodetection();
+        await this.cargarContinuacionBorradorSiAplica();
+        this.syncTipoTrabajadorConRelacionLaboral();
+        this.aplicarAutodeteccionPerfilLaboral();
       } finally {
         if (debeHidratarBorrador) {
-          this.isLoadingCatalogs.set(false);
+          this.cargandoCatalogos.set(false);
         }
       }
     }
   }
 
   async onGuardarBorrador(): Promise<void> {
-    if (!this.isAdvancedMode() || this.isSavingBorrador() || this.isSaving()) {
+    if (!this.esModoAvanzado() || this.guardandoBorrador() || this.guardando()) {
       return;
     }
 
-    this.advancedActionModal.set(null);
+    this.modalAccionAvanzada.set(null);
 
-    if (this.isLoadingCatalogs()) {
-      this.borradorFeedback.set(null);
-      this.openAdvancedActionModal({
-        kind: 'draft-invalid',
-        variant: 'warning',
-        title: 'Espera a que cargue el formulario',
-        message: 'La información base del formulario aún se está preparando. Intenta guardar el borrador nuevamente en unos segundos.',
-        primaryLabel: 'Aceptar',
-        blockingItems: [],
-        warningItems: ['Catálogos y datos base aún en carga.'],
-        infoItems: [],
-        primaryAction: 'dismiss',
-      });
+    if (this.cargandoCatalogos()) {
+      this.retroalimentacionBorrador.set(null);
+      this.modalOrquestador.abrirModalEsperaCatalogosBorrador();
       return;
     }
 
-    const err = validateBorradorAvanzadoFormMinimo(this.form);
-    if (err) {
-      this.borradorFeedback.set(null);
-      this.openDraftInvalidModal(err);
+    const borradorIssues = collectBorradorAvanzadoIssues(this.form);
+    if (borradorIssues.length > 0) {
+      this.retroalimentacionBorrador.set(null);
+      this.modalOrquestador.abrirModalBorradorInvalido(borradorIssues);
       return;
     }
 
-    this.errorMessage.set(null);
-    this.duplicateRutModalRut.set(null);
-    this.successMessage.set(null);
-    this.borradorFeedback.set(null);
-    this.isSavingBorrador.set(true);
+    this.mensajeError.set(null);
+    this.rutModalRutDuplicado.set(null);
+    this.mensajeExito.set(null);
+    this.retroalimentacionBorrador.set(null);
+    this.guardandoBorrador.set(true);
     const prevId = this.borradorPersonaId();
 
     try {
-      const payload = mapEmpleadoFormToPayloadBorrador(this.form, this.catalogos());
+      const payload = mapEmpleadoFormToPayloadBorrador(
+        this.form,
+        this.catalogos(),
+      );
+      const pasoBorrador = this.resolverPasoBorradorParaPersistir();
       const resumen = await this.empleadosService.guardarBorradorAvanzado(
         prevId,
         payload,
-        this.activeWizardStep(),
+        pasoBorrador,
       );
       this.borradorPersonaId.set(resumen.id);
-      this.borradorFeedback.set(
-        prevId === null ? 'Borrador guardado correctamente.' : 'Borrador actualizado.',
+      this.retroalimentacionBorrador.set(
+        prevId === null
+          ? "Borrador guardado correctamente."
+          : "Borrador actualizado.",
       );
       this.form.markAsPristine();
       void this.router.navigate([], {
         relativeTo: this.route,
         queryParams: { idPersona: resumen.id },
-        queryParamsHandling: 'merge',
+        queryParamsHandling: "merge",
         replaceUrl: true,
       });
-      this.openDraftSuccessModal(prevId === null);
+      this.modalOrquestador.abrirModalBorradorExito(prevId === null);
     } catch (error) {
       if (error instanceof EmpleadoRutDuplicadoError) {
-        this.duplicateRutModalRut.set(error.rut);
+        this.rutModalRutDuplicado.set(error.rut);
       } else {
-        this.errorMessage.set(
-          error instanceof Error ? error.message : 'No fue posible guardar el borrador.',
+        this.mensajeError.set(
+          error instanceof Error
+            ? error.message
+            : "No fue posible guardar el borrador.",
         );
       }
     } finally {
-      this.isSavingBorrador.set(false);
+      this.guardandoBorrador.set(false);
     }
   }
 
-  selectWizardStep(index: number): void {
-    if (index < 0 || index >= EMPLEADO_ADVANCED_WIZARD_STEP_COUNT) {
+  seleccionarPasoAsistente(index: number): void {
+    this.navegarPasoAsistente(index, { focusFirstField: true });
+  }
+
+  /** Cambia de paso sin robar foco al primer campo genérico (p. ej. tras MsgBox). */
+  private navegarPasoAsistente(
+    index: number,
+    options: { focusFirstField: boolean },
+  ): void {
+    if (!estaPasoAsistenteAltaEnRango(index, cantidadPasosAsistenteAvanzadoEmpleado)) {
       return;
     }
 
-    this.syncCompletedTabsFromValidity();
-    this.activeWizardStep.set(index);
-    this.markWizardStepVisited(index);
-    this.scrollToCurrentStepStart({ focusFirstField: true });
+    this.sincronizarPestanasCompletadasDesdeValidez();
+    this.presentacion.seleccionarPasoAsistente(index);
+    this.desplazarAInicioPasoActual(options);
   }
 
-  wizardStepShortLabel(stepIndex: number): string {
-    if (this.isHonorariosMode()) {
-      const honorariosLabels: Record<number, string> = {
-        2: 'Servicio',
-        3: 'Honorarios',
-        7: 'Datos para pago',
-        8: 'Condiciones',
-        9: 'Resumen honorarios',
-      };
-      if ([4, 5, 6, this.perfilLaboralWizardStepIndex()].includes(stepIndex)) {
-        return this.advancedWizardShortLabels[stepIndex] ?? '';
-      }
-      return honorariosLabels[stepIndex] ?? this.advancedWizardShortLabels[stepIndex] ?? '';
+  private opcionesEtiquetaPasoHonorarios() {
+    return {
+      indicePasoPerfilLaboral: this.perfilLaboralWizardStepIndex(),
+      etiquetasCortasAsistente: this.etiquetasCortasAsistenteAvanzado,
+      etiquetasLargasAsistente: this.etiquetasAsistenteAvanzado,
+      descripcionesPasosAsistente: this.descripcionesPasosAsistenteAvanzado,
+    };
+  }
+
+  etiquetaCortaPasoAsistente(stepIndex: number): string {
+    if (this.esModoHonorarios()) {
+      return etiquetaPasoHonorarios(stepIndex, "corta", this.opcionesEtiquetaPasoHonorarios());
     }
 
-    return this.advancedWizardShortLabels[stepIndex] ?? this.advancedWizardLabels[stepIndex] ?? '';
+    return (
+      this.etiquetasCortasAsistenteAvanzado[stepIndex] ??
+      this.etiquetasAsistenteAvanzado[stepIndex] ??
+      ""
+    );
   }
 
-  wizardStepFullLabel(stepIndex: number): string {
-    if (this.isHonorariosMode()) {
-      const honorariosLabels: Record<number, string> = {
-        2: 'Datos del servicio',
-        3: 'Monto de honorarios',
-        4: 'Asignaciones laborales',
-        5: 'Previsión y salud',
-        6: 'APVI',
-        7: 'Datos para pago',
-        8: 'Condiciones',
-        9: 'Resumen de honorarios',
-      };
-      return honorariosLabels[stepIndex] ?? this.advancedWizardLabels[stepIndex] ?? '';
+  etiquetaCompletaPasoAsistente(stepIndex: number): string {
+    if (this.esModoHonorarios()) {
+      return etiquetaPasoHonorarios(stepIndex, "larga", this.opcionesEtiquetaPasoHonorarios());
     }
 
-    return this.advancedWizardLabels[stepIndex] ?? '';
+    return this.etiquetasAsistenteAvanzado[stepIndex] ?? "";
   }
 
-  wizardStepDescription(stepIndex: number): string {
-    if (this.isHonorariosMode()) {
-      const honorariosDescriptions: Record<number, string> = {
-        2: 'Registra el servicio, fecha de inicio y ubicación administrativa del prestador a honorarios.',
-        3: 'Informa el monto bruto pactado para la boleta. No corresponde jornada laboral dependiente.',
-        4: 'Las asignaciones laborales no aplican para boleta de honorarios en esta alta.',
-        5: 'Previsión y salud no se capturan como trabajador dependiente en este flujo.',
-        6: 'APVI no aplica dentro de la alta de prestador a honorarios.',
-        7: 'Registra datos de pago del prestador si se usará transferencia.',
-        8: 'Las condiciones especiales de trabajadores dependientes no se declaran para honorarios en esta fase.',
-        9: 'Revisa que este registro queda como borrador de honorarios y no como trabajador dependiente.',
-      };
-      return honorariosDescriptions[stepIndex] ?? this.advancedWizardStepDescriptions[stepIndex] ?? '';
+  descripcionPasoAsistente(stepIndex: number): string {
+    if (this.esModoHonorarios()) {
+      return etiquetaPasoHonorarios(
+        stepIndex,
+        "descripcion",
+        this.opcionesEtiquetaPasoHonorarios(),
+      );
     }
 
-    return this.advancedWizardStepDescriptions[stepIndex] ?? '';
+    return this.descripcionesPasosAsistenteAvanzado[stepIndex] ?? "";
   }
 
-  wizardProgressPercent(): number {
-    return Math.round(((this.activeWizardStep() + 1) / this.totalSteps) * 100);
+  porcentajeProgresoAsistente(): number {
+    return calcularPorcentajeProgresoAsistenteAlta(this.pasoWizardActivo(), this.totalPasos);
   }
 
   async loadCatalogos(): Promise<void> {
     this.catalogosError.set(null);
-    this.isLoadingCatalogs.set(true);
+    this.cargandoCatalogos.set(true);
 
     try {
-      const catalogos = await this.empleadosCatalogosService.obtenerFormulario();
+      const catalogos =
+        await this.empleadosCatalogosService.obtenerFormulario();
       this.catalogos.set(catalogos);
       this.empleadosFormService.applyCatalogDefaults(this.form, catalogos);
-      this.applyPerfilLaboralAutodetection();
+      this.syncTipoTrabajadorConRelacionLaboral();
+      this.aplicarAutodeteccionPerfilLaboral();
     } catch {
       this.catalogosError.set(
-        'No fue posible preparar la informacion requerida para el formulario. Intenta nuevamente.',
+        "No fue posible preparar la informacion requerida para el formulario. Intenta nuevamente.",
       );
     } finally {
-      this.isLoadingCatalogs.set(false);
+      this.cargandoCatalogos.set(false);
     }
   }
 
-  handleFormSubmit(event: SubmitEvent): void {
+  manejarEnvioFormulario(event: SubmitEvent): void {
     event.preventDefault();
     event.stopPropagation();
-    if (this.isAdvancedMode() && this.activeWizardStep() !== this.summaryWizardStepIndex()) {
+    if (
+      this.esModoAvanzado() &&
+      this.pasoWizardActivo() !== this.indicePasoResumenAsistente()
+    ) {
       return;
     }
-    void this.onSubmit();
+    void this.enviarFormulario();
   }
 
-  isWizardStepActive(index: number): boolean {
-    return this.activeWizardStep() === index;
+  esPasoAsistenteActivo(index: number): boolean {
+    return this.pasoWizardActivo() === index;
   }
 
   /** Secuencia de indices al usar Siguiente / Anterior (omite APVI si no aplica). */
-  linearWizardSequence(): readonly number[] {
-    if (this.isHonorariosMode()) {
-      return [0, 1, 2, 3, 7, this.summaryWizardStepIndex()] as const;
+  secuenciaLinealAsistente(): readonly number[] {
+    if (this.esModoHonorarios()) {
+      return [0, 1, 2, 3, 7, this.indicePasoResumenAsistente()] as const;
     }
 
     const base = [0, 1, 2, 3, 4, 5] as const;
     const p = this.form.controls.previsionSalud.controls;
     const incluyeApvi =
-      p.tipoRegimenPrevisional.value === 'AFP' && p.tieneApv.value === true;
+      p.tipoRegimenPrevisional.value === "AFP" && p.tieneApv.value === true;
     if (incluyeApvi) {
-      return [...base, 6, 7, this.perfilLaboralWizardStepIndex(), this.summaryWizardStepIndex()];
+      return [
+        ...base,
+        6,
+        7,
+        this.perfilLaboralWizardStepIndex(),
+        this.indicePasoResumenAsistente(),
+      ];
     }
-    return [...base, 7, this.perfilLaboralWizardStepIndex(), this.summaryWizardStepIndex()];
+    return [
+      ...base,
+      7,
+      this.perfilLaboralWizardStepIndex(),
+      this.indicePasoResumenAsistente(),
+    ];
   }
 
-  async onSubmit(): Promise<void> {
-    if (this.isSaving()) {
+  async enviarFormulario(): Promise<void> {
+    if (this.guardando()) {
       return;
     }
 
-    this.advancedActionModal.set(null);
-    this.attemptedSave.set(true);
-    if (this.isBasicMode()) {
-      this.attemptBasicGroups();
+    this.modalAccionAvanzada.set(null);
+    this.intentoGuardado.set(true);
+    if (this.esModoBasico()) {
+      this.intentarGruposBasicos();
     } else {
-      this.attemptAllTabs();
+      this.intentarTodasPestanas();
     }
-    this.errorMessage.set(null);
-    this.duplicateRutModalRut.set(null);
-    this.successMessage.set(null);
-    this.successFlow.set(null);
-    this.createdEmployeeId.set(null);
-    this.markSubmitControlsAsTouched();
+    this.mensajeError.set(null);
+    this.rutModalRutDuplicado.set(null);
+    this.mensajeExito.set(null);
+    this.flujoExito.set(null);
+    this.idEmpleadoCreado.set(null);
+    this.marcarControlesEnvioComoTocados();
 
-    if (this.isLoadingCatalogs()) {
-      this.errorMessage.set(
-        'La informacion base del formulario aun se esta cargando. Espera unos segundos e intenta nuevamente.',
-      );
+    if (this.cargandoCatalogos()) {
+      if (this.esModoBasico()) {
+        this.modalOrquestador.abrirModalEsperaCatalogosBasico();
+      } else {
+        this.mensajeError.set(
+          "La informacion base del formulario aun se esta cargando. Espera unos segundos e intenta nuevamente.",
+        );
+      }
       return;
     }
 
-    if (this.isBasicMode()) {
-      if (this.isBasicFormInvalid()) {
-        this.focusFirstInvalidControl();
+    if (this.esModoBasico()) {
+      if (this.esFormularioBasicoInvalido()) {
+        this.enfocarPrimerControlEnPaso(this.pasoWizardActivo(), {
+          soloBloqueantes: true,
+        });
         return;
       }
 
-      await this.submitBasicMode();
+      await this.enviarModoBasico();
       return;
     }
 
-    if (this.isHonorariosMode()) {
-      this.syncCompletedTabsFromValidity();
-      this.openHonorariosFinishBlockedModal();
-      return;
-    }
-
-    const firstBadStep = this.findFirstWizardStepWithBlockingIssues();
+    const firstBadStep = this.buscarPrimerPasoAsistenteConBloqueos();
 
     if (firstBadStep !== null || this.form.invalid) {
-      this.syncCompletedTabsFromValidity();
-      this.openFinishInvalidModal(firstBadStep ?? 0);
+      this.sincronizarPestanasCompletadasDesdeValidez();
+      this.modalOrquestador.abrirModalFinalizarInvalido(this, firstBadStep ?? 0);
       return;
     }
 
-    this.markAllValidTabsAsCompleted();
-    this.openFinishConfirmModal();
+    const coherenceIssue = this.primeraDecisionCoherenciaSinReconocer();
+    if (coherenceIssue) {
+      this.sincronizarPestanasCompletadasDesdeValidez();
+      this.modalOrquestador.abrirModalDecisionCoherencia(coherenceIssue, "finish");
+      return;
+    }
+
+    this.marcarTodasPestanasValidasComoCompletadas();
+    this.modalOrquestador.abrirModalConfirmarFinalizar(this);
   }
 
-  private async submitAdvancedMode(): Promise<void> {
-    if (this.isSaving()) {
+  async enviarModoAvanzado(): Promise<void> {
+    if (this.guardando()) {
       return;
     }
 
-    this.markAllValidTabsAsCompleted();
-    this.isSaving.set(true);
-    this.errorMessage.set(null);
-    this.duplicateRutModalRut.set(null);
-    this.successMessage.set(null);
-    this.successFlow.set(null);
-    this.createdEmployeeId.set(null);
+    this.marcarTodasPestanasValidasComoCompletadas();
+    this.guardando.set(true);
+    this.mensajeError.set(null);
+    this.rutModalRutDuplicado.set(null);
+    this.mensajeExito.set(null);
+    this.flujoExito.set(null);
+    this.idEmpleadoCreado.set(null);
 
     try {
       const borradorId = this.borradorPersonaId();
@@ -576,300 +622,582 @@ export class FormEmpleadoComponent implements OnInit {
           borradorId,
           mapEmpleadoFormToPayload(this.form, this.catalogos()),
         );
-        this.successMessage.set(
-          'La ficha avanzada fue guardada correctamente y el empleado quedó listo para operar.',
+        this.mensajeExito.set(
+          "La ficha avanzada fue guardada correctamente y el empleado quedó listo para operar.",
         );
-        this.successFlow.set('avanzado');
-        this.createdEmployeeId.set(borradorId);
+        this.flujoExito.set("avanzado");
+        this.idEmpleadoCreado.set(borradorId);
         this.borradorPersonaId.set(null);
         this.form.markAsPristine();
-        void this.router.navigate(['/empleados/nuevo'], { replaceUrl: true });
+        void this.router.navigate(["/empleados/nuevo"], { replaceUrl: true });
       } else {
         const created = await this.empleadosService.crear(
           mapEmpleadoFormToPayload(this.form, this.catalogos()),
         );
 
-        this.successMessage.set(
-          'La ficha avanzada fue guardada correctamente y el empleado quedó listo para operar.',
+        this.mensajeExito.set(
+          "La ficha avanzada fue guardada correctamente y el empleado quedó listo para operar.",
         );
-        this.successFlow.set('avanzado');
-        this.createdEmployeeId.set(created.id);
+        this.flujoExito.set("avanzado");
+        this.idEmpleadoCreado.set(created.id);
         this.form.markAsPristine();
       }
     } catch (error) {
       if (error instanceof EmpleadoRutDuplicadoError) {
-        this.duplicateRutModalRut.set(error.rut);
+        this.rutModalRutDuplicado.set(error.rut);
       } else {
-        this.errorMessage.set(this.resolveSaveErrorMessage(error));
+        this.mensajeError.set(this.resolverMensajeErrorGuardado(error));
       }
     } finally {
-      this.isSaving.set(false);
+      this.guardando.set(false);
     }
   }
 
-  dismissErrorMessage(): void {
-    this.errorMessage.set(null);
-    this.duplicateRutModalRut.set(null);
+  cerrarMensajeError(): void {
+    this.mensajeError.set(null);
+    this.rutModalRutDuplicado.set(null);
   }
 
-  goToEmployeeList(): void {
-    this.successMessage.set(null);
-    this.successFlow.set(null);
-    this.createdEmployeeId.set(null);
-    void this.router.navigate(['/empleados']);
+  tituloModalError(): string {
+    return this.esModoBasico()
+      ? "No fue posible registrar la ficha"
+      : "No fue posible registrar el empleado";
   }
 
-  handleSuccessAction(): void {
-    this.goToEmployeeList();
-  }
-
-  handleAdvancedActionModalPrimary(): void {
-    this.handleAdvancedActionModalAction(this.advancedActionModal()?.primaryAction ?? 'dismiss');
-  }
-
-  handleAdvancedActionModalSecondary(): void {
-    this.handleAdvancedActionModalAction(this.advancedActionModal()?.secondaryAction ?? 'dismiss');
-  }
-
-  dismissAdvancedActionModal(): void {
-    this.advancedActionModal.set(null);
-  }
-
-  private handleAdvancedActionModalAction(action: AdvancedActionModalAction): void {
-    const modal = this.advancedActionModal();
-
-    switch (action) {
-      case 'continue-next':
-        this.advancedActionModal.set(null);
-        this.advanceToNextWizardStep();
-        break;
-      case 'focus-current-step':
-        this.advancedActionModal.set(null);
-        this.markWizardStepTouched(this.activeWizardStep());
-        this.focusFirstPendingControl(this.activeWizardStep());
-        break;
-      case 'focus-draft-minimum':
-        this.advancedActionModal.set(null);
-        this.showInvalidWizardStep(0);
-        break;
-      case 'focus-first-blocking':
-        this.advancedActionModal.set(null);
-        this.showInvalidWizardStep(modal?.targetStep ?? this.findFirstWizardStepWithBlockingIssues() ?? 0);
-        break;
-      case 'execute-finish':
-        this.advancedActionModal.set(null);
-        void this.submitAdvancedMode();
-        break;
-      case 'confirm-honorarios':
-        this.advancedActionModal.set(null);
-        this.confirmHonorariosMode();
-        break;
-      case 'cancel-honorarios':
-        this.advancedActionModal.set(null);
-        this.cancelHonorariosModeChange();
-        break;
-      case 'save-honorarios-draft':
-        this.advancedActionModal.set(null);
-        void this.onGuardarBorrador();
-        break;
-      case 'dismiss':
-      default:
-        this.advancedActionModal.set(null);
-        break;
+  mensajeModalError(): string {
+    const detalle = this.mensajeError()?.trim();
+    if (detalle) {
+      return this.mensajeErrorNormalizado(detalle);
     }
+    return this.esModoBasico()
+      ? "El registro no se completó. Revisa el detalle y vuelve a intentarlo."
+      : "La ficha avanzada no se guardó porque hay una condición que debe revisarse antes de finalizar.";
   }
 
-  isBasicMode(): boolean {
-    return this.modo() === 'basico';
+  mensajeErrorNormalizado(message: string): string {
+    return message
+      .replace(/Sin prevision/g, "Sin previsión")
+      .replace(/sin prevision/g, "sin previsión")
+      .replace(/opcion/g, "opción")
+      .replace(/calculo/g, "cálculo")
+      .replace(/nomina/g, "nómina")
+      .replace(/informacion/g, "información");
   }
 
-  isAdvancedMode(): boolean {
-    return this.modo() === 'avanzado';
-  }
+  accionRecomendadaError(message: string): string {
+    const normalizedMessage =
+      this.mensajeErrorNormalizado(message).toLowerCase();
 
-  isHonorariosMode(): boolean {
-    return this.form.controls.contrato.controls.relacionLaboral.value === 'HONORARIOS';
-  }
-
-  pageTitle(): string {
-    return 'Crear empleado';
-  }
-
-  saveActionLabel(): string {
-    return this.isBasicMode() ? 'Guardar ficha básica' : 'Crear empleado activo';
-  }
-
-  finalWizardActionLabel(): string {
-    if (this.isSaving()) {
-      return this.isHonorariosMode() ? 'Guardando borrador...' : 'Guardando ficha...';
+    if (
+      normalizedMessage.includes("sin previsión") &&
+      normalizedMessage.includes("afp")
+    ) {
+      return "Vuelve al paso Previsión y salud. Selecciona AFP o IPS si el trabajador quedará habilitado para remuneraciones, o mantén el caso como revisión administrativa si corresponde a una excepción respaldada.";
     }
 
-    return this.isHonorariosMode() ? 'Guardar borrador' : 'Finalizar alta';
+    if (
+      normalizedMessage.includes("rut") &&
+      normalizedMessage.includes("existe")
+    ) {
+      return "Revisa el listado de empleados antes de crear una nueva ficha. Si corresponde, continúa la ficha existente.";
+    }
+
+    if (
+      normalizedMessage.includes("rls") ||
+      normalizedMessage.includes("supabase")
+    ) {
+      return "Revisa la configuración de base de datos y permisos antes de intentar guardar nuevamente.";
+    }
+
+    return "Revisa el paso indicado o la información marcada como pendiente. Luego intenta guardar nuevamente.";
   }
 
-  /** Avanzada: guardado en el pie. Básica: Volver + Guardar en cabecera (modo-basico / sin duplicar pie). */
-  headerVisibleActions(): readonly ('back' | 'save')[] {
-    return this.isBasicMode() ? (['back', 'save'] as const) : (['back'] as const);
+  pasoSugeridoError(message: string): string | null {
+    const normalizedMessage =
+      this.mensajeErrorNormalizado(message).toLowerCase();
+
+    if (
+      normalizedMessage.includes("sin previsión") ||
+      normalizedMessage.includes("afp") ||
+      normalizedMessage.includes("ips")
+    ) {
+      return "Previsión y salud";
+    }
+
+    if (normalizedMessage.includes("rut")) {
+      return "Datos personales";
+    }
+
+    if (
+      normalizedMessage.includes("banco") ||
+      normalizedMessage.includes("cuenta")
+    ) {
+      return "Banco";
+    }
+
+    if (
+      normalizedMessage.includes("contrato") ||
+      normalizedMessage.includes("cesantía")
+    ) {
+      return "Contrato";
+    }
+
+    return this.esModoAvanzado() ? "Acta de revisión" : null;
+  }
+
+  seccionesRutDuplicado(rut: string): MessageBoxSection[] {
+    return buildMsgboxErrorSimple({
+      accion: `Revisa el listado o edita la ficha existente antes de crear una nueva. RUT ${rut}.`,
+    });
+  }
+
+  seccionesErrorGuardado(message: string): MessageBoxSection[] {
+    const suggestedStep = this.pasoSugeridoError(message);
+    return buildMsgboxDiagnostico({
+      diagnostico: this.mensajeErrorNormalizado(message),
+      detalle: suggestedStep ? `Revisar: ${suggestedStep}` : null,
+      accion: this.accionRecomendadaError(message),
+    });
+  }
+
+  seccionesExitoAlta(): MessageBoxSection[] {
+    const fichaId = this.idEmpleadoCreado();
+    const items = fichaId ? [`Ficha N° ${fichaId}`] : [];
+    if (this.flujoExito() === "basico") {
+      return [
+        {
+          title: "Acción recomendada",
+          text: "Completa contrato, previsión, salud, banco y remuneración desde la ficha del empleado cuando corresponda.",
+          items,
+          tone: "info",
+        },
+      ];
+    }
+
+    return [
+      {
+        title: "Acción recomendada",
+        text: "Puedes revisar o completar información adicional desde la ficha del empleado.",
+        items,
+        tone: "info",
+      },
+    ];
+  }
+
+  irAListadoEmpleados(): void {
+    this.mensajeExito.set(null);
+    this.flujoExito.set(null);
+    this.idEmpleadoCreado.set(null);
+    void this.router.navigate(["/empleados"]);
+  }
+
+  manejarAccionExito(): void {
+    this.irAListadoEmpleados();
+  }
+
+  manejarPrimariaModalAccionAvanzada(): void {
+    this.modalOrquestador.manejarAccion(
+      this,
+      this.modalAccionAvanzada()?.primaryAction ?? "dismiss",
+    );
+  }
+
+  manejarSecundariaModalAccionAvanzada(): void {
+    this.modalOrquestador.manejarAccion(
+      this,
+      this.modalAccionAvanzada()?.secondaryAction ?? "dismiss",
+    );
+  }
+
+  manejarItemCampoModalAvanzada(item: ItemCampoModalAccionAvanzada): void {
+    this.modalAccionAvanzada.set(null);
+    this.enfocarPrimerItemModalAvanzada(item, () => {
+      this.mostrarPasoAsistenteInvalido(item.wizardStep);
+    });
+  }
+
+  cerrarModalAccionAvanzada(): void {
+    this.decisionCoherenciaPendiente.set(null);
+    this.modalAccionAvanzada.set(null);
+  }
+
+  esModoBasico(): boolean {
+    return this.modo() === "basico";
+  }
+
+  esModoAvanzado(): boolean {
+    return this.modo() === "avanzado";
+  }
+
+  esModoHonorarios(): boolean {
+    return (
+      this.form.controls.contrato.controls.relacionLaboral.value ===
+      "HONORARIOS"
+    );
+  }
+
+  tituloPagina(): string {
+    return "Crear empleado";
+  }
+
+  etiquetaAccionGuardar(): string {
+    return this.esModoBasico()
+      ? "Guardar ficha básica"
+      : "Crear empleado activo";
+  }
+
+  etiquetaAccionPrimariaShellBasico(): string {
+    return "Guardar borrador";
+  }
+
+  etiquetaAccionFinalAsistente(): string {
+    if (this.guardando()) {
+      return this.esModoHonorarios()
+        ? "Finalizando honorarios..."
+        : "Guardando ficha...";
+    }
+
+    return this.esModoHonorarios() ? "Finalizar honorarios" : "Finalizar alta";
+  }
+
+  etiquetaAccionPrimariaShell(): string {
+    if (this.esModoBasico()) {
+      return this.etiquetaAccionPrimariaShellBasico();
+    }
+    if (this.pasoWizardActivo() === this.indicePasoResumenAsistente()) {
+      return this.etiquetaAccionFinalAsistente();
+    }
+    return this.guardandoBorrador() ? "Guardando borrador..." : "Guardar borrador";
+  }
+
+  cargandoAccionPrimariaShell(): boolean {
+    return this.guardando() || this.guardandoBorrador();
+  }
+
+  accionPrimariaShellDeshabilitada(): boolean {
+    return this.cargandoCatalogos() || this.guardando() || this.guardandoBorrador();
+  }
+
+  ejecutarShellPrimaryAction(): void {
+    if (this.accionPrimariaShellDeshabilitada()) {
+      return;
+    }
+    if (this.esModoBasico()) {
+      void this.enviarFormulario();
+      return;
+    }
+    if (this.pasoWizardActivo() === this.indicePasoResumenAsistente()) {
+      void this.enviarFormulario();
+      return;
+    }
+    void this.onGuardarBorrador();
   }
 
   /** Modal de exito: titulo (solo copia distinta en creacion basica). */
-  successModalTitle(): string {
-    return this.successFlow() === 'basico'
-      ? 'Empleado registrado correctamente'
-      : 'Empleado registrado correctamente';
+  tituloModalExito(): string {
+    return this.flujoExito() === "basico"
+      ? "Empleado registrado correctamente"
+      : "Empleado registrado correctamente";
   }
 
   /** Modal de exito: texto del boton principal. */
-  successModalPrimaryLabel(): string {
-    return 'Ir al listado';
+  etiquetaPrimariaModalExito(): string {
+    return "Ir al listado";
   }
 
-  goToPreviousTab(): void {
-    const seq = this.linearWizardSequence();
-    let idx = seq.indexOf(this.activeWizardStep());
-    if (idx === -1) {
-      const cur = this.activeWizardStep();
-      const candidates = seq.filter((s) => s < cur);
-      const prev = candidates.length ? candidates[candidates.length - 1]! : seq[0]!;
-      this.syncCompletedTabsFromValidity();
-      this.activeWizardStep.set(prev);
-      this.markWizardStepVisited(prev);
-      this.scrollToCurrentStepStart({ focusFirstField: true });
-      return;
-    }
-    if (idx > 0) {
-      this.syncCompletedTabsFromValidity();
-      const previous = seq[idx - 1]!;
-      this.activeWizardStep.set(previous);
-      this.markWizardStepVisited(previous);
-      this.scrollToCurrentStepStart({ focusFirstField: true });
+  irAPestanaAnterior(): void {
+    const seq = this.secuenciaLinealAsistente();
+    const previous = resolverPasoAnteriorAsistenteAlta(seq, this.pasoWizardActivo());
+    if (previous !== null) {
+      this.sincronizarPestanasCompletadasDesdeValidez();
+      this.presentacion.seleccionarPasoAsistente(previous);
+      this.desplazarAInicioPasoActual({ focusFirstField: true });
     }
   }
 
-  goToNextTab(): void {
-    if (!this.isAdvancedMode()) {
-      this.advanceToNextWizardStep();
+  irAPestanaSiguiente(): void {
+    if (!this.esModoAvanzado()) {
+      this.avanzarPasoSiguienteAsistente();
       return;
     }
 
-    const currentStep = this.activeWizardStep();
-    this.markWizardStepAttempted(currentStep);
-    this.markWizardStepTouched(currentStep);
-    this.syncCompletedTabsFromValidity();
+    const currentStep = this.pasoWizardActivo();
+    this.marcarPasoAsistenteIntentado(currentStep);
+    this.marcarPasoAsistenteTocado(currentStep);
+    this.sincronizarPestanasCompletadasDesdeValidez();
 
-    const pending = this.pendingValidationItemsForWizardStep(currentStep);
+    const seq = this.secuenciaLinealAsistente();
+    const nextStep = resolverPasoSiguienteAsistenteAlta(seq, currentStep);
+    if (nextStep === this.indicePasoResumenAsistente()) {
+      this.avanzarPasoSiguienteAsistente();
+      return;
+    }
+
+    const coherenceIssue = this.primeraDecisionCoherenciaPorPaso(currentStep);
+    if (coherenceIssue) {
+      this.modalOrquestador.abrirModalDecisionCoherencia(coherenceIssue, "next");
+      return;
+    }
+
+    const pending = [
+      ...this.pendingValidationItemsForWizardStep(currentStep),
+      ...this.aplicabilidadReviewsAsValidationRules(currentStep),
+    ];
     if (pending.length > 0) {
-      this.openNextStepReviewModal(currentStep, pending);
+      this.modalOrquestador.abrirModalRevisionPasoSiguiente(this, currentStep, pending);
       return;
     }
 
-    this.advanceToNextWizardStep();
+    this.avanzarPasoSiguienteAsistente();
   }
 
-  private advanceToNextWizardStep(): void {
-    const seq = this.linearWizardSequence();
-    let idx = seq.indexOf(this.activeWizardStep());
-    if (idx === -1) {
-      const cur = this.activeWizardStep();
-      const next = seq.find((s) => s > cur);
-      if (next !== undefined) {
-        this.syncCompletedTabsFromValidity();
-        this.activeWizardStep.set(next);
-        this.markWizardStepVisited(next);
-        this.scrollToCurrentStepStart({ focusFirstField: true });
-      }
-      return;
-    }
-    if (idx < seq.length - 1) {
-      this.syncCompletedTabsFromValidity();
-      const next = seq[idx + 1]!;
-      this.activeWizardStep.set(next);
-      this.markWizardStepVisited(next);
-      this.scrollToCurrentStepStart({ focusFirstField: true });
+  avanzarPasoSiguienteAsistente(): void {
+    const seq = this.secuenciaLinealAsistente();
+    const next = resolverPasoSiguienteAsistenteAlta(seq, this.pasoWizardActivo());
+    if (next !== null) {
+      this.sincronizarPestanasCompletadasDesdeValidez();
+      this.presentacion.seleccionarPasoAsistente(next);
+      this.desplazarAInicioPasoActual({ focusFirstField: true });
     }
   }
 
-  isFirstTab(): boolean {
-    const seq = this.linearWizardSequence();
-    const idx = seq.indexOf(this.activeWizardStep());
-    if (idx === -1) {
-      return this.activeWizardStep() <= seq[0]!;
-    }
-    return idx === 0;
+  esPrimeraPestana(): boolean {
+    return esPrimerPasoAsistenteAlta(this.secuenciaLinealAsistente(), this.pasoWizardActivo());
   }
 
-  isLastTab(): boolean {
-    const seq = this.linearWizardSequence();
-    return this.activeWizardStep() === seq[seq.length - 1]!;
+  esUltimaPestana(): boolean {
+    return esUltimoPasoAsistenteAlta(this.secuenciaLinealAsistente(), this.pasoWizardActivo());
   }
 
-  isNextDisabled(): boolean {
+  siguienteDeshabilitado(): boolean {
     return false;
   }
 
-  activeStepNumber(): number {
-    return this.activeWizardStep() + 1;
+  numeroPasoActivo(): number {
+    return this.pasoWizardActivo() + 1;
   }
 
-  summaryWizardStepIndex(): number {
-    return this.totalSteps - 1;
+  indicePasoResumenAsistente(): number {
+    return this.totalPasos - 1;
+  }
+
+  altaResumenEstadoPanel(): FichaEstadoPanelVm {
+    const snapshot = this.buildFichaValidacionSnapshot();
+    const diagnostico = evaluarDiagnosticoFichaEmpleado(snapshot);
+    const estado = this.form.controls.contrato.controls.estado.value ?? 'en_proceso';
+    return buildAltaResumenEstadoPanel({
+      diagnostico,
+      pasoAltaAvanzada: this.esModoAvanzado() ? this.pasoWizardActivo() : null,
+      estadoFicha: 'INCOMPLETO',
+      estadoLaboral: estado,
+      aptoParaRemuneracionesRegistro: false,
+    });
+  }
+
+  altaResumenFaltantes(): FaltanteFichaEmpleado[] {
+    return this.altaResumenEstadoPanel().faltantes;
+  }
+
+  irAlFaltanteResumenAlta(issue: FaltanteFichaEmpleado): void {
+    const diagnostico = evaluarDiagnosticoFichaEmpleado(this.buildFichaValidacionSnapshot());
+    const diagItem = diagnosticoItemDesdeFaltanteAlta(issue, diagnostico.items);
+
+    if (diagItem?.controlPath) {
+      this.enfocarPrimerItemModalAvanzada(
+        {
+          id: diagItem.id,
+          sectionTitle: diagItem.category ?? diagItem.seccion,
+          fieldLabel: diagItem.label,
+          detail: diagItem.detalle,
+          actionLabel: diagItem.accion ?? 'Ir al campo',
+          wizardStep: diagItem.wizardStep,
+          controlPath: diagItem.controlPath,
+          severity: diagItem.severity,
+        },
+        () => {
+          const step = wizardStepDesdeFaltanteAlta(issue, diagnostico.items);
+          this.mostrarPasoAsistenteInvalido(step);
+        },
+      );
+      return;
+    }
+
+    const step = wizardStepDesdeFaltanteAlta(issue, diagnostico.items);
+    this.mostrarPasoAsistenteInvalido(step);
+  }
+
+  altaBitacoraConsoleVm(): VmConsolaBitacoraAlta {
+    const panel = this.altaResumenEstadoPanel();
+    const faltantes = panel.faltantes;
+    const revisionesNormativas = buildRevisionesNormativasConsola(
+      this.altaValidacionesVisiblesMotor(),
+      this.inconsistenciasCoherencia(),
+      this.idsInconsistenciasCoherenciaReconocidas(),
+    );
+    const registrosPendientes = this.filasRevisionAvanzada()
+      .filter((row) => row.kind === 'pendiente' || row.kind === 'errores')
+      .map((row) => ({
+        stepIndex: row.stepIndex,
+        label: row.label,
+        kind: row.kind,
+        stateLabel: this.etiquetaUiPasoAsistente(row.kind),
+      }));
+    const pendientesCierre = this.resumenPendientesNegocio();
+    const totalVisible =
+      faltantes.length +
+      revisionesNormativas.length +
+      registrosPendientes.length +
+      pendientesCierre.length;
+    const onSummary = this.pasoWizardActivo() === this.indicePasoResumenAsistente();
+
+    return {
+      visible: this.esModoAvanzado() && totalVisible > 0,
+      expandedByDefault: onSummary && totalVisible > 0,
+      collapsedLabel:
+        totalVisible === 1 ? '1 pendiente · Bitácora' : `${totalVisible} pendientes · Bitácora`,
+      motivoPrincipal: panel.motivoPrincipal,
+      faltantes,
+      revisionesNormativas,
+      registrosPendientes,
+      pendientesCierre,
+      totalVisible,
+    };
+  }
+
+  abrirGuiaNormativa(): void {
+    this.consolaExpandRequest.update((n) => n + 1);
+  }
+
+  franjaGuiaNormativaPasoActivo(): { mensaje: string } | null {
+    if (!this.esModoAvanzado()) {
+      return null;
+    }
+    const paso = this.pasoWizardActivo();
+    const pasosConFranja = new Set([2, 3, 4, 5, 6, 8]);
+    if (!pasosConFranja.has(paso)) {
+      return null;
+    }
+    const revisiones = buildRevisionesNormativasConsola(
+      this.altaValidacionesVisiblesMotor(),
+      this.inconsistenciasCoherencia(),
+      this.idsInconsistenciasCoherenciaReconocidas(),
+    ).filter((r) => r.stepIndex === paso && !r.bajoRevision);
+    if (revisiones.length > 0) {
+      const primera = revisiones[0];
+      return {
+        mensaje:
+          revisiones.length === 1
+            ? primera.detalle
+            : `${revisiones.length} revisiones normativas en este registro. ${primera.titulo}.`,
+      };
+    }
+    return null;
+  }
+
+  onAplicarRevisionNormativa(rev: RevisionNormativaBitacoraAlta): void {
+    if (rev.origen !== 'coherencia' || !rev.coherenciaIssueId) {
+      this.seleccionarPasoAsistente(rev.stepIndex);
+      return;
+    }
+    const issue = this.inconsistenciasCoherencia().find(
+      (i) => i.id === rev.coherenciaIssueId,
+    );
+    if (!issue?.action) {
+      this.seleccionarPasoAsistente(rev.stepIndex);
+      return;
+    }
+    this.aplicarAccionCoherencia(issue.action, issue.actionValue);
+    this.idsInconsistenciasCoherenciaReconocidas.update((prev) => {
+      const next = new Set(prev);
+      next.delete(issue.id);
+      return next;
+    });
+    this.sincronizarPestanasCompletadasDesdeValidez();
+    this.seleccionarPasoAsistente(issue.stepIndex);
+  }
+
+  onMantenerRevisionNormativa(rev: RevisionNormativaBitacoraAlta): void {
+    if (rev.coherenciaIssueId) {
+      this.idsInconsistenciasCoherenciaReconocidas.update(
+        (prev) => new Set([...prev, rev.coherenciaIssueId!]),
+      );
+      this.sincronizarPestanasCompletadasDesdeValidez();
+    }
+  }
+
+  private altaValidacionesVisiblesMotor(): readonly AltaValidacionVisible[] {
+    const snapshot = this.buildFichaValidacionSnapshot();
+    const diagnostico = evaluarDiagnosticoFichaEmpleado(snapshot);
+    const aplicabilidad = this.altaAplicabilidadState();
+    return evaluarAltaValidacionesDesdeDiagnostico({
+      diagnostico,
+      aplicabilidadItems: Object.values(aplicabilidad.campos),
+      inconsistenciasCoherencia: this.inconsistenciasCoherencia(),
+    });
   }
 
   perfilLaboralWizardStepIndex(): number {
-    return this.totalSteps - 2;
+    return this.totalPasos - 2;
   }
 
-  completedStepCount(): number {
+  cantidadPasosCompletados(): number {
     let n = 0;
-    for (let i = 0; i < EMPLEADO_ADVANCED_WIZARD_STEP_COUNT; i++) {
-      if (this.getWizardStepValidationSummary(i).status === 'complete') {
+    for (let i = 0; i < cantidadPasosAsistenteAvanzadoEmpleado; i++) {
+      if (this.obtenerResumenValidacionPasoAsistente(i).status === "complete") {
         n++;
       }
     }
     return n;
   }
 
-  pendingValidationCount(): number {
-    return this.pendingValidationPanelItems().length;
+  cantidadValidacionesPendientes(): number {
+    return this.itemsValidacionPendientesPanel().length;
   }
 
-  validationPanelItems(): EvaluatedValidationRule[] {
+  itemsPanelValidacion(): ReglaValidacionEvaluada[] {
     return this.evaluateValidationRules().filter(
-      (item) => item.visible && item.wizardStep === this.activeWizardStep(),
+      (item) => item.visible && item.wizardStep === this.pasoWizardActivo(),
     );
   }
 
-  pendingValidationPanelItems(): EvaluatedValidationRule[] {
-    return this.validationPanelItems().filter((item) => !item.complete);
+  itemsValidacionPendientesPanel(): ReglaValidacionEvaluada[] {
+    return this.itemsPanelValidacion().filter((item) => !item.complete);
   }
 
-  blockingValidationPanelItems(): EvaluatedValidationRule[] {
-    return this.pendingValidationPanelItems().filter((item) => item.severity === 'error');
+  itemsValidacionBloqueantesPanel(): ReglaValidacionEvaluada[] {
+    return this.itemsValidacionPendientesPanel().filter(
+      (item) => item.severity === "error",
+    );
   }
 
-  warningValidationPanelItems(): EvaluatedValidationRule[] {
-    return this.pendingValidationPanelItems().filter((item) => item.severity === 'warning');
+  itemsAdvertenciaValidacionPanel(): ReglaValidacionEvaluada[] {
+    return this.itemsValidacionPendientesPanel().filter(
+      (item) => item.severity === "warning",
+    );
   }
 
-  getStepValidationSummary(stepId: ValidationStepId): StepValidationSummary {
-    if (!this.isAdvancedMode()) {
+  obtenerResumenValidacionPaso(stepId: IdPasoValidacion): ResumenValidacionPaso {
+    if (!this.esModoAvanzado()) {
       const evaluated = this.evaluateValidationRules().filter(
         (item) => item.stepId === stepId && item.visible,
       );
       const pending = evaluated.filter((item) => !item.complete);
       const blockingPending = pending.filter((item) => item.blocking).length;
-      const warningsPending = pending.filter((item) => item.severity === 'warning').length;
-      const wasAttempted = this.attemptedTabs().has(stepId) || this.attemptedSave();
-      const hasInteraction = this.hasStepInteraction(stepId);
+      const warningsPending = pending.filter(
+        (item) => item.severity === "warning",
+      ).length;
+      const wasAttempted =
+        this.pestanasIntentadas().has(stepId) || this.intentoGuardado();
+      const hasInteraction = this.tieneInteraccionPaso(stepId);
 
-      let status: StepValidationStatus = 'pending';
+      let status: EstadoValidacionPaso = "pending";
 
       if (blockingPending > 0 && wasAttempted) {
-        status = 'invalid';
+        status = "invalid";
       } else if (blockingPending === 0 && evaluated.length > 0) {
-        status = 'complete';
+        status = "complete";
       } else if (hasInteraction || pending.length > 0) {
-        status = 'in-progress';
+        status = "in-progress";
       }
 
       return {
@@ -883,25 +1211,34 @@ export class FormEmpleadoComponent implements OnInit {
       };
     }
 
-    const indices = this.wizardStepsForTab(stepId);
-    const parts = indices.map((i) => this.computeWizardStepValidationCore(i));
+    const indices = this.pasosAsistenteParaPestana(stepId);
+    const parts = indices.map((i) => this.calcularNucleoValidacionPasoAsistente(i));
     const pending = parts.reduce((sum, p) => sum + p.pending, 0);
-    const blockingPending = parts.reduce((sum, p) => sum + p.blockingPending, 0);
-    const warningsPending = parts.reduce((sum, p) => sum + p.warningsPending, 0);
+    const blockingPending = parts.reduce(
+      (sum, p) => sum + p.blockingPending,
+      0,
+    );
+    const warningsPending = parts.reduce(
+      (sum, p) => sum + p.warningsPending,
+      0,
+    );
     const applicable = parts.reduce((sum, p) => sum + p.applicable, 0);
     const complete = parts.reduce((sum, p) => sum + p.complete, 0);
     const wasAttempted =
-      this.attemptedSave() || indices.some((i) => this.attemptedWizardSteps().has(i));
-    const hasInteraction = indices.some((i) => this.hasWizardStepInteraction(i));
+      this.intentoGuardado() ||
+      indices.some((i) => this.pasosAsistenteIntentados().has(i));
+    const hasInteraction = indices.some((i) =>
+      this.tieneInteraccionPasoAsistente(i),
+    );
 
-    let status: StepValidationStatus = 'pending';
+    let status: EstadoValidacionPaso = "pending";
 
     if (blockingPending > 0 && wasAttempted) {
-      status = 'invalid';
+      status = "invalid";
     } else if (blockingPending === 0 && applicable > 0 && pending === 0) {
-      status = 'complete';
+      status = "complete";
     } else if (hasInteraction || pending > 0) {
-      status = 'in-progress';
+      status = "in-progress";
     }
 
     return {
@@ -915,25 +1252,27 @@ export class FormEmpleadoComponent implements OnInit {
     };
   }
 
-  getWizardStepValidationSummary(wizardStepIndex: number): StepValidationSummary {
-    if (wizardStepIndex === this.summaryWizardStepIndex()) {
+  obtenerResumenValidacionPasoAsistente(
+    wizardStepIndex: number,
+  ): ResumenValidacionPaso {
+    if (wizardStepIndex === this.indicePasoResumenAsistente()) {
       const blockingUpstream =
-        Array.from({ length: this.summaryWizardStepIndex() }, (_, i) => i).some(
-          (i) => this.computeWizardStepValidationCore(i).blockingPending > 0,
+        Array.from({ length: this.indicePasoResumenAsistente() }, (_, i) => i).some(
+          (i) => this.calcularNucleoValidacionPasoAsistente(i).blockingPending > 0,
         ) || this.form.invalid;
-      const wasAttempted = this.attemptedSave();
-      let status: StepValidationStatus = 'pending';
+      const wasAttempted = this.intentoGuardado();
+      let status: EstadoValidacionPaso = "pending";
 
       if (!blockingUpstream) {
-        status = 'complete';
+        status = "complete";
       } else if (wasAttempted) {
-        status = 'invalid';
+        status = "invalid";
       } else {
-        status = 'in-progress';
+        status = "in-progress";
       }
 
       return {
-        stepId: 'bancario',
+        stepId: "bancario",
         pending: blockingUpstream ? 1 : 0,
         blockingPending: blockingUpstream ? 1 : 0,
         warningsPending: 0,
@@ -943,90 +1282,138 @@ export class FormEmpleadoComponent implements OnInit {
       };
     }
 
-    return this.computeWizardStepValidationCore(wizardStepIndex);
+    return this.calcularNucleoValidacionPasoAsistente(wizardStepIndex);
   }
 
-  wizardStepUiKind(stepIndex: number): WizardStepUiKind {
-    const isActive = this.isWizardStepActive(stepIndex);
-    const stepWasAttempted = this.wizardStepWasAttempted(stepIndex);
+  tipoUiPasoAsistente(stepIndex: number): TipoUiPasoAsistente {
+    const isActive = this.esPasoAsistenteActivo(stepIndex);
+    const stepWasAttempted = this.pasoAsistenteFueIntentado(stepIndex);
 
-    if (stepIndex === this.summaryWizardStepIndex()) {
-      const summary = this.getWizardStepValidationSummary(stepIndex);
-      if (summary.blockingPending > 0 && this.attemptedSave()) {
-        return 'errores';
+    if (stepIndex === this.indicePasoResumenAsistente()) {
+      const summary = this.obtenerResumenValidacionPasoAsistente(stepIndex);
+      if (summary.blockingPending > 0 && this.intentoGuardado()) {
+        return "errores";
       }
       if (isActive) {
-        return 'actual';
+        return "actual";
       }
       if (summary.blockingPending === 0) {
-        return 'completo';
+        return "completo";
       }
-      return 'pendiente';
+      return "pendiente";
     }
 
-    if (this.isHonorariosMode() && [4, 5, 6, this.perfilLaboralWizardStepIndex()].includes(stepIndex)) {
-      return 'no-aplica';
+    const aplicabilidadStep = altaAplicabilidadStep(
+      this.altaAplicabilidadState(),
+      stepIndex,
+    );
+
+    if (aplicabilidadStep.estado === "not_applicable") {
+      return "no-aplica";
     }
 
-    const previsionTipo = this.form.controls.previsionSalud.controls.tipoRegimenPrevisional.value;
-    const tieneApv = this.form.controls.previsionSalud.controls.tieneApv.value;
-
-    if (stepIndex === 6 && previsionTipo !== 'AFP') {
-      return 'no-aplica';
+    if (aplicabilidadStep.estado === "optional") {
+      return "opcional";
     }
 
-    if (stepIndex === 6 && previsionTipo === 'AFP' && !tieneApv) {
-      return 'opcional';
-    }
-
-    const summary = this.getWizardStepValidationSummary(stepIndex);
+    const summary = this.obtenerResumenValidacionPasoAsistente(stepIndex);
     /** Respeta la secuencia lineal (p. ej. paso 7 no “pasó” el 6 si APVI está fuera del flujo). */
-    const stepRelevantForUi = this.wizardStepShownAsProgressed(stepIndex);
+    const stepRelevantForUi = this.pasoAsistenteMostradoComoAvanzado(stepIndex);
 
     if (summary.blockingPending > 0 && stepWasAttempted) {
-      return 'errores';
+      return "errores";
     }
 
     if (isActive) {
-      return 'actual';
+      return "actual";
     }
 
-    if (summary.blockingPending === 0 && summary.status === 'complete') {
+    if (summary.blockingPending === 0 && summary.status === "complete") {
       if (!stepRelevantForUi) {
-        return 'pendiente';
+        return "pendiente";
       }
-      return 'completo';
+      return "completo";
     }
 
-    if (stepIndex === 6 && previsionTipo === 'AFP' && tieneApv && summary.applicable === 0) {
-      return 'opcional';
+    if (
+      aplicabilidadStep.estado === "review" ||
+      aplicabilidadStep.estado === "warning"
+    ) {
+      return "pendiente";
     }
 
-    return 'pendiente';
+    return "pendiente";
   }
 
-  wizardStepUiLabel(kind: WizardStepUiKind): string {
+  etiquetaUiPasoAsistente(kind: TipoUiPasoAsistente): string {
     switch (kind) {
-      case 'actual':
-        return 'Actual';
-      case 'completo':
-        return 'Completado';
-      case 'pendiente':
-        return 'Pendiente';
-      case 'errores':
-        return 'Con errores';
-      case 'opcional':
-        return 'Opcional';
-      case 'no-aplica':
-        return 'No aplica';
+      case "actual":
+        return "En edición";
+      case "completo":
+        return "Listo";
+      case "pendiente":
+        return "Requiere datos";
+      case "errores":
+        return "Revisar";
+      case "opcional":
+        return "Solo si aplica";
+      case "no-aplica":
+        return "No requerido";
     }
   }
 
-  advancedReviewRows(): { stepIndex: number; label: string; kind: WizardStepUiKind }[] {
-    return this.advancedWizardLabels.map((_, stepIndex) => ({
+  etiquetaNumeroPasoAsistente(stepIndex: number): string {
+    return String(stepIndex + 1).padStart(2, "0");
+  }
+
+  etiquetaEtapaPasoAsistente(stepIndex: number): string {
+    if (this.esModoHonorarios()) {
+      return etiquetaPasoHonorarios(stepIndex, "etapa", this.opcionesEtiquetaPasoHonorarios());
+    }
+
+    if (stepIndex <= 1) {
+      return "Registro de identidad";
+    }
+    if (stepIndex <= 4) {
+      return "Registro laboral";
+    }
+    if (stepIndex <= 7) {
+      return "Registro de pago y previsión";
+    }
+    if (stepIndex === this.indicePasoResumenAsistente()) {
+      return "Acta de revisión";
+    }
+    return "Registro de revisión";
+  }
+
+  etiquetaDecisionPasoAsistente(stepIndex: number): string {
+    const kind = this.tipoUiPasoAsistente(stepIndex);
+    switch (kind) {
+      case "actual":
+        return "Registro abierto";
+      case "completo":
+        return "Registro listo";
+      case "errores":
+        return "Requiere corrección";
+      case "opcional":
+        return "Registrar solo si corresponde";
+      case "no-aplica":
+        return "Fuera de este caso";
+      case "pendiente":
+      default:
+        return "Pendiente de datos";
+    }
+  }
+
+  filasRevisionAvanzada(): {
+    stepIndex: number;
+    label: string;
+    kind: TipoUiPasoAsistente;
+  }[] {
+    return this.etiquetasAsistenteAvanzado.map((_, stepIndex) => ({
       stepIndex,
-      label: this.wizardStepFullLabel(stepIndex),
-      kind: this.reviewStepUiKind(stepIndex),
+      label: this.etiquetaCompletaPasoAsistente(stepIndex),
+      kind: this.tipoUiPasoRevision(stepIndex),
     }));
   }
 
@@ -1034,158 +1421,167 @@ export class FormEmpleadoComponent implements OnInit {
    * Paso 9: pendientes en lenguaje de negocio tras intentar finalizar (reglas bloqueantes).
    */
   resumenPendientesNegocio(): string[] {
-    if (!this.isAdvancedMode() || this.activeWizardStep() !== this.summaryWizardStepIndex() || !this.attemptedSave()) {
+    if (
+      !this.esModoAvanzado() ||
+      this.pasoWizardActivo() !== this.indicePasoResumenAsistente() ||
+      !this.intentoGuardado()
+    ) {
       return [];
     }
 
-    const seen = new Set<string>();
-    const out: string[] = [];
-    let blockingSinMensaje = 0;
-
-    for (const item of this.evaluateValidationRules()) {
-      if (!item.visible || item.complete || !item.blocking || item.severity !== 'error') {
-        continue;
-      }
-
-      const msg = MENSAJES_FINALIZAR_ALTA[item.id];
-      if (msg) {
-        if (!seen.has(item.id)) {
-          seen.add(item.id);
-          out.push(msg);
-        }
-      } else {
-        blockingSinMensaje += 1;
-      }
-    }
-
-    if (out.length === 0 && blockingSinMensaje > 0) {
-      out.push('Revisa las etapas con pendientes o errores antes de finalizar.');
-    }
-
-    return out.slice(0, 10);
+    const rules = this.evaluateValidationRules().filter(
+      (item) =>
+        item.visible &&
+        this.reglaValidacionCuentaEnFlujoAltaAvanzada(item),
+    );
+    return [...mensajesNegocioDesdeReglas(rules)];
   }
 
-  reviewRowDescription(row: { stepIndex: number; kind: WizardStepUiKind }): string {
+  descripcionFilaRevision(row: {
+    stepIndex: number;
+    kind: TipoUiPasoAsistente;
+  }): string {
     switch (row.kind) {
-      case 'errores':
-        return 'Corrige los datos obligatorios antes de finalizar.';
-      case 'pendiente':
-        return 'Faltan datos obligatorios o revisión de esta etapa.';
-      case 'opcional':
-        return 'Completa esta etapa solo si corresponde.';
-      case 'no-aplica':
-        return 'Esta etapa no corresponde para la configuración actual.';
+      case "errores":
+        return "Corrige este registro antes de cerrar la ficha.";
+      case "pendiente":
+        return "Faltan datos o revisión administrativa en este registro.";
+      case "opcional":
+        return "Se completa solo si corresponde al caso laboral.";
+      case "no-aplica":
+        return "Registro no requerido para la configuración actual.";
       default:
-        return '';
+        return "";
     }
   }
 
-  hasReviewBlockingStates(): boolean {
-    return this.advancedReviewRows().some((row) =>
-      ['pendiente', 'errores'].includes(row.kind),
+  tieneEstadosBloqueantesRevision(): boolean {
+    return this.filasRevisionAvanzada().some((row) =>
+      ["pendiente", "errores"].includes(row.kind),
     );
   }
 
   identificacionResumen(): string {
     const rut = this.form.controls.datosPersonales.controls.rut.value.trim();
-    const pas = this.form.controls.datosPersonales.controls.pasaporte.value.trim();
+    const pas =
+      this.form.controls.datosPersonales.controls.pasaporte.value.trim();
     if (rut) {
       return rut;
     }
     if (pas) {
       return `Pasaporte ${pas}`;
     }
-    return 'Sin información';
+    return "Sin información";
   }
 
-  getGlobalValidationSummary(): GlobalValidationSummary {
-    const summaries = TAB_ORDER.map((stepId) => this.getStepValidationSummary(stepId));
+  obtenerResumenValidacionGlobal(): ResumenValidacionGlobal {
+    const summaries = ordenPestanas.map((stepId) =>
+      this.obtenerResumenValidacionPaso(stepId),
+    );
 
     return {
-      blockingPending: summaries.reduce((total, summary) => total + summary.blockingPending, 0),
-      warningsPending: summaries.reduce((total, summary) => total + summary.warningsPending, 0),
-      completeSteps: summaries.filter((summary) => summary.status === 'complete').length,
-      invalidSteps: summaries.filter((summary) => summary.status === 'invalid').length,
-      pendingTotal: summaries.reduce((total, summary) => total + summary.pending, 0),
+      blockingPending: summaries.reduce(
+        (total, summary) => total + summary.blockingPending,
+        0,
+      ),
+      warningsPending: summaries.reduce(
+        (total, summary) => total + summary.warningsPending,
+        0,
+      ),
+      completeSteps: summaries.filter(
+        (summary) => summary.status === "complete",
+      ).length,
+      invalidSteps: summaries.filter((summary) => summary.status === "invalid")
+        .length,
+      pendingTotal: summaries.reduce(
+        (total, summary) => total + summary.pending,
+        0,
+      ),
     };
   }
 
-  wizardMapPendingCount(): number {
-    return this.advancedWizardLabels.filter(
-      (_, index) => this.wizardStepUiKind(index) === 'pendiente',
+  cantidadPendientesMapaAsistente(): number {
+    return this.etiquetasAsistenteAvanzado.filter(
+      (_, index) => this.tipoUiPasoAsistente(index) === "pendiente",
     ).length;
   }
 
-  wizardMapOptionalCount(): number {
-    return this.advancedWizardLabels.filter(
-      (_, index) => this.wizardStepUiKind(index) === 'opcional',
+  cantidadOpcionalesMapaAsistente(): number {
+    return this.etiquetasAsistenteAvanzado.filter(
+      (_, index) => this.tipoUiPasoAsistente(index) === "opcional",
     ).length;
   }
 
-  wizardMapErrorCount(): number {
-    return this.advancedWizardLabels.filter(
-      (_, index) => this.wizardStepUiKind(index) === 'errores',
+  cantidadErroresMapaAsistente(): number {
+    return this.etiquetasAsistenteAvanzado.filter(
+      (_, index) => this.tipoUiPasoAsistente(index) === "errores",
     ).length;
   }
 
-  wizardMapNotApplicableCount(): number {
-    return this.advancedWizardLabels.filter(
-      (_, index) => this.wizardStepUiKind(index) === 'no-aplica',
+  cantidadNoAplicanMapaAsistente(): number {
+    return this.etiquetasAsistenteAvanzado.filter(
+      (_, index) => this.tipoUiPasoAsistente(index) === "no-aplica",
     ).length;
   }
 
-  wizardMapSummaryLabel(): string {
-    const errors = this.wizardMapErrorCount();
-    const pending = this.wizardMapPendingCount();
-    const optional = this.wizardMapOptionalCount();
-    const notApplicable = this.wizardMapNotApplicableCount();
+  etiquetaResumenMapaAsistente(): string {
+    const errors = this.cantidadErroresMapaAsistente();
+    const pending = this.cantidadPendientesMapaAsistente();
+    const optional = this.cantidadOpcionalesMapaAsistente();
+    const notApplicable = this.cantidadNoAplicanMapaAsistente();
     const parts: string[] = [];
 
     if (errors > 0) {
-      parts.push(`${errors} ${errors === 1 ? 'paso con errores' : 'pasos con errores'}`);
+      parts.push(`Revisión: ${errors}`);
     }
 
     if (pending > 0) {
-      parts.push(`${pending} ${pending === 1 ? 'paso pendiente' : 'pasos pendientes'}`);
+      parts.push(`Pendientes: ${pending}`);
     }
 
     if (optional > 0) {
-      parts.push(`${optional} ${optional === 1 ? 'paso opcional' : 'pasos opcionales'}`);
+      parts.push(`Condicionales: ${optional}`);
     }
 
     if (errors === 0 && notApplicable > 0) {
-      parts.push(`${notApplicable} ${notApplicable === 1 ? 'paso no aplica' : 'pasos no aplican'}`);
+      parts.push(`No requeridos: ${notApplicable}`);
     }
 
-    return parts.length ? parts.join(' · ') : 'Sin pendientes visibles';
+    return parts.length
+      ? parts.join(" · ")
+      : "Bitácora sin pendientes visibles";
   }
 
-  private resolveWizardStep(rule: ValidationRule): number {
-    if (rule.sourcePath === 'contacto.idComuna') {
+  private resolverPasoAsistente(rule: ReglaValidacion): number {
+    if (rule.sourcePath === "contacto.idComuna") {
       return 1;
     }
 
-    if (rule.stepId === 'datosPersonales') {
+    if (rule.stepId === "datosPersonales") {
       return 0;
     }
 
-    if (rule.stepId === 'bancario') {
+    if (rule.stepId === "bancario") {
       return 7;
     }
 
-    if (rule.stepId === 'previsionSalud') {
-      return rule.category === 'APVI' ? 6 : 5;
+    if (rule.stepId === "previsionSalud") {
+      return rule.category === "APVI" ? 6 : 5;
     }
 
-    if (rule.stepId === 'contrato') {
-      const cat = rule.category ?? '';
-      if (cat === 'Perfil laboral' || cat === 'Condiciones especiales') {
+    if (rule.stepId === "contrato") {
+      const cat = rule.category ?? "";
+      if (cat === "Perfil laboral" || cat === "Condiciones especiales") {
         return this.perfilLaboralWizardStepIndex();
       }
-      if (cat === 'Zona extrema' || cat === 'Cargas' || cat === 'Semana corrida') {
+      if (
+        cat === "Zona extrema" ||
+        cat === "Cargas" ||
+        cat === "Semana corrida"
+      ) {
         return 4;
       }
-      if (cat === 'Jornada' || cat === 'Remuneracion') {
+      if (cat === "Jornada" || cat === "Remuneracion") {
         return 3;
       }
       return 2;
@@ -1194,69 +1590,68 @@ export class FormEmpleadoComponent implements OnInit {
     return 0;
   }
 
-  private wizardStepsForTab(tabId: TabId): number[] {
+  private pasosAsistenteParaPestana(tabId: IdPestana): number[] {
     switch (tabId) {
-      case 'datosPersonales':
+      case "datosPersonales":
         return [0, 1];
-      case 'contrato':
+      case "contrato":
         return [2, 3, 4, this.perfilLaboralWizardStepIndex()];
-      case 'previsionSalud':
+      case "previsionSalud":
         return [5, 6];
-      case 'bancario':
+      case "bancario":
         return [7];
     }
   }
 
-  private primaryTabForWizardStep(step: number): TabId {
+  private pestanaPrincipalParaPasoAsistente(step: number): IdPestana {
     if (step <= 1) {
-      return 'datosPersonales';
+      return "datosPersonales";
     }
     if (step <= 4 || step === this.perfilLaboralWizardStepIndex()) {
-      return 'contrato';
+      return "contrato";
     }
     if (step <= 6) {
-      return 'previsionSalud';
+      return "previsionSalud";
     }
-    return 'bancario';
+    return "bancario";
   }
 
-  private hasWizardStepInteraction(wizardStepIndex: number): boolean {
-    if (this.attemptedSave()) {
+  private tieneInteraccionPasoAsistente(wizardStepIndex: number): boolean {
+    if (this.intentoGuardado()) {
       return true;
     }
-    if (this.attemptedWizardSteps().has(wizardStepIndex)) {
+    if (this.pasosAsistenteIntentados().has(wizardStepIndex)) {
       return true;
     }
-    const tab = this.primaryTabForWizardStep(wizardStepIndex);
-    return this.attemptedTabs().has(tab) || this.completedTabs().has(tab);
+    const tab = this.pestanaPrincipalParaPasoAsistente(wizardStepIndex);
+    return this.pestanasIntentadas().has(tab) || this.pestanasCompletadas().has(tab);
   }
 
-  private markWizardStepVisited(step: number): void {
-    this.visitedWizardSteps.update((prev) => new Set([...prev, step]));
+  private marcarPasoAsistenteVisitado(step: number): void {
+    this.presentacion.marcarPasoAsistenteVisitado(step);
   }
 
-  private markWizardStepAttempted(step: number): void {
-    this.markWizardStepVisited(step);
-    this.attemptedWizardSteps.update((prev) => new Set([...prev, step]));
+  private marcarPasoAsistenteIntentado(step: number): void {
+    this.presentacion.marcarPasoAsistenteIntentado(step);
   }
 
-  private wizardStepWasAttempted(stepIndex: number): boolean {
-    return this.attemptedSave() || this.attemptedWizardSteps().has(stepIndex);
+  private pasoAsistenteFueIntentado(stepIndex: number): boolean {
+    return this.intentoGuardado() || this.pasosAsistenteIntentados().has(stepIndex);
   }
 
   /**
    * Indica si el paso ya cuenta como “alcanzado” en el flujo lineal (para pintar completo/errores).
-   * Evita marcar el paso 7 como “pasó” el 6 cuando APVI no está en `linearWizardSequence()`.
+   * Evita marcar el paso 7 como “pasó” el 6 cuando APVI no está en `secuenciaLinealAsistente()`.
    */
-  private wizardStepShownAsProgressed(stepIndex: number): boolean {
-    if (this.attemptedSave() || this.attemptedWizardSteps().has(stepIndex)) {
+  private pasoAsistenteMostradoComoAvanzado(stepIndex: number): boolean {
+    if (this.intentoGuardado() || this.pasosAsistenteIntentados().has(stepIndex)) {
       return true;
     }
-    if (this.visitedWizardSteps().has(stepIndex)) {
+    if (this.pasosAsistenteVisitados().has(stepIndex)) {
       return true;
     }
-    const seq = this.linearWizardSequence();
-    const active = this.activeWizardStep();
+    const seq = this.secuenciaLinealAsistente();
+    const active = this.pasoWizardActivo();
     const iAct = seq.indexOf(active);
     const iStep = seq.indexOf(stepIndex);
 
@@ -1269,29 +1664,50 @@ export class FormEmpleadoComponent implements OnInit {
     return iStep <= iAct;
   }
 
-  private computeWizardStepValidationCore(wizardStepIndex: number): StepValidationSummary {
+  private reglaValidacionCuentaEnFlujoAltaAvanzada(
+    item: ReglaValidacionEvaluada,
+  ): boolean {
+    if (!this.esModoAvanzado()) {
+      return true;
+    }
+
+    return !REGLAS_VALIDACION_EXCLUIDAS_AL_FINALIZAR_ALTA_AVANZADA.has(item.id);
+  }
+
+  private calcularNucleoValidacionPasoAsistente(
+    wizardStepIndex: number,
+  ): ResumenValidacionPaso {
     const evaluated = this.evaluateValidationRules().filter(
-      (item) => item.wizardStep === wizardStepIndex && item.visible,
+      (item) =>
+        item.wizardStep === wizardStepIndex &&
+        item.visible &&
+        this.reglaValidacionCuentaEnFlujoAltaAvanzada(item),
     );
     const pending = evaluated.filter((item) => !item.complete);
     const blockingPending = pending.filter((item) => item.blocking).length;
-    const warningsPending = pending.filter((item) => item.severity === 'warning').length;
+    const warningsPending = pending.filter(
+      (item) => item.severity === "warning",
+    ).length;
     const wasAttempted =
-      this.attemptedWizardSteps().has(wizardStepIndex) || this.attemptedSave();
-    const hasInteraction = this.hasWizardStepInteraction(wizardStepIndex);
+      this.pasosAsistenteIntentados().has(wizardStepIndex) || this.intentoGuardado();
+    const hasInteraction = this.tieneInteraccionPasoAsistente(wizardStepIndex);
 
-    let status: StepValidationStatus = 'pending';
+    let status: EstadoValidacionPaso = "pending";
 
     if (blockingPending > 0 && wasAttempted) {
-      status = 'invalid';
-    } else if (blockingPending === 0 && evaluated.length > 0 && pending.length === 0) {
-      status = 'complete';
+      status = "invalid";
+    } else if (
+      blockingPending === 0 &&
+      evaluated.length > 0 &&
+      pending.length === 0
+    ) {
+      status = "complete";
     } else if (hasInteraction || pending.length > 0) {
-      status = 'in-progress';
+      status = "in-progress";
     }
 
     return {
-      stepId: this.primaryTabForWizardStep(wizardStepIndex),
+      stepId: this.pestanaPrincipalParaPasoAsistente(wizardStepIndex),
       pending: pending.length,
       blockingPending,
       warningsPending,
@@ -1301,60 +1717,66 @@ export class FormEmpleadoComponent implements OnInit {
     };
   }
 
-  private findFirstWizardStepWithBlockingIssues(): number | null {
-    for (let s = 0; s < this.summaryWizardStepIndex(); s++) {
-      if (this.computeWizardStepValidationCore(s).blockingPending > 0) {
+  buscarPrimerPasoAsistenteConBloqueos(): number | null {
+    for (let s = 0; s < this.indicePasoResumenAsistente(); s++) {
+      if (this.calcularNucleoValidacionPasoAsistente(s).blockingPending > 0) {
         return s;
       }
+    }
+
+    if (this.esModoHonorarios()) {
+      return null;
     }
 
     return this.form.invalid ? 0 : null;
   }
 
-  private showInvalidWizardStep(step: number): void {
-    this.activeWizardStep.set(step);
-    this.attemptedWizardSteps.update((prev) => new Set([...prev, step]));
-    this.attemptAllTabs();
-    this.markWizardStepTouched(step);
-    this.focusFirstInvalidControl(step);
+  private mostrarPasoAsistenteInvalido(step: number): void {
+    this.presentacion.marcarPasoAsistenteIntentado(step);
+    this.pasoWizardActivo.set(step);
+    this.intentarTodasPestanas();
+    this.marcarPasoAsistenteTocado(step);
+    this.enfocarPrimerControlEnPaso(step, { soloBloqueantes: true });
   }
 
-  private markWizardStepTouched(step: number): void {
+  private marcarPasoAsistenteTocado(step: number): void {
     switch (step) {
       case 0:
-        this.markControlAsTouched(this.form.controls.datosPersonales);
+        this.marcarControlComoTocado(this.form.controls.datosPersonales);
         this.form.controls.contacto.controls.email.markAsTouched();
         this.form.controls.contacto.controls.telefono.markAsTouched();
         break;
       case 1:
-        this.markControlAsTouched(this.form.controls.contacto);
+        this.marcarControlComoTocado(this.form.controls.contacto);
         break;
       case 2:
       case 3:
       case 4:
-        this.markControlAsTouched(this.form.controls.contrato);
+        this.marcarControlComoTocado(this.form.controls.contrato);
         break;
       case 8:
-        this.markControlAsTouched(this.form.controls.perfilLaboral);
+        this.marcarControlComoTocado(this.form.controls.perfilLaboral);
         break;
       case 5:
       case 6:
-        this.markControlAsTouched(this.form.controls.previsionSalud);
+        this.marcarControlComoTocado(this.form.controls.previsionSalud);
         break;
       case 7:
-        this.markControlAsTouched(this.form.controls.bancario);
+        this.marcarControlComoTocado(this.form.controls.bancario);
         break;
       default:
         this.form.markAllAsTouched();
     }
   }
 
-  private resolveModo(): FormEmpleadoModo {
-    return this.route.snapshot.queryParamMap.get('modo') === 'basico' ? 'basico' : 'avanzado';
+  private resolverModo(): FormEmpleadoModo {
+    return this.route.snapshot.queryParamMap.get("modo") === "basico"
+      ? "basico"
+      : "avanzado";
   }
 
-  private async loadContinuacionBorradorSiAplica(): Promise<void> {
-    const raw = this.route.snapshot.queryParamMap.get('idPersona');
+  private async cargarContinuacionBorradorSiAplica(): Promise<void> {
+    const raw = this.route.snapshot.queryParamMap.get("idPersona");
     const id = raw ? Number(raw) : NaN;
     if (!Number.isInteger(id) || id < 1) {
       return;
@@ -1363,30 +1785,52 @@ export class FormEmpleadoComponent implements OnInit {
     try {
       const detalle = await this.empleadosService.obtenerPorId(id);
       if (!detalle) {
-        this.catalogosError.set('No se encontro la ficha indicada para continuar el alta.');
+        this.catalogosError.set(
+          "No se encontro la ficha indicada para continuar el alta.",
+        );
         return;
       }
-      if (detalle.pasoAltaAvanzada === null || detalle.pasoAltaAvanzada === undefined) {
+      if (
+        detalle.pasoAltaAvanzada === null ||
+        detalle.pasoAltaAvanzada === undefined
+      ) {
         this.catalogosError.set(
-          'Esta ficha no tiene un borrador de creacion avanzada guardado. Usa la ficha del empleado para completar por secciones.',
+          "Esta ficha no tiene un borrador de creacion avanzada guardado. Usa la ficha del empleado para completar por secciones.",
         );
         return;
       }
 
-      const paso = Math.min(Math.max(0, detalle.pasoAltaAvanzada), this.totalSteps - 1);
-      const formValue = normalizarBorradorAvanzadoParaFormulario(detalle.formValue, paso);
+      const paso = Math.min(
+        Math.max(0, detalle.pasoAltaAvanzada),
+        this.totalPasos - 1,
+      );
+      const formValue = normalizarBorradorAvanzadoParaFormulario(
+        detalle.formValue,
+        paso,
+      );
       this.borradorPersonaId.set(id);
       this.form.patchValue(formValue as never);
-      this.activeWizardStep.set(paso);
-      this.visitedWizardSteps.update((prev) => new Set([...prev, paso]));
+      this.presentacion.seleccionarPasoAsistente(paso);
       this.form.markAsPristine();
     } catch {
-      this.catalogosError.set('No fue posible cargar el borrador para continuar el alta.');
+      this.catalogosError.set(
+        "No fue posible cargar el borrador para continuar el alta.",
+      );
     }
   }
 
-  private markSubmitControlsAsTouched(): void {
-    if (!this.isBasicMode()) {
+  private resolverPasoBorradorParaPersistir(): number {
+    const visitedSteps = [...this.pasosAsistenteVisitados()].filter((step) =>
+      estaPasoAsistenteAltaEnRango(step, this.totalPasos),
+    );
+    const maxVisited =
+      visitedSteps.length > 0 ? Math.max(...visitedSteps) : this.pasoWizardActivo();
+
+    return Math.max(this.pasoWizardActivo(), maxVisited);
+  }
+
+  private marcarControlesEnvioComoTocados(): void {
+    if (!this.esModoBasico()) {
       this.form.markAllAsTouched();
       return;
     }
@@ -1395,871 +1839,470 @@ export class FormEmpleadoComponent implements OnInit {
     this.form.controls.contacto.markAllAsTouched();
   }
 
-  private attemptBasicGroups(): void {
-    this.attemptedTabs.set(new Set<TabId>(['datosPersonales']));
+  private intentarGruposBasicos(): void {
+    this.pestanasIntentadas.set(new Set<IdPestana>(["datosPersonales"]));
   }
 
-  private isBasicFormInvalid(): boolean {
-    return this.form.controls.datosPersonales.invalid || this.form.controls.contacto.invalid;
+  private esFormularioBasicoInvalido(): boolean {
+    return (
+      this.form.controls.datosPersonales.invalid ||
+      this.form.controls.contacto.invalid
+    );
   }
 
-  private async submitBasicMode(): Promise<void> {
-    this.isSaving.set(true);
+  private async enviarModoBasico(): Promise<void> {
+    this.guardando.set(true);
 
     try {
       const created = await this.empleadosService.crearBasico(
         mapEmpleadoFormToPayloadBasico(this.form),
       );
 
-      this.successMessage.set(
-        'La creación básica fue guardada y la ficha quedó en estado "En proceso".',
-      );
-      this.successFlow.set('basico');
-      this.createdEmployeeId.set(created.id);
       this.form.markAsPristine();
+      this.modalOrquestador.abrirModalExitoBasico(created.id);
     } catch (error) {
       if (error instanceof EmpleadoRutDuplicadoError) {
-        this.duplicateRutModalRut.set(error.rut);
+        this.modalOrquestador.abrirModalRutDuplicadoBasico(error.rut);
       } else {
-        this.errorMessage.set(this.resolveSaveErrorMessage(error));
+        this.modalOrquestador.abrirModalErrorBasico(
+          this,
+          this.resolverMensajeErrorGuardado(error),
+        );
       }
     } finally {
-      this.isSaving.set(false);
+      this.guardando.set(false);
     }
   }
 
-  private getAllValidationRules(): ValidationRule[] {
-    const personalGroup = this.form.controls.datosPersonales;
-    const personal = personalGroup.controls;
-    const contacto = this.form.controls.contacto.controls;
-    const contrato = this.form.controls.contrato.controls;
-    const perfilLaboral = this.form.controls.perfilLaboral.controls;
-    const prevision = this.form.controls.previsionSalud.controls;
-    const bancario = this.form.controls.bancario.controls;
-    const esHonorarios = this.isHonorariosMode();
-    const esContratoDependiente = !esHonorarios;
-    const hasCuenta2 =
-      prevision.tipoRegimenPrevisional.value === 'AFP' &&
-      (prevision.idMonedaCuenta2.value !== null || prevision.valorCuenta2.value !== null);
-    const requiereSalud =
-      prevision.tipoRegimenPrevisional.value !== null &&
-      prevision.tipoRegimenPrevisional.value !== 'NINGUNA';
-    const hayCondicionesPerfil = this.hasPerfilLaboralCondicionesSeleccionadas();
-    const perfilMenorEdad = this.perfilLaboralEdadResumen().kind === 'menor';
-    const requiereRevisionMenor =
-      perfilMenorEdad &&
-      !perfilLaboral.trabajadorAdolescenteProtegido.value &&
-      !perfilLaboral.autorizacionMenorRegistrada.value;
-
-    return [
-      this.rule(
-        'personal.identity',
-        'datosPersonales',
-        'Ingresa un RUT válido o un identificador extranjero válido',
-        'error',
-        true,
-        'datosPersonales.rut',
-        'Identificacion legal',
-        () =>
-          !personalGroup.hasError('rutOrPassport') &&
-          personal.rut.valid &&
-          personal.pasaporte.valid,
-      ),
-      this.rule(
-        'personal.birthdate',
-        'datosPersonales',
-        'Ingresa la fecha de nacimiento del trabajador',
-        'error',
-        true,
-        'datosPersonales.fechaNacimiento',
-        'Identificacion legal',
-        () => personal.fechaNacimiento.valid,
-      ),
-      this.rule(
-        'personal.names',
-        'datosPersonales',
-        'Ingresa los nombres del trabajador',
-        'error',
-        true,
-        'datosPersonales.nombres',
-        'Nombre del empleado',
-        () => personal.nombres.valid,
-      ),
-      this.rule(
-        'personal.lastname',
-        'datosPersonales',
-        'Ingresa el apellido paterno',
-        'error',
-        true,
-        'datosPersonales.apellidoPaterno',
-        'Nombre del empleado',
-        () => personal.apellidoPaterno.valid,
-      ),
-      this.rule(
-        'personal.sex',
-        'datosPersonales',
-        'Selecciona el sexo registral para la ficha laboral',
-        'error',
-        true,
-        'datosPersonales.sexo',
-        'Identificacion legal',
-        () => personal.sexo.valid,
-      ),
-      this.rule(
-        'personal.country',
-        'datosPersonales',
-        'Selecciona país o nacionalidad',
-        'error',
-        true,
-        'datosPersonales.idPais',
-        'Informacion base',
-        () => personal.idPais.valid,
-      ),
-      this.rule(
-        'personal.marital-status',
-        'datosPersonales',
-        'Selecciona el estado civil',
-        'error',
-        true,
-        'datosPersonales.estadoCivil',
-        'Informacion base',
-        () => personal.estadoCivil.valid,
-      ),
-      this.rule(
-        'personal.email-format',
-        'datosPersonales',
-        'Corrige el formato del correo electrónico',
-        'error',
-        true,
-        'contacto.email',
-        'Informacion base',
-        () => contacto.email.valid,
-        () => Boolean(contacto.email.value.trim()),
-      ),
-      this.rule(
-        'personal.phone-format',
-        'datosPersonales',
-        'Corrige el formato del teléfono',
-        'error',
-        true,
-        'contacto.telefono',
-        'Informacion base',
-        () => contacto.telefono.valid,
-        () => Boolean(contacto.telefono.value.trim()),
-      ),
-      this.rule(
-        'personal.email-empty',
-        'datosPersonales',
-        'Agrega correo de contacto si la empresa lo usará para comunicaciones laborales',
-        'warning',
-        false,
-        'contacto.email',
-        'Informacion base',
-        () => Boolean(contacto.email.value.trim()),
-      ),
-      this.rule(
-        'personal.phone-empty',
-        'datosPersonales',
-        'Agrega teléfono de contacto si la empresa lo usará para comunicaciones laborales',
-        'warning',
-        false,
-        'contacto.telefono',
-        'Informacion base',
-        () => Boolean(contacto.telefono.value.trim()),
-      ),
-      this.rule(
-        'personal.passport-review',
-        'datosPersonales',
-        'Revisa la identificación extranjera antes de finalizar la contratación',
-        'warning',
-        false,
-        'datosPersonales.pasaporte',
-        'Identificacion legal',
-        () => Boolean(personal.rut.value.trim()),
-        () => Boolean(personal.pasaporte.value.trim()) && !Boolean(personal.rut.value.trim()),
-      ),
-      this.rule(
-        'contact.commune',
-        'datosPersonales',
-        'Selecciona la comuna del domicilio contractual',
-        'error',
-        true,
-        'contacto.idComuna',
-        'Domicilio',
-        () => contacto.idComuna.valid,
-        () => this.isAdvancedMode() && esContratoDependiente,
-      ),
-      this.rule(
-        'contact.commune-honorarios',
-        'datosPersonales',
-        'Agrega comuna del prestador si se usará como dato administrativo de contacto',
-        'warning',
-        false,
-        'contacto.idComuna',
-        'Domicilio',
-        () => contacto.idComuna.valid,
-        () => this.isAdvancedMode() && esHonorarios,
-      ),
-
-      this.rule(
-        esHonorarios ? 'honorarios.service' : 'contract.position',
-        'contrato',
-        esHonorarios ? 'Ingresa el servicio o función del prestador' : 'Ingresa el cargo o función del trabajador',
-        'error',
-        true,
-        'contrato.cargo',
-        esHonorarios ? 'Honorarios' : 'Contrato',
-        () => contrato.cargo.valid && !this.isTechnicalCargo(contrato.cargo.value),
-      ),
-      this.rule(
-        'contract.branch',
-        'contrato',
-        'Selecciona sucursal u organización',
-        'error',
-        true,
-        'contrato.idSucursal',
-        'Contrato',
-        () => contrato.idSucursal.value !== null,
-        () => esContratoDependiente,
-      ),
-      this.rule(
-        'honorarios.cost-center',
-        'contrato',
-        'Selecciona sucursal o centro de costo si necesitas imputar internamente el servicio',
-        'warning',
-        false,
-        'contrato.idSucursal',
-        'Honorarios',
-        () => contrato.idSucursal.value !== null || contrato.idCentroCosto.value !== null,
-        () => esHonorarios,
-      ),
-      this.rule(
-        'contract.worker-type',
-        'contrato',
-        'Selecciona el tipo de trabajador',
-        'error',
-        true,
-        'contrato.idTipoTrabajador',
-        'Contrato',
-        () => contrato.idTipoTrabajador.valid,
-        () => esContratoDependiente,
-      ),
-      this.rule(
-        'contract.schedule-type',
-        'contrato',
-        'Selecciona el tipo de jornada',
-        'error',
-        true,
-        'contrato.idTipoJornada',
-        'Jornada',
-        () => contrato.idTipoJornada.valid,
-        () => esContratoDependiente,
-      ),
-      this.rule(
-        'contract.contract-type',
-        'contrato',
-        'Selecciona el tipo de contrato',
-        'error',
-        true,
-        'contrato.tipoContrato',
-        'Contrato',
-        () => contrato.tipoContrato.valid,
-        () => esContratoDependiente,
-      ),
-      this.rule(
-        'contract.start-date',
-        'contrato',
-        'Ingresa la fecha de ingreso',
-        'error',
-        true,
-        'contrato.fechaIngreso',
-        'Fechas',
-        () => contrato.fechaIngreso.valid,
-      ),
-      this.rule(
-        'contract.document-date',
-        'contrato',
-        'Ingresa la fecha del contrato',
-        'error',
-        true,
-        'contrato.fechaContrato',
-        'Fechas',
-        () => contrato.fechaContrato.valid,
-        () => esContratoDependiente,
-      ),
-      this.rule(
-        'contract.end-date',
-        'contrato',
-        'Ingresa la fecha de término del contrato',
-        'error',
-        true,
-        'contrato.fechaTermino',
-        'Fechas',
-        () => contrato.fechaTermino.valid,
-        () =>
-          esContratoDependiente &&
-          contrato.tipoContrato.value !== null && contrato.tipoContrato.value !== 'INDEFINIDO',
-      ),
-      this.rule(
-        esHonorarios ? 'honorarios.amount' : 'contract.salary',
-        'contrato',
-        esHonorarios ? 'Ingresa el monto bruto de honorarios' : 'Ingresa sueldo base válido',
-        'error',
-        true,
-        'contrato.sueldoBase',
-        esHonorarios ? 'Honorarios' : 'Remuneracion',
-        () => contrato.sueldoBase.valid,
-      ),
-      this.rule(
-        esHonorarios ? 'honorarios.currency' : 'contract.currency',
-        'contrato',
-        esHonorarios ? 'Selecciona la moneda del monto bruto de honorarios' : 'Selecciona la moneda de remuneración',
-        'error',
-        true,
-        'contrato.idMoneda',
-        esHonorarios ? 'Honorarios' : 'Remuneracion',
-        () => contrato.idMoneda.value !== null,
-      ),
-      this.rule(
-        'contract.weekly-hours',
-        'contrato',
-        'Completa las horas semanales pactadas',
-        'error',
-        true,
-        'contrato.horasSemanales',
-        'Jornada',
-        () => contrato.horasSemanales.valid,
-        () => esContratoDependiente,
-      ),
-      this.rule(
-        'contract.weekly-days',
-        'contrato',
-        'Completa los días semanales de trabajo',
-        'error',
-        true,
-        'contrato.diasSemanales',
-        'Jornada',
-        () => contrato.diasSemanales.valid,
-        () => esContratoDependiente,
-      ),
-      this.rule(
-        'contract.week-run',
-        'contrato',
-        'Completa los días laborables para semana corrida',
-        'error',
-        true,
-        'contrato.semanaCorridaDiasLaborables',
-        'Semana corrida',
-        () => contrato.semanaCorridaDiasLaborables.valid,
-        () => esContratoDependiente && contrato.semanaCorridaActiva.value,
-      ),
-      this.rule(
-        'contract.extreme-zone-area',
-        'contrato',
-        'Selecciona el territorio asociado a zona extrema',
-        'error',
-        true,
-        'contrato.zonaExtremaTerritorio',
-        'Zona extrema',
-        () => contrato.zonaExtremaTerritorio.valid,
-        () => esContratoDependiente && contrato.zonaExtremaActiva.value,
-      ),
-      this.rule(
-        'contract.extreme-zone-rate',
-        'contrato',
-        'Ingresa el porcentaje de zona extrema',
-        'error',
-        true,
-        'contrato.zonaExtremaPorcentaje',
-        'Zona extrema',
-        () => contrato.zonaExtremaPorcentaje.valid,
-        () => esContratoDependiente && contrato.zonaExtremaActiva.value,
-      ),
-      this.rule(
-        'contract.family-allowance',
-        'contrato',
-        'Confirma el tramo de cargas familiares antes de usar la asignación en remuneraciones',
-        'warning',
-        false,
-        'contrato.idTramoCarga',
-        'Cargas',
-        () => contrato.idTramoCarga.value !== null,
-        () => esContratoDependiente && Number(contrato.cargas.value ?? 0) > 0,
-      ),
-
-      this.rule(
-        'profile-laboral.minor-review',
-        'contrato',
-        'Menor de 18 detectado: revisa si corresponde trabajador adolescente protegido o autorización de menor',
-        'warning',
-        false,
-        'perfilLaboral.trabajadorAdolescenteProtegido',
-        'Condiciones especiales',
-        () => !requiereRevisionMenor,
-        () => esContratoDependiente && perfilMenorEdad,
-      ),
-      this.rule(
-        'profile-laboral.support',
-        'contrato',
-        'Marca respaldo administrativo registrado para las condiciones especiales seleccionadas',
-        'warning',
-        false,
-        'perfilLaboral.respaldoRegistrado',
-        'Condiciones especiales',
-        () => perfilLaboral.respaldoRegistrado.value,
-        () => esContratoDependiente && hayCondicionesPerfil,
-      ),
-      this.rule(
-        'profile-laboral.valid-from',
-        'contrato',
-        'Completa la vigencia de inicio de las condiciones especiales',
-        'error',
-        true,
-        'perfilLaboral.vigenciaInicio',
-        'Condiciones especiales',
-        () => perfilLaboral.vigenciaInicio.valid,
-        () => esContratoDependiente && hayCondicionesPerfil,
-      ),
-      this.rule(
-        'profile-laboral.observation-length',
-        'contrato',
-        'Reduce la observación interna de condiciones especiales',
-        'error',
-        true,
-        'perfilLaboral.observacion',
-        'Condiciones especiales',
-        () => perfilLaboral.observacion.valid,
-        () => esContratoDependiente && Boolean(perfilLaboral.observacion.value.trim()),
-      ),
-
-      this.rule(
-        'prevision.regime',
-        'previsionSalud',
-        'Selecciona el régimen previsional',
-        'error',
-        true,
-        'previsionSalud.tipoRegimenPrevisional',
-        'Prevision',
-        () => prevision.tipoRegimenPrevisional.valid,
-        () => esContratoDependiente,
-      ),
-      this.rule(
-        'prevision.afp',
-        'previsionSalud',
-        'Selecciona la AFP del trabajador',
-        'error',
-        true,
-        'previsionSalud.idAfp',
-        'Prevision',
-        () => prevision.idAfp.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP',
-      ),
-      this.rule(
-        'prevision.ips-name',
-        'previsionSalud',
-        'Ingresa la entidad o ex caja IPS',
-        'error',
-        true,
-        'previsionSalud.nombreExCaja',
-        'IPS',
-        () => prevision.nombreExCaja.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'IPS',
-      ),
-      this.rule(
-        'prevision.ips-regime',
-        'previsionSalud',
-        'Ingresa el régimen IPS',
-        'error',
-        true,
-        'previsionSalud.regimenExCaja',
-        'IPS',
-        () => prevision.regimenExCaja.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'IPS',
-      ),
-      this.rule(
-        'prevision.ips-rate',
-        'previsionSalud',
-        'Ingresa la tasa IPS',
-        'error',
-        true,
-        'previsionSalud.tasaExCaja',
-        'IPS',
-        () => prevision.tasaExCaja.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'IPS',
-      ),
-      this.rule(
-        'prevision.health',
-        'previsionSalud',
-        'Selecciona la institución de salud',
-        'error',
-        true,
-        'previsionSalud.idSalud',
-        'Salud',
-        () => prevision.idSalud.valid,
-        () => esContratoDependiente && requiereSalud,
-      ),
-      this.rule(
-        'prevision.health-currency',
-        'previsionSalud',
-        'Selecciona la moneda del plan de salud',
-        'error',
-        true,
-        'previsionSalud.idMonedaPlan',
-        'Salud',
-        () => prevision.idMonedaPlan.valid,
-        () => esContratoDependiente && requiereSalud,
-      ),
-      this.rule(
-        'prevision.health-plan',
-        'previsionSalud',
-        'Ingresa el valor del plan de salud',
-        'error',
-        true,
-        'previsionSalud.valorPlan',
-        'Salud',
-        () => prevision.valorPlan.valid,
-        () => esContratoDependiente && requiereSalud,
-      ),
-      this.rule(
-        'prevision.health-ges',
-        'previsionSalud',
-        'Ingresa el adicional Auge o GES',
-        'error',
-        true,
-        'previsionSalud.adicionalAugeGes',
-        'Salud',
-        () => prevision.adicionalAugeGes.valid,
-        () => esContratoDependiente && requiereSalud,
-      ),
-      this.rule(
-        'prevision.account2-currency',
-        'previsionSalud',
-        'Selecciona la moneda de Cuenta 2 AFP',
-        'error',
-        true,
-        'previsionSalud.idMonedaCuenta2',
-        'Cuenta 2',
-        () => prevision.idMonedaCuenta2.valid,
-        () => esContratoDependiente && hasCuenta2,
-      ),
-      this.rule(
-        'prevision.account2-value',
-        'previsionSalud',
-        'Ingresa el valor de Cuenta 2 AFP',
-        'error',
-        true,
-        'previsionSalud.valorCuenta2',
-        'Cuenta 2',
-        () => prevision.valorCuenta2.valid,
-        () => esContratoDependiente && hasCuenta2,
-      ),
-      this.rule(
-        'prevision.apv-institution',
-        'previsionSalud',
-        'Selecciona la institución APVI',
-        'error',
-        true,
-        'previsionSalud.idInstitucionApv',
-        'APVI',
-        () => prevision.idInstitucionApv.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
-      ),
-      this.rule(
-        'prevision.apv-currency',
-        'previsionSalud',
-        'Selecciona la moneda APVI',
-        'error',
-        true,
-        'previsionSalud.idMonedaApv',
-        'APVI',
-        () => prevision.idMonedaApv.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
-      ),
-      this.rule(
-        'prevision.apv-amount',
-        'previsionSalud',
-        'Ingresa el monto APVI',
-        'error',
-        true,
-        'previsionSalud.montoApv',
-        'APVI',
-        () => prevision.montoApv.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
-      ),
-      this.rule(
-        'prevision.apv-payment',
-        'previsionSalud',
-        'Selecciona la forma de pago APVI',
-        'error',
-        true,
-        'previsionSalud.idFormaPagoApv',
-        'APVI',
-        () => prevision.idFormaPagoApv.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
-      ),
-      this.rule(
-        'prevision.apv-agreement',
-        'previsionSalud',
-        'Completa el depósito convenido APVI',
-        'error',
-        true,
-        'previsionSalud.depositoConvenidoApvi',
-        'APVI',
-        () => prevision.depositoConvenidoApvi.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
-      ),
-
-      this.rule(
-        'bank.bank',
-        'bancario',
-        'Selecciona el banco para la transferencia',
-        'error',
-        true,
-        'bancario.idBanco',
-        'Bancario',
-        () => bancario.idBanco.valid,
-        () => esContratoDependiente,
-      ),
-      this.rule(
-        'bank.account-type',
-        'bancario',
-        'Selecciona el tipo de cuenta bancaria',
-        'error',
-        true,
-        'bancario.idTipoCuentaBancaria',
-        'Bancario',
-        () => bancario.idTipoCuentaBancaria.valid,
-        () => esContratoDependiente,
-      ),
-      this.rule(
-        'bank.account-number',
-        'bancario',
-        'Ingresa una cuenta bancaria real',
-        'error',
-        true,
-        'bancario.numeroCuenta',
-        'Bancario',
-        () => bancario.numeroCuenta.valid && !this.isDraftAccount(bancario.numeroCuenta.value),
-        () => esContratoDependiente,
-      ),
-      this.rule(
-        'honorarios.bank-data',
-        'bancario',
-        'Agrega datos de pago si el prestador recibirá transferencia',
-        'warning',
-        false,
-        'bancario.idBanco',
-        'Honorarios',
-        () =>
-          bancario.idBanco.value !== null &&
-          bancario.idTipoCuentaBancaria.value !== null &&
-          Boolean(bancario.numeroCuenta.value.trim()) &&
-          !this.isDraftAccount(bancario.numeroCuenta.value),
-        () => esHonorarios,
-      ),
-    ];
+  private evaluateValidationRules(): ReglaValidacionEvaluada[] {
+    return mapDiagnosticoItemsToEvaluatedRules(
+      evaluarDiagnosticoFichaEmpleado(this.buildFichaValidacionSnapshot()),
+    );
   }
 
-  private evaluateValidationRules(): EvaluatedValidationRule[] {
-    return this.getAllValidationRules().map((rule) => {
-      const applicable = rule.isApplicable();
+  private buildFichaValidacionSnapshot(): EmpleadoFichaValidacionSnapshot {
+    const edadResumen = this.perfilLaboralEdadResumen();
+    return construirSnapshotValidacionFicha({
+      form: this.form,
+      catalogos: this.catalogos(),
+      esModoBasico: this.esModoBasico(),
+      esModoAvanzado: this.esModoAvanzado(),
+      esModoHonorarios: this.esModoHonorarios(),
+      pasoWizardActivo: this.pasoWizardActivo(),
+      perfilLaboralMenorEdad: edadResumen.kind === "menor",
+      tieneCondicionesEspeciales: this.hasPerfilLaboralCondicionesSeleccionadas(),
+      observacionCondicionesValida:
+        this.form.controls.perfilLaboral.controls.observacion.valid,
+    });
+  }
 
+  confirmarCambioHonorariosDesdeModal(): void {
+    this.previousRelacionLaboral = "HONORARIOS";
+  }
+
+  aplicarAccionCoherencia(
+    accion: AccionCoherenciaAlta | undefined,
+    valor: boolean | number | undefined,
+  ): void {
+    const contrato = this.form.controls.contrato.controls;
+    const perfil = this.form.controls.perfilLaboral.controls;
+
+    switch (accion) {
+      case "activarSeguroCesantia":
+      case "desactivarSeguroCesantia":
+        contrato.seguroCesantia.setValue(Boolean(valor));
+        contrato.seguroCesantia.markAsDirty();
+        contrato.seguroCesantia.markAsTouched();
+        break;
+      case "ajustarHorasSemanales":
+        contrato.horasSemanales.setValue(
+          typeof valor === "number" ? valor : null,
+        );
+        contrato.horasSemanales.markAsDirty();
+        contrato.horasSemanales.markAsTouched();
+        break;
+      case "marcarTrabajadorAdolescenteProtegido":
+        perfil.trabajadorAdolescenteProtegido.setValue(true);
+        perfil.trabajadorAdolescenteProtegido.markAsDirty();
+        perfil.trabajadorAdolescenteProtegido.markAsTouched();
+        break;
+      case "marcarExentoCotizacionPension":
+        perfil.exentoCotizacionPension.setValue(true);
+        perfil.exentoCotizacionPension.markAsDirty();
+        perfil.exentoCotizacionPension.markAsTouched();
+        this.seleccionarPasoAsistente(this.perfilLaboralWizardStepIndex());
+        break;
+      default:
+        break;
+    }
+  }
+
+  altaCoherenciaState(): EstadoCoherenciaAlta {
+    const contrato = this.form.controls.contrato.controls;
+    const personal = this.form.controls.datosPersonales.controls;
+    const prevision = this.form.controls.previsionSalud.controls;
+    const perfil = this.form.controls.perfilLaboral.controls;
+
+    return evaluarAltaCoherencia({
+      relacionLaboral: contrato.relacionLaboral.value,
+      tipoContrato: contrato.tipoContrato.value,
+      tipoJornadaLabel: this.etiquetaTipoJornadaSeleccionada(),
+      jornadaParcial: this.esJornadaParcialSeleccionada(),
+      fechaNacimiento: personal.fechaNacimiento.value,
+      fechaIngreso: contrato.fechaIngreso.value,
+      fechaTermino: contrato.fechaTermino.value,
+      horasSemanales: contrato.horasSemanales.value,
+      excluidoLimiteJornada: contrato.excluidoLimiteJornada.value,
+      causalExclusionJornada: contrato.causalExclusionJornada.value,
+      casaParticularModalidad: contrato.casaParticularModalidad.value,
+      casaParticularRegistroDtEstado: contrato.casaParticularRegistroDtEstado.value,
+      seguroCesantia: contrato.seguroCesantia.value,
+      tipoRegimenPrevisional: prevision.tipoRegimenPrevisional.value,
+      condiciones: {
+        pensionado: perfil.pensionado.value,
+        pensionadoInvalidezParcial: perfil.pensionadoInvalidezParcial.value,
+        pensionadoInvalidezTotal: perfil.pensionadoInvalidezTotal.value,
+        exentoCotizacionPension: perfil.exentoCotizacionPension.value,
+        trabajadorAdolescenteProtegido:
+          perfil.trabajadorAdolescenteProtegido.value,
+        autorizacionMenorRegistrada: perfil.autorizacionMenorRegistrada.value,
+        tecnicoExtranjeroExento: perfil.tecnicoExtranjeroExento.value,
+        discapacidad: perfil.discapacidad.value,
+        respaldoRegistrado: perfil.respaldoRegistrado.value,
+      },
+    });
+  }
+
+  altaAplicabilidadState(): EstadoAplicabilidadAlta {
+    const contrato = this.form.controls.contrato.controls;
+    const prevision = this.form.controls.previsionSalud.controls;
+    const perfil = this.form.controls.perfilLaboral.controls;
+    const edadResumen = this.perfilLaboralEdadResumen();
+
+    return evaluarAltaAplicabilidad({
+      relacionLaboral: contrato.relacionLaboral.value,
+      tipoContrato: contrato.tipoContrato.value,
+      tipoRegimenPrevisional: prevision.tipoRegimenPrevisional.value,
+      tieneApv: prevision.tieneApv.value,
+      tieneCondicionesEspeciales:
+        this.hasPerfilLaboralCondicionesSeleccionadas(),
+      tieneRespaldoCondiciones: perfil.respaldoRegistrado.value,
+      esMenorEdad: edadResumen.kind === "menor",
+      esMayor65: edadResumen.kind === "mayor",
+    });
+  }
+
+  aplicabilidadItem(campo: AltaAplicabilidadCampo): AltaAplicabilidadItem {
+    return this.altaAplicabilidadState().campos[campo];
+  }
+
+  aplicabilidadStepMotivo(stepIndex: number): string {
+    return altaAplicabilidadStep(this.altaAplicabilidadState(), stepIndex)
+      .motivo;
+  }
+
+  diagnosticoContractualRows(): readonly {
+    label: string;
+    estado: string;
+    motivo: string;
+    tone: string;
+  }[] {
+    const estado = this.altaAplicabilidadState();
+    const campos: readonly AltaAplicabilidadCampo[] = this.esModoHonorarios()
+      ? ["tipoTrabajador", "montoHonorarios", "banco", "resumenFinal"]
+      : [
+          "tipoTrabajador",
+          "jornadaLaboral",
+          "seguroCesantia",
+          "regimenPrevisional",
+          "condicionesEspeciales",
+        ];
+
+    return campos.map((campo) => {
+      const item = estado.campos[campo];
       return {
-        id: rule.id,
-        stepId: rule.stepId,
-        wizardStep: this.resolveWizardStep(rule),
-        label: rule.label,
-        severity: rule.severity,
-        blocking: rule.blocking,
-        complete: applicable ? rule.isComplete() : true,
-        visible: applicable && (rule.isVisible?.() ?? true),
-        sourcePath: rule.sourcePath,
-        category: rule.category,
+        label: item.label,
+        estado: this.diagnosticoEstadoLabel(item.estado),
+        motivo: item.motivo,
+        tone: item.estado,
       };
     });
   }
 
-  private pendingValidationItemsForWizardStep(wizardStep: number): EvaluatedValidationRule[] {
-    return this.evaluateValidationRules()
-      .filter((item) => item.visible && item.wizardStep === wizardStep && !item.complete)
-      .sort((a, b) => this.validationSortWeight(a) - this.validationSortWeight(b));
+  diagnosticoContractualBadge(): string {
+    const bloqueos = this.altaAplicabilidadState().resumen.blocked;
+    const revisiones = this.inconsistenciasCoherencia().length;
+
+    if (bloqueos > 0) {
+      return `${bloqueos} bloqueo(s) de fase`;
+    }
+
+    if (revisiones > 0) {
+      return `${revisiones} punto(s) a revisar`;
+    }
+
+    if (this.esModoHonorarios()) {
+      return "Finalizable";
+    }
+
+    return "Alta coherente";
   }
 
-  private pendingValidationItemsForFinalization(): EvaluatedValidationRule[] {
-    return this.evaluateValidationRules()
-      .filter((item) => item.visible && !item.complete)
-      .sort((a, b) => {
-        const byStep = a.wizardStep - b.wizardStep;
-        return byStep !== 0 ? byStep : this.validationSortWeight(a) - this.validationSortWeight(b);
-      });
+  diagnosticoContractualDescripcion(): string {
+    const bloqueos = this.altaAplicabilidadState().resumen.blocked;
+    const revisiones = this.inconsistenciasCoherencia().length;
+
+    if (this.esModoHonorarios()) {
+      return "Modalidad honorarios: completa servicio, monto y pago.";
+    }
+
+    if (bloqueos > 0) {
+      return "Hay una restricción de fase que impide finalizar con el flujo actual.";
+    }
+
+    if (revisiones > 0) {
+      return "Hay revisiones administrativas que deben decidirse antes de finalizar o quedar mantenidas bajo revisión.";
+    }
+
+    return "El sistema revisó contrato, jornada, previsión y condiciones especiales según la relación seleccionada.";
   }
 
-  private openAdvancedActionModal(modal: AdvancedActionModal): void {
-    this.errorMessage.set(null);
-    this.duplicateRutModalRut.set(null);
-    this.successMessage.set(null);
-    this.advancedActionModal.set(modal);
+  diagnosticoContractualCasoLabel(): string {
+    const edad = this.perfilLaboralEdadResumen().label;
+
+    if (this.esModoHonorarios()) {
+      return `${edad} · Prestador a honorarios / independiente`;
+    }
+
+    return `${edad} · Trabajador dependiente / ${this.tipoContratoResumenLabel()}`;
   }
 
-  private openNextStepReviewModal(step: number, pending: readonly EvaluatedValidationRule[]): void {
-    const blocking = pending.filter((item) => item.blocking && item.severity === 'error');
-    const warnings = pending.filter((item) => item.severity === 'warning');
-    const label = this.wizardStepShortLabel(step);
-
-    this.openAdvancedActionModal({
-      kind: 'next-step-review',
-      variant: blocking.length > 0 ? 'warning' : 'info',
-      title: blocking.length > 0 ? 'Datos pendientes en esta sección' : 'Advertencias de revisión',
-      message:
-        blocking.length > 0
-          ? `La sección "${label}" aún tiene información necesaria para finalizar el alta del trabajador. Puedes corregirla ahora o continuar con la siguiente sección y volver más adelante.`
-          : `La sección "${label}" tiene advertencias administrativas que conviene revisar antes de finalizar el alta. Puedes continuar y volver más adelante.`,
-      primaryLabel: 'Continuar',
-      secondaryLabel: 'Corregir ahora',
-      blockingItems: this.validationModalLabels(blocking, 6),
-      warningItems: this.validationModalLabels(warnings, 6),
-      infoItems: [
-        'Puedes seguir completando otras secciones sin perder lo avanzado.',
-        'Finalizar alta exigirá resolver los datos obligatorios pendientes.',
-      ],
-      targetStep: step,
-      primaryAction: 'continue-next',
-      secondaryAction: 'focus-current-step',
-    });
+  private diagnosticoEstadoLabel(
+    estado: AltaAplicabilidadItem["estado"],
+  ): string {
+    switch (estado) {
+      case "required":
+        return "Aplica";
+      case "optional":
+        return "Solo si aplica";
+      case "derived":
+        return "Definido por sistema";
+      case "not_applicable":
+        return "No requerido";
+      case "review":
+        return "Revisión RRHH";
+      case "warning":
+        return "Revisión RRHH";
+      case "blocked":
+        return "Bloqueado";
+    }
   }
 
-  private openDraftInvalidModal(message: string): void {
-    this.openAdvancedActionModal({
-      kind: 'draft-invalid',
-      variant: 'warning',
-      title: 'No se puede guardar el borrador',
-      message: 'Para guardar un borrador necesitamos identificar al trabajador con datos mínimos. Completa la información pendiente y vuelve a guardar.',
-      primaryLabel: 'Ir al primer dato pendiente',
-      secondaryLabel: 'Cerrar',
-      blockingItems: this.draftMinimumPendingLabels(),
-      warningItems: [],
-      infoItems: [
-        'El borrador solo requiere datos mínimos de identificación.',
-        'El resto de la ficha puede completarse después.',
-      ],
-      targetStep: 0,
-      primaryAction: 'focus-draft-minimum',
-      secondaryAction: 'dismiss',
-    });
+  private tipoContratoResumenLabel(): string {
+    switch (this.form.controls.contrato.controls.tipoContrato.value) {
+      case "INDEFINIDO":
+        return "contrato indefinido";
+      case "PLAZO_FIJO":
+        return "contrato a plazo fijo";
+      case "OBRA_SERVICIO":
+        return "contrato por obra o servicio";
+      case "CASA_PARTICULAR":
+        return "contrato de casa particular";
+      default:
+        return "contrato pendiente";
+    }
   }
 
-  private openDraftSuccessModal(isNewDraft: boolean): void {
-    this.openAdvancedActionModal({
-      kind: 'draft-success',
-      variant: 'success',
-      title: isNewDraft ? 'Borrador guardado' : 'Borrador actualizado',
-      message: 'La ficha fue guardada correctamente. Puedes seguir completando la creación avanzada ahora o continuar más tarde desde el listado de empleados.',
-      primaryLabel: 'Aceptar',
-      blockingItems: [],
-      warningItems: [],
-      infoItems: ['La ficha seguirá en borrador hasta que finalices el alta.'],
-      primaryAction: 'dismiss',
-    });
+  inconsistenciasCoherencia(): readonly InconsistenciaCoherenciaAlta[] {
+    return this.altaCoherenciaState().inconsistencias;
   }
 
-  private openFinishInvalidModal(firstBadStep: number): void {
-    const pending = this.pendingValidationItemsForFinalization();
-    const blocking = pending.filter((item) => item.blocking && item.severity === 'error');
-    const warnings = pending.filter((item) => item.severity === 'warning');
-
-    this.openAdvancedActionModal({
-      kind: 'finish-invalid',
-      variant: 'error',
-      title: 'La ficha no está lista para finalizar',
-      message:
-        'Aún faltan datos administrativos necesarios para crear el trabajador y dejarlo preparado para remuneraciones. Revisa los puntos pendientes antes de finalizar.',
-      primaryLabel: 'Ir al primer pendiente',
-      secondaryLabel: 'Cerrar',
-      blockingItems: this.validationModalLabels(blocking, 10),
-      warningItems: this.validationModalLabels(warnings, 8),
-      infoItems: [
-        'Puedes cerrar este aviso y guardar un borrador si necesitas completar la información después.',
-      ],
-      targetStep: firstBadStep,
-      primaryAction: 'focus-first-blocking',
-      secondaryAction: 'dismiss',
-    });
+  inconsistenciasCoherenciaPasoActivo(): readonly InconsistenciaCoherenciaAlta[] {
+    return this.inconsistenciasCoherenciaPorPaso(this.pasoWizardActivo());
   }
 
-  private openFinishConfirmModal(): void {
-    this.openAdvancedActionModal({
-      kind: 'finish-confirm',
-      variant: 'success',
-      title: 'Finalizar alta del trabajador',
-      message:
-        'La ficha cuenta con los datos mínimos para crear el trabajador y continuar con los procesos administrativos y de remuneraciones. Antes de finalizar, revisa que la información ingresada sea correcta.',
-      primaryLabel: 'Finalizar alta',
-      secondaryLabel: 'Cancelar',
-      blockingItems: [],
-      warningItems: [],
-      infoItems: ['Después podrás revisar información complementaria desde la ficha del empleado.'],
-      primaryAction: 'execute-finish',
-      secondaryAction: 'dismiss',
-    });
+  inconsistenciasCoherenciaPorPaso(stepIndex: number): readonly InconsistenciaCoherenciaAlta[] {
+    return this.inconsistenciasCoherencia().filter(
+      (issue) => issue.stepIndex === stepIndex,
+    );
+  }
+
+  coherenciaResumenItems(): readonly string[] {
+    return this.inconsistenciasCoherencia()
+      .map((issue) => issue.summary)
+      .slice(0, 6);
+  }
+
+  coherenciaResumenBadge(): string {
+    const inconsistencias = this.inconsistenciasCoherencia();
+
+    if (inconsistencias.length === 0) {
+      return "Sin revisiones";
+    }
+
+    const porDecidir = inconsistencias.filter(
+      (issue) =>
+        issue.action && !this.idsInconsistenciasCoherenciaReconocidas().has(issue.id),
+    ).length;
+
+    if (porDecidir > 0) {
+      return `${porDecidir} por decidir`;
+    }
+
+    return `${inconsistencias.length} mantenida(s) bajo revisión`;
+  }
+
+  coherenciaStatusRows(): readonly {
+    label: string;
+    detail: string;
+    tone: string;
+  }[] {
+    const estado = this.altaCoherenciaState();
+    return [
+      {
+        label: `Seguro de Cesantía: ${estado.seguroCesantia.label}`,
+        detail: estado.seguroCesantia.detail,
+        tone: estado.seguroCesantia.tone,
+      },
+      {
+        label: `Jornada: ${estado.jornada.label}`,
+        detail: estado.jornada.detail,
+        tone: estado.jornada.tone,
+      },
+      {
+        label: `Previsión: ${estado.prevision.label}`,
+        detail: estado.prevision.detail,
+        tone: estado.prevision.tone,
+      },
+    ];
+  }
+
+  private primeraDecisionCoherenciaPorPaso(
+    stepIndex: number,
+  ): InconsistenciaCoherenciaAlta | null {
+    return (
+      this.inconsistenciasCoherenciaPorPaso(stepIndex).find(
+        (issue) =>
+          issue.action && !this.idsInconsistenciasCoherenciaReconocidas().has(issue.id),
+      ) ?? null
+    );
+  }
+
+  private primeraDecisionCoherenciaSinReconocer(): InconsistenciaCoherenciaAlta | null {
+    return (
+      this.inconsistenciasCoherencia().find(
+        (issue) =>
+          issue.action && !this.idsInconsistenciasCoherenciaReconocidas().has(issue.id),
+      ) ?? null
+    );
+  }
+
+  private pendingValidationItemsForWizardStep(
+    wizardStep: number,
+  ): ReglaValidacionEvaluada[] {
+    return sortReglasValidacion(
+      this.evaluateValidationRules().filter(
+        (item) =>
+          item.visible && item.wizardStep === wizardStep && !item.complete,
+      ),
+    );
+  }
+
+  obtenerPendientesValidacionFinalizacion(): ReglaValidacionEvaluada[] {
+    return sortReglasValidacion(
+      this.evaluateValidationRules().filter(
+        (item) =>
+          item.visible &&
+          !item.complete &&
+          this.reglaValidacionCuentaEnFlujoAltaAvanzada(item),
+      ),
+    );
+  }
+
+  private aplicabilidadReviewsAsValidationRules(
+    wizardStep: number,
+  ): ReglaValidacionEvaluada[] {
+    return this.altaValidacionesVisiblesMotor()
+      .filter(
+        (item) =>
+          item.paso === wizardStep &&
+          item.id.startsWith('aplicabilidad.') &&
+          (item.tipo === 'review' || item.tipo === 'warning'),
+      )
+      .map((item) => ({
+        id: item.id,
+        stepId: 'contrato',
+        wizardStep: item.paso,
+        sectionTitle: item.area,
+        label: item.titulo,
+        detail: item.detalle,
+        severity: item.tipo === 'warning' ? 'warning' : 'info',
+        blocking: false,
+        complete: false,
+        visible: true,
+        sourcePath: item.controlPath ?? '',
+      }));
   }
 
 
-  private openHonorariosConfirmModal(): void {
-    this.openAdvancedActionModal({
-      kind: 'honorarios-confirm',
-      variant: 'warning',
-      title: 'Cambiar a boleta de honorarios',
-      message:
-        'Este registro se tratará como prestador de servicios y no como trabajador dependiente. El formulario ocultará los datos laborales que no corresponden a esta modalidad.',
-      primaryLabel: 'Confirmar cambio',
-      secondaryLabel: 'Cancelar',
-      blockingItems: [],
-      warningItems: [
-        'Jornada laboral, gratificación, previsión, salud, APVI y asignaciones laborales quedarán como no aplicables.',
-        'La ficha podrá guardarse como borrador, pero no finalizarse como trabajador dependiente.',
-      ],
-      infoItems: [
-        'El monto informado será el monto bruto de honorarios.',
-        'La persistencia completa de honorarios se habilitará en una fase posterior.',
-      ],
-      primaryAction: 'confirm-honorarios',
-      secondaryAction: 'cancel-honorarios',
-    });
+  private configurarFlujoTipoTrabajador(): void {
+    const relacion = this.form.controls.contrato.controls.relacionLaboral;
+
+    relacion.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.syncTipoTrabajadorConRelacionLaboral());
   }
 
-  private openHonorariosFinishBlockedModal(): void {
-    this.openAdvancedActionModal({
-      kind: 'honorarios-finish-blocked',
-      variant: 'warning',
-      title: 'Guardar borrador de honorarios',
-      message:
-        'La ficha está marcada como boleta de honorarios. Se puede conservar como borrador, pero no finalizar como trabajador dependiente con el flujo actual.',
-      primaryLabel: 'Guardar como borrador',
-      secondaryLabel: 'Cerrar',
-      blockingItems: [
-        'La persistencia final de honorarios aún no está habilitada.',
-        'No se generará contrato laboral, jornada, previsión dependiente ni liquidación de sueldo.',
-      ],
-      warningItems: [
-        'Mantén esta ficha como borrador hasta implementar el flujo completo de prestadores a honorarios.',
-      ],
-      infoItems: [
-        'Fase posterior: monto bruto, retención vigente, datos tributarios y separación de nómina dependiente.',
-      ],
-      targetStep: 8,
-      primaryAction: 'save-honorarios-draft',
-      secondaryAction: 'dismiss',
-    });
+  private syncTipoTrabajadorConRelacionLaboral(): void {
+    const contrato = this.form.controls.contrato.controls;
+    const base = tipoTrabajadorBaseParaRelacion(contrato.relacionLaboral.value);
+    const option = buscarTipoTrabajadorBase(
+      this.catalogos().tiposTrabajador,
+      base,
+    );
+
+    if (!option) {
+      contrato.idTipoTrabajador.setValue(null, { emitEvent: false });
+      contrato.idTipoTrabajador.updateValueAndValidity({ emitEvent: false });
+      return;
+    }
+
+    if (contrato.idTipoTrabajador.value !== option.value) {
+      contrato.idTipoTrabajador.setValue(option.value, { emitEvent: false });
+    }
+    contrato.idTipoTrabajador.markAsPristine();
+    contrato.idTipoTrabajador.updateValueAndValidity({ emitEvent: false });
   }
 
-  selectedTipoTrabajadorLabel(): string {
-    const selectedId = this.form.controls.contrato.controls.idTipoTrabajador.value;
-    const option = this.catalogos().tiposTrabajador.find((item) => item.value === selectedId);
+  etiquetaTipoTrabajadorSeleccionado(): string {
+    const selectedId =
+      this.form.controls.contrato.controls.idTipoTrabajador.value;
+    const option = this.catalogos().tiposTrabajador.find(
+      (item) => item.value === selectedId,
+    );
 
-    return option?.label ?? 'Tipo trabajador pendiente';
+    return option?.label ?? "Tipo trabajador pendiente";
   }
 
-  private configurePerfilLaboralAutodetection(): void {
+  etiquetaTipoJornadaSeleccionada(): string {
+    const selectedId = this.form.controls.contrato.controls.idTipoJornada.value;
+    const option = this.catalogos().tiposJornada.find(
+      (item) => item.value === selectedId,
+    );
+
+    return option?.label ?? "Jornada pendiente";
+  }
+
+  private esJornadaParcialSeleccionada(): boolean {
+    const label = this.etiquetaTipoJornadaSeleccionada();
+    return label
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .includes("parcial");
+  }
+
+  private configurarAutodeteccionPerfilLaboral(): void {
     const personal = this.form.controls.datosPersonales.controls;
     const contrato = this.form.controls.contrato.controls;
     const prevision = this.form.controls.previsionSalud.controls;
@@ -2267,7 +2310,6 @@ export class FormEmpleadoComponent implements OnInit {
     const sources: AbstractControl[] = [
       personal.fechaNacimiento,
       contrato.fechaIngreso,
-      contrato.idTipoTrabajador,
       contrato.relacionLaboral,
       prevision.tipoRegimenPrevisional,
     ];
@@ -2275,87 +2317,53 @@ export class FormEmpleadoComponent implements OnInit {
     sources.forEach((control) => {
       control.valueChanges
         .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe(() => this.applyPerfilLaboralAutodetection());
+        .subscribe(() => this.aplicarAutodeteccionPerfilLaboral());
     });
   }
 
-  private applyPerfilLaboralAutodetection(): void {
-    if (this.form.controls.contrato.controls.relacionLaboral.value === 'HONORARIOS') {
-      this.perfilLaboralAutoDetections.set([]);
+  private aplicarAutodeteccionPerfilLaboral(): void {
+    if (
+      this.form.controls.contrato.controls.relacionLaboral.value ===
+      "HONORARIOS"
+    ) {
+      this.deteccionesAutomaticasPerfilLaboral.set([]);
       return;
     }
 
-    const detections = this.detectPerfilLaboralConditions();
-    this.perfilLaboralAutoDetections.set(detections);
-    this.syncAutoDetectedPerfilControls(detections);
+    const detections = this.detectarCondicionesPerfilLaboral();
+    this.deteccionesAutomaticasPerfilLaboral.set(detections);
+    this.sincronizarControlesPerfilAutodetectados(detections);
   }
 
-  private detectPerfilLaboralConditions(): readonly PerfilLaboralAutoDetection[] {
+  private detectarCondicionesPerfilLaboral(): readonly DeteccionAutomaticaPerfilLaboral[] {
     const detections = new Map<CondicionTrabajadorControlName, string>();
     const edadResumen = this.perfilLaboralEdadResumen();
-    const tipoTrabajadorLabel = this.normalizeCatalogLabel(this.selectedTipoTrabajadorLabel());
-    const regimenPrevisional = this.form.controls.previsionSalud.controls.tipoRegimenPrevisional.value;
+    const regimenPrevisional =
+      this.form.controls.previsionSalud.controls.tipoRegimenPrevisional.value;
 
-    if (edadResumen.kind === 'menor') {
+    if (edadResumen.kind === "menor") {
       detections.set(
-        'trabajadorAdolescenteProtegido',
-        'Detectado por fecha de nacimiento y fecha de ingreso.',
+        "trabajadorAdolescenteProtegido",
+        "Detectado por fecha de nacimiento y fecha de ingreso.",
       );
     }
 
-    if (tipoTrabajadorLabel.includes('pensionado')) {
-      if (tipoTrabajadorLabel.includes('invalidez') && tipoTrabajadorLabel.includes('parcial')) {
-        detections.set(
-          'pensionadoInvalidezParcial',
-          'Detectado desde el tipo de trabajador seleccionado.',
-        );
-      } else if (tipoTrabajadorLabel.includes('invalidez') && tipoTrabajadorLabel.includes('total')) {
-        detections.set(
-          'pensionadoInvalidezTotal',
-          'Detectado desde el tipo de trabajador seleccionado.',
-        );
-      } else {
-        detections.set('pensionado', 'Detectado desde el tipo de trabajador seleccionado.');
-      }
-    }
-
-    if (
-      tipoTrabajadorLabel.includes('exento') &&
-      (tipoTrabajadorLabel.includes('cotizacion') ||
-        tipoTrabajadorLabel.includes('prevision') ||
-        tipoTrabajadorLabel.includes('pension'))
-    ) {
+    if (regimenPrevisional === "NINGUNA") {
       detections.set(
-        'exentoCotizacionPension',
-        'Detectado desde el tipo de trabajador seleccionado.',
+        "exentoCotizacionPension",
+        "Detectado desde el régimen previsional informado como sin AFP/IPS.",
       );
     }
 
-    if (regimenPrevisional === 'NINGUNA') {
-      detections.set(
-        'exentoCotizacionPension',
-        'Detectado desde el régimen previsional informado como sin AFP/IPS.',
-      );
-    }
-
-    if (
-      (tipoTrabajadorLabel.includes('tecnico') && tipoTrabajadorLabel.includes('extranjero')) ||
-      (tipoTrabajadorLabel.includes('extranjero') && tipoTrabajadorLabel.includes('exento'))
-    ) {
-      detections.set(
-        'tecnicoExtranjeroExento',
-        'Detectado desde el tipo de trabajador seleccionado.',
-      );
-    }
-
-    if (tipoTrabajadorLabel.includes('discapacidad')) {
-      detections.set('discapacidad', 'Detectado desde el tipo de trabajador seleccionado.');
-    }
-
-    return Array.from(detections.entries()).map(([controlName, reason]) => ({ controlName, reason }));
+    return Array.from(detections.entries()).map(([controlName, reason]) => ({
+      controlName,
+      reason,
+    }));
   }
 
-  private syncAutoDetectedPerfilControls(detections: readonly PerfilLaboralAutoDetection[]): void {
+  private sincronizarControlesPerfilAutodetectados(
+    detections: readonly DeteccionAutomaticaPerfilLaboral[],
+  ): void {
     const perfil = this.form.controls.perfilLaboral.controls;
 
     for (const detection of detections) {
@@ -2366,181 +2374,225 @@ export class FormEmpleadoComponent implements OnInit {
     }
 
     if (detections.length > 0 && !perfil.vigenciaInicio.value) {
-      const fechaIngreso = this.form.controls.contrato.controls.fechaIngreso.value;
-      perfil.vigenciaInicio.setValue(fechaIngreso || new Date().toISOString().slice(0, 10), {
-        emitEvent: false,
-      });
+      const fechaIngreso =
+        this.form.controls.contrato.controls.fechaIngreso.value;
+      perfil.vigenciaInicio.setValue(
+        fechaIngreso || new Date().toISOString().slice(0, 10),
+        {
+          emitEvent: false,
+        },
+      );
     }
   }
 
-  private normalizeCatalogLabel(value: string): string {
+  private normalizarEtiquetaCatalogo(value: string): string {
     return value
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase()
       .trim();
   }
 
-  private configureRelacionLaboralUx(): void {
+  private configurarUxRelacionLaboral(): void {
     const control = this.form.controls.contrato.controls.relacionLaboral;
     this.previousRelacionLaboral = control.value;
 
-    control.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
-      if (this.suppressRelacionLaboralModal) {
+    control.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((value) => {
+        if (this.suppressRelacionLaboralModal) {
+          this.previousRelacionLaboral = value;
+          return;
+        }
+
+        if (
+          value === "HONORARIOS" &&
+          this.previousRelacionLaboral !== "HONORARIOS"
+        ) {
+          this.relacionLaboralRevertirHonorarios = this.previousRelacionLaboral;
+          this.confirmarModoHonorarios({ lockPrevious: false });
+          this.modalOrquestador.abrirModalConfirmarHonorarios();
+          return;
+        }
+
         this.previousRelacionLaboral = value;
-        return;
-      }
-
-      if (value === 'HONORARIOS' && this.previousRelacionLaboral !== 'HONORARIOS') {
-        this.openHonorariosConfirmModal();
-        return;
-      }
-
-      this.previousRelacionLaboral = value;
-    });
+      });
   }
 
-  private confirmHonorariosMode(): void {
-    this.previousRelacionLaboral = 'HONORARIOS';
-    this.applyHonorariosVisualState();
-    this.moveHonorariosFlowToApplicableStep();
-    this.syncCompletedTabsFromValidity();
+  private confirmarModoHonorarios(options?: { lockPrevious?: boolean }): void {
+    this.aplicarEstadoVisualHonorarios();
+    this.empleadosFormService.sincronizarValidadoresPorRelacionLaboral(
+      this.form,
+      this.catalogos(),
+    );
+    this.moverFlujoHonorariosAPasoAplicable();
+    this.sincronizarPestanasCompletadasDesdeValidez();
+    if (options?.lockPrevious !== false) {
+      this.previousRelacionLaboral = "HONORARIOS";
+    }
   }
 
-  private cancelHonorariosModeChange(): void {
+  cancelarCambioModoHonorarios(): void {
     this.suppressRelacionLaboralModal = true;
-    this.form.controls.contrato.controls.relacionLaboral.setValue(this.previousRelacionLaboral, {
-      emitEvent: true,
-    });
+    this.form.controls.contrato.controls.relacionLaboral.setValue(
+      this.relacionLaboralRevertirHonorarios,
+      {
+        emitEvent: true,
+      },
+    );
+    this.previousRelacionLaboral = this.relacionLaboralRevertirHonorarios;
     this.suppressRelacionLaboralModal = false;
-    this.syncCompletedTabsFromValidity();
+    this.sincronizarControlesNoAplicablesHonorarios(false);
+    this.empleadosFormService.sincronizarValidadoresPorRelacionLaboral(
+      this.form,
+      this.catalogos(),
+    );
+    this.sincronizarPestanasCompletadasDesdeValidez();
   }
 
-  private applyHonorariosVisualState(): void {
+  private sincronizarControlesNoAplicablesHonorarios(
+    deshabilitarDependiente: boolean,
+  ): void {
+    const opts = { emitEvent: false } as const;
+    const contrato = this.form.controls.contrato.controls;
+    const contratoNa: AbstractControl[] = [
+      contrato.tipoContrato,
+      contrato.fechaContrato,
+      contrato.fechaTermino,
+      contrato.idTipoJornada,
+      contrato.horasSemanales,
+      contrato.diasSemanales,
+      contrato.distribucionJornada,
+      contrato.tiempoColacionMinutos,
+      contrato.tipoGratificacion,
+      contrato.cargas,
+      contrato.idTramoCarga,
+      contrato.casaParticularModalidad,
+      contrato.casaParticularLabores,
+      contrato.casaParticularDomicilioEspecifico,
+      contrato.casaParticularAsistenciaCuidado,
+      contrato.casaParticularRegistroDtEstado,
+      contrato.casaParticularRegistroDtFecha,
+      contrato.casaParticularRegistroDtFolio,
+      contrato.semanaCorridaActiva,
+      contrato.semanaCorridaDiasLaborables,
+      contrato.zonaExtremaActiva,
+      contrato.zonaExtremaTerritorio,
+      contrato.zonaExtremaPorcentaje,
+    ];
+
+    for (const control of contratoNa) {
+      if (deshabilitarDependiente) {
+        control.disable(opts);
+      } else {
+        control.enable(opts);
+      }
+    }
+
+    const gruposNa = [
+      this.form.controls.previsionSalud,
+      this.form.controls.perfilLaboral,
+    ];
+    for (const grupo of gruposNa) {
+      if (deshabilitarDependiente) {
+        grupo.disable(opts);
+      } else {
+        grupo.enable(opts);
+      }
+    }
+
+    this.form.updateValueAndValidity(opts);
+  }
+
+  private aplicarEstadoVisualHonorarios(): void {
     const contrato = this.form.controls.contrato.controls;
     const prevision = this.form.controls.previsionSalud.controls;
 
-    const independiente = this.catalogos().tiposTrabajador.find((option) =>
-      option.label.toLowerCase().includes('independiente'),
-    );
-    if (independiente) {
-      contrato.idTipoTrabajador.setValue(independiente.value, { emitEvent: false });
-    }
+    this.syncTipoTrabajadorConRelacionLaboral();
 
     contrato.tipoContrato.setValue(null, { emitEvent: false });
-    contrato.fechaContrato.setValue('', { emitEvent: false });
-    contrato.fechaTermino.setValue('', { emitEvent: false });
+    contrato.fechaContrato.setValue("", { emitEvent: false });
+    contrato.fechaTermino.setValue("", { emitEvent: false });
     contrato.idTipoJornada.setValue(null, { emitEvent: false });
     contrato.horasSemanales.setValue(null, { emitEvent: false });
     contrato.diasSemanales.setValue(null, { emitEvent: false });
-    contrato.distribucionJornada.setValue('', { emitEvent: false });
+    contrato.distribucionJornada.setValue("", { emitEvent: false });
     contrato.tiempoColacionMinutos.setValue(null, { emitEvent: false });
     contrato.tipoGratificacion.setValue(null, { emitEvent: false });
     contrato.seguroCesantia.setValue(false, { emitEvent: false });
+    contrato.excluidoLimiteJornada.setValue(false, { emitEvent: false });
+    contrato.causalExclusionJornada.setValue(null, { emitEvent: false });
+    contrato.justificacionExclusionJornada.setValue("", { emitEvent: false });
+    contrato.casaParticularModalidad.setValue(null, { emitEvent: false });
+    contrato.casaParticularLabores.setValue("", { emitEvent: false });
+    contrato.casaParticularDomicilioEspecifico.setValue("", { emitEvent: false });
+    contrato.casaParticularAsistenciaCuidado.setValue(false, { emitEvent: false });
+    contrato.casaParticularRegistroDtEstado.setValue(null, { emitEvent: false });
+    contrato.casaParticularRegistroDtFecha.setValue("", { emitEvent: false });
+    contrato.casaParticularRegistroDtFolio.setValue("", { emitEvent: false });
     contrato.sueldoVariable.setValue(false, { emitEvent: false });
     contrato.semanaCorridaActiva.setValue(false, { emitEvent: false });
     contrato.semanaCorridaDiasLaborables.setValue([], { emitEvent: false });
     contrato.zonaExtremaActiva.setValue(false, { emitEvent: false });
-    contrato.zonaExtremaTerritorio.setValue('', { emitEvent: false });
+    contrato.zonaExtremaTerritorio.setValue("", { emitEvent: false });
     contrato.zonaExtremaPorcentaje.setValue(null, { emitEvent: false });
     contrato.cargas.setValue(0, { emitEvent: false });
     contrato.idTramoCarga.setValue(null, { emitEvent: false });
 
-    prevision.tipoRegimenPrevisional.setValue(null, { emitEvent: false });
+    prevision.tipoRegimenPrevisional.setValue("NINGUNA", { emitEvent: false });
     prevision.tieneApv.setValue(false, { emitEvent: false });
+
+    this.sincronizarControlesNoAplicablesHonorarios(true);
   }
 
-  private moveHonorariosFlowToApplicableStep(): void {
-    if ([4, 5, 6].includes(this.activeWizardStep())) {
-      this.activeWizardStep.set(7);
-      this.markWizardStepVisited(7);
-      this.scrollToCurrentStepStart({ focusFirstField: true });
+  private moverFlujoHonorariosAPasoAplicable(): void {
+    if ([4, 5, 6].includes(this.pasoWizardActivo())) {
+      this.presentacion.seleccionarPasoAsistente(7);
+      this.desplazarAInicioPasoActual({ focusFirstField: true });
     }
   }
 
-  private validationModalLabels(items: readonly EvaluatedValidationRule[], max: number): readonly string[] {
-    const seen = new Set<string>();
-    const out: string[] = [];
-
-    for (const item of items) {
-      const text = this.validationModalLabel(item);
-      if (seen.has(text)) {
-        continue;
-      }
-      seen.add(text);
-      out.push(text);
-      if (out.length >= max) {
-        break;
-      }
-    }
-
-    const remaining = Math.max(0, items.length - out.length);
-    if (remaining > 0) {
-      out.push(`Además hay ${remaining} dato${remaining === 1 ? '' : 's'} pendiente${remaining === 1 ? '' : 's'} adicional${remaining === 1 ? '' : 'es'}.`);
-    }
-
-    return out;
+  cerrarModalYEnfocarPrimerPendiente(
+    modal: ModalAccionAvanzada | null,
+    pasoFallback: number,
+  ): void {
+    this.modalAccionAvanzada.set(null);
+    const first = modal?.fieldItems?.[0];
+    this.enfocarPrimerItemModalAvanzada(first, () => {
+      this.mostrarPasoAsistenteInvalido(
+        first?.wizardStep ?? modal?.targetStep ?? pasoFallback,
+      );
+    });
   }
 
-  private validationModalLabel(item: EvaluatedValidationRule): string {
-    const negocio = MENSAJES_FINALIZAR_ALTA[item.id];
-    if (negocio) {
-      return negocio;
+  enfocarPrimerItemModalAvanzada(
+    item: ItemCampoModalAccionAvanzada | undefined,
+    fallback: () => void,
+  ): void {
+    if (!item?.controlPath) {
+      fallback();
+      return;
     }
 
-    return this.ensureSentence(item.label);
-  }
-
-  private ensureSentence(text: string): string {
-    const clean = text.trim();
-    if (!clean) {
-      return clean;
-    }
-
-    return /[.!?]$/.test(clean) ? clean : `${clean}.`;
-  }
-
-  private draftMinimumPendingLabels(): readonly string[] {
-    const dp = this.form.controls.datosPersonales.controls;
-    const pending: string[] = [];
-
-    if (dp.rut.invalid) {
-      pending.push('RUT válido o identificador extranjero del trabajador.');
-    }
-    if (!String(dp.nombres.value || '').trim()) {
-      pending.push('Nombres del trabajador.');
-    }
-    if (!String(dp.apellidoPaterno.value || '').trim()) {
-      pending.push('Apellido paterno.');
-    }
-    if (!String(dp.fechaNacimiento.value || '').trim()) {
-      pending.push('Fecha de nacimiento.');
-    }
-    if (dp.idPais.value === null || dp.idPais.value < 1) {
-      pending.push('País o nacionalidad.');
-    }
-    if (dp.sexo.value === null) {
-      pending.push('Sexo registral.');
-    }
-    if (dp.estadoCivil.value === null) {
-      pending.push('Estado civil.');
-    }
-
-    return pending.length > 0 ? pending : ['Revisa los datos personales mínimos.'];
+    this.presentacion.marcarPasoAsistenteIntentado(item.wizardStep);
+    this.intentarTodasPestanas();
+    this.marcarPasoAsistenteTocado(item.wizardStep);
+    this.navegarPasoAsistente(item.wizardStep, { focusFirstField: false });
+    this.enfocarRutaControl(item.controlPath);
   }
 
   private rule(
     id: string,
-    stepId: ValidationStepId,
+    stepId: IdPasoValidacion,
     label: string,
-    severity: ValidationSeverity,
+    severity: SeveridadValidacion,
     blocking: boolean,
     sourcePath: string,
     category: string,
     isComplete: () => boolean,
     isApplicable: () => boolean = () => true,
     isVisible?: () => boolean,
-  ): ValidationRule {
+  ): ReglaValidacion {
     return {
       id,
       stepId,
@@ -2555,87 +2607,88 @@ export class FormEmpleadoComponent implements OnInit {
     };
   }
 
-  private validationSortWeight(item: EvaluatedValidationRule): number {
-    if (item.complete) {
-      return 30;
-    }
-
-    if (item.severity === 'error' && item.blocking) {
-      return 0;
-    }
-
-    if (item.severity === 'warning') {
-      return 10;
-    }
-
-    return 20;
-  }
-
-  fullNameVisible(): string {
+  nombreCompletoVisible(): string {
     const { nombres, apellidoPaterno, apellidoMaterno } =
       this.form.controls.datosPersonales.controls;
-    const fullName = [nombres.value, apellidoPaterno.value, apellidoMaterno.value]
+    const fullName = [
+      nombres.value,
+      apellidoPaterno.value,
+      apellidoMaterno.value,
+    ]
       .map((value) => value.trim())
       .filter(Boolean)
-      .join(' ');
+      .join(" ");
 
     if (fullName) {
       return fullName;
     }
 
-    return 'Sin información';
+    return "Sin información";
   }
 
   rutVisible(): string {
-    return this.form.controls.datosPersonales.controls.rut.value.trim() || 'Sin RUT';
+    return (
+      this.form.controls.datosPersonales.controls.rut.value.trim() || "Sin RUT"
+    );
   }
 
   cargoVisible(): string {
     const cargo = this.form.controls.contrato.controls.cargo.value.trim();
-    return cargo && !this.isTechnicalCargo(cargo) ? cargo : 'Sin informacion';
+    return cargo && !this.esCargoTecnico(cargo) ? cargo : "Sin informacion";
   }
 
   sucursalVisible(): string {
     const selectedId = this.form.controls.contrato.controls.idSucursal.value;
-    const sucursal = this.catalogos().sucursales.find((option) => option.value === selectedId);
+    const sucursal = this.catalogos().sucursales.find(
+      (option) => option.value === selectedId,
+    );
 
-    return sucursal?.label || 'Sin información';
+    return sucursal?.label || "Sin información";
   }
 
   perfilLaboralResumenLabel(): string {
     const resumen = this.perfilLaboralEdadResumen();
-    return `${resumen.label} · ${this.isHonorariosMode() ? 'Independiente / honorarios' : 'Dependiente / contrato'}`;
+    return `${resumen.label} · ${this.esModoHonorarios() ? "Independiente / honorarios" : "Dependiente / contrato"}`;
   }
 
   condicionesPerfilResumenLabel(): string {
-    const selected = CONDICIONES_TRABAJADOR_UI
-      .filter((condition) => this.form.controls.perfilLaboral.controls[condition.controlName].value)
-      .map((condition) => condition.label);
+    const selected = CONDICIONES_TRABAJADOR_UI.filter(
+      (condition) =>
+        this.form.controls.perfilLaboral.controls[condition.controlName].value,
+    ).map((condition) => condition.label);
 
     if (selected.length === 0) {
-      return 'Sin condiciones especiales declaradas';
+      return "Sin condiciones especiales declaradas";
     }
 
     if (selected.length <= 3) {
-      return selected.join(', ');
+      return selected.join(", ");
     }
 
-    return `${selected.slice(0, 3).join(', ')} y ${selected.length - 3} más`;
+    return `${selected.slice(0, 3).join(", ")} y ${selected.length - 3} más`;
   }
 
   private hasPerfilLaboralCondicionesSeleccionadas(): boolean {
     return CONDICIONES_TRABAJADOR_UI.some(
-      (condition) => this.form.controls.perfilLaboral.controls[condition.controlName].value,
+      (condition) =>
+        this.form.controls.perfilLaboral.controls[condition.controlName].value,
     );
   }
 
-  private perfilLaboralEdadResumen(): { label: string; kind: 'pendiente' | 'menor' | 'adulto' | 'mayor' } {
-    const nacimiento = this.parseIsoDate(this.form.controls.datosPersonales.controls.fechaNacimiento.value);
+  private perfilLaboralEdadResumen(): {
+    label: string;
+    kind: "pendiente" | "menor" | "adulto" | "mayor";
+  } {
+    const nacimiento = this.parseIsoDate(
+      this.form.controls.datosPersonales.controls.fechaNacimiento.value,
+    );
     const referencia =
-      this.parseIsoDate(this.form.controls.contrato.controls.fechaIngreso.value) ?? new Date();
+      this.parseIsoDate(
+        this.form.controls.contrato.controls.fechaIngreso.value,
+      ) ?? new Date();
 
     if (!nacimiento || nacimiento > referencia) {
-      return { label: 'Edad laboral pendiente', kind: 'pendiente' };
+      return { label: "Edad laboral pendiente", kind: "pendiente" };
     }
 
     let edad = referencia.getFullYear() - nacimiento.getFullYear();
@@ -2647,14 +2700,14 @@ export class FormEmpleadoComponent implements OnInit {
     }
 
     if (edad < 18) {
-      return { label: `Menor de 18 años (${edad})`, kind: 'menor' };
+      return { label: `Menor de 18 años (${edad})`, kind: "menor" };
     }
 
     if (edad > 65) {
-      return { label: `Mayor de 65 años (${edad})`, kind: 'mayor' };
+      return { label: `Mayor de 65 años (${edad})`, kind: "mayor" };
     }
 
-    return { label: `Adulto 18 a 65 años (${edad})`, kind: 'adulto' };
+    return { label: `Adulto 18 a 65 años (${edad})`, kind: "adulto" };
   }
 
   private parseIsoDate(value: string): Date | null {
@@ -2662,156 +2715,137 @@ export class FormEmpleadoComponent implements OnInit {
       return null;
     }
 
-    const [year, month, day] = value.split('-').map(Number);
+    const [year, month, day] = value.split("-").map(Number);
     const parsed = new Date(year, month - 1, day);
 
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
 
-  checklistStatusClass(kind: WizardStepUiKind): string {
+  claseEstadoListaChequeo(kind: TipoUiPasoAsistente): string {
     switch (kind) {
-      case 'completo':
-        return 'is-complete';
-      case 'errores':
-        return 'is-error';
-      case 'opcional':
-        return 'is-optional';
-      case 'no-aplica':
-        return 'is-na';
+      case "completo":
+        return "is-complete";
+      case "errores":
+        return "is-error";
+      case "opcional":
+        return "is-optional";
+      case "no-aplica":
+        return "is-na";
       default:
-        return 'is-pending';
+        return "is-pending";
     }
   }
 
-  private reviewStepUiKind(stepIndex: number): WizardStepUiKind {
-    const kind = this.wizardStepUiKind(stepIndex);
-    if (kind !== 'actual') {
+  private tipoUiPasoRevision(stepIndex: number): TipoUiPasoAsistente {
+    const kind = this.tipoUiPasoAsistente(stepIndex);
+    if (kind !== "actual") {
       return kind;
     }
 
-    const summary = this.getWizardStepValidationSummary(stepIndex);
-    if (summary.blockingPending > 0 && this.attemptedSave()) {
-      return 'errores';
+    const summary = this.obtenerResumenValidacionPasoAsistente(stepIndex);
+    if (summary.blockingPending > 0 && this.intentoGuardado()) {
+      return "errores";
     }
-    if (summary.blockingPending === 0 && summary.status === 'complete') {
-      return 'completo';
+    if (summary.blockingPending === 0 && summary.status === "complete") {
+      return "completo";
     }
-    return 'pendiente';
+    return "pendiente";
   }
 
-  private focusFirstPendingControl(wizardStep: number = this.activeWizardStep()): void {
+  private enfocarPrimerControlEnPaso(
+    wizardStep: number = this.pasoWizardActivo(),
+    options?: { soloBloqueantes?: boolean },
+  ): void {
     window.setTimeout(() => {
+      const host = this.hostElement.nativeElement;
       const sorted = [...this.evaluateValidationRules()].sort(
-        (a, b) => this.validationSortWeight(a) - this.validationSortWeight(b),
-      );
-      const firstPendingRule = sorted.find(
-        (item) => item.visible && item.wizardStep === wizardStep && !item.complete,
-      );
-      const control = this.findControlForRule(firstPendingRule) ?? this.findFirstNgInvalidControl();
-
-      if (!control) {
-        return;
-      }
-
-      control.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      control.focus({ preventScroll: true });
-    });
-  }
-
-  private focusFirstInvalidControl(wizardStep: number = this.activeWizardStep()): void {
-    window.setTimeout(() => {
-      const sorted = [...this.evaluateValidationRules()].sort(
-        (a, b) => this.validationSortWeight(a) - this.validationSortWeight(b),
+        (a, b) => pesoOrdenValidacion(a) - pesoOrdenValidacion(b),
       );
       const firstPendingRule = sorted.find(
         (item) =>
           item.visible &&
           item.wizardStep === wizardStep &&
-          item.blocking &&
-          !item.complete,
+          !item.complete &&
+          (!options?.soloBloqueantes || item.blocking),
       );
-      const firstInvalidControl = this.findControlForRule(firstPendingRule) ?? this.findFirstNgInvalidControl();
+      const control =
+        (firstPendingRule
+          ? buscarControlPorRuta(host, firstPendingRule.sourcePath)
+          : null) ?? buscarPrimerControlNgInvalido(host);
 
-      if (!firstInvalidControl) {
+      if (!control) {
         return;
       }
 
-      firstInvalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      firstInvalidControl.focus({ preventScroll: true });
+      enfocarElemento(control);
     });
   }
 
-  private findControlForRule(rule: EvaluatedValidationRule | undefined): HTMLElement | null {
-    const controlName = rule?.sourcePath.split('.').at(-1);
-    if (!controlName) {
-      return null;
-    }
-
-    const controlHost = this.hostElement.nativeElement.querySelector<HTMLElement>(
-      `.step-panel [formControlName="${controlName}"], .step-panel [formcontrolname="${controlName}"]`,
-    );
-    return this.getFocusableField(controlHost);
-  }
-
-  private findFirstNgInvalidControl(): HTMLElement | null {
-    const invalidHost = this.hostElement.nativeElement.querySelector<HTMLElement>(
-      '.step-panel input.ng-invalid:not([type="hidden"]), .step-panel select.ng-invalid, .step-panel textarea.ng-invalid, .step-panel [formControlName].ng-invalid, .step-panel [formcontrolname].ng-invalid',
-    );
-
-    return this.getFocusableField(invalidHost);
-  }
-
-  private getFocusableField(controlHost: HTMLElement | null): HTMLElement | null {
-    if (!controlHost) {
-      return null;
-    }
-
-    if (this.isFocusableFormField(controlHost)) {
-      return controlHost;
-    }
-
-    return controlHost.querySelector<HTMLElement>(
-      'input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+  private enfocarRutaControl(controlPath: string): void {
+    enfocarRutaControlDom(
+      this.injector,
+      this.hostElement.nativeElement,
+      controlPath,
+      {
+        onFallback: () =>
+          this.desplazarAInicioPasoActual({ focusFirstField: true }),
+      },
     );
   }
 
-  private isFocusableFormField(element: HTMLElement): boolean {
-    return (
-      element.matches('input:not([type="hidden"]):not([disabled])') ||
-      element.matches('select:not([disabled])') ||
-      element.matches('textarea:not([disabled])') ||
-      element.matches('button:not([disabled])') ||
-      element.matches('[tabindex]:not([tabindex="-1"])')
-    );
+  domicilioReferenciaCasaParticular(): string | null {
+    const contacto = this.form.controls.contacto.controls;
+    const partes = [
+      contacto.direccion.value,
+      contacto.numeroDireccion.value,
+      this.catalogos().comunas.find((item) => item.value === contacto.idComuna.value)?.label ?? '',
+    ]
+      .map((value) => value?.trim())
+      .filter(Boolean);
+
+    return partes.length ? partes.join(', ') : null;
   }
 
-  private scrollToPageStart(): void {
+  private desplazarAInicioPagina(): void {
     window.setTimeout(() => {
       const formStart =
-        this.hostElement.nativeElement.querySelector<HTMLElement>('.form-page-head') ??
-        this.hostElement.nativeElement;
+        this.hostElement.nativeElement.querySelector<HTMLElement>(
+          ".form-page-head",
+        ) ?? this.hostElement.nativeElement;
 
-      formStart.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      formStart.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }
 
-  private scrollToCurrentStepStart(options: { focusFirstField: boolean }): void {
+  private desplazarAInicioPasoActual(options: {
+    focusFirstField: boolean;
+  }): void {
     const run = (): void => {
       const host = this.hostElement.nativeElement;
-      const stepHeader = host.querySelector<HTMLElement>('.advanced-step-header');
-      const stepPanel = host.querySelector<HTMLElement>('.advanced-wizard-step .step-panel');
-      const target = stepHeader ?? stepPanel ?? host.querySelector<HTMLElement>('.advanced-wizard-content');
+      const stepHeader = host.querySelector<HTMLElement>(
+        ".advanced-step-header",
+      );
+      const stepPanel = host.querySelector<HTMLElement>(
+        ".advanced-wizard-step .step-panel",
+      );
+      const target =
+        stepHeader ??
+        stepPanel ??
+        host.querySelector<HTMLElement>(".advanced-wizard-content");
 
       if (!target) {
         return;
       }
 
       // Mantener el cambio de paso estable: sube al inicio útil del paso.
-      target.scrollIntoView({ behavior: 'auto', block: 'start' });
+      target.scrollIntoView({ behavior: "auto", block: "start" });
 
       // En desktop, opcionalmente enfocar el primer campo habilitado para dejar el cursor listo.
       // En mobile/tablet evitamos enfocar para no abrir el teclado automáticamente.
-      if (!options.focusFirstField || window.matchMedia('(max-width: 1024px)').matches) {
+      if (
+        !options.focusFirstField ||
+        window.matchMedia?.("(max-width: 1024px)").matches
+      ) {
         return;
       }
 
@@ -2825,28 +2859,28 @@ export class FormEmpleadoComponent implements OnInit {
     requestAnimationFrame(() => requestAnimationFrame(run));
   }
 
-  isTabInvalid(tabId: TabId): boolean {
-    return this.getStepValidationSummary(tabId).blockingPending > 0;
+  esPestanaInvalida(tabId: IdPestana): boolean {
+    return this.obtenerResumenValidacionPaso(tabId).blockingPending > 0;
   }
 
-  private markControlAsTouched(control: AbstractControl): void {
+  private marcarControlComoTocado(control: AbstractControl): void {
     control.markAllAsTouched();
     control.updateValueAndValidity({ emitEvent: false });
   }
 
-  private attemptAllTabs(): void {
-    this.attemptedTabs.set(new Set(TAB_ORDER));
-    this.attemptedWizardSteps.set(
-      new Set(Array.from({ length: this.totalSteps }, (_, index) => index)),
+  private intentarTodasPestanas(): void {
+    this.pestanasIntentadas.set(new Set(ordenPestanas));
+    this.pasosAsistenteIntentados.set(
+      new Set(Array.from({ length: this.totalPasos }, (_, index) => index)),
     );
   }
 
-  private syncCompletedTabsFromValidity(): void {
-    this.completedTabs.update((tabs) => {
+  sincronizarPestanasCompletadasDesdeValidez(): void {
+    this.pestanasCompletadas.update((tabs) => {
       const next = new Set(tabs);
 
-      for (const tabId of TAB_ORDER) {
-        if (this.isTabInvalid(tabId)) {
+      for (const tabId of ordenPestanas) {
+        if (this.esPestanaInvalida(tabId)) {
           next.delete(tabId);
         } else {
           next.add(tabId);
@@ -2857,23 +2891,25 @@ export class FormEmpleadoComponent implements OnInit {
     });
   }
 
-  private markAllValidTabsAsCompleted(): void {
-    this.completedTabs.set(new Set(TAB_ORDER.filter((tabId) => !this.isTabInvalid(tabId))));
+  marcarTodasPestanasValidasComoCompletadas(): void {
+    this.pestanasCompletadas.set(
+      new Set(ordenPestanas.filter((tabId) => !this.esPestanaInvalida(tabId))),
+    );
   }
 
-  private markTabAsCompleted(tabId: TabId): void {
-    this.completedTabs.update((tabs) => new Set([...tabs, tabId]));
+  private marcarPestanaComoCompletada(tabId: IdPestana): void {
+    this.pestanasCompletadas.update((tabs) => new Set([...tabs, tabId]));
   }
 
-  private removeCompletedTab(tabId: TabId): void {
-    this.completedTabs.update((tabs) => {
+  private quitarPestanaCompletada(tabId: IdPestana): void {
+    this.pestanasCompletadas.update((tabs) => {
       const next = new Set(tabs);
       next.delete(tabId);
       return next;
     });
   }
 
-  private resolveSaveErrorMessage(error: unknown): string {
+  private resolverMensajeErrorGuardado(error: unknown): string {
     if (
       error instanceof EmpleadoRutDuplicadoError ||
       error instanceof EmpleadoReferenciaInvalidaError
@@ -2882,54 +2918,54 @@ export class FormEmpleadoComponent implements OnInit {
     }
 
     if (error instanceof Error) {
-      if (error.message.toLowerCase().includes('row-level security')) {
-        return 'Supabase bloqueo la escritura por politicas RLS. Ejecuta bd/base/v11/run_all.sql (esquema por partes) o el monolito crear_sql_v6_11_integrada.sql y vuelve a intentar.';
+      if (error.message.toLowerCase().includes("row-level security")) {
+        return "Supabase bloqueo la escritura por politicas RLS. Ejecuta bd/base/v11/run_all.sql (esquema por partes) o el monolito crear_sql_v6_11_integrada.sql y vuelve a intentar.";
       }
 
       return error.message;
     }
 
-    return 'No fue posible registrar la ficha. Revisa la informacion e intenta nuevamente.';
+    return "No fue posible registrar la ficha. Revisa la informacion e intenta nuevamente.";
   }
 
-  private getSection(tabId: TabId) {
+  private obtenerSeccion(tabId: IdPestana) {
     switch (tabId) {
-      case 'datosPersonales':
+      case "datosPersonales":
         return this.form.controls.datosPersonales;
-      case 'contrato':
+      case "contrato":
         return this.form.controls.contrato;
-      case 'previsionSalud':
+      case "previsionSalud":
         return this.form.controls.previsionSalud;
-      case 'bancario':
+      case "bancario":
         return this.form.controls.bancario;
     }
   }
 
-  private isFormSectionInvalid(tabId: TabId): boolean {
-    return tabId === 'datosPersonales'
-      ? this.getPersonalSectionState().invalid
-      : this.getSection(tabId).invalid;
+  private esSeccionFormularioInvalida(tabId: IdPestana): boolean {
+    return tabId === "datosPersonales"
+      ? this.obtenerEstadoSeccionPersonal().invalid
+      : this.obtenerSeccion(tabId).invalid;
   }
 
-  private hasStepInteraction(tabId: TabId): boolean {
+  private tieneInteraccionPaso(tabId: IdPestana): boolean {
     if (
-      this.completedTabs().has(tabId) ||
-      this.attemptedTabs().has(tabId) ||
-      this.attemptedSave()
+      this.pestanasCompletadas().has(tabId) ||
+      this.pestanasIntentadas().has(tabId) ||
+      this.intentoGuardado()
     ) {
       return true;
     }
 
-    if (tabId === 'datosPersonales') {
-      const personal = this.getPersonalSectionState();
+    if (tabId === "datosPersonales") {
+      const personal = this.obtenerEstadoSeccionPersonal();
       return personal.dirty || personal.touched;
     }
 
-    const section = this.getSection(tabId);
+    const section = this.obtenerSeccion(tabId);
     return section.dirty || section.touched;
   }
 
-  private getPersonalSectionState() {
+  private obtenerEstadoSeccionPersonal() {
     const datosPersonales = this.form.controls.datosPersonales;
     const contacto = this.form.controls.contacto;
 
@@ -2941,19 +2977,23 @@ export class FormEmpleadoComponent implements OnInit {
     };
   }
 
-  private isTechnicalCargo(value: string): boolean {
-    return this.normalizeTechnicalText(value) === this.normalizeTechnicalText('Sin cargo');
+  private esCargoTecnico(value: string): boolean {
+    return (
+      this.normalizarTextoTecnico(value) ===
+      this.normalizarTextoTecnico("Sin cargo")
+    );
   }
 
-  private isDraftAccount(value: string): boolean {
-    return value.trim().toUpperCase().startsWith('DRAFT-');
+  private esCuentaBorrador(value: string): boolean {
+    return value.trim().toUpperCase().startsWith("DRAFT-");
   }
 
-  private normalizeTechnicalText(value: string): string {
+  private normalizarTextoTecnico(value: string): string {
     return value
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
       .trim()
       .toLowerCase();
   }
 }
+

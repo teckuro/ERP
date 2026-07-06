@@ -7,6 +7,25 @@ export const atLeastOneArrayValueValidator: ValidatorFn = (
   return Array.isArray(value) && value.length > 0 ? null : { required: true };
 };
 
+const PERSON_NAME_PATTERN = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' -]+$/;
+const DIGITS_ONLY_PATTERN = /^\d+$/;
+
+export function isValidPersonNameValue(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return true;
+  }
+  return PERSON_NAME_PATTERN.test(trimmed);
+}
+
+export function isValidDigitsOnlyValue(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return true;
+  }
+  return DIGITS_ONLY_PATTERN.test(trimmed);
+}
+
 export const personNameValidator: ValidatorFn = (
   control: AbstractControl,
 ): ValidationErrors | null => {
@@ -16,7 +35,7 @@ export const personNameValidator: ValidatorFn = (
     return null;
   }
 
-  return /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' -]+$/.test(value) ? null : { personName: true };
+  return isValidPersonNameValue(value) ? null : { personName: true };
 };
 
 export const digitsOnlyValidator: ValidatorFn = (
@@ -28,7 +47,7 @@ export const digitsOnlyValidator: ValidatorFn = (
     return null;
   }
 
-  return /^\d+$/.test(value) ? null : { digitsOnly: true };
+  return isValidDigitsOnlyValue(value) ? null : { digitsOnly: true };
 };
 
 export const passportValidator: ValidatorFn = (

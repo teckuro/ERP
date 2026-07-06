@@ -1,0 +1,430 @@
+import type {
+  MotorCalculoIssue,
+  MotorCalculoPeriodoResultado,
+  NominaCalculoPeriodoSnapshot,
+  NominaSnapshotCompletoView,
+  ProcesoMensualPreNominaPeriodo,
+} from '../models/proceso-mensual.model';
+import {
+  formatoFechaHoraNomina,
+  formatoMontoNomina,
+} from '../containers/proceso-mensual-container/utils/proceso-mensual-presentacion.formato';
+import { etiquetaEstadoSnapshot } from '../containers/proceso-mensual-container/utils/proceso-mensual-presentacion.labels';
+import type {
+  ResultadoObservacionView,
+  ResultadoPreliminarEstado,
+  ResultadoPreliminarView,
+  TrabajadorResultadoPreliminarView,
+} from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
+import { limpiarCopyTecnicoNomina, limpiarYUnirMensajes } from './proceso-mensual-copy-limpio.rules';
+import { incidenciaLey16744EmpresaObsoleta } from './proceso-mensual-empresa-ley16744.rules';
+
+export interface BuildResultadoPreliminarInput {
+  calculo: MotorCalculoPeriodoResultado | null;
+  base: ProcesoMensualPreNominaPeriodo['trazabilidad'] | null;
+  snapshotActivo: NominaCalculoPeriodoSnapshot | null;
+  snapshotCompleto: NominaSnapshotCompletoView | null;
+  errorGuardadoResultado: string | null;
+  identificadorResultadoGuardadoActual: string | null;
+  puedeCalcular: boolean;
+  puedeGuardarPreliminar: boolean;
+  periodoValido: boolean;
+  nominaCerradaOperativamente: boolean;
+  errorEjecucion: string | null;
+  guardandoSnapshot: boolean;
+}
+
+function etiquetaResultadoPreliminar(estado: ResultadoPreliminarEstado): string {
+  switch (estado) {
+    case 'no_guardado':
+      return 'Resultado no guardado';
+    case 'guardado':
+      return 'Resultado guardado';
+    case 'actualizado_sin_guardar':
+      return 'Resultado actualizado sin guardar';
+    case 'error_guardado':
+      return 'No se pudo guardar';
+    case 'con_bloqueos':
+      return 'Resultado con bloqueos';
+    case 'sin_resultado':
+    default:
+      return 'Sin resultado';
+  }
+}
+
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
+}
+
+function descripcionEstadoGuardado(estado: ResultadoPreliminarEstado): string {
+  switch (estado) {
+    case 'no_guardado':
+      return 'Revisa la nómina mensual y prepárala como versión revisable si corresponde.';
+    case 'guardado':
+      return 'La nómina mensual revisada quedó guardada como versión revisable. No emite liquidaciones ni confirma el período.';
+    case 'actualizado_sin_guardar':
+      return 'Volviste a calcular despues del ultimo guardado. Guarda esta nueva version si quieres conservarla.';
+    case 'error_guardado':
+      return 'No se pudo guardar la nómina mensual revisada. Intenta nuevamente o revisa las observaciones.';
+    case 'con_bloqueos':
+      return 'No puedes preparar esta nómina mensual. Hay bloqueos que deben resolverse.';
+    case 'sin_resultado':
+    default:
+      return 'Primero revisa trabajadores, montos y observaciones antes de confirmar.';
+  }
+}
+
+function estadoResultadoTrabajador(estado: string): TrabajadorResultadoPreliminarView['estadoLabel'] {
+  switch (estado) {
+    case 'calculado_preliminar':
+      return 'Calculado';
+    case 'con_advertencias':
+      return 'Con observaciones';
+    case 'con_bloqueos':
+      return 'Omitido';
+    default:
+      return 'No calculado';
+  }
+}
+
+function accionResultadoDesdeIssues(
+  issues: readonly MotorCalculoIssue[],
+): Pick<ResultadoObservacionView, 'accionLabel' | 'ruta'> {
+  const origen = issues.map((issue) => `${issue.origen} ${issue.codigo}`.toLowerCase()).join(' ');
+  if (origen.includes('entrada') || origen.includes('movimiento')) {
+    return { accionLabel: 'Revisar movimientos', ruta: '/remuneraciones/novedades-mensuales' };
+  }
+  if (origen.includes('recurrente') || origen.includes('haber')) {
+    return { accionLabel: 'Revisar recurrentes', ruta: '/remuneraciones/haberes-descuentos' };
+  }
+  return { accionLabel: 'Revisar trabajadores' };
+}
+
+function observacionesResultado(
+  calculo: MotorCalculoPeriodoResultado,
+  severidad: MotorCalculoIssue['severidad'],
+): ResultadoObservacionView[] {
+  return [
+    ...asArray(calculo.issues),
+    ...asArray(calculo.liquidaciones).flatMap((liq) => asArray(liq.issues)),
+  ]
+    .filter((issue) => issue.severidad === severidad && !incidenciaLey16744EmpresaObsoleta(issue.codigo))
+    .map((issue) => ({
+      codigo: issue.codigo,
+      titulo: severidad === 'BLOQUEO' ? 'Bloqueo del resultado' : 'Advertencia del resultado',
+      descripcion: issue.mensaje,
+      ...accionResultadoDesdeIssues([issue]),
+    }));
+}
+
+function resolverEstadoGuardadoResultado(
+  input: BuildResultadoPreliminarInput,
+  calculo: MotorCalculoPeriodoResultado,
+  bloqueos: ResultadoObservacionView[],
+): ResultadoPreliminarEstado {
+  if (input.errorGuardadoResultado) return 'error_guardado';
+  if (calculo.estado === 'con_bloqueos' || bloqueos.length > 0) return 'con_bloqueos';
+  const snapshot = input.snapshotActivo;
+  if (!snapshot || snapshot.estado === 'borrador') return 'no_guardado';
+  return input.identificadorResultadoGuardadoActual === snapshot.hashSnapshot
+    ? 'guardado'
+    : 'actualizado_sin_guardar';
+}
+
+function razonNoPuedeGuardarResultado(
+  input: BuildResultadoPreliminarInput,
+  bloqueos: ResultadoObservacionView[],
+): string {
+  if (!input.periodoValido) return 'El periodo seleccionado no es valido.';
+  if (input.nominaCerradaOperativamente) {
+    return 'El proceso mensual del período está cerrado. Para modificarlo, será necesario reabrir el período en una fase posterior.';
+  }
+  if (!input.calculo) return 'Primero revisa la nómina.';
+  if (input.errorEjecucion) return 'Hay un error tecnico activo que debes resolver antes de guardar.';
+  if (bloqueos.length > 0) return 'El resultado tiene bloqueos que deben revisarse.';
+  const snapshot = input.snapshotActivo;
+  if (snapshot && snapshot.estado !== 'borrador' && input.identificadorResultadoGuardadoActual === snapshot.hashSnapshot) {
+    return 'No hay cambios para guardar. La nómina mensual revisada actual ya está guardada.';
+  }
+  if (input.guardandoSnapshot) return 'El guardado de la nómina mensual revisada está en curso.';
+  return 'Genera una nómina mensual revisada sin bloqueos antes de guardar.';
+}
+
+function ultimoGuardadoDesdeSnapshot(
+  snapshot: NominaCalculoPeriodoSnapshot,
+): ResultadoPreliminarView['ultimoGuardado'] {
+  const advertencias = snapshot.totalAdvertencias ?? 0;
+  return {
+    versionLabel: snapshot.idCalculoPeriodo
+      ? `Disponible como referencia interna ${snapshot.idCalculoPeriodo}`
+      : 'Version numerica no disponible en esta etapa.',
+    fechaGuardadoLabel: formatoFechaHoraNomina(snapshot.fechaGeneracion),
+    versionCalculoLabel: snapshot.versionMotor || 'Version no disponible',
+    identificadorTecnicoLabel: snapshot.hashSnapshot || 'Referencia interna no disponible',
+    estadoLabel: etiquetaEstadoSnapshot(snapshot.estado),
+    trabajadoresCalculados: snapshot.totalTrabajadores,
+    trabajadoresConObservaciones: advertencias,
+    trabajadoresOmitidos: snapshot.totalBloqueados,
+    totalLiquidoLabel: formatoMontoNomina(snapshot.totalLiquido),
+    advertenciasLabel: advertencias > 0
+      ? `Este resultado se guardo con ${advertencias} advertencia(s) no bloqueante(s).`
+      : 'Resultado guardado sin advertencias.',
+  };
+}
+
+function trabajadoresDesdeBaseNomina(
+  base: BuildResultadoPreliminarInput['base'],
+): TrabajadorResultadoPreliminarView[] {
+  return asArray(base?.trabajadores).map((trabajador) => {
+    const estadoLabel =
+      trabajador.estado === 'bloqueado' || trabajador.estado === 'excluido'
+        ? 'Omitido'
+        : trabajador.estado === 'con_observaciones'
+          ? 'Con observaciones'
+          : 'Calculado';
+    return {
+      idPersona: trabajador.idPersona,
+      trabajadorLabel: trabajador.trabajadorLabel?.trim() || 'Trabajador sin ficha visible',
+      rutLabel: trabajador.rutLabel?.trim() || 'RUT no disponible',
+      estadoLabel,
+      haberesLabel: 'Monto no disponible',
+      descuentosLabel: 'Monto no disponible',
+      liquidoLabel: 'Monto no disponible',
+      observacionLabel: trabajador.observacion?.trim() || 'Sin observaciones',
+      accionLabel:
+        estadoLabel === 'Omitido'
+          ? 'Revisar trabajadores'
+          : estadoLabel === 'Con observaciones'
+            ? 'Revisar antes de confirmar'
+            : 'Sin acción pendiente',
+    };
+  });
+}
+
+function trabajadoresDesdeSnapshotActivo(
+  snapshot: NominaCalculoPeriodoSnapshot | null,
+): TrabajadorResultadoPreliminarView[] {
+  return asArray(snapshot?.trabajadores).map((trabajador) => {
+    const estadoLabel = estadoResultadoTrabajador(trabajador.estado);
+    const issues = asArray(trabajador.issues);
+    return {
+      idPersona: trabajador.idPersona,
+      trabajadorLabel: trabajador.nombreCompletoSnapshot?.trim() || 'Trabajador sin ficha visible',
+      rutLabel: trabajador.rut?.trim() || 'RUT no disponible',
+      estadoLabel,
+      haberesLabel: formatoMontoNomina(trabajador.totalHaberesImponibles + trabajador.totalHaberesNoImponibles),
+      descuentosLabel: formatoMontoNomina(trabajador.totalDescuentosLegales + trabajador.totalDescuentosVoluntarios),
+      liquidoLabel: formatoMontoNomina(trabajador.liquidoPreliminar),
+      observacionLabel: issues.length
+        ? limpiarYUnirMensajes(issues.map((issue) => issue.mensaje))
+        : 'Sin observaciones',
+      accionLabel:
+        estadoLabel === 'Omitido' || estadoLabel === 'No calculado'
+          ? 'Revisar trabajadores'
+          : estadoLabel === 'Con observaciones'
+            ? 'Revisar antes de confirmar'
+            : 'Sin acción pendiente',
+    };
+  });
+}
+
+function resolverTrabajadoresPreliminaresSinCalculo(
+  input: BuildResultadoPreliminarInput,
+): TrabajadorResultadoPreliminarView[] {
+  const desdeCompleto = trabajadoresDesdeSnapshotGuardado(input.snapshotCompleto);
+  if (desdeCompleto.length > 0) {
+    return desdeCompleto;
+  }
+  const desdeActivo = trabajadoresDesdeSnapshotActivo(input.snapshotActivo);
+  if (desdeActivo.length > 0) {
+    return desdeActivo;
+  }
+  return trabajadoresDesdeBaseNomina(input.base);
+}
+
+function trabajadoresDesdeSnapshotGuardado(
+  snapshotCompleto: NominaSnapshotCompletoView | null,
+): TrabajadorResultadoPreliminarView[] {
+  const trabajadoresSnapshot = asArray(snapshotCompleto?.trabajadores);
+  if (!trabajadoresSnapshot.length) {
+    return [];
+  }
+  return trabajadoresSnapshot.map((trabajador) => {
+    const estadoLabel = estadoResultadoTrabajador(trabajador.estado);
+    const issues = asArray(trabajador.issues);
+    return {
+      idPersona: trabajador.idPersona,
+      trabajadorLabel: trabajador.nombreCompletoSnapshot?.trim() || 'Trabajador sin ficha visible',
+      rutLabel: trabajador.rut?.trim() || 'RUT no disponible',
+      estadoLabel,
+      haberesLabel: formatoMontoNomina(trabajador.totalHaberesImponibles + trabajador.totalHaberesNoImponibles),
+      descuentosLabel: formatoMontoNomina(trabajador.totalDescuentosLegales + trabajador.totalDescuentosVoluntarios),
+      liquidoLabel: formatoMontoNomina(trabajador.liquidoPreliminar),
+      observacionLabel: issues.length
+        ? limpiarYUnirMensajes(issues.map((issue) => issue.mensaje))
+        : 'Sin observaciones',
+      accionLabel:
+        estadoLabel === 'Omitido' || estadoLabel === 'No calculado'
+          ? 'Revisar trabajadores'
+          : estadoLabel === 'Con observaciones'
+            ? 'Revisar antes de confirmar'
+            : 'Sin acción pendiente',
+    };
+  });
+}
+
+export function buildResultadoPreliminarView(input: BuildResultadoPreliminarInput): ResultadoPreliminarView {
+  const { calculo, base, snapshotActivo: snapshot } = input;
+
+  if (!calculo) {
+    const guardado = snapshot != null && snapshot.estado !== 'borrador';
+    const estado: ResultadoPreliminarEstado = input.errorGuardadoResultado
+      ? 'error_guardado'
+      : guardado
+        ? 'guardado'
+        : 'sin_resultado';
+    return {
+      estado,
+      estadoLabel: etiquetaResultadoPreliminar(estado),
+      descripcionEstado: descripcionEstadoGuardado(estado),
+      resumen: {
+        trabajadoresCalculados: snapshot?.totalTrabajadores ?? 0,
+        trabajadoresConObservaciones: snapshot?.totalAdvertencias ?? 0,
+        trabajadoresOmitidos: snapshot?.totalBloqueados ?? 0,
+        totalHaberes: snapshot?.totalHaberes ?? null,
+        totalDescuentos: snapshot?.totalDescuentos ?? null,
+        totalLiquido: snapshot?.totalLiquido ?? null,
+        totalCostoEmpresa: null,
+      },
+      trabajadores: resolverTrabajadoresPreliminaresSinCalculo(input),
+      bloqueos: [],
+      advertencias: [],
+      informaciones: guardado
+        ? [{
+            codigo: 'RESULTADO_GUARDADO',
+            titulo: 'Nómina mensual revisada guardada',
+            descripcion: 'Existe una nómina mensual revisada activa para revisar.',
+          }]
+        : [],
+      detalleTecnico: {
+        versionCalculo: snapshot?.versionMotor ?? 'Version no disponible',
+        identificadorTecnico: snapshot?.hashSnapshot ?? 'Referencia interna no disponible',
+        generadoEn: snapshot?.fechaGeneracion ?? 'Fecha no disponible',
+      },
+      ultimoGuardado: guardado && snapshot ? ultimoGuardadoDesdeSnapshot(snapshot) : undefined,
+      acciones: {
+        puedeRecalcular: input.puedeCalcular,
+        puedeGuardarPreliminar: false,
+        razonNoPuedeGuardar: guardado
+          ? 'No hay cambios para guardar. La nómina mensual revisada actual ya está guardada.'
+          : 'Primero revisa la nómina.',
+        helperGuardar: 'Guarda una versión revisable del cálculo. No emite liquidaciones ni confirma el período.',
+        modoGuardadoLabel: 'Al guardar, se reemplazará la nómina mensual revisada activa del período.',
+      },
+    };
+  }
+
+  const bloqueos = observacionesResultado(calculo, 'BLOQUEO');
+  const advertencias = observacionesResultado(calculo, 'ADVERTENCIA');
+  const liquidaciones = asArray(calculo.liquidaciones);
+  const trabajadoresCalculadosIds = new Set(liquidaciones.map((liq) => liq.idPersona));
+  const omitidosBase = asArray(base?.trabajadores)
+    .filter((trabajador) => (
+      !trabajadoresCalculadosIds.has(trabajador.idPersona) ||
+      trabajador.estado === 'bloqueado' ||
+      trabajador.estado === 'excluido'
+    ))
+    .map((trabajador) => {
+      const noCalculado = !trabajadoresCalculadosIds.has(trabajador.idPersona);
+      const bloqueaConfirmacion = trabajador.estado === 'bloqueado' || (
+        noCalculado &&
+        trabajador.estado !== 'excluido'
+      );
+      const view: TrabajadorResultadoPreliminarView = {
+        idPersona: `omitido-${trabajador.idPersona}`,
+        trabajadorLabel: trabajador.trabajadorLabel || 'Trabajador sin ficha visible',
+        rutLabel: trabajador.rutLabel || 'RUT no disponible',
+        estadoLabel: 'Omitido',
+        haberesLabel: 'Monto no disponible',
+        descuentosLabel: 'Monto no disponible',
+        liquidoLabel: 'Monto no disponible',
+        observacionLabel: limpiarCopyTecnicoNomina(trabajador.observacion) || 'No calculado en la nómina mensual revisada.',
+        accionLabel: bloqueaConfirmacion ? 'Revisar trabajadores' : 'Sin acción pendiente',
+      };
+      return { bloqueaConfirmacion, view };
+    });
+  const trabajadores = [
+    ...liquidaciones.map<TrabajadorResultadoPreliminarView>((liq) => {
+      const estadoLabel = estadoResultadoTrabajador(liq.estado);
+      const issues = asArray(liq.issues);
+      return {
+        idPersona: liq.idPersona,
+        trabajadorLabel: liq.nombreCompleto?.trim() || 'Trabajador sin ficha visible',
+        rutLabel: liq.rut?.trim() || 'RUT no disponible',
+        estadoLabel,
+        haberesLabel: formatoMontoNomina(liq.totalHaberes),
+        descuentosLabel: formatoMontoNomina(liq.totalDescuentos),
+        liquidoLabel: formatoMontoNomina(liq.liquidoAPago),
+        observacionLabel: issues.length
+          ? limpiarYUnirMensajes(issues.map((issue) => issue.mensaje))
+          : 'Sin observaciones',
+        ...accionResultadoDesdeIssues(issues),
+      };
+    }),
+    ...omitidosBase.map((omitido) => omitido.view),
+  ];
+  for (const omitido of omitidosBase) {
+    if (!omitido.bloqueaConfirmacion) {
+      continue;
+    }
+    bloqueos.push({
+      codigo: String(omitido.view.idPersona),
+      titulo: 'Trabajador omitido del calculo',
+      descripcion: omitido.view.observacionLabel,
+      accionLabel: 'Revisar trabajadores',
+    });
+  }
+
+  const trabajadoresConObservaciones = trabajadores.filter((t) => t.estadoLabel === 'Con observaciones').length;
+  const trabajadoresOmitidos = trabajadores.filter((t) => t.estadoLabel === 'Omitido' || t.estadoLabel === 'No calculado').length;
+  const estado = resolverEstadoGuardadoResultado(input, calculo, bloqueos);
+  const puedeGuardarPreliminar = input.puedeGuardarPreliminar;
+
+  return {
+    estado,
+    estadoLabel: etiquetaResultadoPreliminar(estado),
+    descripcionEstado: descripcionEstadoGuardado(estado),
+    resumen: {
+      trabajadoresCalculados: calculo.resumen.totalTrabajadoresCalculados,
+      trabajadoresConObservaciones,
+      trabajadoresOmitidos,
+      totalHaberes: calculo.resumen.totalHaberes,
+      totalDescuentos: calculo.resumen.totalDescuentos,
+      totalLiquido: calculo.resumen.totalLiquidoPreliminar,
+      totalCostoEmpresa: null,
+    },
+    trabajadores,
+    bloqueos,
+    advertencias,
+    informaciones: [{
+      codigo: 'RESULTADO_GENERADO',
+      titulo: 'Nómina mensual revisada generada',
+      descripcion: 'Revisa trabajadores, observaciones y totales antes de confirmar.',
+    }],
+    detalleTecnico: {
+      versionCalculo: snapshot?.versionMotor ?? 'Version no disponible',
+      identificadorTecnico: snapshot?.hashSnapshot ?? 'Referencia interna no disponible',
+      generadoEn: calculo.generadoEn,
+    },
+    ultimoGuardado: snapshot ? ultimoGuardadoDesdeSnapshot(snapshot) : undefined,
+    acciones: {
+      puedeRecalcular: input.puedeCalcular,
+      puedeGuardarPreliminar,
+      razonNoPuedeGuardar: puedeGuardarPreliminar
+        ? undefined
+        : razonNoPuedeGuardarResultado(input, bloqueos),
+      helperGuardar: 'Guarda una versión revisable del cálculo. No emite liquidaciones ni confirma el período.',
+      modoGuardadoLabel: 'Al guardar, se reemplazará la nómina mensual revisada activa del período.',
+    },
+  };
+}

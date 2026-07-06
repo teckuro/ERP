@@ -1,0 +1,281 @@
+<section class="emp-form-shell" aria-label="Datos de empresa">
+  <section class="emp-section" aria-labelledby="emp-ident-title">
+    <h2 id="emp-ident-title">Identificación</h2>
+    <div class="emp-field-grid">
+      <label class="emp-field">
+        <span>RUT</span>
+        <input
+          class="emp-input"
+          [class.emp-input--error]="errorCampo('rutCompleto')"
+          type="text"
+          [ngModel]="rutCompleto"
+          (ngModelChange)="onRutChange($event)"
+          [readonly]="readonlyMode"
+          autocomplete="off"
+        />
+        @if (errorCampo('rutCompleto'); as err) {
+          <span class="emp-field-error">{{ err }}</span>
+        }
+      </label>
+      <label class="emp-field">
+        <span>Razón social</span>
+        <input
+          class="emp-input"
+          [class.emp-input--error]="errorCampo('razonSocial')"
+          type="text"
+          [ngModel]="model.razonSocial"
+          (ngModelChange)="patch({ razonSocial: $event })"
+          [readonly]="readonlyMode"
+        />
+        @if (errorCampo('razonSocial'); as err) {
+          <span class="emp-field-error">{{ err }}</span>
+        }
+      </label>
+      <label class="emp-field">
+        <span>Nombre fantasía</span>
+        <input
+          class="emp-input"
+          type="text"
+          [ngModel]="model.nombreFantasia"
+          (ngModelChange)="patch({ nombreFantasia: $event || null })"
+          [readonly]="readonlyMode"
+        />
+      </label>
+      <label class="emp-field">
+        <span>Giro</span>
+        <input
+          class="emp-input"
+          type="text"
+          [ngModel]="model.giro"
+          (ngModelChange)="patch({ giro: $event || null })"
+          [readonly]="readonlyMode"
+        />
+      </label>
+      <label class="emp-field emp-field-grid--single">
+        <span>Actividad económica</span>
+        <input
+          class="emp-input"
+          type="text"
+          [ngModel]="model.actividadEconomica"
+          (ngModelChange)="patch({ actividadEconomica: $event || null })"
+          [readonly]="readonlyMode"
+        />
+      </label>
+    </div>
+  </section>
+
+  <section class="emp-section" aria-labelledby="emp-contacto-title">
+    <h2 id="emp-contacto-title">Representante y contacto</h2>
+    <div class="emp-field-grid">
+      <label class="emp-field">
+        <span>Representante legal</span>
+        <input
+          class="emp-input"
+          type="text"
+          [ngModel]="model.representanteLegalNombre"
+          (ngModelChange)="patch({ representanteLegalNombre: $event || null })"
+          [readonly]="readonlyMode"
+        />
+      </label>
+      <label class="emp-field">
+        <span>RUT representante</span>
+        <input
+          class="emp-input"
+          [class.emp-input--error]="errorCampo('representanteLegalRut')"
+          type="text"
+          [ngModel]="model.representanteLegalRut"
+          (ngModelChange)="patch({ representanteLegalRut: $event || null })"
+          [readonly]="readonlyMode"
+        />
+      </label>
+      <label class="emp-field">
+        <span>Email representante</span>
+        <input
+          class="emp-input"
+          type="email"
+          [ngModel]="model.representanteLegalEmail"
+          (ngModelChange)="patch({ representanteLegalEmail: $event || null })"
+          [readonly]="readonlyMode"
+        />
+      </label>
+      <label class="emp-field">
+        <span>Teléfono representante</span>
+        <input
+          class="emp-input"
+          type="text"
+          [ngModel]="model.representanteLegalTelefono"
+          (ngModelChange)="patch({ representanteLegalTelefono: $event || null })"
+          [readonly]="readonlyMode"
+        />
+      </label>
+      <label class="emp-field">
+        <span>Email contacto empresa</span>
+        <input
+          class="emp-input"
+          type="email"
+          [ngModel]="model.emailContacto"
+          (ngModelChange)="patch({ emailContacto: $event || null })"
+          [readonly]="readonlyMode"
+        />
+      </label>
+      <label class="emp-field">
+        <span>Teléfono contacto empresa</span>
+        <input
+          class="emp-input"
+          type="text"
+          [ngModel]="model.telefonoContacto"
+          (ngModelChange)="patch({ telefonoContacto: $event || null })"
+          [readonly]="readonlyMode"
+        />
+      </label>
+    </div>
+  </section>
+
+  <section class="emp-section" aria-labelledby="emp-ubicacion-title">
+    <h2 id="emp-ubicacion-title">Ubicación</h2>
+    <div class="emp-field-grid">
+      <label class="emp-field">
+        <span>Dirección</span>
+        <input
+          class="emp-input"
+          type="text"
+          [ngModel]="model.direccionLinea1"
+          (ngModelChange)="patch({ direccionLinea1: $event || null })"
+          [readonly]="readonlyMode"
+        />
+      </label>
+      <label class="emp-field">
+        <span>Complemento</span>
+        <input
+          class="emp-input"
+          type="text"
+          [ngModel]="model.direccionLinea2"
+          (ngModelChange)="patch({ direccionLinea2: $event || null })"
+          [readonly]="readonlyMode"
+        />
+      </label>
+      <label class="emp-field">
+        <span>Comuna</span>
+        <input
+          class="emp-input"
+          type="text"
+          [ngModel]="model.comuna"
+          (ngModelChange)="patch({ comuna: $event || null })"
+          [readonly]="readonlyMode"
+        />
+      </label>
+      <label class="emp-field">
+        <span>Ciudad</span>
+        <input
+          class="emp-input"
+          type="text"
+          [ngModel]="model.ciudad"
+          (ngModelChange)="patch({ ciudad: $event || null })"
+          [readonly]="readonlyMode"
+        />
+      </label>
+      <label class="emp-field">
+        <span>Región</span>
+        <input
+          class="emp-input"
+          type="text"
+          [ngModel]="model.region"
+          (ngModelChange)="patch({ region: $event || null })"
+          [readonly]="readonlyMode"
+        />
+      </label>
+      <label class="emp-field">
+        <span>Código postal</span>
+        <input
+          class="emp-input"
+          type="text"
+          [ngModel]="model.codigoPostal"
+          (ngModelChange)="patch({ codigoPostal: $event || null })"
+          [readonly]="readonlyMode"
+        />
+      </label>
+    </div>
+  </section>
+
+  <section class="emp-section" aria-labelledby="emp-mutual-title">
+    <h2 id="emp-mutual-title">Mutual</h2>
+    <p class="emp-section-lead">Configura el organismo mutual solo si la empresa aplica cotización empleador por mutual.</p>
+    <label class="emp-checkbox-inline">
+      <input
+        type="checkbox"
+        [checked]="model.aplicaMutual"
+        (change)="onAplicaMutualChange($any($event.target).checked)"
+        [disabled]="readonlyMode"
+      />
+      <span>Aplica mutual</span>
+    </label>
+
+    @if (model.aplicaMutual) {
+      <div class="emp-mutual-panel">
+        <div class="emp-field-grid">
+          <label class="emp-field">
+            <span>Organismo mutual</span>
+            <app-search-select
+              [options]="organismoOptions"
+              [ngModel]="model.idOrganismoMutual"
+              (ngModelChange)="patch({ idOrganismoMutual: $event })"
+              placeholder="Seleccionar organismo"
+              searchPlaceholder="Buscar organismo"
+              [clearable]="true"
+              [disabled]="readonlyMode"
+            ></app-search-select>
+            @if (errorCampo('idOrganismoMutual'); as err) {
+              <span class="emp-field-error">{{ err }}</span>
+            }
+          </label>
+          <label class="emp-field">
+            <span>Tasa adicional diferenciada</span>
+            <input
+              class="emp-input"
+              [class.emp-input--error]="errorCampo('tasaAdicionalDiferenciada')"
+              type="number"
+              step="0.0001"
+              [ngModel]="model.tasaAdicionalDiferenciada"
+              (ngModelChange)="patch({ tasaAdicionalDiferenciada: $event === '' || $event == null ? null : +$event })"
+              [readonly]="readonlyMode"
+            />
+          </label>
+          <label class="emp-field emp-field-grid--single">
+            <span>Fuente resolución o certificado</span>
+            <input
+              class="emp-input"
+              type="text"
+              [ngModel]="model.fuenteResolucionOCertificado"
+              (ngModelChange)="patch({ fuenteResolucionOCertificado: $event || null })"
+              [readonly]="readonlyMode"
+            />
+          </label>
+          <label class="emp-field">
+            <span>Vigencia inicio</span>
+            <input
+              class="emp-input"
+              type="date"
+              [ngModel]="model.vigenciaInicio"
+              (ngModelChange)="patch({ vigenciaInicio: $event || null })"
+              [readonly]="readonlyMode"
+            />
+          </label>
+          <label class="emp-field">
+            <span>Vigencia fin</span>
+            <input
+              class="emp-input"
+              [class.emp-input--error]="errorCampo('vigenciaFin')"
+              type="date"
+              [ngModel]="model.vigenciaFin"
+              (ngModelChange)="patch({ vigenciaFin: $event || null })"
+              [readonly]="readonlyMode"
+            />
+            @if (errorCampo('vigenciaFin'); as err) {
+              <span class="emp-field-error">{{ err }}</span>
+            }
+          </label>
+        </div>
+      </div>
+    }
+  </section>
+</section>

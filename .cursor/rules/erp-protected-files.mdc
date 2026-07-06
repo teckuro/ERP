@@ -1,0 +1,69 @@
+---
+description: Archivos protegidos y alcance crítico del ERP
+alwaysApply: true
+---
+
+# ERP — archivos protegidos y alcance crítico
+
+Esta regla evita cambios accidentales en configuración, estilos globales, persistencia o motor de remuneraciones.
+
+## 1. Archivos protegidos
+
+No modificar sin fase explícita que lo autorice:
+
+- `angular.json`
+- `postcss.config.*`
+- `tailwind.config.*`
+- `src/styles.css`
+- `src/styles/index.css`
+- `src/styles/tailwind.css`
+- `src/styles/fonts.css`
+- `src/styles/theme.css`
+
+## 2. Zonas críticas
+
+Normas de capa cuando sí hay fase autorizada: `docs/codex/estandares/` (EST-002…006).
+
+No modificar sin fase explícita:
+
+- SQL/RPC/RLS/BD;
+- motor de cálculo;
+- nómina productiva;
+- liquidaciones productivas;
+- servicios de negocio;
+- repositorios;
+- mappers;
+- payloads;
+- persistencia crítica;
+- contratos de datos;
+- rutas/guards globales.
+
+## 3. Cambios visuales locales
+
+Si una fase es visual:
+
+- resolver en CSS local o componente local;
+- no mover reglas a estilos globales para esquivar budgets;
+- no cambiar `formControlName`;
+- no cambiar guardado;
+- no cambiar servicios;
+- no introducir dependencias nuevas;
+- no subir budgets en `angular.json`.
+
+## 4. Budgets CSS
+
+Si falla un budget CSS:
+
+- tratarlo como fase propia;
+- reducir, consolidar o segmentar CSS local;
+- no aumentar el límite sin autorización explícita;
+- no mover CSS local a global para ocultar el problema.
+
+## 5. Cierre de tarea
+
+Antes de responder:
+
+- listar archivos tocados;
+- indicar validaciones ejecutadas;
+- declarar si no se tocó configuración/estilos globales/SQL/motor;
+- si no se ejecutó build, explicar por qué no correspondía o qué lo impidió.

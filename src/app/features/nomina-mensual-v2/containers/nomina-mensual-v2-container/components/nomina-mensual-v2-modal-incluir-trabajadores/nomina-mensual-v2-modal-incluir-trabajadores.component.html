@@ -1,0 +1,104 @@
+<div class="incluir-modal__backdrop" role="presentation" aria-hidden="true"></div>
+<section
+  class="incluir-modal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="incluir-modal-title"
+  (click)="$event.stopPropagation()"
+>
+  <header class="incluir-modal__head">
+    <div class="incluir-modal__copy">
+      <p class="incluir-modal__eyebrow">Paso 2 · Dotación</p>
+      <h2 id="incluir-modal-title" class="incluir-modal__title">
+        Agregar trabajadores a la nómina
+      </h2>
+      <p class="incluir-modal__subtitle">
+        Selecciona los trabajadores activos que deben participar en este período.
+        Los marcados como “Ya en nómina” no se vuelven a incluir.
+      </p>
+    </div>
+    <button
+      type="button"
+      class="incluir-modal__close"
+      (click)="cerrarPicker()"
+      [disabled]="aplicando()"
+      aria-label="Cerrar"
+    >
+      <lucide-icon [img]="closeIcon" aria-hidden="true"></lucide-icon>
+    </button>
+  </header>
+
+  <div class="incluir-modal__stats" role="group" aria-label="Resumen del listado">
+    <span class="incluir-modal__stat">
+      <strong>{{ totalElegibles() }}</strong>
+      <small>elegibles</small>
+    </span>
+    <span class="incluir-modal__stat is-soft">
+      <strong>{{ totalYaEnNomina() }}</strong>
+      <small>ya en nómina</small>
+    </span>
+  </div>
+
+  @if (errorMensaje(); as msg) {
+    <p class="incluir-modal__error" role="alert">{{ msg }}</p>
+  }
+
+  <div class="incluir-modal__grid">
+    <app-data-grid
+      title=""
+      [columns]="columnas"
+      [rows]="filas()"
+      [filters]="filtros()"
+      [filtersEnabled]="true"
+      [filtersCollapsible]="false"
+      filterChipsDisplay="whenFiltersHidden"
+      headerCountDisplay="text"
+      headerCountNoun="trabajadores"
+      [headerShowActiveFiltersCount]="true"
+      [selectable]="true"
+      selectionLabel="trabajadores"
+      [bulkActions]="accionesMasivas"
+      [bulkActionLoading]="aplicando()"
+      [loading]="cargando()"
+      loadingLabel="Cargando trabajadores…"
+      [trackBy]="trackFila"
+      [persistenceKey]="persistenceKey"
+      toolbarLayout="operativa"
+      [gridHeight]="'100%'"
+      [serverSide]="true"
+      [totalRowCount]="totalFiltrado()"
+      [maxItems]="pageSize()"
+      emptyTitle="Sin trabajadores activos"
+      emptyDescription="La empresa no tiene trabajadores activos con ficha apta para remuneraciones."
+      emptyTitleWhenFiltered="Sin resultados con los filtros actuales"
+      emptyDescriptionWhenFiltered="Cambia o limpia los filtros para ampliar la búsqueda."
+      className="incluir-modal__data-grid"
+      cardClassName="incluir-modal__data-grid-card"
+      (bulkAction)="manejarAccionMasiva($event)"
+      (serverQueryChange)="manejarConsultaServidor($event)"
+    >
+      <ng-template appDataGridCell="yaEnNomina" let-fila>
+        @if (fila.yaEnNomina) {
+          <span class="incluir-modal__pill is-yaEnNomina">Ya en nómina</span>
+        } @else {
+          <span class="incluir-modal__pill is-elegible">Elegible</span>
+        }
+      </ng-template>
+    </app-data-grid>
+  </div>
+
+  <footer class="incluir-modal__footer">
+    <p class="incluir-modal__footnote" aria-live="polite">
+      Marca trabajadores con el checkbox y usa “Incluir seleccionados” para
+      agregarlos a la dotación.
+    </p>
+    <button
+      type="button"
+      class="incluir-modal__cancel"
+      (click)="cerrarPicker()"
+      [disabled]="aplicando()"
+    >
+      Volver
+    </button>
+  </footer>
+</section>

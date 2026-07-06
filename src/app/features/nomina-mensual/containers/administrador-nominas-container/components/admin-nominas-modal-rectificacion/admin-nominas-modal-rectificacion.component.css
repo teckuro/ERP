@@ -1,0 +1,59 @@
+@import '../admin-nominas-modal-nueva-nomina/admin-nominas-modal-nueva-nomina.component.css';
+
+.adm-nom-modal__check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.adm-nom-modal__check-row input {
+  margin-top: 3px;
+}
+
+.adm-nom-modal__lista-items--compact {
+  margin-bottom: 8px;
+}
+
+.adm-nom-modal__rect-contexto {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.adm-nom-modal__rect-col {
+  flex: 1 1 120px;
+  border: 1px solid var(--erp-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: var(--erp-surface-soft);
+}
+
+.adm-nom-modal__rect-col.is-strong {
+  background: var(--erp-info-soft, var(--erp-surface-soft));
+  border-color: var(--erp-border);
+}
+
+.adm-nom-modal__rect-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--erp-muted);
+  margin-bottom: 4px;
+}
+
+.adm-nom-modal__rect-value {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.adm-nom-modal__rect-nota {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--erp-muted);
+}

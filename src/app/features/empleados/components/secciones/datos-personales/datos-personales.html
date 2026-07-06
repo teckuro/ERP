@@ -1,22 +1,24 @@
 <section class="employee-section-shell">
-  @if (isBlockVisible('identificacion')) {
+  @if (esBloqueVisible('identificacion')) {
     <app-card className="employee-block employee-block--wide" [formGroup]="formGroup">
+      @if (!disposicionInlineFicha) {
       <div class="employee-block-head">
         <h4>
           Identificación legal
-          <span class="field-required" aria-hidden="true">*</span>
+          <app-empleado-field-required />
         </h4>
         @if (basicSectionLeads) {
           <p class="employee-block-lead">RUT o pasaporte (uno obligatorio).</p>
         }
       </div>
+      }
 
       <div
         class="employee-grid"
         [class.employee-grid-basic--ident]="basicSectionLeads"
         [class.employee-grid--two]="!basicSectionLeads"
-        [class.employee-grid-adv]="advancedGridLayout"
-        [class.employee-grid-adv--ident]="advancedGridLayout"
+        [class.employee-grid-adv]="grillaAvanzada"
+        [class.employee-grid-adv--ident]="grillaAvanzada"
       >
         <div class="form-field form-field--rut">
           <div class="field-label-row">
@@ -27,6 +29,7 @@
             type="text"
             inputmode="text"
             maxlength="12"
+            data-field-path="datosPersonales.rut"
             formControlName="rut"
             placeholder="Ej: 12.345.678-9"
             [class]="controlClass('rut')"
@@ -62,11 +65,12 @@
           <div class="field-label-row">
             <label for="empleado-fecha-nacimiento">Fecha nacimiento</label>
             @if (isRequired('fechaNacimiento')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <app-calendar-input
             id="empleado-fecha-nacimiento"
+            fieldPath="datosPersonales.fechaNacimiento"
             formControlName="fechaNacimiento"
             placeholder="dd/mm/aaaa"
             [invalid]="hasError('fechaNacimiento')"
@@ -87,11 +91,12 @@
           <div class="field-label-row">
             <label for="empleado-sexo">Sexo</label>
             @if (isRequired('sexo')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <app-search-select
             id="empleado-sexo"
+            fieldPath="datosPersonales.sexo"
             formControlName="sexo"
             placeholder="Selecciona sexo"
             searchPlaceholder="Buscar sexo"
@@ -109,32 +114,35 @@
     </app-card>
   }
 
-  @if (isBlockVisible('nombre')) {
+  @if (esBloqueVisible('nombre')) {
     <app-card className="employee-block employee-block--wide" [formGroup]="formGroup">
+      @if (!disposicionInlineFicha) {
       <div class="employee-block-head">
         <h4>Nombre del empleado</h4>
         @if (basicSectionLeads) {
           <p class="employee-block-lead">Nombre visible en listados y comunicaciones.</p>
         }
       </div>
+      }
 
       <div
         class="employee-grid"
         [class.employee-grid-basic--nombre]="basicSectionLeads"
         [class.employee-grid--three]="!basicSectionLeads"
-        [class.employee-grid-adv]="advancedGridLayout"
-        [class.employee-grid-adv--nombre]="advancedGridLayout"
+        [class.employee-grid-adv]="grillaAvanzada"
+        [class.employee-grid-adv--nombre]="grillaAvanzada"
       >
         <div class="form-field form-field--wide">
           <div class="field-label-row">
             <label for="empleado-nombres">Nombres</label>
             @if (isRequired('nombres')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <input
             id="empleado-nombres"
             type="text"
+            data-field-path="datosPersonales.nombres"
             formControlName="nombres"
             placeholder="Ej: Camila Andrea"
             [class]="controlClass('nombres')"
@@ -154,12 +162,13 @@
           <div class="field-label-row">
             <label for="empleado-apellido-paterno">Apellido paterno</label>
             @if (isRequired('apellidoPaterno')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <input
             id="empleado-apellido-paterno"
             type="text"
+            data-field-path="datosPersonales.apellidoPaterno"
             formControlName="apellidoPaterno"
             placeholder="Ej: Soto"
             [class]="controlClass('apellidoPaterno')"
@@ -198,14 +207,16 @@
     </app-card>
   }
 
-  @if (isBlockVisible('base')) {
+  @if (esBloqueVisible('base')) {
     @if (basicSectionLeads) {
       <div class="employee-basic-bottom-grid" aria-label="Datos personales y contacto">
         <app-card className="employee-block employee-block--narrow">
+          @if (!disposicionInlineFicha) {
           <div class="employee-block-head">
             <h4>Datos personales</h4>
             <p class="employee-block-lead">Nacionalidad y estado civil.</p>
           </div>
+          }
 
           <div
             class="employee-grid employee-grid-basic--base"
@@ -215,11 +226,12 @@
               <div class="field-label-row">
                 <label for="empleado-idPais">Nacionalidad</label>
                 @if (isRequired('idPais')) {
-                  <span class="field-required" aria-hidden="true">*</span>
+                  <app-empleado-field-required />
                 }
               </div>
               <app-search-select
                 id="empleado-idPais"
+                fieldPath="datosPersonales.idPais"
                 formControlName="idPais"
                 placeholder="Selecciona un país"
                 searchPlaceholder="Buscar país"
@@ -241,11 +253,12 @@
               <div class="field-label-row">
                 <label for="empleado-estadoCivil">Estado civil</label>
                 @if (isRequired('estadoCivil')) {
-                  <span class="field-required" aria-hidden="true">*</span>
+                  <app-empleado-field-required />
                 }
               </div>
               <app-search-select
                 id="empleado-estadoCivil"
+                fieldPath="datosPersonales.estadoCivil"
                 formControlName="estadoCivil"
                 placeholder="Selecciona un estado civil"
                 searchPlaceholder="Buscar estado civil"
@@ -261,27 +274,37 @@
           </div>
         </app-card>
 
-        @if (isBlockVisible('contacto')) {
+        @if (esBloqueVisible('contacto')) {
           <app-card className="employee-block employee-block--narrow">
+            @if (!disposicionInlineFicha) {
             <div class="employee-block-head">
               <h4>Contacto</h4>
-              <p class="employee-block-lead">Email y teléfono opcionales.</p>
+              <p class="employee-block-lead">Correo y teléfono obligatorios para contacto laboral.</p>
             </div>
+            }
 
             <div class="employee-grid employee-grid-basic--contact" [formGroup]="contactoFormGroup">
               <div class="form-field form-field--wide">
                 <div class="field-label-row">
-                  <label for="empleado-email">Email</label>
+                  <label for="empleado-email">Correo</label>
+                  @if (isContactoRequired('email')) {
+                    <app-empleado-field-required />
+                  }
                 </div>
                 <input
                   id="empleado-email"
                   type="email"
+                  data-field-path="contacto.email"
                   formControlName="email"
                   placeholder="Ej: nombre@empresa.cl"
                   [class]="contactoControlClass('email')"
                 />
-                @if (hasContactoError('email', 'email')) {
-                  <p class="field-message">Ingresa un email válido.</p>
+                @if (hasContactoError('email', 'required')) {
+                  <p class="field-message">El correo es obligatorio.</p>
+                } @else if (hasContactoError('email', 'email')) {
+                  <p class="field-message">Ingresa un correo válido.</p>
+                } @else if (hasContactoError('email', 'maxlength')) {
+                  <p class="field-message">El correo supera el largo permitido.</p>
                 } @else {
                   <p class="field-message"></p>
                 }
@@ -290,17 +313,23 @@
               <div class="form-field">
                 <div class="field-label-row">
                   <label for="empleado-telefono">Teléfono</label>
+                  @if (isContactoRequired('telefono')) {
+                    <app-empleado-field-required />
+                  }
                 </div>
                 <input
                   id="empleado-telefono"
                   type="text"
                   inputmode="tel"
                   maxlength="20"
+                  data-field-path="contacto.telefono"
                   formControlName="telefono"
                   placeholder="Ej: +56 9 1234 5678"
                   [class]="contactoControlClass('telefono')"
                 />
-                @if (
+                @if (hasContactoError('telefono', 'required')) {
+                  <p class="field-message">El teléfono es obligatorio.</p>
+                } @else if (
                   hasContactoError('telefono', 'phoneFormat') || hasContactoError('telefono', 'maxlength')
                 ) {
                   <p class="field-message">Ingresa un teléfono válido.</p>
@@ -314,24 +343,27 @@
       </div>
     } @else {
       <app-card className="employee-block employee-block--narrow">
+        @if (!disposicionInlineFicha) {
         <div class="employee-block-head">
           <h4>Datos personales</h4>
         </div>
+        }
         <div
           class="employee-grid employee-grid--four"
           [formGroup]="formGroup"
-          [class.employee-grid-adv]="advancedGridLayout"
-          [class.employee-grid-adv--base]="advancedGridLayout"
+          [class.employee-grid-adv]="grillaAvanzada"
+          [class.employee-grid-adv--base]="grillaAvanzada"
         >
           <div class="form-field">
             <div class="field-label-row">
               <label for="empleado-idPais">Nacionalidad</label>
               @if (isRequired('idPais')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
               id="empleado-idPais"
+              fieldPath="datosPersonales.idPais"
               formControlName="idPais"
               placeholder="Selecciona un país"
               searchPlaceholder="Buscar país"
@@ -349,11 +381,12 @@
             <div class="field-label-row">
               <label for="empleado-estadoCivil">Estado civil</label>
               @if (isRequired('estadoCivil')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
               id="empleado-estadoCivil"
+              fieldPath="datosPersonales.estadoCivil"
               formControlName="estadoCivil"
               placeholder="Selecciona un estado civil"
               searchPlaceholder="Buscar estado civil"
@@ -369,32 +402,42 @@
         </div>
       </app-card>
 
-      @if (isBlockVisible('contacto')) {
+      @if (esBloqueVisible('contacto')) {
         <app-card className="employee-block employee-block--narrow" [formGroup]="contactoFormGroup">
+          @if (!disposicionInlineFicha) {
           <div class="employee-block-head">
             <h4>Contacto</h4>
-            <p class="employee-block-lead">Email y teléfono son opcionales para coordinación interna.</p>
+            <p class="employee-block-lead">Correo y teléfono son obligatorios para coordinación interna.</p>
           </div>
+          }
 
           <div
             class="employee-grid employee-grid--two"
-            [class.employee-grid-adv]="advancedGridLayout"
-            [class.employee-grid-adv--contact]="advancedGridLayout"
+            [class.employee-grid-adv]="grillaAvanzada"
+            [class.employee-grid-adv--contact]="grillaAvanzada"
           >
             <div class="form-field form-field--wide">
               <div class="field-label-row">
-                <label for="empleado-email">Email (opcional)</label>
+                <label for="empleado-email">Correo</label>
+                @if (isContactoRequired('email')) {
+                  <app-empleado-field-required />
+                }
               </div>
               <input
                 id="empleado-email"
                 type="email"
                 inputmode="email"
+                data-field-path="contacto.email"
                 formControlName="email"
                 placeholder="Ej: nombre@empresa.cl"
                 [class]="contactoControlClass('email')"
               />
-              @if (hasContactoError('email', 'email')) {
-                <p class="field-message">Ingresa un email válido.</p>
+              @if (hasContactoError('email', 'required')) {
+                <p class="field-message">El correo es obligatorio.</p>
+              } @else if (hasContactoError('email', 'email')) {
+                <p class="field-message">Ingresa un correo válido.</p>
+              } @else if (hasContactoError('email', 'maxlength')) {
+                <p class="field-message">El correo supera el largo permitido.</p>
               } @else {
                 <p class="field-message"></p>
               }
@@ -402,18 +445,24 @@
 
             <div class="form-field">
               <div class="field-label-row">
-                <label for="empleado-telefono">Teléfono (opcional)</label>
+                <label for="empleado-telefono">Teléfono</label>
+                @if (isContactoRequired('telefono')) {
+                  <app-empleado-field-required />
+                }
               </div>
               <input
                 id="empleado-telefono"
                 type="text"
                 inputmode="tel"
                 maxlength="20"
+                data-field-path="contacto.telefono"
                 formControlName="telefono"
                 placeholder="Ej: +56 9 1234 5678"
                 [class]="contactoControlClass('telefono')"
               />
-              @if (
+              @if (hasContactoError('telefono', 'required')) {
+                <p class="field-message">El teléfono es obligatorio.</p>
+              } @else if (
                 hasContactoError('telefono', 'phoneFormat') || hasContactoError('telefono', 'maxlength')
               ) {
                 <p class="field-message">Ingresa un teléfono válido.</p>

@@ -4,7 +4,7 @@
     <h3 class="employee-section-title">Previsión y salud</h3>
   </div>
 
-  @if (isBlockVisible('regimen')) {
+  @if (esBloqueVisible('regimen')) {
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
         <div class="prevision-card-title-row">
@@ -25,7 +25,7 @@
       <app-card-content className="prevision-card-content">
         <div
           class="prevision-grid prevision-grid--two"
-          [class.prevision-grid-adv]="advancedGridLayout"
+          [class.prevision-grid-adv]="grillaAvanzada"
         >
           <div class="form-field prevision-field--regimen">
             <div class="field-label-row">
@@ -35,7 +35,7 @@
                 Tipo de previsión
               </label>
               @if (isRequired('tipoRegimenPrevisional')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
@@ -76,14 +76,14 @@
     </app-card>
   }
 
-  @if (sinPrevision && isBlockVisible('regimen')) {
+  @if (sinPrevision && esBloqueVisible('regimen')) {
     <div class="prevision-state-note is-none" role="status">
       <span class="prevision-state-note__label">Sin previsión</span>
       <p>No se solicitarán datos de AFP, IPS ni APVI para este trabajador.</p>
     </div>
   }
 
-  @if (esAfp && isBlockVisible('afp')) {
+  @if (esAfp && esBloqueVisible('afp')) {
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
         <h4>Datos AFP</h4>
@@ -91,13 +91,13 @@
       <app-card-content className="prevision-card-content">
         <div
           class="prevision-grid prevision-grid--three"
-          [class.prevision-grid-adv]="advancedGridLayout"
+          [class.prevision-grid-adv]="grillaAvanzada"
         >
           <div class="form-field prevision-field--afp">
             <div class="field-label-row">
               <label for="empleado-afp">Nombre AFP</label>
               @if (isRequired('idAfp')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
@@ -121,7 +121,7 @@
                 Moneda Cuenta 2
               </label>
               @if (isRequired('idMonedaCuenta2')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
@@ -145,7 +145,7 @@
                 Valor Cuenta 2
               </label>
               @if (isRequired('valorCuenta2')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <input
@@ -169,7 +169,7 @@
     </app-card>
   }
 
-  @if (esIps && isBlockVisible('ips')) {
+  @if (esIps && esBloqueVisible('ips')) {
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
         <h4>Datos IPS</h4>
@@ -177,7 +177,7 @@
       <app-card-content className="prevision-card-content">
         <div
           class="prevision-grid prevision-grid--four prevision-grid--ips"
-          [class.prevision-grid-adv]="advancedGridLayout"
+          [class.prevision-grid-adv]="grillaAvanzada"
         >
           <div class="form-field prevision-field--ips">
             <div class="field-label-row">
@@ -187,7 +187,7 @@
                 Entidad IPS
               </label>
               @if (isRequired('idEntidadPrevisionalIps')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
@@ -211,7 +211,7 @@
                 Ex-Caja
               </label>
               @if (isRequired('idExCajaPrevisional')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
@@ -235,7 +235,7 @@
                 Régimen Ex-Caja
               </label>
               @if (isRequired('idRegimenExCaja')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
@@ -263,7 +263,7 @@
                 Tasa Ex-Caja (%)
               </label>
               @if (isRequired('tasaExCaja')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <input
@@ -287,7 +287,7 @@
     </app-card>
   }
 
-  @if (mostrarSalud && isBlockVisible('salud')) {
+  @if (mostrarSalud && esBloqueVisible('salud')) {
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
         <h4>Salud</h4>
@@ -295,7 +295,7 @@
       <app-card-content className="prevision-card-content">
         <div
           class="prevision-grid prevision-grid--four prevision-grid--salud"
-          [class.prevision-grid-adv]="advancedGridLayout"
+          [class.prevision-grid-adv]="grillaAvanzada"
         >
           <div class="form-field prevision-field--salud">
             <div class="field-label-row">
@@ -303,7 +303,7 @@
                 >Institución de salud</label
               >
               @if (isRequired('idSalud')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
@@ -327,7 +327,7 @@
                 >Moneda plan salud</label
               >
               @if (isRequired('idMonedaPlan')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
@@ -337,6 +337,7 @@
               searchPlaceholder="Buscar moneda"
               [options]="monedaPlanSelectOptions"
               [invalid]="hasError('idMonedaPlan')"
+              [disabled]="esFonasaSalud"
             ></app-search-select>
             @if (hasError('idMonedaPlan', 'required')) {
               <p class="field-message">La moneda del plan de salud es obligatoria.</p>
@@ -345,68 +346,72 @@
             }
           </div>
 
-          <div class="form-field prevision-field--amount">
-            <div class="field-label-row">
-              <label for="empleado-valor-plan"
-                >Valor plan</label
-              >
-              @if (isRequired('valorPlan')) {
-                <span class="field-required" aria-hidden="true">*</span>
+          @if (!esFonasaSalud) {
+            <div class="form-field prevision-field--amount">
+              <div class="field-label-row">
+                <label for="empleado-valor-plan"
+                  >Valor plan</label
+                >
+                @if (isRequired('valorPlan')) {
+                  <app-empleado-field-required />
+                }
+              </div>
+              <input
+                id="empleado-valor-plan"
+                type="number"
+                min="0"
+                step="1000"
+                formControlName="valorPlan"
+                [class]="controlClass('valorPlan')"
+              />
+              @if (hasError('valorPlan', 'required')) {
+                <p class="field-message">El valor del plan es obligatorio.</p>
+              } @else if (hasError('valorPlan', 'min')) {
+                <p class="field-message">El valor del plan no puede ser negativo.</p>
+              } @else {
+                <p class="field-message"></p>
               }
             </div>
-            <input
-              id="empleado-valor-plan"
-              type="number"
-              min="0"
-              step="1000"
-              formControlName="valorPlan"
-              [class]="controlClass('valorPlan')"
-            />
-            @if (hasError('valorPlan', 'required')) {
-              <p class="field-message">El valor del plan es obligatorio.</p>
-            } @else if (hasError('valorPlan', 'min')) {
-              <p class="field-message">El valor del plan no puede ser negativo.</p>
-            } @else {
-              <p class="field-message"></p>
-            }
-          </div>
+          }
 
-          <div class="form-field prevision-field--amount">
-            <div class="field-label-row">
-              <label for="empleado-auge-ges">
-                Adicional GES (UF)
-              </label>
-              @if (isRequired('adicionalAugeGes')) {
-                <span class="field-required" aria-hidden="true">*</span>
+          @if (!esFonasaSalud) {
+            <div class="form-field prevision-field--amount">
+              <div class="field-label-row">
+                <label for="empleado-auge-ges">
+                  Adicional GES (UF)
+                </label>
+                @if (isRequired('adicionalAugeGes')) {
+                  <app-empleado-field-required />
+                }
+              </div>
+              <input
+                id="empleado-auge-ges"
+                type="number"
+                min="0"
+                step="1000"
+                formControlName="adicionalAugeGes"
+                [class]="controlClass('adicionalAugeGes')"
+              />
+              @if (hasError('adicionalAugeGes', 'required')) {
+                <p class="field-message">El adicional Plan Auge es obligatorio.</p>
+              } @else if (hasError('adicionalAugeGes', 'min')) {
+                <p class="field-message">El adicional Plan Auge no puede ser negativo.</p>
+              } @else {
+                <p class="field-message"></p>
               }
             </div>
-            <input
-              id="empleado-auge-ges"
-              type="number"
-              min="0"
-              step="1000"
-              formControlName="adicionalAugeGes"
-              [class]="controlClass('adicionalAugeGes')"
-            />
-            @if (hasError('adicionalAugeGes', 'required')) {
-              <p class="field-message">El adicional Plan Auge es obligatorio.</p>
-            } @else if (hasError('adicionalAugeGes', 'min')) {
-              <p class="field-message">El adicional Plan Auge no puede ser negativo.</p>
-            } @else {
-              <p class="field-message"></p>
-            }
-          </div>
+          }
         </div>
       </app-card-content>
     </app-card>
-  } @else if (isBlockVisible('salud') && tipoPrevision !== null) {
+  } @else if (esBloqueVisible('salud') && tipoPrevision !== null) {
     <div class="prevision-state-note is-neutral" role="status">
       <span class="prevision-state-note__label">Salud sin datos requeridos</span>
       <p>La selección actual no solicita datos de salud en este paso.</p>
     </div>
   }
 
-  @if (advancedGridLayout && isBlockVisible('regimen')) {
+  @if (grillaAvanzada && esBloqueVisible('regimen')) {
     <div
       class="prevision-impact"
       [class.is-enabled]="esAfp && formGroup.controls.tieneApv.value"
@@ -421,7 +426,7 @@
     </div>
   }
 
-  @if (esAfp && isBlockVisible('apvi') && mostrarApvi) {
+  @if (esAfp && esBloqueVisible('apvi') && mostrarApvi) {
       <app-card className="prevision-card">
         <app-card-header className="prevision-card-header">
           <h4>APVI - Ahorro Previsional Voluntario Individual</h4>
@@ -433,7 +438,7 @@
           </p>
           <div
             class="prevision-grid prevision-grid--three prevision-grid--apvi"
-            [class.prevision-grid-adv]="advancedGridLayout"
+            [class.prevision-grid-adv]="grillaAvanzada"
           >
             <div class="form-field">
               <div class="field-label-row">
@@ -441,7 +446,7 @@
                   Institución APVI
                 </label>
                 @if (isRequired('idInstitucionApv')) {
-                  <span class="field-required" aria-hidden="true">*</span>
+                  <app-empleado-field-required />
                 }
               </div>
               <app-search-select
@@ -465,7 +470,7 @@
                   Moneda APVI
                 </label>
                 @if (isRequired('idMonedaApv')) {
-                  <span class="field-required" aria-hidden="true">*</span>
+                  <app-empleado-field-required />
                 }
               </div>
               <app-search-select
@@ -489,7 +494,7 @@
                   Valor APVI
                 </label>
                 @if (isRequired('montoApv')) {
-                  <span class="field-required" aria-hidden="true">*</span>
+                  <app-empleado-field-required />
                 }
               </div>
               <input
@@ -515,7 +520,7 @@
                   Forma de Pago APVI
                 </label>
                 @if (isRequired('idFormaPagoApv')) {
-                  <span class="field-required" aria-hidden="true">*</span>
+                  <app-empleado-field-required />
                 }
               </div>
               <app-search-select
@@ -541,7 +546,7 @@
                   Deposito Convenido APVI
                 </label>
                 @if (isRequired('depositoConvenidoApvi')) {
-                  <span class="field-required" aria-hidden="true">*</span>
+                  <app-empleado-field-required />
                 }
               </div>
               <input

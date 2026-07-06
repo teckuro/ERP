@@ -321,6 +321,78 @@
   line-height: 1.4;
 }
 
+/* Ficha empleado: edicion inline alineada al expediente editorial */
+:host.perfil-layout-inline-record .perfil-laboral-shell {
+  gap: 10px;
+}
+
+:host.perfil-layout-inline-record .perfil-block-head {
+  display: none;
+}
+
+:host.perfil-layout-inline-record ::ng-deep .perfil-block {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:host.perfil-layout-inline-record .perfil-review-grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding: 0 0 8px;
+}
+
+:host.perfil-layout-inline-record .perfil-status {
+  border-color: var(--employee-exp-border, #e5e7eb);
+  border-radius: 5px;
+  background: var(--employee-exp-panel, #ffffff);
+  padding: 10px 12px;
+}
+
+:host.perfil-layout-inline-record .perfil-facts {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+:host.perfil-layout-inline-record .perfil-facts div {
+  border-color: var(--employee-exp-border, #e5e7eb);
+  border-radius: 5px;
+  background: #f8fafc;
+  padding: 8px 10px;
+}
+
+:host.perfil-layout-inline-record .perfil-conditions-grid {
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 0;
+}
+
+:host.perfil-layout-inline-record .perfil-condition-card {
+  border-radius: 5px;
+  padding: 8px 10px;
+}
+
+:host.perfil-layout-inline-record .perfil-respaldo-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  padding: 0;
+}
+
+:host.perfil-layout-inline-record .perfil-observacion-field {
+  padding: 0;
+}
+
+:host.perfil-layout-inline-record .perfil-auto-detected {
+  margin: 0 0 8px;
+  border-radius: 5px;
+}
+
+:host.perfil-layout-inline-record .perfil-empty-state,
+:host.perfil-layout-inline-record .perfil-alerts {
+  border-radius: 5px;
+}
+
 @media (max-width: 1080px) {
   .perfil-review-grid,
   .perfil-respaldo-grid,
@@ -330,7 +402,7 @@
 }
 
 @media (max-width: 860px) {
-  .perfil-block-head {
+  :host:not(.perfil-layout-inline-record) .perfil-block-head {
     display: grid;
   }
 
@@ -382,10 +454,14 @@
 
 .perfil-condition-reason {
   display: block;
-  border-left: 2px solid #93c5fd;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
   color: #1e3a8a;
   font-size: var(--erp-text-xs, 0.665rem);
   font-weight: 500;
   line-height: 1.35;
-  padding-left: 7px;
+  padding: 4px 7px;
 }

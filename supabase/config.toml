@@ -1,0 +1,4 @@
+# Supabase local / deploy. Vincular: supabase link --project-ref <ref>
+
+[functions.erp-asistente-preguntor]
+verify_jwt = true

@@ -1,11 +1,12 @@
 import { TestBed } from '@angular/core/testing';
-import { vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { SUPABASE_CLIENT } from '../../../core/services/supabase.service';
 import { NominaCalculoSnapshotRepository } from './nomina-calculo-snapshot.repository';
 
 const baseRow = {
   id_calculo_periodo: 1,
+  id_nomina_periodo: 'nomina-uuid-1',
   periodo: '2026-05',
   id_empresa: null,
   estado: 'preliminar',
@@ -19,6 +20,8 @@ const baseRow = {
   total_advertencias: 0,
   version_motor: 'MOTOR-03B',
   hash_snapshot: 'fnv1a32:12345678',
+  hash_parametros: 'fnv1a32:aaaaaaaa',
+  hash_entradas: 'fnv1a32:bbbbbbbb',
   origen: 'preliminar',
   activo: true,
   reemplazado_por: null,
@@ -115,6 +118,7 @@ function query(result: unknown) {
   const chain = {
     select: vi.fn(() => chain),
     eq: vi.fn(() => chain),
+    neq: vi.fn(() => chain),
     in: vi.fn(() => chain),
     is: vi.fn(() => chain),
     insert: vi.fn(() => chain),
@@ -133,6 +137,7 @@ function query(result: unknown) {
 function snapshotParaGuardar(overrides: Record<string, unknown> = {}) {
   return {
     idCalculoPeriodo: null,
+    nominaPeriodoId: 'nomina-uuid-1',
     periodo: '2026-05',
     idEmpresa: null,
     estado: 'preliminar',
@@ -217,6 +222,131 @@ function snapshotParaGuardar(overrides: Record<string, unknown> = {}) {
 }
 
 describe('NominaCalculoSnapshotRepository', () => {
+  it('guarda borrador con trabajadores, issues y metadata', async () => {
+    const insertQuery = query({
+      ...baseRow,
+      id_calculo_periodo: 9,
+      estado: 'borrador',
+      total_haberes: 0,
+      total_descuentos: 0,
+      total_liquido: 0,
+      hash_snapshot: null,
+      version_motor: 'BASE-NOMINA-01',
+    });
+    const trabajadoresInsertQuery = query([{ ...trabajadorRow, id_calculo_periodo: 9 }]);
+    const issuesInsertQuery = query(null);
+    const metadataUpdateQuery = query(null);
+    const from = vi.fn()
+      .mockReturnValueOnce(query(null))
+      .mockReturnValueOnce(insertQuery)
+      .mockReturnValueOnce(trabajadoresInsertQuery)
+      .mockReturnValueOnce(issuesInsertQuery)
+      .mockReturnValueOnce(metadataUpdateQuery);
+
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: {
+            from,
+            rpc: vi.fn(),
+            auth: { getUser: vi.fn() },
+          },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    const guardado = await repo.guardarBaseNominaBorrador(
+      snapshotParaGuardar({
+        estado: 'borrador',
+        totalHaberes: 0,
+        totalDescuentos: 0,
+        totalLiquido: 0,
+        hashSnapshot: null,
+        versionMotor: 'BASE-NOMINA-01',
+        trabajadores: [
+          {
+            idPersona: 1,
+            rut: '11.111.111-1',
+            nombreCompletoSnapshot: 'Ana Perez',
+            estado: 'calculado_preliminar',
+            sueldoBase: 0,
+            baseImponiblePrevisional: 0,
+            baseTributable: 0,
+            totalHaberesImponibles: 0,
+            totalHaberesNoImponibles: 0,
+            totalDescuentosLegales: 0,
+            totalDescuentosVoluntarios: 0,
+            impuestoUnico: 0,
+            liquidoPreliminar: 0,
+            cotizacionAfp: 0,
+            cotizacionSalud: 0,
+            cotizacionAfc: 0,
+            cotizacionSis: 0,
+            cotizacionSanna: 0,
+            cotizacionLey16744Empleador: 0,
+            conceptos: [],
+            issues: [],
+            trazabilidad: [],
+          },
+        ],
+        issues: [
+          {
+            codigo: 'ADV_TEST',
+            severidad: 'ADVERTENCIA',
+            origen: 'pre_nomina',
+            mensaje: 'Advertencia de prueba',
+            campo: null,
+            entidadId: null,
+          },
+        ],
+        trazabilidad: [],
+      }),
+      {
+        entradasMensuales: [],
+        resumenPrevalidacion: null,
+        prevalidacionEstado: 'LISTO_PARA_CALCULO',
+      },
+    );
+
+    expect(insertQuery.insert).toHaveBeenCalledWith(expect.objectContaining({
+      periodo: '2026-05',
+      estado: 'borrador',
+      activo: true,
+    }));
+    expect(trabajadoresInsertQuery.insert).toHaveBeenCalled();
+    expect(issuesInsertQuery.insert).toHaveBeenCalled();
+    expect(metadataUpdateQuery.update).toHaveBeenCalled();
+    expect(guardado.snapshot.trabajadores).toHaveLength(1);
+    expect(guardado.reemplazoSnapshotAnterior).toBe(false);
+  });
+
+  it('no reemplaza snapshot preliminar activo al guardar base borrador', async () => {
+    const from = vi.fn(() => query(baseRow));
+
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: {
+            from,
+            rpc: vi.fn(),
+            auth: { getUser: vi.fn() },
+          },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    await expect(repo.guardarBaseNominaBorrador(snapshotParaGuardar({ estado: 'borrador' }))).rejects.toThrow(
+      'Ya existe una nomina generada para el periodo.',
+    );
+    expect(from).toHaveBeenCalledTimes(1);
+  });
+
   it('guarda resultado preliminar mediante RPC atomica con payload completo', async () => {
     const nuevoRow = {
       ...baseRow,
@@ -265,9 +395,65 @@ describe('NominaCalculoSnapshotRepository', () => {
     expect(rpcPayload.p_conceptos[0]).toMatchObject({ trabajador_index: 0, nombre_concepto_snapshot: 'Sueldo base' });
     expect(rpcPayload.p_observaciones[0]).toMatchObject({ trabajador_index: 0, mensaje: 'Informacion guardada.' });
     expect(rpcPayload.p_trazabilidad[0]).toMatchObject({ trabajador_index: 0, codigo: 'LIQUIDO_PRELIMINAR' });
+    // F09: la RPC recibe la nómina para scopear el reemplazo del activo.
+    expect(rpcPayload.p_id_nomina_periodo).toBe('nomina-uuid-1');
     expect(guardado.snapshot.idCalculoPeriodo).toBe(2);
+    expect(guardado.snapshot.nominaPeriodoId).toBe('nomina-uuid-1');
     expect(guardado.snapshot.aprobacionOperativa).toBeNull();
     expect(guardado.reemplazoSnapshotAnterior).toBe(true);
+  });
+
+  it('guarda resultado preliminar aunque falten listas opcionales en runtime', async () => {
+    const nuevoRow = {
+      ...baseRow,
+      id_calculo_periodo: 2,
+      estado: 'recalculado',
+      origen: 'recalculo',
+      hash_snapshot: 'fnv1a32:nuevo',
+    };
+    const from = vi.fn()
+      .mockReturnValueOnce(query(baseRow))
+      .mockReturnValueOnce(query(nuevoRow))
+      .mockReturnValueOnce(query([{ ...trabajadorRow, id_calculo_periodo: 2 }]))
+      .mockReturnValueOnce(query([]))
+      .mockReturnValueOnce(query([]))
+      .mockReturnValueOnce(query([]));
+    const rpc = vi.fn().mockResolvedValue({ data: 2, error: null });
+
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: {
+            from,
+            rpc,
+            auth: { getUser: vi.fn() },
+          },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    const snapshot = snapshotParaGuardar({
+      trabajadores: [{
+        ...snapshotParaGuardar().trabajadores[0],
+        conceptos: undefined,
+        issues: undefined,
+        trazabilidad: undefined,
+      }],
+      issues: undefined,
+      trazabilidad: undefined,
+    });
+
+    const guardado = await repo.guardarSnapshotPreliminar(snapshot);
+    const rpcPayload = rpc.mock.calls[0][1];
+
+    expect(rpcPayload.p_trabajadores).toHaveLength(1);
+    expect(rpcPayload.p_conceptos).toEqual([]);
+    expect(rpcPayload.p_observaciones).toEqual([]);
+    expect(rpcPayload.p_trazabilidad).toEqual([]);
+    expect(guardado.snapshot.idCalculoPeriodo).toBe(2);
   });
 
   it('propaga error controlado si falla la RPC atomica', async () => {
@@ -325,6 +511,38 @@ describe('NominaCalculoSnapshotRepository', () => {
     expect(snapshot?.aprobacionOperativa?.advertencias).toEqual(['Advertencia visible']);
   });
 
+  it('reconstruye responsable de aprobacion desde metadata persistida al recargar', async () => {
+    const approvedRow = {
+      ...baseRow,
+      aprobacion_operativa_estado: 'aprobado_operativamente',
+      aprobacion_operativa_fecha: '2026-05-05T11:00:00.000Z',
+      aprobacion_operativa_usuario_id: null,
+      aprobacion_operativa_usuario_label: null,
+      aprobacion_operativa_metadata: {
+        usuarioResponsableId: '00000000-0000-0000-0000-000000000002',
+        usuarioResponsableNombre: 'rrhh.persistido@empresa.cl',
+      },
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: {
+            from: vi.fn(() => query(approvedRow)),
+            auth: { getUser: vi.fn() },
+          },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    const snapshot = await repo.obtenerSnapshotActivo('2026-05');
+
+    expect(snapshot?.aprobacionOperativa?.usuarioId).toBe('00000000-0000-0000-0000-000000000002');
+    expect(snapshot?.aprobacionOperativa?.usuarioLabel).toBe('rrhh.persistido@empresa.cl');
+  });
+
   it('llama RPC cerrar_nomina_operativa con parametros correctos y mapea cierre', async () => {
     const cerradoRow = {
       ...baseRow,
@@ -369,6 +587,40 @@ describe('NominaCalculoSnapshotRepository', () => {
     expect(snapshot.cierreOperativo?.usuarioLabel).toBe('rrhh@empresa.cl');
   });
 
+  it('reconstruye responsable de cierre desde metadata persistida al recargar', async () => {
+    const cerradoRow = {
+      ...baseRow,
+      cierre_operativo_estado: 'cerrado_operativamente',
+      cierre_operativo_fecha: '2026-05-05T12:00:00.000Z',
+      cierre_operativo_usuario_id: null,
+      cierre_operativo_usuario_label: null,
+      cierre_operativo_metadata: {
+        usuarioResponsable: {
+          id: '00000000-0000-0000-0000-000000000003',
+          nombre: 'jefe.rrhh@empresa.cl',
+        },
+      },
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: {
+            from: vi.fn(() => query(cerradoRow)),
+            auth: { getUser: vi.fn() },
+          },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    const snapshot = await repo.obtenerSnapshotActivo('2026-05');
+
+    expect(snapshot?.cierreOperativo?.usuarioId).toBe('00000000-0000-0000-0000-000000000003');
+    expect(snapshot?.cierreOperativo?.usuarioLabel).toBe('jefe.rrhh@empresa.cl');
+  });
+
   it('sanitiza error operativo si falla RPC de cierre', async () => {
     const rpc = vi.fn().mockResolvedValue({ data: null, error: { message: 'detalle sql sensible' } });
     TestBed.configureTestingModule({
@@ -391,8 +643,7 @@ describe('NominaCalculoSnapshotRepository', () => {
     );
   });
 
-  it('persiste aprobacion por id_calculo_periodo activo y retorna la aprobacion guardada', async () => {
-    const updatePayloads: unknown[] = [];
+  it('aprueba via fn_aprobar_prenomina_periodo enviando los tres hashes esperados', async () => {
     const updatedRow = {
       ...baseRow,
       aprobacion_operativa_estado: 'aprobado_operativamente',
@@ -403,16 +654,13 @@ describe('NominaCalculoSnapshotRepository', () => {
       aprobacion_operativa_metadata: { idCalculoPeriodo: 1 },
     };
     const selectQuery = query(baseRow);
-    const updateQuery = {
-      ...query(updatedRow),
-      update: vi.fn((payload: unknown) => {
-        updatePayloads.push(payload);
-        return updateQuery;
-      }),
-    };
-    const from = vi.fn()
-      .mockReturnValueOnce(selectQuery)
-      .mockReturnValueOnce(updateQuery);
+    const from = vi.fn().mockReturnValueOnce(selectQuery);
+    const rpc = vi.fn().mockImplementation((fn: string) => {
+      if (fn === 'fn_validar_prenomina_periodo') {
+        return Promise.resolve({ data: { ok: true, bloqueos: [], advertencias: [] }, error: null });
+      }
+      return Promise.resolve({ data: updatedRow, error: null });
+    });
 
     TestBed.configureTestingModule({
       providers: [
@@ -421,12 +669,8 @@ describe('NominaCalculoSnapshotRepository', () => {
           provide: SUPABASE_CLIENT,
           useValue: {
             from,
-            auth: {
-              getUser: vi.fn().mockResolvedValue({
-                data: { user: { id: '00000000-0000-0000-0000-000000000001', email: 'rrhh@empresa.cl' } },
-                error: null,
-              }),
-            },
+            rpc,
+            auth: { getUser: vi.fn() },
           },
         },
       ],
@@ -439,14 +683,55 @@ describe('NominaCalculoSnapshotRepository', () => {
       advertencias: ['Advertencia visible'],
     });
 
-    expect(from).toHaveBeenCalledWith('nomina_calculo_periodo');
-    expect(updatePayloads[0]).toMatchObject({
-      aprobacion_operativa_estado: 'aprobado_operativamente',
-      aprobacion_operativa_usuario_id: '00000000-0000-0000-0000-000000000001',
-      aprobacion_operativa_usuario_label: 'rrhh@empresa.cl',
-      aprobacion_operativa_advertencias: ['Advertencia visible'],
-    });
+    expect(rpc).toHaveBeenCalledWith('fn_validar_prenomina_periodo', expect.objectContaining({
+      p_id_calculo_periodo: 1,
+      p_periodo: '2026-05',
+    }));
+    expect(rpc).toHaveBeenCalledWith('fn_aprobar_prenomina_periodo', expect.objectContaining({
+      p_id_calculo_periodo: 1,
+      p_periodo: '2026-05',
+      p_hash_snapshot: 'fnv1a32:12345678',
+      p_hash_parametros: 'fnv1a32:aaaaaaaa',
+      p_hash_entradas: 'fnv1a32:bbbbbbbb',
+    }));
     expect(snapshot.aprobacionOperativa?.estado).toBe('aprobado_operativamente');
+  });
+
+  it('no aprueba si la validacion previa reporta bloqueos', async () => {
+    const selectQuery = query(baseRow);
+    const from = vi.fn().mockReturnValueOnce(selectQuery);
+    const rpc = vi.fn().mockImplementation((fn: string) => {
+      if (fn === 'fn_validar_prenomina_periodo') {
+        return Promise.resolve({
+          data: { ok: false, bloqueos: [{ codigo: 'HASH_MISMATCH', mensaje: 'El hash no coincide.' }], advertencias: [] },
+          error: null,
+        });
+      }
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: {
+            from,
+            rpc,
+            auth: { getUser: vi.fn() },
+          },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    await expect(repo.aprobarResultadoPreliminarOperativamente({
+      idCalculoPeriodo: 1,
+      periodo: '2026-05',
+      advertencias: [],
+    })).rejects.toThrow('El hash no coincide.');
+
+    expect(rpc).not.toHaveBeenCalledWith('fn_aprobar_prenomina_periodo', expect.anything());
   });
 
   it('consulta snapshot completo activo por periodo sin recalcular', async () => {
@@ -549,5 +834,73 @@ describe('NominaCalculoSnapshotRepository', () => {
 
     const repo = TestBed.inject(NominaCalculoSnapshotRepository);
     await expect(repo.obtenerSnapshotCompletoPorId(1)).rejects.toThrow('No fue posible consultar el resultado guardado');
+  });
+
+  it('obtenerSnapshotParametrosBase filtra por nominaPeriodoId', async () => {
+    const baseNominaA = {
+      ...baseRow,
+      id_calculo_periodo: 10,
+      id_nomina_periodo: 'nom-a',
+      version_motor: 'PARAMETROS-BASE-01',
+      estado: 'borrador',
+      activo: true,
+    };
+    const baseNominaB = {
+      ...baseRow,
+      id_calculo_periodo: 11,
+      id_nomina_periodo: 'nom-b',
+      version_motor: 'PARAMETROS-BASE-01',
+      estado: 'borrador',
+      activo: true,
+    };
+    const from = vi.fn(() => ({
+      select: vi.fn(() => ({
+        eq: vi.fn((_col: string, id: string) => ({
+          order: vi.fn(() =>
+            query(id === 'nom-a' ? [baseNominaA] : id === 'nom-b' ? [baseNominaB] : []),
+          ),
+        })),
+      })),
+    }));
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: { from, auth: { getUser: vi.fn() } },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    const snapshotA = await repo.obtenerSnapshotParametrosBase('2026-05', null, 'nom-a');
+    const snapshotB = await repo.obtenerSnapshotParametrosBase('2026-05', null, 'nom-b');
+
+    expect(snapshotA?.idCalculoPeriodo).toBe(10);
+    expect(snapshotB?.idCalculoPeriodo).toBe(11);
+  });
+
+  it('listarSnapshotsNomina consulta por id_nomina_periodo', async () => {
+    const rows = [{ ...baseRow, id_nomina_periodo: 'nom-x' }];
+    const order = vi.fn(() => query(rows));
+    const eq = vi.fn(() => ({ order }));
+    const select = vi.fn(() => ({ eq }));
+    const from = vi.fn(() => ({ select }));
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: { from, auth: { getUser: vi.fn() } },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    const snapshots = await repo.listarSnapshotsNomina('nom-x');
+
+    expect(from).toHaveBeenCalledWith('nomina_calculo_periodo');
+    expect(snapshots).toHaveLength(1);
+    expect(snapshots[0]?.nominaPeriodoId).toBe('nom-x');
   });
 });

@@ -249,6 +249,38 @@ python -B ..\Python\06_scrape_ips_tasas_v611.py --help
 
 No ejecutar `--apply`, `--aplicar-seed` ni `--aplicar-mensual` contra bases reales desde esta fase.
 
+## Wrapper seguro contra sobrescritura
+
+Fase `PARAM-MENSUAL-OVERWRITE-GUARD-01`.
+
+Para cargas mensuales desde terminal, usar el wrapper:
+
+```powershell
+.\scripts\run-parametros-mensuales.ps1 -Periodo 2026-05 -PythonProjectPath "..\Python"
+```
+
+Por defecto solo genera el SQL mensual. Si se usa `-ApplySql`, el wrapper consulta primero datos existentes del periodo y detiene la aplicacion si encuentra registros, salvo que se confirme con `-Force`.
+
+```powershell
+$env:SUPABASE_DB_URL_LOCAL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+.\scripts\run-parametros-mensuales.ps1 -Periodo 2026-05 -PythonProjectPath "..\Python" -ApplySql -RunValidations
+```
+
+Si hay datos existentes:
+
+```txt
+No se aplico SQL.
+Vuelve a ejecutar con -Force si confirmas la actualizacion.
+```
+
+Confirmacion explicita:
+
+```powershell
+.\scripts\run-parametros-mensuales.ps1 -Periodo 2026-05 -PythonProjectPath "..\Python" -ApplySql -RunValidations -Force
+```
+
+No usar `bd/base/v11/run_all.sql` para carga mensual sobre una BD con datos a conservar.
+
 Validacion SQL local:
 
 ```powershell
@@ -275,3 +307,19 @@ La validacion SQL es de lectura: reporta filas a revisar y no modifica datos.
 3. Resolver producto/BD para `trabajo_pesado_parametro` si deja de ser hibrido.
 4. Resolver convergencia UI para `afp` vs `afp_vigencia`.
 5. Revisar `02_normativa_base_v611.py` para eliminar la ruta legacy de upsert por `codigo` en tablas que v11 versiona por `(codigo, periodo)`.
+
+## PARAM-CLIENT-CONFIG-SEPARATION-AUDIT-01 - Separacion oficial/cliente
+
+El flujo Python mensual no debe escribir `parametros_generales_cliente`. Esa tabla es configuracion cliente protegida y editable desde UI.
+
+Si el wrapper detecta registros cliente para el periodo, los informa aparte:
+
+```txt
+Configuracion cliente existente:
+- parametros_generales_cliente: 1 registros
+
+La carga mensual oficial no deberia modificar esta tabla.
+Si despues de aplicar oficiales existen diferencias, revisa la reconciliacion desde Parametros.
+```
+
+`-Force` solo confirma actualizar o reemplazar datos oficiales del periodo. No autoriza pisar configuracion cliente.

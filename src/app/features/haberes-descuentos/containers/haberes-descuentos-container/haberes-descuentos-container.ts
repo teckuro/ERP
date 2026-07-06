@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { Edit, LoaderCircle, Plus, RefreshCw } from 'lucide-angular/src/icons';
 
@@ -21,80 +21,43 @@ import {
   CardComponent,
   CardContentComponent,
   CardHeaderComponent,
-} from '../../../../shared/components/ui/card.component';
+} from '../../../../shared/components/ui/primitives/card.component';
 import {
   DataGridCellDirective,
-  DataGridColumn,
   DataGridComponent,
-  DataGridFilter,
-} from '../../../../shared/components/ui/data-grid.component';
-import { ButtonComponent } from '../../../../shared/components/ui/button.component';
+} from '../../../../shared/components/ui/data-grid';
+import { ButtonComponent } from '../../../../shared/components/ui/primitives/button.component';
 import {
   MessageBoxComponent,
   MessageBoxVariant,
-} from '../../../../shared/components/ui/message-box.component';
-import {
-  RecordBreadcrumbComponent,
-  RecordBreadcrumbItem,
-} from '../../../../shared/components/ui/record-breadcrumb.component';
+} from '../../../../shared/components/ui/feedback/message-box/message-box.component';
+import type {
+  MessageBoxAction,
+  MessageBoxSection,
+} from '../../../../shared/components/ui/feedback/message-box/message-box.component';
+import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import {
   SearchSelectComponent,
   SearchSelectOption,
-} from '../../../../shared/components/ui/search-select.component';
+} from '../../../../shared/components/ui/forms/search-select.component';
 import { PeriodoActivoService, primerDiaSqlDesdeYm } from '../../../../core/services/periodo-activo.service';
 import { HaberesDescuentosService } from '../../services/haberes-descuentos.service';
 import {
   ConceptoListado,
-  HaberDescuentoAsignacionListado,
   HaberDescuentoAsignacionPayload,
   HaberDescuentoTipoValor,
   PERIODICIDADES_HD,
 } from '../../models/haber-descuento-asignacion.model';
-import { type EstadoVigenciaAsignacion } from '../../rules/haber-descuento-vigencia.rules';
-
-type HdGridRow = HaberDescuentoAsignacionListado & {
-  estadoVigencia: EstadoVigenciaAsignacion;
-  estadoVigenciaEtiqueta: string;
-  valorAsignacion: string;
-  /** Texto agregado para filtro “Buscar” (nombre, código concepto, LRE). */
-  busquedaAsignacion: string;
-};
-
-function etiquetaEstadoFicha(empleado: EmpleadoListado): string {
-  switch (empleado.estadoFicha) {
-    case 'VALIDO':
-      return 'Válido';
-    case 'INCOMPLETO':
-      return 'En proceso';
-    case 'BORRADOR':
-      return 'Borrador';
-    default:
-      return empleado.estadoFicha;
-  }
-}
-
-function etiquetaTipoConcepto(tipo: string | null): string {
-  if (tipo === 'HABER') {
-    return 'Haber';
-  }
-  if (tipo === 'DESCUENTO') {
-    return 'Descuento';
-  }
-  if (tipo === 'APORTE_EMPLEADOR') {
-    return 'Aporte empleador';
-  }
-  return tipo?.trim() ? tipo : '—';
-}
-
-function etiquetaNaturalezaFn(n: string | null): string {
-  if (n === 'IMPONIBLE') {
-    return 'Imponible';
-  }
-  if (n === 'NO_IMPONIBLE') {
-    return 'No imponible';
-  }
-  return n?.trim() ? n : '—';
-}
+import type { FilaGridHaberDescuento } from '../../models/haber-descuento-asignacion-listado.vm';
+import { HaberDescuentoAsignacionEditorDialogComponent } from '../../components/haber-descuento-asignacion-editor-dialog/haber-descuento-asignacion-editor-dialog.component';
+import {
+  aFilasGridHaberDescuento,
+  crearColumnasGridHaberDescuento,
+  crearFiltrosGridHaberDescuento,
+  debeMostrarCuotasRecurrente,
+  etiquetaEstadoFichaEmpleado,
+  etiquetaTipoConceptoHd,
+} from '../../utils/haber-descuento-asignacion-listado.presenter';
 
 @Component({
   selector: 'app-haberes-descuentos-container',
@@ -102,8 +65,8 @@ function etiquetaNaturalezaFn(n: string | null): string {
   imports: [
     CommonModule,
     FormsModule,
+    RouterLink,
     LucideAngularModule,
-    RecordBreadcrumbComponent,
     ButtonComponent,
     DataGridComponent,
     DataGridCellDirective,
@@ -112,6 +75,7 @@ function etiquetaNaturalezaFn(n: string | null): string {
     CardComponent,
     CardHeaderComponent,
     CardContentComponent,
+    HaberDescuentoAsignacionEditorDialogComponent,
   ],
   templateUrl: './haberes-descuentos-container.html',
   styleUrl: './haberes-descuentos-container.css',
@@ -125,13 +89,10 @@ export class HaberesDescuentosContainer implements OnInit {
   private readonly haberesDescuentosService = inject(HaberesDescuentosService);
   readonly periodoActivo = inject(PeriodoActivoService);
 
+  private accionRegistrarPendiente = false;
+
   readonly periodicidadesHd = PERIODICIDADES_HD;
   readonly fechaReferenciaPeriodo = computed(() => new Date(`${this.periodoActivo.periodoYm()}-01T00:00:00`));
-
-  readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
-    { label: 'Remuneraciones', link: '/remuneraciones' },
-    { label: 'Asignaciones recurrentes' },
-  ];
 
   readonly loaderIcon = LoaderCircle;
   readonly plusIcon = Plus;
@@ -149,7 +110,7 @@ export class HaberesDescuentosContainer implements OnInit {
 
   readonly personaIdSeleccionada = signal<number | null>(null);
 
-  readonly filas = signal<HdGridRow[]>([]);
+  readonly filas = signal<FilaGridHaberDescuento[]>([]);
 
   readonly dialogAbierto = signal(false);
   readonly dialogEditId = signal<number | null>(null);
@@ -180,6 +141,28 @@ export class HaberesDescuentosContainer implements OnInit {
 
   readonly confirmDesactivar = signal<{ idAsignacion: number; nombre: string } | null>(null);
 
+  seccionesCerrarRecurrente(nombre: string): MessageBoxSection[] {
+    return [
+      {
+        title: 'Principal',
+        text: nombre,
+        tone: 'attention',
+      },
+      {
+        title: 'Acción',
+        text: 'Cerrar solo si el movimiento no debe seguir aplicándose en períodos futuros.',
+        tone: 'info',
+      },
+    ];
+  }
+
+  accionesCerrarRecurrente(): MessageBoxAction[] {
+    return [
+      { label: 'Cancelar', value: 'secondary', role: 'secondary', align: 'left' },
+      { label: 'Cerrar', value: 'primary', role: 'danger', align: 'right' },
+    ];
+  }
+
   readonly empleadoActual = computed(() => {
     const id = this.personaIdSeleccionada();
     if (id == null) {
@@ -188,14 +171,12 @@ export class HaberesDescuentosContainer implements OnInit {
     return this.empleadosListado().find((e) => e.id === id) ?? null;
   });
 
-  readonly resumenAsignaciones = computed(() => {
-    const filas = this.filas();
-    return {
-      activas: filas.filter((fila) => fila.estadoVigencia === 'ACTIVA').length,
-      futuras: filas.filter((fila) => fila.estadoVigencia === 'FUTURA').length,
-      vencidasOCerradas: filas.filter((fila) => fila.estadoVigencia === 'VENCIDA' || fila.estadoVigencia === 'CERRADA').length,
-      invalidas: filas.filter((fila) => fila.estadoVigencia === 'INVALIDA').length,
-    };
+  readonly trabajadorResumenModal = computed(() => {
+    const emp = this.empleadoActual();
+    if (!emp) {
+      return null;
+    }
+    return { nombre: emp.nombre, rut: emp.rut };
   });
 
   readonly conceptoFormulario = computed(() => {
@@ -234,8 +215,10 @@ export class HaberesDescuentosContainer implements OnInit {
   });
 
   readonly tituloModal = computed(() =>
-    this.dialogEditId() == null ? 'Nueva asignacion recurrente' : 'Editar asignacion recurrente',
+    this.dialogEditId() == null ? 'Registrar recurrente' : 'Editar movimiento recurrente',
   );
+
+  readonly mostrarCuotasRecurrente = computed(() => debeMostrarCuotasRecurrente(this.conceptoFormulario()));
 
   readonly conceptoOpciones = computed<SearchSelectOption<number>[]>(() => {
     const base = this.conceptos().map((c) => ({
@@ -259,171 +242,33 @@ export class HaberesDescuentosContainer implements OnInit {
     return base;
   });
 
-  readonly contratoOpcionesNativo = computed(() => this.contratosPersona());
-
   readonly tieneMultiplesContratos = computed(() => this.contratosPersona().length > 1);
 
-  readonly columns: DataGridColumn<HdGridRow>[] = [
-    {
-      id: 'nombreConcepto',
-      header: 'Concepto',
-      field: 'nombreConcepto',
-      type: 'text',
-      sortable: true,
-      priorityResponsive: 'primary',
-      filterable: false,
-    },
-    {
-      id: 'codigoLre',
-      header: 'Código LRE',
-      field: 'codigoLre',
-      type: 'text',
-      sortable: true,
-      format: (v) => (v == null || v === '' ? '—' : String(v)),
-      filterable: false,
-    },
-    {
-      id: 'tipoConcepto',
-      header: 'Tipo',
-      field: 'tipoConcepto',
-      type: 'text',
-      sortable: true,
-      filterable: false,
-    },
-    {
-      id: 'naturalezaConcepto',
-      header: 'Naturaleza',
-      field: 'naturalezaConcepto',
-      type: 'text',
-      sortable: true,
-      format: (_v, row) => etiquetaNaturalezaFn(row.naturalezaConcepto),
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'valorAsignacion',
-      header: 'Valor',
-      field: 'valorAsignacion',
-      type: 'text',
-      align: 'right',
-      sortable: false,
-      filterable: false,
-    },
-    {
-      id: 'monto',
-      header: 'Monto',
-      field: 'monto',
-      type: 'text',
-      align: 'right',
-      sortable: true,
-      format: (_v, row) =>
-        row.tipoValor === 'PORCENTAJE' || row.monto == null
-          ? '—'
-          : `$ ${Number(row.monto).toLocaleString('es-CL')}`,
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'porcentaje',
-      header: 'Porcentaje',
-      field: 'porcentaje',
-      type: 'text',
-      align: 'right',
-      sortable: true,
-      format: (_v, row) =>
-        row.tipoValor === 'FIJO' || row.porcentaje == null ? '—' : `${this.formatPercent(row.porcentaje)} %`,
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'periodicidad',
-      header: 'Periodicidad',
-      field: 'periodicidad',
-      type: 'text',
-      sortable: true,
-      format: (v) => (v == null || v === '' ? '—' : String(v)),
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'vigenciaInicio',
-      header: 'Vigencia inicio',
-      field: 'vigenciaInicio',
-      type: 'text',
-      sortable: true,
-      format: (v) => this.formatDate(v),
-      filterable: false,
-    },
-    {
-      id: 'vigenciaFin',
-      header: 'Vigencia fin',
-      field: 'vigenciaFin',
-      type: 'text',
-      sortable: true,
-      format: (v) => this.formatDate(v),
-      filterable: false,
-    },
-    {
-      id: 'estadoVigenciaEtiqueta',
-      header: 'Estado vigencia',
-      field: 'estadoVigenciaEtiqueta',
-      type: 'text',
-      sortable: true,
-      filterable: false,
-    },
-    {
-      id: 'acciones',
-      header: 'Acciones',
-      align: 'center',
-      sortable: false,
-      hideable: false,
-    },
-  ];
+  readonly columns = crearColumnasGridHaberDescuento();
+  readonly filters = crearFiltrosGridHaberDescuento();
 
-  readonly trackHdRow = (_index: number, row: HdGridRow): number => row.idAsignacion;
+  readonly trackHdRow = (_index: number, row: FilaGridHaberDescuento): number => row.idAsignacion;
 
-  readonly filters: DataGridFilter<HdGridRow>[] = [
-    {
-      id: 'busquedaAsignacion',
-      label: 'Buscar concepto',
-      field: 'busquedaAsignacion',
-      type: 'text',
-      operator: 'contains',
-      placeholder: 'Nombre, código o LRE',
-    },
-    {
-      id: 'estadoVigencia',
-      label: 'Estado de vigencia',
-      field: 'estadoVigencia',
-      type: 'select',
-      operator: 'equals',
-      emptyLabel: 'Todas',
-      initialValue: 'OPERATIVAS',
-      options: [
-        { label: 'Operativas', value: 'OPERATIVAS' },
-        { label: 'Activas', value: 'ACTIVA' },
-        { label: 'Futuras', value: 'FUTURA' },
-        { label: 'Vencidas', value: 'VENCIDA' },
-        { label: 'Cerradas', value: 'CERRADA' },
-        { label: 'Invalidas', value: 'INVALIDA' },
-      ],
-      predicate: (row, value) => {
-        if (typeof value !== 'string' || value === '') {
-          return true;
-        }
-        if (value === 'OPERATIVAS') {
-          return row.estadoVigencia === 'ACTIVA' || row.estadoVigencia === 'FUTURA';
-        }
-        return row.estadoVigencia === value;
-      },
-    },
-  ];
-
-  etiquetaTipo = etiquetaTipoConcepto;
-  etiquetaNaturaleza = etiquetaNaturalezaFn;
-  etiquetaFicha = etiquetaEstadoFicha;
+  etiquetaTipo = etiquetaTipoConceptoHd;
+  etiquetaFicha = etiquetaEstadoFichaEmpleado;
 
   constructor() {
+    bindShellPageContext(
+      this.destroyRef,
+      () => ({
+        breadcrumbs: [
+          { label: 'Remuneraciones', path: '/remuneraciones/nominas' },
+          { label: 'Recurrentes' },
+        ],
+        primaryAction: {
+          label: 'Registrar recurrente',
+          disabled: this.personaIdSeleccionada() == null,
+          actionId: 'registrar-recurrente',
+        },
+      }),
+      { onPrimaryAction: () => this.abrirNuevo() },
+    );
+
     effect(() => {
       const pid = this.personaIdSeleccionada();
       this.periodoActivo.periodoYm();
@@ -452,12 +297,39 @@ export class HaberesDescuentosContainer implements OnInit {
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const raw = params.get('persona');
       const id = raw ? Number(raw) : NaN;
-      if (Number.isInteger(id) && id > 0) {
+      const personaValida = Number.isInteger(id) && id > 0;
+      if (personaValida) {
         this.personaIdSeleccionada.set(id);
       } else {
         this.personaIdSeleccionada.set(null);
       }
+
+      const accion = params.get('accion');
+      if (accion === 'registrar') {
+        this.accionRegistrarPendiente = personaValida;
+        if (personaValida) {
+          setTimeout(() => this.consumirAccionRegistrar(), 0);
+        }
+      } else {
+        this.accionRegistrarPendiente = false;
+      }
     });
+  }
+
+  private consumirAccionRegistrar(): void {
+    if (!this.accionRegistrarPendiente || this.personaIdSeleccionada() == null) {
+      return;
+    }
+    this.accionRegistrarPendiente = false;
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { accion: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+    if (!this.dialogAbierto()) {
+      this.abrirNuevo();
+    }
   }
 
   async refrescar(): Promise<void> {
@@ -468,21 +340,6 @@ export class HaberesDescuentosContainer implements OnInit {
       await this.cargarContratos(pid);
       await this.cargarAsignaciones(pid);
     }
-  }
-
-  private mapFilasAsignacion(rows: HaberDescuentoAsignacionListado[]): HdGridRow[] {
-    return rows.map((r) => {
-      const estadoVigencia = r.estadoVigencia ?? 'INVALIDA';
-      return {
-        ...r,
-        estadoVigencia,
-        estadoVigenciaEtiqueta: r.estadoVigenciaEtiqueta ?? 'Invalida',
-        valorAsignacion: this.valorAsignacionLabel(r),
-        busquedaAsignacion: [r.nombreConcepto, r.codigoConcepto, r.codigoLre ?? '']
-          .join(' ')
-          .toLowerCase(),
-      };
-    });
   }
 
   async cargarEmpleados(): Promise<void> {
@@ -520,7 +377,7 @@ export class HaberesDescuentosContainer implements OnInit {
     this.gridLoading.set(true);
     try {
       const rows = await this.haberesDescuentosService.listarPorPersona(idPersona, this.fechaReferenciaPeriodo());
-      this.filas.set(this.mapFilasAsignacion(rows));
+      this.filas.set(aFilasGridHaberDescuento(rows));
     } finally {
       this.gridLoading.set(false);
     }
@@ -528,9 +385,11 @@ export class HaberesDescuentosContainer implements OnInit {
 
   onEmpleadoChange(id: number | null): void {
     this.personaIdSeleccionada.set(id);
+    this.accionRegistrarPendiente = false;
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: id ? { persona: id } : {},
+      queryParams: id ? { persona: id, accion: null } : { persona: null, accion: null },
+      queryParamsHandling: 'merge',
       replaceUrl: true,
     });
     if (!id) {
@@ -580,7 +439,7 @@ export class HaberesDescuentosContainer implements OnInit {
     this.dialogAbierto.set(true);
   }
 
-  editar(row: HdGridRow): void {
+  editar(row: FilaGridHaberDescuento): void {
     if (!this.puedeEditar(row)) {
       return;
     }
@@ -708,7 +567,7 @@ export class HaberesDescuentosContainer implements OnInit {
     }
   }
 
-  pedirDesactivar(row: HdGridRow): void {
+  pedirDesactivar(row: FilaGridHaberDescuento): void {
     if (!this.puedeCerrar(row)) {
       return;
     }
@@ -765,52 +624,19 @@ export class HaberesDescuentosContainer implements OnInit {
     });
   }
 
-  puedeEditar(row: HdGridRow): boolean {
+  puedeEditar(row: FilaGridHaberDescuento): boolean {
     return row.estadoVigencia === 'ACTIVA' || row.estadoVigencia === 'FUTURA';
   }
 
-  puedeCerrar(row: HdGridRow): boolean {
+  puedeCerrar(row: FilaGridHaberDescuento): boolean {
     return row.estadoVigencia === 'ACTIVA' || row.estadoVigencia === 'FUTURA';
   }
 
-  tituloEditar(row: HdGridRow): string {
+  tituloEditar(row: FilaGridHaberDescuento): string {
     return this.puedeEditar(row) ? 'Editar' : 'No editable en historial';
   }
 
-  tituloCerrar(row: HdGridRow): string {
+  tituloCerrar(row: FilaGridHaberDescuento): string {
     return this.puedeCerrar(row) ? 'Cerrar' : 'No se puede cerrar este estado';
   }
-
-  private valorAsignacionLabel(row: HaberDescuentoAsignacionListado): string {
-    if (row.tipoValor === 'PORCENTAJE') {
-      return row.porcentaje == null ? '—' : `${this.formatPercent(row.porcentaje)} %`;
-    }
-    return row.monto == null ? '—' : `$ ${Number(row.monto).toLocaleString('es-CL')}`;
-  }
-
-  private formatPercent(value: number): string {
-    return new Intl.NumberFormat('es-CL', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
-  }
-
-  private formatDate(value: unknown): string {
-    if (value == null || value === '') {
-      return '—';
-    }
-    const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
-    if (!Number.isFinite(date.getTime())) {
-      return String(value);
-    }
-    return new Intl.DateTimeFormat('es-CL', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    })
-      .format(date)
-      .replaceAll('/', '-');
-  }
 }
-
-

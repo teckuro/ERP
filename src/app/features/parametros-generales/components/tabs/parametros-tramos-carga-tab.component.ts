@@ -3,8 +3,7 @@ import { Component, Input } from '@angular/core';
 import {
   DataGridColumn,
   DataGridComponent,
-  DataGridFilter,
-} from '../../../../shared/components/ui/data-grid.component';
+} from '../../../../shared/components/ui/data-grid';
 import { TramoCargaParametro } from '../../models/parametro-general.model';
 
 @Component({
@@ -15,24 +14,12 @@ import { TramoCargaParametro } from '../../models/parametro-general.model';
     <section class="tab-panel parametros-tab-panel">
       <section class="catalog-section parametros-grid-shell" aria-labelledby="tramos-carga-title">
         <h2 id="tramos-carga-title">Tramos cargas familiares</h2>
-        @if (referenciaPeriodoLabel) {
-          <div class="param-reference-callout" role="note">
-            <div>
-              <span class="param-reference-callout__label">Referencia {{ referenciaPeriodoLabel }}</span>
-              <p>No se usara para calculo de {{ periodoLabel }}.</p>
-            </div>
-            <button type="button" class="param-reference-callout__action" (click)="verReferenciaPeriodoAnterior?.()">
-              Ver referencia {{ referenciaPeriodoLabel }}
-            </button>
-          </div>
-        }
         <app-data-grid
           title="Tramos de asignacion familiar"
           [rows]="rows"
           [columns]="columns"
           [loading]="loading"
-          [filters]="tramosCargaFilters"
-          [filtersEnabled]="true"
+          [filtersEnabled]="false"
           [showExportAction]="true"
           [maxItems]="10"
           gridHeight="min(520px, 100%)"
@@ -54,16 +41,4 @@ export class ParametrosTramosCargaTabComponent {
   @Input() referenciaPeriodoLabel: string | null = null;
   @Input() verReferenciaPeriodoAnterior: (() => void) | null = null;
   @Input() refresh: (() => void) | null = null;
-
-  readonly tramosCargaFilters: DataGridFilter<TramoCargaParametro>[] = [
-    {
-      id: 'periodo',
-      label: 'Periodo',
-      field: 'periodo',
-      type: 'text',
-      operator: 'startsWith',
-      placeholder: 'Ej: 2026-05',
-      emptyLabel: 'Todos',
-    },
-  ];
 }

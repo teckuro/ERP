@@ -1,0 +1,145 @@
+﻿@let f = facade;
+<section class="employee-file-page" aria-label="Ficha de empleado">
+  @if (f.isLoading() || f.mensajeError()) {
+    <!-- toolbar minimal comentado -->
+  }
+
+  <div
+    class="file-content-card"
+    [class.file-content-card--loaded]="f.empleado() && !f.isLoading() && !f.mensajeError()"
+  >
+    @if (f.isLoading()) {
+      <app-workspace-loading message="Cargando ficha..." [fill]="true" />
+    } @else if (f.mensajeError(); as mensaje) {
+      <section class="file-state file-state--error">
+        <lucide-icon class="file-state-card-icon" [img]="f.alertIcon"></lucide-icon>
+
+        <p>{{ mensaje }}</p>
+      </section>
+    } @else if (f.empleado(); as employee) {
+      <div class="employee-record-shell">
+        <app-empleado-record-header [employee]="employee" [initials]="f.employeeInitials(employee)" />
+
+        <div class="employee-record-layout">
+          @let estado = f.fichaEstadoPanel(employee);
+
+          <app-empleado-diagnostico-panel
+            [estado]="estado"
+            [progressStyle]="f.progressStyle(employee)"
+            [validando]="f.isValidatingPayroll()"
+            (navegarFaltante)="f.navegarFaltante($event)"
+            (accionPrincipal)="f.ejecutarAccionPrincipalPanel()"
+          />
+
+          <div class="employee-record-workspace">
+            <app-empleado-expediente-rail
+              [items]="f.expedienteNavItems(employee)"
+              [totalBloques]="f.tabs.length"
+              (seleccionarTab)="f.selectTab($event)"
+            />
+
+            <div
+              class="employee-record-main"
+              role="tabpanel"
+              [attr.aria-labelledby]="'employee-tab-' + f.tabActivo()"
+            >
+              <main class="file-main">
+                <section class="section-summary employee-record-block">
+                  @if (f.tabActivo() === 'historial') {
+                    <app-data-grid
+                      title="Historial"
+                      [columns]="f.historyColumns"
+                      [rows]="f.historyRows(employee)"
+                      [filtersEnabled]="false"
+                      [showExportAction]="false"
+                      [selectable]="false"
+                      [showHeader]="true"
+                      [maxItems]="10"
+                      [trackBy]="f.trackHistoryRow"
+                      cardClassName="history-grid-card"
+                      emptyTitle="Sin eventos de historial"
+                      emptyDescription="La ficha aún no registra eventos de auditoría."
+                    ></app-data-grid>
+                  } @else {
+                    <div class="ficha-registro-tab">
+                      <header
+                        class="employee-record-block__intro"
+                        [class.employee-record-block__intro--with-action]="
+                          f.tabActivo() === 'remuneracion' && employee.aptoParaRemuneraciones
+                        "
+                      >
+                        <div class="employee-record-block__intro-copy">
+                          <h2 class="employee-record-block__title">{{ f.tabActivoIntroTitle() }}</h2>
+                          <p class="employee-record-block__desc">{{ f.tabActivoDescription() }}</p>
+                        </div>
+
+                        @if (f.tabActivo() === 'remuneracion' && employee.aptoParaRemuneraciones) {
+                          <div class="employee-record-block__intro-actions">
+                            <a
+                              routerLink="/remuneraciones/haberes-descuentos"
+                              [queryParams]="{ persona: employee.id, accion: null }"
+                              class="file-toolbar-button file-toolbar-button--secondary erp-toolbar-button"
+                            >
+                              Revisar movimientos
+                            </a>
+                          </div>
+                        }
+                      </header>
+
+                      <div class="ficha-registro-tab__cuerpo">
+                        <div class="detail-block-list detail-block-list--editorial">
+                          @for (block of f.detailBlocks(employee); track block.id) {
+                            <section class="detail-block detail-block--editorial">
+                              <header class="detail-block-head detail-block-head--editorial">
+                                <h3 class="detail-block-head__title">{{ block.title }}</h3>
+
+                                @if (f.canEditBlock(block.id)) {
+                                  <button
+                                    type="button"
+                                    class="section-edit-button erp-btn-ghost"
+                                    (click)="f.startEditing(block.id)"
+                                  >
+                                    <lucide-icon
+                                      class="section-edit-button__icon"
+                                      [img]="f.editIcon"
+                                      aria-hidden="true"
+                                    />
+                                    Editar
+                                  </button>
+                                }
+                              </header>
+
+                              <dl class="detail-grid detail-grid--editorial">
+                                @for (item of block.items; track item.label) {
+                                  <div [class.detail-row--muted]="f.isMissingValue(item.value)">
+                                    <dt>{{ item.label }}</dt>
+
+                                    <dd [class.detail-dd--missing]="f.isMissingValue(item.value)">
+                                      @if (f.isMissingValue(item.value)) {
+                                        <lucide-icon
+                                          class="detail-missing-icon"
+                                          [img]="f.emptyFieldIcon"
+                                          aria-hidden="true"
+                                        />
+                                      }
+
+                                      <span>{{ item.value }}</span>
+                                    </dd>
+                                  </div>
+                                }
+                              </dl>
+                            </section>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </section>
+              </main>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</section>

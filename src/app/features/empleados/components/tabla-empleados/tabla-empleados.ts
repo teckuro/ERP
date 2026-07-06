@@ -1,13 +1,19 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, HostListener, Input, Output, ViewChild, inject } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import { Router, NavigationStart, RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import {
   ArrowRight,
-  ClipboardCheck,
-  Edit,
   Eye,
-  History,
   LoaderCircle,
   MoreVertical,
   Plus,
@@ -19,13 +25,18 @@ import {
   DataGridCellDirective,
   DataGridBulkActionEvent,
   DataGridBulkActionResult,
-  DataGridBulkActionOption,
-  DataGridColumn,
   DataGridComponent,
   DataGridExportEvent,
-  DataGridFilter,
   DataGridPrimaryActionMenuDirective,
-} from '../../../../shared/components/ui/data-grid.component';
+} from '../../../../shared/components/ui/data-grid';
+import {
+  capitalizarTextoEmpleado,
+  crearAccionesMasivasEstadoEmpleado,
+  crearColumnasGridTablaEmpleados,
+  crearFiltrosGridTablaEmpleados,
+  etiquetaEstadoEmpleado,
+  formatearFechaIngresoListado,
+} from '../../utils/tabla-empleados-listado.presenter';
 
 @Component({
   selector: 'app-tabla-empleados',
@@ -41,236 +52,42 @@ import {
   templateUrl: './tabla-empleados.html',
   styleUrl: './tabla-empleados.css',
 })
-export class TablaEmpleadosComponent {
+export class TablaEmpleadosComponent implements OnDestroy {
   private readonly router = inject(Router);
 
   @Input() empleados: EmpleadoListado[] = [];
   @Input() maxItems = 10;
   @Input() loading = false;
-  @Input() errorMessage = '';
+  @Input() mensajeError = '';
   @Input() bulkActionLoading = false;
   @Input() bulkActionResult: DataGridBulkActionResult<EmpleadoListado> | null = null;
-  @Input() createNavigationTarget: 'basico' | 'avanzado' | null = null;
+  @Input() destinoNavegacionCreacion: 'basico' | 'avanzado' | null = null;
   @Output() readonly refresh = new EventEmitter<void>();
   @Output() readonly bulkAction = new EventEmitter<DataGridBulkActionEvent<EmpleadoListado>>();
   @Output() readonly createBasico = new EventEmitter<void>();
   @Output() readonly createAvanzado = new EventEmitter<void>();
 
-  readonly editIcon = Edit;
   readonly eyeIcon = Eye;
-  readonly historyIcon = History;
   readonly loaderIcon = LoaderCircle;
   readonly moreIcon = MoreVertical;
   readonly plusIcon = Plus;
   readonly powerOffIcon = PowerOff;
   readonly rowActionIcon = ArrowRight;
-  readonly completionIcon = ClipboardCheck;
   openActionMenuId: number | null = null;
+  actionMenuPosition: { top: number; left: number } | null = null;
   crearMenuAbierto = false;
+
+  private gridScrollListenerTarget: HTMLElement | null = null;
+  private readonly onGridScrollClose = (): void => this.closeActionMenu();
 
   @ViewChild(DataGridComponent)
   private readonly dataGrid?: DataGridComponent<EmpleadoListado>;
 
   readonly pageSizeOptions = [10, 20, 30, 50];
 
-  readonly bulkStateActions: DataGridBulkActionOption[] = [
-    {
-      id: 'set-in-progress',
-      label: 'En proceso',
-      value: 'en_proceso',
-      tone: 'info',
-      confirmLabel: 'Pasar a en proceso',
-    },
-    {
-      id: 'activate',
-      label: 'Activo',
-      value: 'activo',
-      tone: 'success',
-      confirmLabel: 'Activar seleccion',
-    },
-    {
-      id: 'change-status',
-      label: 'Suspendido',
-      value: 'suspendido',
-      tone: 'warning',
-      confirmLabel: 'Suspender seleccion',
-    },
-    {
-      id: 'deactivate',
-      label: 'Inactivo',
-      value: 'inactivo',
-      tone: 'danger',
-      confirmLabel: 'Desactivar seleccion',
-    },
-    {
-      id: 'set-unlinked',
-      label: 'Desvinculado',
-      value: 'desvinculado',
-      tone: 'danger',
-      confirmLabel: 'Desvincular seleccion',
-    },
-    {
-      id: 'set-blocked',
-      label: 'Bloqueado',
-      value: 'bloqueado',
-      tone: 'blocked',
-      confirmLabel: 'Bloquear seleccion',
-    },
-  ];
-
-  readonly columns: DataGridColumn<EmpleadoListado>[] = [
-    {
-      id: 'rut',
-      header: 'RUT',
-      field: 'rut',
-      type: 'text',
-      cellClass: 'whitespace-nowrap text-neutral-700',
-      priorityResponsive: 'secondary',
-      filterable: true,
-      showFilterWhenHidden: true,
-    },
-    {
-      id: 'nombre',
-      header: 'Empleado',
-      field: 'nombre',
-      type: 'text',
-      hideable: false,
-      priorityResponsive: 'primary',
-      filterable: true,
-      showFilterWhenHidden: true,
-    },
-    {
-      id: 'cargo',
-      header: 'Cargo',
-      field: 'cargo',
-      type: 'text',
-      cellClass: 'text-neutral-700',
-      priorityResponsive: 'tertiary',
-      format: (value) => this.capitalize(String(value ?? '')),
-      filterable: true,
-      showFilterWhenHidden: true,
-    },
-    {
-      id: 'departamento',
-      header: 'Departamento',
-      field: 'departamento',
-      type: 'text',
-      cellClass: 'text-neutral-700',
-      priorityResponsive: 'tertiary',
-      filterable: true,
-      showFilterWhenHidden: true,
-    },
-    {
-      id: 'fechaIngreso',
-      header: 'Fecha ingreso',
-      field: 'fechaIngreso',
-      type: 'date',
-      cellClass: 'whitespace-nowrap text-neutral-700',
-      format: (value) => this.formatDisplayDate(String(value ?? '')),
-      filterable: true,
-      showFilterWhenHidden: true,
-    },
-    {
-      id: 'sueldoBase',
-      header: 'Sueldo',
-      field: 'sueldoBase',
-      type: 'number',
-      align: 'right',
-      cellClass: 'whitespace-nowrap font-semibold text-neutral-900',
-      format: (value) => `$ ${Number(value).toLocaleString('es-CL')}`,
-      filterable: false,
-    },
-    {
-      id: 'estado',
-      header: 'Estado',
-      field: 'estado',
-      type: 'text',
-      hideable: false,
-      priorityResponsive: 'secondary',
-      format: (value) => this.labelEstado(value as EmpleadoEstado),
-      filterable: true,
-      showFilterWhenHidden: true,
-    },
-    {
-      id: 'avance',
-      header: 'Completitud',
-      align: 'left',
-      sortable: false,
-      hideable: true,
-      filterable: false,
-    },
-    {
-      id: 'acciones',
-      header: 'Accion',
-      align: 'center',
-      sortable: false,
-      hideable: false,
-      filterable: false,
-    },
-  ];
-
-  readonly filters: DataGridFilter<EmpleadoListado>[] = [
-    {
-      id: 'rut',
-      label: 'RUT',
-      field: 'rut',
-      type: 'text',
-      operator: 'contains',
-      normalize: 'rut',
-      placeholder: 'Buscar RUT',
-    },
-    {
-      id: 'nombre',
-      label: 'Empleado',
-      field: 'nombre',
-      type: 'text',
-      operator: 'contains',
-      normalize: 'text',
-      matchMode: 'tokens',
-      placeholder: 'Buscar empleado',
-    },
-    {
-      id: 'estado',
-      label: 'Estado',
-      field: 'estado',
-      type: 'select',
-      operator: 'equals',
-      emptyLabel: 'Todo',
-      options: [
-        { label: 'Borrador', value: 'borrador' },
-        { label: 'En proceso', value: 'en_proceso' },
-        { label: 'Activo', value: 'activo' },
-        { label: 'Suspendido', value: 'suspendido' },
-        { label: 'Inactivo', value: 'inactivo' },
-        { label: 'Desvinculado', value: 'desvinculado' },
-        { label: 'Bloqueado', value: 'bloqueado' },
-      ],
-    },
-    {
-      id: 'departamento',
-      label: 'Centro de costo',
-      field: 'departamento',
-      type: 'select',
-      operator: 'equals',
-      emptyLabel: 'Todos los centros',
-    },
-    {
-      id: 'cargo',
-      label: 'Cargo',
-      field: 'cargo',
-      type: 'select',
-      operator: 'equals',
-      emptyLabel: 'Todos los cargos',
-    },
-    {
-      id: 'fechaIngreso',
-      label: 'Fecha de ingreso',
-      field: 'fechaIngreso',
-      type: 'date-range',
-      operator: 'between',
-      disallowFuture: true,
-    },
-  ];
+  readonly bulkStateActions = crearAccionesMasivasEstadoEmpleado();
+  readonly columns = crearColumnasGridTablaEmpleados();
+  readonly filters = crearFiltrosGridTablaEmpleados();
 
   @HostListener('document:click', ['$event'])
   closeActionMenuOnOutsideClick(event: MouseEvent): void {
@@ -280,7 +97,7 @@ export class TablaEmpleadosComponent {
       return;
     }
 
-    this.openActionMenuId = null;
+    this.closeActionMenu();
   }
 
   @HostListener('document:click', ['$event'])
@@ -297,16 +114,27 @@ export class TablaEmpleadosComponent {
   @HostListener('document:keydown.escape')
   closeMenusOnEscape(): void {
     this.crearMenuAbierto = false;
-    this.openActionMenuId = null;
+    this.closeActionMenu();
+  }
+
+  @HostListener('window:resize')
+  closeActionMenuOnResize(): void {
+    if (this.openActionMenuId !== null) {
+      this.closeActionMenu();
+    }
   }
 
   constructor() {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationStart) {
         this.crearMenuAbierto = false;
-        this.openActionMenuId = null;
+        this.closeActionMenu();
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.unbindGridScrollCloseListener();
   }
 
   trackByEmpleadoId(_index: number, empleado: EmpleadoListado): number {
@@ -314,14 +142,14 @@ export class TablaEmpleadosComponent {
   }
 
   toggleCrearMenu(): void {
-    if (this.createNavigationTarget) {
+    if (this.destinoNavegacionCreacion) {
       return;
     }
     this.crearMenuAbierto = !this.crearMenuAbierto;
   }
 
   onCrearBasico(): void {
-    if (this.createNavigationTarget) {
+    if (this.destinoNavegacionCreacion) {
       return;
     }
     this.crearMenuAbierto = false;
@@ -329,7 +157,7 @@ export class TablaEmpleadosComponent {
   }
 
   onCrearAvanzado(): void {
-    if (this.createNavigationTarget) {
+    if (this.destinoNavegacionCreacion) {
       return;
     }
     this.crearMenuAbierto = false;
@@ -370,17 +198,71 @@ export class TablaEmpleadosComponent {
     URL.revokeObjectURL(url);
   }
 
+  openActionMenuEmpleado(): EmpleadoListado | null {
+    if (this.openActionMenuId === null) {
+      return null;
+    }
+
+    return this.empleados.find((empleado) => empleado.id === this.openActionMenuId) ?? null;
+  }
+
   toggleActionMenu(empleadoId: number, event: MouseEvent): void {
     event.stopPropagation();
-    this.openActionMenuId = this.openActionMenuId === empleadoId ? null : empleadoId;
+
+    if (this.openActionMenuId === empleadoId) {
+      this.closeActionMenu();
+      return;
+    }
+
+    const trigger = event.currentTarget;
+
+    if (!(trigger instanceof HTMLElement)) {
+      return;
+    }
+
+    const rect = trigger.getBoundingClientRect();
+    const menuWidthPx = 224;
+    const viewportPaddingPx = 8;
+    const gapPx = 4;
+    let left = rect.right - menuWidthPx;
+
+    left = Math.max(
+      viewportPaddingPx,
+      Math.min(left, window.innerWidth - menuWidthPx - viewportPaddingPx),
+    );
+
+    this.actionMenuPosition = {
+      top: rect.bottom + gapPx,
+      left,
+    };
+    this.openActionMenuId = empleadoId;
+    this.bindGridScrollCloseListener();
   }
 
   closeActionMenu(): void {
     this.openActionMenuId = null;
+    this.actionMenuPosition = null;
+    this.unbindGridScrollCloseListener();
+  }
+
+  private bindGridScrollCloseListener(): void {
+    this.unbindGridScrollCloseListener();
+    this.gridScrollListenerTarget = document.querySelector(
+      'app-tabla-empleados app-data-grid.empleados-grid-shell .data-grid-scroll',
+    );
+
+    this.gridScrollListenerTarget?.addEventListener('scroll', this.onGridScrollClose, {
+      passive: true,
+    });
+  }
+
+  private unbindGridScrollCloseListener(): void {
+    this.gridScrollListenerTarget?.removeEventListener('scroll', this.onGridScrollClose);
+    this.gridScrollListenerTarget = null;
   }
 
   formatEmployeeMeta(empleado: EmpleadoListado): string {
-    return `${this.capitalize(empleado.cargo)} • ${this.formatDisplayDate(empleado.fechaIngreso)}`;
+    return `${capitalizarTextoEmpleado(empleado.cargo)} • ${formatearFechaIngresoListado(empleado.fechaIngreso)}`;
   }
 
   isDefaultDepartamento(departamento: string): boolean {
@@ -461,6 +343,15 @@ export class TablaEmpleadosComponent {
     return 'Ver ficha';
   }
 
+  /** Etiqueta del popover de acciones (solo Ver ficha o Continuar alta). */
+  menuPrimaryActionLabel(empleado: EmpleadoListado): string {
+    return empleado.pasoAltaAvanzada !== null ? 'Continuar alta' : 'Ver ficha';
+  }
+
+  menuPrimaryActionIcon(empleado: EmpleadoListado) {
+    return empleado.pasoAltaAvanzada !== null ? this.rowActionIcon : this.eyeIcon;
+  }
+
   completionValue(empleado: EmpleadoListado): number {
     if (empleado.pasoAltaAvanzada !== null) {
       return 24;
@@ -507,7 +398,7 @@ export class TablaEmpleadosComponent {
     }
 
     if (this.isEstadoOperativoCerrado(empleado.estado)) {
-      return this.labelEstado(empleado.estado);
+      return etiquetaEstadoEmpleado(empleado.estado);
     }
 
     if (empleado.estado === 'activo' && !empleado.aptoParaRemuneraciones) {
@@ -522,57 +413,11 @@ export class TablaEmpleadosComponent {
       return 'Activo / Apto';
     }
 
-    return this.labelEstado(empleado.estado);
+    return etiquetaEstadoEmpleado(empleado.estado);
   }
 
-  labelEstado(estado: EmpleadoEstado): string {
-    switch (estado) {
-      case 'borrador':
-        return 'Borrador';
-      case 'en_proceso':
-        return 'En proceso';
-      case 'activo':
-        return 'Activo';
-      case 'suspendido':
-        return 'Suspendido';
-      case 'inactivo':
-        return 'Inactivo';
-      case 'desvinculado':
-        return 'Desvinculado';
-      case 'bloqueado':
-        return 'Bloqueado';
-    }
-  }
-
-  capitalize(value: string): string {
-    return value
-      .toLowerCase()
-      .split(' ')
-      .filter(Boolean)
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(' ');
-  }
-
-  private formatDisplayDate(value: string): string {
-    const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    const date = match
-      ? new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]))
-      : new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-      return value;
-    }
-
-    return new Intl.DateTimeFormat('es-CL', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    })
-      .format(date)
-      .toLowerCase()
-      .replace('.', '')
-      .replace(/^(\d{2})\s/, '$1 ');
-  }
+  labelEstado = etiquetaEstadoEmpleado;
+  capitalize = capitalizarTextoEmpleado;
 
   private exportFileName(event: DataGridExportEvent<EmpleadoListado>): string {
     const suffixByScope: Record<DataGridExportEvent<EmpleadoListado>['scope'], string> = {

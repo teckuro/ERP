@@ -1,0 +1,103 @@
+@let f = facade;
+@if (f.empleado()) {
+  @if (f.mensajeExitoValidacion(); as mensajeExito) {
+    <div class="file-validation-feedback file-validation-feedback--success" role="status">
+      {{ mensajeExito }}
+    </div>
+  }
+
+  @if (f.mensajeErrorValidacion(); as mensajeValidacion) {
+    <div class="file-validation-feedback file-validation-feedback--error" role="alert">
+      <strong>No se puede validar la ficha</strong>
+
+      <span>{{ mensajeValidacion }}</span>
+
+      @if (f.validationBlockingItems().length > 0) {
+        <ul>
+          @for (item of f.validationBlockingItems(); track item) {
+            <li>{{ item }}</li>
+          }
+        </ul>
+      }
+      @if (f.validationPendingCount() > 0) {
+        <small>y {{ f.validationPendingCount() }} pendientes más.</small>
+      }
+    </div>
+  }
+
+  @if (overlaysPort.overlay(); as overlay) {
+    @if (overlay.kind === 'editarBloque') {
+      <app-ficha-empleado-edit-modal
+        [blockId]="overlay.blockId"
+        [tituloBloque]="overlay.tituloBloque"
+      />
+    }
+  }
+
+  @if (f.confirmPayrollValidation()) {
+    <div class="file-confirm-backdrop" role="presentation">
+      <section
+        class="file-confirm-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="validar-remuneraciones-title"
+      >
+        <h3 id="validar-remuneraciones-title">¿Validar esta ficha para remuneraciones?</h3>
+
+        <p>
+          Desde este momento el trabajador podrá ser considerado en procesos de remuneración si el
+          período y contrato cumplen las reglas del sistema.
+        </p>
+
+        <div class="file-confirm-dialog__actions">
+          <button
+            type="button"
+            class="inline-action inline-action--secondary"
+            [disabled]="f.isValidatingPayroll()"
+            (click)="f.cancelPayrollValidation()"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="button"
+            class="inline-action inline-action--primary"
+            [disabled]="f.isValidatingPayroll()"
+            (click)="f.validarFichaParaRemuneraciones()"
+          >
+            @if (f.isValidatingPayroll()) {
+              Validando...
+            } @else {
+              Validar
+            }
+          </button>
+        </div>
+      </section>
+    </div>
+  }
+
+  @if (f.mensajeErrorSeccion(); as mensajeSeccion) {
+    <app-message-box
+      mode="modal"
+      variant="error"
+      title="No se pudo guardar"
+      [message]="mensajeSeccion"
+      [sections]="f.sectionValidationSections()"
+      primaryLabel="Aceptar"
+      (action)="f.dismissSectionError()"
+      (dismiss)="f.dismissSectionError()"
+    ></app-message-box>
+  }
+
+  @if (f.mensajeExitoSeccion(); as sectionSuccess) {
+    <app-message-box
+      mode="modal"
+      variant="success"
+      [title]="f.tituloExitoSeccion() ?? 'Sección guardada'"
+      [message]="sectionSuccess"
+      primaryLabel="Aceptar"
+      (action)="f.dismissSectionSuccess()"
+      (dismiss)="f.dismissSectionSuccess()"
+    ></app-message-box>
+  }
+}

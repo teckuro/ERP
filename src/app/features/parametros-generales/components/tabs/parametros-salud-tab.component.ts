@@ -1,14 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   DataGridColumn,
   DataGridComponent,
-  DataGridFilter,
-} from '../../../../shared/components/ui/data-grid.component';
+} from '../../../../shared/components/ui/data-grid';
 import { IsapreParametro } from '../../models/parametro-general.model';
 import { ParametrosInnerTabBarComponent } from '../parametros-inner-tab-bar.component';
 
-type SaludSubId = 'isapre' | 'instituciones';
+export type SaludSubId = 'isapre' | 'instituciones';
 
 @Component({
   selector: 'app-parametros-salud-tab',
@@ -22,22 +21,21 @@ type SaludSubId = 'isapre' | 'instituciones';
             ariaLabel="Secciones de salud"
             mobileLabel="Vista"
             [tabs]="saludInnerTabs"
-            [activeId]="activeSub()"
-            (activeIdChange)="setSub($event)"
+            [activeId]="activeSub"
+            (activeIdChange)="emitSub($event)"
           />
         </div>
       </div>
 
       <div class="param-tab-subview">
-        @if (activeSub() === 'isapre') {
+        @if (activeSub === 'isapre') {
           <section class="catalog-section parametros-grid-shell" aria-label="ISAPRE">
             <app-data-grid
               title="ISAPRE"
               [rows]="isapreRows"
               [columns]="columns"
               [loading]="loading"
-              [filters]="isapreFilters"
-              [filtersEnabled]="true"
+              [filtersEnabled]="false"
               [showExportAction]="true"
               [maxItems]="10"
               gridHeight="100%"
@@ -49,15 +47,14 @@ type SaludSubId = 'isapre' | 'instituciones';
           </section>
         }
 
-        @if (activeSub() === 'instituciones') {
+        @if (activeSub === 'instituciones') {
           <section class="catalog-section parametros-grid-shell" aria-label="Instituciones de salud">
             <app-data-grid
               title="Instituciones de salud"
               [rows]="institucionesRows"
               [columns]="columns"
               [loading]="loading"
-              [filters]="institucionesFilters"
-              [filtersEnabled]="true"
+              [filtersEnabled]="false"
               [showExportAction]="true"
               [maxItems]="10"
               gridHeight="100%"
@@ -78,7 +75,8 @@ export class ParametrosSaludTabComponent {
     { id: 'instituciones' as const, label: 'Instituciones' },
   ];
 
-  readonly activeSub = signal<SaludSubId>('isapre');
+  @Input({ required: true }) activeSub!: SaludSubId;
+  @Output() activeSubChange = new EventEmitter<SaludSubId>();
 
   @Input({ required: true }) isapreRows!: IsapreParametro[];
   @Input({ required: true }) institucionesRows!: IsapreParametro[];
@@ -89,96 +87,9 @@ export class ParametrosSaludTabComponent {
   @Input() gridPersistenceKeyInstituciones = 'parametros.salud-instituciones.dg';
   @Input() refresh: (() => void) | null = null;
 
-  readonly isapreFilters: DataGridFilter<IsapreParametro>[] = [
-    {
-      id: 'vigenciaInicio',
-      label: 'Vigencia inicio',
-      field: 'vigenciaInicio',
-      type: 'text',
-      operator: 'startsWith',
-      placeholder: 'Ej: 2026-05',
-      emptyLabel: 'Todos',
-    },
-    {
-      id: 'codigo',
-      label: 'Codigo',
-      field: 'codigo',
-      type: 'text',
-      operator: 'contains',
-      placeholder: 'Filtrar por codigo',
-      emptyLabel: 'Todos',
-    },
-    {
-      id: 'nombre',
-      label: 'Nombre',
-      field: 'nombre',
-      type: 'text',
-      operator: 'contains',
-      emptyLabel: 'Todos',
-    },
-    {
-      id: 'vigente',
-      label: 'Estado',
-      field: 'vigente',
-      type: 'select',
-      emptyLabel: 'Todos',
-      options: [
-        { label: 'Vigente', value: 'true' },
-        { label: 'Inactivo', value: 'false' },
-      ],
-    },
-  ];
-
-  readonly institucionesFilters: DataGridFilter<IsapreParametro>[] = [
-    {
-      id: 'vigenciaInicio',
-      label: 'Vigencia inicio',
-      field: 'vigenciaInicio',
-      type: 'text',
-      operator: 'startsWith',
-      placeholder: 'Ej: 2026-05',
-      emptyLabel: 'Todos',
-    },
-    {
-      id: 'tipo',
-      label: 'Tipo',
-      field: 'tipo',
-      type: 'text',
-      operator: 'contains',
-      emptyLabel: 'Todos',
-    },
-    {
-      id: 'codigo',
-      label: 'Codigo',
-      field: 'codigo',
-      type: 'text',
-      operator: 'contains',
-      emptyLabel: 'Todos',
-    },
-    {
-      id: 'nombre',
-      label: 'Nombre',
-      field: 'nombre',
-      type: 'text',
-      operator: 'contains',
-      emptyLabel: 'Todos',
-    },
-    {
-      id: 'vigente',
-      label: 'Estado',
-      field: 'vigente',
-      type: 'select',
-      emptyLabel: 'Todos',
-      options: [
-        { label: 'Vigente', value: 'true' },
-        { label: 'Inactivo', value: 'false' },
-      ],
-    },
-  ];
-
-  setSub(id: string): void {
+  emitSub(id: string): void {
     if (id === 'isapre' || id === 'instituciones') {
-      this.activeSub.set(id);
+      this.activeSubChange.emit(id);
     }
   }
 }

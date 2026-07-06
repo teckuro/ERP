@@ -1,11 +1,17 @@
 import { Injectable, isDevMode } from '@angular/core';
 
+import {
+  resolverUsuarioResponsableActual,
+  usuarioResponsableDisponible,
+} from '../../../core/auth/auth-user-label';
 import type { Database, Json } from '../../../core/models/database.types';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import type {
   AprobacionOperativaPersistida,
   AprobarResultadoPreliminarOperativamenteParams,
+  BorradorPersistContext,
   CerrarNominaOperativamenteParams,
+  ReabrirNominaOperativamenteParams,
   NominaCalculoConceptoSnapshot,
   NominaCalculoIssueSnapshot,
   NominaCalculoPeriodoSnapshot,
@@ -17,6 +23,17 @@ import type {
   NominaCalculoTrazabilidadSnapshot,
   MotorCalculoEstadoTrabajador,
 } from '../models/proceso-mensual.model';
+import {
+  buildBorradorPersistMetadataPayload,
+  extractBorradorPersistContext,
+} from '../rules/proceso-mensual-borrador-snapshot.rules';
+import { esSnapshotParametrosBase } from '../../nomina-mensual-v2/mappers/nomina-parametros-base.mapper';
+import type { NominaCalculoParametroSnapshot } from '../models/proceso-mensual.model';
+import {
+  diffEntreVersionesConsecutivas,
+  snapshotsAResumenesComparables,
+  type DiffCalculoVersionResultado,
+} from '../rules/nomina-calculo-version-diff.rules';
 
 type Tables = Database['public']['Tables'];
 type NominaCalculoPeriodoRow = Tables['nomina_calculo_periodo']['Row'];
@@ -27,6 +44,8 @@ type NominaCalculoTrazabilidadRow = Tables['nomina_calculo_trazabilidad']['Row']
 type NominaCalculoConceptoInsert = Tables['nomina_calculo_concepto']['Insert'];
 type NominaCalculoIssueInsert = Tables['nomina_calculo_issue']['Insert'];
 type NominaCalculoTrazabilidadInsert = Tables['nomina_calculo_trazabilidad']['Insert'];
+type NominaCalculoParametroRow = Tables['nomina_calculo_parametro']['Row'];
+type NominaCalculoParametroInsert = Tables['nomina_calculo_parametro']['Insert'];
 
 interface GuardarSnapshotRpcPayload {
   cabecera: Record<string, Json>;
@@ -34,30 +53,127 @@ interface GuardarSnapshotRpcPayload {
   conceptos: Array<Record<string, Json>>;
   observaciones: Array<Record<string, Json>>;
   trazabilidad: Array<Record<string, Json>>;
+  parametros: Array<Record<string, Json>>;
+}
+
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
+}
+
+export interface PrenominaValidacionItem {
+  codigo: string;
+  mensaje: string;
+}
+
+function parsePrenominaValidacion(
+  value: Json | null,
+): { ok: boolean; bloqueos: PrenominaValidacionItem[]; advertencias: PrenominaValidacionItem[] } {
+  const record = value != null && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+  const bloqueos = parseValidacionItems(record['bloqueos']);
+  const advertencias = parseValidacionItems(record['advertencias']);
+  return { ok: record['ok'] === true && bloqueos.length === 0, bloqueos, advertencias };
+}
+
+function parseValidacionItems(value: unknown): PrenominaValidacionItem[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== 'object') return [];
+    const rec = item as Record<string, unknown>;
+    return [{ codigo: String(rec['codigo'] ?? ''), mensaje: String(rec['mensaje'] ?? '') }];
+  });
 }
 
 @Injectable({ providedIn: 'root' })
 export class NominaCalculoSnapshotRepository {
   private readonly supabase = injectSupabase();
 
-  async guardarSnapshotPreliminar(snapshot: NominaCalculoPeriodoSnapshot): Promise<{
+  async guardarBaseNominaBorrador(
+    snapshot: NominaCalculoPeriodoSnapshot,
+    borradorPersist?: BorradorPersistContext,
+  ): Promise<{
     snapshot: NominaCalculoPeriodoSnapshot;
     reemplazoSnapshotAnterior: boolean;
   }> {
     const anterior = await this.obtenerSnapshotActivo(snapshot.periodo, snapshot.idEmpresa);
+    if (anterior?.estado && anterior.estado !== 'borrador') {
+      throw new Error('Ya existe una nomina generada para el periodo. No se reemplazo la version vigente.');
+    }
+    if (anterior?.idCalculoPeriodo) {
+      await this.marcarInactivo(anterior.idCalculoPeriodo, 'anulado', 'Reemplazo de base generada borrador.');
+    }
+    const guardado = await this.insertarCabecera({ ...snapshot, estado: 'borrador', activo: true });
+    if (!guardado.idCalculoPeriodo) {
+      throw new Error('No fue posible obtener el identificador del borrador guardado.');
+    }
+    const trabajadoresInsertados = await this.insertarTrabajadores(
+      guardado.idCalculoPeriodo,
+      snapshot.trabajadores,
+    );
+    const idTrabajadorPorPersona = new Map(
+      trabajadoresInsertados.map((t) => [t.idPersona, t.idCalculoTrabajador!]),
+    );
+    await this.insertarIssues(
+      guardado.idCalculoPeriodo,
+      snapshot.issues,
+      trabajadoresInsertados,
+      idTrabajadorPorPersona,
+    );
+    const persist = borradorPersist ?? snapshot.borradorPersist ?? null;
+    if (persist) {
+      await this.guardarBorradorMetadata(guardado.idCalculoPeriodo, persist);
+    }
+    if (anterior?.idCalculoPeriodo && guardado.idCalculoPeriodo) {
+      await this.actualizarReemplazo(anterior.idCalculoPeriodo, guardado.idCalculoPeriodo);
+    }
+    return {
+      snapshot: {
+        ...guardado,
+        trabajadores: trabajadoresInsertados,
+        issues: snapshot.issues,
+        borradorPersist: persist,
+      },
+      reemplazoSnapshotAnterior: !!anterior,
+    };
+  }
+
+  async guardarSnapshotPreliminar(
+    snapshot: NominaCalculoPeriodoSnapshot,
+    borradorPersist?: BorradorPersistContext | null,
+  ): Promise<{
+    snapshot: NominaCalculoPeriodoSnapshot;
+    reemplazoSnapshotAnterior: boolean;
+  }> {
+    // F09: con nómina el "anterior" se resuelve dentro de la misma nómina;
+    // sin nómina se conserva el scope legacy por período/empresa.
+    const anterior = snapshot.nominaPeriodoId
+      ? await this.obtenerSnapshotActivoDeNomina(snapshot.nominaPeriodoId)
+      : await this.obtenerSnapshotActivo(snapshot.periodo, snapshot.idEmpresa);
+    const persist =
+      borradorPersist
+      ?? anterior?.borradorPersist
+      ?? snapshot.borradorPersist
+      ?? null;
     const payload = buildGuardarSnapshotRpcPayload(snapshot);
     const { data, error } = await this.supabase.rpc('guardar_nomina_calculo_snapshot', {
       p_periodo: snapshot.periodo,
-      p_id_empresa: snapshot.idEmpresa ?? 0,
+      p_id_empresa: snapshot.idEmpresa as number,
       p_cabecera: payload.cabecera,
       p_trabajadores: payload.trabajadores,
       p_conceptos: payload.conceptos,
       p_observaciones: payload.observaciones,
       p_trazabilidad: payload.trazabilidad,
+      p_parametros: payload.parametros,
+      p_id_nomina_periodo: snapshot.nominaPeriodoId ?? undefined,
     });
     if (error || typeof data !== 'number') {
       logGuardarSnapshotRpcError(snapshot, payload, error, data);
       throw new Error('No se pudo guardar el resultado preliminar completo. No se realizaron cambios parciales.');
+    }
+
+    if (persist) {
+      await this.guardarBorradorMetadata(data, persist);
     }
 
     const completo = await this.obtenerSnapshotCompletoPorId(data);
@@ -66,7 +182,10 @@ export class NominaCalculoSnapshotRepository {
     }
 
     return {
-      snapshot: completo.cabecera,
+      snapshot: {
+        ...completo.cabecera,
+        borradorPersist: persist,
+      },
       reemplazoSnapshotAnterior: !!anterior,
     };
   }
@@ -84,6 +203,27 @@ export class NominaCalculoSnapshotRepository {
     return data ? mapPeriodoRow(data) : null;
   }
 
+  /**
+   * F09: snapshot de cálculo activo de UNA nómina (excluye las bases de
+   * parámetros F06, que conviven activas en paralelo).
+   */
+  async obtenerSnapshotActivoDeNomina(
+    nominaPeriodoId: string,
+  ): Promise<NominaCalculoPeriodoSnapshot | null> {
+    const { data, error } = await this.supabase
+      .from('nomina_calculo_periodo')
+      .select('*')
+      .eq('id_nomina_periodo', nominaPeriodoId)
+      .eq('activo', true)
+      .neq('version_motor', 'PARAMETROS-BASE-01')
+      .limit(1)
+      .maybeSingle();
+    if (error) {
+      throw new Error(`No fue posible consultar snapshot activo de la nómina: ${error.message}`);
+    }
+    return data ? mapPeriodoRow(data) : null;
+  }
+
   async listarSnapshotsPeriodo(periodo: string): Promise<NominaCalculoPeriodoSnapshot[]> {
     const { data, error } = await this.supabase
       .from('nomina_calculo_periodo')
@@ -94,14 +234,182 @@ export class NominaCalculoSnapshotRepository {
     return (data ?? []).map(mapPeriodoRow);
   }
 
-  async anularSnapshotActivo(periodo: string, motivo?: string): Promise<void> {
-    const activo = await this.obtenerSnapshotActivo(periodo);
+  async listarParametrosSnapshot(idCalculoPeriodo: number): Promise<NominaCalculoParametroSnapshot[]> {
+    const { data, error } = await this.supabase
+      .from('nomina_calculo_parametro')
+      .select('*')
+      .eq('id_calculo_periodo', idCalculoPeriodo)
+      .order('grupo', { ascending: true })
+      .order('clave', { ascending: true });
+    if (error) {
+      throw new Error(`No fue posible consultar parámetros del snapshot: ${error.message}`);
+    }
+    return (data ?? []).map(mapParametroRow);
+  }
+
+  async obtenerSnapshotParametrosBase(
+    periodo: string,
+    idEmpresa: number | null = null,
+    nominaPeriodoId: string | null = null,
+  ): Promise<NominaCalculoPeriodoSnapshot | null> {
+    const snapshots = nominaPeriodoId
+      ? await this.listarSnapshotsNomina(nominaPeriodoId)
+      : await this.listarSnapshotsPeriodo(periodo);
+    const bases = snapshots.filter(
+      (snapshot) =>
+        esSnapshotParametrosBase(snapshot)
+        && (idEmpresa == null || snapshot.idEmpresa === idEmpresa)
+        && (nominaPeriodoId == null || snapshot.nominaPeriodoId === nominaPeriodoId),
+    );
+    if (bases.length === 0) return null;
+
+    const activa = bases.find((snapshot) => snapshot.activo === true && snapshot.reemplazadoPor == null);
+    if (activa) return activa;
+
+    const vigente = bases.find((snapshot) => snapshot.reemplazadoPor == null);
+    return vigente ?? bases[0] ?? null;
+  }
+
+  async listarSnapshotsNomina(nominaPeriodoId: string): Promise<NominaCalculoPeriodoSnapshot[]> {
+    const { data, error } = await this.supabase
+      .from('nomina_calculo_periodo')
+      .select('*')
+      .eq('id_nomina_periodo', nominaPeriodoId)
+      .order('fecha_generacion', { ascending: false });
+    if (error) {
+      throw new Error(`No fue posible listar snapshots de la nómina: ${error.message}`);
+    }
+    return (data ?? []).map(mapPeriodoRow);
+  }
+
+  /** F09: diffs entre recálculos consecutivos de una nómina (excluye snapshots de parámetros). */
+  async obtenerDiffsVersionesCalculoNomina(
+    nominaPeriodoId: string,
+  ): Promise<DiffCalculoVersionResultado[]> {
+    const snapshots = await this.listarSnapshotsNomina(nominaPeriodoId);
+    const resumenes = snapshotsAResumenesComparables(snapshots);
+    return diffEntreVersionesConsecutivas(resumenes);
+  }
+
+  /**
+   * BKL-09: detalle expandible/preview de un trabajador desde snapshot persistido.
+   */
+  async obtenerTrabajadorCalculoDetalle(
+    idCalculoTrabajador: number,
+  ): Promise<NominaCalculoTrabajadorSnapshot | null> {
+    const { data, error } = await this.supabase
+      .from('nomina_calculo_trabajador')
+      .select('*')
+      .eq('id_calculo_trabajador', idCalculoTrabajador)
+      .maybeSingle();
+    if (error) {
+      throw new Error(`No fue posible consultar el trabajador del cálculo: ${error.message}`);
+    }
+    if (!data) return null;
+
+    const trabajador = mapTrabajadorCompletoRow(data);
+    const [conceptos, issues] = await Promise.all([
+      this.obtenerConceptosSnapshot([idCalculoTrabajador]),
+      this.obtenerIssuesTrabajador(idCalculoTrabajador),
+    ]);
+    trabajador.conceptos = conceptos;
+    trabajador.issues = issues;
+    return trabajador;
+  }
+
+  private async obtenerIssuesTrabajador(
+    idCalculoTrabajador: number,
+  ): Promise<NominaCalculoIssueSnapshot[]> {
+    const { data, error } = await this.supabase
+      .from('nomina_calculo_issue')
+      .select('*')
+      .eq('id_calculo_trabajador', idCalculoTrabajador)
+      .order('severidad', { ascending: true });
+    if (error) {
+      throw new Error(`No fue posible consultar observaciones del trabajador: ${error.message}`);
+    }
+    return (data ?? []).map(mapIssueCompletoRow);
+  }
+
+  /**
+   * Persiste snapshot base de parámetros sin reemplazar snapshot preliminar de cálculo activo.
+   */
+  async guardarSnapshotParametrosBase(
+    snapshot: NominaCalculoPeriodoSnapshot,
+    metadataOverlay: Record<string, unknown>,
+  ): Promise<{ snapshot: NominaCalculoPeriodoSnapshot; reemplazoAnterior: boolean }> {
+    const activo = await this.obtenerSnapshotActivo(snapshot.periodo, snapshot.idEmpresa);
+    const anteriorBase = await this.obtenerSnapshotParametrosBase(
+      snapshot.periodo,
+      snapshot.idEmpresa,
+      snapshot.nominaPeriodoId ?? null,
+    );
+    const preliminarActivo = !!activo && !esSnapshotParametrosBase(activo);
+
+    if (anteriorBase?.idCalculoPeriodo) {
+      await this.marcarInactivo(
+        anteriorBase.idCalculoPeriodo,
+        'anulado',
+        'Reemplazo de base de parámetros.',
+      );
+    } else if (activo?.idCalculoPeriodo && esSnapshotParametrosBase(activo)) {
+      await this.marcarInactivo(
+        activo.idCalculoPeriodo,
+        'anulado',
+        'Reemplazo de base de parámetros.',
+      );
+    }
+
+    const guardado = await this.insertarCabecera(
+      { ...snapshot, activo: !preliminarActivo },
+    );
+    if (!guardado.idCalculoPeriodo) {
+      throw new Error('No fue posible obtener el identificador de la base de parámetros guardada.');
+    }
+
+    await this.insertarParametrosSnapshot(guardado.idCalculoPeriodo, asArray(snapshot.parametros));
+    await this.insertarTrazabilidadPeriodo(guardado.idCalculoPeriodo, asArray(snapshot.trazabilidad));
+    await this.guardarMetadataParametrosBase(guardado.idCalculoPeriodo, metadataOverlay);
+
+    if (anteriorBase?.idCalculoPeriodo && guardado.idCalculoPeriodo) {
+      await this.actualizarReemplazo(anteriorBase.idCalculoPeriodo, guardado.idCalculoPeriodo);
+    }
+
+    return {
+      snapshot: {
+        ...guardado,
+        parametros: snapshot.parametros,
+        trazabilidad: snapshot.trazabilidad,
+      },
+      reemplazoAnterior: !!anteriorBase,
+    };
+  }
+
+  async anularSnapshotActivo(
+    periodo: string,
+    motivo?: string,
+    idEmpresa: number | null = null,
+  ): Promise<void> {
+    const activo = await this.obtenerSnapshotActivo(periodo, idEmpresa);
     if (!activo?.idCalculoPeriodo) return;
-    await this.marcarInactivo(activo.idCalculoPeriodo, 'anulado', motivo);
+    await this.marcarInactivo(
+      activo.idCalculoPeriodo,
+      'anulado',
+      motivo ?? 'Anulación operativa del cálculo del período.',
+    );
   }
 
   async obtenerSnapshotCompletoActivo(periodo: string, idEmpresa: number | null = null): Promise<NominaSnapshotCompletoView | null> {
     const cabecera = await this.obtenerSnapshotActivo(periodo, idEmpresa);
+    if (!cabecera?.idCalculoPeriodo) return null;
+    return this.obtenerSnapshotCompletoPorId(cabecera.idCalculoPeriodo);
+  }
+
+  /** F09: detalle completo del snapshot activo de UNA nómina. */
+  async obtenerSnapshotCompletoActivoDeNomina(
+    nominaPeriodoId: string,
+  ): Promise<NominaSnapshotCompletoView | null> {
+    const cabecera = await this.obtenerSnapshotActivoDeNomina(nominaPeriodoId);
     if (!cabecera?.idCalculoPeriodo) return null;
     return this.obtenerSnapshotCompletoPorId(cabecera.idCalculoPeriodo);
   }
@@ -186,30 +494,91 @@ export class NominaCalculoSnapshotRepository {
       return activo;
     }
 
-    const { data: userData } = await this.supabase.auth.getUser();
-    const user = userData.user;
-    const fecha = new Date().toISOString();
-    const usuarioLabel = user?.email?.trim() || 'Usuario no disponible en esta sesion';
-    const metadata = buildAprobacionOperativaMetadata(activo);
-    const { data, error } = await this.supabase
-      .from('nomina_calculo_periodo')
-      .update({
-        aprobacion_operativa_estado: 'aprobado_operativamente',
-        aprobacion_operativa_fecha: fecha,
-        aprobacion_operativa_usuario_id: user?.id ?? null,
-        aprobacion_operativa_usuario_label: usuarioLabel,
-        aprobacion_operativa_advertencias: params.advertencias,
-        aprobacion_operativa_metadata: metadata as Json,
-        updated_at: fecha,
-      })
-      .eq('id_calculo_periodo', params.idCalculoPeriodo)
-      .eq('periodo', params.periodo)
-      .eq('activo', true)
-      .is('reemplazado_por', null)
-      .select('*')
-      .single();
-    if (error) throw new Error(`No se pudo registrar la aprobacion operativa: ${error.message}`);
-    return mapPeriodoRow(data);
+    // Orden del flujo: validar -> aprobar. La RPC de aprobacion revalida server-side,
+    // pero la validacion previa de solo lectura entrega el bloqueo concreto al usuario.
+    const validacion = await this.validarPrenomina({
+      idCalculoPeriodo: params.idCalculoPeriodo,
+      periodo: params.periodo,
+      hashSnapshot: activo.hashSnapshot,
+      hashParametros: activo.hashParametros,
+      hashEntradas: activo.hashEntradas,
+    });
+    if (!validacion.ok) {
+      throw new Error(
+        validacion.bloqueos[0]?.mensaje
+          ?? 'La nomina del periodo no cumple las validaciones necesarias para aprobarse.',
+      );
+    }
+
+    const usuario = await this.resolverUsuarioActual();
+    const metadata = {
+      ...buildAprobacionOperativaMetadata(activo),
+      ...(usuarioResponsableDisponible(usuario)
+        ? {
+            usuarioResponsableId: usuario.id,
+            usuarioResponsableNombre: usuario.nombre,
+          }
+        : {}),
+    };
+    const { data, error } = await this.supabase.rpc('fn_aprobar_prenomina_periodo', {
+      p_id_calculo_periodo: params.idCalculoPeriodo,
+      p_periodo: params.periodo,
+      p_hash_snapshot: activo.hashSnapshot ?? '',
+      p_hash_parametros: activo.hashParametros ?? '',
+      p_hash_entradas: activo.hashEntradas ?? '',
+      p_advertencias: (params.advertencias ?? []) as Json,
+      p_metadata: metadata as Json,
+    });
+    if (error || !data) {
+      throw new Error(
+        error?.message
+          ? `No se pudo registrar la aprobacion operativa: ${error.message}`
+          : 'No se pudo registrar la aprobacion operativa. No se realizaron cambios parciales.',
+      );
+    }
+    return mapPeriodoRow(data as NominaCalculoPeriodoRow);
+  }
+
+  /** Validacion server-side de solo lectura previa a la aprobacion. */
+  async validarPrenomina(params: {
+    idCalculoPeriodo: number;
+    periodo: string;
+    hashSnapshot?: string | null;
+    hashParametros?: string | null;
+    hashEntradas?: string | null;
+  }): Promise<{ ok: boolean; bloqueos: PrenominaValidacionItem[]; advertencias: PrenominaValidacionItem[] }> {
+    const { data, error } = await this.supabase.rpc('fn_validar_prenomina_periodo', {
+      p_id_calculo_periodo: params.idCalculoPeriodo,
+      p_periodo: params.periodo,
+      p_hash_snapshot: params.hashSnapshot ?? undefined,
+      p_hash_parametros: params.hashParametros ?? undefined,
+      p_hash_entradas: params.hashEntradas ?? undefined,
+    });
+    if (error) {
+      throw new Error(`No fue posible validar la prenomina: ${error.message}`);
+    }
+    return parsePrenominaValidacion(data);
+  }
+
+  async reabrirNominaOperativa(
+    params: ReabrirNominaOperativamenteParams & {
+      metadata?: Record<string, unknown>;
+    },
+  ): Promise<NominaCalculoPeriodoSnapshot> {
+    const { data, error } = await this.supabase.rpc('reabrir_nomina_operativa', {
+      p_id_calculo_periodo: params.idCalculoPeriodo,
+      p_periodo: params.periodo,
+      p_observacion: params.observacion ?? undefined,
+      p_metadata: {
+        ...(params.metadata ?? {}),
+        ...(await this.metadataUsuarioResponsable()),
+      } as unknown as Json,
+      p_forzar: params.forzar ?? false,
+    });
+    if (error || !data) {
+      throw new Error('No se pudo reabrir operativamente la nomina. No se realizaron cambios parciales.');
+    }
+    return mapPeriodoRow(data as NominaCalculoPeriodoRow);
   }
 
   async cerrarNominaOperativa(params: CerrarNominaOperativamenteParams & {
@@ -219,7 +588,10 @@ export class NominaCalculoSnapshotRepository {
       p_id_calculo_periodo: params.idCalculoPeriodo,
       p_periodo: params.periodo,
       p_observacion: params.observacion ?? undefined,
-      p_metadata: (params.metadata ?? {}) as Json,
+      p_metadata: {
+        ...(params.metadata ?? {}),
+        ...(await this.metadataUsuarioResponsable()),
+      } as unknown as Json,
     });
     if (error || !data) {
       logCerrarNominaOperativaRpcError(params, error);
@@ -228,12 +600,97 @@ export class NominaCalculoSnapshotRepository {
     return mapPeriodoRow(data as NominaCalculoPeriodoRow);
   }
 
+  private async guardarBorradorMetadata(
+    idCalculoPeriodo: number,
+    context: BorradorPersistContext,
+  ): Promise<void> {
+    const { error } = await this.supabase
+      .from('nomina_calculo_periodo')
+      .update({
+        cierre_operativo_metadata: buildBorradorPersistMetadataPayload(context) as Json,
+      })
+      .eq('id_calculo_periodo', idCalculoPeriodo);
+    if (error) {
+      throw new Error(`No fue posible guardar metadata del borrador: ${error.message}`);
+    }
+  }
+
+  private async resolverUsuarioActual() {
+    try {
+      const result = await this.supabase.auth.getUser();
+      return resolverUsuarioResponsableActual(result?.data?.user);
+    } catch {
+      return resolverUsuarioResponsableActual(null);
+    }
+  }
+
+  private async metadataUsuarioResponsable(): Promise<Record<string, unknown>> {
+    const usuario = await this.resolverUsuarioActual();
+    return usuarioResponsableDisponible(usuario) ? { usuarioResponsable: usuario } : {};
+  }
+
+  /** Actualiza solo `cierre_operativo_metadata` de un snapshot base de parámetros (sin tocar filas congeladas). */
+  async actualizarMetadataParametrosBase(
+    idCalculoPeriodo: number,
+    metadataOverlay: Record<string, unknown>,
+  ): Promise<void> {
+    await this.guardarMetadataParametrosBase(idCalculoPeriodo, metadataOverlay);
+  }
+
+  private async guardarMetadataParametrosBase(
+    idCalculoPeriodo: number,
+    metadataOverlay: Record<string, unknown>,
+  ): Promise<void> {
+    const { error } = await this.supabase
+      .from('nomina_calculo_periodo')
+      .update({
+        cierre_operativo_metadata: metadataOverlay as Json,
+      })
+      .eq('id_calculo_periodo', idCalculoPeriodo);
+    if (error) {
+      throw new Error(`No fue posible guardar metadata de base de parámetros: ${error.message}`);
+    }
+  }
+
+  private async insertarParametrosSnapshot(
+    idCalculoPeriodo: number,
+    parametros: NominaCalculoParametroSnapshot[],
+  ): Promise<void> {
+    const rows: NominaCalculoParametroInsert[] = parametros.map((parametro) => ({
+      id_calculo_periodo: idCalculoPeriodo,
+      grupo: parametro.grupo,
+      clave: parametro.clave,
+      valor: parametro.valor,
+      valor_numerico: parametro.valorNumerico,
+      vigencia: normalizeRpcDate(parametro.vigencia),
+      origen: parametro.origen,
+    }));
+    if (rows.length === 0) return;
+    const { error } = await this.supabase.from('nomina_calculo_parametro').insert(rows);
+    if (error) {
+      throw new Error(`No fue posible guardar parámetros congelados: ${error.message}`);
+    }
+  }
+
+  private async insertarTrazabilidadPeriodo(
+    idCalculoPeriodo: number,
+    trazas: NominaCalculoTrazabilidadSnapshot[],
+  ): Promise<void> {
+    const rows = trazas.map((traza) => mapTrazabilidadRow(traza, idCalculoPeriodo, null));
+    if (rows.length === 0) return;
+    const { error } = await this.supabase.from('nomina_calculo_trazabilidad').insert(rows);
+    if (error) {
+      throw new Error(`No fue posible guardar trazabilidad de base de parámetros: ${error.message}`);
+    }
+  }
+
   private async insertarCabecera(snapshot: NominaCalculoPeriodoSnapshot): Promise<NominaCalculoPeriodoSnapshot> {
     const { data, error } = await this.supabase
       .from('nomina_calculo_periodo')
       .insert({
         periodo: snapshot.periodo,
         id_empresa: snapshot.idEmpresa,
+        id_nomina_periodo: snapshot.nominaPeriodoId ?? null,
         estado: snapshot.estado,
         fecha_generacion: snapshot.fechaGeneracion,
         usuario_generador: snapshot.usuarioGenerador,
@@ -245,8 +702,9 @@ export class NominaCalculoSnapshotRepository {
         total_advertencias: snapshot.totalAdvertencias,
         version_motor: snapshot.versionMotor,
         hash_snapshot: snapshot.hashSnapshot,
+        hash_parametros: snapshot.hashParametros ?? null,
         origen: snapshot.origen,
-        activo: true,
+        activo: snapshot.activo ?? true,
       })
       .select('*')
       .single();
@@ -258,7 +716,8 @@ export class NominaCalculoSnapshotRepository {
     idCalculoPeriodo: number,
     trabajadores: NominaCalculoTrabajadorSnapshot[],
   ): Promise<NominaCalculoTrabajadorSnapshot[]> {
-    const rows = trabajadores.map((t) => ({
+    const trabajadoresSnapshot = asArray(trabajadores);
+    const rows = trabajadoresSnapshot.map((t) => ({
       id_calculo_periodo: idCalculoPeriodo,
       id_persona: t.idPersona,
       rut: t.rut,
@@ -280,22 +739,23 @@ export class NominaCalculoSnapshotRepository {
       cotizacion_sanna: t.cotizacionSanna,
       cotizacion_ley_16744_empleador: t.cotizacionLey16744Empleador,
     }));
+    if (rows.length === 0) return [];
     const { data, error } = await this.supabase
       .from('nomina_calculo_trabajador')
       .insert(rows)
       .select('*');
     if (error) throw new Error(`No fue posible guardar trabajadores del snapshot: ${error.message}`);
-    return (data ?? []).map((row) => mapTrabajadorRow(row, trabajadores));
+    return (data ?? []).map((row) => mapTrabajadorRow(row, trabajadoresSnapshot));
   }
 
   private async insertarConceptos(
     trabajadores: NominaCalculoTrabajadorSnapshot[],
     idTrabajadorPorPersona: Map<number, number>,
   ): Promise<void> {
-    const rows: NominaCalculoConceptoInsert[] = trabajadores.flatMap((t) => {
+    const rows: NominaCalculoConceptoInsert[] = asArray(trabajadores).flatMap((t) => {
       const idCalculoTrabajador = idTrabajadorPorPersona.get(t.idPersona);
       if (idCalculoTrabajador == null) return [];
-      return t.conceptos.map((c): NominaCalculoConceptoInsert => ({
+      return asArray(t.conceptos).map((c): NominaCalculoConceptoInsert => ({
         id_calculo_trabajador: idCalculoTrabajador,
         id_concepto: c.idConcepto,
         tipo: c.tipo,
@@ -321,9 +781,9 @@ export class NominaCalculoSnapshotRepository {
     idTrabajadorPorPersona: Map<number, number>,
   ): Promise<void> {
     const rows = [
-      ...issuesPeriodo.map((i) => mapIssueRow(i, idCalculoPeriodo, null)),
-      ...trabajadores.flatMap((t) =>
-        t.issues.map((i) => mapIssueRow(i, idCalculoPeriodo, idTrabajadorPorPersona.get(t.idPersona) ?? null)),
+      ...asArray(issuesPeriodo).map((i) => mapIssueRow(i, idCalculoPeriodo, null)),
+      ...asArray(trabajadores).flatMap((t) =>
+        asArray(t.issues).map((i) => mapIssueRow(i, idCalculoPeriodo, idTrabajadorPorPersona.get(t.idPersona) ?? null)),
       ),
     ];
     if (rows.length === 0) return;
@@ -336,8 +796,8 @@ export class NominaCalculoSnapshotRepository {
     trabajadores: NominaCalculoTrabajadorSnapshot[],
     idTrabajadorPorPersona: Map<number, number>,
   ): Promise<void> {
-    const rows = trabajadores.flatMap((t) =>
-      t.trazabilidad.map((tr) => mapTrazabilidadRow(tr, idCalculoPeriodo, idTrabajadorPorPersona.get(t.idPersona) ?? null)),
+    const rows = asArray(trabajadores).flatMap((t) =>
+      asArray(t.trazabilidad).map((tr) => mapTrazabilidadRow(tr, idCalculoPeriodo, idTrabajadorPorPersona.get(t.idPersona) ?? null)),
     );
     if (rows.length === 0) return;
     const { error } = await this.supabase.from('nomina_calculo_trazabilidad').insert(rows);
@@ -495,7 +955,8 @@ function countInvalidNumbers(value: unknown): number {
 }
 
 function buildGuardarSnapshotRpcPayload(snapshot: NominaCalculoPeriodoSnapshot): GuardarSnapshotRpcPayload {
-  const trabajadores = snapshot.trabajadores.map((trabajador, trabajadorIndex) => ({
+  const trabajadoresSnapshot = asArray(snapshot.trabajadores);
+  const trabajadores = trabajadoresSnapshot.map((trabajador, trabajadorIndex) => ({
     trabajador_index: trabajadorIndex,
     id_persona: trabajador.idPersona,
     rut: trabajador.rut,
@@ -518,8 +979,8 @@ function buildGuardarSnapshotRpcPayload(snapshot: NominaCalculoPeriodoSnapshot):
     cotizacion_ley_16744_empleador: trabajador.cotizacionLey16744Empleador,
   })) satisfies Array<Record<string, Json>>;
 
-  const conceptos = snapshot.trabajadores.flatMap((trabajador, trabajadorIndex) =>
-    trabajador.conceptos.map((concepto) => ({
+  const conceptos = trabajadoresSnapshot.flatMap((trabajador, trabajadorIndex) =>
+    asArray(trabajador.conceptos).map((concepto) => ({
       trabajador_index: trabajadorIndex,
       id_concepto: concepto.idConcepto,
       tipo: concepto.tipo,
@@ -535,18 +996,27 @@ function buildGuardarSnapshotRpcPayload(snapshot: NominaCalculoPeriodoSnapshot):
   ) satisfies Array<Record<string, Json>>;
 
   const observaciones = [
-    ...snapshot.issues.map((issue) => buildIssueRpcPayload(issue, null)),
-    ...snapshot.trabajadores.flatMap((trabajador, trabajadorIndex) =>
-      trabajador.issues.map((issue) => buildIssueRpcPayload(issue, trabajadorIndex)),
+    ...asArray(snapshot.issues).map((issue) => buildIssueRpcPayload(issue, null)),
+    ...trabajadoresSnapshot.flatMap((trabajador, trabajadorIndex) =>
+      asArray(trabajador.issues).map((issue) => buildIssueRpcPayload(issue, trabajadorIndex)),
     ),
   ];
 
   const trazabilidad = [
-    ...snapshot.trazabilidad.map((traza) => buildTrazabilidadRpcPayload(traza, null)),
-    ...snapshot.trabajadores.flatMap((trabajador, trabajadorIndex) =>
-      trabajador.trazabilidad.map((traza) => buildTrazabilidadRpcPayload(traza, trabajadorIndex)),
+    ...asArray(snapshot.trazabilidad).map((traza) => buildTrazabilidadRpcPayload(traza, null)),
+    ...trabajadoresSnapshot.flatMap((trabajador, trabajadorIndex) =>
+      asArray(trabajador.trazabilidad).map((traza) => buildTrazabilidadRpcPayload(traza, trabajadorIndex)),
     ),
   ];
+
+  const parametros = asArray(snapshot.parametros).map((parametro) => ({
+    grupo: parametro.grupo,
+    clave: parametro.clave,
+    valor: parametro.valor,
+    valor_numerico: parametro.valorNumerico,
+    vigencia: normalizeRpcDate(parametro.vigencia),
+    origen: parametro.origen,
+  })) satisfies Array<Record<string, Json>>;
 
   return {
     cabecera: {
@@ -563,12 +1033,15 @@ function buildGuardarSnapshotRpcPayload(snapshot: NominaCalculoPeriodoSnapshot):
       total_advertencias: snapshot.totalAdvertencias,
       version_motor: snapshot.versionMotor,
       hash_snapshot: snapshot.hashSnapshot,
+      hash_parametros: snapshot.hashParametros ?? null,
+      hash_entradas: snapshot.hashEntradas ?? null,
       origen: snapshot.origen,
     },
     trabajadores,
     conceptos,
     observaciones,
     trazabilidad,
+    parametros,
   };
 }
 
@@ -606,9 +1079,21 @@ function buildTrazabilidadRpcPayload(
   };
 }
 
+function mapParametroRow(row: NominaCalculoParametroRow): NominaCalculoParametroSnapshot {
+  return {
+    grupo: row.grupo,
+    clave: row.clave,
+    valor: row.valor,
+    valorNumerico: row.valor_numerico == null ? null : Number(row.valor_numerico),
+    vigencia: row.vigencia,
+    origen: row.origen,
+  };
+}
+
 function mapPeriodoRow(row: NominaCalculoPeriodoRow): NominaCalculoPeriodoSnapshot {
   return {
     idCalculoPeriodo: row.id_calculo_periodo,
+    nominaPeriodoId: row.id_nomina_periodo ?? null,
     periodo: row.periodo,
     idEmpresa: row.id_empresa ?? null,
     estado: parseSnapshotEstado(row.estado),
@@ -622,14 +1107,56 @@ function mapPeriodoRow(row: NominaCalculoPeriodoRow): NominaCalculoPeriodoSnapsh
     totalAdvertencias: Number(row.total_advertencias ?? 0),
     versionMotor: row.version_motor,
     hashSnapshot: row.hash_snapshot ?? null,
+    hashParametros: (row as { hash_parametros?: string | null }).hash_parametros ?? null,
+    hashEntradas: (row as { hash_entradas?: string | null }).hash_entradas ?? null,
     origen: parseSnapshotOrigen(row.origen),
     activo: row.activo === true,
     reemplazadoPor: row.reemplazado_por ?? null,
     aprobacionOperativa: mapAprobacionOperativa(row),
     cierreOperativo: mapCierreOperativo(row),
+    reaperturaOperativa: mapReaperturaOperativa(row),
+    anulacion: mapAnulacionOperativa(row),
+    borradorPersist: extractBorradorPersistContext(parseRecord(row.cierre_operativo_metadata)),
+    metadataOperativa: parseRecord(row.cierre_operativo_metadata),
     trabajadores: [],
     issues: [],
     trazabilidad: [],
+  };
+}
+
+function mapReaperturaOperativa(row: NominaCalculoPeriodoRow): {
+  fecha: string;
+  usuarioId: string | null;
+  usuarioLabel: string | null;
+  observacion: string | null;
+  metadata: Record<string, unknown> | null;
+} | null {
+  const fecha = (row as any).reapertura_operativa_fecha ?? null;
+  if (!fecha) return null;
+  const metadata = parseRecord((row as any).reapertura_operativa_metadata);
+  const usuarioMetadata = parseUsuarioResponsableMetadata(metadata);
+  return {
+    fecha,
+    usuarioId: (row as any).reapertura_operativa_usuario_id ?? usuarioMetadata.id,
+    usuarioLabel: (row as any).reapertura_operativa_usuario_label ?? usuarioMetadata.nombre,
+    observacion: (row as any).reapertura_operativa_observacion ?? null,
+    metadata,
+  };
+}
+
+function mapAnulacionOperativa(row: NominaCalculoPeriodoRow): {
+  fecha: string;
+  usuarioId: string | null;
+  usuarioLabel: string | null;
+  observacion: string | null;
+} | null {
+  const fecha = (row as any).anulacion_fecha ?? null;
+  if (!fecha) return null;
+  return {
+    fecha,
+    usuarioId: (row as any).anulacion_usuario_id ?? null,
+    usuarioLabel: (row as any).anulacion_usuario_label ?? null,
+    observacion: row.observacion_anulacion ?? null,
   };
 }
 
@@ -637,14 +1164,16 @@ function mapCierreOperativo(row: NominaCalculoPeriodoRow): NominaCierreOperativo
   if (row.cierre_operativo_estado !== 'cerrado_operativamente' || !row.cierre_operativo_fecha) {
     return null;
   }
+  const metadata = parseRecord(row.cierre_operativo_metadata);
+  const usuarioMetadata = parseUsuarioResponsableMetadata(metadata);
 
   return {
     estado: 'cerrado_operativamente',
     fecha: row.cierre_operativo_fecha,
-    usuarioId: row.cierre_operativo_usuario_id ?? null,
-    usuarioLabel: row.cierre_operativo_usuario_label || 'Usuario no disponible en esta sesion',
+    usuarioId: row.cierre_operativo_usuario_id ?? usuarioMetadata.id,
+    usuarioLabel: row.cierre_operativo_usuario_label || usuarioMetadata.nombre || 'Usuario no disponible en esta sesion',
     observacion: row.cierre_operativo_observacion ?? null,
-    metadata: parseRecord(row.cierre_operativo_metadata),
+    metadata,
   };
 }
 
@@ -652,14 +1181,16 @@ function mapAprobacionOperativa(row: NominaCalculoPeriodoRow): AprobacionOperati
   if (row.aprobacion_operativa_estado !== 'aprobado_operativamente' || !row.aprobacion_operativa_fecha) {
     return null;
   }
+  const metadata = parseRecord(row.aprobacion_operativa_metadata);
+  const usuarioMetadata = parseUsuarioResponsableMetadata(metadata);
 
   return {
     estado: 'aprobado_operativamente',
     fecha: row.aprobacion_operativa_fecha,
-    usuarioId: row.aprobacion_operativa_usuario_id ?? null,
-    usuarioLabel: row.aprobacion_operativa_usuario_label ?? null,
+    usuarioId: row.aprobacion_operativa_usuario_id ?? usuarioMetadata.id,
+    usuarioLabel: row.aprobacion_operativa_usuario_label ?? usuarioMetadata.nombre,
     advertencias: parseStringArray(row.aprobacion_operativa_advertencias),
-    metadata: parseRecord(row.aprobacion_operativa_metadata),
+    metadata,
   };
 }
 
@@ -676,7 +1207,7 @@ function buildAprobacionOperativaMetadata(snapshot: NominaCalculoPeriodoSnapshot
     totalBloqueados: snapshot.totalBloqueados,
     totalAdvertencias: snapshot.totalAdvertencias,
     origen: snapshot.origen,
-    notaAlcance: 'Aprobacion operativa interna; no cierra periodo ni emite liquidaciones.',
+    notaAlcance: 'Revision interna de nomina. No cierra periodo ni emite liquidaciones.',
   };
 }
 
@@ -688,6 +1219,23 @@ function parseRecord(value: Json | null): Record<string, unknown> {
   return value != null && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
     : {};
+}
+
+function parseUsuarioResponsableMetadata(metadata: Record<string, unknown>): { id: string | null; nombre: string | null } {
+  const nested = metadata['usuarioResponsable'];
+  if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+    const record = nested as Record<string, unknown>;
+    return {
+      id: typeof record['id'] === 'string' ? record['id'] : null,
+      nombre: typeof record['nombre'] === 'string' && record['nombre'].trim() ? record['nombre'] : null,
+    };
+  }
+  return {
+    id: typeof metadata['usuarioResponsableId'] === 'string' ? metadata['usuarioResponsableId'] : null,
+    nombre: typeof metadata['usuarioResponsableNombre'] === 'string' && metadata['usuarioResponsableNombre'].trim()
+      ? metadata['usuarioResponsableNombre']
+      : null,
+  };
 }
 
 function mapTrabajadorRow(

@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
-import { CardComponent, CardContentComponent } from '../shared/components/ui/card.component';
-import { BadgeComponent } from '../shared/components/ui/badge.component';
-import { ButtonComponent } from '../shared/components/ui/button.component';
+import { CardComponent, CardContentComponent } from '../shared/components/ui/primitives/card.component';
+import { BadgeComponent } from '../shared/components/ui/primitives/badge.component';
+import { ButtonComponent } from '../shared/components/ui/primitives/button.component';
+import { bindShellPageContext } from '../layout/shell-page-context.binding';
 
 @Component({
   selector: 'app-licencias-medicas-page',
@@ -18,18 +19,13 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
     ButtonComponent,
   ],
   template: `
-    <div class="space-y-6">
-      <!-- Header -->
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-xl font-semibold text-gray-900">Licencias Médicas</h1>
-          <p class="text-sm text-gray-600 mt-1">{{ licencias().length }} licencias registradas</p>
-        </div>
-        <app-button variant="primary" (click)="showModal.set(true)">
-          <lucide-icon icon class="w-4 h-4" name="plus"></lucide-icon>
-          Registrar Licencia
-        </app-button>
-      </div>
+    <section class="erp-fullscreen-page licencias-page" aria-label="Licencias médicas">
+      <div class="erp-fullscreen-frame licencias-frame">
+      <header class="erp-fullscreen-header licencias-head">
+        <p class="text-sm text-gray-600">{{ licencias().length }} licencias registradas</p>
+      </header>
+
+      <div class="erp-fullscreen-scroll licencias-content">
 
       <!-- Stats -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -273,10 +269,38 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
           </div>
         </div>
       }
-    </div>
+      </div>
+      </div>
+    </section>
   `,
+  styles: [
+    `
+      .licencias-content {
+        display: grid;
+        gap: 1rem;
+        padding: 12px;
+        align-content: start;
+      }
+    `,
+  ],
 })
 export class LicenciasMedicasPage {
+  constructor() {
+    bindShellPageContext(
+      inject(DestroyRef),
+      () => ({
+        breadcrumbs: [{ label: 'Licencias médicas' }],
+        primaryAction: {
+          label: 'Registrar licencia',
+          actionId: 'registrar-licencia',
+        },
+      }),
+      {
+        onPrimaryAction: () => this.showModal.set(true),
+      },
+    );
+  }
+
   readonly showModal = signal(false);
   readonly estados = ['todas', 'emitida', 'aprobada', 'rechazada', 'pagada'] as const;
   readonly filter = signal<(typeof this.estados)[number]>('todas');

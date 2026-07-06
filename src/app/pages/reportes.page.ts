@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
-import { BadgeComponent } from '../shared/components/ui/badge.component';
-import { CardComponent, CardContentComponent, CardHeaderComponent } from '../shared/components/ui/card.component';
+import { bindShellPageContext } from '../layout/shell-page-context.binding';
+import { BadgeComponent } from '../shared/components/ui/primitives/badge.component';
+import { CardComponent, CardContentComponent, CardHeaderComponent } from '../shared/components/ui/primitives/card.component';
 
 @Component({
   selector: 'app-reportes-page',
@@ -13,22 +14,16 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink, LucideAngularModule, CardComponent, CardContentComponent, CardHeaderComponent, BadgeComponent],
   template: `
-    <div class="space-y-4">
-      <header class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <nav class="text-xs text-gray-500">Inicio / Reportes</nav>
-          <h1 class="text-xl font-semibold text-gray-900">Reportes</h1>
-          <p class="mt-1 text-sm text-gray-600">
-            Consulta operativa del periodo {{ periodoActivo.etiqueta() }}. Las salidas formales quedan deshabilitadas
-            hasta una fase dedicada.
-          </p>
-        </div>
-        <a routerLink="/remuneraciones/liquidaciones" class="report-link report-link--primary">
-          <lucide-icon class="h-4 w-4" name="file-search"></lucide-icon>
-          Ver liquidaciones internas
-        </a>
+    <section class="erp-fullscreen-page report-page" aria-label="Reportes">
+      <div class="erp-fullscreen-frame report-frame">
+      <header class="erp-fullscreen-header report-page-lead">
+        <p class="mt-1 text-sm text-gray-600">
+          Consulta operativa del periodo {{ periodoActivo.etiqueta() }}. Las salidas formales quedan deshabilitadas
+          hasta una fase dedicada.
+        </p>
       </header>
 
+      <div class="erp-fullscreen-scroll report-content">
       <app-card>
         <app-card-content>
           <div class="flex items-start gap-3">
@@ -78,8 +73,8 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
             </div>
           </app-card-header>
           <app-card-content className="space-y-3 p-4">
-            <a routerLink="/remuneraciones/proceso-mensual" class="report-tile">
-              <strong>Preparar nomina</strong>
+            <a routerLink="/remuneraciones/nominas" class="report-tile">
+              <strong>Administrador de nóminas</strong>
               <span>Estado del periodo, bloqueos, advertencias y trazabilidad operativa.</span>
             </a>
             <a routerLink="/remuneraciones/liquidaciones" class="report-tile">
@@ -87,12 +82,8 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
               <span>Listado y detalle interno generado desde una nomina cerrada.</span>
             </a>
             <a routerLink="/remuneraciones/novedades-mensuales" class="report-tile">
-              <strong>Movimientos del mes</strong>
-              <span>Bonos, descuentos, anticipos y ajustes que impactan el periodo.</span>
-            </a>
-            <a routerLink="/remuneraciones/haberes-descuentos" class="report-tile">
-              <strong>Asignaciones recurrentes</strong>
-              <span>Haberes, descuentos y aportes vigentes por trabajador.</span>
+              <strong>Movimientos de remuneracion</strong>
+              <span>Bonos, descuentos, anticipos, recurrentes y ajustes que impactan el periodo.</span>
             </a>
           </app-card-content>
           </div>
@@ -147,16 +138,25 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
               <h2 class="text-sm font-semibold text-gray-900">Acciones deshabilitadas</h2>
               <p class="mt-1 text-sm text-gray-600">
                 Esta pantalla no descarga paquetes, no agenda envios y no crea archivos externos. Primero se conserva el
-                circuito validado: preparar nomina, cerrar operativamente y consultar liquidaciones internas.
+                circuito validado: nómina mensual, cierre operativo y consulta de liquidaciones internas.
               </p>
             </div>
           </div>
         </app-card-content>
       </app-card>
-    </div>
+      </div>
+      </div>
+    </section>
   `,
   styles: [
     `
+      .report-content {
+        display: grid;
+        gap: 1rem;
+        padding: 12px;
+        align-content: start;
+      }
+
       .report-link,
       .report-tile {
         text-decoration: none;
@@ -201,26 +201,65 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
 
       .report-tabbar {
         display: flex;
-        gap: 1rem;
+        align-items: flex-end;
+        width: fit-content;
+        max-width: 100%;
+        gap: 0.2rem;
         overflow-x: auto;
-        border-bottom: 1px solid #e5e7eb;
+        border: 1px solid #e5e7eb;
+        border-bottom-color: #dbe2ea;
+        border-radius: 8px 8px 0 0;
+        background: #f8fafc;
+        padding: 0.3rem 0.3rem 0;
       }
 
       .report-tabbar button {
-        min-height: 2.5rem;
-        border: 0;
-        border-bottom: 2px solid transparent;
-        background: transparent;
+        position: relative;
+        min-height: 2.1rem;
+        flex: 0 0 auto;
+        border: 1px solid transparent;
+        border-bottom-color: #dbe2ea;
+        border-radius: 7px 7px 0 0;
+        background: #ffffff;
         color: #4b5563;
         font-size: 0.875rem;
         font-weight: 700;
-        padding: 0 0.25rem;
+        padding: 0 0.68rem 0 1.25rem;
         white-space: nowrap;
       }
 
+      .report-tabbar button::before {
+        content: '';
+        position: absolute;
+        left: 0.65rem;
+        top: 50%;
+        width: 0.38rem;
+        height: 0.38rem;
+        border-radius: 999px;
+        background: #cbd5e1;
+        transform: translateY(-50%);
+      }
+
+      .report-tabbar button:hover {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+      }
+
+      .report-tabbar button:focus-visible {
+        outline: 2px solid #bfdbfe;
+        outline-offset: 2px;
+      }
+
       .report-tabbar button.is-active {
-        border-bottom-color: #2563eb;
+        border-color: #c7d0c4;
+        border-bottom-color: #ffffff;
+        background: #ffffff;
         color: #111827;
+        margin-bottom: -1px;
+      }
+
+      .report-tabbar button.is-active::before {
+        background: #2563eb;
       }
 
       .report-future-list {
@@ -256,7 +295,26 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
 })
 export class ReportesPage {
   readonly periodoActivo = inject(PeriodoActivoService);
+  private readonly router = inject(Router);
   readonly activeTab = signal<'disponibles' | 'futuros'>('disponibles');
+
+  constructor() {
+    bindShellPageContext(
+      inject(DestroyRef),
+      () => ({
+        breadcrumbs: [{ label: 'Reportes' }],
+        primaryAction: {
+          label: 'Ver liquidaciones',
+          actionId: 'ruta:/remuneraciones/liquidaciones',
+        },
+      }),
+      {
+        onPrimaryAction: () => {
+          void this.router.navigateByUrl('/remuneraciones/liquidaciones');
+        },
+      },
+    );
+  }
 
   onTabKeydown(event: KeyboardEvent): void {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;

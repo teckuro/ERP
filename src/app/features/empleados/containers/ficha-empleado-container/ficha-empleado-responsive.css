@@ -1,0 +1,417 @@
+@media (max-width: 560px) {
+  .detail-block-head__title {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  .detail-block-head .section-edit-button {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .detail-grid:not(.detail-grid--editorial) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .detail-grid:not(.detail-grid--editorial) div {
+    border-right: 0;
+  }
+
+  .detail-grid:not(.detail-grid--editorial) div + div {
+    border-top: 0.5px solid #e7edf5;
+  }
+
+  .file-toolbar {
+    justify-content: stretch;
+  }
+
+  .file-toolbar-button {
+    flex: 1 1 100%;
+  }
+
+  .employee-file-page {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    overflow-x: hidden;
+  }
+}
+
+/* Ficha expediente integrada: overrides finales alineados al prototipo de nuevo-modulo. */
+.employee-record-shell {
+  width: 100%;
+  max-width: 100%;
+  min-height: calc(100vh - 7.5rem);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.employee-record-header {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 16px 24px;
+  min-height: 76px;
+  padding: 0 24px;
+}
+
+.employee-record-header__avatar {
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 999px;
+  background: #d8e8f7;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.employee-record-header__identity {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 16px;
+  padding-right: 22px;
+  border-right: 1px solid var(--employee-exp-border);
+}
+
+.employee-record-header__name {
+  font-size: 14.5px;
+  font-weight: 650;
+}
+
+.employee-record-header__badge {
+  gap: 5px;
+  padding: 2px 8px;
+  font-size: 10.5px;
+  font-weight: 650;
+}
+
+.employee-record-header__badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.employee-record-header__role {
+  font-size: 11.5px;
+}
+
+.employee-record-header__meta {
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 0;
+  font-size: 12px;
+  min-width: 0;
+}
+
+.employee-record-header__meta span:not([aria-hidden='true']) {
+  color: var(--employee-exp-text);
+  font-weight: 550;
+}
+
+.employee-record-header__meta strong {
+  margin-right: 4px;
+  color: #9baab8;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.employee-record-header__meta span[aria-hidden='true'] {
+  margin: 0 10px;
+  color: var(--employee-exp-border);
+}
+
+.employee-record-tabbar__title,
+.employee-record-status__title {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.employee-record-tabbar__count {
+  font-size: 11px;
+}
+
+@media (max-width: 1100px) {
+  .employee-record-header {
+    flex-wrap: wrap;
+    padding: 14px 18px;
+  }
+
+  .employee-record-header__identity {
+    border-right: 0;
+    padding-right: 0;
+  }
+
+  .employee-record-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'status'
+      'workspace';
+  }
+}
+
+.employee-record-status__card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 0;
+  min-height: 0;
+}
+
+.employee-record-status__section {
+  display: grid;
+  gap: 7px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--employee-exp-border);
+}
+
+.employee-record-status__section + .employee-record-status__section {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.employee-record-status__section--action {
+  border-bottom: 0;
+}
+
+.employee-record-status__progress-panel {
+  gap: 5px;
+  padding-bottom: 16px;
+}
+
+.employee-record-status__progress-head {
+  column-gap: 14px;
+}
+
+.employee-record-status__progress-copy {
+  gap: 5px;
+}
+
+.employee-record-status__title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.employee-record-status__progress,
+.employee-record-status__cta {
+  width: 100%;
+  max-width: none;
+}
+
+.employee-record-status__pct {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.employee-record-status__completion {
+  font-size: 11.5px;
+  font-weight: 550;
+}
+
+.employee-record-status__progress {
+  height: 7px;
+  margin-top: 4px;
+}
+
+.employee-record-status__issue {
+  grid-template-columns: 7px minmax(0, 1fr) 12px;
+  grid-template-areas:
+    "dot block chevron"
+    "dot msg chevron";
+  align-items: start;
+  border-bottom: 1px solid var(--employee-exp-border);
+  border-radius: 0;
+  padding: 8px 2px;
+}
+
+.employee-record-status__issue-dot {
+  grid-area: dot;
+  margin-top: 7px;
+}
+
+.employee-record-status__issue-block {
+  grid-area: block;
+}
+
+.employee-record-status__issue-msg {
+  grid-area: msg;
+}
+
+.employee-record-status__issue-chevron {
+  grid-area: chevron;
+  align-self: center;
+}
+
+@media (max-width: 1100px) {
+  .employee-record-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'status'
+      'workspace';
+  }
+
+  .employee-record-status {
+    border-right: 0;
+    border-bottom: 1px solid var(--employee-exp-border);
+  }
+}
+
+/* Overrides finales: layout generico de Empleados, unido al top y sin marco exterior. */
+.employee-file-page,
+.file-content-card,
+.file-content-card--loaded {
+  min-height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
+  background: #ffffff;
+}
+
+.employee-record-shell {
+  min-height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.employee-record-header {
+  min-height: 64px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #d7dde5;
+  background: #ffffff;
+}
+
+.employee-record-layout {
+  grid-template-columns: 304px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: 'status workspace';
+  min-height: 0;
+  background: #ffffff;
+}
+
+.employee-record-status {
+  padding: 14px 16px;
+  border-right: 1px solid #d7dde5;
+  border-bottom: 0;
+  background: #fbfcfe;
+}
+
+.employee-record-tabbar {
+  border-bottom-color: #d7dde5;
+  background: #f8fafc;
+  padding: 10px 12px 0;
+}
+
+.employee-record-tabbar__tab:not(.employee-record-tabbar__tab--active) {
+  border-color: transparent transparent #d7dde5;
+  background: #f8fafc;
+}
+
+.employee-record-tabbar__tab--active {
+  border-color: #c9d7e6;
+  border-bottom-color: #ffffff;
+}
+
+.employee-record-main {
+  padding: 0;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.file-main {
+  overflow: hidden;
+  padding-top: 0;
+}
+
+.employee-record-block {
+  overflow: hidden;
+}
+
+.employee-record-block__intro {
+  margin: 0;
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid #d7dde5;
+  background: #ffffff;
+}
+
+.ficha-registro-tab .employee-record-block__intro {
+  border-bottom: 0;
+  background: var(--form-bg, #f8fafc);
+}
+
+.ficha-registro-tab__cuerpo {
+  margin: 0;
+  border: 0;
+}
+
+.section-summary .detail-block-list {
+  overflow: auto;
+  padding: 0;
+}
+
+.section-summary app-data-grid {
+  overflow: hidden;
+  padding: 12px 16px 18px;
+}
+
+.detail-block-list--editorial {
+  gap: 0;
+}
+
+@media (max-width: 1100px) {
+  .employee-record-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      'status'
+      'workspace';
+  }
+
+  .employee-record-status {
+    max-height: none;
+    border-right: 0;
+    border-bottom: 1px solid #d7dde5;
+  }
+
+  .employee-record-tabbar {
+    padding: 8px 10px 0;
+  }
+
+  .employee-record-tabbar__meta {
+    padding-bottom: 4px;
+  }
+
+  .employee-record-tabbar__list {
+    scrollbar-width: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .employee-record-header {
+    min-height: 0;
+    padding: 12px;
+  }
+
+  .employee-record-status {
+    padding: 12px;
+  }
+
+  .section-summary app-data-grid {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .ficha-registro-tab .employee-record-block__intro {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .ficha-registro-tab__cuerpo .detail-block--editorial {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+}
+
+
+

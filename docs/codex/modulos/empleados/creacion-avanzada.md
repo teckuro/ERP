@@ -30,16 +30,20 @@ Reglas de UX implementadas:
 - El monto se comunica como `Monto bruto de honorarios`.
 - Bancario se comunica como `Datos para pago del prestador`.
 - El resumen final avisa que el registro no ingresa a nomina dependiente.
-- `Finalizar alta` queda bloqueado para honorarios hasta implementar persistencia real.
+- `Finalizar honorarios` queda habilitado en el shell cuando la ficha cumple aplicabilidad; no exige nómina dependiente ni previsión AFP/salud.
+- **Finalize (2026-05-25):** `mapEmpleadoFormToPayload` usa rama `HONORARIOS` con `resolveEmpleadoCatalogFallbacks` (`tipoPrevision: NINGUNA`, catálogos mínimos); **banco y número de cuenta obligatorios** al finalizar (sin cuenta ficticia por timestamp); borrador sigue tolerando placeholder; MsgBox «Finalizar boleta de honorarios»; radios con `formControlName`; validadores re-sincronizados al confirmar/cancelar honorarios (`form.valid` honesto).
+- Tras finalizar honorarios, `apto_para_remuneraciones` permanece en `false` (mapper y `recalcularEstadoFicha`).
 - `Guardar borrador` sigue disponible con validacion minima.
 
 Fuera de alcance:
-
-- Persistir honorarios como entidad final.
 - Calcular retencion.
 - Generar boletas, pagos, LRE, liquidaciones o nomina dependiente.
 
 # Creacion avanzada: bloques del formulario (inventario)
+
+**Referencia visual NOIA del sistema:** [`../../diseno/noia-bases-sistema-referencia.md`](../../diseno/noia-bases-sistema-referencia.md)  tokens `--bitacora-*`, layout `268px | 1fr`, clases `advanced-*` y `employee-*`. Copiar este módulo antes de inventar otro wizard.
+
+---
 
 El alta avanzada (`form-empleado`) organiza los pasos como **tabs internos** (`TAB_ORDER`): `datosPersonales`, `contrato`, `previsionSalud`, `bancario`. Los textos del stepper se muestran en `conceptualSteps` en [`form-empleado.ts`](../../../src/app/features/empleados/components/form-empleado/form-empleado.ts).
 
@@ -58,25 +62,66 @@ La creacion avanzada no debe mostrar una tarjeta fija de validaciones por paso. 
 
 - El **Mapa de ficha** resume estado, progreso, pendientes y pasos opcionales/no aplica.
 - El contenido del paso muestra solo los campos y ayudas propias del paso.
-- Las validaciones chilenas se eval�an internamente y se muestran mediante `app-message-box` cuando el usuario actua.
+- Las validaciones chilenas se evalúan internamente y se muestran mediante `app-message-box` cuando el usuario actua.
 
 Comportamiento:
 
-| Accion | Comportamiento |
+| Acción | Comportamiento |
 |---|---|
-| Guardar borrador | Validacion minima. Si falta identificacion base, MsgBox con pendientes. Si guarda, MsgBox de exito. |
-| Siguiente | Flexible. Si hay pendientes/advertencias, MsgBox con `Corregir ahora` o `Continuar`. |
-| Finalizar alta | Estricto. MsgBox con datos obligatorios pendientes y advertencias de revisi�n. `Ir al primer pendiente` navega y enfoca el campo pendiente. |
+| Guardar borrador | Validación mínima. Si falta identificación o contacto, MsgBox (`draft-invalid`) con lista accionable por campo (`fieldItems`) y mensaje del primer pendiente. Espera de catálogos usa `draft-catalog-wait`. Si guarda, MsgBox de éxito. |
+| Siguiente | Flexible. Si hay bloqueos obligatorios, MsgBox (`next-step-review`): título «Faltan datos obligatorios», mensaje con registro y conteo, sección «Campos pendientes» (lista corta), nota «Podrás continuar…»; primario genérico «Revisar primer pendiente» (foco via `fieldItems[0]`), secundario «Continuar con pendiente». Sin listado HTML embebido. Advertencias/normativa: flujo previo con secciones bitácora. |
+| Finalizar alta | Estricto. MsgBox (`finish-invalid`) con `fieldItems` agrupados por registro del asistente. `Ir al primer pendiente` navega al mismo paso y control que el primer item de la lista. La consola bitácora y el modal comparten el motor de diagnóstico (`empleado-alta-modal.presenter.ts`). |
 
 Regla UX: no duplicar la informacion del mapa con tarjetas permanentes dentro del paso.
+
+### Pipeline de foco (MsgBox y consola)
+
+Un solo camino para «Revisar primer pendiente» y CTAs equivalentes (`focus-current-step`, `focus-draft-minimum`, `focus-first-blocking`):
+
+1. Cerrar modal y leer `fieldItems[0]` (mismo orden que la lista corta del presenter).
+2. `enfocarPrimerItemModalAvanzada`: navegar paso sin `focusFirstField` en el wizard; foco DOM via [`empleado-alta-foco.util.ts`](../../../src/app/features/empleados/utils/empleado-alta-foco.util.ts) (`data-field-path` primero, luego `formControlName`).
+3. Si no hay `controlPath`, fallback `mostrarPasoAsistenteInvalido` + `enfocarPrimerControlEnPaso` (bloqueantes u opcionales según acción).
+
+`app-search-select` y `app-calendar-input` exponen `fieldPath` → `data-field-path` en el host del control. Campos nativos criticos del paso 0 usan `data-field-path` en el `<input>`.
+
+### Contacto obligatorio
+
+Correo y teléfono son obligatorios en identificación/contacto (formulario reactivo, guardar borrador, finalizar alta y guardado en repositorio). Formato: email válido y teléfono con al menos 8 dígitos.
+
+### Estado de ficha (interno, no RRHH)
+
+En creacion avanzada y edicion inline con `grillaAvanzada`, **no** se muestra el campo «Estado de ficha inicial» en el paso contrato (`contrato.html`). El `FormControl` `estado` conserva valor por defecto (`en_proceso`); el borrador fuerza `borrador` en el payload y la activacion/finalizacion aplican `buildPersonaBorradorAvanzadoInsert` / `buildPersonaActivacionUpdate` en el mapper de escritura.
+
+Limpieza total de empleados en BD de desarrollo: `node scripts/limpiar-empleados-bd.mjs --dry-run` y `--confirm` (requiere `SUPABASE_DB_URL` + `psql`).
+
+### EMP-ALTA-NORMATIVA-CL-01 — Matriz normativa y motor único
+
+Contrato detallado: [`empleado-alta-normativa-cl.md`](./empleado-alta-normativa-cl.md).
+
+- Las tres capas (obligatorio, aplicabilidad, coherencia) se unifican en UI mediante `evaluarAltaValidacionesVisibles` alimentado por `buildAltaValidacionInput` (`empleado-alta-validacion-input.ts`).
+- La consola flotante es la **guía normativa** operativa; no se usa un panel pasivo «Revisión guiada» en Resumen.
+- El formulario de horas semanales no debe contradecir el tope administrativo de 42 h (sin validador `max(168)` en dependiente).
+
+### EMP-ALTA-REVISION-GUIADA-CONSOLA-01 — Consola accionable
+
+Orden de bloques en `app-alta-bitacora-console`:
+
+1. Pendientes del expediente (diagnóstico).
+2. **Revisiones normativas** (coherencia + aplicabilidad en revisión): Revisar paso · Aplicar sugerencia · Mantener revisión.
+3. Registros de la bitácora (wizard pendiente/error).
+4. Pendientes para cierre.
+
+Franja bajo el encabezado del paso (pasos 2, 3, 4, 5, 6, 8): una línea + «Abrir guía normativa» (expande la consola). Sin cards.
+
+En Resumen final: mantener **Diagnóstico contractual**; lead que remite a la consola para revisiones normativas.
 
 ### Copy administrativo de MsgBox
 
 - Los mensajes deben sonar administrativos y orientados a RRHH.
-- Evitar lenguaje t�cnico como `bloqueo` en botones o t�tulos visibles.
-- Usar `datos obligatorios pendientes`, `advertencias de revisi�n` e `informaci�n �til`.
+- Evitar lenguaje técnico como `bloqueo` en botones o títulos visibles.
+- Usar `datos obligatorios pendientes`, `advertencias de revisión` e `información útil`.
 - No usar punto y coma en textos visibles. Separar ideas en frases cortas.
-- Los listados del MsgBox deben usar guion visual o vi�eta y cerrar cada idea con punto final.
+- Los listados del MsgBox deben usar guion visual o viñeta y cerrar cada idea con punto final.
 
 
 ## EMP-PERFIL-LABORAL-UI-01 - Perfil laboral en paso propio
@@ -113,7 +158,169 @@ Regla UX: no duplicar la informacion del mapa con tarjetas permanentes dentro de
 - El paso `Condiciones especiales` no debe obligar a RRHH a volver a marcar informacion que ya existe en los pasos anteriores.
 - Se pre-marcan condiciones cuando el origen es claro:
   - menor de 18 anos desde fecha de nacimiento + fecha de ingreso -> `Trabajador adolescente protegido`;
-  - tipo trabajador con texto pensionado/invalidez/exento/tecnico extranjero/discapacidad -> condicion equivalente;
+  - categoria base `tipo_trabajador` se deriva desde la relacion laboral: `CONTRATO` -> `DEPENDIENTE`, `HONORARIOS` -> `INDEPENDIENTE`;
   - regimen previsional `NINGUNA` -> `Exento de cotizacion de pension` para revision administrativa.
 - Las condiciones pre-marcadas se muestran con chip `Detectada` y bloque de resumen `pre-marcado desde pasos anteriores`.
 - RRHH mantiene control final: puede revisar, corregir, marcar respaldo y completar observacion/vigencia.
+
+## EMP-ALTA-REGLAS-COHERENCIA-01 - Validaciones asistidas con decision RRHH
+
+La alta avanzada incorpora una capa de coherencia administrativa para no permitir que combinaciones laborales/previsionales pasen en silencio.
+
+Principios:
+
+- El sistema avisa y recomienda; no cambia datos automaticamente sin decision del usuario.
+- RRHH puede aplicar la correccion sugerida o mantener la situacion bajo revision administrativa.
+- Las revisiones mantenidas quedan visibles en el Resumen final.
+- Esta capa no calcula cotizaciones ni reemplaza al motor de nomina.
+
+Casos iniciales:
+
+- Seguro de Cesantia:
+  - Contrato indefinido: aplica, distribucion trabajador + empleador.
+  - Plazo fijo u obra/servicio: aplica, aporte de cargo del empleador.
+  - Menor de 18: revisar/no aplica.
+  - Pensionado: revisar, salvo invalidez parcial.
+  - Tecnico extranjero exento: la exencion previsional no apaga por si sola el Seguro de Cesantia.
+- Jornada:
+  - Jornada ordinaria vigente: maximo administrativo 42 horas semanales.
+  - Jornada parcial o menor de 18: maximo administrativo 30 horas semanales.
+- Prevision:
+  - Regimen `NINGUNA` exige condicion especial y respaldo administrativo.
+- Condiciones especiales:
+  - Menor de 18 sin trabajador adolescente protegido/autorizacion genera decision asistida.
+
+Patron de uso:
+
+1. Aviso inline en el paso actual.
+2. MsgBox al avanzar o finalizar cuando hay una decision corregible.
+3. Boton primario aplica la recomendacion.
+4. Boton secundario mantiene bajo revision y permite continuar.
+5. Resumen final y consola conservan la revision pendiente (consola como canal principal desde EMP-ALTA-REVISION-GUIADA-CONSOLA-01).
+
+## EMP-ALTA-COHERENCIA-GLOBAL-00 - Matriz de aplicabilidad y coherencia
+
+La auditoría [`alta-coherencia-global-00.md`](./alta-coherencia-global-00.md) queda como contrato previo para las próximas mejoras de Creación avanzada.
+
+Principios vigentes:
+
+- `relacionLaboral` ordena el flujo completo: `CONTRATO` usa trabajador dependiente; `HONORARIOS` usa prestador independiente y finalización bloqueada.
+- `tipo_trabajador` no es una condición especial: se deriva como `DEPENDIENTE` o `INDEPENDIENTE`.
+- Las condiciones como pensionado, invalidez, técnico extranjero, discapacidad, exento de cotización y menor protegido se declaran en `Condiciones especiales`.
+- Validación obligatoria, aplicabilidad y coherencia administrativa no son lo mismo.
+- Las incoherencias relevantes deben avisar con `app-message-box` y permitir que RRHH aplique la corrección sugerida o mantenga bajo revisión.
+- La siguiente implementación debe crear una matriz única que alimente templates, validaciones, mapa lateral, resumen final y limpieza de honorarios.
+
+
+## EMP-ALTA-COHERENCIA-GLOBAL-01 - Implementación de matriz única
+
+Creación avanzada ahora cuenta con una regla pura de aplicabilidad:
+
+```txt
+src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts
+```
+
+La regla no reemplaza las validaciones ni la coherencia administrativa. Ordena qué corresponde exigir, mostrar como derivado, tratar como opcional, marcar como no aplicable o mantener bajo revisión según `CONTRATO` / `HONORARIOS`, régimen previsional, APVI, condiciones especiales y edad laboral.
+
+Uso visible:
+
+- el wizard consume la matriz para estados `No aplica` y `Opcional`;
+- el resumen final muestra `Matriz de aplicabilidad`;
+- `Coherencia administrativa` queda como bloque separado para combinaciones que requieren decisión RRHH.
+
+Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nómina, sin creación básica, sin ficha empleado y sin persistencia final de honorarios.
+
+
+## EMP-ALTA-DIAGNOSTICO-CONTRACTUAL-UX-01 - Diagnóstico contractual visible
+
+La matriz única de aplicabilidad no debe exponerse como una matriz técnica en el Resumen final.
+
+Patrón vigente:
+
+- la regla `empleado-alta-aplicabilidad.rules.ts` sigue definiendo estados internos;
+- el usuario ve `Diagnóstico contractual`;
+- el bloque muestra `Caso detectado` y tarjetas operativas;
+- `Coherencia administrativa` queda separada para revisiones y decisiones RRHH;
+- los bloques informativos/advertencia usan fondos suaves y bordes completos, sin `border-left` fuerte ni barras laterales de color.
+
+Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nómina, sin creación básica, sin ficha empleado y sin persistencia final de honorarios.
+
+
+## EMP-ALTA-MSGBOX-ERROR-UX-01 - Error de guardado estructurado
+
+Los errores de guardado en alta avanzada deben usar el mismo lenguaje visual del éxito: modal con encabezado, panel de detalle y acción recomendada.
+
+Patrón vigente:
+
+- evitar mensajes planos debajo del título;
+- separar `Qué revisar` de `Acción recomendada`;
+- sugerir el paso de corrección cuando sea posible;
+- mantener copy administrativo para RRHH;
+- no mostrar stack técnico ni transformar reglas de aptitud en textos crudos.
+
+Ejemplo: si el error indica `Sin previsión`, el modal debe orientar al paso `Previsión y salud` y explicar que AFP o IPS son necesarios para validar remuneraciones, salvo excepción respaldada.
+
+## EMP-ALTA-VALIDACIONES-ASISTIDAS-01 - Validaciones visibles guiadas
+
+La alta avanzada centraliza la salida visible en `empleado-alta-validaciones.rules.ts`. Esta capa no decide por sí sola qué aplica ni qué combinación es incoherente: traduce lo que ya entregan aplicabilidad, coherencia y validadores del formulario.
+
+Reglas de UX:
+
+- Los datos obligatorios pendientes se muestran mediante `app-message-box` al presionar `Siguiente` o `Finalizar`.
+- Los campos fuera de flujo se muestran como `Campos no aplicables`, no como error.
+- `tipo_trabajador` se muestra como `Definido por sistema`.
+- Régimen `NINGUNA` se muestra como revisión administrativa en `Previsión y salud`, con copy explícito sobre `Sin previsión`.
+- `app-message-box` se reserva para decisiones: aplicar corrección sugerida, mantener bajo revisión, volver al formulario o finalizar.
+- Honorarios no muestra errores de contrato laboral, jornada, previsión dependiente, asignaciones ni APVI; permite borrador y mantiene finalización bloqueada por fase.
+
+El Resumen final mantiene `Estado por etapa` como lectura consolidada. Los mensajes de paso se mantienen en MsgBox para no recargar ni duplicar información en el formulario.
+
+## EMP-ADV-BITACORA-LABORAL-UX-01 - Patrón Bitácora Laboral
+
+Creación avanzada adopta el patrón `Bitácora laboral` como identidad local del flujo:
+
+- El alta se presenta como ficha en construcción con registros, decisiones y pendientes.
+- El mapa lateral se agrupa por bloques funcionales, sin cambiar orden ni cantidad de pasos.
+- Los estados visibles se traducen a lenguaje operativo RRHH.
+- Los pasos cortos y estados no requeridos deben explicar decisión y siguiente acción, no quedar como alertas vacías.
+- El resumen se presenta como `Acta de revisión de la ficha`, con datos principales, diagnóstico del expediente, revisión guiada y registros de bitácora.
+
+Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nómina, sin creación básica, sin ficha empleado, sin persistencia final de honorarios y sin estilos globales protegidos.
+
+Documento de fase: [`bitacora-laboral-ux-01.md`](./bitacora-laboral-ux-01.md).
+
+## ERP-NOIA-BITACORA-OPERATIVA-00 - Relacion con identidad global
+
+La Creacion avanzada es el primer caso local de la identidad global [`NOIA / Bitacora Operativa`](../../diseno/bitacora-operativa-noia.md).
+
+- `Bitacora laboral` se mantiene como nombre de experiencia local.
+- Cada paso debe sentirse como registro administrativo con estado, decision y cierre, no como wizard generico.
+- Futuras mejoras deben respetar la narrativa: ficha en construccion, revision RRHH y acta final.
+- Esta regla es documental y no cambia guardado, mappers, rutas, SQL, motor ni estilos globales.
+## EMP-ADV-CSS-BUDGET-REDUCE-01 - Presupuesto CSS del componente
+
+La alta avanzada conserva su estructura visual de `Bitacora laboral`, pero el CSS del componente se organiza por responsabilidad para no exceder `anyComponentStyle`.
+
+Regla vigente:
+
+- `form-empleado.css`: shell, modo basico, marco avanzado y exito/error base.
+- `form-empleado.wizard.css`: navegacion de pasos, paneles de paso y resumen/checklist.
+- `form-empleado.feedback.css`: acciones asistidas, honorarios, diagnostico contractual, coherencia y overrides Bitacora del cierre.
+
+No mover estas reglas a estilos globales ni subir budgets para resolver regresiones futuras; primero compactar CSS local o separar por responsabilidad manteniendo encapsulacion Angular.
+
+Documento de fase: [`emp-adv-css-budget-reduce-01.md`](./emp-adv-css-budget-reduce-01.md).
+
+## Roadmap fase 2 — Orquestador de modales (solo diseño)
+
+Objetivo: reducir [`form-empleado.ts`](../../../src/app/features/empleados/components/form-empleado/form-empleado.ts) sin cambiar comportamiento ni tocar mappers/SQL/estilos globales.
+
+| Módulo futuro | Responsabilidad | Estado |
+| --- | --- | --- |
+| `empleado-alta-foco.util.ts` | Foco DOM (`buscarControlPorRuta`, reintentos `afterNextRender`) | **Implementado** (fase 1) |
+| `empleado-alta-modal.presenter.ts` | Copy MsgBox, `fieldItems`, secciones bitácora | Ya existe |
+| `empleado-alta-avanzada-presentacion.facade.ts` | Paso wizard, intentos | Ya existe |
+| `empleado-alta-modal.orquestador.ts` | Modales MsgBox + `manejarAccion` + coherencia; delegación vía `DelegadoModalAltaEmpleado` | **Implementado** (2026-05-25) |
+| `empleado-alta-ficha-snapshot.builder.ts` | `construirSnapshotValidacionFicha` desde formulario | **Implementado** (2026-05-25) |
+
+**No extraer aun** (alto riesgo): `evaluateValidationRules` embebido, mappers, catálogos, honorarios. Criterio: tests existentes verdes + spec del orquestador por extraccion.

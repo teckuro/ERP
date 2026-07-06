@@ -1,0 +1,68 @@
+<app-message-box
+  variant="info"
+  mode="modal"
+  width="lg"
+  panelClass="adm-nom-historial-msgbox"
+  eyebrow="Historial administrativo"
+  [title]="tituloModal()"
+  [message]="subtituloModal()"
+  (dismiss)="cerrarModal()"
+>
+  <div class="adm-nom-historial">
+    @if (error()) {
+      <div class="adm-nom-historial__empty adm-nom-historial__empty--attention">
+        <lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon>
+        <strong>No fue posible cargar el historial</strong>
+        <span>{{ error() }}</span>
+      </div>
+    } @else {
+      <div class="adm-nom-historial__grid-wrap">
+        <app-data-grid
+          title=""
+          [columns]="columnas"
+          [rows]="filas()"
+          [filtersEnabled]="false"
+          [loading]="cargando()"
+          loadingLabel="Cargando historial…"
+          [trackBy]="trackFila"
+          headerCountDisplay="text"
+          headerCountNoun="movimientos"
+          [gridHeight]="'100%'"
+          emptyTitle="Sin eventos registrados"
+          emptyDescription="Los movimientos aparecerán al crear o cambiar el estado de la nómina."
+          className="adm-nom-historial__grid"
+          cardClassName="adm-nom-historial__grid-card"
+        >
+          <ng-template appDataGridCell="fecha" let-fila="row">
+            <span class="adm-nom-historial__fecha" [title]="fila.fechaLarga">{{ fila.fechaCorta }}</span>
+          </ng-template>
+
+          <ng-template appDataGridCell="accion" let-fila="row">
+            <span class="adm-nom-historial__accion">
+              <span
+                class="adm-nom-historial__icon"
+                [class]="'adm-nom-historial__icon--' + fila.tono"
+                aria-hidden="true"
+              >
+                <lucide-icon [name]="fila.icono"></lucide-icon>
+              </span>
+              <span class="adm-nom-historial__accion-text">{{ fila.accion }}</span>
+            </span>
+          </ng-template>
+
+          <ng-template appDataGridCell="usuario" let-fila="row">
+            <span class="adm-nom-historial__usuario">{{ fila.usuario }}</span>
+          </ng-template>
+
+          <ng-template appDataGridCell="motivo" let-fila="row">
+            @if (fila.motivo) {
+              <span class="adm-nom-historial__motivo">{{ fila.motivo }}</span>
+            } @else {
+              <span class="adm-nom-historial__muted">—</span>
+            }
+          </ng-template>
+        </app-data-grid>
+      </div>
+    }
+  </div>
+</app-message-box>

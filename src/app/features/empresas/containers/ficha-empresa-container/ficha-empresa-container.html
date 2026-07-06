@@ -1,0 +1,38 @@
+<section class="emp-ficha__page" aria-label="Ficha de empresa">
+  @if (mensajeError(); as error) {
+    <app-message-box
+      variant="error"
+      [message]="error"
+    ></app-message-box>
+  }
+  @if (mensajeValidacion(); as warning) {
+    <app-message-box
+      variant="warning"
+      title="Revisa los datos antes de guardar"
+      [message]="warning"
+    ></app-message-box>
+  }
+  @if (mensajeExito(); as ok) {
+    <app-message-box
+      variant="success"
+      [message]="ok"
+    ></app-message-box>
+  }
+
+  @if (cargando()) {
+    <app-workspace-loading
+      [fill]="false"
+      title="Cargando ficha"
+      message="Estamos leyendo los datos de la empresa."
+    />
+  } @else {
+    <app-empresa-form
+      [model]="model()"
+      [rutCompleto]="rutCompleto()"
+      [organismos]="organismos()"
+      [validacion]="validacion()"
+      (modelChange)="onModelChange($event)"
+      (rutCompletoChange)="onRutChange($event)"
+    ></app-empresa-form>
+  }
+</section>

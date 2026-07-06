@@ -1,0 +1,4 @@
+/* Participa en .employee-record-layout sin caja extra del host. */
+:host {
+  display: contents;
+}

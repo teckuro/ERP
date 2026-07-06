@@ -1,5 +1,7 @@
 ## Base v11
 
+**Normas técnicas (migraciones Supabase, RLS, RPC):** [`docs/codex/estandares/README.md`](../docs/codex/estandares/README.md) — EST-002, EST-003, EST-006. Smoke tests: `bd/scripts/validar-*.sql`.
+
 ### Formas de ejecutar el esquema
 
 - **Fresh install local (destructivo)**: `run_all.sql` incluye `partes/00_reset.sql` y recrea la base v11 por partes. Usarlo solo en BD local/dev sin datos que conservar.
@@ -40,6 +42,12 @@ Estados validos:
 
 12. Para completar el contrato LRE de catalogo y conceptos no directos, ejecutar `partes/24_lre_catalogo_oficial.sql` y luego `partes/25_lre_concept_rules.sql`. El script 25 agrega `estrategia_lre`, `requiere_exportacion_lre` y `observacion_normativa_lre` a `concepto`; no implementa exportador LRE ni modifica formulas legales.
 
+13. Para habilitar condiciones especiales del trabajador y perfil laboral/previsional derivado, ejecutar `partes/26_empleados_condiciones_trabajador.sql` despues de `25_lre_concept_rules.sql`. Crea `tipo_condicion_trabajador`, `persona_condicion_trabajador`, seeds minimos, RLS/permisos locales y `fn_obtener_perfil_laboral_persona`; no modifica HTML, motor ni liquidaciones.
+
+14. Para habilitar campos normativos de contrato en Empleados, ejecutar `partes/28_empleados_contrato_normativo.sql` despues de `27_nomina_periodo_diagnostico.sql`. Agrega exclusion de limite de jornada/art. 22 y datos de casa particular sobre `contrato` con `CHECK` de textos permitidos; no modifica liquidaciones ni catalogos.
+
+15. Para persistir el vinculo laboral (dependiente u honorarios) en `contrato`, ejecutar `partes/29_relacion_laboral_contrato.sql` despues de `28_empleados_contrato_normativo.sql`. Agrega `relacion_laboral` con valores `CONTRATO` o `HONORARIOS`; espejo de `supabase/migrations/20260524224000_add_relacion_laboral_contrato.sql`.
+
 `12_migracion_lre_datos_incremental.sql` requiere que existan `persona`/`contrato` con IDs coherentes si se dejan los datos demo.
 
 ### Orden de ejecucion fresh local (`partes/`)
@@ -68,6 +76,10 @@ Estados validos:
 22. `23_liquidaciones_oficiales_rpc.sql`: RPC `generar_liquidaciones_oficiales`, atomica, `SECURITY INVOKER`, sin `anon`, desde snapshot cerrado sin recalculo.
 23. `24_lre_catalogo_oficial.sql`: catalogo LRE oficial y mapeo base de conceptos directos.
 24. `25_lre_concept_rules.sql`: estrategia LRE para conceptos no directos o ambiguos.
+25. `26_empleados_condiciones_trabajador.sql`: condiciones especiales del trabajador y perfil laboral/previsional derivado.
+26. `27_nomina_periodo_diagnostico.sql`: diagnostico operativo de periodos de nomina.
+27. `28_empleados_contrato_normativo.sql`: campos normativos de contrato para casa particular y exclusion de limite de jornada.
+28. `29_relacion_laboral_contrato.sql`: columna `relacion_laboral` en `contrato` (`CONTRATO` / `HONORARIOS`).
 
 ### Ejecucion fresh local
 

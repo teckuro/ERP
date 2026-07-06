@@ -1,0 +1,171 @@
+<section class="nmv2-page nomina-shell" [attr.data-step]="currentStep()" aria-label="Generador de nómina">
+  @if (nominaCargaEstado() === 'not_found' || nominaCargaEstado() === 'error') {
+    <div class="nmv2-empty-state" role="alert">
+      <h2 class="nmv2-empty-state__title">
+        @if (nominaCargaEstado() === 'not_found') {
+          Nómina no encontrada
+        } @else {
+          No fue posible cargar la nómina
+        }
+      </h2>
+      <p class="nmv2-empty-state__text">
+        @if (nominaCargaEstado() === 'not_found') {
+          El identificador de la URL no corresponde a una nómina activa o ya no existe.
+        } @else {
+          Revisa tu conexión e intenta de nuevo desde el administrador.
+        }
+      </p>
+      <button type="button" class="nmv2-empty-state__btn" (click)="volverAdministrador()">
+        Volver al administrador
+      </button>
+    </div>
+  } @else if (generadorEnCargaCabecera()) {
+    <app-workspace-loading
+      class="nmv2-page__loading"
+      [fill]="true"
+      title="Cargando nómina"
+      message="Estamos preparando el generador con los datos del período."
+    />
+  } @else {
+    <div class="nmv2-page__workspace">
+      <app-nomina-mensual-v2-stepper
+        [pasoActual]="currentStep()"
+        [steps]="steps"
+        [nomina]="nominaCargada()"
+        [avanceDesdePasoActualBloqueado]="parametrosPasoOcupado()"
+        [indiceMaximoAccesible]="indiceMaximoAccesibleEfectivo()"
+        (pasoSeleccionado)="intentarIrAPaso($event)"
+        (volverPasoAnterior)="intentarIrAPaso($event)"
+      />
+
+      @if (contextoNomina().items.length > 0) {
+        <div class="nmv2-context-franja" role="status" aria-label="Contexto de la nómina">
+          @for (item of contextoNomina().items; track item.id) {
+            <div class="nmv2-context-franja__item">
+              <span class="nmv2-context-franja__label">{{ item.label }}</span>
+              <strong class="nmv2-context-franja__value">{{ item.value }}</strong>
+            </div>
+          }
+        </div>
+      }
+
+      @if (rehidratacionError(); as errorRehidratacion) {
+        <app-message-box
+          mode="modal"
+          variant="warning"
+          width="md"
+          title="Reanudación parcial"
+          [message]="errorRehidratacion"
+          primaryLabel="Entendido"
+          (action)="rehidratacionError.set(null)"
+          (dismiss)="rehidratacionError.set(null)"
+        />
+      }
+
+      @if (bannerHandoff(); as banner) {
+        <div
+          class="nmv2-banner-handoff"
+          [class.nmv2-banner-handoff--success]="banner.tono === 'success'"
+          [class.nmv2-banner-handoff--info]="banner.tono === 'info'"
+          role="status"
+          aria-live="polite"
+        >
+          <span class="nmv2-banner-handoff__texto">{{ banner.mensaje }}</span>
+          <button
+            type="button"
+            class="nmv2-banner-handoff__cerrar"
+            (click)="cerrarBannerHandoff()"
+            aria-label="Descartar mensaje"
+          >&times;</button>
+        </div>
+      }
+
+      @if (orquestador.ayudaAvance(); as ayudaAvance) {
+        <p
+          class="nmv2-step-nav-hint"
+          [class.nmv2-step-nav-hint--bloqueo]="orquestador.tonoAyudaAvance() === 'bloqueo'"
+          [class.nmv2-step-nav-hint--revision]="orquestador.tonoAyudaAvance() === 'revision'"
+        >{{ ayudaAvance }}</p>
+      }
+
+      <div class="nmv2-step-body">
+        <div class="nmv2-step-frame">
+          @switch (currentStep()) {
+            @case ('parameters') {
+              <app-nomina-mensual-v2-paso-parametros
+                [nominaPeriodoId]="nominaPeriodoId()"
+                [periodoNomina]="nominaCargada()?.periodo ?? null"
+                [fechaInicioNomina]="nominaCargada()?.fechaInicio ?? null"
+                [fechaFinNomina]="nominaCargada()?.fechaFin ?? null"
+                [empresaIdNomina]="nominaCargada()?.empresaId ?? null"
+                [tipoNomina]="nominaCargada()?.tipo ?? 'mensual'"
+                [preparacionExterna]="preparacionOverlayActiva()"
+                (avanceSolicitado)="manejarAvanceDesdeParametros($event)"
+              />
+            }
+            @case ('dotacion') {
+              <app-nomina-mensual-v2-paso-dotacion
+                [nominaPeriodoId]="nominaPeriodoId()"
+                [trabajadorDetalleInicial]="trabajadorDetalleDotacion()"
+                [preparacionExterna]="preparacionOverlayActiva()"
+                (detalleInicialConsumido)="limpiarTrabajadorDetalleDotacion()"
+              />
+            }
+            @case ('movements') {
+              <app-nomina-mensual-v2-paso-movimientos
+                [nominaPeriodoId]="nominaPeriodoId()"
+                [preparacionExterna]="preparacionOverlayActiva()"
+              />
+            }
+            @case ('calculation') {
+              <app-nomina-mensual-v2-paso-calculo
+                [nominaPeriodoId]="nominaPeriodoId()"
+                [preparacionExterna]="preparacionOverlayActiva()"
+                (nominaCabeceraCambiada)="manejarNominaCabeceraCambiada()"
+              />
+            }
+            @case ('validation') {
+              <app-nomina-mensual-v2-paso-validacion
+                [nominaPeriodoId]="nominaPeriodoId()"
+                [preparacionExterna]="preparacionOverlayActiva()"
+                (verEnDotacionSolicitado)="manejarVerEnDotacion($event)"
+                (validacionCompletada)="manejarValidacionCompletada()"
+              />
+            }
+            @case ('closure') {
+              <app-nomina-mensual-v2-paso-cierre
+                [nominaPeriodoId]="nominaPeriodoId()"
+                [preparacionExterna]="preparacionOverlayActiva()"
+                (nominaCabeceraCambiada)="manejarNominaCabeceraCambiada($event)"
+              />
+            }
+          }
+        </div>
+      </div>
+
+      <app-nomina-mensual-v2-overlays
+        (confirmarAvanceConRevision)="confirmarAvanceConRevision()"
+        (irAPendientesParametros)="irAPendientesParametros()"
+        (confirmarGuardarBaseYContinuar)="confirmarGuardarBaseYContinuar()"
+        (confirmarMantenerBaseYContinuar)="confirmarMantenerBaseYContinuar()"
+        (solicitarActualizarBase)="solicitarActualizarBase()"
+        (confirmarActualizarBaseYContinuar)="confirmarActualizarBaseYContinuar()"
+        (confirmarReingresoParametros)="confirmarReingresoParametros()"
+        (confirmarRecargaBaseParametros)="confirmarRecargaBaseParametros()"
+        (confirmarRetrocesoAPaso)="confirmarRetrocesoAPaso()"
+      />
+
+      <app-nomina-mensual-v2-trazabilidad-modal />
+      <app-nomina-mensual-v2-trazabilidad-drawer />
+
+      @if (preparacionOverlayActiva()) {
+        <app-workspace-loading
+          class="nmv2-page__loading nmv2-page__loading--overlay"
+          [fill]="true"
+          title="Cargando nómina"
+          message="Estamos preparando el generador con los datos del período."
+        />
+      }
+    </div>
+  }
+</section>

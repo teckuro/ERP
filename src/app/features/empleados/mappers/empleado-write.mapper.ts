@@ -83,10 +83,12 @@ export function buildPersonaActivacionUpdate(
   payload: CrearEmpleadoPayload,
   fechaActivacion: string,
 ): PersonaUpdate {
+  const esHonorarios = payload.relacionLaboral === 'HONORARIOS';
+
   return {
     estado: mapEmpleadoEstadoToPersonaEstado(payload.estado),
     estado_ficha: mapEmpleadoEstadoToEstadoFicha(payload.estado),
-    apto_para_remuneraciones: payload.origenCreacion === 'avanzado',
+    apto_para_remuneraciones: payload.origenCreacion === 'avanzado' && !esHonorarios,
     fecha_activacion: payload.origenCreacion === 'avanzado' ? fechaActivacion : null,
   };
 }
@@ -99,6 +101,7 @@ export function buildContratoInsert(
   return {
     id_persona: personaId,
     id_empresa: empresaId,
+    relacion_laboral: payload.relacionLaboral,
     id_sucursal: payload.idSucursal,
     id_departamento_empresa: payload.idDepartamentoEmpresa,
     id_tipo_trabajador: payload.idTipoTrabajador,
@@ -106,6 +109,32 @@ export function buildContratoInsert(
     codigo_tipo_contrato: payload.tipoContrato,
     cargo: payload.cargo.trim(),
     seguro_cesantia: payload.seguroCesantia,
+    excluido_limite_jornada: payload.excluidoLimiteJornada,
+    causal_exclusion_jornada: payload.excluidoLimiteJornada
+      ? payload.causalExclusionJornada
+      : null,
+    justificacion_exclusion_jornada: payload.excluidoLimiteJornada
+      ? payload.justificacionExclusionJornada
+      : null,
+    casa_particular_modalidad: payload.tipoContrato === 'CASA_PARTICULAR'
+      ? payload.casaParticularModalidad
+      : null,
+    casa_particular_labores: payload.tipoContrato === 'CASA_PARTICULAR'
+      ? payload.casaParticularLabores
+      : null,
+    casa_particular_domicilio_especifico: payload.tipoContrato === 'CASA_PARTICULAR'
+      ? payload.casaParticularDomicilioEspecifico
+      : null,
+    casa_particular_asistencia_cuidado: payload.tipoContrato === 'CASA_PARTICULAR'
+      ? payload.casaParticularAsistenciaCuidado
+      : false,
+    casa_particular_registro_dt_estado: payload.tipoContrato === 'CASA_PARTICULAR'
+      ? payload.casaParticularRegistroDtEstado
+      : null,
+    casa_particular_registro_dt_fecha:
+      payload.tipoContrato === 'CASA_PARTICULAR' ? payload.casaParticularRegistroDtFecha : null,
+    casa_particular_registro_dt_folio:
+      payload.tipoContrato === 'CASA_PARTICULAR' ? payload.casaParticularRegistroDtFolio : null,
     fecha_inicio: payload.fechaIngreso,
     fecha_contrato: payload.fechaContrato,
     fecha_termino: payload.fechaTermino,
@@ -158,6 +187,11 @@ export function buildPrevisionInsert(
   };
 }
 
+function resolvePlanSaludLabel(payload: CrearEmpleadoPayload): string | null {
+  const tipo = payload.tipoSalud?.trim();
+  return tipo ? tipo : null;
+}
+
 export function buildSaludTrabajadorInsert(
   payload: CrearEmpleadoPayload,
   contratoId: number,
@@ -169,7 +203,7 @@ export function buildSaludTrabajadorInsert(
   return {
     id_contrato: contratoId,
     id_salud: payload.idSalud!,
-    plan_salud: null,
+    plan_salud: resolvePlanSaludLabel(payload),
     id_moneda_plan: payload.idMonedaPlan,
     valor_plan: payload.valorPlan ?? 0,
     adicional_auge_ges: payload.adicionalAugeGes ?? 0,
@@ -300,9 +334,10 @@ export function mapCreatedEmpleado(
     departamento: departamento ?? 'Sin centro de costo',
     fechaIngreso: formatDate(payload.fechaIngreso),
     sueldoBase: payload.sueldoBase,
+    monedaContrato: null,
     estado: payload.estado,
     estadoFicha: mapEmpleadoEstadoToEstadoFicha(payload.estado),
-    aptoParaRemuneraciones: payload.estado === 'activo',
+    aptoParaRemuneraciones: payload.estado === 'activo' && payload.relacionLaboral !== 'HONORARIOS',
     pasoAltaAvanzada: null,
   };
 }

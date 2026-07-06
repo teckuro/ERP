@@ -1,0 +1,441 @@
+import type { EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
+import type {
+  BaseNominaTrazabilidad,
+  BaseNominaTrabajadorEstado,
+  BaseNominaTrabajadorResumen,
+  BorradorPersistContext,
+  MotorCalculoEstadoTrabajador,
+  NominaCalculoIssueSnapshot,
+  NominaCalculoPeriodoSnapshot,
+  NominaCalculoTrabajadorSnapshot,
+  NominaSnapshotCompletoView,
+  ProcesoMensualMensaje,
+  ProcesoMensualPreNominaPeriodo,
+  ProcesoMensualPrevalidacion,
+  ProcesoMensualResumen,
+  TrabajadorPendienteRevisionPeriodo,
+} from '../models/proceso-mensual.model';
+
+export type { BorradorPersistContext };
+
+export interface BuildBorradorSnapshotInput {
+  periodo: string;
+  preNomina: ProcesoMensualPreNominaPeriodo;
+  prevalidacion: ProcesoMensualPrevalidacion | null;
+  fechaGeneracion: string;
+  totalAdvertencias: number;
+  usuarioGenerador?: string | null;
+}
+
+export function buildBorradorSnapshotFromPreNomina(input: BuildBorradorSnapshotInput): {
+  snapshot: NominaCalculoPeriodoSnapshot;
+  borradorPersist: BorradorPersistContext;
+} {
+  const trazabilidad = input.preNomina.trazabilidad;
+  const trabajadores = (trazabilidad?.trabajadores ?? []).map(mapTrabajadorBorradorToSnapshot);
+  const issues = buildIssuesBorrador(input.prevalidacion, input.preNomina);
+  const totalBloqueados = trazabilidad?.bloqueados ?? countTrabajadoresPorEstado(trabajadores, 'con_bloqueos');
+
+  const snapshot: NominaCalculoPeriodoSnapshot = {
+    periodo: input.periodo.trim(),
+    idEmpresa: null,
+    estado: 'borrador',
+    fechaGeneracion: input.fechaGeneracion,
+    usuarioGenerador: input.usuarioGenerador ?? null,
+    totalTrabajadores: input.preNomina.trabajadoresIncluidos,
+    totalHaberes: 0,
+    totalDescuentos: 0,
+    totalLiquido: 0,
+    totalBloqueados: totalBloqueados,
+    totalAdvertencias: input.totalAdvertencias,
+    versionMotor: 'BASE-NOMINA-01',
+    hashSnapshot: null,
+    origen: 'preliminar',
+    activo: true,
+    reemplazadoPor: null,
+    aprobacionOperativa: null,
+    cierreOperativo: null,
+    trabajadores,
+    issues,
+    trazabilidad: [],
+  };
+
+  const borradorPersist = buildBorradorPersistFromPrevalidacion(input.prevalidacion);
+
+  return { snapshot, borradorPersist };
+}
+
+export function buildBorradorPersistFromPrevalidacion(
+  prevalidacion: ProcesoMensualPrevalidacion | null,
+): BorradorPersistContext {
+  return {
+    entradasMensuales: prevalidacion?.entradasMensuales ?? [],
+    resumenPrevalidacion: prevalidacion?.resumen ?? null,
+    prevalidacionEstado: prevalidacion?.estado ?? null,
+    trabajadoresPendientesRevision: prevalidacion?.trabajadoresPendientesRevision ?? [],
+    bloqueos: prevalidacion?.bloqueos ?? [],
+    advertencias: prevalidacion?.advertencias ?? [],
+  };
+}
+
+export function mergeBorradorPersistContexts(
+  base: BorradorPersistContext | null | undefined,
+  overlay: BorradorPersistContext | null | undefined,
+): BorradorPersistContext {
+  if (!base && !overlay) {
+    return buildBorradorPersistFromPrevalidacion(null);
+  }
+  if (!base) {
+    return overlay!;
+  }
+  if (!overlay) {
+    return base;
+  }
+  return {
+    entradasMensuales: overlay.entradasMensuales.length > 0 ? overlay.entradasMensuales : base.entradasMensuales,
+    resumenPrevalidacion: overlay.resumenPrevalidacion ?? base.resumenPrevalidacion,
+    prevalidacionEstado: overlay.prevalidacionEstado ?? base.prevalidacionEstado,
+    trabajadoresPendientesRevision:
+      overlay.trabajadoresPendientesRevision?.length
+        ? overlay.trabajadoresPendientesRevision
+        : base.trabajadoresPendientesRevision ?? [],
+    bloqueos: overlay.bloqueos?.length ? overlay.bloqueos : base.bloqueos ?? [],
+    advertencias: overlay.advertencias?.length ? overlay.advertencias : base.advertencias ?? [],
+  };
+}
+
+export function buildBorradorPersistMetadataPayload(
+  context: BorradorPersistContext,
+): Record<string, unknown> {
+  return {
+    borradorPersist: context,
+    notaAlcance: 'Contexto de borrador para rehidratar entradas y resumen sin recalcular motor.',
+  };
+}
+
+export function extractBorradorPersistContext(
+  metadata: Record<string, unknown> | null | undefined,
+): BorradorPersistContext | null {
+  if (!metadata || typeof metadata !== 'object') {
+    return null;
+  }
+  const raw = metadata['borradorPersist'];
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return null;
+  }
+  const record = raw as Record<string, unknown>;
+  const entradas = Array.isArray(record['entradasMensuales'])
+    ? (record['entradasMensuales'] as EntradaMensualPeriodo[])
+    : [];
+  const resumen =
+    record['resumenPrevalidacion'] && typeof record['resumenPrevalidacion'] === 'object'
+      ? (record['resumenPrevalidacion'] as ProcesoMensualResumen)
+      : null;
+  const prevalidacionEstado =
+    typeof record['prevalidacionEstado'] === 'string'
+      ? (record['prevalidacionEstado'] as ProcesoMensualPrevalidacion['estado'])
+      : null;
+  const trabajadoresPendientesRevision = Array.isArray(record['trabajadoresPendientesRevision'])
+    ? (record['trabajadoresPendientesRevision'] as TrabajadorPendienteRevisionPeriodo[])
+    : [];
+  const bloqueos = Array.isArray(record['bloqueos'])
+    ? (record['bloqueos'] as ProcesoMensualMensaje[])
+    : [];
+  const advertencias = Array.isArray(record['advertencias'])
+    ? (record['advertencias'] as ProcesoMensualMensaje[])
+    : [];
+  return {
+    entradasMensuales: entradas,
+    resumenPrevalidacion: resumen,
+    prevalidacionEstado,
+    trabajadoresPendientesRevision,
+    bloqueos,
+    advertencias,
+  };
+}
+
+export function buildPrevalidacionLecturaDesdeBorrador(
+  periodo: string,
+  context: BorradorPersistContext,
+): ProcesoMensualPrevalidacion {
+  const resumen = context.resumenPrevalidacion ?? {
+    periodo,
+    hayBloqueos: false,
+    hayAdvertencias: false,
+    conteoMovimientosPorEstado: {},
+    trabajadoresActivosAptos: 0,
+    trabajadoresActivosNoAptos: 0,
+    parametrosOperativos: false,
+    parametrosGrupos: [],
+    recurrentesAplicablesAlPeriodo: 0,
+    recurrentesInvalidas: 0,
+    recurrentesCerradas: 0,
+    recurrentesFueraDelMes: 0,
+  };
+  return {
+    periodo,
+    estado: context.prevalidacionEstado ?? 'LISTO_PARA_CALCULO',
+    resumen,
+    bloqueos: asArray(context.bloqueos),
+    advertencias: asArray(context.advertencias),
+    informaciones: [],
+    items: [],
+    entradasMensuales: context.entradasMensuales,
+    trabajadoresPendientesRevision: asArray(context.trabajadoresPendientesRevision),
+  };
+}
+
+export function buildPrevalidacionMinimaDesdeSnapshot(
+  periodo: string,
+  snapshot: NominaCalculoPeriodoSnapshot,
+): ProcesoMensualPrevalidacion {
+  const persist = snapshot.borradorPersist;
+  if (persist) {
+    return buildPrevalidacionLecturaDesdeBorrador(periodo, persist);
+  }
+  const resumen: ProcesoMensualResumen = {
+    periodo,
+    hayBloqueos: snapshot.totalBloqueados > 0,
+    hayAdvertencias: snapshot.totalAdvertencias > 0,
+    conteoMovimientosPorEstado: {},
+    trabajadoresActivosAptos: snapshot.totalTrabajadores,
+    trabajadoresActivosNoAptos: 0,
+    parametrosOperativos: true,
+    parametrosGrupos: [],
+    recurrentesAplicablesAlPeriodo: 0,
+    recurrentesInvalidas: 0,
+    recurrentesCerradas: 0,
+    recurrentesFueraDelMes: 0,
+  };
+  return {
+    periodo,
+    estado: snapshot.totalBloqueados > 0 ? 'BLOQUEADO' : snapshot.totalAdvertencias > 0 ? 'CON_ADVERTENCIAS' : 'LISTO_PARA_CALCULO',
+    resumen,
+    bloqueos: [],
+    advertencias: [],
+    informaciones: [],
+    items: [],
+    entradasMensuales: [],
+    trabajadoresPendientesRevision: [],
+  };
+}
+
+export function resolvePrevalidacionDiagnosticoRehidratacion(
+  periodo: string,
+  snapshot: NominaCalculoPeriodoSnapshot | null,
+  diagnosticoBd: ProcesoMensualPrevalidacion | null,
+): ProcesoMensualPrevalidacion | null {
+  if (snapshot?.borradorPersist) {
+    return buildPrevalidacionLecturaDesdeBorrador(periodo, snapshot.borradorPersist);
+  }
+  if (diagnosticoBd) {
+    return diagnosticoBd;
+  }
+  if (snapshot) {
+    return buildPrevalidacionMinimaDesdeSnapshot(periodo, snapshot);
+  }
+  return null;
+}
+
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
+}
+
+function mapTrabajadoresSnapshotToBaseTrazabilidad(
+  trabajadoresSnapshot: readonly NominaCalculoTrabajadorSnapshot[],
+  totalTrabajadores: number,
+): BaseNominaTrazabilidad {
+  const trabajadores: BaseNominaTrabajadorResumen[] = trabajadoresSnapshot.map((t) => ({
+    idPersona: t.idPersona,
+    trabajadorLabel: t.nombreCompletoSnapshot,
+    rutLabel: t.rut,
+    contratoLabel: '',
+    estado: mapMotorEstadoToBaseTrabajador(t.estado),
+    aptoFicha: t.estado !== 'con_bloqueos',
+    listoParaNomina: t.estado === 'calculado_preliminar',
+    bloqueadoParaNomina: t.estado === 'con_bloqueos',
+    motivoBloqueoNomina: t.issues[0]?.mensaje,
+    asignacionesRecurrentes: 0,
+    movimientosDelMes: 0,
+    observacion: t.issues[0]?.mensaje ?? '',
+  }));
+
+  return {
+    trabajadores,
+    trabajadoresConsiderados: totalTrabajadores,
+    listosParaCalculo: trabajadores.filter((t) => t.estado === 'listo').length,
+    conObservaciones: trabajadores.filter((t) => t.estado === 'con_observaciones').length,
+    bloqueados: trabajadores.filter((t) => t.estado === 'bloqueado').length,
+    excluidos: trabajadores.filter((t) => t.estado === 'excluido').length,
+    asignacionesRecurrentesIncluidas: 0,
+    movimientosDelMesIncluidos: 0,
+    parametrosEstado: 'por_revisar',
+    observacionParametros: '',
+  };
+}
+
+export function mapSnapshotCompletoToBaseTrazabilidad(
+  completo: NominaSnapshotCompletoView | null,
+): BaseNominaTrazabilidad | null {
+  if (!completo) {
+    return null;
+  }
+  return mapTrabajadoresSnapshotToBaseTrazabilidad(
+    completo.trabajadores,
+    completo.cabecera.totalTrabajadores,
+  );
+}
+
+export function mapSnapshotActivoToBaseTrazabilidad(
+  snapshot: NominaCalculoPeriodoSnapshot | null,
+): BaseNominaTrazabilidad | null {
+  const trabajadoresSnapshot = asArray(snapshot?.trabajadores);
+  if (!snapshot || trabajadoresSnapshot.length === 0) {
+    return null;
+  }
+  return mapTrabajadoresSnapshotToBaseTrazabilidad(
+    trabajadoresSnapshot,
+    snapshot.totalTrabajadores,
+  );
+}
+
+export interface ResolveBaseNominaTrazabilidadInput {
+  preNomina: ProcesoMensualPreNominaPeriodo | null;
+  snapshotActivo: NominaCalculoPeriodoSnapshot | null;
+  snapshotCompleto: NominaSnapshotCompletoView | null;
+}
+
+export function resolveBaseNominaTrazabilidad(
+  input: ResolveBaseNominaTrazabilidadInput,
+): BaseNominaTrazabilidad | null {
+  const trazabilidadPreNomina = input.preNomina?.trazabilidad ?? null;
+  if (trazabilidadPreNomina?.trabajadores.length) {
+    return trazabilidadPreNomina;
+  }
+
+  const trazabilidadCompleto = mapSnapshotCompletoToBaseTrazabilidad(input.snapshotCompleto);
+  if (trazabilidadCompleto?.trabajadores.length) {
+    return trazabilidadCompleto;
+  }
+
+  const trazabilidadActivo = mapSnapshotActivoToBaseTrazabilidad(input.snapshotActivo);
+  if (trazabilidadActivo?.trabajadores.length) {
+    return trazabilidadActivo;
+  }
+
+  return trazabilidadPreNomina ?? trazabilidadCompleto ?? trazabilidadActivo;
+}
+
+function mapTrabajadorBorradorToSnapshot(trabajador: BaseNominaTrabajadorResumen): NominaCalculoTrabajadorSnapshot {
+  return {
+    idPersona: trabajador.idPersona,
+    rut: trabajador.rutLabel,
+    nombreCompletoSnapshot: trabajador.trabajadorLabel,
+    estado: mapBaseTrabajadorEstadoToMotor(trabajador.estado),
+    sueldoBase: 0,
+    baseImponiblePrevisional: 0,
+    baseTributable: 0,
+    totalHaberesImponibles: 0,
+    totalHaberesNoImponibles: 0,
+    totalDescuentosLegales: 0,
+    totalDescuentosVoluntarios: 0,
+    impuestoUnico: 0,
+    liquidoPreliminar: 0,
+    cotizacionAfp: 0,
+    cotizacionSalud: 0,
+    cotizacionAfc: 0,
+    cotizacionSis: 0,
+    cotizacionSanna: 0,
+    cotizacionLey16744Empleador: 0,
+    conceptos: [],
+    issues: trabajador.observacion
+      ? [
+          {
+            codigo: `TRAB-${trabajador.idPersona}`,
+            severidad: trabajador.estado === 'bloqueado' || trabajador.estado === 'excluido' ? 'BLOQUEO' : 'ADVERTENCIA',
+            origen: 'trabajador',
+            mensaje: trabajador.observacion,
+            campo: null,
+            entidadId: trabajador.idPersona,
+          },
+        ]
+      : [],
+    trazabilidad: [],
+  };
+}
+
+function buildIssuesBorrador(
+  prevalidacion: ProcesoMensualPrevalidacion | null,
+  preNomina: ProcesoMensualPreNominaPeriodo,
+): NominaCalculoIssueSnapshot[] {
+  const issues: NominaCalculoIssueSnapshot[] = [];
+  const pushMensajes = (mensajes: ProcesoMensualMensaje[], severidad: NominaCalculoIssueSnapshot['severidad']) => {
+    for (const mensaje of mensajes) {
+      issues.push({
+        codigo: mensaje.codigo,
+        severidad,
+        origen: mensaje.area,
+        mensaje: mensaje.texto,
+        campo: null,
+        entidadId: null,
+      });
+    }
+  };
+  if (prevalidacion) {
+    pushMensajes(prevalidacion.bloqueos, 'BLOQUEO');
+    pushMensajes(prevalidacion.advertencias, 'ADVERTENCIA');
+  }
+  for (const codigo of preNomina.codigosBloqueo) {
+    issues.push({
+      codigo,
+      severidad: 'BLOQUEO',
+      origen: 'pre_nomina',
+      mensaje: codigo,
+      campo: null,
+      entidadId: null,
+    });
+  }
+  for (const codigo of preNomina.codigosAdvertencia) {
+    issues.push({
+      codigo,
+      severidad: 'ADVERTENCIA',
+      origen: 'pre_nomina',
+      mensaje: codigo,
+      campo: null,
+      entidadId: null,
+    });
+  }
+  return issues;
+}
+
+function mapBaseTrabajadorEstadoToMotor(estado: BaseNominaTrabajadorEstado): MotorCalculoEstadoTrabajador {
+  switch (estado) {
+    case 'listo':
+      return 'calculado_preliminar';
+    case 'bloqueado':
+    case 'excluido':
+      return 'con_bloqueos';
+    case 'con_observaciones':
+    default:
+      return 'con_advertencias';
+  }
+}
+
+function mapMotorEstadoToBaseTrabajador(estado: MotorCalculoEstadoTrabajador): BaseNominaTrabajadorEstado {
+  switch (estado) {
+    case 'calculado_preliminar':
+      return 'listo';
+    case 'con_bloqueos':
+      return 'bloqueado';
+    case 'con_advertencias':
+    default:
+      return 'con_observaciones';
+  }
+}
+
+function countTrabajadoresPorEstado(
+  trabajadores: NominaCalculoTrabajadorSnapshot[],
+  estado: MotorCalculoEstadoTrabajador,
+): number {
+  return trabajadores.filter((t) => t.estado === estado).length;
+}

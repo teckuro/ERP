@@ -602,10 +602,19 @@ export type Database = {
       contrato: {
         Row: {
           cargo: string | null
+          casa_particular_asistencia_cuidado: boolean
+          casa_particular_domicilio_especifico: string | null
+          casa_particular_labores: string | null
+          casa_particular_modalidad: string | null
+          casa_particular_registro_dt_estado: string | null
+          casa_particular_registro_dt_fecha: string | null
+          casa_particular_registro_dt_folio: string | null
+          causal_exclusion_jornada: string | null
           codigo_tipo_contrato:
             | Database["public"]["Enums"]["tipo_contrato_enum"]
             | null
           estado: string | null
+          excluido_limite_jornada: boolean
           fecha_contrato: string | null
           fecha_inicio: string
           fecha_termino: string | null
@@ -616,14 +625,25 @@ export type Database = {
           id_sucursal: number | null
           id_tipo_jornada: number | null
           id_tipo_trabajador: number | null
+          justificacion_exclusion_jornada: string | null
+          relacion_laboral: string
           seguro_cesantia: boolean
         }
         Insert: {
           cargo?: string | null
+          casa_particular_asistencia_cuidado?: boolean
+          casa_particular_domicilio_especifico?: string | null
+          casa_particular_labores?: string | null
+          casa_particular_modalidad?: string | null
+          casa_particular_registro_dt_estado?: string | null
+          casa_particular_registro_dt_fecha?: string | null
+          casa_particular_registro_dt_folio?: string | null
+          causal_exclusion_jornada?: string | null
           codigo_tipo_contrato?:
             | Database["public"]["Enums"]["tipo_contrato_enum"]
             | null
           estado?: string | null
+          excluido_limite_jornada?: boolean
           fecha_contrato?: string | null
           fecha_inicio: string
           fecha_termino?: string | null
@@ -634,14 +654,25 @@ export type Database = {
           id_sucursal?: number | null
           id_tipo_jornada?: number | null
           id_tipo_trabajador?: number | null
+          justificacion_exclusion_jornada?: string | null
+          relacion_laboral?: string
           seguro_cesantia?: boolean
         }
         Update: {
           cargo?: string | null
+          casa_particular_asistencia_cuidado?: boolean
+          casa_particular_domicilio_especifico?: string | null
+          casa_particular_labores?: string | null
+          casa_particular_modalidad?: string | null
+          casa_particular_registro_dt_estado?: string | null
+          casa_particular_registro_dt_fecha?: string | null
+          casa_particular_registro_dt_folio?: string | null
+          causal_exclusion_jornada?: string | null
           codigo_tipo_contrato?:
             | Database["public"]["Enums"]["tipo_contrato_enum"]
             | null
           estado?: string | null
+          excluido_limite_jornada?: boolean
           fecha_contrato?: string | null
           fecha_inicio?: string
           fecha_termino?: string | null
@@ -652,6 +683,8 @@ export type Database = {
           id_sucursal?: number | null
           id_tipo_jornada?: number | null
           id_tipo_trabajador?: number | null
+          justificacion_exclusion_jornada?: string | null
+          relacion_laboral?: string
           seguro_cesantia?: boolean
         }
         Relationships: [
@@ -1002,69 +1035,101 @@ export type Database = {
       }
       empresa: {
         Row: {
-          dv: string
-          fecha_creacion: string | null
-          id_empresa: number
-          razon_social: string
-          rut: string
-        }
-        Insert: {
-          dv: string
-          fecha_creacion?: string | null
-          id_empresa?: number
-          razon_social: string
-          rut: string
-        }
-        Update: {
-          dv?: string
-          fecha_creacion?: string | null
-          id_empresa?: number
-          razon_social?: string
-          rut?: string
-        }
-        Relationships: []
-      }
-      empresa_ley_16744: {
-        Row: {
           actividad_economica: string | null
+          aplica_ley_16744: boolean
+          ciudad: string | null
+          codigo_postal: string | null
+          comuna: string | null
+          direccion_linea_1: string | null
+          direccion_linea_2: string | null
+          dv: string
+          email_contacto: string | null
+          feature_gates: Json
+          fecha_creacion: string | null
           fuente_resolucion_o_certificado: string | null
+          giro: string | null
           id_empresa: number
-          id_empresa_ley_16744: number
           id_organismo_administrador_ley_16744: number | null
-          tasa_adicional_diferenciada: number
+          nombre_fantasia: string | null
+          razon_social: string
+          region: string | null
+          representante_legal_dv: string | null
+          representante_legal_email: string | null
+          representante_legal_nombre: string | null
+          representante_legal_rut: string | null
+          representante_legal_telefono: string | null
+          rut: string
+          tasa_adicional_diferenciada: number | null
+          telefono_contacto: string | null
+          updated_at: string
           vigencia_fin: string | null
-          vigencia_inicio: string
+          vigencia_inicio: string | null
         }
         Insert: {
           actividad_economica?: string | null
+          aplica_ley_16744?: boolean
+          ciudad?: string | null
+          codigo_postal?: string | null
+          comuna?: string | null
+          direccion_linea_1?: string | null
+          direccion_linea_2?: string | null
+          dv: string
+          email_contacto?: string | null
+          feature_gates?: Json
+          fecha_creacion?: string | null
           fuente_resolucion_o_certificado?: string | null
-          id_empresa: number
-          id_empresa_ley_16744?: number
+          giro?: string | null
+          id_empresa?: number
           id_organismo_administrador_ley_16744?: number | null
-          tasa_adicional_diferenciada?: number
+          nombre_fantasia?: string | null
+          razon_social: string
+          region?: string | null
+          representante_legal_dv?: string | null
+          representante_legal_email?: string | null
+          representante_legal_nombre?: string | null
+          representante_legal_rut?: string | null
+          representante_legal_telefono?: string | null
+          rut: string
+          tasa_adicional_diferenciada?: number | null
+          telefono_contacto?: string | null
+          updated_at?: string
           vigencia_fin?: string | null
-          vigencia_inicio: string
+          vigencia_inicio?: string | null
         }
         Update: {
           actividad_economica?: string | null
+          aplica_ley_16744?: boolean
+          ciudad?: string | null
+          codigo_postal?: string | null
+          comuna?: string | null
+          direccion_linea_1?: string | null
+          direccion_linea_2?: string | null
+          dv?: string
+          email_contacto?: string | null
+          feature_gates?: Json
+          fecha_creacion?: string | null
           fuente_resolucion_o_certificado?: string | null
+          giro?: string | null
           id_empresa?: number
-          id_empresa_ley_16744?: number
           id_organismo_administrador_ley_16744?: number | null
-          tasa_adicional_diferenciada?: number
+          nombre_fantasia?: string | null
+          razon_social?: string
+          region?: string | null
+          representante_legal_dv?: string | null
+          representante_legal_email?: string | null
+          representante_legal_nombre?: string | null
+          representante_legal_rut?: string | null
+          representante_legal_telefono?: string | null
+          rut?: string
+          tasa_adicional_diferenciada?: number | null
+          telefono_contacto?: string | null
+          updated_at?: string
           vigencia_fin?: string | null
-          vigencia_inicio?: string
+          vigencia_inicio?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "empresa_ley_16744_id_empresa_fkey"
-            columns: ["id_empresa"]
-            isOneToOne: false
-            referencedRelation: "empresa"
-            referencedColumns: ["id_empresa"]
-          },
-          {
-            foreignKeyName: "empresa_ley_16744_id_organismo_administrador_ley_16744_fkey"
+            foreignKeyName: "empresa_id_organismo_administrador_ley_16744_fkey"
             columns: ["id_organismo_administrador_ley_16744"]
             isOneToOne: false
             referencedRelation: "organismo_administrador_ley_16744"
@@ -1090,18 +1155,74 @@ export type Database = {
         }
         Relationships: []
       }
+      evento_auditoria_nomina: {
+        Row: {
+          accion: string
+          created_at: string
+          estado_nuevo: string | null
+          estado_previo: string | null
+          id: string
+          id_nomina_periodo: string
+          id_usuario: string | null
+          motivo: string | null
+          payload: Json | null
+          version_estado_esperada: number | null
+          version_estado_resultante: number | null
+        }
+        Insert: {
+          accion: string
+          created_at?: string
+          estado_nuevo?: string | null
+          estado_previo?: string | null
+          id?: string
+          id_nomina_periodo: string
+          id_usuario?: string | null
+          motivo?: string | null
+          payload?: Json | null
+          version_estado_esperada?: number | null
+          version_estado_resultante?: number | null
+        }
+        Update: {
+          accion?: string
+          created_at?: string
+          estado_nuevo?: string | null
+          estado_previo?: string | null
+          id?: string
+          id_nomina_periodo?: string
+          id_usuario?: string | null
+          motivo?: string | null
+          payload?: Json | null
+          version_estado_esperada?: number | null
+          version_estado_resultante?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evento_auditoria_nomina_id_nomina_periodo_fkey"
+            columns: ["id_nomina_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_periodo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ex_caja_previsional: {
         Row: {
+          codigo_base: string | null
+          codigo_previred_ejemplo: string | null
           id_ex_caja_previsional: number
           nombre: string
           vigente: boolean
         }
         Insert: {
+          codigo_base?: string | null
+          codigo_previred_ejemplo?: string | null
           id_ex_caja_previsional?: number
           nombre: string
           vigente?: boolean
         }
         Update: {
+          codigo_base?: string | null
+          codigo_previred_ejemplo?: string | null
           id_ex_caja_previsional?: number
           nombre?: string
           vigente?: boolean
@@ -1374,6 +1495,86 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_persona_factores"
             referencedColumns: ["id_persona"]
+          },
+        ]
+      }
+      incidencia_nomina: {
+        Row: {
+          bloqueante: boolean
+          created_at: string
+          decidida_at: string | null
+          estado_decision: string
+          id: string
+          id_nomina_periodo: string
+          id_persona: number | null
+          id_segmento_nomina: string | null
+          justificacion: string | null
+          mensaje: string
+          resuelta_at: string | null
+          severidad: string
+          tipo: string
+          version_calculo_snapshot: number | null
+        }
+        Insert: {
+          bloqueante?: boolean
+          created_at?: string
+          decidida_at?: string | null
+          estado_decision?: string
+          id?: string
+          id_nomina_periodo: string
+          id_persona?: number | null
+          id_segmento_nomina?: string | null
+          justificacion?: string | null
+          mensaje: string
+          resuelta_at?: string | null
+          severidad: string
+          tipo: string
+          version_calculo_snapshot?: number | null
+        }
+        Update: {
+          bloqueante?: boolean
+          created_at?: string
+          decidida_at?: string | null
+          estado_decision?: string
+          id?: string
+          id_nomina_periodo?: string
+          id_persona?: number | null
+          id_segmento_nomina?: string | null
+          justificacion?: string | null
+          mensaje?: string
+          resuelta_at?: string | null
+          severidad?: string
+          tipo?: string
+          version_calculo_snapshot?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidencia_nomina_id_nomina_periodo_fkey"
+            columns: ["id_nomina_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_periodo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incidencia_nomina_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "incidencia_nomina_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "incidencia_nomina_id_segmento_nomina_fkey"
+            columns: ["id_segmento_nomina"]
+            isOneToOne: false
+            referencedRelation: "segmento_nomina"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1841,6 +2042,247 @@ export type Database = {
           },
         ]
       }
+      movimiento_nomina: {
+        Row: {
+          cantidad: number | null
+          categoria: string
+          created_at: string
+          estado: string
+          fecha_desde: string | null
+          fecha_hasta: string | null
+          glosa: string | null
+          id: string
+          id_concepto: number | null
+          id_empresa: number
+          id_nomina_periodo: string
+          id_persona: number
+          id_recurrente: string | null
+          id_segmento_nomina: string | null
+          monto: number | null
+          origen: string
+          tipo: string
+          unidad: string | null
+          updated_at: string
+        }
+        Insert: {
+          cantidad?: number | null
+          categoria: string
+          created_at?: string
+          estado?: string
+          fecha_desde?: string | null
+          fecha_hasta?: string | null
+          glosa?: string | null
+          id?: string
+          id_concepto?: number | null
+          id_empresa: number
+          id_nomina_periodo: string
+          id_persona: number
+          id_recurrente?: string | null
+          id_segmento_nomina?: string | null
+          monto?: number | null
+          origen?: string
+          tipo: string
+          unidad?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cantidad?: number | null
+          categoria?: string
+          created_at?: string
+          estado?: string
+          fecha_desde?: string | null
+          fecha_hasta?: string | null
+          glosa?: string | null
+          id?: string
+          id_concepto?: number | null
+          id_empresa?: number
+          id_nomina_periodo?: string
+          id_persona?: number
+          id_recurrente?: string | null
+          id_segmento_nomina?: string | null
+          monto?: number | null
+          origen?: string
+          tipo?: string
+          unidad?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimiento_nomina_id_concepto_fkey"
+            columns: ["id_concepto"]
+            isOneToOne: false
+            referencedRelation: "concepto"
+            referencedColumns: ["id_concepto"]
+          },
+          {
+            foreignKeyName: "movimiento_nomina_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+          {
+            foreignKeyName: "movimiento_nomina_id_nomina_periodo_fkey"
+            columns: ["id_nomina_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_periodo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimiento_nomina_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "movimiento_nomina_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "movimiento_nomina_id_recurrente_fkey"
+            columns: ["id_recurrente"]
+            isOneToOne: false
+            referencedRelation: "movimiento_recurrente"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimiento_nomina_id_segmento_nomina_fkey"
+            columns: ["id_segmento_nomina"]
+            isOneToOne: false
+            referencedRelation: "segmento_nomina"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      movimiento_recurrente: {
+        Row: {
+          activo_desde: string
+          activo_hasta: string | null
+          cantidad: number | null
+          categoria: string
+          created_at: string
+          estado: string
+          frecuencia: string
+          glosa: string | null
+          id: string
+          id_cargo: number | null
+          id_centro_costo: number | null
+          id_concepto: number | null
+          id_empresa: number
+          id_grupo: number | null
+          id_haberdescuento_origen: number | null
+          id_persona: number | null
+          id_segmento_nomina: string | null
+          id_tipo_contrato: number | null
+          monto: number | null
+          tipo: string
+          unidad: string | null
+          updated_at: string
+        }
+        Insert: {
+          activo_desde: string
+          activo_hasta?: string | null
+          cantidad?: number | null
+          categoria: string
+          created_at?: string
+          estado?: string
+          frecuencia?: string
+          glosa?: string | null
+          id?: string
+          id_cargo?: number | null
+          id_centro_costo?: number | null
+          id_concepto?: number | null
+          id_empresa: number
+          id_grupo?: number | null
+          id_haberdescuento_origen?: number | null
+          id_persona?: number | null
+          id_segmento_nomina?: string | null
+          id_tipo_contrato?: number | null
+          monto?: number | null
+          tipo: string
+          unidad?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activo_desde?: string
+          activo_hasta?: string | null
+          cantidad?: number | null
+          categoria?: string
+          created_at?: string
+          estado?: string
+          frecuencia?: string
+          glosa?: string | null
+          id?: string
+          id_cargo?: number | null
+          id_centro_costo?: number | null
+          id_concepto?: number | null
+          id_empresa?: number
+          id_grupo?: number | null
+          id_haberdescuento_origen?: number | null
+          id_persona?: number | null
+          id_segmento_nomina?: string | null
+          id_tipo_contrato?: number | null
+          monto?: number | null
+          tipo?: string
+          unidad?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimiento_recurrente_id_centro_costo_fkey"
+            columns: ["id_centro_costo"]
+            isOneToOne: false
+            referencedRelation: "centro_costo"
+            referencedColumns: ["id_centro_costo"]
+          },
+          {
+            foreignKeyName: "movimiento_recurrente_id_concepto_fkey"
+            columns: ["id_concepto"]
+            isOneToOne: false
+            referencedRelation: "concepto"
+            referencedColumns: ["id_concepto"]
+          },
+          {
+            foreignKeyName: "movimiento_recurrente_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+          {
+            foreignKeyName: "movimiento_recurrente_id_haberdescuento_origen_fkey"
+            columns: ["id_haberdescuento_origen"]
+            isOneToOne: false
+            referencedRelation: "haberdescuento_persona"
+            referencedColumns: ["id_asignacion"]
+          },
+          {
+            foreignKeyName: "movimiento_recurrente_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "movimiento_recurrente_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "movimiento_recurrente_id_segmento_nomina_fkey"
+            columns: ["id_segmento_nomina"]
+            isOneToOne: false
+            referencedRelation: "segmento_nomina"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       movimiento_variable_mensual: {
         Row: {
           estado: string
@@ -2017,6 +2459,13 @@ export type Database = {
             referencedColumns: ["id_calculo_periodo"]
           },
           {
+            foreignKeyName: "nomina_calculo_issue_id_calculo_periodo_fkey"
+            columns: ["id_calculo_periodo"]
+            isOneToOne: false
+            referencedRelation: "v_nomina_estado_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+          {
             foreignKeyName: "nomina_calculo_issue_id_calculo_trabajador_fkey"
             columns: ["id_calculo_trabajador"]
             isOneToOne: false
@@ -2024,6 +2473,42 @@ export type Database = {
             referencedColumns: ["id_calculo_trabajador"]
           },
         ]
+      }
+      nomina_calculo_parametro: {
+        Row: {
+          clave: string
+          created_at: string
+          grupo: string
+          id_calculo_parametro: number
+          id_calculo_periodo: number
+          origen: string
+          valor: string | null
+          valor_numerico: number | null
+          vigencia: string | null
+        }
+        Insert: {
+          clave: string
+          created_at?: string
+          grupo: string
+          id_calculo_parametro?: number
+          id_calculo_periodo: number
+          origen?: string
+          valor?: string | null
+          valor_numerico?: number | null
+          vigencia?: string | null
+        }
+        Update: {
+          clave?: string
+          created_at?: string
+          grupo?: string
+          id_calculo_parametro?: number
+          id_calculo_periodo?: number
+          origen?: string
+          valor?: string | null
+          valor_numerico?: number | null
+          vigencia?: string | null
+        }
+        Relationships: []
       }
       nomina_calculo_periodo: {
         Row: {
@@ -2043,13 +2528,22 @@ export type Database = {
           created_at: string
           estado: string
           fecha_generacion: string
+          hash_entradas: string | null
+          hash_parametros: string | null
           hash_snapshot: string | null
           id_calculo_periodo: number
           id_empresa: number | null
+          id_nomina_periodo: string | null
+          id_preparacion_nomina: number | null
           observacion_anulacion: string | null
           origen: string
           periodo: string
+          reapertura_operativa_fecha: string | null
+          reapertura_operativa_metadata: Json
+          reapertura_operativa_usuario_id: string | null
+          reapertura_operativa_usuario_label: string | null
           reemplazado_por: number | null
+          tipo_preparacion: string | null
           total_advertencias: number
           total_bloqueados: number
           total_descuentos: number
@@ -2077,13 +2571,22 @@ export type Database = {
           created_at?: string
           estado?: string
           fecha_generacion?: string
+          hash_entradas?: string | null
+          hash_parametros?: string | null
           hash_snapshot?: string | null
           id_calculo_periodo?: number
           id_empresa?: number | null
+          id_nomina_periodo?: string | null
+          id_preparacion_nomina?: number | null
           observacion_anulacion?: string | null
           origen?: string
           periodo: string
+          reapertura_operativa_fecha?: string | null
+          reapertura_operativa_metadata?: Json
+          reapertura_operativa_usuario_id?: string | null
+          reapertura_operativa_usuario_label?: string | null
           reemplazado_por?: number | null
+          tipo_preparacion?: string | null
           total_advertencias?: number
           total_bloqueados?: number
           total_descuentos?: number
@@ -2111,13 +2614,22 @@ export type Database = {
           created_at?: string
           estado?: string
           fecha_generacion?: string
+          hash_entradas?: string | null
+          hash_parametros?: string | null
           hash_snapshot?: string | null
           id_calculo_periodo?: number
           id_empresa?: number | null
+          id_nomina_periodo?: string | null
+          id_preparacion_nomina?: number | null
           observacion_anulacion?: string | null
           origen?: string
           periodo?: string
+          reapertura_operativa_fecha?: string | null
+          reapertura_operativa_metadata?: Json
+          reapertura_operativa_usuario_id?: string | null
+          reapertura_operativa_usuario_label?: string | null
           reemplazado_por?: number | null
+          tipo_preparacion?: string | null
           total_advertencias?: number
           total_bloqueados?: number
           total_descuentos?: number
@@ -2137,10 +2649,31 @@ export type Database = {
             referencedColumns: ["id_empresa"]
           },
           {
+            foreignKeyName: "nomina_calculo_periodo_id_nomina_periodo_fkey"
+            columns: ["id_nomina_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_periodo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nomina_calculo_periodo_preparacion_fk"
+            columns: ["id_preparacion_nomina"]
+            isOneToOne: false
+            referencedRelation: "nomina_preparacion"
+            referencedColumns: ["id_preparacion_nomina"]
+          },
+          {
             foreignKeyName: "nomina_calculo_periodo_reemplazado_por_fkey"
             columns: ["reemplazado_por"]
             isOneToOne: false
             referencedRelation: "nomina_calculo_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_calculo_periodo_reemplazado_por_fkey"
+            columns: ["reemplazado_por"]
+            isOneToOne: false
+            referencedRelation: "v_nomina_estado_periodo"
             referencedColumns: ["id_calculo_periodo"]
           },
         ]
@@ -2230,6 +2763,13 @@ export type Database = {
             referencedColumns: ["id_calculo_periodo"]
           },
           {
+            foreignKeyName: "nomina_calculo_trabajador_id_calculo_periodo_fkey"
+            columns: ["id_calculo_periodo"]
+            isOneToOne: false
+            referencedRelation: "v_nomina_estado_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+          {
             foreignKeyName: "nomina_calculo_trabajador_id_persona_fkey"
             columns: ["id_persona"]
             isOneToOne: false
@@ -2303,11 +2843,79 @@ export type Database = {
             referencedColumns: ["id_calculo_periodo"]
           },
           {
+            foreignKeyName: "nomina_calculo_trazabilidad_id_calculo_periodo_fkey"
+            columns: ["id_calculo_periodo"]
+            isOneToOne: false
+            referencedRelation: "v_nomina_estado_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+          {
             foreignKeyName: "nomina_calculo_trazabilidad_id_calculo_trabajador_fkey"
             columns: ["id_calculo_trabajador"]
             isOneToOne: false
             referencedRelation: "nomina_calculo_trabajador"
             referencedColumns: ["id_calculo_trabajador"]
+          },
+        ]
+      }
+      nomina_consolidacion: {
+        Row: {
+          created_at: string
+          estado: string
+          id: string
+          id_empresa: number
+          id_nomina_destino: string
+          id_nomina_origen: string
+          metadata: Json
+          monto_pagado: number
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          estado?: string
+          id?: string
+          id_empresa: number
+          id_nomina_destino: string
+          id_nomina_origen: string
+          metadata?: Json
+          monto_pagado?: number
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          estado?: string
+          id?: string
+          id_empresa?: number
+          id_nomina_destino?: string
+          id_nomina_origen?: string
+          metadata?: Json
+          monto_pagado?: number
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_consolidacion_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+          {
+            foreignKeyName: "nomina_consolidacion_id_nomina_destino_fkey"
+            columns: ["id_nomina_destino"]
+            isOneToOne: false
+            referencedRelation: "nomina_periodo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nomina_consolidacion_id_nomina_origen_fkey"
+            columns: ["id_nomina_origen"]
+            isOneToOne: false
+            referencedRelation: "nomina_periodo"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2365,7 +2973,65 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "nomina_liquidacion_concepto_id_concepto_fkey"
+            columns: ["id_concepto"]
+            isOneToOne: false
+            referencedRelation: "concepto"
+            referencedColumns: ["id_concepto"]
+          },
+          {
             foreignKeyName: "nomina_liquidacion_concepto_id_liquidacion_trabajador_fkey"
+            columns: ["id_liquidacion_trabajador"]
+            isOneToOne: false
+            referencedRelation: "nomina_liquidacion_trabajador"
+            referencedColumns: ["id_liquidacion_trabajador"]
+          },
+        ]
+      }
+      nomina_liquidacion_emision: {
+        Row: {
+          canal: string
+          emitido_en: string
+          id_liquidacion_emision: number
+          id_liquidacion_periodo: number
+          id_liquidacion_trabajador: number
+          metadata: Json
+          usuario_id: string | null
+          usuario_label: string
+          version_liquidacion: number
+        }
+        Insert: {
+          canal?: string
+          emitido_en?: string
+          id_liquidacion_emision?: number
+          id_liquidacion_periodo: number
+          id_liquidacion_trabajador: number
+          metadata?: Json
+          usuario_id?: string | null
+          usuario_label: string
+          version_liquidacion?: number
+        }
+        Update: {
+          canal?: string
+          emitido_en?: string
+          id_liquidacion_emision?: number
+          id_liquidacion_periodo?: number
+          id_liquidacion_trabajador?: number
+          metadata?: Json
+          usuario_id?: string | null
+          usuario_label?: string
+          version_liquidacion?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_liquidacion_emision_id_liquidacion_periodo_fkey"
+            columns: ["id_liquidacion_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_liquidacion_periodo"
+            referencedColumns: ["id_liquidacion_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_liquidacion_emision_id_liquidacion_trabajador_fkey"
             columns: ["id_liquidacion_trabajador"]
             isOneToOne: false
             referencedRelation: "nomina_liquidacion_trabajador"
@@ -2381,9 +3047,14 @@ export type Database = {
           fecha_generacion: string
           id_calculo_periodo: number
           id_empresa: number | null
+          id_liquidacion_origen: number | null
           id_liquidacion_periodo: number
+          id_liquidacion_reemplazada: number | null
+          id_nomina_periodo: string | null
+          id_preparacion_nomina: number | null
           metadata: Json
           periodo: string
+          tipo_liquidacion: string
           total_descuentos: number
           total_haberes: number
           total_liquido: number
@@ -2391,6 +3062,7 @@ export type Database = {
           updated_at: string
           usuario_generacion_id: string | null
           usuario_generacion_label: string | null
+          version: number
         }
         Insert: {
           activo?: boolean
@@ -2399,9 +3071,14 @@ export type Database = {
           fecha_generacion?: string
           id_calculo_periodo: number
           id_empresa?: number | null
+          id_liquidacion_origen?: number | null
           id_liquidacion_periodo?: number
+          id_liquidacion_reemplazada?: number | null
+          id_nomina_periodo?: string | null
+          id_preparacion_nomina?: number | null
           metadata?: Json
           periodo: string
+          tipo_liquidacion?: string
           total_descuentos?: number
           total_haberes?: number
           total_liquido?: number
@@ -2409,6 +3086,7 @@ export type Database = {
           updated_at?: string
           usuario_generacion_id?: string | null
           usuario_generacion_label?: string | null
+          version?: number
         }
         Update: {
           activo?: boolean
@@ -2417,9 +3095,14 @@ export type Database = {
           fecha_generacion?: string
           id_calculo_periodo?: number
           id_empresa?: number | null
+          id_liquidacion_origen?: number | null
           id_liquidacion_periodo?: number
+          id_liquidacion_reemplazada?: number | null
+          id_nomina_periodo?: string | null
+          id_preparacion_nomina?: number | null
           metadata?: Json
           periodo?: string
+          tipo_liquidacion?: string
           total_descuentos?: number
           total_haberes?: number
           total_liquido?: number
@@ -2427,8 +3110,59 @@ export type Database = {
           updated_at?: string
           usuario_generacion_id?: string | null
           usuario_generacion_label?: string | null
+          version?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "nomina_liquidacion_periodo_id_calculo_periodo_fkey"
+            columns: ["id_calculo_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_calculo_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_liquidacion_periodo_id_calculo_periodo_fkey"
+            columns: ["id_calculo_periodo"]
+            isOneToOne: false
+            referencedRelation: "v_nomina_estado_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_liquidacion_periodo_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+          {
+            foreignKeyName: "nomina_liquidacion_periodo_id_nomina_periodo_fkey"
+            columns: ["id_nomina_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_periodo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nomina_liquidacion_periodo_origen_fk"
+            columns: ["id_liquidacion_origen"]
+            isOneToOne: false
+            referencedRelation: "nomina_liquidacion_periodo"
+            referencedColumns: ["id_liquidacion_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_liquidacion_periodo_preparacion_fk"
+            columns: ["id_preparacion_nomina"]
+            isOneToOne: false
+            referencedRelation: "nomina_preparacion"
+            referencedColumns: ["id_preparacion_nomina"]
+          },
+          {
+            foreignKeyName: "nomina_liquidacion_periodo_reemplazada_fk"
+            columns: ["id_liquidacion_reemplazada"]
+            isOneToOne: false
+            referencedRelation: "nomina_liquidacion_periodo"
+            referencedColumns: ["id_liquidacion_periodo"]
+          },
+        ]
       }
       nomina_liquidacion_trabajador: {
         Row: {
@@ -2439,6 +3173,7 @@ export type Database = {
           created_at: string
           dias_trabajados: number | null
           estado: string
+          estado_revision: string | null
           fecha_ingreso: string | null
           id_calculo_periodo: number
           id_contrato: number | null
@@ -2463,6 +3198,7 @@ export type Database = {
           created_at?: string
           dias_trabajados?: number | null
           estado?: string
+          estado_revision?: string | null
           fecha_ingreso?: string | null
           id_calculo_periodo: number
           id_contrato?: number | null
@@ -2487,6 +3223,7 @@ export type Database = {
           created_at?: string
           dias_trabajados?: number | null
           estado?: string
+          estado_revision?: string | null
           fecha_ingreso?: string | null
           id_calculo_periodo?: number
           id_contrato?: number | null
@@ -2510,6 +3247,490 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "nomina_liquidacion_periodo"
             referencedColumns: ["id_liquidacion_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_liquidacion_trabajador_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "nomina_liquidacion_trabajador_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+        ]
+      }
+      nomina_periodo: {
+        Row: {
+          aprobado_at: string | null
+          calculado_at: string | null
+          calculo_vigente: boolean
+          closed_at: string | null
+          codigo_ciclo: string
+          created_at: string
+          empresa_nombre: string | null
+          estado: string
+          fecha_fin: string
+          fecha_inicio: string
+          fecha_pago: string | null
+          id: string
+          id_calculo_periodo_vigente: number | null
+          id_empresa: number
+          maximo_paso_completado: string | null
+          maximo_paso_completado_at: string | null
+          naturaleza: string
+          nomina_origen_id: string | null
+          paso_visitado_at: string | null
+          periodo: string
+          plantilla_ciclo_id: string | null
+          tipo: string
+          total_advertencias: number
+          total_descuentos: number
+          total_haberes: number
+          total_incidencias_criticas: number
+          total_liquido: number
+          total_segmentos: number
+          total_trabajadores: number
+          ultimo_paso_visitado: string | null
+          updated_at: string
+          validado_at: string | null
+          version_calculo: number
+          version_estado: number
+        }
+        Insert: {
+          aprobado_at?: string | null
+          calculado_at?: string | null
+          calculo_vigente?: boolean
+          closed_at?: string | null
+          codigo_ciclo: string
+          created_at?: string
+          empresa_nombre?: string | null
+          estado?: string
+          fecha_fin: string
+          fecha_inicio: string
+          fecha_pago?: string | null
+          id?: string
+          id_calculo_periodo_vigente?: number | null
+          id_empresa: number
+          maximo_paso_completado?: string | null
+          maximo_paso_completado_at?: string | null
+          naturaleza: string
+          nomina_origen_id?: string | null
+          paso_visitado_at?: string | null
+          periodo: string
+          plantilla_ciclo_id?: string | null
+          tipo?: string
+          total_advertencias?: number
+          total_descuentos?: number
+          total_haberes?: number
+          total_incidencias_criticas?: number
+          total_liquido?: number
+          total_segmentos?: number
+          total_trabajadores?: number
+          ultimo_paso_visitado?: string | null
+          updated_at?: string
+          validado_at?: string | null
+          version_calculo?: number
+          version_estado?: number
+        }
+        Update: {
+          aprobado_at?: string | null
+          calculado_at?: string | null
+          calculo_vigente?: boolean
+          closed_at?: string | null
+          codigo_ciclo?: string
+          created_at?: string
+          empresa_nombre?: string | null
+          estado?: string
+          fecha_fin?: string
+          fecha_inicio?: string
+          fecha_pago?: string | null
+          id?: string
+          id_calculo_periodo_vigente?: number | null
+          id_empresa?: number
+          maximo_paso_completado?: string | null
+          maximo_paso_completado_at?: string | null
+          naturaleza?: string
+          nomina_origen_id?: string | null
+          paso_visitado_at?: string | null
+          periodo?: string
+          plantilla_ciclo_id?: string | null
+          tipo?: string
+          total_advertencias?: number
+          total_descuentos?: number
+          total_haberes?: number
+          total_incidencias_criticas?: number
+          total_liquido?: number
+          total_segmentos?: number
+          total_trabajadores?: number
+          ultimo_paso_visitado?: string | null
+          updated_at?: string
+          validado_at?: string | null
+          version_calculo?: number
+          version_estado?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_periodo_id_calculo_periodo_vigente_fkey"
+            columns: ["id_calculo_periodo_vigente"]
+            isOneToOne: false
+            referencedRelation: "nomina_calculo_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_periodo_id_calculo_periodo_vigente_fkey"
+            columns: ["id_calculo_periodo_vigente"]
+            isOneToOne: false
+            referencedRelation: "v_nomina_estado_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_periodo_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+          {
+            foreignKeyName: "nomina_periodo_nomina_origen_id_fkey"
+            columns: ["nomina_origen_id"]
+            isOneToOne: false
+            referencedRelation: "nomina_periodo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nomina_periodo_plantilla_ciclo_id_fkey"
+            columns: ["plantilla_ciclo_id"]
+            isOneToOne: false
+            referencedRelation: "nomina_plantilla_ciclo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nomina_periodo_diagnostico: {
+        Row: {
+          activo: boolean
+          cerrado_en: string | null
+          cerrado_motivo: string | null
+          created_at: string
+          estado: string
+          fingerprint: string | null
+          id_diagnostico: number
+          payload: Json
+          periodo: string
+          updated_at: string
+          verificado_en: string
+          verificado_por: string
+        }
+        Insert: {
+          activo?: boolean
+          cerrado_en?: string | null
+          cerrado_motivo?: string | null
+          created_at?: string
+          estado?: string
+          fingerprint?: string | null
+          id_diagnostico?: number
+          payload: Json
+          periodo: string
+          updated_at?: string
+          verificado_en?: string
+          verificado_por: string
+        }
+        Update: {
+          activo?: boolean
+          cerrado_en?: string | null
+          cerrado_motivo?: string | null
+          created_at?: string
+          estado?: string
+          fingerprint?: string | null
+          id_diagnostico?: number
+          payload?: Json
+          periodo?: string
+          updated_at?: string
+          verificado_en?: string
+          verificado_por?: string
+        }
+        Relationships: []
+      }
+      nomina_plantilla_ciclo: {
+        Row: {
+          activo: boolean
+          codigo: string
+          configuracion: Json
+          created_at: string
+          descripcion: string | null
+          id: string
+          id_empresa: number
+          naturaleza: string
+          nombre: string
+          politica_fin_semana: string
+          regla_anticipo: Json | null
+          regla_fecha_pago: Json
+          tipo: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          activo?: boolean
+          codigo: string
+          configuracion?: Json
+          created_at?: string
+          descripcion?: string | null
+          id?: string
+          id_empresa: number
+          naturaleza: string
+          nombre: string
+          politica_fin_semana?: string
+          regla_anticipo?: Json | null
+          regla_fecha_pago: Json
+          tipo: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          activo?: boolean
+          codigo?: string
+          configuracion?: Json
+          created_at?: string
+          descripcion?: string | null
+          id?: string
+          id_empresa?: number
+          naturaleza?: string
+          nombre?: string
+          politica_fin_semana?: string
+          regla_anticipo?: Json | null
+          regla_fecha_pago?: Json
+          tipo?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_plantilla_ciclo_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+        ]
+      }
+      nomina_preparacion: {
+        Row: {
+          activo: boolean
+          anulada_at: string | null
+          anulada_by: string | null
+          cerrada_at: string | null
+          cerrada_by: string | null
+          confirmada_at: string | null
+          confirmada_by: string | null
+          created_at: string
+          created_by: string | null
+          created_by_label: string | null
+          estado: string
+          id_calculo_origen: number | null
+          id_empresa: number
+          id_liquidacion_origen: number | null
+          id_preparacion_nomina: number
+          id_preparacion_origen: number | null
+          metadata: Json
+          metodo_alcance: string
+          modo_reproceso: string | null
+          motivo: string | null
+          motivo_anulacion: string | null
+          periodo_origen: string | null
+          periodo_pago: string
+          tipo_preparacion: string
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          anulada_at?: string | null
+          anulada_by?: string | null
+          cerrada_at?: string | null
+          cerrada_by?: string | null
+          confirmada_at?: string | null
+          confirmada_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          created_by_label?: string | null
+          estado?: string
+          id_calculo_origen?: number | null
+          id_empresa: number
+          id_liquidacion_origen?: number | null
+          id_preparacion_nomina?: number
+          id_preparacion_origen?: number | null
+          metadata?: Json
+          metodo_alcance: string
+          modo_reproceso?: string | null
+          motivo?: string | null
+          motivo_anulacion?: string | null
+          periodo_origen?: string | null
+          periodo_pago: string
+          tipo_preparacion: string
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          anulada_at?: string | null
+          anulada_by?: string | null
+          cerrada_at?: string | null
+          cerrada_by?: string | null
+          confirmada_at?: string | null
+          confirmada_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          created_by_label?: string | null
+          estado?: string
+          id_calculo_origen?: number | null
+          id_empresa?: number
+          id_liquidacion_origen?: number | null
+          id_preparacion_nomina?: number
+          id_preparacion_origen?: number | null
+          metadata?: Json
+          metodo_alcance?: string
+          modo_reproceso?: string | null
+          motivo?: string | null
+          motivo_anulacion?: string | null
+          periodo_origen?: string | null
+          periodo_pago?: string
+          tipo_preparacion?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_preparacion_calculo_origen_fk"
+            columns: ["id_calculo_origen"]
+            isOneToOne: false
+            referencedRelation: "nomina_calculo_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_preparacion_calculo_origen_fk"
+            columns: ["id_calculo_origen"]
+            isOneToOne: false
+            referencedRelation: "v_nomina_estado_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_preparacion_empresa_fk"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+          {
+            foreignKeyName: "nomina_preparacion_liquidacion_origen_fk"
+            columns: ["id_liquidacion_origen"]
+            isOneToOne: false
+            referencedRelation: "nomina_liquidacion_periodo"
+            referencedColumns: ["id_liquidacion_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_preparacion_origen_fk"
+            columns: ["id_preparacion_origen"]
+            isOneToOne: false
+            referencedRelation: "nomina_preparacion"
+            referencedColumns: ["id_preparacion_nomina"]
+          },
+        ]
+      }
+      nomina_preparacion_evento: {
+        Row: {
+          created_at: string
+          id_preparacion_evento: number
+          id_preparacion_nomina: number
+          metadata: Json
+          tipo_evento: string
+          usuario_id: string | null
+          usuario_label: string | null
+        }
+        Insert: {
+          created_at?: string
+          id_preparacion_evento?: number
+          id_preparacion_nomina: number
+          metadata?: Json
+          tipo_evento: string
+          usuario_id?: string | null
+          usuario_label?: string | null
+        }
+        Update: {
+          created_at?: string
+          id_preparacion_evento?: number
+          id_preparacion_nomina?: number
+          metadata?: Json
+          tipo_evento?: string
+          usuario_id?: string | null
+          usuario_label?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_preparacion_evento_id_preparacion_nomina_fkey"
+            columns: ["id_preparacion_nomina"]
+            isOneToOne: false
+            referencedRelation: "nomina_preparacion"
+            referencedColumns: ["id_preparacion_nomina"]
+          },
+        ]
+      }
+      nomina_preparacion_trabajador: {
+        Row: {
+          created_at: string
+          estado: string
+          id_contrato: number | null
+          id_persona: number
+          id_preparacion_nomina: number
+          id_preparacion_trabajador: number
+          metadata: Json
+          motivo: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          estado: string
+          id_contrato?: number | null
+          id_persona: number
+          id_preparacion_nomina: number
+          id_preparacion_trabajador?: number
+          metadata?: Json
+          motivo?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          estado?: string
+          id_contrato?: number | null
+          id_persona?: number
+          id_preparacion_nomina?: number
+          id_preparacion_trabajador?: number
+          metadata?: Json
+          motivo?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_preparacion_trabajador_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "nomina_preparacion_trabajador_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "nomina_preparacion_trabajador_id_preparacion_nomina_fkey"
+            columns: ["id_preparacion_nomina"]
+            isOneToOne: false
+            referencedRelation: "nomina_preparacion"
+            referencedColumns: ["id_preparacion_nomina"]
           },
         ]
       }
@@ -3169,6 +4390,56 @@ export type Database = {
           },
         ]
       }
+      persona_condicion_trabajador: {
+        Row: {
+          activa: boolean
+          created_at: string
+          id_contrato: number | null
+          id_persona: number
+          id_persona_condicion_trabajador: number
+          id_tipo_condicion_trabajador: number
+          observacion: string | null
+          respaldo_registrado: boolean
+          updated_at: string | null
+          vigencia_fin: string | null
+          vigencia_inicio: string
+        }
+        Insert: {
+          activa?: boolean
+          created_at?: string
+          id_contrato?: number | null
+          id_persona: number
+          id_persona_condicion_trabajador?: number
+          id_tipo_condicion_trabajador: number
+          observacion?: string | null
+          respaldo_registrado?: boolean
+          updated_at?: string | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string
+        }
+        Update: {
+          activa?: boolean
+          created_at?: string
+          id_contrato?: number | null
+          id_persona?: number
+          id_persona_condicion_trabajador?: number
+          id_tipo_condicion_trabajador?: number
+          observacion?: string | null
+          respaldo_registrado?: boolean
+          updated_at?: string | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "persona_condicion_trabajador_id_tipo_condicion_trabajador_fkey"
+            columns: ["id_tipo_condicion_trabajador"]
+            isOneToOne: false
+            referencedRelation: "tipo_condicion_trabajador"
+            referencedColumns: ["id_tipo_condicion_trabajador"]
+          },
+        ]
+      }
       persona_tramo_carga: {
         Row: {
           id_persona: number
@@ -3424,31 +4695,46 @@ export type Database = {
       reforma_previsional_parametro: {
         Row: {
           aporte_empleador_total: number
+          codigo: string | null
+          cotizacion_rentabilidad_protegida: number
           cuenta_capitalizacion_individual: number
           fapp_seguro_social: number
           fuente: string | null
           id_reforma_previsional_parametro: number
+          ley_referencia: string | null
+          observacion: string | null
           periodo: string | null
+          seguro_social_sis_cev: number
           vigencia_fin: string | null
           vigencia_inicio: string
         }
         Insert: {
           aporte_empleador_total: number
+          codigo?: string | null
+          cotizacion_rentabilidad_protegida?: number
           cuenta_capitalizacion_individual: number
           fapp_seguro_social: number
           fuente?: string | null
           id_reforma_previsional_parametro?: number
+          ley_referencia?: string | null
+          observacion?: string | null
           periodo?: string | null
+          seguro_social_sis_cev?: number
           vigencia_fin?: string | null
           vigencia_inicio: string
         }
         Update: {
           aporte_empleador_total?: number
+          codigo?: string | null
+          cotizacion_rentabilidad_protegida?: number
           cuenta_capitalizacion_individual?: number
           fapp_seguro_social?: number
           fuente?: string | null
           id_reforma_previsional_parametro?: number
+          ley_referencia?: string | null
+          observacion?: string | null
           periodo?: string | null
+          seguro_social_sis_cev?: number
           vigencia_fin?: string | null
           vigencia_inicio?: string
         }
@@ -3456,6 +4742,10 @@ export type Database = {
       }
       regimen_ex_caja: {
         Row: {
+          codigo_base: string | null
+          codigo_previred: string | null
+          codigo_subcaja: string | null
+          glosa_previred: string | null
           id_ex_caja_previsional: number
           id_regimen_ex_caja: number
           nombre: string
@@ -3463,6 +4753,10 @@ export type Database = {
           vigente: boolean
         }
         Insert: {
+          codigo_base?: string | null
+          codigo_previred?: string | null
+          codigo_subcaja?: string | null
+          glosa_previred?: string | null
           id_ex_caja_previsional: number
           id_regimen_ex_caja?: number
           nombre: string
@@ -3470,6 +4764,10 @@ export type Database = {
           vigente?: boolean
         }
         Update: {
+          codigo_base?: string | null
+          codigo_previred?: string | null
+          codigo_subcaja?: string | null
+          glosa_previred?: string | null
           id_ex_caja_previsional?: number
           id_regimen_ex_caja?: number
           nombre?: string
@@ -3824,6 +5122,69 @@ export type Database = {
           },
         ]
       }
+      segmento_nomina: {
+        Row: {
+          created_at: string
+          estado: string
+          id: string
+          id_empresa: number
+          id_nomina_periodo: string
+          nombre: string
+          ordinal: number
+          tipo: string | null
+          total_advertencias: number
+          total_incidencias_criticas: number
+          total_trabajadores: number
+          trabajador_ids: number[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          estado?: string
+          id?: string
+          id_empresa: number
+          id_nomina_periodo: string
+          nombre: string
+          ordinal?: number
+          tipo?: string | null
+          total_advertencias?: number
+          total_incidencias_criticas?: number
+          total_trabajadores?: number
+          trabajador_ids?: number[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          estado?: string
+          id?: string
+          id_empresa?: number
+          id_nomina_periodo?: string
+          nombre?: string
+          ordinal?: number
+          tipo?: string | null
+          total_advertencias?: number
+          total_incidencias_criticas?: number
+          total_trabajadores?: number
+          trabajador_ids?: number[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "segmento_nomina_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+          {
+            foreignKeyName: "segmento_nomina_id_nomina_periodo_fkey"
+            columns: ["id_nomina_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_periodo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       semana_corrida: {
         Row: {
           activa: boolean
@@ -3931,6 +5292,54 @@ export type Database = {
           tramo?: number
           vigencia_fin?: string | null
           vigencia_inicio?: string
+        }
+        Relationships: []
+      }
+      tipo_condicion_trabajador: {
+        Row: {
+          afecta_afc: boolean
+          afecta_prevision: boolean
+          afecta_salud: boolean
+          codigo: string
+          created_at: string
+          descripcion: string | null
+          grupo: string
+          id_tipo_condicion_trabajador: number
+          nombre: string
+          orden: number
+          requiere_respaldo: boolean
+          updated_at: string | null
+          vigente: boolean
+        }
+        Insert: {
+          afecta_afc?: boolean
+          afecta_prevision?: boolean
+          afecta_salud?: boolean
+          codigo: string
+          created_at?: string
+          descripcion?: string | null
+          grupo?: string
+          id_tipo_condicion_trabajador?: number
+          nombre: string
+          orden?: number
+          requiere_respaldo?: boolean
+          updated_at?: string | null
+          vigente?: boolean
+        }
+        Update: {
+          afecta_afc?: boolean
+          afecta_prevision?: boolean
+          afecta_salud?: boolean
+          codigo?: string
+          created_at?: string
+          descripcion?: string | null
+          grupo?: string
+          id_tipo_condicion_trabajador?: number
+          nombre?: string
+          orden?: number
+          requiere_respaldo?: boolean
+          updated_at?: string | null
+          vigente?: boolean
         }
         Relationships: []
       }
@@ -4114,6 +5523,27 @@ export type Database = {
           id_tramo?: number
           periodo?: string
           rebaja?: number | null
+        }
+        Relationships: []
+      }
+      usuario_preferencia_ui: {
+        Row: {
+          actualizado_en: string
+          clave: string
+          id_usuario: string
+          valor: Json
+        }
+        Insert: {
+          actualizado_en?: string
+          clave: string
+          id_usuario: string
+          valor?: Json
+        }
+        Update: {
+          actualizado_en?: string
+          clave?: string
+          id_usuario?: string
+          valor?: Json
         }
         Relationships: []
       }
@@ -4354,6 +5784,49 @@ export type Database = {
       }
     }
     Views: {
+      v_nomina_estado_periodo: {
+        Row: {
+          activo: boolean | null
+          aprobacion_operativa_estado: string | null
+          aprobacion_operativa_fecha: string | null
+          cierre_operativo_estado: string | null
+          cierre_operativo_fecha: string | null
+          estado_flujo: string | null
+          estado_snapshot: string | null
+          hash_entradas: string | null
+          hash_parametros: string | null
+          hash_snapshot: string | null
+          id_calculo_periodo: number | null
+          id_empresa: number | null
+          periodo: string | null
+          reapertura_operativa_fecha: string | null
+          reemplazado_por: number | null
+          total_liquidaciones: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_calculo_periodo_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+          {
+            foreignKeyName: "nomina_calculo_periodo_reemplazado_por_fkey"
+            columns: ["reemplazado_por"]
+            isOneToOne: false
+            referencedRelation: "nomina_calculo_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_calculo_periodo_reemplazado_por_fkey"
+            columns: ["reemplazado_por"]
+            isOneToOne: false
+            referencedRelation: "v_nomina_estado_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+        ]
+      }
       vw_persona_factores: {
         Row: {
           afp_nombre: string | null
@@ -4466,6 +5939,295 @@ export type Database = {
       }
     }
     Functions: {
+      _validar_clave_preferencia_ui: {
+        Args: { p_clave: string }
+        Returns: string
+      }
+      actualizar_estado_revision_liquidacion_trabajador: {
+        Args: {
+          p_estado_revision: string
+          p_id_liquidacion_trabajador: number
+        }
+        Returns: {
+          base_imponible: number
+          base_tributable: number
+          cargo: string | null
+          centro_costo: string | null
+          created_at: string
+          dias_trabajados: number | null
+          estado: string
+          estado_revision: string | null
+          fecha_ingreso: string | null
+          id_calculo_periodo: number
+          id_contrato: number | null
+          id_liquidacion_periodo: number
+          id_liquidacion_trabajador: number
+          id_persona: number | null
+          liquido_pagar: number
+          metadata: Json
+          nombre_trabajador: string
+          observaciones: Json
+          rut: string | null
+          total_aportes_empleador_referencia: number
+          total_descuentos: number
+          total_haberes: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_liquidacion_trabajador"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      emitir_liquidacion_trabajador: {
+        Args: {
+          p_canal?: string
+          p_id_liquidacion_trabajador: number
+          p_metadata?: Json
+        }
+        Returns: {
+          canal: string
+          emitido_en: string
+          id_liquidacion_emision: number
+          id_liquidacion_periodo: number
+          id_liquidacion_trabajador: number
+          metadata: Json
+          usuario_id: string | null
+          usuario_label: string
+          version_liquidacion: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_liquidacion_emision"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      actualizar_maximo_paso_completado_nomina: {
+        Args: { p_nomina_id: string; p_paso: string }
+        Returns: {
+          aprobado_at: string | null
+          calculado_at: string | null
+          calculo_vigente: boolean
+          closed_at: string | null
+          codigo_ciclo: string
+          created_at: string
+          empresa_nombre: string | null
+          estado: string
+          fecha_fin: string
+          fecha_inicio: string
+          fecha_pago: string | null
+          id: string
+          id_calculo_periodo_vigente: number | null
+          id_empresa: number
+          maximo_paso_completado: string | null
+          maximo_paso_completado_at: string | null
+          naturaleza: string
+          nomina_origen_id: string | null
+          paso_visitado_at: string | null
+          periodo: string
+          plantilla_ciclo_id: string | null
+          tipo: string
+          total_advertencias: number
+          total_descuentos: number
+          total_haberes: number
+          total_incidencias_criticas: number
+          total_liquido: number
+          total_segmentos: number
+          total_trabajadores: number
+          ultimo_paso_visitado: string | null
+          updated_at: string
+          validado_at: string | null
+          version_calculo: number
+          version_estado: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      actualizar_paso_visitado_nomina: {
+        Args: { p_nomina_id: string; p_paso: string }
+        Returns: {
+          aprobado_at: string | null
+          calculado_at: string | null
+          calculo_vigente: boolean
+          closed_at: string | null
+          codigo_ciclo: string
+          created_at: string
+          empresa_nombre: string | null
+          estado: string
+          fecha_fin: string
+          fecha_inicio: string
+          fecha_pago: string | null
+          id: string
+          id_calculo_periodo_vigente: number | null
+          id_empresa: number
+          maximo_paso_completado: string | null
+          maximo_paso_completado_at: string | null
+          naturaleza: string
+          nomina_origen_id: string | null
+          paso_visitado_at: string | null
+          periodo: string
+          plantilla_ciclo_id: string | null
+          tipo: string
+          total_advertencias: number
+          total_descuentos: number
+          total_haberes: number
+          total_incidencias_criticas: number
+          total_liquido: number
+          total_segmentos: number
+          total_trabajadores: number
+          ultimo_paso_visitado: string | null
+          updated_at: string
+          validado_at: string | null
+          version_calculo: number
+          version_estado: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      anular_nomina_preparacion: {
+        Args: {
+          p_id_preparacion_nomina: number
+          p_metadata?: Json
+          p_motivo: string
+        }
+        Returns: {
+          activo: boolean
+          anulada_at: string | null
+          anulada_by: string | null
+          cerrada_at: string | null
+          cerrada_by: string | null
+          confirmada_at: string | null
+          confirmada_by: string | null
+          created_at: string
+          created_by: string | null
+          created_by_label: string | null
+          estado: string
+          id_calculo_origen: number | null
+          id_empresa: number
+          id_liquidacion_origen: number | null
+          id_preparacion_nomina: number
+          id_preparacion_origen: number | null
+          metadata: Json
+          metodo_alcance: string
+          modo_reproceso: string | null
+          motivo: string | null
+          motivo_anulacion: string | null
+          periodo_origen: string | null
+          periodo_pago: string
+          tipo_preparacion: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_preparacion"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      aplicar_consolidaciones_nomina: {
+        Args: { p_id_nomina_destino: string }
+        Returns: Json
+      }
+      aprobar_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          aprobado_at: string | null
+          calculado_at: string | null
+          calculo_vigente: boolean
+          closed_at: string | null
+          codigo_ciclo: string
+          created_at: string
+          empresa_nombre: string | null
+          estado: string
+          fecha_fin: string
+          fecha_inicio: string
+          fecha_pago: string | null
+          id: string
+          id_calculo_periodo_vigente: number | null
+          id_empresa: number
+          maximo_paso_completado: string | null
+          maximo_paso_completado_at: string | null
+          naturaleza: string
+          nomina_origen_id: string | null
+          paso_visitado_at: string | null
+          periodo: string
+          plantilla_ciclo_id: string | null
+          tipo: string
+          total_advertencias: number
+          total_descuentos: number
+          total_haberes: number
+          total_incidencias_criticas: number
+          total_liquido: number
+          total_segmentos: number
+          total_trabajadores: number
+          ultimo_paso_visitado: string | null
+          updated_at: string
+          validado_at: string | null
+          version_calculo: number
+          version_estado: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      cerrar_nomina: {
+        Args: { p_motivo?: string; p_nomina_id: string }
+        Returns: {
+          aprobado_at: string | null
+          calculado_at: string | null
+          calculo_vigente: boolean
+          closed_at: string | null
+          codigo_ciclo: string
+          created_at: string
+          empresa_nombre: string | null
+          estado: string
+          fecha_fin: string
+          fecha_inicio: string
+          fecha_pago: string | null
+          id: string
+          id_calculo_periodo_vigente: number | null
+          id_empresa: number
+          maximo_paso_completado: string | null
+          maximo_paso_completado_at: string | null
+          naturaleza: string
+          nomina_origen_id: string | null
+          paso_visitado_at: string | null
+          periodo: string
+          plantilla_ciclo_id: string | null
+          tipo: string
+          total_advertencias: number
+          total_descuentos: number
+          total_haberes: number
+          total_incidencias_criticas: number
+          total_liquido: number
+          total_segmentos: number
+          total_trabajadores: number
+          ultimo_paso_visitado: string | null
+          updated_at: string
+          validado_at: string | null
+          version_calculo: number
+          version_estado: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       cerrar_nomina_operativa: {
         Args: {
           p_id_calculo_periodo: number
@@ -4490,13 +6252,22 @@ export type Database = {
           created_at: string
           estado: string
           fecha_generacion: string
+          hash_entradas: string | null
+          hash_parametros: string | null
           hash_snapshot: string | null
           id_calculo_periodo: number
           id_empresa: number | null
+          id_nomina_periodo: string | null
+          id_preparacion_nomina: number | null
           observacion_anulacion: string | null
           origen: string
           periodo: string
+          reapertura_operativa_fecha: string | null
+          reapertura_operativa_metadata: Json
+          reapertura_operativa_usuario_id: string | null
+          reapertura_operativa_usuario_label: string | null
           reemplazado_por: number | null
+          tipo_preparacion: string | null
           total_advertencias: number
           total_bloqueados: number
           total_descuentos: number
@@ -4514,7 +6285,208 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      cerrar_nomina_periodo_diagnostico: {
+        Args: { p_motivo?: string; p_periodo: string }
+        Returns: {
+          activo: boolean
+          cerrado_en: string | null
+          cerrado_motivo: string | null
+          created_at: string
+          estado: string
+          fingerprint: string | null
+          id_diagnostico: number
+          payload: Json
+          periodo: string
+          updated_at: string
+          verificado_en: string
+          verificado_por: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_periodo_diagnostico"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      confirmar_creacion_nomina: {
+        Args: {
+          p_codigo_ciclo?: string
+          p_fingerprint: string
+          p_periodo: string
+          p_tipo: string
+        }
+        Returns: Json
+      }
+      confirmar_nomina_preparacion: {
+        Args: { p_id_preparacion_nomina: number; p_metadata?: Json }
+        Returns: {
+          activo: boolean
+          anulada_at: string | null
+          anulada_by: string | null
+          cerrada_at: string | null
+          cerrada_by: string | null
+          confirmada_at: string | null
+          confirmada_by: string | null
+          created_at: string
+          created_by: string | null
+          created_by_label: string | null
+          estado: string
+          id_calculo_origen: number | null
+          id_empresa: number
+          id_liquidacion_origen: number | null
+          id_preparacion_nomina: number
+          id_preparacion_origen: number | null
+          metadata: Json
+          metodo_alcance: string
+          modo_reproceso: string | null
+          motivo: string | null
+          motivo_anulacion: string | null
+          periodo_origen: string | null
+          periodo_pago: string
+          tipo_preparacion: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_preparacion"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      confirmar_rectificacion_nomina: {
+        Args: {
+          p_fingerprint: string
+          p_motivo: string
+          p_nomina_origen_id: string
+          p_trabajador_ids?: number[]
+        }
+        Returns: Json
+      }
+      crear_nomina_preparacion: {
+        Args: {
+          p_id_calculo_origen?: number
+          p_id_empresa: number
+          p_id_liquidacion_origen?: number
+          p_id_preparacion_origen?: number
+          p_metadata?: Json
+          p_metodo_alcance?: string
+          p_modo_reproceso?: string
+          p_motivo?: string
+          p_periodo_origen?: string
+          p_periodo_pago: string
+          p_tipo_preparacion?: string
+        }
+        Returns: {
+          activo: boolean
+          anulada_at: string | null
+          anulada_by: string | null
+          cerrada_at: string | null
+          cerrada_by: string | null
+          confirmada_at: string | null
+          confirmada_by: string | null
+          created_at: string
+          created_by: string | null
+          created_by_label: string | null
+          estado: string
+          id_calculo_origen: number | null
+          id_empresa: number
+          id_liquidacion_origen: number | null
+          id_preparacion_nomina: number
+          id_preparacion_origen: number | null
+          metadata: Json
+          metodo_alcance: string
+          modo_reproceso: string | null
+          motivo: string | null
+          motivo_anulacion: string | null
+          periodo_origen: string | null
+          periodo_pago: string
+          tipo_preparacion: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_preparacion"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      crear_version_plantilla: {
+        Args: {
+          p_activar?: boolean
+          p_descripcion?: string
+          p_nombre?: string
+          p_plantilla_id: string
+          p_politica_fin_semana?: string
+          p_regla_anticipo?: Json
+          p_regla_fecha_pago?: Json
+        }
+        Returns: string
+      }
+      current_user_empresa_id: { Args: never; Returns: number }
+      current_user_id: { Args: never; Returns: string }
       dblink_dteconfiguracion: { Args: never; Returns: string }
+      definir_alcance_nomina_preparacion: {
+        Args: {
+          p_id_preparacion_nomina: number
+          p_metadata?: Json
+          p_trabajadores: Json
+        }
+        Returns: {
+          activo: boolean
+          anulada_at: string | null
+          anulada_by: string | null
+          cerrada_at: string | null
+          cerrada_by: string | null
+          confirmada_at: string | null
+          confirmada_by: string | null
+          created_at: string
+          created_by: string | null
+          created_by_label: string | null
+          estado: string
+          id_calculo_origen: number | null
+          id_empresa: number
+          id_liquidacion_origen: number | null
+          id_preparacion_nomina: number
+          id_preparacion_origen: number | null
+          metadata: Json
+          metodo_alcance: string
+          modo_reproceso: string | null
+          motivo: string | null
+          motivo_anulacion: string | null
+          periodo_origen: string | null
+          periodo_pago: string
+          tipo_preparacion: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_preparacion"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      desvincular_consolidacion_nomina: {
+        Args: { p_id_consolidacion: string }
+        Returns: {
+          created_at: string
+          estado: string
+          id: string
+          id_empresa: number
+          id_nomina_destino: string
+          id_nomina_origen: string
+          metadata: Json
+          monto_pagado: number
+          tipo: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_consolidacion"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      eliminar_nomina_completa: { Args: { p_nomina_id: string }; Returns: Json }
       empleado_historial_changed_fields: {
         Args: { p_new: Json; p_old: Json }
         Returns: string[]
@@ -4527,6 +6499,79 @@ export type Database = {
         Args: { p_tabla: string }
         Returns: string
       }
+      erp_etiqueta_usuario: { Args: { p_id: string }; Returns: string }
+      erp_nomina_feature_habilitado: {
+        Args: { p_gate: string }
+        Returns: boolean
+      }
+      erp_nomina_permiso_efectivo: {
+        Args: { p_permiso: string }
+        Returns: boolean
+      }
+      fn_aplicar_politica_fds: {
+        Args: { p_fecha: string; p_politica: string }
+        Returns: string
+      }
+      fn_aprobar_prenomina_periodo: {
+        Args: {
+          p_advertencias?: Json
+          p_hash_entradas: string
+          p_hash_parametros: string
+          p_hash_snapshot: string
+          p_id_calculo_periodo: number
+          p_metadata?: Json
+          p_periodo: string
+        }
+        Returns: {
+          activo: boolean
+          aprobacion_operativa_advertencias: Json
+          aprobacion_operativa_estado: string | null
+          aprobacion_operativa_fecha: string | null
+          aprobacion_operativa_metadata: Json
+          aprobacion_operativa_usuario_id: string | null
+          aprobacion_operativa_usuario_label: string | null
+          cierre_operativo_estado: string | null
+          cierre_operativo_fecha: string | null
+          cierre_operativo_metadata: Json
+          cierre_operativo_observacion: string | null
+          cierre_operativo_usuario_id: string | null
+          cierre_operativo_usuario_label: string | null
+          created_at: string
+          estado: string
+          fecha_generacion: string
+          hash_entradas: string | null
+          hash_parametros: string | null
+          hash_snapshot: string | null
+          id_calculo_periodo: number
+          id_empresa: number | null
+          id_nomina_periodo: string | null
+          id_preparacion_nomina: number | null
+          observacion_anulacion: string | null
+          origen: string
+          periodo: string
+          reapertura_operativa_fecha: string | null
+          reapertura_operativa_metadata: Json
+          reapertura_operativa_usuario_id: string | null
+          reapertura_operativa_usuario_label: string | null
+          reemplazado_por: number | null
+          tipo_preparacion: string | null
+          total_advertencias: number
+          total_bloqueados: number
+          total_descuentos: number
+          total_haberes: number
+          total_liquido: number
+          total_trabajadores: number
+          updated_at: string
+          usuario_generador: string | null
+          version_motor: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_calculo_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       fn_calcular_dias_trabajados: {
         Args: {
           p_fecha_ingreso: string
@@ -4536,9 +6581,21 @@ export type Database = {
         }
         Returns: number
       }
+      fn_calcular_fecha_pago: {
+        Args: {
+          p_fecha_inicio_corte: string
+          p_politica_fds: string
+          p_regla: Json
+        }
+        Returns: string
+      }
       fn_calcular_impuesto_unico: {
         Args: { p_base: number; p_fecha: string }
         Returns: number
+      }
+      fn_dia_habil_n: {
+        Args: { p_fecha_ref: string; p_n: number }
+        Returns: string
       }
       fn_formato_decimales: {
         Args: { p_decimales?: number; p_valor: number }
@@ -4585,6 +6642,27 @@ export type Database = {
         Args: { p_fecha: string; p_nombre: string }
         Returns: number
       }
+      fn_obtener_perfil_laboral_persona: {
+        Args: { p_id_persona: number; p_periodo: string }
+        Returns: {
+          aplica_imm_general: boolean
+          aplica_imm_menor18_mayor65: boolean
+          autorizacion_menor_registrada: boolean
+          edad_periodo: number
+          es_adulto_18_65: boolean
+          es_mayor_65: boolean
+          es_menor_18: boolean
+          es_pensionado: boolean
+          es_pensionado_invalidez_parcial: boolean
+          es_pensionado_invalidez_total: boolean
+          exento_cotizacion_pension: boolean
+          id_persona: number
+          periodo: string
+          requiere_revision_rrhh: boolean
+          trabajador_adolescente_protegido: boolean
+          tramo_edad_laboral: string
+        }[]
+      }
       fn_obtener_remuneracion: {
         Args: { p_fecha: string; p_id_contrato: number }
         Returns: {
@@ -4607,6 +6685,8 @@ export type Database = {
           valor_plan: number
         }[]
       }
+      fn_ultimo_dia_corrido: { Args: { p_fecha_ref: string }; Returns: string }
+      fn_ultimo_dia_habil: { Args: { p_fecha_ref: string }; Returns: string }
       fn_validar_liquidacion: {
         Args: { p_id_liquidacion: number }
         Returns: {
@@ -4616,6 +6696,49 @@ export type Database = {
           ok: boolean
           validacion: string
         }[]
+      }
+      fn_validar_prenomina_periodo: {
+        Args: {
+          p_hash_entradas?: string
+          p_hash_parametros?: string
+          p_hash_snapshot?: string
+          p_id_calculo_periodo: number
+          p_periodo: string
+        }
+        Returns: Json
+      }
+      generar_liquidaciones_nomina: {
+        Args: { p_id_nomina_periodo: string }
+        Returns: {
+          activo: boolean
+          created_at: string
+          estado: string
+          fecha_generacion: string
+          id_calculo_periodo: number
+          id_empresa: number | null
+          id_liquidacion_origen: number | null
+          id_liquidacion_periodo: number
+          id_liquidacion_reemplazada: number | null
+          id_nomina_periodo: string | null
+          id_preparacion_nomina: number | null
+          metadata: Json
+          periodo: string
+          tipo_liquidacion: string
+          total_descuentos: number
+          total_haberes: number
+          total_liquido: number
+          total_trabajadores: number
+          updated_at: string
+          usuario_generacion_id: string | null
+          usuario_generacion_label: string | null
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_liquidacion_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       generar_liquidaciones_oficiales: {
         Args: {
@@ -4630,9 +6753,14 @@ export type Database = {
           fecha_generacion: string
           id_calculo_periodo: number
           id_empresa: number | null
+          id_liquidacion_origen: number | null
           id_liquidacion_periodo: number
+          id_liquidacion_reemplazada: number | null
+          id_nomina_periodo: string | null
+          id_preparacion_nomina: number | null
           metadata: Json
           periodo: string
+          tipo_liquidacion: string
           total_descuentos: number
           total_haberes: number
           total_liquido: number
@@ -4640,6 +6768,7 @@ export type Database = {
           updated_at: string
           usuario_generacion_id: string | null
           usuario_generacion_label: string | null
+          version: number
         }
         SetofOptions: {
           from: "*"
@@ -4653,14 +6782,602 @@ export type Database = {
           p_cabecera: Json
           p_conceptos?: Json
           p_id_empresa: number
+          p_id_nomina_periodo?: string
+          p_id_preparacion_nomina?: number
           p_observaciones?: Json
+          p_parametros?: Json
           p_periodo: string
           p_trabajadores: Json
           p_trazabilidad?: Json
         }
         Returns: number
       }
+      guardar_nomina_periodo_diagnostico: {
+        Args: { p_fingerprint?: string; p_payload: Json; p_periodo: string }
+        Returns: {
+          activo: boolean
+          cerrado_en: string | null
+          cerrado_motivo: string | null
+          created_at: string
+          estado: string
+          fingerprint: string | null
+          id_diagnostico: number
+          payload: Json
+          periodo: string
+          updated_at: string
+          verificado_en: string
+          verificado_por: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_periodo_diagnostico"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      guardar_preferencia_ui: {
+        Args: { p_clave: string; p_valor?: Json }
+        Returns: undefined
+      }
+      invalidar_decisiones_incidencias_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: number
+      }
+      listar_calculo_trabajadores_nomina: {
+        Args: {
+          p_busqueda?: string
+          p_estado?: string
+          p_nomina_id: string
+          p_page?: number
+          p_page_size?: number
+        }
+        Returns: {
+          base_imponible_previsional: number
+          base_tributable: number
+          cotizacion_ley_16744_empleador: number
+          cotizacion_sanna: number
+          cotizacion_sis: number
+          cuenta_issues: number
+          estado: string
+          id_calculo_trabajador: number
+          id_persona: number
+          liquido_preliminar: number
+          nombre: string
+          rut: string
+          sueldo_base: number
+          total_count: number
+          total_descuentos: number
+          total_haberes: number
+        }[]
+      }
+      listar_consolidaciones_pendientes: {
+        Args: { p_id_nomina_destino: string }
+        Returns: {
+          created_at: string
+          estado: string
+          id: string
+          id_empresa: number
+          id_nomina_destino: string
+          id_nomina_origen: string
+          metadata: Json
+          monto_pagado: number
+          tipo: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "nomina_consolidacion"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      listar_dotacion_nomina: {
+        Args: {
+          p_busqueda?: string
+          p_con_incidencias?: boolean
+          p_con_movimientos?: boolean
+          p_estado?: string
+          p_nomina_id: string
+          p_page?: number
+          p_page_size?: number
+          p_segmento_id?: string
+        }
+        Returns: {
+          estado: string
+          nombre: string
+          rut: string
+          segmento_id: string
+          total_advertencias: number
+          total_count: number
+          total_incidencias_criticas: number
+          total_movimientos: number
+          trabajador_id: number
+        }[]
+      }
+      listar_eventos_auditoria_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          accion: string
+          created_at: string
+          estado_nuevo: string
+          estado_previo: string
+          id: string
+          id_nomina_periodo: string
+          id_usuario: string
+          motivo: string
+          payload: Json
+          usuario_nombre: string
+          version_estado_esperada: number
+          version_estado_resultante: number
+        }[]
+      }
+      listar_ids_dotacion_nomina: {
+        Args: {
+          p_busqueda?: string
+          p_con_incidencias?: boolean
+          p_con_movimientos?: boolean
+          p_estado?: string
+          p_nomina_id: string
+          p_segmento_id?: string
+        }
+        Returns: {
+          trabajador_id: number
+        }[]
+      }
+      listar_liquidaciones_nomina: {
+        Args: { p_id_nomina_periodo: string }
+        Returns: {
+          activo: boolean
+          created_at: string
+          estado: string
+          fecha_generacion: string
+          id_calculo_periodo: number
+          id_empresa: number | null
+          id_liquidacion_origen: number | null
+          id_liquidacion_periodo: number
+          id_liquidacion_reemplazada: number | null
+          id_nomina_periodo: string | null
+          id_preparacion_nomina: number | null
+          metadata: Json
+          periodo: string
+          tipo_liquidacion: string
+          total_descuentos: number
+          total_haberes: number
+          total_liquido: number
+          total_trabajadores: number
+          updated_at: string
+          usuario_generacion_id: string | null
+          usuario_generacion_label: string | null
+          version: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "nomina_liquidacion_periodo"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      listar_movimientos_trabajadores_nomina: {
+        Args: {
+          p_busqueda?: string
+          p_categoria?: string
+          p_estado?: string
+          p_nomina_id: string
+          p_page?: number
+          p_page_size?: number
+        }
+        Returns: {
+          cargo: string
+          cuenta_aplicados: number
+          cuenta_ausencias: number
+          cuenta_informativos: number
+          cuenta_items: number
+          cuenta_manuales_aplicados: number
+          cuenta_omitidos: number
+          cuenta_pendientes: number
+          departamento: string
+          nombre: string
+          rut: string
+          total_count: number
+          total_descuentos: number
+          total_haberes: number
+          trabajador_id: number
+        }[]
+      }
+      listar_preview_creacion_trabajadores: {
+        Args: {
+          p_busqueda?: string
+          p_clasificacion?: string
+          p_codigo_ciclo?: string
+          p_page?: number
+          p_page_size?: number
+          p_periodo: string
+          p_tipo?: string
+        }
+        Returns: {
+          cargo: string
+          id_persona: number
+          motivo: string
+          motivo_humano: string
+          nombre: string
+          rut: string
+          total_count: number
+        }[]
+      }
+      listar_trabajadores_elegibles_nomina: {
+        Args: {
+          p_busqueda?: string
+          p_nomina_id: string
+          p_page?: number
+          p_page_size?: number
+          p_solo_disponibles?: boolean
+          p_solo_en_nomina?: boolean
+        }
+        Returns: {
+          cargo: string
+          departamento: string
+          nombre: string
+          rut: string
+          total_count: number
+          trabajador_id: number
+          ya_en_nomina: boolean
+        }[]
+      }
+      nomina_dotacion_ids_origen: {
+        Args: { p_nomina_origen_id: string }
+        Returns: number[]
+      }
+      nomina_resolver_origen_rectificacion: {
+        Args: { p_nomina_id: string }
+        Returns: string
+      }
+      obtener_feature_gates_nomina: { Args: never; Returns: Json }
+      obtener_nomina_mensual_consolidadora: {
+        Args: { p_id_empresa: number; p_periodo: string }
+        Returns: string
+      }
+      obtener_nomina_periodo_diagnostico_activo: {
+        Args: { p_periodo: string }
+        Returns: {
+          activo: boolean
+          cerrado_en: string | null
+          cerrado_motivo: string | null
+          created_at: string
+          estado: string
+          fingerprint: string | null
+          id_diagnostico: number
+          payload: Json
+          periodo: string
+          updated_at: string
+          verificado_en: string
+          verificado_por: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_periodo_diagnostico"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      obtener_preferencia_ui: { Args: { p_clave: string }; Returns: Json }
+      preferencia_ui_establecida: {
+        Args: { p_clave: string }
+        Returns: boolean
+      }
+      previsualizar_cortes_plantilla: {
+        Args: { p_anio: number; p_cantidad?: number; p_plantilla_id: string }
+        Returns: {
+          ajuste_fds: string
+          codigo_ciclo: string
+          fecha_fin: string
+          fecha_inicio: string
+          fecha_pago_calendario: string
+          fecha_pago_propuesta: string
+          notas: string
+          numero_corte: number
+        }[]
+      }
+      previsualizar_creacion_nomina: {
+        Args: { p_codigo_ciclo?: string; p_periodo: string; p_tipo?: string }
+        Returns: Json
+      }
+      previsualizar_rectificacion_nomina: {
+        Args: {
+          p_motivo?: string
+          p_nomina_origen_id: string
+          p_trabajador_ids?: number[]
+        }
+        Returns: Json
+      }
+      reabrir_nomina_operativa: {
+        Args: {
+          p_forzar?: boolean
+          p_id_calculo_periodo: number
+          p_metadata?: Json
+          p_observacion?: string
+          p_periodo: string
+        }
+        Returns: {
+          activo: boolean
+          aprobacion_operativa_advertencias: Json
+          aprobacion_operativa_estado: string | null
+          aprobacion_operativa_fecha: string | null
+          aprobacion_operativa_metadata: Json
+          aprobacion_operativa_usuario_id: string | null
+          aprobacion_operativa_usuario_label: string | null
+          cierre_operativo_estado: string | null
+          cierre_operativo_fecha: string | null
+          cierre_operativo_metadata: Json
+          cierre_operativo_observacion: string | null
+          cierre_operativo_usuario_id: string | null
+          cierre_operativo_usuario_label: string | null
+          created_at: string
+          estado: string
+          fecha_generacion: string
+          hash_entradas: string | null
+          hash_parametros: string | null
+          hash_snapshot: string | null
+          id_calculo_periodo: number
+          id_empresa: number | null
+          id_nomina_periodo: string | null
+          id_preparacion_nomina: number | null
+          observacion_anulacion: string | null
+          origen: string
+          periodo: string
+          reapertura_operativa_fecha: string | null
+          reapertura_operativa_metadata: Json
+          reapertura_operativa_usuario_id: string | null
+          reapertura_operativa_usuario_label: string | null
+          reemplazado_por: number | null
+          tipo_preparacion: string | null
+          total_advertencias: number
+          total_bloqueados: number
+          total_descuentos: number
+          total_haberes: number
+          total_liquido: number
+          total_trabajadores: number
+          updated_at: string
+          usuario_generador: string | null
+          version_motor: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_calculo_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      registrar_consolidacion_calculo: {
+        Args: { p_id_nomina_origen: string }
+        Returns: {
+          created_at: string
+          estado: string
+          id: string
+          id_empresa: number
+          id_nomina_destino: string
+          id_nomina_origen: string
+          metadata: Json
+          monto_pagado: number
+          tipo: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_consolidacion"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      registrar_decision_incidencia: {
+        Args: {
+          p_accion: string
+          p_id_incidencia: string
+          p_justificacion?: string
+        }
+        Returns: {
+          bloqueante: boolean
+          created_at: string
+          decidida_at: string | null
+          estado_decision: string
+          id: string
+          id_nomina_periodo: string
+          id_persona: number | null
+          id_segmento_nomina: string | null
+          justificacion: string | null
+          mensaje: string
+          resuelta_at: string | null
+          severidad: string
+          tipo: string
+          version_calculo_snapshot: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "incidencia_nomina"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      registrar_evento_auditoria_nomina: {
+        Args: {
+          p_accion: string
+          p_estado_nuevo?: string
+          p_estado_previo?: string
+          p_id_nomina_periodo: string
+          p_motivo?: string
+          p_payload?: Json
+          p_version_estado_esperada?: number
+          p_version_estado_resultante?: number
+        }
+        Returns: string
+      }
+      resumen_calculo_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          con_advertencias: number
+          con_bloqueos: number
+          id_calculo_periodo: number
+          total_descuentos: number
+          total_haberes: number
+          total_liquido: number
+          trabajadores_calculados: number
+        }[]
+      }
+      resumen_dotacion_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          bloqueados: number
+          con_advertencias: number
+          con_criticos: number
+          listos: number
+          total: number
+        }[]
+      }
+      resumen_movimientos_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          total_aplicados: number
+          total_descuentos: number
+          total_haberes: number
+          total_pendientes: number
+          trabajadores_con_movimientos: number
+          trabajadores_con_pendientes: number
+        }[]
+      }
+      resumen_trabajadores_elegibles_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          elegibles: number
+          total_activos: number
+          ya_en_nomina: number
+        }[]
+      }
+      sincronizar_incidencias_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: Json
+      }
+      transicionar_nomina_periodo: {
+        Args: {
+          p_estado_destino: string
+          p_estado_esperado: string
+          p_id_calculo_periodo?: number
+          p_motivo?: string
+          p_nomina_id: string
+          p_total_descuentos?: number
+          p_total_haberes?: number
+          p_total_liquido?: number
+          p_total_trabajadores?: number
+          p_version_estado_esperada?: number
+        }
+        Returns: {
+          aprobado_at: string | null
+          calculado_at: string | null
+          calculo_vigente: boolean
+          closed_at: string | null
+          codigo_ciclo: string
+          created_at: string
+          empresa_nombre: string | null
+          estado: string
+          fecha_fin: string
+          fecha_inicio: string
+          fecha_pago: string | null
+          id: string
+          id_calculo_periodo_vigente: number | null
+          id_empresa: number
+          maximo_paso_completado: string | null
+          maximo_paso_completado_at: string | null
+          naturaleza: string
+          nomina_origen_id: string | null
+          paso_visitado_at: string | null
+          periodo: string
+          plantilla_ciclo_id: string | null
+          tipo: string
+          total_advertencias: number
+          total_descuentos: number
+          total_haberes: number
+          total_incidencias_criticas: number
+          total_liquido: number
+          total_segmentos: number
+          total_trabajadores: number
+          ultimo_paso_visitado: string | null
+          updated_at: string
+          validado_at: string | null
+          version_calculo: number
+          version_estado: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       unaccent: { Args: { "": string }; Returns: string }
+      validar_nomina: {
+        Args: { p_nomina_id: string }
+        Returns: {
+          aprobado_at: string | null
+          calculado_at: string | null
+          calculo_vigente: boolean
+          closed_at: string | null
+          codigo_ciclo: string
+          created_at: string
+          empresa_nombre: string | null
+          estado: string
+          fecha_fin: string
+          fecha_inicio: string
+          fecha_pago: string | null
+          id: string
+          id_calculo_periodo_vigente: number | null
+          id_empresa: number
+          maximo_paso_completado: string | null
+          maximo_paso_completado_at: string | null
+          naturaleza: string
+          nomina_origen_id: string | null
+          paso_visitado_at: string | null
+          periodo: string
+          plantilla_ciclo_id: string | null
+          tipo: string
+          total_advertencias: number
+          total_descuentos: number
+          total_haberes: number
+          total_incidencias_criticas: number
+          total_liquido: number
+          total_segmentos: number
+          total_trabajadores: number
+          ultimo_paso_visitado: string | null
+          updated_at: string
+          validado_at: string | null
+          version_calculo: number
+          version_estado: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      vincular_consolidacion_nomina: {
+        Args: { p_id_consolidacion: string; p_id_nomina_destino: string }
+        Returns: {
+          created_at: string
+          estado: string
+          id: string
+          id_empresa: number
+          id_nomina_destino: string
+          id_nomina_origen: string
+          metadata: Json
+          monto_pagado: number
+          tipo: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_consolidacion"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       tipo_concepto_enum: "HABER" | "DESCUENTO" | "APORTE_EMPLEADOR"

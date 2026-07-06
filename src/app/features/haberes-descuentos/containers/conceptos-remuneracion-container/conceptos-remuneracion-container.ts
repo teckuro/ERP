@@ -9,18 +9,16 @@ import {
   DataGridColumn,
   DataGridComponent,
   DataGridFilter,
-} from '../../../../shared/components/ui/data-grid.component';
-import { MessageBoxComponent, MessageBoxVariant } from '../../../../shared/components/ui/message-box.component';
-import {
-  RecordBreadcrumbComponent,
-  RecordBreadcrumbItem,
-} from '../../../../shared/components/ui/record-breadcrumb.component';
-import { SearchSelectComponent, SearchSelectOption } from '../../../../shared/components/ui/search-select.component';
+} from '../../../../shared/components/ui/data-grid';
+import { MessageBoxComponent, MessageBoxVariant } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
+import { SearchSelectComponent, SearchSelectOption } from '../../../../shared/components/ui/forms/search-select.component';
+import { ErpPermisosRemuneracionesService } from '../../../../core/auth/erp-permisos-remuneraciones.service';
 import { HaberesDescuentosService } from '../../services/haberes-descuentos.service';
 import {
   CatalogoLreOpcion,
   ConceptoMantenimientoFila,
   ConceptoMantenimientoPayload,
+  ReglaConceptoCalculoFila,
 } from '../../models/haber-descuento-asignacion.model';
 import {
   clasificarVigenciaConcepto,
@@ -45,12 +43,6 @@ type CatalogoGridRow = ConceptoMantenimientoFila & {
   filtroLre: 'CON' | 'SIN';
   esAsignableCatalogo: boolean;
 };
-
-/**
- * Perfil administrador: permitir editar conceptos sistema / cálculo automático.
- * Sin esto, quedan solo lectura / bloqueados.
- */
-const PUEDE_EDITAR_CONCEPTOS_MODO_ADMIN = false;
 
 function etiquetaTipoConcepto(tipo: string | null): string {
   if (tipo === 'HABER') {
@@ -82,7 +74,6 @@ function etiquetaNaturalezaFn(n: string | null): string {
     CommonModule,
     FormsModule,
     LucideAngularModule,
-    RecordBreadcrumbComponent,
     DataGridComponent,
     DataGridCellDirective,
     MessageBoxComponent,
@@ -94,11 +85,7 @@ function etiquetaNaturalezaFn(n: string | null): string {
 })
 export class ConceptosRemuneracionContainer implements OnInit {
   private readonly haberesDescuentosService = inject(HaberesDescuentosService);
-
-  readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
-    { label: 'Remuneraciones', link: '/remuneraciones' },
-    { label: 'Conceptos de remuneración' },
-  ];
+  private readonly permisosRemuneraciones = inject(ErpPermisosRemuneracionesService);
 
   readonly editIcon = Edit;
   readonly eyeIcon = Eye;
@@ -135,6 +122,8 @@ export class ConceptosRemuneracionContainer implements OnInit {
 
   /** Detalle 9.2B (modal de solo lectura). */
   readonly detalleConceptoFila = signal<CatalogoGridRow | null>(null);
+  readonly reglasCalculoDetalle = signal<ReglaConceptoCalculoFila[]>([]);
+  readonly cargandoReglasDetalle = signal(false);
 
   readonly modalMsg = signal<{
     variant: MessageBoxVariant;
@@ -153,10 +142,19 @@ export class ConceptosRemuneracionContainer implements OnInit {
 
   readonly detalleAcciones = computed((): ConceptoAccionesPermitidas | null => {
     const r = this.detalleConceptoFila();
-    return r ? evaluarConceptoAccionesPermitidas(r, this.fechaReferenciaListado(), this.puedeEditarConceptoCatalogo) : null;
+    return r ? this.accionesConcepto(r) : null;
   });
 
-  readonly puedeEditarConceptoCatalogo = PUEDE_EDITAR_CONCEPTOS_MODO_ADMIN;
+  readonly puedeEditarConceptoCatalogo = computed(
+    () => this.permisosRemuneraciones.esAdministradorRemuneraciones(),
+  );
+
+  private opcionesAccionesConcepto() {
+    return {
+      puedeEditarModoAdmin: this.puedeEditarConceptoCatalogo(),
+      esAdministrador: this.permisosRemuneraciones.esAdministradorRemuneraciones(),
+    };
+  }
 
   readonly catalogColumns: DataGridColumn<CatalogoGridRow>[] = [
     {
@@ -373,7 +371,7 @@ export class ConceptosRemuneracionContainer implements OnInit {
   }
 
   accionesConcepto(row: CatalogoGridRow): ConceptoAccionesPermitidas {
-    return evaluarConceptoAccionesPermitidas(row, this.fechaReferenciaListado(), this.puedeEditarConceptoCatalogo);
+    return evaluarConceptoAccionesPermitidas(row, this.fechaReferenciaListado(), this.opcionesAccionesConcepto());
   }
 
   tituloAccion(row: CatalogoGridRow, accion: 'editar' | 'eliminar'): string {
@@ -390,10 +388,17 @@ export class ConceptosRemuneracionContainer implements OnInit {
 
   revisarConceptoRow(row: CatalogoGridRow): void {
     this.detalleConceptoFila.set(row);
+    this.reglasCalculoDetalle.set([]);
+    this.cargandoReglasDetalle.set(true);
+    void this.haberesDescuentosService.listarReglasCalculoConcepto(row.idConcepto)
+      .then((reglas) => this.reglasCalculoDetalle.set(reglas))
+      .catch(() => this.reglasCalculoDetalle.set([]))
+      .finally(() => this.cargandoReglasDetalle.set(false));
   }
 
   cerrarDetalleConcepto(): void {
     this.detalleConceptoFila.set(null);
+    this.reglasCalculoDetalle.set([]);
   }
 
   onCatLreChange(id: number | null): void {

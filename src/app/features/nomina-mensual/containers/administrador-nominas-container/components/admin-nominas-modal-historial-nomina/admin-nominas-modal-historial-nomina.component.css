@@ -1,0 +1,188 @@
+/* Historial administrativo — modal ancho casi viewport, grilla acoplada. */
+
+app-admin-nominas-modal-historial-nomina app-message-box.message-box-host-modal {
+  padding: 0.75rem 1rem;
+  align-items: stretch;
+}
+
+.adm-nom-historial-msgbox.noia-msgbox--modal {
+  width: min(100%, calc(100vw - 2rem)) !important;
+  max-width: min(100%, calc(100vw - 2rem)) !important;
+  height: min(92vh, 56rem);
+  max-height: min(92vh, 56rem);
+  margin-inline: auto;
+}
+
+.adm-nom-historial-msgbox .noia-msgbox__slot--modal:not(:empty) {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.adm-nom-historial {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.adm-nom-historial__grid-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+.adm-nom-historial__grid {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.adm-nom-historial__grid-card {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: #ffffff;
+}
+
+.adm-nom-historial__grid-wrap .data-grid-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.adm-nom-historial__grid-wrap .data-grid-table-view--fit {
+  width: 100%;
+}
+
+.adm-nom-historial__grid-wrap .border-b.border-neutral-100,
+.adm-nom-historial__grid-wrap .data-grid-footer {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.adm-nom-historial__grid-wrap .border-b.border-neutral-100 .text-sm.font-medium.uppercase {
+  display: none;
+}
+
+.adm-nom-historial__empty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  margin: 0 1.5rem 1.25rem;
+  padding: 24px 16px;
+  border: 1px solid #e4e9f2;
+  border-radius: 8px;
+  background: #f8fafc;
+  text-align: center;
+}
+
+.adm-nom-historial__empty lucide-icon {
+  width: 20px;
+  height: 20px;
+  color: #475569;
+}
+
+.adm-nom-historial__empty strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.adm-nom-historial__empty span {
+  max-width: 28rem;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+.adm-nom-historial__empty--attention {
+  background: #fff8ed;
+  border-color: #ece3d4;
+}
+
+.adm-nom-historial__fecha {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.adm-nom-historial__accion {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
+}
+
+.adm-nom-historial__accion-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+  line-height: 1.35;
+}
+
+.adm-nom-historial__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  flex-shrink: 0;
+}
+
+.adm-nom-historial__icon lucide-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.adm-nom-historial__icon--ok {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+
+.adm-nom-historial__icon--warning {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+}
+
+.adm-nom-historial__icon--danger {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.adm-nom-historial__usuario {
+  font-size: 12.5px;
+  color: #334155;
+}
+
+.adm-nom-historial__motivo {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #334155;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.adm-nom-historial__muted {
+  color: #94a3b8;
+}

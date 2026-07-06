@@ -1,0 +1,512 @@
+/**
+ * Administrador de Nóminas — estilos locales (encapsulation Emulated).
+ *
+ * Patrón canónico replicado del Listado de Empleados:
+ *
+ *   .erp-shell-scroll                     (shell global)
+ *     > app-administrador-nominas-container  (:host de este componente)
+ *       > .adm-nom__page                    (flex column, full-height)
+ *         > .adm-nom__grid-shell            (flex:1 1 auto, hospeda al data-grid)
+ *           > app-data-grid                 (gridHeight=100% activa display:flex)
+ *             > app-card                    (estirada por data-grid)
+ *
+ * Layout (alto/ancho/padding) se gestiona aquí. El shell global aporta título
+ * y acción primaria; aquí vive la grilla operativa.
+ *
+ * NOTA: el header del page-frame queda fuera (frame ya no se usa: complicaba
+ * la cadena flex con padding y gaps extra). Replicamos directamente el patrón
+ * de empleados que funciona.
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.adm-nom__page {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #f6f7f4;
+}
+
+/* Shell del grid (igual que .listado-content de empleados) ---------------- */
+
+.adm-nom__grid-shell {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Franja KPI operativa (sin cards; patrón dotación / parámetros v2) ---------- */
+
+.adm-nom__kpis {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  padding: 8px 16px;
+  border-bottom: 1px solid #eef0eb;
+  background: #ffffff;
+}
+
+.adm-nom__kpi {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-right: 14px;
+  border-right: 1px solid #eef0eb;
+  line-height: 1.2;
+  color: #647084;
+  font-variant-numeric: tabular-nums;
+}
+
+.adm-nom__kpi:last-child {
+  border-right: 0;
+  padding-right: 0;
+}
+
+.adm-nom__kpi strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.adm-nom__kpi small {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #647084;
+}
+
+.adm-nom__kpi--info strong {
+  color: #1d4ed8;
+}
+
+.adm-nom__kpi--warning strong {
+  color: #b45309;
+}
+
+.adm-nom__kpi--danger strong {
+  color: #b91c1c;
+}
+
+.adm-nom__cell-periodo-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.adm-nom__cell-meta {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748b;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-nom__cell-meta--rango {
+  font-weight: 400;
+  color: #94a3b8;
+}
+
+.adm-nom__cell-meta--rect {
+  color: #475569;
+}
+
+.adm-nom__cell-link {
+  display: block;
+  margin-top: 2px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--erp-color-primary, #0f172a);
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.adm-nom__cell-link:hover {
+  color: var(--erp-color-primary-hover, #1e293b);
+}
+
+/* Host del <app-data-grid> y su <app-card> interna (mismo patrón
+   `empleados-grid-shell` del listado de empleados, ver
+   src/app/features/empleados/components/tabla-empleados/tabla-empleados.css).
+   `gridHeight="100%"` activa la clase data-grid-host--sized del grid, que
+   ya aporta display:flex + height:100% al host y a la card. Aquí solo
+   reforzamos width:100% y min-width:0 para evitar overflow horizontal. */
+:host ::ng-deep app-data-grid.adm-nom__grid {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+:host ::ng-deep app-data-grid.adm-nom__grid > app-card.adm-nom__grid-card {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+}
+
+:host ::ng-deep app-data-grid.adm-nom__grid .data-grid-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Celdas ------------------------------------------------------------------- */
+
+.adm-nom__cell-periodo {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+}
+
+.adm-nom__cell-empresa-nombre {
+  display: block;
+  font-weight: 500;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adm-nom__cell-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.adm-nom__cell-muted {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.adm-nom__next-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #1d4ed8;
+  line-height: 1.3;
+  min-width: 0;
+}
+
+.adm-nom__next-step-icon {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  color: #64748b;
+}
+
+.adm-nom__next-step-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adm-nom__next-step.is-priority {
+  color: #b45309;
+}
+
+.adm-nom__next-step.is-priority .adm-nom__next-step-icon {
+  color: #b45309;
+}
+
+.adm-nom__next-step-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.adm-nom__en-curso {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: #64748b;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-nom__chip--inline {
+  margin-top: 2px;
+  font-size: 11px;
+  padding: 1px 6px;
+  align-self: flex-start;
+}
+
+.adm-nom__state {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #eff6ff;
+  border-bottom: 1px solid #bfdbfe;
+  color: #1e40af;
+  font-size: 12px;
+}
+
+.adm-nom__state--error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+/* Chips de estado (compactos, sobrios) ------------------------------------ */
+
+.adm-nom__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.adm-nom__chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.adm-nom__chip--neutral {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #e5e7eb;
+}
+
+.adm-nom__chip--info {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.adm-nom__chip--success {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.adm-nom__chip--warning {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.adm-nom__chip--danger {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+/* Acciones por fila -------------------------------------------------------- */
+
+.adm-nom__row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+}
+
+.adm-nom__row-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font-weight: 500;
+  border-radius: 5px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #0f172a;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.adm-nom__row-action:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.adm-nom__row-action:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+.adm-nom__row-action lucide-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.adm-nom__row-action--danger {
+  color: #b91c1c;
+}
+
+.adm-nom__row-action--danger:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.adm-nom__row-action--danger:focus-visible {
+  outline-color: #b91c1c;
+}
+
+.adm-nom__row-action--primary {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+.adm-nom__row-action--primary:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+/* Accesibilidad ------------------------------------------------------------ */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Bloque de motivo proyectado dentro del app-message-box (ADM-MOD-05) ----- */
+
+.adm-nom__motivo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 0;
+}
+
+.adm-nom__motivo-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.adm-nom__motivo textarea {
+  min-height: 84px;
+  padding: 8px 10px;
+  resize: vertical;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font: inherit;
+  color: inherit;
+  background: #fff;
+}
+
+.adm-nom__motivo textarea:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+  border-color: #2563eb;
+}
+
+.adm-nom__motivo textarea:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.adm-nom__motivo-error {
+  margin: 6px 0 0;
+  color: #b91c1c;
+  font-size: 12px;
+}
+
+@media (max-width: 1024px) {
+  .adm-nom__row-actions {
+    gap: 2px;
+    flex-wrap: wrap;
+    max-width: 9.5rem;
+    justify-content: flex-end;
+  }
+
+  .adm-nom__row-action {
+    width: 28px;
+    height: 28px;
+  }
+
+  .adm-nom__kpis {
+    gap: 10px;
+    padding: 6px 12px;
+  }
+
+  .adm-nom__kpi {
+    padding-right: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .adm-nom__kpis {
+    gap: 8px;
+  }
+
+  .adm-nom__kpi {
+    padding-right: 8px;
+  }
+
+  .adm-nom__kpi strong {
+    font-size: 13px;
+  }
+
+  .adm-nom__kpi small {
+    font-size: 11px;
+  }
+
+  .adm-nom__row-actions {
+    max-width: 100%;
+    justify-content: center;
+  }
+}

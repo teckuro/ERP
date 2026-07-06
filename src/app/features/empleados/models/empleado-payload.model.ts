@@ -1,11 +1,15 @@
 import { EmpleadoEstado } from './empleado-listado.model';
 import { CondicionTrabajadorPayload } from './empleado-perfil-laboral.model';
 import {
+  CasaParticularModalidad,
+  CasaParticularRegistroDtEstado,
+  CausalExclusionJornada,
   EmpleadoSexo,
   TipoContrato,
   TipoEstadoCivil,
   TipoGratificacion,
   TipoRegimenPrevisional,
+  RelacionLaboral,
 } from './empleado.model';
 
 export interface CrearEmpleadoPayload {
@@ -30,12 +34,23 @@ export interface CrearEmpleadoPayload {
   idSucursal: number | null;
   idDepartamentoEmpresa: number | null;
   idCentroCosto: number | null;
+  relacionLaboral: RelacionLaboral;
   cargo: string;
   fechaContrato: string;
   tipoContrato: TipoContrato;
   idTipoTrabajador: number;
   idTipoJornada: number;
   seguroCesantia: boolean;
+  excluidoLimiteJornada: boolean;
+  causalExclusionJornada: CausalExclusionJornada | null;
+  justificacionExclusionJornada: string | null;
+  casaParticularModalidad: CasaParticularModalidad | null;
+  casaParticularLabores: string | null;
+  casaParticularDomicilioEspecifico: string | null;
+  casaParticularAsistenciaCuidado: boolean;
+  casaParticularRegistroDtEstado: CasaParticularRegistroDtEstado | null;
+  casaParticularRegistroDtFecha: string | null;
+  casaParticularRegistroDtFolio: string | null;
   fechaIngreso: string;
   fechaTermino: string | null;
   sueldoBase: number;
@@ -67,6 +82,7 @@ export interface CrearEmpleadoPayload {
   regimenExCaja: string | null;
   tasaExCaja: number | null;
   idSalud: number | null;
+  tipoSalud: 'FONASA' | 'ISAPRE' | string | null;
   idMonedaPlan: number | null;
   valorPlan: number | null;
   adicionalAugeGes: number | null;

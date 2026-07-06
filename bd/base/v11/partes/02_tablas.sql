@@ -115,8 +115,8 @@ CREATE TABLE parametros_generales (
     fecha_actualizacion TIMESTAMP DEFAULT NOW(),
     CONSTRAINT chk_parametros_periodo CHECK (periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$')
 );
--- Snapshot denormalizado consumido por la app (database.types / repositorio).
--- Detalle normativo sigue en parametros_legales y tabla_impuesto_unico.
+-- Snapshot oficial mensual: unica fuente de escalares para completitud, nomina y motor.
+-- parametros_legales y tablas de catalogo (impuesto, tramos, AFP) no sustituyen columnas NULL aqui.
 
 CREATE TABLE tramo_carga (
     id_tramo SERIAL PRIMARY KEY,
@@ -134,8 +134,8 @@ CREATE TABLE tramo_impuesto (
     periodo VARCHAR(7) NOT NULL,
     desde NUMERIC(12,0),
     hasta NUMERIC(12,0),
-    factor NUMERIC(5,2),
-    rebaja NUMERIC(12,0),
+    factor NUMERIC(8,6),
+    rebaja NUMERIC(18,2),
     CONSTRAINT chk_tramo_impuesto_periodo CHECK (periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
     CONSTRAINT chk_tramo_impuesto_rango CHECK (hasta IS NULL OR desde IS NULL OR hasta >= desde)
 );
@@ -533,21 +533,32 @@ CREATE TABLE empresa (
     dv CHAR(1) NOT NULL,
     razon_social VARCHAR(150) NOT NULL,
     fecha_creacion TIMESTAMP DEFAULT NOW(),
-    CONSTRAINT chk_empresa_rut CHECK (rut ~ '^[0-9]{7,9}$')
-);
-
-CREATE TABLE empresa_ley_16744 (
-    id_empresa_ley_16744 SERIAL PRIMARY KEY,
-    id_empresa INT NOT NULL REFERENCES empresa(id_empresa) ON DELETE CASCADE,
-    id_organismo_administrador_ley_16744 INT REFERENCES organismo_administrador_ley_16744(id_organismo_administrador_ley_16744),
-    tasa_adicional_diferenciada NUMERIC(7,4) NOT NULL DEFAULT 0,
+    nombre_fantasia VARCHAR(150),
+    giro VARCHAR(200),
     actividad_economica VARCHAR(200),
+    representante_legal_nombre VARCHAR(150),
+    representante_legal_rut VARCHAR(9),
+    representante_legal_dv CHAR(1),
+    representante_legal_email VARCHAR(150),
+    representante_legal_telefono VARCHAR(30),
+    email_contacto VARCHAR(150),
+    telefono_contacto VARCHAR(30),
+    direccion_linea_1 TEXT,
+    direccion_linea_2 TEXT,
+    comuna VARCHAR(100),
+    ciudad VARCHAR(100),
+    region VARCHAR(100),
+    codigo_postal VARCHAR(20),
+    aplica_ley_16744 BOOLEAN NOT NULL DEFAULT FALSE,
+    id_organismo_administrador_ley_16744 INT REFERENCES organismo_administrador_ley_16744(id_organismo_administrador_ley_16744),
+    tasa_adicional_diferenciada NUMERIC(7,4),
     fuente_resolucion_o_certificado TEXT,
-    vigencia_inicio DATE NOT NULL,
+    vigencia_inicio DATE,
     vigencia_fin DATE,
-    CONSTRAINT uq_empresa_ley_16744 UNIQUE (id_empresa, vigencia_inicio),
-    CONSTRAINT chk_empresa_ley_16744_tasa CHECK (tasa_adicional_diferenciada >= 0),
-    CONSTRAINT chk_empresa_ley_16744_vigencia CHECK (vigencia_fin IS NULL OR vigencia_fin >= vigencia_inicio)
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT chk_empresa_rut CHECK (rut ~ '^[0-9]{7,9}$'),
+    CONSTRAINT chk_empresa_tasa CHECK (tasa_adicional_diferenciada IS NULL OR tasa_adicional_diferenciada >= 0),
+    CONSTRAINT chk_empresa_vigencia CHECK (vigencia_fin IS NULL OR vigencia_inicio IS NULL OR vigencia_fin >= vigencia_inicio)
 );
 
 CREATE TABLE sucursal (
@@ -645,13 +656,28 @@ CREATE TABLE contrato (
     id_tipo_trabajador INT REFERENCES tipo_trabajador(id_tipo_trabajador),
     id_tipo_jornada INT REFERENCES tipo_jornada(id_tipo_jornada),
     codigo_tipo_contrato tipo_contrato_enum,
+    relacion_laboral TEXT NOT NULL DEFAULT 'CONTRATO',
     cargo VARCHAR(100),
     seguro_cesantia BOOLEAN NOT NULL DEFAULT TRUE,
+    excluido_limite_jornada BOOLEAN NOT NULL DEFAULT FALSE,
+    causal_exclusion_jornada TEXT,
+    justificacion_exclusion_jornada TEXT,
+    casa_particular_modalidad TEXT,
+    casa_particular_labores TEXT,
+    casa_particular_domicilio_especifico TEXT,
+    casa_particular_asistencia_cuidado BOOLEAN NOT NULL DEFAULT FALSE,
+    casa_particular_registro_dt_estado TEXT,
+    casa_particular_registro_dt_fecha DATE,
+    casa_particular_registro_dt_folio TEXT,
     fecha_contrato DATE,
     fecha_inicio DATE NOT NULL,
     fecha_termino DATE,
     estado VARCHAR(20) DEFAULT 'ACTIVO',
     CONSTRAINT chk_contrato_estado CHECK (estado IN ('ACTIVO', 'TERMINADO', 'SUSPENDIDO', 'PENDIENTE')),
+    CONSTRAINT chk_contrato_relacion_laboral CHECK (relacion_laboral IN ('CONTRATO', 'HONORARIOS')),
+    CONSTRAINT chk_contrato_exclusion_jornada_causal CHECK (causal_exclusion_jornada IS NULL OR causal_exclusion_jornada IN ('ALTA_RESPONSABILIDAD', 'SIN_FISCALIZACION_SUPERIOR_INMEDIATA')),
+    CONSTRAINT chk_contrato_casa_particular_modalidad CHECK (casa_particular_modalidad IS NULL OR casa_particular_modalidad IN ('PUERTAS_AFUERA', 'PUERTAS_ADENTRO')),
+    CONSTRAINT chk_contrato_casa_particular_registro_dt_estado CHECK (casa_particular_registro_dt_estado IS NULL OR casa_particular_registro_dt_estado IN ('PENDIENTE', 'REGISTRADO', 'NO_APLICA')),
     CONSTRAINT chk_contrato_fechas CHECK (fecha_termino IS NULL OR fecha_termino >= fecha_inicio)
 );
 
@@ -1086,6 +1112,10 @@ CREATE TABLE persona_tramo_carga (
     CONSTRAINT chk_persona_tramo_carga_vigencia CHECK (vigencia_fin IS NULL OR vigencia_fin >= vigencia_inicio)
 );
 
+-- [LEGACY/DEPRECADO] Tabla liquidacion
+-- Salida del motor SQL fn_generar_liquidacion. No es liquidación oficial del periodo.
+-- Reemplazada por nomina_liquidacion_periodo / nomina_liquidacion_trabajador (emisión desde snapshot aprobado).
+-- Se conserva por compatibilidad y datos históricos; no eliminar sin fase explícita.
 CREATE TABLE liquidacion (
     id_liquidacion SERIAL PRIMARY KEY,
     id_contrato INT NOT NULL REFERENCES contrato(id_contrato),
@@ -1120,6 +1150,10 @@ CREATE TABLE liquidacion (
     CONSTRAINT uq_liquidacion_periodo UNIQUE (id_contrato, periodo)
 );
 
+-- [LEGACY/DEPRECADO] Tabla liquidacion_detalle
+-- Detalle de fn_generar_liquidacion. No es snapshot oficial de conceptos del periodo.
+-- Reemplazada por nomina_liquidacion_concepto. Sigue leída (solo COUNT) por contarUsoConcepto en Angular (guard borrado concepto).
+-- Se conserva por compatibilidad; no eliminar sin migrar ese guard.
 CREATE TABLE liquidacion_detalle (
     id_detalle SERIAL PRIMARY KEY,
     id_liquidacion INT NOT NULL REFERENCES liquidacion(id_liquidacion) ON DELETE CASCADE,

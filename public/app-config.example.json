@@ -1,5 +1,6 @@
 {
   "supabaseUrl": "https://YOUR_PROJECT_REF.supabase.co",
-  "supabaseAnonKey": "YOUR_SUPABASE_ANON_KEY"
+  "supabaseAnonKey": "YOUR_SUPABASE_ANON_KEY",
+  "asistentePreguntorFunction": "super-service"
 }
 

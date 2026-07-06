@@ -9,31 +9,53 @@ import {
   TramoCargaCatalogOption,
 } from '../../../models/empleado-catalogos.model';
 import { ContratoFormGroup } from '../../../models/empleado-form.model';
-import { RelacionLaboral, TipoContrato, TipoGratificacion } from '../../../models/empleado.model';
+import {
+  CasaParticularModalidad,
+  CasaParticularRegistroDtEstado,
+  CausalExclusionJornada,
+  RelacionLaboral,
+  TipoContrato,
+  TipoGratificacion,
+} from '../../../models/empleado.model';
 import { EmpleadoEstado } from '../../../models/empleado-listado.model';
-import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
-import { CardComponent } from '../../../../../shared/components/ui/card.component';
+import { CalendarInputComponent } from '../../../../../shared/components/ui/forms/calendar-input/calendar-input.component';
+import { CardComponent } from '../../../../../shared/components/ui/primitives/card.component';
 import {
   SearchSelectComponent,
   type SearchSelectOption,
-} from '../../../../../shared/components/ui/search-select.component';
+} from '../../../../../shared/components/ui/forms/search-select.component';
 import { withEmptyNumberCatalog, withEmptyStringCatalog } from '../../../utils/empleado-select-options';
+import {
+  buscarTipoTrabajadorBase,
+  descripcionTipoTrabajadorBase,
+  tipoTrabajadorBaseParaRelacion,
+} from '../../../rules/empleado-tipo-trabajador-flow.rules';
+import { EmpleadoFieldRequiredComponent } from '../../empleado-field-required/empleado-field-required.component';
+import { EmpleadoFieldTipComponent } from '../../empleado-field-tip/empleado-field-tip.component';
+import { buildTodayValue } from '../../../utils/empleado-form-defaults';
 
-type ContratoControlName = keyof ContratoFormGroup['controls'];
+type NombreControlContrato = keyof ContratoFormGroup['controls'];
 
-interface SelectOption<T> {
+interface OpcionSeleccion<T> {
   value: T;
   label: string;
 }
 
-interface WeekdayOption {
+interface OpcionDiaSemana {
   value: number;
   label: string;
 }
 
 @Component({
   selector: 'app-empleado-contrato',
-  imports: [ReactiveFormsModule, CalendarInputComponent, CardComponent, SearchSelectComponent],
+  imports: [
+    ReactiveFormsModule,
+    CalendarInputComponent,
+    CardComponent,
+    SearchSelectComponent,
+    EmpleadoFieldTipComponent,
+    EmpleadoFieldRequiredComponent,
+  ],
   templateUrl: './contrato.html',
   styleUrl: './contrato.css',
 })
@@ -48,48 +70,129 @@ export class ContratoComponent {
   @Input() tiposGratificacion: EmpleadoStringCatalogOption<TipoGratificacion>[] = [];
   @Input() monedas: EmpleadoCatalogOption[] = [];
   @Input() tramosCarga: TramoCargaCatalogOption[] = [];
-  @Input() visibleBlocks: string[] | null = null;
+  @Input() bloquesVisibles: string[] | null = null;
+  @Input() domicilioReferencia: string | null = null;
   /** Grilla 8 columnas y spans laborales (solo alta avanzada). */
-  @Input() advancedGridLayout = false;
+  @Input() grillaAvanzada = false;
+  /** Edicion inline desde ficha: la card exterior ya aporta el titulo del bloque. */
+  @Input() disposicionInlineFicha = false;
 
   @HostBinding('class.labor-layout-advanced')
   protected get laborLayoutAdvanced(): boolean {
-    return this.advancedGridLayout;
+    return this.grillaAvanzada;
   }
 
-  readonly employeeStates: SelectOption<EmpleadoEstado>[] = [
+  @HostBinding('class.labor-layout-inline-record')
+  protected get laborLayoutInlineRecord(): boolean {
+    return this.disposicionInlineFicha;
+  }
+
+  readonly hoy = buildTodayValue();
+
+  get minFechaTermino(): string {
+    const ingreso = this.formGroup.controls.fechaIngreso.value?.trim();
+    return ingreso || '';
+  }
+
+  readonly estadosEmpleado: OpcionSeleccion<EmpleadoEstado>[] = [
     { value: 'en_proceso', label: 'En proceso' },
   ];
 
-  readonly relationOptions: SelectOption<RelacionLaboral>[] = [
+  readonly opcionesRelacionLaboral: OpcionSeleccion<RelacionLaboral>[] = [
     { value: 'CONTRATO', label: 'Contrato' },
     { value: 'HONORARIOS', label: 'Boleta de honorarios' },
   ];
 
+  readonly opcionesModalidadCasaParticular: OpcionSeleccion<CasaParticularModalidad>[] = [
+    { value: 'PUERTAS_AFUERA', label: 'Puertas afuera' },
+    { value: 'PUERTAS_ADENTRO', label: 'Puertas adentro' },
+  ];
 
-  get isHonorariosMode(): boolean {
+  readonly opcionesRegistroDtCasaParticular: OpcionSeleccion<CasaParticularRegistroDtEstado>[] = [
+    { value: 'PENDIENTE', label: 'Pendiente' },
+    { value: 'REGISTRADO', label: 'Registrado' },
+    { value: 'NO_APLICA', label: 'No aplica' },
+  ];
+
+  readonly opcionesCausalExclusionJornada: OpcionSeleccion<CausalExclusionJornada>[] = [
+    { value: 'ALTA_RESPONSABILIDAD', label: 'Alta responsabilidad / confianza' },
+    {
+      value: 'SIN_FISCALIZACION_SUPERIOR_INMEDIATA',
+      label: 'Sin fiscalizacion superior inmediata',
+    },
+  ];
+
+  get esModoHonorarios(): boolean {
     return this.formGroup.controls.relacionLaboral.value === 'HONORARIOS';
   }
 
-  serviceOrPositionLabel(): string {
-    return this.isHonorariosMode ? 'Servicio o función' : 'Cargo';
+  get esCasaParticular(): boolean {
+    return !this.esModoHonorarios && this.formGroup.controls.tipoContrato.value === 'CASA_PARTICULAR';
   }
 
-  serviceOrPositionPlaceholder(): string {
-    return this.isHonorariosMode ? 'Ej.: asesoría contable mensual' : '';
+  get esRegistroDtRegistrado(): boolean {
+    return this.formGroup.controls.casaParticularRegistroDtEstado.value === 'REGISTRADO';
   }
 
-  baseAmountLabel(): string {
-    return this.isHonorariosMode ? 'Monto bruto de honorarios' : 'Sueldo base mensual';
+  get estaExcluidoLimiteJornada(): boolean {
+    return this.formGroup.controls.excluidoLimiteJornada.value === true;
   }
 
-  baseAmountHelpText(): string {
-    return this.isHonorariosMode
+  get tipoTrabajadorBaseEsperado(): 'DEPENDIENTE' | 'INDEPENDIENTE' {
+    return tipoTrabajadorBaseParaRelacion(this.formGroup.controls.relacionLaboral.value);
+  }
+
+  get tipoTrabajadorBaseLabel(): string {
+    const selectedId = this.formGroup.controls.idTipoTrabajador.value;
+    const selected = this.tiposTrabajador.find((option) => option.value === selectedId);
+
+    return selected?.label ?? this.tipoTrabajadorBaseEsperado;
+  }
+
+  get tipoTrabajadorBaseDescription(): string {
+    return descripcionTipoTrabajadorBase(this.tipoTrabajadorBaseEsperado);
+  }
+
+  get tipoTrabajadorBaseWarning(): string | null {
+    const selectedId = this.formGroup.controls.idTipoTrabajador.value;
+    if (selectedId !== null) {
+      return null;
+    }
+
+    const expected = buscarTipoTrabajadorBase(this.tiposTrabajador, this.tipoTrabajadorBaseEsperado);
+    if (expected) {
+      return null;
+    }
+
+    return `No se encontró ${this.tipoTrabajadorBaseEsperado} en el catálogo tipo_trabajador.`;
+  }
+
+  etiquetaServicioOCargo(): string {
+    return this.esModoHonorarios ? 'Servicio o función' : 'Cargo';
+  }
+
+  placeholderServicioOCargo(): string {
+    return this.esModoHonorarios ? 'Ej.: asesoría contable mensual' : '';
+  }
+
+  etiquetaMontoBase(): string {
+    return this.esModoHonorarios ? 'Monto bruto de honorarios' : 'Sueldo base mensual';
+  }
+
+  ayudaMontoBase(): string {
+    return this.esModoHonorarios
       ? 'Corresponde al valor bruto pactado por servicios a honorarios. No genera jornada laboral ni remuneración dependiente.'
       : 'El sueldo base debe ser mayor a cero.';
   }
 
-  readonly weekdayOptions: WeekdayOption[] = [
+  /** Ayuda operativa en tooltip (alta avanzada). */
+  pistaCampoMontoBase(): string {
+    return this.esModoHonorarios
+      ? 'Corresponde al valor bruto pactado por servicios a honorarios. No genera jornada laboral ni remuneración dependiente.'
+      : 'Monto base mensual pactado en la moneda del contrato.';
+  }
+
+  readonly opcionesDiasSemana: OpcionDiaSemana[] = [
     { value: 1, label: 'Lunes' },
     { value: 2, label: 'Martes' },
     { value: 3, label: 'Miércoles' },
@@ -99,23 +202,23 @@ export class ContratoComponent {
     { value: 7, label: 'Domingo' },
   ];
 
-  controlClass(controlName: ContratoControlName): string {
-    return ['employee-control', this.hasError(controlName) ? 'is-invalid' : '']
+  claseControl(controlName: NombreControlContrato): string {
+    return ['employee-control', this.tieneError(controlName) ? 'is-invalid' : '']
       .filter(Boolean)
       .join(' ');
   }
 
-  checkboxClass(dayValue: number): string {
+  claseCheckboxDia(dayValue: number): string {
     return [
       'weekday-chip',
-      this.hasWeekday(dayValue) ? 'is-selected' : '',
+      this.tieneDiaSemana(dayValue) ? 'is-selected' : '',
       this.formGroup.controls.semanaCorridaActiva.value ? '' : 'is-disabled',
     ]
       .filter(Boolean)
       .join(' ');
   }
 
-  hasError(controlName: ContratoControlName, errorCode?: string): boolean {
+  tieneError(controlName: NombreControlContrato, errorCode?: string): boolean {
     const control = this.formGroup.controls[controlName];
 
     if (!control.touched) {
@@ -125,7 +228,7 @@ export class ContratoComponent {
     return errorCode ? control.hasError(errorCode) : control.invalid;
   }
 
-  isRequired(controlName: ContratoControlName): boolean {
+  esRequerido(controlName: NombreControlContrato): boolean {
     return this.formGroup.controls[controlName].hasValidator(Validators.required);
   }
 
@@ -134,7 +237,7 @@ export class ContratoComponent {
     return this.departamentos.filter((option) => option.idSucursal === sucursalId);
   }
 
-  get contractTypes(): SelectOption<TipoContrato>[] {
+  get tiposContratoDisponibles(): OpcionSeleccion<TipoContrato>[] {
     return this.tiposContrato.length
       ? this.tiposContrato
       : [
@@ -145,7 +248,7 @@ export class ContratoComponent {
         ];
   }
 
-  get gratificationTypes(): SelectOption<TipoGratificacion>[] {
+  get tiposGratificacionDisponibles(): OpcionSeleccion<TipoGratificacion>[] {
     return this.tiposGratificacion.length
       ? this.tiposGratificacion
       : [
@@ -160,7 +263,7 @@ export class ContratoComponent {
   }
 
   get tipoContratoSelectOptions(): SearchSelectOption[] {
-    return withEmptyStringCatalog(this.contractTypes, 'Seleccione tipo de contrato');
+    return withEmptyStringCatalog(this.tiposContratoDisponibles, 'Seleccione tipo de contrato');
   }
 
   get sucursalesSelectOptions(): SearchSelectOption[] {
@@ -180,7 +283,7 @@ export class ContratoComponent {
   }
 
   get gratificacionSelectOptions(): SearchSelectOption[] {
-    return withEmptyStringCatalog(this.gratificationTypes, 'Seleccione tipo de gratificación');
+    return withEmptyStringCatalog(this.tiposGratificacionDisponibles, 'Seleccione tipo de gratificación');
   }
 
   get centrosCostoSelectOptions(): SearchSelectOption[] {
@@ -188,7 +291,7 @@ export class ContratoComponent {
   }
 
   /** Etiquetas combinadas para app-search-select (misma info que los <option> nativos). */
-  get tramosCargaOptions(): SearchSelectOption[] {
+  get tramosCargaSelectOptions(): SearchSelectOption[] {
     const rows = this.tramosCarga.map((tramo) => {
       const range =
         tramo.desde !== null || tramo.hasta !== null
@@ -208,11 +311,11 @@ export class ContratoComponent {
   }
 
   get tramoAsignado(): string {
-    return this.selectedTramo?.tramo ?? 'Sin tramo';
+    return this.tramoSeleccionado?.tramo ?? 'Sin tramo';
   }
 
   get valorPorCarga(): string {
-    const tramo = this.selectedTramo;
+    const tramo = this.tramoSeleccionado;
 
     if (!tramo?.valor) {
       return '$0';
@@ -226,10 +329,10 @@ export class ContratoComponent {
   }
 
   get periodoTramoVigente(): string | null {
-    return this.selectedTramo?.periodo ?? this.tramosCarga[0]?.periodo ?? null;
+    return this.tramoSeleccionado?.periodo ?? this.tramosCarga[0]?.periodo ?? null;
   }
 
-  get selectedTramo(): TramoCargaCatalogOption | null {
+  get tramoSeleccionado(): TramoCargaCatalogOption | null {
     const tramoId = this.formGroup.controls.idTramoCarga.value;
 
     if (tramoId === null) {
@@ -239,12 +342,7 @@ export class ContratoComponent {
     return this.tramosCarga.find((option) => option.value === tramoId) ?? null;
   }
 
-  onRelacionLaboralChange(value: RelacionLaboral): void {
-    this.formGroup.controls.relacionLaboral.setValue(value);
-    this.formGroup.controls.relacionLaboral.markAsTouched();
-  }
-
-  onIndefinidoToggle(checked: boolean): void {
+  manejarToggleIndefinido(checked: boolean): void {
     if (checked) {
       this.formGroup.controls.tipoContrato.setValue('INDEFINIDO');
     } else if (this.formGroup.controls.tipoContrato.value === 'INDEFINIDO') {
@@ -253,7 +351,7 @@ export class ContratoComponent {
     this.formGroup.controls.tipoContrato.markAsTouched();
   }
 
-  toggleWeekday(dayValue: number): void {
+  alternarDiaSemana(dayValue: number): void {
     if (!this.formGroup.controls.semanaCorridaActiva.value) {
       return;
     }
@@ -267,16 +365,16 @@ export class ContratoComponent {
     this.formGroup.controls.semanaCorridaDiasLaborables.markAsTouched();
   }
 
-  hasWeekday(dayValue: number): boolean {
+  tieneDiaSemana(dayValue: number): boolean {
     return this.formGroup.controls.semanaCorridaDiasLaborables.value.includes(dayValue);
   }
 
-  isBlockVisible(blockId: string): boolean {
-    if (this.visibleBlocks === null) {
+  esBloqueVisible(blockId: string): boolean {
+    if (this.bloquesVisibles === null) {
       return true;
     }
 
-    const v = this.visibleBlocks;
+    const v = this.bloquesVisibles;
 
     if (blockId === 'contratoBase' && v.includes('contrato')) {
       return true;

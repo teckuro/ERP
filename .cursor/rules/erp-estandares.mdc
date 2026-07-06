@@ -1,0 +1,33 @@
+---
+description: Constitución técnica EST-001…EST-008 — nomenclatura, BD, Angular, IA
+alwaysApply: true
+---
+
+# ERP — estándares técnicos (`docs/codex/estandares`)
+
+Regla permanente: **todo código nuevo** y **toda sesión de agente** debe alinearse a la constitución técnica.
+
+## Lectura obligatoria
+
+| Situación | Leer |
+|-----------|------|
+| Cualquier tarea (agente) | [`EST-008-ia.md`](../../docs/codex/estandares/EST-008-ia.md) + [`contexto-rapido.md`](../../docs/codex/contexto-rapido.md) |
+| Índice y jerarquía | [`estandares/README.md`](../../docs/codex/estandares/README.md) |
+| SQL / migración / RLS | EST-001, EST-002, EST-003, EST-006 |
+| TypeScript / repository | EST-001, EST-004 |
+| Angular / feature / grid | EST-004, EST-005 (+ NOIA si UI) |
+| Documentación / cierre fase | EST-007 |
+
+## Reglas ejecutables (resumen)
+
+1. **Nomenclatura:** BD `snake_case`; FK `id_*`; RPC `listar_`/`obtener_`/`guardar_`; TS dominio camelCase español; archivos kebab-case.
+2. **Capas:** componente → service → repository → Supabase; mappers únicos BD↔dominio.
+3. **Seguridad:** RLS por operación; `authenticated` only; revocar `anon` en negocio.
+4. **Legacy:** no renombrar objetos existentes; código nuevo sigue columna «Obligatorio (nuevo)» de EST-001.
+5. **Prohibido** sin fase explícita: estilos globales, motor, relajar RLS, `anon` en negocio (detalle en EST-008).
+
+## Jerarquía
+
+En conflicto: fase/módulo congelado > NOIA (UI) > EST-008 > EST-001…007 > AGENTS.md > README padre.
+
+No sustituye contratos de módulo ni `frontend-interfaces.md`; los complementa.

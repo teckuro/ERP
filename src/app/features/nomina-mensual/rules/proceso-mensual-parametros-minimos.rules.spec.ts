@@ -1,4 +1,5 @@
 import type { ParametroGeneral, ParametrosGeneralesCatalogos } from '../../parametros-generales/models/parametro-general.model';
+import { describe, expect, it } from 'vitest';
 
 import { revisarGruposParametrosMinimos } from './proceso-mensual-parametros-minimos.rules';
 
@@ -85,6 +86,30 @@ describe('proceso-mensual-parametros-minimos.rules', () => {
     expect(ids).toContain('mensuales_uf_utm_sueldo');
     expect(grupos.find((g) => g.id === 'mensuales_uf_utm_sueldo')?.clasificacion).toBe('OK');
     expect(grupos.find((g) => g.id === 'catalogos_afp_impuesto')?.clasificacion).toBe('OK');
+  });
+
+  it('fila exacta con uf null -> mensuales PARCIAL', () => {
+    const grupos = revisarGruposParametrosMinimos({
+      periodo: '2026-05',
+      fila: { ...filaOk, uf: null },
+      lecturaFila: 'ok',
+      catalogos: catalogosMin,
+      lecturaCatalogos: 'ok',
+    });
+    expect(grupos.find((g) => g.id === 'mensuales_uf_utm_sueldo')?.clasificacion).toBe('PARCIAL');
+  });
+
+  it('fila exacta con uf en cero -> mensuales PARCIAL y detalle uf', () => {
+    const grupos = revisarGruposParametrosMinimos({
+      periodo: '2026-05',
+      fila: { ...filaOk, uf: 0 },
+      lecturaFila: 'ok',
+      catalogos: catalogosMin,
+      lecturaCatalogos: 'ok',
+    });
+    const mensuales = grupos.find((g) => g.id === 'mensuales_uf_utm_sueldo');
+    expect(mensuales?.clasificacion).toBe('PARCIAL');
+    expect(mensuales?.detalle).toContain('Dato oficial en cero: uf');
   });
 
   it('sin fila -> mensuales y topes FALTANTE', () => {

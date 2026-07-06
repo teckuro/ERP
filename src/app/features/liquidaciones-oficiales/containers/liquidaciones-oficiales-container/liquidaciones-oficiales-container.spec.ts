@@ -1,12 +1,28 @@
 import { importProvidersFrom } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
-import { ArrowLeft, FileCheck2, RefreshCw } from 'lucide-angular/src/icons';
-import { vi } from 'vitest';
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle,
+  DollarSign,
+  Eye,
+  FileCheck2,
+  FileText,
+  RefreshCw,
+  Repeat,
+  Search,
+  Send,
+} from 'lucide-angular/src/icons';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { of } from 'rxjs';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { LiquidacionesOficialesService } from '../../services/liquidaciones-oficiales.service';
+import { NominaPeriodoService } from '../../../nomina-mensual/services/nomina-periodo.service';
+import { crearNomina, crearNominaResumen } from '../../../nomina-mensual/models/nomina-periodo.models';
 import { LiquidacionesOficialesContainer } from './liquidaciones-oficiales-container';
 
 describe('LiquidacionesOficialesContainer', () => {
@@ -15,163 +31,350 @@ describe('LiquidacionesOficialesContainer', () => {
     consultarEstadoPeriodo: ReturnType<typeof vi.fn>;
     generarLiquidaciones: ReturnType<typeof vi.fn>;
     obtenerDetalleTrabajador: ReturnType<typeof vi.fn>;
+    listarTrabajadoresLiquidacion: ReturnType<typeof vi.fn>;
+    guardarEstadoRevisionTrabajador: ReturnType<typeof vi.fn>;
   };
-  let periodoActivo: PeriodoActivoService;
+  let nominaService: {
+    obtenerNomina: ReturnType<typeof vi.fn>;
+    listarLiquidacionesNomina: ReturnType<typeof vi.fn>;
+    generarLiquidacionesNomina: ReturnType<typeof vi.fn>;
+    listarResumenes: ReturnType<typeof vi.fn>;
+  };
 
-  beforeEach(async () => {
+  async function configurar(
+    queryParams: Record<string, string> = {},
+    opts: {
+      resumenes?: ReturnType<typeof crearNominaResumen>[];
+      nomina?: ReturnType<typeof crearNomina> | null;
+      liquidacionesNomina?: unknown[];
+      trabajadoresLiquidacion?: unknown[];
+    } = {},
+  ) {
     service = {
-      consultarEstadoPeriodo: vi.fn().mockResolvedValue({
-      estado: 'lista_para_generar',
-      periodo: '2026-04',
-      snapshot: {
-        idCalculoPeriodo: 15,
-        totalTrabajadores: 1,
-        totalHaberes: 100,
-        totalDescuentos: 20,
-        totalLiquido: 80,
-        totalAdvertencias: 0,
-        versionMotor: 'v1',
-        hashSnapshot: 'abc',
-        aprobadoOperativamente: true,
-        cerradoOperativamente: true,
-      },
-      liquidacion: null,
-      trabajadores: [],
-      motivoNoPuedeGenerar: null,
-      advertencias: [],
-      }),
+      consultarEstadoPeriodo: vi.fn(),
       generarLiquidaciones: vi.fn(),
       obtenerDetalleTrabajador: vi.fn().mockResolvedValue([]),
+      listarTrabajadoresLiquidacion: vi.fn().mockResolvedValue(opts.trabajadoresLiquidacion ?? []),
+      guardarEstadoRevisionTrabajador: vi.fn().mockResolvedValue({}),
+    };
+    nominaService = {
+      obtenerNomina: vi.fn().mockResolvedValue(opts.nomina ?? null),
+      listarLiquidacionesNomina: vi.fn().mockResolvedValue(opts.liquidacionesNomina ?? []),
+      generarLiquidacionesNomina: vi.fn().mockResolvedValue(undefined),
+      listarResumenes: vi.fn().mockResolvedValue(opts.resumenes ?? []),
     };
 
     await TestBed.configureTestingModule({
       imports: [LiquidacionesOficialesContainer],
       providers: [
-        provideRouter([]),
-        importProvidersFrom(LucideAngularModule.pick({ ArrowLeft, FileCheck2, RefreshCw })),
+        provideRouter([
+          { path: 'remuneraciones/liquidaciones', component: LiquidacionesOficialesContainer },
+        ]),
+        importProvidersFrom(
+          LucideAngularModule.pick({
+            ArrowLeft,
+            ArrowRight,
+            CheckCircle,
+            DollarSign,
+            Eye,
+            FileCheck2,
+            FileText,
+            RefreshCw,
+            Repeat,
+            Search,
+            Send,
+          }),
+        ),
         PeriodoActivoService,
         { provide: LiquidacionesOficialesService, useValue: service },
+        { provide: NominaPeriodoService, useValue: nominaService },
+        {
+          provide: ActivatedRoute,
+          useValue: { queryParams: of(queryParams) },
+        },
       ],
     }).compileComponents();
 
-    periodoActivo = TestBed.inject(PeriodoActivoService);
+    const periodoActivo = TestBed.inject(PeriodoActivoService);
     periodoActivo.setPeriodoYm('2026-04');
     fixture = TestBed.createComponent(LiquidacionesOficialesContainer);
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
-  });
+  }
 
-  it('muestra boton generar cuando corresponde', () => {
-    expect(fixture.nativeElement.textContent).toContain('Generar liquidaciones oficiales');
-    expect(fixture.componentInstance.puedeGenerar()).toBe(true);
-  });
-
-  it('consume el periodo global como contexto y no muestra selector local', () => {
-    const input = fixture.nativeElement.querySelector('input[type="month"]') as HTMLInputElement | null;
-    const text = fixture.nativeElement.textContent as string;
-    expect(input).toBeNull();
-    expect(text).toContain('Periodo activo:');
-    expect(text).toContain('Informacion interna y alcance');
-  });
-
-  it('no duplica el CTA principal de generar en la botonera superior', () => {
-    const actionBar = fixture.nativeElement.querySelector('.liq-actions') as HTMLElement | null;
-    expect(actionBar?.textContent ?? '').not.toContain('Generar liquidaciones oficiales');
-  });
-
-  it('abre confirmacion visible antes de generar', () => {
-    fixture.componentInstance.generarLiquidaciones();
+  it('sin nominaPeriodoId carga listado de nóminas con liquidaciones', async () => {
+    await configurar(
+      {},
+      {
+        resumenes: [
+          crearNominaResumen({
+            id: 'nom-1',
+            estado: 'liquidada',
+            periodo: '2026-04',
+            evidenciaCalculo: { idCalculoPeriodo: 10, versionCalculo: 1, calculoVigente: true },
+          }),
+          crearNominaResumen({ id: 'nom-2', estado: 'borrador', periodo: '2026-03' }),
+        ],
+      },
+    );
+    await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Generar liquidaciones');
-    expect(fixture.nativeElement.textContent).toContain('No se recalcularan montos.');
-    expect(service.generarLiquidaciones).not.toHaveBeenCalled();
+    expect(nominaService.listarResumenes).toHaveBeenCalled();
+    expect(service.consultarEstadoPeriodo).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.nominasConLiquidaciones().length).toBe(1);
+    expect(fixture.nativeElement.textContent).toContain('Liquidaciones por nómina');
+    expect(fixture.componentInstance.modalSeleccionNominaAbierto()).toBe(false);
+    expect(fixture.nativeElement.textContent).toContain('Selecciona la nómina origen');
+    expect(fixture.nativeElement.querySelector('[aria-label^="Abrir liquidaciones"]')).toBeTruthy();
   });
 
-  it('genera despues de confirmar en modal', async () => {
-    service.generarLiquidaciones.mockResolvedValue({
-      estado: 'generadas',
+  it('cerrar modal y abrir desde disparador', async () => {
+    const resumen = crearNominaResumen({
+      id: 'nom-1',
+      estado: 'liquidada',
       periodo: '2026-04',
-      snapshot: {
-        idCalculoPeriodo: 15,
-        totalTrabajadores: 1,
-        totalHaberes: 100,
-        totalDescuentos: 20,
-        totalLiquido: 80,
-        totalAdvertencias: 0,
-        versionMotor: 'v1',
-        hashSnapshot: 'abc',
-        aprobadoOperativamente: true,
-        cerradoOperativamente: true,
-      },
-      liquidacion: {
-        idLiquidacionPeriodo: 1,
-        periodo: '2026-04',
-        estado: 'generada',
-        totalTrabajadores: 0,
-        totalHaberes: 0,
-        totalDescuentos: 0,
-        totalLiquido: 0,
-        fechaGeneracion: '2026-04-30T12:00:00.000Z',
-      },
-      trabajadores: [],
-      motivoNoPuedeGenerar: 'Las liquidaciones oficiales ya fueron generadas para este periodo.',
-      advertencias: [],
+      evidenciaCalculo: { idCalculoPeriodo: 10, versionCalculo: 1, calculoVigente: true },
     });
-
-    fixture.componentInstance.generarLiquidaciones();
-    fixture.componentInstance.confirmarGeneracionLiquidaciones();
+    await configurar({}, { resumenes: [resumen] });
     await fixture.whenStable();
+    fixture.detectChanges();
 
-    expect(service.generarLiquidaciones).toHaveBeenCalledWith('2026-04');
+    fixture.componentInstance.cerrarModalSeleccionNomina();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.modalSeleccionNominaAbierto()).toBe(false);
+
+    fixture.componentInstance.abrirModalSeleccionNomina();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.modalSeleccionNominaAbierto()).toBe(true);
   });
 
-  it('al cambiar periodo global consulta nuevo periodo y limpia detalle', async () => {
-    fixture.componentInstance.trabajadorSeleccionado.set({
-      idLiquidacionTrabajador: 99,
-      idPersona: 10,
-      idContrato: null,
-      rut: '11.111.111-1',
-      nombreTrabajador: 'Ana Perez',
-      cargo: null,
-      centroCosto: null,
-      fechaIngreso: null,
-      diasTrabajados: null,
-      baseImponible: 100,
-      baseTributable: 100,
-      totalHaberes: 100,
-      totalDescuentos: 20,
-      totalAportesEmpleadorReferencia: 0,
-      liquidoPagar: 80,
-      estado: 'generada',
-      observaciones: [],
-      metadata: {},
+  it('seleccionar nómina en modal cierra el modal', async () => {
+    const resumen = crearNominaResumen({
+      id: 'nom-1',
+      estado: 'liquidada',
+      periodo: '2026-04',
+      evidenciaCalculo: { idCalculoPeriodo: 10, versionCalculo: 1, calculoVigente: true },
     });
-    fixture.componentInstance.conceptosDetalle.set([
-      {
-        idLiquidacionConcepto: 1,
-        idLiquidacionTrabajador: 99,
-        idConcepto: 20,
-        codigo: 'BONO',
-        codigoLre: null,
-        nombre: 'Bono',
-        tipo: 'HABER',
-        clasificacion: null,
-        cantidad: null,
-        base: null,
-        tasa: null,
-        monto: 100,
-        orden: 1,
-        metadata: {},
-      },
-    ]);
+    await configurar({}, { resumenes: [resumen] });
+    await fixture.whenStable();
+    fixture.detectChanges();
 
-    periodoActivo.setPeriodoYm('2026-06');
+    fixture.componentInstance.onNominaSeleccionadaEnModal(resumen);
+    expect(fixture.componentInstance.modalSeleccionNominaAbierto()).toBe(false);
+  });
+
+  it('sin nóminas elegibles muestra estado vacío', async () => {
+    await configurar();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('No hay nóminas liquidadas o cerradas');
+    expect(fixture.nativeElement.textContent).toContain('Ir al administrador de nóminas');
+  });
+
+  it('con nominaPeriodoId carga liquidaciones internas y trabajadores de la versión vigente', async () => {
+    await configurar(
+      { nominaPeriodoId: 'nom-99', periodo: '2026-04' },
+      {
+        nomina: crearNomina({ id: 'nom-99', empresaNombre: 'Acme', estado: 'liquidada', trabajadorIds: ['1'] }),
+        liquidacionesNomina: [
+          {
+            idLiquidacionPeriodo: 1,
+            idNominaPeriodo: 'nom-99',
+            periodo: '2026-04',
+            version: 1,
+            estado: 'generada',
+            activo: true,
+            idLiquidacionReemplazada: null,
+            fechaGeneracion: '2026-04-01T00:00:00Z',
+            totalTrabajadores: 2,
+            totalHaberes: 100,
+            totalDescuentos: 10,
+            totalLiquido: 90,
+          },
+        ],
+        trabajadoresLiquidacion: [
+          {
+            idLiquidacionTrabajador: 5,
+            idLiquidacionPeriodo: 1,
+            idTrabajador: 1,
+            nombreTrabajador: 'Ana Pérez',
+            rut: '11.111.111-1',
+            cargo: 'Analista',
+            centroCosto: 'RRHH',
+            totalHaberes: 100,
+            totalDescuentos: 10,
+            liquidoPagar: 90,
+            baseImponible: 100,
+            baseTributable: 90,
+            observaciones: [],
+          },
+        ],
+      },
+    );
+    await fixture.whenStable();
+    await vi.waitUntil(() => service.listarTrabajadoresLiquidacion.mock.calls.length > 0);
+    fixture.detectChanges();
+
+    expect(nominaService.obtenerNomina).toHaveBeenCalledWith('nom-99');
+    expect(nominaService.listarLiquidacionesNomina).toHaveBeenCalledWith('nom-99');
+    expect(service.listarTrabajadoresLiquidacion).toHaveBeenCalledWith(1);
+    expect(fixture.componentInstance.modoNominaInterna()).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Historial de versiones');
+    expect(fixture.nativeElement.textContent).toContain('Trabajadores liquidados');
+    expect(fixture.nativeElement.textContent).toContain('Ana Pérez');
+    expect(fixture.nativeElement.textContent).toContain('Pendientes de autorizar');
+    expect(fixture.nativeElement.textContent).toContain('Rectificaciones');
+    expect(service.consultarEstadoPeriodo).not.toHaveBeenCalled();
+  });
+
+  it('feedback de acción de trabajador incluye tono según estado', async () => {
+    await configurar(
+      { nominaPeriodoId: 'nom-99', periodo: '2026-04' },
+      {
+        nomina: crearNomina({ id: 'nom-99', empresaNombre: 'Acme', estado: 'liquidada', trabajadorIds: ['1'] }),
+        liquidacionesNomina: [
+          {
+            idLiquidacionPeriodo: 1,
+            idNominaPeriodo: 'nom-99',
+            periodo: '2026-04',
+            version: 1,
+            estado: 'generada',
+            activo: true,
+            idLiquidacionReemplazada: null,
+            fechaGeneracion: '2026-04-01T00:00:00Z',
+            totalTrabajadores: 1,
+            totalHaberes: 100,
+            totalDescuentos: 10,
+            totalLiquido: 90,
+          },
+        ],
+        trabajadoresLiquidacion: [
+          {
+            idLiquidacionTrabajador: 5,
+            idLiquidacionPeriodo: 1,
+            idTrabajador: 1,
+            nombreTrabajador: 'Ana Pérez',
+            rut: '11.111.111-1',
+            cargo: 'Analista',
+            centroCosto: 'RRHH',
+            totalHaberes: 100,
+            totalDescuentos: 10,
+            liquidoPagar: 90,
+            baseImponible: 100,
+            baseTributable: 90,
+            observaciones: [],
+          },
+        ],
+      },
+    );
+    await fixture.whenStable();
+    await vi.waitUntil(() => fixture.componentInstance.trabajadoresLiquidacion().length > 0);
+
+    fixture.componentInstance.ejecutarAccionTrabajador({
+      idLiquidacionTrabajador: 5,
+      tipo: 'autorizar',
+    });
+    fixture.detectChanges();
+
+    const feedback = fixture.componentInstance.feedbackAccionTrabajador();
+    expect(feedback?.mensaje).toContain('autorizada');
+    expect(feedback?.tono).toBe('info');
+  });
+
+  it('confirmar regeneración muestra evidencia de versión generada', async () => {
+    await configurar(
+      { nominaPeriodoId: 'nom-99', periodo: '2026-04' },
+      {
+        nomina: crearNomina({
+          id: 'nom-99',
+          empresaNombre: 'Acme',
+          estado: 'liquidada',
+          trabajadorIds: ['1'],
+          evidenciaCalculo: { idCalculoPeriodo: 10, versionCalculo: 1, calculoVigente: true },
+        }),
+        liquidacionesNomina: [
+          {
+            idLiquidacionPeriodo: 1,
+            idNominaPeriodo: 'nom-99',
+            periodo: '2026-04',
+            version: 1,
+            estado: 'generada',
+            activo: true,
+            idLiquidacionReemplazada: null,
+            fechaGeneracion: '2026-04-01T00:00:00Z',
+            totalTrabajadores: 2,
+            totalHaberes: 100,
+            totalDescuentos: 10,
+            totalLiquido: 90,
+          },
+          {
+            idLiquidacionPeriodo: 2,
+            idNominaPeriodo: 'nom-99',
+            periodo: '2026-04',
+            version: 2,
+            estado: 'generada',
+            activo: true,
+            idLiquidacionReemplazada: 1,
+            fechaGeneracion: '2026-04-02T00:00:00Z',
+            totalTrabajadores: 2,
+            totalHaberes: 120,
+            totalDescuentos: 12,
+            totalLiquido: 108,
+          },
+        ],
+        trabajadoresLiquidacion: [],
+      },
+    );
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    await fixture.componentInstance.confirmarRegeneracionInterna();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(nominaService.generarLiquidacionesNomina).toHaveBeenCalledWith('nom-99');
+    expect(fixture.componentInstance.evidenciaRegeneracion()).toContain('Versión v');
+    expect(fixture.componentInstance.evidenciaRegeneracion()).toContain('trabajadores');
+  });
+
+  it('confirmación de regeneración expone secciones de acta guiada', async () => {
+    await configurar(
+      { nominaPeriodoId: 'nom-99', periodo: '2026-04' },
+      {
+        nomina: crearNomina({
+          id: 'nom-99',
+          estado: 'liquidada',
+          evidenciaCalculo: { idCalculoPeriodo: 10, versionCalculo: 1, calculoVigente: true },
+        }),
+        liquidacionesNomina: [
+          {
+            idLiquidacionPeriodo: 1,
+            idNominaPeriodo: 'nom-99',
+            periodo: '2026-04',
+            version: 1,
+            estado: 'generada',
+            activo: true,
+            idLiquidacionReemplazada: null,
+            fechaGeneracion: '2026-04-01T00:00:00Z',
+            totalTrabajadores: 1,
+            totalHaberes: 100,
+            totalDescuentos: 10,
+            totalLiquido: 90,
+          },
+        ],
+      },
+    );
     await fixture.whenStable();
 
-    expect(service.consultarEstadoPeriodo).toHaveBeenCalledWith('2026-06');
-    expect(fixture.componentInstance.trabajadorSeleccionado()).toBeNull();
-    expect(fixture.componentInstance.conceptosDetalle()).toEqual([]);
+    const secciones = fixture.componentInstance.seccionesConfirmacionRegeneracionInterna();
+    expect(secciones.map((s) => s.title)).toEqual([
+      'Qué se hará',
+      'Condición',
+      'Qué queda registrado',
+      'Qué sigue',
+    ]);
   });
 });

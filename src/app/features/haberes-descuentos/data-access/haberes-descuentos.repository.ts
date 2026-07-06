@@ -7,6 +7,7 @@ import {
   ConceptoMantenimientoFila,
   ConceptoMantenimientoPayload,
   ContratoResumenPersona,
+  ReglaConceptoCalculoFila,
   HaberDescuentoAsignacionCierrePayload,
   HaberDescuentoAsignacionListado,
   HaberDescuentoAsignacionPayload,
@@ -185,6 +186,8 @@ export class HaberesDescuentosRepository {
    * `esConceptoAsignable` (servicio).
    */
   async obtenerConceptoParaAsignacion(idConcepto: number): Promise<{
+    codigo: string | null;
+    nombre: string | null;
     tipo: string | null;
     esSistema: boolean;
     calculoAutomatico: boolean;
@@ -194,7 +197,7 @@ export class HaberesDescuentosRepository {
   } | null> {
     const { data, error } = await this.supabase
       .from('concepto')
-      .select('tipo, es_sistema, calculo_automatico, vigente, vigencia_inicio, vigencia_fin')
+      .select('codigo, nombre, tipo, es_sistema, calculo_automatico, vigente, vigencia_inicio, vigencia_fin')
       .eq('id_concepto', idConcepto)
       .maybeSingle();
 
@@ -207,6 +210,8 @@ export class HaberesDescuentosRepository {
     }
 
     return {
+      codigo: data.codigo ?? null,
+      nombre: data.nombre ?? null,
       tipo: data.tipo ?? null,
       esSistema: Boolean(data.es_sistema),
       calculoAutomatico: Boolean(data.calculo_automatico),
@@ -353,6 +358,11 @@ export class HaberesDescuentosRepository {
     }
   }
 
+  /**
+   * Cuenta referencias al concepto antes de borrarlo.
+   * `liquidacionDetalle` consulta la tabla legacy `liquidacion_detalle` (salida de fn_generar_liquidacion);
+   * no es la liquidación oficial del periodo (nomina_liquidacion_concepto). Solo lectura COUNT; no alterar sin fase de migración del guard.
+   */
   async contarUsoConcepto(idConcepto: number): Promise<{ liquidacionDetalle: number; asignaciones: number }> {
     const [liq, asig] = await Promise.all([
       this.supabase
@@ -620,5 +630,23 @@ export class HaberesDescuentosRepository {
 
   async desactivarAsignacion(idAsignacion: number): Promise<void> {
     await this.cerrarAsignacion(idAsignacion, { estado: false, vigenciaFin: null });
+  }
+
+  async listarReglasCalculoConcepto(idConcepto: number): Promise<ReglaConceptoCalculoFila[]> {
+    const { data, error } = await this.supabase
+      .from('regla_concepto_calculo')
+      .select('id_regla_concepto_calculo, codigo_regla, base_calculo, calculo_automatico, activo')
+      .eq('id_concepto', idConcepto)
+      .order('codigo_regla', { ascending: true });
+    if (error) {
+      throw new Error(error.message);
+    }
+    return (data ?? []).map((row) => ({
+      idReglaConceptoCalculo: Number(row.id_regla_concepto_calculo),
+      codigoRegla: row.codigo_regla,
+      baseCalculo: row.base_calculo ?? null,
+      calculoAutomatico: Boolean(row.calculo_automatico),
+      activo: Boolean(row.activo),
+    }));
   }
 }

@@ -2,7 +2,7 @@
 
 ## Estado (Fase 9)
 
-**Fase fuerte del producto en curso:** la **documentación** Fase 9 incluye diagnóstico, contrato funcional y **decisiones operativas** ([`decisiones-operativas.md`](./decisiones-operativas.md)). **Fase 9.2A** dejó el **listado base** del catálogo (columnas, filtros, regla `esConceptoAsignable`, vacíos). **Fase 9.2B** añadió **detalle** al **Revisar** (modal), motivos de no asignabilidad/resumen, vigencia `INVALIDO` si fechas incoherentes, y **blindaje de acciones** (`concepto-acciones.rules.ts` + deshabilitado en grilla). **Fase 9.2C** alineó **Haberes y descuentos** al listado de asignables del catálogo (`HaberesDescuentosService.listarConceptos` + validación al guardar con `esConceptoAsignable`). Siguen brechas de **permisos/JWT**, **CRUD completo alineado a roles**, **reglas de cálculo en UI**, **E2E visual estable** y **RLS** según diagnóstico §8 y decisiones §2 / §10.
+**Fase fuerte del producto en curso:** la **documentación** Fase 9 incluye diagnóstico, contrato funcional y **decisiones operativas** ([`decisiones-operativas.md`](./decisiones-operativas.md)). **CONC-02 núcleo cerrado** (permisos JWT, RLS, reglas en UI): [`conc-02-cierre.md`](./conc-02-cierre.md).
 
 ## Orden de lectura
 
@@ -43,3 +43,25 @@ El modulo Conceptos incorpora metadata para tratamiento LRE:
 - `observacion_normativa_lre`
 
 Esto permite diferenciar conceptos directos, derivados, ambiguos, pendientes o internos sin forzar codigos LRE incorrectos.
+## ERP-NOIA-BITACORA-OPERATIVA-00 - Lectura de modulo
+
+Conceptos de remuneracion queda alineado a [`NOIA / Bitacora Operativa`](../../diseno/bitacora-operativa-noia.md) como catalogo normativo de conceptos, separado de los movimientos aplicados a trabajadores.
+
+- `Concepto` define naturaleza, imponibilidad, tributacion, reglas y vigencia.
+- `Movimiento` registra aplicacion concreta por trabajador o periodo.
+- Esta separacion debe mantenerse en futuras fases UX para evitar mezclar catalogo con bitacora operacional.
+- Esta referencia es documental; no cambia SQL, servicios, motor, rutas ni estilos globales.
+
+## NOM-MOVIMIENTOS-SIMPLE-00
+
+La decision documental vigente define `Movimientos de remuneracion` como experiencia futura que unifica `Movimientos del mes` y `Asignaciones recurrentes` desde la duracion del registro: `Solo este mes`, `Recurrente` o `En cuotas`. Documento rector: [`../remuneraciones/movimientos-remuneracion-simple.md`](../remuneraciones/movimientos-remuneracion-simple.md).
+
+Esta fase no cambia rutas, servicios, SQL, motor ni pantallas actuales.
+
+## NOM-MOVIMIENTOS-SIMPLE-01
+
+La capa visible de movimientos no cambia el catalogo maestro. `Conceptos de remuneracion` sigue separado: define conceptos; `Movimientos de remuneracion` aplica conceptos a trabajadores y periodos.
+
+## NOM-MOVIMIENTOS-POR-TRABAJADOR-01
+
+Conceptos se mantiene como catalogo maestro. La gestion por trabajador usa conceptos existentes para movimientos mensuales o recurrentes, sin mezclar catalogo con aplicacion concreta del movimiento.

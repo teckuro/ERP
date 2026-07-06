@@ -1,0 +1,124 @@
+<app-nomina-mensual-v2-modal-acceso-base-parametros
+  [modal]="orquestador.modalAccesoBaseParametros()"
+  (confirmar)="confirmarRecargaBaseParametros.emit()"
+  (cerrar)="cerrarModalAccesoBaseParametros()"
+/>
+
+@if (orquestador.modalRevisarParametros(); as modalRevisar) {
+  <app-message-box
+    variant="decision"
+    mode="modal"
+    width="md"
+    [title]="'Revisar parámetros de ' + modalRevisar.periodoEtiqueta"
+    message="La configuración del período ya está preparada. Puedes revisarla. Cámbiala solo si hace falta."
+    primaryLabel="Revisar"
+    secondaryLabel="Cancelar"
+    (action)="confirmarReingresoParametros.emit()"
+    (secondary)="cerrarModalRevisarParametros()"
+  ></app-message-box>
+}
+
+@if (orquestador.modalConfirmarRetroceso(); as modalRetro) {
+  <app-message-box
+    variant="decision"
+    mode="modal"
+    width="md"
+    [title]="'Volver a ' + modalRetro.etiquetaDestino"
+    [message]="'Vas a revisar ' + modalRetro.etiquetaDestino + '. Si modificas algo, se invalidará el avance posterior.'"
+    primaryLabel="Continuar"
+    secondaryLabel="Cancelar"
+    (action)="confirmarRetrocesoAPaso.emit()"
+    (secondary)="cerrarModalConfirmarRetroceso()"
+  ></app-message-box>
+}
+
+@if (orquestador.modalTablaDiferenciasParametrosBase(); as modalTabla) {
+  <app-message-box
+    variant="info"
+    mode="modal"
+    width="md"
+    title="Diferencias de parámetros"
+    message="Estos valores cambiaron desde la configuración guardada."
+    [sections]="seccionesTablaDiferencias(modalTabla.diferencias)"
+    primaryLabel="Entendido"
+    (action)="cerrarModalTablaDiferencias()"
+  ></app-message-box>
+}
+
+@if (orquestador.modalActualizarParametrosBase(); as modalActualizar) {
+  <app-message-box
+    variant="decision"
+    mode="modal"
+    width="md"
+    title="Actualizar configuración"
+    message="Se reemplazará la configuración guardada por los parámetros actuales del mantenedor."
+    primaryLabel="Actualizar y continuar"
+    secondaryLabel="Cancelar"
+    (action)="confirmarActualizarBaseYContinuar.emit()"
+    (secondary)="cerrarModalActualizarBase()"
+  ></app-message-box>
+}
+
+@if (orquestador.modalDiferenciasParametrosBase(); as modalDiff) {
+  <app-message-box
+    variant="decision"
+    mode="modal"
+    width="md"
+    title="Hay cambios en los parámetros"
+    message="Elige si mantienes la configuración guardada o la actualizas con los valores actuales."
+    primaryLabel="Mantener configuración"
+    [secondaryLabel]="permisosRecargaBase().puedeActualizarBaseEnDiferencias ? 'Actualizar' : ''"
+    tertiaryLabel="Ver cambios"
+    (action)="confirmarMantenerBaseYContinuar.emit()"
+    (secondary)="solicitarActualizarBase.emit()"
+    (tertiary)="orquestador.modalTablaDiferenciasParametrosBase.set({ diferencias: modalDiff.diferencias })"
+  ></app-message-box>
+}
+
+@if (orquestador.modalPrepararNomina(); as modalPreparar) {
+  <app-message-box
+    variant="decision"
+    mode="modal"
+    width="md"
+    [title]="'Preparar nómina de ' + modalPreparar.preview.periodoEtiqueta"
+    message="Se guardará la configuración de parámetros para este período."
+    [sections]="seccionesPrepararNomina(modalPreparar.preview)"
+    primaryLabel="Guardar y continuar"
+    secondaryLabel="Cancelar"
+    (action)="confirmarGuardarBaseYContinuar.emit()"
+    (secondary)="cerrarModalPrepararNomina()"
+  ></app-message-box>
+}
+
+@if (orquestador.modalAvanceParametros(); as modalAvance) {
+  @switch (modalAvance.tipo) {
+    @case ('bloqueo') {
+      <app-message-box
+        variant="blocked"
+        mode="modal"
+        width="md"
+        title="Faltan datos para preparar la nómina"
+        message="Completa los datos del mes antes de continuar."
+        [sections]="seccionesMsgBoxBloqueoParametros(modalAvance.pendientes)"
+        primaryLabel="Entendido"
+        secondaryLabel="Ver pendientes"
+        (action)="cerrarModalAvanceParametros()"
+        (secondary)="irAPendientesParametros.emit()"
+      ></app-message-box>
+    }
+    @case ('revision') {
+      <app-message-box
+        variant="decision"
+        mode="modal"
+        width="md"
+        title="Hay observaciones en los parámetros"
+        message="Puedes continuar o volver al paso Parámetros para corregirlas."
+        [sections]="seccionesMsgBoxRevisionParametros"
+        primaryLabel="Continuar"
+        secondaryLabel="Corregir"
+        (action)="confirmarAvanceConRevision.emit()"
+        (secondary)="cerrarModalAvanceParametros()"
+      ></app-message-box>
+    }
+  }
+}

@@ -7,13 +7,14 @@ import {
   EmpleadoStringCatalogOption,
 } from '../../../models/empleado-catalogos.model';
 import { EmpleadoSexo, TipoEstadoCivil } from '../../../models/empleado.model';
-import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
-import { CardComponent } from '../../../../../shared/components/ui/card.component';
+import { CalendarInputComponent } from '../../../../../shared/components/ui/forms/calendar-input/calendar-input.component';
+import { CardComponent } from '../../../../../shared/components/ui/primitives/card.component';
 import {
   SearchSelectComponent,
   type SearchSelectOption,
-} from '../../../../../shared/components/ui/search-select.component';
+} from '../../../../../shared/components/ui/forms/search-select.component';
 import { withEmptyNumberCatalog, withEmptyStringCatalog } from '../../../utils/empleado-select-options';
+import { EmpleadoFieldRequiredComponent } from '../../empleado-field-required/empleado-field-required.component';
 
 type DatosPersonalesControlName = keyof DatosPersonalesFormGroup['controls'];
 type ContactoControlName = keyof ContactoFormGroup['controls'];
@@ -21,7 +22,13 @@ type ContactoControlName = keyof ContactoFormGroup['controls'];
 @Component({
   selector: 'app-empleado-datos-personales',
   standalone: true,
-  imports: [ReactiveFormsModule, CalendarInputComponent, CardComponent, SearchSelectComponent],
+  imports: [
+    ReactiveFormsModule,
+    CalendarInputComponent,
+    CardComponent,
+    SearchSelectComponent,
+    EmpleadoFieldRequiredComponent,
+  ],
   templateUrl: './datos-personales.html',
   styleUrl: './datos-personales.css',
 })
@@ -31,15 +38,22 @@ export class DatosPersonalesComponent {
   @Input() sexos: EmpleadoStringCatalogOption<EmpleadoSexo>[] = [];
   @Input() estadosCivil: EmpleadoStringCatalogOption<TipoEstadoCivil>[] = [];
   @Input() paises: EmpleadoCatalogOption[] = [];
-  @Input() visibleBlocks: string[] | null = null;
+  @Input() bloquesVisibles: string[] | null = null;
   /** Textos de ayuda bajo cada titulo de bloque (solo creacion basica). */
   @Input() basicSectionLeads = false;
   /** Grilla 8 columnas y spans proporcionales (solo alta avanzada). */
-  @Input() advancedGridLayout = false;
+  @Input() grillaAvanzada = false;
+  /** Edicion inline desde ficha: la card exterior ya aporta el titulo del bloque. */
+  @Input() disposicionInlineFicha = false;
 
   @HostBinding('class.employee-layout-advanced')
   protected get employeeLayoutAdvanced(): boolean {
-    return this.advancedGridLayout;
+    return this.grillaAvanzada;
+  }
+
+  @HostBinding('class.employee-layout-inline-record')
+  protected get employeeLayoutInlineRecord(): boolean {
+    return this.disposicionInlineFicha;
   }
 
   readonly today = this.toIsoDate(new Date());
@@ -104,8 +118,8 @@ export class DatosPersonalesComponent {
     return control.touched && !String(control.value ?? '').trim();
   }
 
-  isBlockVisible(blockId: string): boolean {
-    return this.visibleBlocks === null || this.visibleBlocks.includes(blockId);
+  esBloqueVisible(blockId: string): boolean {
+    return this.bloquesVisibles === null || this.bloquesVisibles.includes(blockId);
   }
 
   get sexoSelectOptions(): SearchSelectOption[] {

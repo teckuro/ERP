@@ -2,7 +2,7 @@ import { importProvidersFrom } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
-import { Lock } from 'lucide-angular/src/icons';
+import { Building2, Check, Eye, Lock, Mail, Unlock } from 'lucide-angular/src/icons';
 import { describe, expect, it, vi } from 'vitest';
 
 import { AuthService } from '../core/auth/auth.service';
@@ -22,7 +22,11 @@ async function setup(auth = createAuthMock()): Promise<{
 }> {
   await TestBed.configureTestingModule({
     imports: [LoginPage],
-    providers: [{ provide: AuthService, useValue: auth }, provideRouter([]), importProvidersFrom(LucideAngularModule.pick({ Lock }))],
+    providers: [
+      { provide: AuthService, useValue: auth },
+      provideRouter([]),
+      importProvidersFrom(LucideAngularModule.pick({ Building2, Check, Eye, Lock, Mail, Unlock })),
+    ],
   }).compileComponents();
 
   const fixture = TestBed.createComponent(LoginPage);

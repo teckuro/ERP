@@ -1,0 +1,609 @@
+/*
+       * Rejilla maestra: 8 columnas; cada input/select = span 2 (de a dos). No hace falta llenar la fila: pueden quedar columnas libres.
+       * Subtítulos (.param-subsection-title) = span 8. Radios/checks compactos en Valores = span 1.
+       */
+      .field-grid--values,
+      .field-grid--gratificacion,
+      .field-grid--rentas,
+.field-grid--afc,
+      .field-grid--topes,
+      .field-grid--sis,
+      .field-grid--ccaf {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        justify-content: start;
+        align-items: end;
+      }
+
+      .field-grid > .field-grid-slot {
+        grid-column: span 8;
+        min-width: 0;
+        justify-self: stretch;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      /* Agrupa título + filas de campos con el mismo ritmo que el resto del formulario */
+      .field-grid > .field-grid-slot--subsection {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--prm-field-stack-gap);
+        min-width: 0;
+      }
+
+      /* Slots anidados: hasta 3 columnas (máx.); repetir reglas sin '>' para slots dentro de subsección */
+      .field-grid .field-grid-slot--3 {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--prm-grid-gap-inline);
+        align-items: end;
+        min-width: 0;
+      }
+
+      .field-grid > .field-grid-slot--3 {
+        grid-column: span 8;
+      }
+
+      .field-grid .field-grid-slot--2 {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--prm-grid-gap-inline);
+        align-items: end;
+        min-width: 0;
+      }
+
+      .field-grid > .field-grid-slot--2 {
+        grid-column: span 8;
+      }
+
+      .param-checkbox-inline {
+        display: inline-flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        min-height: var(--erp-control-height, 22px);
+        margin: 0;
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: #374151;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .param-checkbox-inline input {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        accent-color: #2563eb;
+      }
+
+      .parametros-page .param-checkbox-inline:has(input:disabled),
+      .parametros-page .param-checkbox-inline--locked,
+      .parametros-page .param-check:has(input:disabled),
+      .parametros-page .erp-choice-radio:has(input:disabled) {
+        cursor: default;
+        color: var(--prm-field-locked-muted);
+      }
+
+      .parametros-page .param-checkbox-inline input[type='checkbox']:disabled,
+      .parametros-page .param-check input[type='checkbox']:disabled {
+        appearance: none;
+        -webkit-appearance: none;
+        display: inline-grid;
+        place-content: center;
+        margin: 0;
+        border: 1px solid var(--prm-field-locked-border);
+        border-radius: 3px;
+        background: var(--prm-field-locked-bg);
+        opacity: 1;
+        accent-color: transparent;
+      }
+
+      .parametros-page .param-checkbox-inline input[type='checkbox']:disabled:checked,
+      .parametros-page .param-check input[type='checkbox']:disabled:checked {
+        border-color: var(--prm-field-locked-border);
+        background-color: #e2e8f0;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 6.2 4.8 8.5 9.5 3.5' stroke='%23334155' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 11px 11px;
+      }
+
+      .parametros-page .erp-choice-radio input[type='radio']:disabled {
+        appearance: none;
+        -webkit-appearance: none;
+        display: inline-grid;
+        place-content: center;
+        margin: 0;
+        width: 16px;
+        height: 16px;
+        border: 1px solid var(--prm-field-locked-border);
+        border-radius: 50%;
+        background: var(--prm-field-locked-bg);
+        opacity: 1;
+        accent-color: transparent;
+      }
+
+      .parametros-page .erp-choice-radio input[type='radio']:disabled:checked {
+        border-color: var(--prm-field-locked-border);
+        background-color: #e2e8f0;
+        box-shadow: inset 0 0 0 3px var(--prm-field-locked-ink);
+      }
+
+      .field-grid--gratificacion > .param-checkbox-inline span {
+        line-height: 1.2;
+      }
+
+      .field-grid--values > .param-field,
+      .field-grid--values > .param-check,
+      .field-grid--gratificacion > .param-field,
+      .field-grid--rentas > .param-field,
+      .field-grid--afc > .param-field,
+      .field-grid--sis > .param-field,
+      .field-grid--topes > .param-field,
+      .field-grid--ccaf > .param-field {
+        grid-column: span 2;
+        min-width: 0;
+        justify-self: start;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      /* Radios / checks: controles compactos → span 1 cada uno (excepción respecto a inputs span 2) */
+      .parametros-page .field-grid--values > .erp-choice-radio {
+        grid-column: span 1;
+        min-width: 0;
+        justify-self: start;
+        width: auto;
+        max-width: 100%;
+        box-sizing: border-box;
+        align-self: end;
+      }
+
+      .field-grid--gratificacion > .param-checkbox-inline {
+        grid-column: span 1;
+        min-width: 0;
+        justify-self: start;
+        width: auto;
+        max-width: 100%;
+        align-self: end;
+      }
+
+      @media (max-width: 980px) {
+        .field-grid--values,
+        .field-grid--gratificacion,
+        .field-grid--rentas,
+        .field-grid--afc,
+        .field-grid--sis,
+        .field-grid--topes,
+        .field-grid--ccaf {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .field-grid > .field-grid-slot {
+          grid-column: span 4;
+        }
+
+        .field-grid .param-subsection-title,
+        .field-grid .param-flag-row {
+          grid-column: span 4;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .field-grid,
+        .field-grid--values,
+        .field-grid--gratificacion,
+        .field-grid--rentas,
+        .field-grid--afc,
+        .field-grid--sis,
+        .field-grid--topes,
+        .field-grid--ccaf {
+          grid-template-columns: 1fr;
+          padding: 12px;
+          gap: 10px;
+        }
+
+        .field-grid > .field-grid-slot {
+          grid-column: span 1;
+        }
+
+        .field-grid .field-grid-slot--3,
+        .field-grid > .field-grid-slot--3 {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+
+        .field-grid .field-grid-slot--2,
+        .field-grid > .field-grid-slot--2 {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+
+        .parametros-page .field-grid--values > .erp-choice-radio,
+        .field-grid--values > .param-field,
+        .field-grid--values > .param-check,
+        .field-grid--gratificacion > .param-field,
+        .field-grid--gratificacion > .param-checkbox-inline,
+        .field-grid--rentas > .param-field,
+        .field-grid--afc > .param-field,
+        .field-grid--sis > .param-field,
+        .field-grid--topes > .param-field,
+        .field-grid--ccaf > .param-field {
+          grid-column: span 1;
+        }
+
+        .field-grid .param-subsection-title,
+        .field-grid .param-flag-row {
+          grid-column: span 1;
+        }
+
+        .catalog-section--split h2 {
+          grid-column: span 1;
+        }
+      }
+
+      .param-field,
+      .param-check,
+      .radio-row label {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        min-width: 0;
+        gap: 6px;
+        color: #374151;
+        font-size: 0.74rem;
+        font-weight: 700;
+        line-height: 1.05;
+        justify-items: start;
+        text-align: left;
+      }
+
+      /* Labels compactos */
+      .param-field > span:first-child,
+      .param-check > span:first-child,
+      .radio-row label > span:first-child {
+        min-height: 1.65em;
+        display: flex;
+        align-items: flex-end;
+        justify-self: start;
+        max-width: 100%;
+      }
+
+      /* .param-field--wide opcional (misma huella span 2 que el resto; texto largo sólo rompe dentro de la celda) */
+
+      .param-check {
+      }
+
+      .param-check span,
+      .radio-row label span {
+        text-align: left;
+      }
+
+      .param-check input,
+      .radio-row input {
+        width: 16px;
+        height: 16px;
+        accent-color: #2563eb;
+      }
+
+      .param-field .unit-field,
+      .field-grid .param-field > .unit-field {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+      }
+
+      /*
+       * Campo con unidad ($ % UF IMM): un solo borde exterior, input sin borde interno,
+       * chip como flex item (alineación estable; evita solapamiento con padding-right fijo).
+       */
+      .parametros-page .unit-field.unit-field--suffix {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: var(--prm-unit-gap);
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+        min-height: var(--erp-control-height, 22px);
+        height: var(--erp-control-height, 22px);
+        padding: 0 6px 0 8px;
+        border: 1px solid var(--prm-input-border);
+        border-radius: 6px;
+        background: var(--prm-panel);
+        transition:
+          border-color 140ms ease,
+          box-shadow 140ms ease;
+      }
+
+      .parametros-page .unit-field.unit-field--suffix:focus-within {
+        border-color: var(--prm-blue);
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
+      }
+
+      .parametros-page .unit-field.unit-field--suffix:has(.param-input:is([readonly], :disabled)) {
+        background: var(--prm-field-readonly-bg);
+        border-color: var(--prm-field-readonly-border);
+      }
+
+      .parametros-page .unit-field.unit-field--suffix:has(.param-input:is([readonly], :disabled))::after {
+        border-color: #cbd5e1;
+        color: #475569;
+      }
+
+      .parametros-page .unit-field.unit-field--suffix .param-input {
+        flex: 1 1 0%;
+        min-width: 0;
+        height: auto;
+        align-self: stretch;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 4px 0 0 !important;
+      }
+
+      .parametros-page .unit-field.unit-field--suffix .param-input:focus {
+        outline: none !important;
+      }
+
+      .parametros-page .unit-field.unit-field--suffix .param-input:is([readonly], :disabled) {
+        background: transparent !important;
+        color: var(--prm-field-readonly-text) !important;
+      }
+
+      .parametros-page .unit-field.unit-field--suffix::after {
+        content: attr(data-unit);
+        position: static;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: var(--erp-unit-badge-height, 16px);
+        min-width: var(--erp-unit-badge-min-width, 18px);
+        padding: 0 var(--erp-unit-badge-padding-x, 5px);
+        border: 1px solid var(--prm-line);
+        border-radius: 999px;
+        background: var(--prm-soft);
+        color: #64748b;
+        font-size: var(--erp-unit-badge-font-size, var(--prm-unit-chip-fs, 0.625rem));
+        font-weight: 750;
+        line-height: 1;
+        pointer-events: none;
+      }
+
+      /* Prefijo legacy (no hay plantillas actuales): badge absoluto dentro del input */
+      .parametros-page .unit-field.unit-field--prefix:not(.unit-field--suffix) {
+        position: relative;
+        display: block;
+      }
+
+      .parametros-page .unit-field.unit-field--prefix:not(.unit-field--suffix)::after {
+        content: attr(data-unit);
+        position: absolute;
+        top: 50%;
+        right: var(--erp-unit-offset-x, 6px);
+        transform: translateY(-50%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: var(--erp-unit-badge-height, 16px);
+        min-width: var(--erp-unit-badge-min-width, 18px);
+        padding: 0 var(--erp-unit-badge-padding-x, 5px);
+        border: 1px solid var(--prm-line);
+        border-radius: 999px;
+        background: var(--prm-soft);
+        color: #64748b;
+        font-size: var(--erp-unit-badge-font-size, 0.66rem);
+        font-weight: 750;
+        line-height: 1;
+        pointer-events: none;
+      }
+
+      .parametros-page .unit-field.unit-field--prefix:not(.unit-field--suffix) .param-input {
+        padding-right: var(--erp-unit-input-padding, 34px);
+        padding-left: 6px;
+      }
+
+      .text-right {
+        text-align: right;
+      }
+
+      .radio-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(var(--erp-field-min-width, 190px), var(--erp-field-max-width, 260px)));
+        justify-content: start;
+        justify-items: start;
+        align-items: end;
+        row-gap: var(--erp-field-row-gap, 3px);
+        column-gap: var(--erp-field-col-gap, 2px);
+        padding: 12px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+
+      .radio-row--spaced {
+        row-gap: 8px;
+        column-gap: 16px;
+        padding: 12px 12px 14px;
+      }
+
+      .tab-footnote {
+        padding: 0 4px 6px;
+        color: #6b7280;
+        font-size: 0.74rem;
+        font-weight: 600;
+      }
+
+      .tab-footnote--muted {
+        margin-top: 4px;
+        padding: 10px 12px 8px;
+        border-top: 1px solid #f1f5f9;
+        color: #94a3b8;
+        font-weight: 600;
+      }
+
+      .catalog-section {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 0;
+        min-height: 0;
+        min-width: 0;
+        width: 100%;
+        gap: 0;
+        overflow: hidden;
+        border: 1px solid #dbe2ea;
+        border-radius: 8px;
+        background: #ffffff;
+        box-shadow: none;
+      }
+
+      .parametros-page .param-subhead + .param-tab-subview > .catalog-section {
+        margin-top: -1px;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+      }
+
+      .catalog-section > h2 {
+        flex: 0 0 auto;
+      }
+
+      .catalog-section > app-data-grid {
+        box-sizing: border-box;
+        flex: 1 1 auto;
+        min-height: 0;
+        width: 100%;
+        min-width: 0;
+        padding: 0;
+      }
+
+      .catalog-section > .catalog-grid {
+        flex: 1 1 auto;
+        min-height: 0;
+      }
+
+      .catalog-grid {
+        display: grid;
+        width: 100%;
+        min-width: 0;
+        min-height: 0;
+        gap: 8px;
+        padding: 8px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-auto-rows: minmax(0, 1fr);
+        justify-items: stretch;
+        align-items: stretch;
+      }
+
+      .catalog-grid app-data-grid {
+        min-width: 0;
+        min-height: 0;
+        height: 100%;
+      }
+
+      .parametros-page .catalog-section app-data-grid app-card.erp-card {
+        border: 0;
+        border-radius: 0;
+        height: 100% !important;
+        min-height: 0;
+        box-shadow: none;
+      }
+
+      .parametros-page .catalog-grid app-data-grid app-card.erp-card {
+        border: 1px solid #dbe2ea;
+        border-radius: 7px;
+        height: 100% !important;
+      }
+
+      .parametros-page .catalog-section app-data-grid .data-grid-filter-panel {
+        gap: 6px !important;
+        padding: 7px 10px !important;
+        border-color: #dbe2ea !important;
+      }
+
+      .parametros-page .catalog-section app-data-grid .data-grid-footer {
+        padding: 7px 10px !important;
+      }
+
+      .parametros-page .catalog-section app-data-grid .data-grid-scroll {
+        flex: 1 1 auto;
+        min-height: 0;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      .parametros-page .catalog-grid app-data-grid .data-grid-scroll,
+      .parametros-page .catalog-section.catalog-section--split app-data-grid .data-grid-scroll {
+        flex: 1 1 auto;
+      }
+
+      .parametros-page .catalog-section app-data-grid .data-grid-scroll::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+      }
+
+      @media (max-width: 980px) {
+        .catalog-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .catalog-section + .catalog-section {
+        margin-top: 0;
+      }
+
+      .catalog-section.catalog-section--split {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr);
+        flex: 1 1 0;
+        min-height: 0;
+      }
+
+      .catalog-section.catalog-section--split > h2 {
+        grid-column: 1 / -1;
+      }
+
+      .catalog-section.catalog-section--split > app-data-grid {
+        min-height: 0;
+        height: 100%;
+        align-self: stretch;
+      }
+
+      @media (max-width: 1060px) {
+        .catalog-section.catalog-section--split {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr);
+        }
+
+        .catalog-section.catalog-section--split > h2 {
+          grid-column: 1;
+        }
+
+        .catalog-section.catalog-section--split > app-data-grid {
+          grid-column: 1;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .parametros-toolbar {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .parametros-toolbar__main,
+        .period-controls {
+          width: 100%;
+        }
+
+        .period-month,
+        .period-year {
+          width: 100%;
+        }
+
+        .folder-tab {
+          min-width: 150px;
+        }
+      }
+

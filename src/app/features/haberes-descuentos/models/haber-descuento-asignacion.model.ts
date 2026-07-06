@@ -156,6 +156,14 @@ export interface HaberDescuentoAsignacionPayload {
   estado: boolean;
 }
 
+export interface ReglaConceptoCalculoFila {
+  idReglaConceptoCalculo: number;
+  codigoRegla: string;
+  baseCalculo: string | null;
+  calculoAutomatico: boolean;
+  activo: boolean;
+}
+
 export interface ContratoResumenPersona {
   idContrato: number;
   etiqueta: string;

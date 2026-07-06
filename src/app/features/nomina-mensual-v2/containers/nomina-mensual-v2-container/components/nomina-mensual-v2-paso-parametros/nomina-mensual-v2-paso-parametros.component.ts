@@ -1,0 +1,797 @@
+import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  EventEmitter,
+  OnInit,
+  Output,
+  computed,
+  ViewEncapsulation,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
+import { Router } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
+
+import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
+import type { MessageBoxSection } from '../../../../../../shared/components/ui/feedback/message-box/message-box.types';
+import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
+import { PeriodoActivoService } from '../../../../../../core/services/periodo-activo.service';
+import type { PayrollStepId } from '../../../../models/nomina-mensual-v2.models';
+import type {
+  OrigenBaseParametrosAlAvanzar,
+} from '../../../../models/nomina-parametros-base.models';
+import type {
+  NominaParametrosResumen,
+  ParametroBloqueoSeveridad,
+  ParametroResumenBloqueo,
+  ParametroResumenAreaId,
+  ParametroResumenItem,
+  ParametroResumenEstado,
+  ParametroResumenItemEstado,
+  ParametrosMantenedorDestino,
+} from '../../../../models/nomina-parametros-resumen.models';
+import { NominaParametrosBaseService } from '../../../../services/nomina-parametros-base.service';
+import { NominaParametrosBaseAccesoService } from '../../../../services/nomina-parametros-base-acceso.service';
+import { ayudaAvanceParametrosConBase } from '../../../../rules/nomina-parametros-base-acceso.rules';
+import { NominaParametrosResumenService } from '../../../../services/nomina-parametros-resumen.service';
+import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
+import type { NominaParametrosContext } from '../../../../models/nomina-parametros-context.models';
+import {
+  buildNominaParametrosContext,
+  esContextoParametrosCompleto,
+} from '../../../../rules/nomina-parametros-rango.rules';
+import type { TipoNomina } from '../../../../../nomina-mensual/models/nomina-periodo.models';
+type DonutTonoPresentacion = 'exito' | 'revision' | 'bloqueo' | 'neutral';
+
+type ParametrosCargaOverlayPresentacion = {
+  titulo: string;
+  mensaje: string;
+};
+
+type ModalPendientesParametrosTipo = 'preparacion' | 'oficiales';
+
+type GrupoModalPendientesParametros = {
+  areaId: ParametroResumenAreaId;
+  titulo: string;
+  cantidad: number;
+  bloqueos: ParametroResumenBloqueo[];
+};
+
+type ResultadoValidacionPaso = 'permitido' | 'advertencia' | 'bloqueado';
+
+interface EstadoPendientesPasoParametros {
+  tieneBloqueos: boolean;
+  tieneRevisiones: boolean;
+  puedeContinuar: boolean;
+  resultado: ResultadoValidacionPaso;
+}
+
+const coloresDonutPorTono: Record<DonutTonoPresentacion, string> = {
+  exito: '#3d6b4f',
+  revision: '#d97706',
+  bloqueo: '#9a5555',
+  neutral: '#64748b',
+};
+
+@Component({
+  selector: 'app-nomina-mensual-v2-paso-parametros',
+  standalone: true,
+  imports: [CommonModule, LucideAngularModule, MessageBoxComponent, WorkspaceLoadingComponent],
+  templateUrl: './nomina-mensual-v2-paso-parametros.component.html',
+  styleUrls: ['./nomina-mensual-v2-paso-parametros.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+})
+export class NominaMensualV2PasoParametrosComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+  private readonly orquestador = inject(NominaMensualV2OrquestadorPort);
+  private readonly parametrosResumenService = inject(NominaParametrosResumenService);
+  private readonly parametrosBaseService = inject(NominaParametrosBaseService);
+  private readonly periodoActivo = inject(PeriodoActivoService);
+  private readonly accesoBaseService = inject(NominaParametrosBaseAccesoService);
+  private tokenCargaPeriodo = 0;
+  private accionPendienteTrasConfirmacionAdmin: (() => void) | null = null;
+
+  readonly nominaPeriodoId = input<string | null>(null);
+  readonly periodoNomina = input<string | null>(null);
+  readonly fechaInicioNomina = input<string | null>(null);
+  readonly fechaFinNomina = input<string | null>(null);
+  readonly empresaIdNomina = input<string | null>(null);
+  readonly tipoNomina = input<TipoNomina>('mensual');
+  readonly preparacionExterna = input(false);
+
+  readonly contextoParametros = computed((): NominaParametrosContext | null => {
+    const id = this.nominaPeriodoId();
+    const periodo = this.periodoNomina();
+    const fechaInicio = this.fechaInicioNomina();
+    const fechaFin = this.fechaFinNomina();
+    if (!id || !periodo || !fechaInicio || !fechaFin) return null;
+    return buildNominaParametrosContext({
+      id,
+      periodo,
+      fechaInicio,
+      fechaFin,
+      empresaId: this.empresaIdNomina() ?? '',
+      tipo: this.tipoNomina(),
+    });
+  });
+
+  @Output() avanceSolicitado = new EventEmitter<PayrollStepId>();
+  @Output() resumenActualizado = new EventEmitter<void>();
+
+  readonly parametrosResumen = signal<NominaParametrosResumen | null>(null);
+  readonly modalPendientesParametros = signal<{ tipo: ModalPendientesParametrosTipo } | null>(null);
+  readonly parametrosLoading = signal(true);
+  readonly parametrosValidando = signal(false);
+  readonly parametrosRedirigiendo = signal(false);
+  readonly parametrosError = signal<string | null>(null);
+  readonly parametrosAreas = computed(() => this.parametrosResumen()?.areas ?? []);
+  readonly parametrosBloqueosActuales = computed(() => this.parametrosResumen()?.bloqueosActuales ?? []);
+  readonly parametrosPendientesPreparacion = computed(() => this.parametrosResumen()?.pendientesPreparacion ?? []);
+  readonly parametrosAdvertenciasNoBloqueantes = computed(() => this.parametrosResumen()?.advertenciasNoBloqueantes ?? []);
+  readonly parametrosPendientesPreparacionPreview = computed(() => this.parametrosPendientesPreparacion().slice(0, 2));
+  readonly parametrosPendientesPreparacionOcultos = computed(() =>
+    Math.max(this.parametrosPendientesPreparacion().length - this.parametrosPendientesPreparacionPreview().length, 0),
+  );
+  readonly parametrosPendientesSidebar = this.parametrosPendientesPreparacion;
+  readonly parametrosAccesos = computed(() => this.parametrosResumen()?.accesos ?? []);
+
+  readonly estadoBase = computed(() => this.orquestador.estadoParametrosBase());
+  readonly hayDiferenciasBase = computed(() => this.estadoBase()?.comparacion?.hayDiferencias ?? false);
+  readonly fechaBaseGuardadaTexto = computed(() =>
+    this.formatoHoraActualizacion(this.estadoBase()?.fechaBaseGuardada),
+  );
+  readonly muestraLineaBaseGuardada = computed(() => !!this.estadoBase()?.idCalculoPeriodoBase);
+  readonly hayBaseParametrosGuardada = computed(() => !!this.estadoBase()?.idCalculoPeriodoBase);
+  readonly permisosRecargaBase = computed(() => this.accesoBaseService.resolverPermisos());
+
+  readonly parametrosCargaOverlay = computed((): ParametrosCargaOverlayPresentacion | null => {
+    if (this.preparacionExterna() && !this.parametrosRedirigiendo()) {
+      return null;
+    }
+    if (this.parametrosRedirigiendo()) {
+      return {
+        titulo: 'Abriendo parámetros',
+        mensaje: 'Preparando el mantenedor del período seleccionado.',
+      };
+    }
+    if (this.parametrosLoading()) {
+      return {
+        titulo: 'Cargando parámetros',
+        mensaje: 'Consultando la configuración normativa y operativa del período.',
+      };
+    }
+    if (this.parametrosValidando()) {
+      return {
+        titulo: 'Preparando nómina',
+        mensaje: 'Revisando parámetros y configuración guardada antes de continuar.',
+      };
+    }
+    return null;
+  });
+
+  readonly parametrosAlertaTipo = computed((): 'error' | 'bloqueo' | 'revision' | 'oficiales' | 'diferencias' | null => {
+    if (this.parametrosLoading()) return null;
+    if (this.parametrosError()) return 'error';
+    if (this.hayDiferenciasBase()) return 'diferencias';
+    const resumen = this.parametrosResumen();
+    if (!resumen) return null;
+    if (resumen.bloqueosPreparacion > 0) return 'bloqueo';
+    if (resumen.advertenciasOficiales > 0) return 'oficiales';
+    if (resumen.requiereRevision > 0) return 'revision';
+    return null;
+  });
+
+  readonly alertaRevisionTitulo = computed(() => {
+    const resumen = this.parametrosResumen();
+    const bloqueos = resumen?.bloqueos ?? 0;
+    if (bloqueos > 0) {
+      const etiquetaItem = bloqueos === 1 ? 'parámetro obligatorio pendiente' : 'parámetros obligatorios pendientes';
+      return `Hay ${bloqueos} ${etiquetaItem}`;
+    }
+    const cantidad = resumen?.requiereRevision ?? 0;
+    const etiquetaItem = cantidad === 1 ? 'ítem' : 'ítems';
+    const etiquetaVerbo = cantidad === 1 ? 'requiere' : 'requieren';
+    return `Hay ${cantidad} ${etiquetaItem} que ${etiquetaVerbo} revisión`;
+  });
+
+  readonly alertaRevisionDescripcion = computed(() => {
+    const resumen = this.parametrosResumen();
+    if ((resumen?.bloqueos ?? 0) > 0) {
+      return 'Puedes usar «Preparar nómina» para guardar la configuración actual o corregirlos en Parámetros.';
+    }
+    const cantidad = resumen?.requiereRevision ?? 0;
+    if (cantidad === 0) return '';
+    return 'Puedes usar «Preparar nómina» igual. El cálculo validará más adelante.';
+  });
+
+  readonly alertaBloqueoTitulo = computed(() => {
+    const cantidad = this.parametrosResumen()?.bloqueosPreparacion ?? 0;
+    const etiquetaItem = cantidad === 1
+      ? 'parámetro obligatorio pendiente'
+      : 'parámetros obligatorios pendientes';
+    return `Hay ${cantidad} ${etiquetaItem}`;
+  });
+
+  readonly alertaBloqueoDescripcion = computed(() => {
+    const cantidad = this.parametrosResumen()?.bloqueosPreparacion ?? 0;
+    const etiquetaAccion = cantidad === 1 ? 'Corrígelo' : 'Corrígelos';
+    return `${etiquetaAccion} en Parámetros antes de preparar la nómina.`;
+  });
+
+  readonly alertaOficialesTitulo = computed(() => {
+    const cantidad = this.parametrosResumen()?.advertenciasOficiales ?? 0;
+    const etiquetaItem = cantidad === 1
+      ? 'oficial pendiente, no bloqueante'
+      : 'oficiales pendientes, no bloqueantes';
+    return `Hay ${cantidad} ${etiquetaItem}`;
+  });
+
+  readonly alertaOficialesDescripcion = computed(() =>
+    'Puedes preparar la nómina. Estos valores oficiales mensuales se actualizarán cuando estén disponibles.',
+  );
+
+  readonly parametrosEstadoPreparacionCompleto = computed(() => {
+    if (this.parametrosLoading() || this.parametrosValidando()) return false;
+    const resumen = this.parametrosResumen();
+    if (!resumen) return false;
+    return resumen.bloqueosPreparacion === 0;
+  });
+
+  readonly tituloEstadoParametros = computed(() => {
+    const resumen = this.parametrosResumen();
+    if ((resumen?.bloqueosPreparacion ?? 0) > 0) {
+      return 'Pendientes para preparar';
+    }
+    return 'Pendientes para preparar';
+  });
+
+  readonly parametrosEstadoCompleto = computed(() => {
+    if (this.parametrosLoading() || this.parametrosValidando()) return false;
+    const resumen = this.parametrosResumen();
+    if (!resumen) return false;
+    return resumen.bloqueos === 0 && resumen.requiereRevision === 0;
+  });
+
+  readonly donutTono = computed((): DonutTonoPresentacion => {
+    if (this.parametrosLoading()) return 'neutral';
+    const resumen = this.parametrosResumen();
+    if (!resumen) return 'neutral';
+    if (resumen.bloqueosPreparacion > 0) return 'bloqueo';
+    if (resumen.requiereRevision > 0 || resumen.advertenciasOficiales > 0) return 'revision';
+    return 'exito';
+  });
+
+  readonly completitudSeccionesPct = computed(() => {
+    const resumen = this.parametrosResumen();
+    if (!resumen) return 0;
+    return resumen.completitudSecciones;
+  });
+
+  readonly completitudSeccionesCaption = computed(() => {
+    const resumen = this.parametrosResumen();
+    if (!resumen) return '0 de 0 secciones listas';
+    return `${resumen.seccionesListas} de ${resumen.seccionesTotales} secciones listas`;
+  });
+
+  readonly estiloArcoDonut = computed(() => {
+    const porcentaje = this.completitudSeccionesPct();
+    const color = coloresDonutPorTono[this.donutTono()];
+    return `conic-gradient(${color} 0 ${porcentaje}%, #e2e8f0 ${porcentaje}% 100%)`;
+  });
+
+  constructor() {
+    effect(() => {
+      const contexto = this.contextoParametros();
+      if (!contexto) {
+        this.parametrosLoading.set(false);
+        return;
+      }
+      void this.cargarParametrosResumen(contexto);
+    });
+    effect(() => {
+      if (this.parametrosLoading() || this.parametrosValidando()) {
+        this.orquestador.establecerAyudaAvance(null);
+        return;
+      }
+      const resumen = this.parametrosResumen();
+      if (!resumen) {
+        this.orquestador.establecerAyudaAvance(null);
+        return;
+      }
+      if (this.hayBaseParametrosGuardada()) {
+        this.orquestador.establecerAyudaAvance(
+          ayudaAvanceParametrosConBase({
+            esAdmin: this.permisosRecargaBase().puedeRecargarBase,
+            hayDiferencias: this.hayDiferenciasBase(),
+          }),
+          this.hayDiferenciasBase() ? 'revision' : null,
+        );
+        return;
+      }
+      if (resumen.bloqueosPreparacion > 0) {
+        this.orquestador.establecerAyudaAvance(
+          'Completa los datos del mes pendientes antes de preparar la nómina.',
+          'bloqueo',
+        );
+        return;
+      }
+      if (resumen.advertenciasOficiales > 0) {
+        this.orquestador.establecerAyudaAvance(
+          'Hay oficiales mensuales pendientes. No bloquean la preparación del período.',
+          'revision',
+        );
+        return;
+      }
+      if (resumen.requiereRevision > 0) {
+        this.orquestador.establecerAyudaAvance('Hay observaciones pendientes. Revísalas antes de continuar.', 'revision');
+        return;
+      }
+      this.orquestador.establecerAyudaAvance(null);
+    });
+  }
+
+  ngOnInit(): void {
+    const limpiarAccionPrincipal = this.orquestador.registrarAccionPrincipal(() => void this.prepararNomina());
+    this.destroyRef.onDestroy(() => {
+      limpiarAccionPrincipal();
+      this.orquestador.establecerAyudaAvance(null);
+    });
+  }
+
+  evaluarAvance(destinoPaso: PayrollStepId): void {
+    const estado = this.obtenerEstadoPendientesPasoParametros();
+    if (estado.resultado === 'bloqueado') {
+      const resumen = this.parametrosResumen();
+      this.orquestador.modalAvanceParametros.set({
+        tipo: 'bloqueo',
+        pendientes: (resumen?.pendientesPreparacion ?? []).map((item) => `${item.titulo}: ${item.detalle ?? 'Pendiente'}`),
+      });
+      return;
+    }
+    if (estado.resultado === 'advertencia') {
+      this.orquestador.modalAvanceParametros.set({ tipo: 'revision', destinoPaso });
+      return;
+    }
+    this.orquestador.modalAvanceParametros.set(null);
+    this.avanceSolicitado.emit(destinoPaso);
+  }
+
+  confirmarAvanceConRevision(): void {
+    const modal = this.orquestador.modalAvanceParametros();
+    if (modal?.tipo !== 'revision') return;
+    this.orquestador.modalAvanceParametros.set(null);
+    this.avanceSolicitado.emit(modal.destinoPaso);
+  }
+
+  cerrarModalAvanceParametros(): void {
+    this.orquestador.modalAvanceParametros.set(null);
+  }
+
+  irAPendientesParametros(): void {
+    this.orquestador.modalAvanceParametros.set(null);
+    this.abrirModalPendientesParametros('preparacion');
+  }
+
+  abrirTablaDiferencias(): void {
+    const diferencias = this.estadoBase()?.comparacion?.diferencias ?? [];
+    if (diferencias.length === 0) return;
+    this.orquestador.modalTablaDiferenciasParametrosBase.set({ diferencias });
+  }
+
+  abrirModalPendientesParametros(tipo: ModalPendientesParametrosTipo): void {
+    this.modalPendientesParametros.set({ tipo });
+  }
+
+  cerrarModalPendientesParametros(): void {
+    this.modalPendientesParametros.set(null);
+  }
+
+  tituloModalPendientesParametros(tipo: ModalPendientesParametrosTipo): string {
+    return tipo === 'preparacion' ? 'Pendientes para preparar' : 'Oficiales pendientes';
+  }
+
+  mensajeModalPendientesParametros(tipo: ModalPendientesParametrosTipo): string {
+    return tipo === 'preparacion'
+      ? 'Completa estos datos del mes antes de preparar la nómina.'
+      : 'Estos oficiales mensuales no bloquean la preparación del período.';
+  }
+
+  itemsModalPendientesParametros(tipo: ModalPendientesParametrosTipo): ParametroResumenBloqueo[] {
+    return tipo === 'preparacion'
+      ? this.parametrosPendientesPreparacion()
+      : this.parametrosAdvertenciasNoBloqueantes();
+  }
+
+  gruposModalPendientesParametros(tipo: ModalPendientesParametrosTipo): GrupoModalPendientesParametros[] {
+    return this.agruparPendientesParametros(this.itemsModalPendientesParametros(tipo)).map(([areaId, bloqueos]) => ({
+      areaId,
+      titulo: this.parametroAreaTitulo(areaId),
+      cantidad: bloqueos.length,
+      bloqueos,
+    }));
+  }
+
+  modalPendientesResumen(tipo: ModalPendientesParametrosTipo): string {
+    const total = this.itemsModalPendientesParametros(tipo).length;
+    const areas = this.gruposModalPendientesParametros(tipo).length;
+    const etiquetaTotal = total === 1 ? 'pendiente' : 'pendientes';
+    const etiquetaArea = areas === 1 ? 'área' : 'áreas';
+    return `${total} ${etiquetaTotal} en ${areas} ${etiquetaArea}`;
+  }
+
+  async confirmarGuardarBaseYContinuar(): Promise<void> {
+    const modal = this.orquestador.modalPrepararNomina();
+    if (!modal) return;
+    try {
+      await this.ejecutarGuardadoBase(modal.resumen, 'recienGuardada');
+      this.orquestador.modalPrepararNomina.set(null);
+    } catch (error) {
+      console.error('[Nómina V2] Error guardando base de parámetros', error);
+      this.parametrosError.set(this.mensajeErrorPersistenciaBase(error));
+      this.resumenActualizado.emit();
+    }
+  }
+
+  async confirmarMantenerBaseYContinuar(): Promise<void> {
+    const modal = this.orquestador.modalDiferenciasParametrosBase();
+    if (!modal) return;
+    this.orquestador.modalDiferenciasParametrosBase.set(null);
+    const origen = this.parametrosBaseService.origenTrasAccionDiferencias('mantener');
+    try {
+      await this.parametrosBaseService.registrarMantenerBaseConDiferencias(
+        modal.idCalculoPeriodoBase,
+        modal.resumen,
+        this.contextoParametros(),
+      );
+      await this.actualizarEstadoBase(modal.resumen.periodo, this.contextoParametros());
+      this.orquestador.registrarOrigenBaseAlAvanzar(origen, modal.idCalculoPeriodoBase);
+      await this.orquestador.recomputarTrazabilidad(false);
+      this.continuarHaciaAlcance(modal.resumen);
+    } catch (error) {
+      console.error('[Nómina V2] Error registrando mantener base con diferencias', error);
+      this.parametrosError.set(this.mensajeErrorPersistenciaBase(error));
+      this.resumenActualizado.emit();
+    }
+  }
+
+  solicitarActualizarBase(): void {
+    if (this.interceptarRecargaBaseGuardada(() => this.abrirModalActualizarBaseDesdeDiferencias())) {
+      return;
+    }
+    this.abrirModalActualizarBaseDesdeDiferencias();
+  }
+
+  async confirmarActualizarBaseYContinuar(): Promise<void> {
+    const modal = this.orquestador.modalActualizarParametrosBase();
+    if (!modal) return;
+    await this.ejecutarConfirmarActualizarBase(modal.resumen);
+  }
+
+  confirmarRecargaBaseParametrosAdmin(): void {
+    const accion = this.accionPendienteTrasConfirmacionAdmin;
+    this.accionPendienteTrasConfirmacionAdmin = null;
+    this.orquestador.modalAccesoBaseParametros.set(null);
+    accion?.();
+  }
+
+  cerrarModalAccesoBaseParametros(): void {
+    this.accionPendienteTrasConfirmacionAdmin = null;
+    this.orquestador.modalAccesoBaseParametros.set(null);
+  }
+
+  private async ejecutarConfirmarActualizarBase(resumen: NominaParametrosResumen): Promise<void> {
+    try {
+      await this.ejecutarGuardadoBase(resumen, 'actualizadaExplicitamente');
+      this.orquestador.modalActualizarParametrosBase.set(null);
+    } catch (error) {
+      console.error('[Nómina V2] Error actualizando base de parámetros', error);
+      this.parametrosError.set(this.mensajeErrorPersistenciaBase(error));
+      this.resumenActualizado.emit();
+    }
+  }
+
+  async cargarParametrosResumen(contexto: NominaParametrosContext): Promise<void> {
+    const token = ++this.tokenCargaPeriodo;
+    this.parametrosLoading.set(true);
+    this.parametrosError.set(null);
+    try {
+      const resumen = await this.parametrosResumenService.obtenerResumenParaNomina(contexto);
+      if (token !== this.tokenCargaPeriodo) return;
+      this.parametrosResumen.set(resumen);
+      this.actualizarContextoTrazabilidad(resumen);
+      await this.actualizarEstadoBase(resumen.periodo, contexto);
+      if (token !== this.tokenCargaPeriodo) return;
+      this.resumenActualizado.emit();
+    } catch (error) {
+      if (token !== this.tokenCargaPeriodo) return;
+      console.error('[Nómina V2] Error cargando parámetros', error);
+      this.parametrosError.set('No fue posible cargar el resumen de parámetros.');
+      this.resumenActualizado.emit();
+    } finally {
+      if (token !== this.tokenCargaPeriodo) return;
+      this.parametrosLoading.set(false);
+      this.resumenActualizado.emit();
+    }
+  }
+
+  async prepararNomina(): Promise<void> {
+    await this.ejecutarPrepararNomina();
+  }
+
+  private async ejecutarPrepararNomina(): Promise<void> {
+    const contexto = this.contextoParametros();
+    if (!esContextoParametrosCompleto(contexto)) {
+      this.parametrosError.set('La nómina aún no está lista para consultar parámetros.');
+      return;
+    }
+    this.parametrosValidando.set(true);
+    this.parametrosError.set(null);
+    this.resumenActualizado.emit();
+    try {
+      const resumen = await this.parametrosResumenService.obtenerResumenParaNomina(contexto);
+      if (this.contextoParametros()?.nominaPeriodoId !== contexto.nominaPeriodoId) return;
+      this.parametrosResumen.set(resumen);
+      this.actualizarContextoTrazabilidad(resumen);
+      const estadoBase = await this.actualizarEstadoBase(resumen.periodo, contexto);
+      if (this.contextoParametros()?.nominaPeriodoId !== contexto.nominaPeriodoId) return;
+      this.resumenActualizado.emit();
+
+      const rama = this.parametrosBaseService.resolverRamaAccionPreparacion(resumen, estadoBase);
+      switch (rama.tipo) {
+        case 'bloqueado':
+          this.orquestador.modalAvanceParametros.set({
+            tipo: 'bloqueo',
+            pendientes: rama.pendientes.map((item) => `${item.titulo}: ${item.detalle ?? 'Pendiente'}`),
+          });
+          break;
+        case 'guardar': {
+          const preview = await this.parametrosBaseService.construirVistaPreviaParametrosBase(resumen, resumen.periodo);
+          this.orquestador.modalPrepararNomina.set({ preview, resumen });
+          break;
+        }
+        case 'continuar':
+          this.orquestador.registrarOrigenBaseAlAvanzar(rama.origen, rama.idCalculoPeriodoBase);
+          await this.orquestador.recomputarTrazabilidad(false);
+          this.continuarHaciaAlcance(resumen);
+          break;
+        case 'diferencias':
+          this.orquestador.modalDiferenciasParametrosBase.set({
+            resumen: rama.resumen,
+            idCalculoPeriodoBase: rama.idCalculoPeriodoBase,
+            diferencias: rama.diferencias,
+          });
+          break;
+      }
+    } catch (error) {
+      console.error('[Nómina V2] Error preparando nómina', error);
+      this.parametrosError.set(this.mensajeErrorPreparacion(error));
+      this.resumenActualizado.emit();
+    } finally {
+      this.parametrosValidando.set(false);
+      this.resumenActualizado.emit();
+    }
+  }
+
+  goToParametros(destino: ParametrosMantenedorDestino): void {
+    this.parametrosRedirigiendo.set(true);
+    void this.router.navigate(['/parametros'], {
+      queryParams: {
+        periodo: this.parametrosResumen()?.periodo,
+        area: destino.area,
+        tab: destino.tab,
+      },
+    }).catch(() => this.parametrosRedirigiendo.set(false));
+  }
+
+  goToMantenedorParametros(): void {
+    this.parametrosRedirigiendo.set(true);
+    void this.router.navigate(['/parametros'], {
+      queryParams: {
+        periodo: this.parametrosResumen()?.periodo,
+        area: 'datosOficiales',
+        tab: 'valores',
+      },
+    }).catch(() => this.parametrosRedirigiendo.set(false));
+  }
+
+  parametroEstadoEtiqueta(estado: ParametroResumenEstado): string {
+    switch (estado) {
+      case 'completo': return 'Completo';
+      case 'requiereRevision': return 'Requiere revisión';
+      case 'bloqueo': return 'Bloqueo';
+      case 'pendiente': return 'Pendiente';
+    }
+  }
+
+  parametroEstadoIcono(estado: ParametroResumenEstado): string {
+    switch (estado) {
+      case 'completo': return 'check-circle-2';
+      case 'requiereRevision': return 'triangle-alert';
+      case 'bloqueo': return 'circle-alert';
+      case 'pendiente': return 'clock-3';
+    }
+  }
+
+  parametroEstadoClase(estado: ParametroResumenEstado): string {
+    switch (estado) {
+      case 'completo': return 'status-green';
+      case 'requiereRevision': return 'status-amber';
+      case 'bloqueo': return 'status-red';
+      case 'pendiente': return 'status-gray';
+    }
+  }
+
+  parametroEstadoTono(estado: ParametroResumenEstado): 'ok' | 'warn' | 'block' | 'neutral' {
+    switch (estado) {
+      case 'completo': return 'ok';
+      case 'requiereRevision': return 'warn';
+      case 'bloqueo': return 'block';
+      case 'pendiente': return 'neutral';
+    }
+  }
+
+  /** Mapea los bloqueos al contrato de `MessageBoxSection` agrupando por área. */
+  sectionsPendientesParaMessageBox(tipo: ModalPendientesParametrosTipo): MessageBoxSection[] {
+    const grupos = this.gruposModalPendientesParametros(tipo);
+    return grupos.map((grupo) => ({
+      title: `${grupo.titulo} (${grupo.cantidad})`,
+      tone: tipo === 'preparacion' ? 'warning' : 'attention',
+      items: grupo.bloqueos.map((bloqueo) => `${bloqueo.titulo}: ${bloqueo.detalle ?? 'Pendiente'}`),
+    }));
+  }
+
+  bloqueoSeveridadClase(severidad: ParametroBloqueoSeveridad): string {
+    return severidad === 'bloqueo' ? 'status-red' : 'status-amber';
+  }
+
+  bloqueoSeveridadIcono(severidad: ParametroBloqueoSeveridad): string {
+    return severidad === 'bloqueo' ? 'circle-alert' : 'triangle-alert';
+  }
+
+  bloqueoSeveridadEtiqueta(severidad: ParametroBloqueoSeveridad): string {
+    return severidad === 'bloqueo' ? 'Bloqueo crítico' : 'Revisión requerida';
+  }
+
+  formatoHoraActualizacion(value: string | null | undefined): string {
+    if (!value) return 'Sin registro';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return `hoy, ${date.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  parametroAreaTitulo(areaId: ParametroResumenAreaId): string {
+    return this.parametrosAreas().find((area) => area.id === areaId)?.titulo ?? areaId;
+  }
+
+  chipsVisiblesParametro(items: ParametroResumenItem[]): ParametroResumenItem[] {
+    return items.slice(0, 5);
+  }
+
+  cantidadChipsOcultosParametro(items: ParametroResumenItem[]): number {
+    return Math.max(items.length - 5, 0);
+  }
+
+  private abrirModalActualizarBaseDesdeDiferencias(): void {
+    const modal = this.orquestador.modalDiferenciasParametrosBase();
+    if (!modal) return;
+    this.orquestador.modalDiferenciasParametrosBase.set(null);
+    this.orquestador.modalActualizarParametrosBase.set({ resumen: modal.resumen });
+  }
+
+  private interceptarRecargaBaseGuardada(accion: () => void): boolean {
+    const contexto = this.contextoParametros();
+    const evaluacion = this.accesoBaseService.evaluarIntentoRecarga(
+      this.hayBaseParametrosGuardada(),
+      contexto?.periodo ?? this.periodoActivo.periodoYm(),
+    );
+    if (!this.accesoBaseService.debeInterceptarRecarga(evaluacion)) {
+      return false;
+    }
+    const modal = this.accesoBaseService.modalParaEvaluacion(evaluacion);
+    if (modal) {
+      if (evaluacion.accion === 'confirmar') {
+        this.accionPendienteTrasConfirmacionAdmin = accion;
+      }
+      this.orquestador.modalAccesoBaseParametros.set(modal);
+    }
+    return true;
+  }
+
+  private async ejecutarGuardadoBase(
+    resumen: NominaParametrosResumen,
+    origen: OrigenBaseParametrosAlAvanzar,
+  ): Promise<void> {
+    const contexto = this.contextoParametros();
+    const guardado = origen === 'actualizadaExplicitamente'
+      ? await this.parametrosBaseService.actualizarSnapshotParametrosBase(resumen, contexto)
+      : await this.parametrosBaseService.guardarSnapshotParametrosBase(resumen, origen, contexto);
+    await this.actualizarEstadoBase(resumen.periodo, contexto);
+    this.orquestador.registrarOrigenBaseAlAvanzar(origen, guardado.idCalculoPeriodoBase);
+    await this.orquestador.recomputarTrazabilidad(false);
+    this.continuarHaciaAlcance(resumen);
+  }
+
+  private continuarHaciaAlcance(resumen: NominaParametrosResumen): void {
+    this.actualizarContextoTrazabilidad(resumen);
+    this.orquestador.modalAvanceParametros.set(null);
+    this.avanceSolicitado.emit('dotacion');
+  }
+
+  private async actualizarEstadoBase(periodo: string, contexto: NominaParametrosContext | null = this.contextoParametros()) {
+    const estado = contexto
+      ? await this.parametrosBaseService.obtenerEstadoBaseNomina(contexto)
+      : await this.parametrosBaseService.obtenerEstadoBasePeriodo(periodo);
+    this.orquestador.estadoParametrosBase.set(estado);
+    return estado;
+  }
+
+  private actualizarContextoTrazabilidad(resumen: NominaParametrosResumen): void {
+    const contexto = this.contextoParametros();
+    this.orquestador.actualizarContextoTrazabilidad({
+      periodo: resumen.periodo,
+      nominaPeriodoId: contexto?.nominaPeriodoId ?? resumen.nominaPeriodoId ?? null,
+      parametrosResumen: {
+        seccionesListas: resumen.seccionesListas,
+        seccionesTotal: resumen.seccionesTotales,
+        controlesVerificados: resumen.controlesVerificados,
+        bloqueos: resumen.bloqueos,
+        advertencias: resumen.requiereRevision,
+      },
+      parametrosBase: this.orquestador.origenBaseParametrosAlAvanzar()
+        ? {
+            origen: this.orquestador.origenBaseParametrosAlAvanzar()!,
+            idCalculoPeriodoBase: this.orquestador.idCalculoPeriodoBase() ?? 0,
+            fechaBaseGuardada: this.orquestador.estadoParametrosBase()?.fechaBaseGuardada ?? null,
+          }
+        : undefined,
+    });
+  }
+
+  private mensajeErrorPersistenciaBase(error: unknown): string {
+    const detalle = error instanceof Error ? error.message : '';
+    if (/row-level security|RLS|permission denied/i.test(detalle)) {
+      return 'No fue posible guardar la configuración de parámetros. Tu sesión no tiene permiso de escritura. Inicia sesión nuevamente o pide acceso a administración.';
+    }
+    return detalle || 'No fue posible guardar la configuración de parámetros.';
+  }
+
+  private mensajeErrorPreparacion(error: unknown): string {
+    const detalle = error instanceof Error ? error.message : '';
+    if (/row-level security|RLS|permission denied/i.test(detalle)) {
+      return 'No fue posible consultar o guardar la configuración de parámetros por permisos de la sesión.';
+    }
+    return detalle || 'No fue posible preparar la nómina con la configuración guardada.';
+  }
+
+  private obtenerEstadoPendientesPasoParametros(): EstadoPendientesPasoParametros {
+    const resumen = this.parametrosResumen();
+    const tieneBloqueos = (resumen?.bloqueosPreparacion ?? 0) > 0;
+    const tieneRevisiones = (resumen?.requiereRevision ?? 0) > 0 || (resumen?.advertenciasOficiales ?? 0) > 0;
+    const puedeContinuar = resumen?.puedePreparar ?? false;
+    let resultado: ResultadoValidacionPaso = 'permitido';
+    if (tieneBloqueos) {
+      resultado = 'bloqueado';
+    } else if (tieneRevisiones) {
+      resultado = 'advertencia';
+    }
+    return { tieneBloqueos, tieneRevisiones, puedeContinuar, resultado };
+  }
+
+  private agruparPendientesParametros(
+    bloqueos: readonly ParametroResumenBloqueo[],
+  ): Array<[ParametroResumenAreaId, ParametroResumenBloqueo[]]> {
+    const grupos = new Map<ParametroResumenAreaId, ParametroResumenBloqueo[]>();
+    for (const bloqueo of bloqueos) {
+      const grupo = grupos.get(bloqueo.areaId) ?? [];
+      grupo.push(bloqueo);
+      grupos.set(bloqueo.areaId, grupo);
+    }
+    return [...grupos.entries()];
+  }
+}

@@ -1,0 +1,783 @@
+:host {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+}
+
+.paso-calc {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 16px 16px;
+  background: #ffffff;
+  min-height: 0;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Header                                                                     */
+/* -------------------------------------------------------------------------- */
+
+.paso-calc__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.paso-calc__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.paso-calc__head-aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.paso-calc__eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.paso-calc__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.paso-calc__subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+  max-width: 64ch;
+}
+
+/* Stats compactos estilo Movimientos. */
+.paso-calc__stats {
+  margin: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(100px, max-content);
+  gap: 0 20px;
+  padding: 4px 0;
+  align-items: end;
+}
+
+.paso-calc__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-left: 1px solid #e2e8f0;
+  padding-left: 12px;
+}
+
+.paso-calc__stat:first-child {
+  border-left: none;
+  padding-left: 0;
+}
+
+.paso-calc__stat dt {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.paso-calc__stat dd {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.paso-calc__stat.is-positive dd {
+  color: #047857;
+}
+
+.paso-calc__stat.is-negative dd {
+  color: #b91c1c;
+}
+
+.paso-calc__stat.is-warning dd {
+  color: #92400e;
+}
+
+.paso-calc__stat.is-danger dd {
+  color: #b91c1c;
+}
+
+.paso-calc__stat.is-strong dd {
+  font-size: 19px;
+  color: #1e3a8a;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Toolbar                                                                    */
+/* -------------------------------------------------------------------------- */
+
+.paso-calc__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Bloqueo pre-cálculo (solo si hay críticos; sin duplicar resumen de cabecera) */
+/* -------------------------------------------------------------------------- */
+
+.paso-calc__bloqueo {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+}
+
+.paso-calc__diff-recalculo {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.paso-calc__diff-recalculo-title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.paso-calc__diff-recalculo-grid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px 16px;
+}
+
+.paso-calc__diff-recalculo-item {
+  margin: 0;
+}
+
+.paso-calc__diff-recalculo-item dt {
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.paso-calc__diff-recalculo-item dd {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 12px;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+.paso-calc__diff-recalculo-valor.is-strong {
+  font-weight: 700;
+}
+
+.paso-calc__diff-recalculo-arrow {
+  color: #94a3b8;
+}
+
+.paso-calc__diff-recalculo-delta {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.paso-calc__diff-recalculo-delta.is-positive {
+  color: #047857;
+}
+
+.paso-calc__diff-recalculo-delta.is-negative {
+  color: #b91c1c;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Placeholders / estado vacío                                                */
+/* -------------------------------------------------------------------------- */
+
+.paso-calc__placeholder {
+  margin: 0;
+  padding: 18px;
+  text-align: center;
+  font-size: 13px;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 4px;
+}
+
+.paso-calc__vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 28px 18px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+}
+
+.paso-calc__vacio-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.paso-calc__vacio-desc {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.55;
+  max-width: 56ch;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Botones                                                                    */
+/* -------------------------------------------------------------------------- */
+
+.paso-calc__btn {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.paso-calc__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paso-calc__btn.is-primary {
+  background: #1e3a8a;
+  color: #ffffff;
+  border-color: #1e3a8a;
+}
+
+.paso-calc__btn.is-primary:disabled {
+  background: #94a3b8;
+  border-color: #94a3b8;
+  color: #ffffff;
+  opacity: 1;
+}
+
+.paso-calc__procesando {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.paso-calc__btn.is-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: #475569;
+}
+
+.paso-calc__btn.is-ghost:hover:not(:disabled) {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.paso-calc__btn.is-small {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.paso-calc__link {
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: #1e3a8a;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.paso-calc__link:hover {
+  color: #0f172a;
+}
+
+.paso-calc__btn-icono {
+  appearance: none;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  cursor: pointer;
+  color: #475569;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paso-calc__btn-icono:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #1e3a8a;
+}
+
+.paso-calc__btn-icono:focus-visible {
+  outline: 2px solid #1e3a8a;
+  outline-offset: 2px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Grilla                                                                      */
+/* -------------------------------------------------------------------------- */
+
+/* Patrón Dotación: wrapper flex 1 + data-grid con `[gridHeight]="'100%'"`.
+   El wrapper toma el alto sobrante y la grilla se expande dentro,
+   ocupando todo el espacio hasta la franja inferior. */
+.paso-calc__grid-wrapper {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 360px;
+}
+
+.paso-calc__data-grid {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.paso-calc__data-grid-card {
+  border-radius: 6px;
+  border-color: #e2e8f0;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Footer                                                                     */
+/* -------------------------------------------------------------------------- */
+
+.paso-calc__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  min-height: 16px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 12px;
+  color: #475569;
+}
+
+.paso-calc__footer-hint {
+  color: #475569;
+  font-variant-numeric: tabular-nums;
+}
+
+.paso-calc__cell-trabajador {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.paso-calc__cell-trabajador-nombre {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.paso-calc__cell-trabajador-meta {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.paso-calc__cell-rut {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.paso-calc__cell-meta {
+  font-size: 12px;
+  color: #334155;
+}
+
+.paso-calc__cell-meta.is-empty {
+  color: #94a3b8;
+}
+
+.paso-calc__cell-monto {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.paso-calc__cell-monto.is-positive {
+  color: #0f172a;
+}
+
+.paso-calc__cell-monto.is-negative {
+  color: #b91c1c;
+}
+
+.paso-calc__cell-monto.is-strong {
+  color: #1e3a8a;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.paso-calc__estado-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.paso-calc__estado-pill[data-variant='aviso'] {
+  background: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.paso-calc__estado-pill[data-variant='bloqueo'] {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Detalle expandible                                                          */
+/* -------------------------------------------------------------------------- */
+
+.paso-calc__detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px 16px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.paso-calc__detalle-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.paso-calc__detalle-head-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.paso-calc__detalle-head-nombre {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.paso-calc__detalle-meta {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.paso-calc__detalle-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.paso-calc__detalle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.paso-calc__detalle-bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.paso-calc__detalle-bloque--bases,
+.paso-calc__detalle-bloque--empleador {
+  background: #f1f5f9;
+}
+
+.paso-calc__detalle-bloque-title {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #1e3a8a;
+}
+
+.paso-calc__detalle-empty {
+  margin: 0;
+  font-size: 12px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.paso-calc__detalle-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.paso-calc__detalle-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px dashed #e2e8f0;
+  font-size: 12.5px;
+}
+
+.paso-calc__detalle-item:last-child {
+  border-bottom: none;
+}
+
+.paso-calc__detalle-item-concepto {
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.paso-calc__detalle-item-valor {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.paso-calc__detalle-item-valor.is-positive {
+  color: #0f172a;
+}
+
+.paso-calc__detalle-item-valor.is-negative {
+  color: #b91c1c;
+}
+
+.paso-calc__detalle-formula {
+  font-size: 11px;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.paso-calc__chip-imp {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #dbeafe;
+  white-space: nowrap;
+}
+
+.paso-calc__chip-imp[data-tipo='no_imponible'],
+.paso-calc__chip-imp[data-tipo='no_tributable'] {
+  background: #f8fafc;
+  color: #475569;
+  border-color: #e2e8f0;
+}
+
+.paso-calc__detalle-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 4px 0 0;
+  padding-top: 6px;
+  border-top: 1px solid #cbd5e1;
+  font-size: 12.5px;
+  color: #475569;
+}
+
+.paso-calc__detalle-total strong {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.paso-calc__detalle-total strong.is-positive {
+  color: #0f172a;
+}
+
+.paso-calc__detalle-bases {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 6px 16px;
+}
+
+.paso-calc__detalle-bases > div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.paso-calc__detalle-bases dt {
+  margin: 0;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.paso-calc__detalle-bases dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+}
+
+.paso-calc__detalle-empleador-nota {
+  margin: 0 0 4px;
+  font-size: 11px;
+  color: #64748b;
+  font-style: italic;
+}
+
+.paso-calc__detalle-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid #cbd5e1;
+}
+
+.paso-calc__detalle-footer-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.paso-calc__detalle-footer-monto {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e3a8a;
+  font-variant-numeric: tabular-nums;
+}
+
+.paso-calc__rect-panel {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.paso-calc__rect-col {
+  flex: 1 1 120px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #f8fafc;
+}
+
+.paso-calc__rect-col.is-strong {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.paso-calc__rect-label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.paso-calc__rect-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}

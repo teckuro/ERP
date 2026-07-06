@@ -24,6 +24,7 @@ export type ProcesoMensualAccionLocal =
   | 'guardarResultado'
   | 'aprobarResultado'
   | 'cerrarNomina'
+  | 'confirmarNomina'
   | 'revisarBloqueos';
 
 export interface ProcesoMensualPendienteVm {
@@ -72,6 +73,8 @@ export interface ProcesoMensualEstadoOperativoVm {
 export interface ProcesoMensualEstadoOperativoInput {
   periodoValido: boolean;
   tienePrevalidacion: boolean;
+  /** Calendario + fila parametros_generales del período listos (prevalidación). */
+  parametrosOperativos: boolean;
   bloqueosPrevalidacion: ProcesoMensualPendienteVm[];
   advertenciasPrevalidacion: ProcesoMensualPendienteVm[];
   informacionesPrevalidacion: ProcesoMensualPendienteVm[];
@@ -93,90 +96,171 @@ export interface ProcesoMensualEstadoOperativoInput {
   razonNoPuedeGuardar?: string;
   razonNoPuedeAprobar?: string;
   razonNoPuedeCerrar?: string;
+  /** Sin bloqueados ni observaciones en el panel masivo (cuando hay filas). */
+  revisionTrabajadoresCompleta?: boolean;
 }
 
 const ACCESOS_RAPIDOS: ProcesoMensualPendienteVm[] = [
   {
-    codigo: 'MOVIMIENTOS_MES',
-    titulo: 'Movimientos del mes',
-    descripcion: 'Revisar bonos, descuentos, anticipos o ajustes del periodo.',
+    codigo: 'MOVIMIENTOS_REMUNERACION',
+    titulo: 'Movimientos de remuneración',
+    descripcion: 'Revisar bonos, descuentos, anticipos, recurrentes y cuotas que impactan el período.',
     severidad: 'neutral',
     ruta: '/remuneraciones/novedades-mensuales',
-    accionLabel: 'Revisar movimientos del mes',
+    accionLabel: 'Revisar movimientos',
   },
   {
-    codigo: 'ASIGNACIONES_RECURRENTES',
-    titulo: 'Asignaciones recurrentes',
-    descripcion: 'Revisar asignaciones vigentes que entran a la base.',
+    codigo: 'MOVIMIENTOS_RECURRENTES',
+    titulo: 'Vista recurrente',
+    descripcion: 'Administrar movimientos vigentes que se repiten mes a mes.',
     severidad: 'neutral',
     ruta: '/remuneraciones/haberes-descuentos',
-    accionLabel: 'Revisar asignaciones recurrentes',
+    accionLabel: 'Revisar recurrentes',
   },
   {
     codigo: 'PARAMETROS',
-    titulo: 'Parametros',
-    descripcion: 'Revisar parametros operativos del periodo.',
+    titulo: 'Parámetros',
+    descripcion: 'Revisar parámetros operativos del período.',
     severidad: 'neutral',
     ruta: '/parametros',
-    accionLabel: 'Revisar parametros',
+    accionLabel: 'Revisar parámetros',
   },
 ];
+
+const CODIGOS_PENDIENTE_CRITICO_PRE_GENERACION = new Set([
+  'PERIODO_FORMATO_INVALIDO',
+  'PARAMETROS_LECTURA_ERROR',
+  'PARAMETROS_SIN_FILA',
+  'PARAMETROS_CALENDARIO_LECTURA',
+  'PARAMETROS_ESTADO_PERIODO_INOPERATIVO',
+  'TRABAJADORES_BLOQUEADOS_NOMINA',
+  'EMPLEADOS_SIN_ACTIVOS_APTOS',
+  'ENTRADAS_BLOQUEANTES',
+  'BLOQ-001',
+  'BLOQ-002',
+  'BLOQ-004',
+  'BLOQ-006',
+]);
+
+function pendienteCriticoAntesDeGenerarNomina(codigo: string): boolean {
+  if (CODIGOS_PENDIENTE_CRITICO_PRE_GENERACION.has(codigo)) {
+    return true;
+  }
+  return codigo.startsWith('PARAMETROS_') && !codigo.startsWith('PARAM_MIN_');
+}
+
+export function filtrarBloqueosCriticosPrevalidacion(
+  input: Pick<ProcesoMensualEstadoOperativoInput, 'bloqueosPrevalidacion' | 'parametrosOperativos'>,
+): ProcesoMensualPendienteVm[] {
+  return input.bloqueosPrevalidacion.filter((bloqueo) => {
+    if (bloqueo.codigo === 'BLOQ-005') {
+      return false;
+    }
+    if (bloqueo.codigo === 'BLOQ-004' && input.parametrosOperativos) {
+      return false;
+    }
+    return pendienteCriticoAntesDeGenerarNomina(bloqueo.codigo);
+  });
+}
+
+export function hayPendientesRevisionTrabajadores(
+  pendientes: readonly ProcesoMensualPendienteVm[],
+): boolean {
+  return pendientes.some(
+    (pendiente) => bloqueoDestinoTrabajadores(pendiente) || pendienteRequiereRevisionTrabajador(pendiente),
+  );
+}
+
+function pendienteRequiereRevisionTrabajador(pendiente: ProcesoMensualPendienteVm): boolean {
+  const codigo = pendiente.codigo.toUpperCase();
+  return codigo === 'ADV-003' || codigo === 'BLOQ-003';
+}
 
 export function resolverEstadoOperativoProcesoMensual(
   input: ProcesoMensualEstadoOperativoInput,
 ): ProcesoMensualEstadoOperativoVm {
-  const bloqueosCriticosPrevalidacion = input.bloqueosPrevalidacion.filter((b) => b.codigo !== 'BLOQ-005');
-  const bloqueoParametros = bloqueosCriticosPrevalidacion.find((b) => b.ruta === '/parametros' || b.codigo === 'BLOQ-004');
+  const bloqueosCriticosPrevalidacion = filtrarBloqueosCriticosPrevalidacion(input);
 
-  if (input.liquidacionesDisponibles) {
+  if (input.cerradoOperativamente && input.liquidacionesDisponibles) {
     return buildEstado(input, {
-      estadoClave: 'liquidaciones_disponibles',
-      titulo: 'Liquidaciones disponibles',
-      descripcion: 'Las liquidaciones oficiales internas ya estan disponibles para consulta.',
+      estadoClave: 'nomina_cerrada',
+      titulo: 'Proceso mensual cerrado',
+      descripcion: 'El período quedó cerrado operativamente y las liquidaciones emitidas quedan disponibles para consulta.',
       severidad: 'success',
-      accionPrincipal: ruta('Ver liquidaciones oficiales', 'Consulta las liquidaciones oficiales internas generadas.', '/remuneraciones/liquidaciones'),
+      accionPrincipal: ruta('Ver liquidaciones', 'Consulta las liquidaciones emitidas del período cerrado.', '/remuneraciones/liquidaciones'),
       etapaActiva: 'liquidaciones',
       disclosureActivo: 'liquidaciones',
-      queFaltaAhora: [info('LIQ_LISTAS', 'Liquidaciones disponibles', 'Consulta el detalle interno. PDF, firma, envio, Previred, LRE, banco y contabilidad siguen fuera de alcance.')],
+      queFaltaAhora: [info('PROCESO_CERRADO', 'Proceso mensual cerrado', 'Consulta las liquidaciones emitidas. PDF, firma, envío, Previred, LRE, banco y contabilidad siguen fuera de alcance.')],
     });
   }
 
   if (input.cerradoOperativamente) {
     return buildEstado(input, {
       estadoClave: 'nomina_cerrada',
-      titulo: 'Nomina cerrada',
-      descripcion: 'La nomina del periodo esta cerrada operativamente. No recalcules ni reemplaces el resultado.',
+      titulo: 'Proceso cerrado',
+      descripcion: 'El proceso mensual del período quedó cerrado. La nómina no admite cambios operativos.',
       severidad: 'success',
-      accionPrincipal: ruta('Ir a liquidaciones oficiales', 'Continua con liquidaciones oficiales internas desde la nomina cerrada.', '/remuneraciones/liquidaciones'),
+      accionPrincipal: input.liquidacionesDisponibles
+        ? ruta('Ver liquidaciones', 'Consulta las liquidaciones emitidas del período.', '/remuneraciones/liquidaciones')
+        : { label: 'Proceso cerrado', descripcion: 'Período cerrado sin liquidaciones emitidas.', tipo: 'ninguna' },
       etapaActiva: 'liquidaciones',
       disclosureActivo: 'liquidaciones',
-      queFaltaAhora: [info('NOMINA_CERRADA', 'Nomina cerrada', 'El resultado quedo congelado para continuar con liquidaciones oficiales internas.')],
+      queFaltaAhora: [info('NOMINA_CERRADA', 'Proceso cerrado', 'El período quedó cerrado operativamente.')],
     });
   }
 
   if (input.aprobadoOperativamente) {
+    // Orden del flujo: aprobar -> emitir -> cerrar. Tras aprobar, primero se emiten liquidaciones.
+    if (!input.liquidacionesDisponibles) {
+      return buildEstado(input, {
+        estadoClave: 'aprobado_operativamente',
+        titulo: 'Revisión registrada',
+        descripcion: 'La nómina quedó aprobada. Genera las liquidaciones del período antes de cerrarlo.',
+        severidad: 'info',
+        accionPrincipal: ruta(
+          'Generar liquidaciones',
+          'Emite las liquidaciones desde la nómina aprobada. El cierre del período es el paso final.',
+          '/remuneraciones/liquidaciones',
+        ),
+        etapaActiva: 'liquidaciones',
+        disclosureActivo: 'liquidaciones',
+        queFaltaAhora: [info('FALTA_EMISION', 'Generar liquidaciones', 'Con la nómina aprobada, emite las liquidaciones del período. El cierre queda como bloqueo final.')],
+      });
+    }
     return buildEstado(input, {
       estadoClave: 'aprobado_operativamente',
-      titulo: 'Aprobado operativamente',
-      descripcion: 'El resultado guardado ya fue aprobado. Falta cerrar la nomina del periodo.',
+      titulo: 'Liquidaciones emitidas',
+      descripcion: 'Las liquidaciones del período ya están emitidas. Cierra el proceso mensual para finalizar el período.',
       severidad: 'success',
-      accionPrincipal: local('Cerrar nomina del periodo', 'El cierre congela el resultado y habilita liquidaciones oficiales internas.', 'cerrarNomina', !input.puedeCerrar, input.razonNoPuedeCerrar),
+      accionPrincipal: local(
+        'Cerrar proceso mensual',
+        'Cierra el período como base oficial. Es el paso final del flujo.',
+        'cerrarNomina',
+        !input.puedeCerrar,
+        input.razonNoPuedeCerrar,
+      ),
       etapaActiva: 'aprobar_cerrar',
       disclosureActivo: 'cierre',
-      queFaltaAhora: [info('FALTA_CIERRE', 'Cerrar nomina del periodo', 'El cierre bloquea reemplazos y deja el periodo listo para liquidaciones oficiales internas.')],
+      queFaltaAhora: [info('FALTA_CIERRE', 'Cerrar proceso mensual', 'El cierre operativo es el paso final del período.')],
     });
   }
 
   if (input.resultadoGuardado) {
     return buildEstado(input, {
       estadoClave: 'resultado_guardado',
-      titulo: 'Resultado guardado',
-      descripcion: 'Existe un resultado preliminar vigente. Falta aprobacion operativa antes de cerrar.',
+      titulo: 'Revisión guardada',
+      descripcion: 'La versión revisada quedó guardada. Falta aprobar la nómina del período.',
       severidad: 'info',
-      accionPrincipal: local('Aprobar resultado preliminar', 'Aprueba internamente el resultado guardado vigente.', 'aprobarResultado', !input.puedeAprobar, input.razonNoPuedeAprobar),
+      accionPrincipal: local(
+        'Aprobar nómina',
+        'Registra la revisión de RRHH. Luego se emiten las liquidaciones y se cierra el período.',
+        'aprobarResultado',
+        !input.puedeAprobar,
+        input.razonNoPuedeAprobar,
+      ),
       etapaActiva: 'aprobar_cerrar',
       disclosureActivo: 'aprobacion',
-      queFaltaAhora: [info('FALTA_APROBACION', 'Aprobar resultado preliminar', 'La aprobacion operativa es necesaria antes del cierre.')],
+      queFaltaAhora: [info('FALTA_APROBACION_CIERRE', 'Aprobar nómina', 'Registra la revisión para dejar la versión lista para emitir liquidaciones.')],
     });
   }
 
@@ -184,10 +268,10 @@ export function resolverEstadoOperativoProcesoMensual(
     if (input.calculoConBloqueos || input.bloqueosCalculo.length > 0) {
       return buildEstado(input, {
         estadoClave: 'resultado_con_bloqueos',
-        titulo: 'Resultado con bloqueos',
-        descripcion: 'El calculo preliminar tiene bloqueos. No guardes el resultado hasta resolverlos.',
+        titulo: 'En revisión',
+        descripcion: 'Hay trabajadores o datos del período con bloqueos. Resuélvelos antes de aprobar la nómina.',
         severidad: 'danger',
-        accionPrincipal: local('Revisar bloqueos', 'Corrige los bloqueos antes de guardar el resultado preliminar.', 'revisarBloqueos', false),
+        accionPrincipal: local('Revisar trabajadores', 'Corrige bloqueos y advertencias antes de aprobar la nómina mensual.', 'revisarBloqueos', false),
         etapaActiva: 'calculo',
         disclosureActivo: 'calculo',
         queFaltaAhora: [...input.bloqueosCalculo, ...input.advertenciasCalculo],
@@ -197,54 +281,67 @@ export function resolverEstadoOperativoProcesoMensual(
     const conAdvertencias = input.calculoConAdvertencias || input.advertenciasCalculo.length > 0;
     return buildEstado(input, {
       estadoClave: conAdvertencias ? 'resultado_preliminar_revisable' : 'resultado_listo_para_guardar',
-      titulo: conAdvertencias ? 'Resultado preliminar revisable' : 'Resultado listo para guardar',
+      titulo: conAdvertencias ? 'En revisión' : 'Lista para guardar revisión',
       descripcion: conAdvertencias
-        ? 'El resultado tiene advertencias revisables, pero no bloqueos para guardar.'
-        : 'El resultado preliminar puede guardarse como version vigente del periodo.',
+        ? 'La nómina tiene advertencias revisables, pero no bloqueos críticos.'
+        : 'La nómina mensual puede quedar guardada como versión revisada antes de aprobarse.',
       severidad: conAdvertencias ? 'warning' : 'success',
-      accionPrincipal: local('Guardar resultado preliminar', 'Guarda una version vigente para revision y aprobacion.', 'guardarResultado', !input.puedeGuardarResultado, input.razonNoPuedeGuardar),
+      accionPrincipal: local(
+        conAdvertencias ? 'Revisar trabajadores' : 'Guardar revisión',
+        conAdvertencias
+          ? 'Revisa advertencias por trabajador antes de confirmar.'
+          : 'Guarda esta versión revisada del período antes de registrar la revisión de RRHH.',
+        conAdvertencias ? 'revisarBloqueos' : 'confirmarNomina',
+        !input.puedeGuardarResultado,
+        input.razonNoPuedeGuardar,
+      ),
       etapaActiva: 'guardar',
       disclosureActivo: 'calculo',
       queFaltaAhora: conAdvertencias
         ? [...input.advertenciasCalculo, info('GUARDADO_PERMITIDO', 'Advertencias revisables', 'Las advertencias no bloquean el guardado salvo que una regla existente lo indique.')]
-        : [info('LISTO_GUARDAR', 'Guardar resultado', 'El resultado puede guardarse como version vigente del periodo.')],
+        : [info('LISTO_GUARDAR', 'Guardar revisión', 'La versión revisada queda lista para registrar la revisión de remuneraciones.')],
     });
   }
 
   if (input.baseGenerada) {
+    const accionBorrador = accionPrincipalBorradorGenerado(input);
     return buildEstado(input, {
       estadoClave: 'base_lista',
-      titulo: 'Base lista',
-      descripcion: 'La base de nomina ya fue preparada. Falta ejecutar el calculo preliminar.',
+      titulo: 'Borrador generado',
+      descripcion: accionBorrador.accionLocal === 'confirmarNomina'
+        ? 'La revisión por trabajador está al día. Calcule la nómina preliminar para guardar la revisión.'
+        : 'La nómina preliminar del período está calculada. Revise trabajadores, montos y movimientos antes de confirmar.',
       severidad: 'info',
-      accionPrincipal: local('Calcular preliminar', 'Ejecuta el calculo sobre la base preparada.', 'calcularPreliminar', !input.puedeCalcular),
+      accionPrincipal: accionBorrador,
       etapaActiva: 'calculo',
       disclosureActivo: 'calculo',
-      queFaltaAhora: [info('FALTA_CALCULO', 'Calcular preliminar', 'La base esta lista; ejecuta el calculo para revisar el resultado.')],
+      queFaltaAhora: [
+        accionBorrador.accionLocal === 'confirmarNomina'
+          ? info('LISTO_CALCULO', 'Calcular nómina preliminar', 'Con la revisión al día, calcule para ver montos y guardar la revisión.')
+          : info('FALTA_CALCULO', 'Revisar trabajadores', 'Revisa trabajadores listos para nómina y continúa la revisión del período.'),
+      ],
     });
   }
 
   if (!input.periodoValido || !input.tienePrevalidacion) {
     return buildEstado(input, {
       estadoClave: 'pendiente_validacion',
-      titulo: 'Pendiente de validacion',
-      descripcion: 'Selecciona y valida un periodo antes de preparar la nomina.',
+      titulo: 'Sin verificar',
+      descripcion: 'Verifica trabajadores, parámetros, movimientos y recurrentes del período antes de generar la nómina.',
       severidad: 'neutral',
-      accionPrincipal: local('Validar periodo', 'Revisa trabajadores, parametros, asignaciones recurrentes y movimientos del mes.', 'validarPeriodo', !input.periodoValido),
+      accionPrincipal: local('Verificar y generar nómina', 'Revisa el período y, si no hay bloqueos críticos, genera el borrador de nómina.', 'validarPeriodo', !input.periodoValido),
       etapaActiva: 'validar',
       disclosureActivo: 'base',
-      queFaltaAhora: [info('VALIDAR_PERIODO', 'Validar periodo', 'Selecciona un periodo valido y valida para detectar bloqueos, advertencias y tareas pendientes.')],
+      queFaltaAhora: [info('VERIFICAR_PERIODO', 'Verificar período', 'Revisa el período activo antes de generar la nómina mensual.')],
     });
   }
 
   if (bloqueosCriticosPrevalidacion.length > 0) {
-    const accion = bloqueoParametros
-      ? ruta('Revisar parametros', 'Corrige los parametros bloqueantes antes de avanzar.', '/parametros')
-      : local('Revisar bloqueos', 'Resuelve los bloqueos antes de generar la base.', 'revisarBloqueos');
+    const accion = resolverAccionPrincipalPeriodoConPendientes(input, bloqueosCriticosPrevalidacion);
     return buildEstado(input, {
       estadoClave: 'periodo_con_pendientes',
-      titulo: 'Periodo con pendientes',
-      descripcion: 'Hay bloqueos o pendientes que deben resolverse antes de avanzar.',
+      titulo: 'En revisión',
+      descripcion: 'Hay trabajadores o datos obligatorios que RRHH debe revisar antes de continuar.',
       severidad: 'danger',
       accionPrincipal: accion,
       etapaActiva: 'validar',
@@ -255,14 +352,19 @@ export function resolverEstadoOperativoProcesoMensual(
 
   return buildEstado(input, {
     estadoClave: 'listo_para_generar_base',
-    titulo: 'Listo para generar base',
-    descripcion: 'El periodo esta validado. Falta generar la base de nomina.',
+    titulo: 'Período verificado',
+    descripcion: 'El período está verificado. Puede generarse el borrador de nómina mensual en el mismo paso.',
     severidad: input.advertenciasPrevalidacion.length ? 'warning' : 'success',
-    accionPrincipal: local('Generar base de nomina', 'La base toma trabajadores, movimientos y asignaciones del periodo.', 'generarBase', !input.puedeGenerarBase),
+    accionPrincipal: local(
+      'Verificar y generar nómina',
+      'Consolida trabajadores, movimientos del mes y calcula la nómina preliminar del período.',
+      'generarBase',
+      !input.puedeGenerarBase,
+    ),
     etapaActiva: 'base',
     disclosureActivo: 'base',
     queFaltaAhora: [
-      info('FALTA_BASE', 'Generar base de nomina', 'La base consolida trabajadores aptos, movimientos del mes y asignaciones recurrentes.'),
+      info('FALTA_NOMINA', 'Generar nómina', 'La nómina mensual consolida trabajadores listos para nómina y movimientos del período.'),
       ...input.advertenciasPrevalidacion,
     ],
   });
@@ -293,22 +395,28 @@ function construirTimeline(
   const revisionCompleta = input.resultadoGuardado;
   const revisionActual = etapaActiva === 'calculo' || etapaActiva === 'guardar';
   const aprobacionCompleta = input.aprobadoOperativamente || input.cerradoOperativamente;
-  const aprobacionActual = etapaActiva === 'aprobar_cerrar';
+  const aprobacionActual =
+    etapaActiva === 'aprobar_cerrar' && !input.aprobadoOperativamente && input.resultadoGuardado;
+  const liquidacionesCompletas = input.liquidacionesDisponibles;
+  const liquidacionesActual = etapaActiva === 'liquidaciones' && input.aprobadoOperativamente && !liquidacionesCompletas;
+  const cierreCompleto = input.cerradoOperativamente;
+  const cierreActual =
+    input.aprobadoOperativamente && liquidacionesCompletas && !cierreCompleto && etapaActiva === 'aprobar_cerrar';
 
   return [
     {
       numero: '1',
-      titulo: 'Preparacion',
+      titulo: input.tienePrevalidacion && !input.baseGenerada ? 'Generar nómina' : 'Verificar período',
       estado: preparacionCompleta ? 'Completo' : preparacionActual ? 'Actual' : 'Pendiente',
       descripcion: preparacionCompleta
-        ? 'Datos base listos'
+        ? 'Nómina generada'
         : input.tienePrevalidacion && !input.baseGenerada
-          ? 'Falta generar base'
-          : 'Periodo por validar',
+          ? 'Período verificado'
+          : 'Sin verificar',
     },
     {
       numero: '2',
-      titulo: 'Revision',
+      titulo: 'Revisar trabajadores',
       estado: input.calculoConBloqueos
         ? 'Bloqueada'
         : revisionCompleta
@@ -317,32 +425,156 @@ function construirTimeline(
             ? 'Actual'
             : 'Pendiente',
       descripcion: revisionCompleta
-        ? 'Resultado guardado'
+        ? 'Trabajadores revisados'
         : input.calculoGenerado
-          ? 'Resultado por guardar'
+          ? 'Revision pendiente'
           : revisionActual
-            ? 'Calculo por revisar'
+            ? 'Trabajadores por revisar'
             : 'Pendiente',
     },
     {
       numero: '3',
-      titulo: 'Aprobacion y cierre',
+      titulo: 'Aprobar nómina',
       estado: aprobacionCompleta ? 'Completo' : aprobacionActual ? 'Actual' : 'Pendiente',
-      descripcion: input.cerradoOperativamente
-        ? 'Periodo cerrado'
-        : input.aprobadoOperativamente
-          ? 'Aprobado'
-          : aprobacionActual
-            ? 'Falta aprobar o cerrar'
-            : 'Pendiente',
+      descripcion: input.cerradoOperativamente || input.aprobadoOperativamente
+        ? 'Nómina aprobada'
+        : aprobacionActual
+          ? 'Pendiente de aprobar'
+          : 'Pendiente',
     },
     {
       numero: '4',
-      titulo: 'Liquidaciones',
-      estado: etapaActiva === 'liquidaciones' ? 'Actual' : 'Pendiente',
-      descripcion: input.liquidacionesDisponibles ? 'Disponibles' : input.cerradoOperativamente ? 'Listas para generar' : 'Pendiente',
+      titulo: 'Generar liquidaciones',
+      estado: liquidacionesCompletas ? 'Completo' : liquidacionesActual ? 'Actual' : 'Pendiente',
+      descripcion: liquidacionesCompletas
+        ? 'Liquidaciones emitidas'
+        : input.aprobadoOperativamente
+          ? 'Pendiente de emitir'
+          : 'Pendiente',
+    },
+    {
+      numero: '5',
+      titulo: 'Cerrar proceso mensual',
+      estado: cierreCompleto ? 'Completo' : cierreActual ? 'Actual' : 'Pendiente',
+      descripcion: cierreCompleto ? 'Proceso cerrado' : cierreActual ? 'Pendiente de cierre' : 'Pendiente',
     },
   ];
+}
+
+export function bloqueoDestinoParametros(bloqueo: ProcesoMensualPendienteVm): boolean {
+  return bloqueo.ruta === '/parametros' || bloqueo.codigo === 'BLOQ-004';
+}
+
+export function bloqueoDestinoTrabajadores(bloqueo: ProcesoMensualPendienteVm): boolean {
+  const codigo = bloqueo.codigo.toUpperCase();
+  return (
+    bloqueo.accionLocal === 'revisarBloqueos' ||
+    codigo === 'BLOQ-003' ||
+    codigo === 'BLOQ-006' ||
+    codigo.includes('TRABAJ')
+  );
+}
+
+export function bloqueoDestinoNominaPeriodo(bloqueo: ProcesoMensualPendienteVm): boolean {
+  return !bloqueoDestinoParametros(bloqueo) && !bloqueoDestinoTrabajadores(bloqueo);
+}
+
+export interface BloqueosConfiguracionPeriodoConteo {
+  trabajadores: number;
+  nomina: number;
+}
+
+export function contarBloqueosConfiguracionPeriodo(
+  bloqueos: readonly ProcesoMensualPendienteVm[],
+): BloqueosConfiguracionPeriodoConteo {
+  let trabajadores = 0;
+  let nomina = 0;
+  for (const bloqueo of bloqueos) {
+    if (bloqueoDestinoParametros(bloqueo)) {
+      continue;
+    }
+    if (bloqueoDestinoTrabajadores(bloqueo)) {
+      trabajadores += 1;
+    } else {
+      nomina += 1;
+    }
+  }
+  return { trabajadores, nomina };
+}
+
+function accionPrincipalBorradorGenerado(
+  input: ProcesoMensualEstadoOperativoInput,
+): ProcesoMensualAccionPrincipalVm {
+  const pendientes = [
+    ...input.bloqueosPrevalidacion,
+    ...input.advertenciasPrevalidacion,
+    ...input.bloqueosCalculo,
+    ...input.advertenciasCalculo,
+  ];
+  const revisionAlDia =
+    !hayPendientesRevisionTrabajadores(pendientes)
+    && (input.revisionTrabajadoresCompleta ?? false);
+
+  if (revisionAlDia) {
+    return local(
+      'Calcular nómina preliminar',
+      'La revisión por trabajador está al día. Calcula para ver montos y guardar la revisión del período.',
+      'confirmarNomina',
+      !input.puedeCalcular,
+    );
+  }
+  return local(
+    'Revisar trabajadores',
+    'Revisa el borrador y continúa con la revisión por trabajador.',
+    'calcularPreliminar',
+    !input.puedeCalcular,
+  );
+}
+
+function resolverAccionPrincipalPeriodoConPendientes(
+  input: ProcesoMensualEstadoOperativoInput,
+  bloqueosCriticos: readonly ProcesoMensualPendienteVm[],
+): ProcesoMensualAccionPrincipalVm {
+  const bloqueoTrabajadores = bloqueosCriticos.find(bloqueoDestinoTrabajadores);
+  if (bloqueoTrabajadores) {
+    return local(
+      'Revisar trabajadores',
+      'Resuelve los bloqueos antes de confirmar la nómina mensual.',
+      'revisarBloqueos',
+    );
+  }
+  const bloqueoNomina = bloqueosCriticos.find(bloqueoDestinoNominaPeriodo);
+  if (bloqueoNomina) {
+    return local(
+      'Revisar nómina',
+      'Resuelve los bloqueos del período antes de confirmar la nómina mensual.',
+      'revisarBloqueos',
+    );
+  }
+  if (!input.parametrosOperativos && bloqueosCriticos.some(bloqueoDestinoParametros)) {
+    return ruta('Revisar parámetros', 'Corrige los parámetros bloqueantes antes de avanzar.', '/parametros');
+  }
+  const bloqueoConRuta = bloqueosCriticos.find((bloqueo) => bloqueo.ruta?.trim());
+  if (bloqueoConRuta?.ruta) {
+    return ruta(
+      bloqueoConRuta.accionLabel ?? bloqueoConRuta.titulo,
+      bloqueoConRuta.descripcion,
+      bloqueoConRuta.ruta,
+    );
+  }
+  if (!input.baseGenerada && input.puedeGenerarBase) {
+    return local(
+      'Generar nómina',
+      'Arma la nómina mensual con trabajadores, movimientos y asignaciones del período.',
+      'generarBase',
+      false,
+    );
+  }
+  return local(
+    'Revisar nómina',
+    'Resuelve los bloqueos del período antes de confirmar la nómina mensual.',
+    'revisarBloqueos',
+  );
 }
 
 function local(
@@ -360,5 +592,13 @@ function ruta(label: string, descripcion: string, ruta: string): ProcesoMensualA
 }
 
 function info(codigo: string, titulo: string, descripcion: string): ProcesoMensualPendienteVm {
+  if (codigo === 'LISTO_GUARDAR') {
+    return {
+      codigo: 'LISTO_GUARDAR_REVISION',
+      titulo: 'Guardar revisión',
+      descripcion: 'La versión revisada queda lista para registrar la revisión de remuneraciones.',
+      severidad: 'info',
+    };
+  }
   return { codigo, titulo, descripcion, severidad: 'info' };
 }

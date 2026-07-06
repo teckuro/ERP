@@ -1,0 +1,567 @@
+﻿@import './nomina-mensual-v2-visual-system.css';
+
+/* L2/L3/L4 movidos a CSS local del componente (L5 desacople 2026-06). Ver:
+   components/nomina-mensual-v2-paso-parametros/nomina-mensual-v2-paso-parametros.component.css */
+
+:host {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  min-width: 0;
+  background: #f6f8fb;
+  color: #172033;
+  font-family: var(
+    --erp-font-sans,
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif
+  );
+}
+
+app-nomina-mensual-v2-stepper,
+app-nomina-mensual-v2-overlays {
+  display: block;
+  flex: 0 0 auto;
+}
+
+app-nomina-mensual-v2-paso-parametros {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  align-self: stretch;
+}
+
+app-nomina-mensual-v2-paso-parametros .nmv2-paso-parametros {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+lucide-icon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  stroke-width: 2.15;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* L1 — Marco del shell V2 (ViewEncapsulation.None). */
+.nmv2-page {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  position: relative;
+  gap: 0;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #f6f7f4;
+}
+
+.nmv2-page__loading {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.nmv2-page__workspace {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+}
+
+.nmv2-page__loading--overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: #f6f7f4;
+}
+
+.nmv2-page.nomina-shell {
+  min-height: 0;
+  gap: 0;
+}
+
+.nmv2-page[data-step='parameters'] {
+  padding: 0;
+  gap: 0;
+  background: #ffffff;
+}
+
+/* Franja de contexto fijo (F18b — AG-CTX-04) -------------------------------- */
+
+.nmv2-context-franja {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px 16px;
+  margin: 0;
+  padding: 8px 16px;
+  border-bottom: 1px solid #eef0eb;
+  background: #ffffff;
+}
+
+.nmv2-context-franja__item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-right: 16px;
+  border-right: 1px solid #eef0eb;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.nmv2-context-franja__item:last-child {
+  border-right: 0;
+  padding-right: 0;
+}
+
+.nmv2-context-franja__label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.nmv2-context-franja__value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 16rem;
+}
+
+@media (max-width: 1024px) {
+  .nmv2-context-franja {
+    gap: 8px 12px;
+    padding: 6px 12px;
+  }
+
+  .nmv2-context-franja__item {
+    padding-right: 12px;
+  }
+
+  .nmv2-context-franja__value {
+    max-width: 12rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .nmv2-context-franja__item {
+    flex: 1 1 calc(50% - 8px);
+    border-right: 0;
+    padding-right: 0;
+  }
+}
+
+.nmv2-step-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.nmv2-step-frame {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.nmv2-step-frame > app-nomina-mensual-v2-paso-parametros,
+.nmv2-step-frame > app-nomina-mensual-v2-paso-dotacion,
+.nmv2-step-frame > app-nomina-mensual-v2-paso-movimientos,
+.nmv2-step-frame > app-nomina-mensual-v2-paso-calculo,
+.nmv2-step-frame > app-nomina-mensual-v2-paso-validacion,
+.nmv2-step-frame > app-nomina-mensual-v2-paso-cierre {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+}
+
+.nmv2-paso-parametros {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  gap: 0;
+}
+
+.nmv2-step-frame .paso-dotacion,
+.nmv2-step-frame .paso-mov,
+.nmv2-step-frame .paso-calc,
+.nmv2-step-frame .paso-val,
+.nmv2-step-frame .paso-cierre {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.nmv2-step-nav-hint {
+  margin: 0;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: #475569;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.nmv2-step-nav-hint--bloqueo {
+  color: #7f1d1d;
+  background: #fef7f7;
+  border-bottom-color: #fecaca;
+}
+
+.nmv2-step-nav-hint--revision {
+  color: #78350f;
+  background: #fffbeb;
+  border-bottom-color: #fde68a;
+}
+
+.nmv2-banner-handoff {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 16px;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+.nmv2-banner-handoff--success {
+  color: #065f46;
+  background: #ecfdf5;
+  border-bottom-color: #a7f3d0;
+}
+
+.nmv2-banner-handoff--info {
+  color: #1e40af;
+  background: #eff6ff;
+  border-bottom-color: #bfdbfe;
+}
+
+.nmv2-banner-handoff__texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nmv2-banner-handoff__cerrar {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  opacity: 0.7;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.nmv2-banner-handoff__cerrar:hover {
+  opacity: 1;
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.erp-shell-scroll > app-remuneraciones-outlet {
+  flex: 1 1 auto;
+  min-height: 100%;
+}
+
+app-nomina-mensual-v2-page,
+app-nomina-mensual-v2-container {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+app-nomina-mensual-v2-container > .nmv2-page {
+  flex: 1 1 auto;
+  min-height: 100%;
+}
+
+.nmv2-page[data-step='parameters'] > app-nomina-mensual-v2-stepper,
+.nmv2-page[data-step='parameters'] > .nmv2-step-nav-hint,
+.nmv2-page[data-step='dotacion'] > app-nomina-mensual-v2-stepper {
+  flex: 0 0 auto;
+}
+
+.nmv2-page > .nmv2-step-body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.nmv2-page[data-step='parameters'] .nmv2-paso-parametros {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.nmv2-page > app-nomina-mensual-v2-stepper {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+}
+
+.nmv2-page .nomina-workflow-header.nmv2-stepper-card {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.nmv2-page > .nmv2-step-nav-hint {
+  margin: 0;
+  border-top: 0;
+}
+
+.nmv2-page > .nmv2-step-body {
+  margin-top: 0;
+}
+
+.nmv2-page > .nmv2-step-nav-hint + .nmv2-step-body {
+  margin-top: 0;
+}
+
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.text-link--left {
+  justify-content: flex-start;
+}
+
+.icon-btn {
+  display: inline-grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid #d9e2ec;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  border-color: #bfdbfe;
+  color: #2563eb;
+}
+
+body.nmv2-trazabilidad-scroll-lock {
+  overflow: hidden;
+}
+
+.nmv2-trazabilidad-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.nmv2-trazabilidad-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 1201;
+  display: flex;
+  flex-direction: column;
+  width: min(420px, 92vw);
+  height: 100dvh;
+  border-left: 1px solid #e2e8f0;
+  background: #fff;
+  box-shadow: -8px 0 24px rgba(15, 23, 42, 0.08);
+}
+
+.nmv2-trazabilidad-drawer__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.nmv2-trazabilidad-drawer__header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.nmv2-trazabilidad-drawer__header p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.nmv2-trazabilidad-drawer__body {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 14px 18px 24px;
+}
+
+.nmv2-trazabilidad-drawer__empty {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.nmv2-trazabilidad-timeline {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nmv2-trazabilidad-timeline__item {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 10px;
+}
+
+.nmv2-trazabilidad-timeline__marker {
+  color: #16a34a;
+}
+
+.nmv2-trazabilidad-timeline__item--invalid .nmv2-trazabilidad-timeline__marker {
+  color: #dc2626;
+}
+
+.nmv2-trazabilidad-timeline__content {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.nmv2-trazabilidad-timeline__content strong {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.nmv2-trazabilidad-timeline__content span,
+.nmv2-trazabilidad-timeline__content em {
+  color: #64748b;
+  font-style: normal;
+}
+
+.nmv2-trazabilidad-timeline__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 2px;
+}
+
+.nmv2-trazabilidad-timeline__actions .text-link {
+  padding: 0;
+  font-size: 12px;
+}
+
+.nmv2-empty-state {
+  display: grid;
+  gap: 12px;
+  max-width: 28rem;
+  margin: 2rem auto;
+  padding: 1rem 1.25rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.nmv2-empty-state__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.nmv2-empty-state__text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.nmv2-empty-state__btn {
+  justify-self: start;
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #1e3a8a;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nmv2-empty-state__btn:hover {
+  background: #f8fafc;
+}

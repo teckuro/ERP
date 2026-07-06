@@ -41,6 +41,7 @@ function prevalidacionBase(over: Partial<ProcesoMensualPrevalidacion> = {}): Pro
     bloqueos: [],
     advertencias: [],
     informaciones: [],
+    trabajadoresPendientesRevision: [],
     items: [],
     entradasMensuales: [],
     ...over,

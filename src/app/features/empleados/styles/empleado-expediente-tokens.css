@@ -1,0 +1,51 @@
+﻿/**
+ * Tokens locales expediente empleado (ficha + resumen alta).
+ * Mapeados a bitacora / ERP; no importar en estilos globales.
+ */
+:host {
+  --emp-bg: var(--bitacora-bg, #f6f8fa);
+  --emp-panel: var(--bitacora-surface, #ffffff);
+  --emp-soft: var(--bitacora-surface-soft, #f9fafb);
+  --emp-border: var(--bitacora-border, #dde3ea);
+  --emp-text: var(--bitacora-text, #172033);
+  --emp-muted: var(--bitacora-muted, #647084);
+  --emp-accent: var(--bitacora-primary, #2563eb);
+  --emp-accent-soft: var(--bitacora-primary-soft, #f3f4f6);
+  --emp-success-soft: #eaf7ee;
+  --emp-warning-soft: #fff7e6;
+  --emp-danger-soft: #fdecec;
+  --emp-rail-width-min: 260px;
+  --emp-rail-width-max: 280px;
+  --emp-diag-width-min: 300px;
+  --emp-diag-width-max: 360px;
+  --emp-radius: 8px;
+  --emp-radius-sm: 6px;
+  --emp-gap: 8px;
+  --emp-gap-md: 12px;
+  --emp-floating-z: 40;
+
+  --employee-exp-bg: var(--emp-bg);
+  --employee-exp-panel: var(--emp-panel);
+  --employee-exp-soft: var(--emp-soft);
+  --employee-exp-border: var(--emp-border);
+  --employee-exp-text: var(--emp-text);
+  --employee-exp-muted: var(--emp-muted);
+  --employee-exp-blue: var(--emp-accent);
+  --employee-exp-blue-soft: var(--emp-accent-soft);
+  --employee-exp-green-soft: var(--emp-success-soft);
+  --employee-exp-yellow-soft: var(--emp-warning-soft);
+  --employee-exp-red-soft: var(--emp-danger-soft);
+  --employee-floating-ui-z: var(--emp-floating-z);
+  --erp-select-panel-z: 11060;
+
+  --form-bg: #f8fafc;
+  --form-surface: var(--emp-panel);
+  --form-border: var(--emp-border);
+  --form-text: var(--emp-text);
+  --form-muted: var(--emp-muted);
+
+  color: var(--emp-text);
+  font-size: var(--erp-text-md, 0.8rem);
+  line-height: 1.45;
+  background-color: var(--emp-bg);
+}

@@ -39,7 +39,13 @@ export interface ParametroGeneral {
   sueldoMinimoCasaParticular: number | null;
   ingresoMinimoNoRemuneracional: number | null;
   topeAfpUf: number | null;
+  /** Politica de empresa: si paga gratificacion legal (art. 50). */
   gratificacion: boolean;
+  /**
+   * Factor legal del tope de gratificacion art. 50 (4,75 IMM anual), NO el sueldo minimo en pesos.
+   * El tope mensual se calcula como (sueldoMinimo * immGratificacion) / 12.
+   * Nombre historico de columna `imm_gratificacion`; representa un factor multiplicador.
+   */
   immGratificacion: number | null;
   topeAfp: number | null;
   topeIpsUf: number | null;

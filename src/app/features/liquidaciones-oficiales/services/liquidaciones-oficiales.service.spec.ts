@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
+import { AuthService } from '../../../core/auth/auth.service';
 import { NominaCalculoSnapshotRepository } from '../../nomina-mensual/data-access/nomina-calculo-snapshot.repository';
 import { LiquidacionesOficialesRepository } from '../data-access/liquidaciones-oficiales.repository';
 import { LiquidacionesOficialesService } from './liquidaciones-oficiales.service';
@@ -25,7 +26,7 @@ describe('LiquidacionesOficialesService', () => {
     activo: true,
     reemplazadoPor: null,
     aprobacionOperativa: { estado: 'aprobado_operativamente', fecha: '', usuarioId: null, usuarioLabel: null, advertencias: [], metadata: {} },
-    cierreOperativo: { estado: 'cerrado_operativamente', fecha: '', usuarioId: null, usuarioLabel: 'rrhh', observacion: null, metadata: {} },
+    cierreOperativo: null,
     trabajadores: [],
     issues: [],
     trazabilidad: [],
@@ -66,6 +67,13 @@ describe('LiquidacionesOficialesService', () => {
         LiquidacionesOficialesService,
         { provide: LiquidacionesOficialesRepository, useValue: liquidaciones },
         { provide: NominaCalculoSnapshotRepository, useValue: snapshots },
+        {
+          provide: AuthService,
+          useValue: {
+            currentUser: () => null,
+            getSession: vi.fn().mockResolvedValue(null),
+          },
+        },
       ],
     });
   });

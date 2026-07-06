@@ -1,70 +1,111 @@
 import { TestBed } from '@angular/core/testing';
-import { vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { SUPABASE_CLIENT } from '../../../core/services/supabase.service';
 import { EmpleadosService } from '../../empleados/services/empleados.service';
 import { HaberesDescuentosService } from '../../haberes-descuentos/services/haberes-descuentos.service';
 import { MovimientosVariablesService } from '../../movimientos-variables/services/movimientos-variables.service';
-import type { ParametroGeneral } from '../../parametros-generales/models/parametro-general.model';
+import type {
+  ParametroGeneral,
+  ParametrosGeneralesClienteConfig,
+} from '../../parametros-generales/models/parametro-general.model';
 import { ParametrosGeneralesService } from '../../parametros-generales/services/parametros-generales.service';
 
 import { EntradasMensualesPeriodoService } from '../entradas/services/entradas-mensuales-periodo.service';
+import { LiquidacionesOficialesRepository } from '../../liquidaciones-oficiales/data-access/liquidaciones-oficiales.repository';
 import { NominaCalculoSnapshotRepository } from '../data-access/nomina-calculo-snapshot.repository';
+import { NominaPeriodoDiagnosticoRepository } from '../data-access/nomina-periodo-diagnostico.repository';
 import { ProcesoMensualService } from './proceso-mensual.service';
 
 const filaPgMock = {
   periodo: '2026-05',
   uf: 38000,
   utm: 60000,
-  uta: null,
+  uta: 720000,
   sueldoMinimo: 500000,
-  sueldoMinimo18a65: null,
-  sueldoMinimoMenor18Mayor65: null,
-  sueldoMinimoCasaParticular: null,
-  ingresoMinimoNoRemuneracional: null,
-  topeAfpUf: null,
+  sueldoMinimo18a65: 500000,
+  sueldoMinimoMenor18Mayor65: 372989,
+  sueldoMinimoCasaParticular: 500000,
+  ingresoMinimoNoRemuneracional: 322295,
+  topeAfpUf: 87.8,
   gratificacion: false,
   immGratificacion: null,
-  topeAfp: 100,
-  topeIpsUf: null,
-  topeIps: 100,
-  topeCesantiaUf: null,
-  topeCesantia: 100,
-  topeApvMensualUf: null,
-  topeApvMensual: null,
-  topeApvAnualUf: null,
-  topeApvAnual: null,
+  topeAfp: 3336400,
+  topeIpsUf: 87.8,
+  topeIps: 3336400,
+  topeCesantiaUf: 131.9,
+  topeCesantia: 5012200,
+  topeApvMensualUf: 50,
+  topeApvMensual: 1900000,
+  topeApvAnualUf: 600,
+  topeApvAnual: 22800000,
   topeDepositoConvenidoAnualUf: null,
   topeDepositoConvenidoAnual: null,
   topeAfpVoluntario: null,
   sis: 0.0145,
-  sanna: null,
+  sanna: 0.0003,
   seguroSocialExpectativaVida: null,
   aporteEmpleadorAfp: null,
-  saludObligatoria: null,
+  saludObligatoria: 0.07,
   saludCcaf: null,
   saludFonasaConCcaf: null,
   descuentosBasePorDia: false,
-  afcTrabajadorIndefinido: null,
-  afcEmpleadorIndefinido: null,
-  afcEmpleadorPlazo: null,
+  afcTrabajadorIndefinido: 0.006,
+  afcEmpleadorIndefinido: 0.024,
+  afcEmpleadorPlazo: 0.03,
   afcEmpleadorIndefinidoOnceAnosMas: null,
   afcEmpleadorCasaParticular: null,
-  trabajoPesadoEmpleador: null,
-  trabajoPesadoTrabajador: null,
-  trabajoMenosPesadoEmpleador: null,
-  trabajoMenosPesadoTrabajador: null,
+  trabajoPesadoEmpleador: 0.02,
+  trabajoPesadoTrabajador: 0.02,
+  trabajoMenosPesadoEmpleador: 0.01,
+  trabajoMenosPesadoTrabajador: 0.01,
   fechaActualizacion: null,
 } as unknown as ParametroGeneral;
+
+const clienteConfigMock = {
+  ...filaPgMock,
+  idCcafEntidad: 1,
+  idOrganismoAdministradorLey16744: null,
+  estadoReconciliacionOficial: 'cliente_confirmado',
+  fechaReconciliacionOficial: null,
+  origenReconciliacion: null,
+  observacionReconciliacion: null,
+} as ParametrosGeneralesClienteConfig;
 
 const catalogosMock = {
   afp: [{ idAfp: 1, codigo: 'x', nombre: 'n', periodo: null, tasaObligatoria: 0.1, comision: 0, sis: 0, tasaEmpleador: 0, vigente: true, vigenciaInicio: null, vigenciaFin: null }],
   isapres: [],
   saludInstituciones: [{ idSalud: 1, codigo: 'FONASA', nombre: 'Fonasa', tipo: 'FONASA', porcentajeCotizacion: 0.07, periodo: null, vigente: true, vigenciaInicio: null, vigenciaFin: null }],
-  tramosCarga: [],
+  tramosCarga: [{ idTramo: 1, periodo: '2026-05', tramo: 'A', desde: 0, hasta: 500000, valor: 1000 }],
   tramosImpuesto: [{ idTramo: 1, periodo: '2026-05', desde: 0, hasta: 1, factor: 1, rebaja: 0 }],
   tablaImpuestoUnico: [{ id: 1, tramo: 1, desde: 0, hasta: 999999, factor: 0, rebaja: 0, vigenciaInicio: '2026-05-01', vigenciaFin: null }],
-  reformaPensiones: [],
-  trabajosPesados: [],
+  reformaPensiones: [
+    {
+      idParametro: 1,
+      nombre: 'reforma',
+      valorDecimal: 0,
+      valorEntero: null,
+      periodo: '2026-05',
+      vigenciaInicio: '2026-01-01',
+      vigenciaFin: null,
+    },
+  ],
+  trabajosPesados: [
+    {
+      idTrabajoPesadoParametro: 1,
+      codigo: 'TP',
+      periodo: '2026-05',
+      nombre: 'Trabajo pesado',
+      tasaTrabajador: 0.02,
+      tasaEmpleador: 0.02,
+      tasaTotal: 0.04,
+      requiereDictamenCen: true,
+      fuente: null,
+      vigente: true,
+      vigenciaInicio: '2026-01-01',
+      vigenciaFin: null,
+    },
+  ],
   reformaPrevisional: [
     {
       idReformaPrevisionalParametro: 1,
@@ -117,6 +158,7 @@ describe('ProcesoMensualService', () => {
   let parametros: {
     obtenerUltimoHastaPeriodo: ReturnType<typeof vi.fn>;
     obtenerPeriodoRemuneracion: ReturnType<typeof vi.fn>;
+    obtenerClienteConfig: ReturnType<typeof vi.fn>;
     listarCatalogos: ReturnType<typeof vi.fn>;
   };
   let empleados: { listar: ReturnType<typeof vi.fn>; obtenerPorId: ReturnType<typeof vi.fn> };
@@ -127,6 +169,7 @@ describe('ProcesoMensualService', () => {
   let movimientos: { listarPorPeriodo: ReturnType<typeof vi.fn> };
   let entradasMensuales: { listarEntradasPeriodo: ReturnType<typeof vi.fn> };
   let snapshots: {
+    guardarBaseNominaBorrador: ReturnType<typeof vi.fn>;
     guardarSnapshotPreliminar: ReturnType<typeof vi.fn>;
     obtenerSnapshotActivo: ReturnType<typeof vi.fn>;
     obtenerSnapshotCompletoActivo: ReturnType<typeof vi.fn>;
@@ -135,6 +178,11 @@ describe('ProcesoMensualService', () => {
     anularSnapshotActivo: ReturnType<typeof vi.fn>;
     aprobarResultadoPreliminarOperativamente: ReturnType<typeof vi.fn>;
     cerrarNominaOperativa: ReturnType<typeof vi.fn>;
+  };
+  let diagnosticoPeriodo: {
+    guardar: ReturnType<typeof vi.fn>;
+    obtenerActivo: ReturnType<typeof vi.fn>;
+    cerrar: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -146,12 +194,13 @@ describe('ProcesoMensualService', () => {
         fechaInicio: '2026-05-01',
         fechaFin: '2026-05-31',
       }),
+      obtenerClienteConfig: vi.fn().mockResolvedValue(clienteConfigMock),
       listarCatalogos: vi.fn().mockResolvedValue(catalogosMock),
     };
     empleados = {
       listar: vi.fn().mockResolvedValue([
-        { id: 1, estado: 'activo', aptoParaRemuneraciones: true },
-        { id: 2, estado: 'activo', aptoParaRemuneraciones: true },
+        { id: 1, estado: 'activo', aptoParaRemuneraciones: true, idContrato: 10, estadoFicha: 'VALIDO' },
+        { id: 2, estado: 'activo', aptoParaRemuneraciones: true, idContrato: 20, estadoFicha: 'VALIDO' },
       ]),
       obtenerPorId: vi.fn().mockImplementation((id: number) => Promise.resolve({
         id,
@@ -189,6 +238,10 @@ describe('ProcesoMensualService', () => {
       listarEntradasPeriodo: vi.fn().mockResolvedValue([]),
     };
     snapshots = {
+      guardarBaseNominaBorrador: vi.fn().mockImplementation((snapshot) => Promise.resolve({
+        snapshot: { ...snapshot, idCalculoPeriodo: 77 },
+        reemplazoSnapshotAnterior: false,
+      })),
       guardarSnapshotPreliminar: vi.fn().mockImplementation((snapshot) => Promise.resolve({
         snapshot: { ...snapshot, idCalculoPeriodo: 1 },
         reemplazoSnapshotAnterior: false,
@@ -223,16 +276,47 @@ describe('ProcesoMensualService', () => {
         },
       })),
     };
+    diagnosticoPeriodo = {
+      guardar: vi.fn().mockResolvedValue(undefined),
+      obtenerActivo: vi.fn().mockResolvedValue(null),
+      cerrar: vi.fn().mockResolvedValue(undefined),
+    };
+
+    const supabaseFrom = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        order: vi.fn().mockReturnValue({
+          limit: vi.fn().mockReturnValue({
+            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+          }),
+        }),
+      }),
+    });
 
     TestBed.configureTestingModule({
       providers: [
         ProcesoMensualService,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: {
+            from: supabaseFrom,
+            auth: {
+              getUser: vi.fn().mockResolvedValue({
+                data: { user: { id: 'test-user', email: 'rrhh@test.cl' } },
+              }),
+            },
+          },
+        },
         { provide: ParametrosGeneralesService, useValue: parametros },
         { provide: EmpleadosService, useValue: empleados },
         { provide: HaberesDescuentosService, useValue: haberes },
         { provide: EntradasMensualesPeriodoService, useValue: entradasMensuales },
         { provide: MovimientosVariablesService, useValue: movimientos },
         { provide: NominaCalculoSnapshotRepository, useValue: snapshots },
+        { provide: NominaPeriodoDiagnosticoRepository, useValue: diagnosticoPeriodo },
+        {
+          provide: LiquidacionesOficialesRepository,
+          useValue: { obtenerLiquidacionPeriodo: vi.fn().mockResolvedValue(null) },
+        },
       ],
     });
   });
@@ -256,20 +340,66 @@ describe('ProcesoMensualService', () => {
     expect(parametros.listarCatalogos).toHaveBeenCalledWith('2026-05');
   });
 
+  it('consultarEstadoParametrosPeriodo solo lee parametros generales', async () => {
+    const svc = TestBed.inject(ProcesoMensualService);
+    await svc.consultarEstadoParametrosPeriodo('2026-05');
+    expect(parametros.obtenerUltimoHastaPeriodo).toHaveBeenCalledWith('2026-05');
+    expect(parametros.obtenerPeriodoRemuneracion).toHaveBeenCalledWith('2026-05');
+    expect(parametros.obtenerClienteConfig).toHaveBeenCalledWith('2026-05');
+    expect(parametros.listarCatalogos).toHaveBeenCalledWith('2026-05');
+    expect(empleados.listar).not.toHaveBeenCalled();
+    expect(entradasMensuales.listarEntradasPeriodo).not.toHaveBeenCalled();
+    expect(haberes.listarAsignacionesParaPrevalidacionMensual).not.toHaveBeenCalled();
+  });
+
   it('no calcula montos ni invoca liquidaciones (solo dependencias declaradas)', async () => {
     const svc = TestBed.inject(ProcesoMensualService);
     const r = await svc.ejecutarPrevalidaciones('2026-05');
     expect(r.resumen.trabajadoresActivosAptos).toBe(2);
     expect(r.resumen.recurrentesAplicablesAlPeriodo).toBe(0);
-    expect(parametros.obtenerUltimoHastaPeriodo).toHaveBeenCalled();
+    expect(parametros.obtenerUltimoHastaPeriodo).toHaveBeenCalledWith('2026-05');
   });
 
-  it('propaga fallo de lectura de entradas como bloqueo en resultado', async () => {
+  it('marca parametros no operativos si la fila oficial tiene UF vacia', async () => {
+    parametros.obtenerUltimoHastaPeriodo.mockResolvedValue({ ...filaPgMock, uf: null });
+    const svc = TestBed.inject(ProcesoMensualService);
+    const r = await svc.ejecutarPrevalidaciones('2026-05');
+    expect(r.resumen.parametrosOperativos).toBe(false);
+    expect(r.resumen.parametrosGrupos.find((g) => g.id === 'mensuales_uf_utm_sueldo')?.clasificacion).toBe('PARCIAL');
+  });
+
+  it('marca parametros no operativos si sanna falta en parametros_generales aunque exista en legales', async () => {
+    parametros.obtenerUltimoHastaPeriodo.mockResolvedValue({ ...filaPgMock, sanna: null });
+    const svc = TestBed.inject(ProcesoMensualService);
+    const r = await svc.ejecutarPrevalidaciones('2026-05');
+    expect(r.resumen.parametrosOperativos).toBe(false);
+    const mensajesParametros = [...r.bloqueos, ...r.advertencias]
+      .filter((m) => m.area === 'PARAMETROS')
+      .map((m) => m.texto)
+      .join(' ');
+    expect(mensajesParametros).toMatch(/sanna/i);
+  });
+
+  it('marca parametros no operativos si hay diferencias y la config cliente se edito tras decision', async () => {
+    parametros.obtenerClienteConfig.mockResolvedValue({
+      ...clienteConfigMock,
+      uf: 40000,
+      estadoReconciliacionOficial: 'cliente_confirmado',
+      fechaReconciliacionOficial: '2026-05-01T10:00:00',
+      fechaActualizacion: '2026-05-20T12:00:00',
+    });
+    const svc = TestBed.inject(ProcesoMensualService);
+    const r = await svc.consultarEstadoParametrosPeriodo('2026-05');
+    expect(r.resumen.parametrosOperativos).toBe(false);
+    expect(r.advertencias.some((a) => a.codigo === 'PARAMETROS_RECONCILIACION_PENDIENTE')).toBe(true);
+  });
+
+  it('propaga fallo de lectura de entradas como advertencia (no bloquea generar nómina)', async () => {
     entradasMensuales.listarEntradasPeriodo.mockRejectedValue(new Error('red'));
     const svc = TestBed.inject(ProcesoMensualService);
     const r = await svc.ejecutarPrevalidaciones('2026-05');
-    expect(r.bloqueos.some((b) => b.codigo === 'ENTRADAS_LECTURA_ERROR')).toBe(true);
-    expect(r.estado).toBe('BLOQUEADO');
+    expect(r.advertencias.some((a) => a.codigo === 'ENTRADAS_LECTURA_ERROR')).toBe(true);
+    expect(r.estado).toBe('CON_ADVERTENCIAS');
   });
 
   it('genera pre-nomina funcional desde la prevalidacion del periodo', async () => {
@@ -310,6 +440,101 @@ describe('ProcesoMensualService', () => {
     expect(r.generadoEn).toMatch(/T/);
   });
 
+  it('guarda base nomina borrador sin calcular ni cerrar periodo', async () => {
+    const svc = TestBed.inject(ProcesoMensualService);
+    const preNomina = await svc.generarPreNominaPeriodo('2026-05');
+    const r = await svc.guardarBaseNominaBorrador('2026-05', preNomina);
+
+    expect(r.ok).toBe(true);
+    expect(r.snapshot?.estado).toBe('borrador');
+    expect(r.snapshot?.totalTrabajadores).toBe(preNomina.trabajadoresIncluidos);
+    expect(r.snapshot?.totalLiquido).toBe(0);
+    expect(snapshots.guardarBaseNominaBorrador).toHaveBeenCalledWith(
+      expect.objectContaining({
+        periodo: '2026-05',
+        estado: 'borrador',
+        origen: 'preliminar',
+        trabajadores: expect.arrayContaining([
+          expect.objectContaining({ idPersona: expect.any(Number) }),
+        ]),
+      }),
+      expect.objectContaining({
+        entradasMensuales: expect.any(Array),
+      }),
+    );
+    expect(snapshots.guardarSnapshotPreliminar).not.toHaveBeenCalled();
+  });
+
+  it('no guarda base borrador automaticamente si hay advertencias', async () => {
+    entradasMensuales.listarEntradasPeriodo.mockResolvedValueOnce([{
+      idEntrada: 'novedad:warn',
+      origen: 'novedad_mensual',
+      origenId: 1,
+      idPersona: 1,
+      idContrato: null,
+      idConcepto: 1,
+      periodo: '2026-05',
+      tipoEntrada: 'haber',
+      categoria: 'haber_variable',
+      tipoMovimiento: 'haber',
+      cantidad: null,
+      unidad: null,
+      monto: 1000,
+      moneda: 'CLP',
+      estado: 'pendiente_revision',
+      fechaEvento: null,
+      observacion: null,
+      referenciaExterna: null,
+      requiereRevision: true,
+      bloqueaProceso: false,
+      warnings: [],
+      metadata: {},
+    }]);
+    const svc = TestBed.inject(ProcesoMensualService);
+    const preNomina = await svc.generarPreNominaPeriodo('2026-05');
+    const r = await svc.guardarBaseNominaBorrador('2026-05', preNomina);
+
+    expect(r.ok).toBe(false);
+    expect(r.issues.some((issue) => issue.severidad === 'ADVERTENCIA')).toBe(true);
+    expect(snapshots.guardarBaseNominaBorrador).not.toHaveBeenCalled();
+  });
+
+  it('guarda base revisada si se permiten advertencias', async () => {
+    entradasMensuales.listarEntradasPeriodo.mockResolvedValueOnce([{
+      idEntrada: 'novedad:warn',
+      origen: 'novedad_mensual',
+      origenId: 1,
+      idPersona: 1,
+      idContrato: null,
+      idConcepto: 1,
+      periodo: '2026-05',
+      tipoEntrada: 'haber',
+      categoria: 'haber_variable',
+      tipoMovimiento: 'haber',
+      cantidad: null,
+      unidad: null,
+      monto: 1000,
+      moneda: 'CLP',
+      estado: 'pendiente_revision',
+      fechaEvento: null,
+      observacion: null,
+      referenciaExterna: null,
+      requiereRevision: true,
+      bloqueaProceso: false,
+      warnings: [],
+      metadata: {},
+    }]);
+    const svc = TestBed.inject(ProcesoMensualService);
+    const preNomina = await svc.generarPreNominaPeriodo('2026-05');
+    const r = await svc.guardarBaseNominaBorrador('2026-05', preNomina, undefined, {
+      permitirAdvertencias: true,
+    });
+
+    expect(r.ok).toBe(true);
+    expect(r.snapshot?.estado).toBe('borrador');
+    expect(snapshots.guardarBaseNominaBorrador).toHaveBeenCalled();
+  });
+
   it('genera calculo preliminar y lo deja consultable en memoria', async () => {
     const svc = TestBed.inject(ProcesoMensualService);
     const r = await svc.generarCalculoPeriodo('2026-05');
@@ -321,6 +546,31 @@ describe('ProcesoMensualService', () => {
   });
 
   it('construye calculo desde entradas canonicas sin alterar resultados legales en MOTOR-04', async () => {
+    empleados.listar.mockResolvedValueOnce([
+      { id: 1, estado: 'activo', aptoParaRemuneraciones: true, idContrato: 10, estadoFicha: 'VALIDO' },
+    ]);
+    empleados.obtenerPorId.mockImplementationOnce((id: number) => Promise.resolve({
+      id,
+      idContrato: 10,
+      rut: '11.111.111-1',
+      nombre: 'Trabajador MOTOR-04',
+      cargo: 'Analista',
+      departamento: 'Operaciones',
+      fechaIngreso: '2024-01-01',
+      sueldoBase: 100,
+      estado: 'activo',
+      estadoFicha: 'VALIDO',
+      aptoParaRemuneraciones: true,
+      pasoAltaAvanzada: null,
+      historial: [],
+      formValue: {
+        datosPersonales: {},
+        contacto: {},
+        contrato: { sueldoBase: 100, tipoContrato: 'I' },
+        previsionSalud: { idAfp: 1, idSalud: 1, valorPlan: null },
+        bancario: {},
+      },
+    }));
     entradasMensuales.listarEntradasPeriodo.mockResolvedValue([
       {
         idEntrada: 'novedad:1',
@@ -351,7 +601,8 @@ describe('ProcesoMensualService', () => {
     const r = await svc.generarCalculoPeriodo('2026-05');
 
     expect(entradasMensuales.listarEntradasPeriodo).toHaveBeenCalledWith('2026-05');
-    expect(r.liquidaciones[0].baseImponiblePrevisional).toBe(100);
+    // B6: la entrada mensual (haber variable aprobado de 50.000) se integra a la base imponible.
+    expect(r.liquidaciones[0].baseImponiblePrevisional).toBe(50100);
     expect(r.liquidaciones[0].impuestoUnico).toBe(0);
     expect(r.liquidaciones[0].liquidoAPago).toBe(r.liquidaciones[0].totalHaberes - r.liquidaciones[0].totalDescuentos);
   });
@@ -514,5 +765,78 @@ describe('ProcesoMensualService', () => {
       }),
     }));
     expect(r.cierreOperativo?.estado).toBe('cerrado_operativamente');
+  });
+
+  it('contarLiquidacionesGeneradas filtra por snapshot activo', async () => {
+    const liquidaciones = TestBed.inject(LiquidacionesOficialesRepository) as unknown as {
+      obtenerLiquidacionPeriodo: ReturnType<typeof vi.fn>;
+    };
+    liquidaciones.obtenerLiquidacionPeriodo.mockImplementation(
+      async (_periodo: string, idCalculoPeriodo?: number | null) =>
+        idCalculoPeriodo === 9
+          ? {
+              idLiquidacionPeriodo: 1,
+              idCalculoPeriodo: 9,
+              periodo: '2026-05',
+            }
+          : null,
+    );
+
+    const svc = TestBed.inject(ProcesoMensualService);
+    await expect(svc.contarLiquidacionesGeneradas('2026-05', 9)).resolves.toBe(1);
+    await expect(svc.contarLiquidacionesGeneradas('2026-05', 99)).resolves.toBe(0);
+
+    expect(liquidaciones.obtenerLiquidacionPeriodo).toHaveBeenCalledWith('2026-05', 9);
+    expect(liquidaciones.obtenerLiquidacionPeriodo).toHaveBeenCalledWith('2026-05', 99);
+  });
+
+  it('rehidratarPeriodo sin snapshot restaura prevalidacion desde diagnostico persistido (NOM-PERIODO-DIAGNOSTICO)', async () => {
+    const prevalidacion = {
+      periodo: '2026-05',
+      estado: 'LISTO_PARA_CALCULO' as const,
+      resumen: {
+        periodo: '2026-05',
+        hayBloqueos: false,
+        hayAdvertencias: false,
+        conteoMovimientosPorEstado: {},
+        trabajadoresActivosAptos: 2,
+        trabajadoresActivosNoAptos: 0,
+        parametrosOperativos: true,
+        parametrosGrupos: [],
+        recurrentesAplicablesAlPeriodo: 0,
+        recurrentesInvalidas: 0,
+        recurrentesCerradas: 0,
+        recurrentesFueraDelMes: 0,
+      },
+      bloqueos: [],
+      advertencias: [],
+      informaciones: [],
+      items: [],
+      entradasMensuales: [],
+    };
+    snapshots.obtenerSnapshotActivo.mockResolvedValue(null);
+    diagnosticoPeriodo.obtenerActivo.mockResolvedValue(prevalidacion);
+
+    const svc = TestBed.inject(ProcesoMensualService);
+    const r = await svc.rehidratarPeriodo('2026-05');
+
+    expect(diagnosticoPeriodo.obtenerActivo).toHaveBeenCalledWith('2026-05');
+    expect(r.snapshot).toBeNull();
+    expect(r.prevalidacionDiagnostico?.estado).toBe('LISTO_PARA_CALCULO');
+  });
+
+  it('guardarDiagnosticoPeriodo delega al repositorio de diagnostico', async () => {
+    const svc = TestBed.inject(ProcesoMensualService);
+    const prevalidacion = (await svc.ejecutarPrevalidaciones('2026-05')) as {
+      periodo: string;
+      estado: string;
+    };
+    await svc.guardarDiagnosticoPeriodo('2026-05', prevalidacion as never);
+
+    expect(diagnosticoPeriodo.guardar).toHaveBeenCalledWith(
+      '2026-05',
+      prevalidacion,
+      expect.any(String),
+    );
   });
 });

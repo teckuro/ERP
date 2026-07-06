@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 
+import { HaberesDescuentosService } from '../../../haberes-descuentos/services/haberes-descuentos.service';
 import { NovedadesMensualesRepository } from '../data-access/novedades-mensuales.repository';
 import type {
   ActualizarNovedadMensualInput,
@@ -89,6 +90,15 @@ function mergeParaValidacion(
 @Injectable({ providedIn: 'root' })
 export class NovedadesMensualesService {
   private readonly repository = inject(NovedadesMensualesRepository);
+  private readonly haberesDescuentosService = inject(HaberesDescuentosService);
+
+  private async assertConceptoPermiteNovedad(idConcepto: number, periodo: string): Promise<void> {
+    const ref = new Date(`${periodo.trim()}-01T12:00:00`);
+    await this.haberesDescuentosService.resolverSnapshotConceptoParaMovimientoVariableManual(
+      idConcepto,
+      ref,
+    );
+  }
 
   async listarNovedadesPeriodo(periodo: string): Promise<NovedadMensual[]> {
     assertPeriodo(periodo);
@@ -117,6 +127,7 @@ export class NovedadesMensualesService {
   async crearNovedad(input: CrearNovedadMensualInput): Promise<NovedadMensual> {
     const normalizado = normalizarCrearInput(input);
     assertValidacion(validarNovedadMensualInput({ ...normalizado, estado: 'borrador' }));
+    await this.assertConceptoPermiteNovedad(normalizado.idConcepto, normalizado.periodo);
     return this.repository.crear(normalizado);
   }
 
@@ -124,7 +135,9 @@ export class NovedadesMensualesService {
     assertIdNovedad(idNovedad);
     const actual = await this.obtenerExistente(idNovedad);
     assertValidacion(puedeEditarNovedad(actual));
-    assertValidacion(validarNovedadMensualInput(mergeParaValidacion(actual, input)));
+    const merged = mergeParaValidacion(actual, input);
+    assertValidacion(validarNovedadMensualInput(merged));
+    await this.assertConceptoPermiteNovedad(merged.idConcepto!, merged.periodo!);
     return this.repository.actualizar(idNovedad, input);
   }
 

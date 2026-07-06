@@ -1,0 +1,330 @@
+:host {
+  display: block;
+}
+
+:host.message-box-host-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 13000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(23, 32, 51, 0.4);
+}
+
+.noia-msgbox--modal {
+  width: min(100%, 42rem);
+  max-height: min(86vh, 46rem);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #d5dce8;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
+  font-family: inherit;
+  color: #0f172a;
+}
+
+.noia-msgbox--modal.noia-msgbox--sm {
+  width: min(100%, 26.25rem);
+}
+
+.noia-msgbox--modal.noia-msgbox--lg {
+  width: min(100%, 45rem);
+}
+
+.noia-msgbox__header {
+  position: relative;
+  flex: 0 0 auto;
+  padding: 1.45rem 3rem 1.25rem 1.65rem;
+  border-bottom: 1px solid #e4e9f2;
+  background: #f8fafc;
+}
+
+.noia-msgbox__close {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.1rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.noia-msgbox__close:hover {
+  background: #eef2f7;
+  color: #0f172a;
+}
+
+.noia-msgbox__close-icon,
+.noia-msgbox__spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.9rem;
+  height: 0.9rem;
+  line-height: 0;
+  pointer-events: none;
+}
+
+:host ::ng-deep .noia-msgbox__close-icon svg,
+:host ::ng-deep .noia-msgbox__spinner svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.noia-msgbox__spinner {
+  margin-bottom: 0.5rem;
+  color: #64748b;
+  animation: noia-msgbox-spin 850ms linear infinite;
+}
+
+.noia-msgbox__eyebrow {
+  margin: 0 0 0.55rem;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+}
+
+.noia-msgbox__title {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.noia-msgbox__message {
+  margin: 0.55rem 0 0;
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.noia-msgbox__body {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.25rem 1.65rem;
+  overflow: auto;
+  min-height: 0;
+}
+
+.noia-msgbox__detail {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.noia-msgbox__section {
+  padding: 0.9rem 1rem;
+  border: 1px solid #e4e9f2;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.noia-msgbox__section--attention {
+  background: #fff8ed;
+  border-color: #ece3d4;
+}
+
+.noia-msgbox__section--info {
+  background: #f3f7fc;
+  border-color: #dde7f3;
+}
+
+.noia-msgbox__section--success {
+  background: #f3faf5;
+  border-color: #dcefe3;
+}
+
+.noia-msgbox__section-title {
+  margin: 0 0 0.35rem;
+  color: #0f172a;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.noia-msgbox__section-text,
+.noia-msgbox__section-items {
+  margin: 0;
+  color: #475569;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.noia-msgbox__section-items {
+  margin-top: 0.25rem;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.noia-msgbox__slot:empty {
+  display: none;
+}
+
+.noia-msgbox__footer {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.65rem;
+  border-top: 1px solid #e4e9f2;
+  background: #ffffff;
+}
+
+.noia-msgbox__footer-left,
+.noia-msgbox__footer-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.noia-msgbox__footer-right {
+  margin-left: auto;
+  justify-content: flex-end;
+}
+
+.noia-msgbox__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  padding: 0 0.9rem;
+  border: 1px solid #d5dce8;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.noia-msgbox__action:hover {
+  border-color: #b8c3d4;
+  background: #f8fafc;
+}
+
+.noia-msgbox__action--primary {
+  border-color: var(--erp-primary, #1e3a8a);
+  background: var(--erp-primary, #1e3a8a);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.noia-msgbox__action--primary:hover {
+  border-color: var(--erp-primary-hover, #1d4ed8);
+  background: var(--erp-primary-hover, #1d4ed8);
+}
+
+.noia-msgbox__action--danger {
+  border-color: #e4b4b4;
+  background: #ffffff;
+  color: #b91c1c;
+}
+
+.noia-msgbox__action--danger:hover {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+
+.noia-msgbox__action--ghost {
+  border-color: transparent;
+  background: transparent;
+  color: #64748b;
+}
+
+.noia-msgbox__action--ghost:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+/* Inline */
+.noia-msgbox--inline {
+  position: relative;
+  border: 1px solid #dadfd7;
+  border-radius: 8px;
+  background: #fafaf7;
+  padding: 0.75rem 0.875rem;
+}
+
+.noia-msgbox__close--inline {
+  top: 0.45rem;
+  right: 0.45rem;
+}
+
+.noia-msgbox__title--inline {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.noia-msgbox__message--inline {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+}
+
+.noia-msgbox__inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.noia-msgbox--loading .noia-msgbox__footer,
+.noia-msgbox--loading .noia-msgbox__close {
+  display: none;
+}
+
+@keyframes noia-msgbox-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 640px) {
+  .noia-msgbox--modal {
+    width: min(100%, calc(100vw - 2rem)) !important;
+    border-radius: 16px;
+  }
+
+  .noia-msgbox__footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .noia-msgbox__footer-left,
+  .noia-msgbox__footer-right {
+    width: 100%;
+    margin-left: 0;
+    justify-content: stretch;
+  }
+
+  .noia-msgbox__action {
+    flex: 1 1 auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .noia-msgbox__spinner {
+    animation: none;
+  }
+}

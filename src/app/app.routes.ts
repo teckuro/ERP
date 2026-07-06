@@ -34,7 +34,7 @@ export const routes: Routes = [
       {
         path: 'proceso-remuneraciones',
         pathMatch: 'full',
-        redirectTo: '/remuneraciones/proceso-mensual',
+        redirectTo: '/remuneraciones/nominas',
       },
       {
         path: 'liquidaciones/:id',
@@ -54,7 +54,7 @@ export const routes: Routes = [
           {
             path: '',
             pathMatch: 'full',
-            redirectTo: 'proceso-mensual',
+            redirectTo: 'nominas',
           },
           {
             path: 'conceptos',
@@ -65,6 +65,11 @@ export const routes: Routes = [
             path: 'haberes-descuentos',
             loadComponent: () =>
               import('./pages/haberes-descuentos.page').then((m) => m.HaberesDescuentosPage),
+          },
+          {
+            path: 'movimientos',
+            pathMatch: 'full',
+            redirectTo: 'novedades-mensuales',
           },
           {
             path: 'movimientos-variables',
@@ -78,8 +83,34 @@ export const routes: Routes = [
           },
           {
             path: 'proceso-mensual',
+            pathMatch: 'full',
+            redirectTo: 'nominas',
+          },
+          {
+            path: 'nomina-mensual-v2',
+            pathMatch: 'full',
+            redirectTo: 'nominas',
+          },
+          {
+            path: 'nominas',
             loadComponent: () =>
-              import('./pages/proceso-remuneraciones.page').then((m) => m.ProcesoRemuneracionesPage),
+              import(
+                './features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container'
+              ).then((m) => m.AdministradorNominasContainer),
+          },
+          {
+            path: 'nominas/:nominaPeriodoId/generador',
+            loadComponent: () =>
+              import(
+                './features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container'
+              ).then((m) => m.NominaMensualV2Container),
+          },
+          {
+            path: 'plantillas-ciclos',
+            loadComponent: () =>
+              import(
+                './features/nomina-mensual/containers/administrador-plantillas-container/administrador-plantillas-container'
+              ).then((m) => m.AdministradorPlantillasContainer),
           },
           {
             path: 'liquidaciones',
@@ -106,8 +137,16 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/reportes.page').then((m) => m.ReportesPage),
       },
       {
+        path: 'preguntor',
+        loadComponent: () => import('./pages/preguntor.page').then((m) => m.PreguntorPage),
+      },
+      {
         path: 'parametros',
         loadComponent: () => import('./pages/parametros.page').then((m) => m.ParametrosPage),
+      },
+      {
+        path: 'empresas',
+        loadChildren: () => import('./features/empresas/empresas.routes').then((m) => m.empresasRoutes),
       },
     ],
   },

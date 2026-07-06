@@ -47,7 +47,9 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     }).compileComponents();
 
     const fixture = TestBed.createComponent(FormEmpleadoComponent);
-    return fixture.componentInstance;
+    const component = fixture.componentInstance;
+    component.isLoadingCatalogs.set(false);
+    return component;
   }
 
   it('cargo Sin cargo no completa el paso Contrato y organizacion', async () => {
@@ -149,6 +151,106 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     expect(component.advancedActionModal()).toBeNull();
     expect(component.activeWizardStep()).toBe(0);
+  });
+
+
+  it('Boleta de honorarios omite pasos laborales dependientes en la navegacion lineal', async () => {
+    const component = await setup();
+
+    component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
+
+    expect(component.linearWizardSequence()).toEqual([0, 1, 2, 3, 7, 8]);
+    expect(component.wizardStepUiKind(4)).toBe('no-aplica');
+    expect(component.wizardStepUiKind(5)).toBe('no-aplica');
+    expect(component.wizardStepUiKind(6)).toBe('no-aplica');
+  });
+
+  it('Boleta de honorarios bloquea finalizar alta activa y ofrece guardar borrador', async () => {
+    const component = await setup();
+
+    component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
+    component.selectWizardStep(8);
+
+    await component.onSubmit();
+
+    expect(component.advancedActionModal()?.kind).toBe('honorarios-finish-blocked');
+    expect(component.advancedActionModal()?.title).toBe('Guardar borrador de honorarios');
+    expect(component.advancedActionModal()?.primaryLabel).toBe('Guardar como borrador');
+    expect(component.advancedActionModal()?.secondaryLabel).toBe('Cerrar');
+  });
+
+  it('Boleta de honorarios usa accion final de borrador en el resumen', async () => {
+    const component = await setup();
+
+    expect(component.finalWizardActionLabel()).toBe('Finalizar alta');
+
+    component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
+
+    expect(component.finalWizardActionLabel()).toBe('Guardar borrador');
+  });
+
+  it('Confirmar honorarios mueve una etapa no aplicable al siguiente paso util', async () => {
+    const component = await setup();
+    await component.ngOnInit();
+
+    component.selectWizardStep(5);
+    component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
+
+    expect(component.advancedActionModal()?.kind).toBe('honorarios-confirm');
+
+    component.handleAdvancedActionModalPrimary();
+
+    expect(component.activeWizardStep()).toBe(7);
+  });
+
+
+  it('Siguiente muestra MsgBox de coherencia y permite activar seguro de cesantia', async () => {
+    const component = await setup();
+    component.selectWizardStep(3);
+    component.form.patchValue({
+      contrato: {
+        tipoContrato: 'INDEFINIDO',
+        idTipoJornada: 1,
+        sueldoBase: 500000,
+        idMoneda: 1,
+        horasSemanales: 42,
+        diasSemanales: 5,
+        seguroCesantia: false,
+      },
+    } as never);
+
+    component.goToNextTab();
+
+    expect(component.advancedActionModal()?.kind).toBe('coherence-decision');
+    expect(component.advancedActionModal()?.primaryLabel).toBe('Activar seguro de cesantía');
+
+    component.handleAdvancedActionModalPrimary();
+
+    expect(component.form.controls.contrato.controls.seguroCesantia.value).toBe(true);
+    expect(component.activeWizardStep()).toBe(3);
+  });
+
+  it('Mantener revision de coherencia permite continuar sin cambiar el dato', async () => {
+    const component = await setup();
+    component.selectWizardStep(3);
+    component.form.patchValue({
+      contrato: {
+        tipoContrato: 'INDEFINIDO',
+        idTipoJornada: 1,
+        sueldoBase: 500000,
+        idMoneda: 1,
+        horasSemanales: 42,
+        diasSemanales: 5,
+        seguroCesantia: false,
+      },
+    } as never);
+
+    component.goToNextTab();
+    component.handleAdvancedActionModalSecondary();
+
+    expect(component.form.controls.contrato.controls.seguroCesantia.value).toBe(false);
+    expect(component.activeWizardStep()).toBe(4);
+    expect(component.coherenciaResumenItems()).toContain('Seguro de Cesantía desactivado en contrato indefinido.');
   });
 
 });

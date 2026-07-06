@@ -1,0 +1,23 @@
+﻿Archivo: angular-erp-base-clean.zip
+Origen: C:\Users\PC\Desktop\ERP\angular-erp
+Generado: 2026-05-29 13:39:38 -04:00
+
+Incluye:
+- archivos base de Angular y npm
+- src
+- scripts
+- bd
+- docs
+- .cursor
+- public/app-config.example.json
+
+Excluye:
+- node_modules
+- dist
+- .angular
+- .git
+- zips previos
+- .env
+- .env.local
+- public/app-config.json
+- *.bak

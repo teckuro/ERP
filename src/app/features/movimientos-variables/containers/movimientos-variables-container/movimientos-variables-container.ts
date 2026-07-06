@@ -9,106 +9,57 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { Plus, RefreshCw } from 'lucide-angular/src/icons';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
-import { ButtonComponent } from '../../../../shared/components/ui/button.component';
+import { ButtonComponent } from '../../../../shared/components/ui/primitives/button.component';
 import {
   DataGridCellDirective,
-  DataGridColumn,
   DataGridComponent,
-  DataGridFilter,
-} from '../../../../shared/components/ui/data-grid.component';
+} from '../../../../shared/components/ui/data-grid';
 import {
   MessageBoxComponent,
   MessageBoxVariant,
-} from '../../../../shared/components/ui/message-box.component';
+} from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import {
   RecordBreadcrumbComponent,
   RecordBreadcrumbItem,
-} from '../../../../shared/components/ui/record-breadcrumb.component';
-import {
-  SearchSelectComponent,
-  SearchSelectOption,
-} from '../../../../shared/components/ui/search-select.component';
+} from '../../../../shared/components/ui/layout/record-breadcrumb.component';
+import { SearchSelectOption } from '../../../../shared/components/ui/forms/search-select.component';
 import { EmpleadoListado } from '../../../empleados/models/empleado-listado.model';
 import { EmpleadosService } from '../../../empleados/services/empleados.service';
 import { ConceptoListado } from '../../../haberes-descuentos/models/haber-descuento-asignacion.model';
 import { HaberesDescuentosService } from '../../../haberes-descuentos/services/haberes-descuentos.service';
-import type {
-  MovimientoVariableEstado,
-  MovimientoVariableListadoFila,
-} from '../../models/movimiento-variable.model';
-import { puedeAnularMovimientoVariable, esPeriodoRemuneracionValido } from '../../rules/movimiento-variable-validacion.rules';
+import { MovimientoVariableAltaDialogComponent } from '../../components/movimiento-variable-alta-dialog/movimiento-variable-alta-dialog.component';
+import { MovimientoVariableAnularDialogComponent } from '../../components/movimiento-variable-anular-dialog/movimiento-variable-anular-dialog.component';
+import type { FilaGridMovimientoVariable } from '../../models/movimiento-variable-listado.vm';
+import type { MovimientoVariableEstado } from '../../models/movimiento-variable.model';
+import {
+  puedeAnularMovimientoVariable,
+  esPeriodoRemuneracionValido,
+} from '../../rules/movimiento-variable-validacion.rules';
 import { MovimientosVariablesService } from '../../services/movimientos-variables.service';
-
-type MovVarGridRow = MovimientoVariableListadoFila & {
-  trabajadorEtiqueta: string;
-  conceptoEtiqueta: string;
-  tipoConceptoEtiqueta: string;
-  busqueda: string;
-};
-
-function etiquetaTipoConcepto(tipo: string | null): string {
-  if (tipo === 'HABER') {
-    return 'Haber';
-  }
-  if (tipo === 'DESCUENTO') {
-    return 'Descuento';
-  }
-  if (tipo === 'APORTE_EMPLEADOR') {
-    return 'Aporte empleador';
-  }
-  return tipo?.trim() ? tipo : '—';
-}
-
-function etiquetaEstadoMv(estado: MovimientoVariableEstado): string {
-  switch (estado) {
-    case 'BORRADOR':
-      return 'Borrador';
-    case 'VALIDADO':
-      return 'Validado';
-    case 'OBSERVADO':
-      return 'Observado';
-    case 'ANULADO':
-      return 'Anulado';
-    case 'BLOQUEADO':
-      return 'Bloqueado';
-    case 'INCLUIDO_EN_PROCESO':
-      return 'Incluido en proceso';
-    default:
-      return estado;
-  }
-}
-
-function etiquetaOrigen(origen: string): string {
-  if (origen === 'MANUAL') {
-    return 'Manual';
-  }
-  if (origen === 'IMPORTADO') {
-    return 'Importado';
-  }
-  if (origen === 'SISTEMA') {
-    return 'Sistema';
-  }
-  return origen;
-}
+import {
+  aFilaGridMovimientoVariable,
+  crearColumnasGridMovimientoVariable,
+  crearFiltrosGridMovimientoVariable,
+  etiquetaEstadoMovimientoVariable,
+} from '../../utils/movimiento-variable-listado.presenter';
 
 @Component({
   selector: 'app-movimientos-variables-container',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     LucideAngularModule,
     RecordBreadcrumbComponent,
     ButtonComponent,
     DataGridComponent,
     DataGridCellDirective,
     MessageBoxComponent,
-    SearchSelectComponent,
+    MovimientoVariableAltaDialogComponent,
+    MovimientoVariableAnularDialogComponent,
   ],
   templateUrl: './movimientos-variables-container.html',
   styleUrl: './movimientos-variables-container.css',
@@ -138,7 +89,7 @@ export class MovimientosVariablesContainer implements OnInit {
 
   readonly periodoActual = computed(() => this.periodoActivo.periodoYm());
 
-  readonly filas = signal<MovVarGridRow[]>([]);
+  readonly filas = signal<FilaGridMovimientoVariable[]>([]);
 
   readonly dialogNuevoAbierto = signal(false);
   readonly formPersonaId = signal<number | null>(null);
@@ -154,7 +105,7 @@ export class MovimientosVariablesContainer implements OnInit {
     detail?: string;
   } | null>(null);
 
-  readonly confirmAnular = signal<MovVarGridRow | null>(null);
+  readonly confirmAnular = signal<FilaGridMovimientoVariable | null>(null);
   readonly motivoAnulacion = signal<string>('');
   private pantallaInicializada = false;
 
@@ -174,98 +125,10 @@ export class MovimientosVariablesContainer implements OnInit {
     return this.conceptos().find((c) => c.idConcepto === id) ?? null;
   });
 
-  readonly columns: DataGridColumn<MovVarGridRow>[] = [
-    {
-      id: 'trabajadorEtiqueta',
-      header: 'Trabajador',
-      field: 'trabajadorEtiqueta',
-      type: 'text',
-      sortable: true,
-      priorityResponsive: 'primary',
-      filterable: false,
-    },
-    {
-      id: 'conceptoEtiqueta',
-      header: 'Concepto',
-      field: 'conceptoEtiqueta',
-      type: 'text',
-      sortable: true,
-      filterable: false,
-    },
-    {
-      id: 'tipoConceptoEtiqueta',
-      header: 'Tipo',
-      field: 'tipoConceptoEtiqueta',
-      type: 'text',
-      sortable: true,
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'monto',
-      header: 'Monto',
-      field: 'monto',
-      type: 'number',
-      align: 'right',
-      sortable: true,
-      format: (_v, row) => this.formatMonto(row.monto),
-      filterable: false,
-    },
-    {
-      id: 'estado',
-      header: 'Estado',
-      field: 'estado',
-      type: 'text',
-      sortable: true,
-      filterable: false,
-    },
-    {
-      id: 'origen',
-      header: 'Origen',
-      field: 'origen',
-      type: 'text',
-      sortable: true,
-      format: (v) => etiquetaOrigen(String(v ?? '')),
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'observacion',
-      header: 'Observación',
-      field: 'observacion',
-      type: 'text',
-      sortable: false,
-      format: (v) => {
-        const s = v == null ? '' : String(v);
-        if (s.length <= 48) {
-          return s || '—';
-        }
-        return `${s.slice(0, 45)}…`;
-      },
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'acciones',
-      header: 'Acciones',
-      align: 'center',
-      sortable: false,
-      hideable: false,
-    },
-  ];
+  readonly columns = crearColumnasGridMovimientoVariable();
+  readonly filters = crearFiltrosGridMovimientoVariable();
 
-  readonly filters: DataGridFilter<MovVarGridRow>[] = [
-    {
-      id: 'busquedaMv',
-      label: 'Buscar',
-      field: 'busqueda',
-      type: 'text',
-      operator: 'contains',
-      placeholder: 'Trabajador, concepto, estado…',
-    },
-  ];
-
-  readonly trackMvRow = (_index: number, row: MovVarGridRow): number => row.idMovimiento;
+  readonly trackMvRow = (_index: number, row: FilaGridMovimientoVariable): number => row.idMovimiento;
 
   constructor() {
     effect(() => {
@@ -286,7 +149,7 @@ export class MovimientosVariablesContainer implements OnInit {
     void this.inicializar();
   }
 
-  etiquetaEstado = etiquetaEstadoMv;
+  etiquetaEstado = etiquetaEstadoMovimientoVariable;
   puedeAnular = (estado: MovimientoVariableEstado): boolean => puedeAnularMovimientoVariable(estado).valido;
 
   async inicializar(): Promise<void> {
@@ -335,7 +198,11 @@ export class MovimientosVariablesContainer implements OnInit {
     this.gridLoading.set(true);
     try {
       const listado = await this.movimientosVariablesService.listarPorPeriodo(p);
-      this.filas.set(listado.map((fila) => this.aGridRow(fila)));
+      this.filas.set(
+        listado.map((fila) =>
+          aFilaGridMovimientoVariable(fila, this.empleadosListado(), this.conceptos()),
+        ),
+      );
     } catch (err) {
       this.mostrarError(err, 'No se pudo cargar el listado.');
       this.filas.set([]);
@@ -425,7 +292,7 @@ export class MovimientosVariablesContainer implements OnInit {
     }
   }
 
-  pedirAnular(row: MovVarGridRow): void {
+  pedirAnular(row: FilaGridMovimientoVariable): void {
     if (!this.puedeAnular(row.estado)) {
       return;
     }
@@ -463,10 +330,6 @@ export class MovimientosVariablesContainer implements OnInit {
     this.modalMsg.set(null);
   }
 
-  formatMonto(m: number): string {
-    return `$ ${Number(m).toLocaleString('es-CL')}`;
-  }
-
   private mostrarError(err: unknown, fallback: string): void {
     const message = err instanceof Error && err.message.trim() ? err.message : fallback;
     this.modalMsg.set({
@@ -474,25 +337,5 @@ export class MovimientosVariablesContainer implements OnInit {
       title: 'Error',
       message,
     });
-  }
-
-  private aGridRow(fila: MovimientoVariableListadoFila): MovVarGridRow {
-    const emp = this.empleadosListado().find((e) => e.id === fila.idPersona);
-    const trabajadorEtiqueta = emp ? `${emp.nombre} · ${emp.rut}` : `Persona ${fila.idPersona}`;
-    const concepto = this.conceptos().find((c) => c.idConcepto === fila.idConcepto);
-    const conceptoEtiqueta = concepto
-      ? `${concepto.nombre} (${concepto.codigo})`
-      : `Concepto ${fila.idConcepto}`;
-    const tipoConceptoEtiqueta = etiquetaTipoConcepto(concepto?.tipo ?? null);
-    const busqueda = [trabajadorEtiqueta, conceptoEtiqueta, fila.estado, fila.origen ?? '']
-      .join(' ')
-      .toLowerCase();
-    return {
-      ...fila,
-      trabajadorEtiqueta,
-      conceptoEtiqueta,
-      tipoConceptoEtiqueta,
-      busqueda,
-    };
   }
 }

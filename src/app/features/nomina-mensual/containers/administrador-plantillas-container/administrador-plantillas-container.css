@@ -1,0 +1,163 @@
+.adm-plant__page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+  height: 100%;
+  min-height: 0;
+}
+
+.adm-plant__state {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  border: 1px solid transparent;
+}
+
+.adm-plant__state--error {
+  background: var(--erp-danger-bg, #fef2f2);
+  border-color: var(--erp-danger-border, #fee2e2);
+  color: var(--erp-danger, #991b1b);
+}
+
+.adm-plant__grid-shell {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.adm-plant__grid-card {
+  flex: 1;
+}
+
+.adm-plant__cell-codigo {
+  display: block;
+  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--erp-text-strong, #0f172a);
+  font-family: var(--erp-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+
+.adm-plant__cell-desc {
+  display: block;
+  font-size: 11px;
+  color: var(--erp-text-muted, #6b7280);
+  margin-top: 2px;
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adm-plant__cell-nombre {
+  font-size: 12.5px;
+  color: var(--erp-text-strong, #0f172a);
+}
+
+.adm-plant__cell-regla,
+.adm-plant__cell-fds {
+  font-size: 12px;
+  color: var(--erp-text-strong, #0f172a);
+}
+
+.adm-plant__cell-num {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--erp-text-muted, #6b7280);
+}
+
+.adm-plant__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.adm-plant__chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.adm-plant__chip--neutral {
+  background: var(--erp-bg-subtle, #f3f4f6);
+  color: var(--erp-text-muted, #4b5563);
+  border-color: var(--erp-border, #e5e7eb);
+}
+
+.adm-plant__chip--info {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #dbeafe;
+}
+
+.adm-plant__chip--success {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #d1fae5;
+}
+
+.adm-plant__chip--muted {
+  background: #f3f4f6;
+  color: #6b7280;
+  border-color: #e5e7eb;
+}
+
+.adm-plant__row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.adm-plant__row-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
+  border: 1px solid var(--erp-border, #e5e7eb);
+  background: #fff;
+  color: var(--erp-text-muted, #6b7280);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.adm-plant__row-action:hover:not(:disabled) {
+  background: var(--erp-bg-subtle, #f8fafc);
+  color: var(--erp-text-strong, #0f172a);
+  border-color: var(--erp-border-strong, #d1d5db);
+}
+
+.adm-plant__row-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.adm-plant__row-action lucide-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.adm-plant__row-action--danger:hover:not(:disabled) {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.adm-plant__error-modal {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--erp-danger, #dc2626);
+}

@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { BadgeComponent } from '../../../../shared/components/ui/badge.component';
-import { CardComponent, CardContentComponent } from '../../../../shared/components/ui/card.component';
+import { BadgeComponent } from '../../../../shared/components/ui/primitives/badge.component';
+import { CardComponent, CardContentComponent } from '../../../../shared/components/ui/primitives/card.component';
 import type { LiquidacionPeriodo } from '../../models/liquidacion-oficial.model';
 
 @Component({

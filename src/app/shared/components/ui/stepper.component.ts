@@ -40,7 +40,7 @@ export interface StepperItem {
             >
               <span class="stepper-circle">
                 @if (!isActive(step.id) && step.status === 'complete') {
-                  <span class="stepper-check">OK</span>
+                  <span class="stepper-check" aria-label="Listo">✓</span>
                 } @else {
                   {{ index + 1 }}
                 }
@@ -182,9 +182,9 @@ export interface StepperItem {
       }
 
       .stepper-item.is-active .stepper-circle {
-        border-color: #2563eb;
-        background: #2563eb;
-        color: #ffffff;
+        border-color: #bfdbfe;
+        background: #eff6ff;
+        color: #1d4ed8;
       }
 
       .stepper-item.is-active .stepper-label {
@@ -192,13 +192,13 @@ export interface StepperItem {
       }
 
       .stepper-item.is-active .stepper-state {
-        color: #2563eb;
+        color: #1d4ed8;
       }
 
       .stepper-item.is-complete .stepper-circle {
-        border-color: #16a34a;
-        background: #16a34a;
-        color: #ffffff;
+        border-color: #bbf7d0;
+        background: #f0fdf4;
+        color: #166534;
       }
 
       .stepper-item.is-complete .stepper-label {
@@ -206,17 +206,17 @@ export interface StepperItem {
       }
 
       .stepper-item.is-complete .stepper-state {
-        color: #16a34a;
+        color: #166534;
       }
 
       .stepper-item.is-invalid .stepper-circle {
-        border-color: #dc2626;
-        background: #ffffff;
-        color: #dc2626;
+        border-color: #fecaca;
+        background: #fef2f2;
+        color: #b91c1c;
       }
 
       .stepper-item.is-invalid .stepper-state {
-        color: #dc2626;
+        color: #b91c1c;
       }
 
       .stepper-item.is-upcoming .stepper-circle {
@@ -237,7 +237,7 @@ export interface StepperItem {
       }
 
       .stepper-connector.is-complete {
-        background: #2563eb;
+        background: #bfdbfe;
       }
 
       .stepper-check {
@@ -294,14 +294,14 @@ export class StepperComponent {
 
   stateLabel(step: StepperItem): string {
     if (step.id === this.activeId) {
-      return 'En curso';
+      return 'En edición';
     }
 
     switch (step.status) {
       case 'complete':
-        return 'Completado';
+        return 'Listo';
       case 'invalid':
-        return 'Requiere revisión';
+        return 'Requiere datos';
       default:
         return 'Pendiente';
     }

@@ -8,15 +8,10 @@ import { EmpleadosService } from '../../services/empleados.service';
 import {
   DataGridBulkActionEvent,
   DataGridBulkActionResult,
-} from '../../../../shared/components/ui/data-grid.component';
-import {
-  RecordBreadcrumbComponent,
-  RecordBreadcrumbItem,
-} from '../../../../shared/components/ui/record-breadcrumb.component';
-
+} from '../../../../shared/components/ui/data-grid';
 @Component({
   selector: 'app-listado-empleados',
-  imports: [CommonModule, RecordBreadcrumbComponent, TablaEmpleadosComponent],
+  imports: [CommonModule, TablaEmpleadosComponent],
   templateUrl: './listado-empleados-container.html',
   styleUrl: './listado-empleados-container.css',
 })
@@ -24,95 +19,94 @@ export class ListadoEmpleadosContainer {
   private readonly empleadosService = inject(EmpleadosService);
   private readonly router = inject(Router);
 
-  readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [{ label: 'Empleados' }];
   readonly empleados = signal<EmpleadoListado[]>([]);
-  readonly isLoading = signal(true);
-  readonly errorMessage = signal<string | null>(null);
-  readonly bulkActionLoading = signal(false);
-  readonly bulkActionResult = signal<DataGridBulkActionResult<EmpleadoListado> | null>(null);
-  readonly createNavigationTarget = signal<'basico' | 'avanzado' | null>(null);
+  readonly cargando = signal(true);
+  readonly mensajeError = signal<string | null>(null);
+  readonly cargandoAccionMasiva = signal(false);
+  readonly resultadoAccionMasiva = signal<DataGridBulkActionResult<EmpleadoListado> | null>(null);
+  readonly destinoNavegacionCreacion = signal<'basico' | 'avanzado' | null>(null);
 
   async ngOnInit(): Promise<void> {
-    await this.loadEmpleados();
+    await this.cargarEmpleados();
   }
 
-  async loadEmpleados(): Promise<void> {
-    this.isLoading.set(true);
-    this.errorMessage.set(null);
+  async cargarEmpleados(): Promise<void> {
+    this.cargando.set(true);
+    this.mensajeError.set(null);
 
     try {
       this.empleados.set(await this.empleadosService.listar());
     } catch {
-      this.errorMessage.set('No se pudo cargar el listado de empleados.');
+      this.mensajeError.set('No se pudo cargar el listado de empleados.');
     } finally {
-      this.isLoading.set(false);
+      this.cargando.set(false);
     }
   }
 
   async crearBasico(): Promise<void> {
-    if (this.createNavigationTarget()) {
+    if (this.destinoNavegacionCreacion()) {
       return;
     }
-    this.createNavigationTarget.set('basico');
+    this.destinoNavegacionCreacion.set('basico');
 
     try {
       await this.router.navigate(['/empleados/nuevo'], { queryParams: { modo: 'basico' } });
     } finally {
-      this.createNavigationTarget.set(null);
+      this.destinoNavegacionCreacion.set(null);
     }
   }
 
   async crearAvanzado(): Promise<void> {
-    if (this.createNavigationTarget()) {
+    if (this.destinoNavegacionCreacion()) {
       return;
     }
-    this.createNavigationTarget.set('avanzado');
+    this.destinoNavegacionCreacion.set('avanzado');
 
     try {
       await this.router.navigate(['/empleados/nuevo'], { queryParams: { modo: 'avanzado' } });
     } finally {
-      this.createNavigationTarget.set(null);
+      this.destinoNavegacionCreacion.set(null);
     }
   }
 
-  async handleBulkAction(event: DataGridBulkActionEvent<EmpleadoListado>): Promise<void> {
-    const nextEstado = this.normalizeBulkState(event.value);
-    this.bulkActionLoading.set(true);
-    this.bulkActionResult.set(null);
+  async manejarAccionMasiva(event: DataGridBulkActionEvent<EmpleadoListado>): Promise<void> {
+    const estadoSiguiente = this.normalizarEstadoMasivo(event.value);
+    this.cargandoAccionMasiva.set(true);
+    this.resultadoAccionMasiva.set(null);
 
     try {
-      const updatedIds = await this.empleadosService.actualizarEstadoPersonas(
+      const idsActualizados = await this.empleadosService.actualizarEstadoPersonas(
         event.rows.map((empleado) => empleado.id),
-        nextEstado,
+        estadoSiguiente,
       );
-      const updatedIdSet = new Set(updatedIds);
-      const processed = updatedIds.length;
+      const idsActualizadosSet = new Set(idsActualizados);
+      const procesados = idsActualizados.length;
 
       this.empleados.update((empleados) =>
         empleados.map((empleado) =>
-          updatedIdSet.has(empleado.id)
+          idsActualizadosSet.has(empleado.id)
             ? {
                 ...empleado,
-                estado: nextEstado,
+                estado: estadoSiguiente,
               }
             : empleado,
         ),
       );
 
-      this.bulkActionResult.set({
+      this.resultadoAccionMasiva.set({
         action: event.action,
         rows: event.rows,
-        status: processed === event.rows.length ? 'success' : 'partial',
-        processed,
+        status: procesados === event.rows.length ? 'success' : 'partial',
+        processed: procesados,
         total: event.rows.length,
-        message: this.bulkActionResultMessage(
+        message: this.mensajeResultadoAccionMasiva(
           event.label ?? 'estado seleccionado',
-          processed,
+          procesados,
           event.rows.length,
         ),
       });
     } catch {
-      this.bulkActionResult.set({
+      this.resultadoAccionMasiva.set({
         action: event.action,
         rows: event.rows,
         status: 'error',
@@ -121,11 +115,11 @@ export class ListadoEmpleadosContainer {
         message: 'No fue posible actualizar el estado en la base de datos.',
       });
     } finally {
-      this.bulkActionLoading.set(false);
+      this.cargandoAccionMasiva.set(false);
     }
   }
 
-  private normalizeBulkState(value: string | undefined): EmpleadoListado['estado'] {
+  private normalizarEstadoMasivo(value: string | undefined): EmpleadoListado['estado'] {
     switch (value) {
       case 'en_proceso':
       case 'activo':
@@ -139,8 +133,8 @@ export class ListadoEmpleadosContainer {
     }
   }
 
-  private bulkActionResultMessage(label: string, processed: number, total: number): string {
-    const statusText = processed === total ? `${processed}` : `${processed} de ${total}`;
-    return `${statusText} empleados actualizados a ${label}.`;
+  private mensajeResultadoAccionMasiva(label: string, procesados: number, total: number): string {
+    const textoEstado = procesados === total ? `${procesados}` : `${procesados} de ${total}`;
+    return `${textoEstado} empleados actualizados a ${label}.`;
   }
 }

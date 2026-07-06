@@ -408,6 +408,10 @@ LEFT JOIN LATERAL (
     LIMIT 1
 ) r ON TRUE;
 
+-- [LEGACY/DEPRECADO] fn_generar_liquidacion
+-- Motor SQL monolítico que recalcula y escribe en liquidacion / liquidacion_detalle.
+-- Reemplazado por: motor TypeScript (prenómina) -> nomina_calculo_* -> generar_liquidaciones_oficiales -> nomina_liquidacion_*.
+-- No usar en flujo mensual activo. Se conserva por compatibilidad; no eliminar sin fase explícita.
 CREATE OR REPLACE FUNCTION fn_generar_liquidacion(
     p_id_contrato INTEGER,
     p_periodo DATE,
@@ -1198,6 +1202,10 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
+-- [LEGACY/DEPRECADO] fn_validar_liquidacion
+-- Validador companion de fn_generar_liquidacion; lee liquidacion / liquidacion_detalle.
+-- Reemplazado por validación de prenómina (fn_validar_prenomina_periodo) y emisión desde snapshot.
+-- No usar en flujo mensual activo. Se conserva por compatibilidad.
 CREATE OR REPLACE FUNCTION fn_validar_liquidacion(
     p_id_liquidacion INTEGER
 ) RETURNS TABLE (

@@ -1,0 +1,130 @@
+<div
+  class="adm-nom-modal__backdrop"
+  role="presentation"
+  (keydown)="onEscape($event)"
+  tabindex="-1"
+>
+  <div
+    class="adm-nom-modal adm-nom-modal--wide"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="adm-nom-modal-rect-title"
+  >
+    <header class="adm-nom-modal__head">
+      <div>
+        <h2 id="adm-nom-modal-rect-title" class="adm-nom-modal__title">Crear rectificación</h2>
+        <p class="adm-nom-modal__subtitle">
+          {{ nominaOrigen().empresaNombre }} · {{ nominaOrigen().periodo }} · Original cerrada
+        </p>
+      </div>
+      <button type="button" class="adm-nom-modal__close" (click)="cerrarModal()" aria-label="Cerrar">
+        <lucide-icon name="x" aria-hidden="true"></lucide-icon>
+      </button>
+    </header>
+
+    <section class="adm-nom-modal__body adm-nom-modal__body--preview">
+      <div class="adm-nom-modal__rect-contexto" role="status" aria-label="Referencia del cierre original">
+        <div class="adm-nom-modal__rect-col">
+          <span class="adm-nom-modal__rect-label">Líquido original</span>
+          <span class="adm-nom-modal__rect-value">{{ contextoModal().liquidoOriginal }}</span>
+        </div>
+        <div class="adm-nom-modal__rect-col">
+          <span class="adm-nom-modal__rect-label">Dotación original</span>
+          <span class="adm-nom-modal__rect-value">{{ contextoModal().trabajadoresOriginal }}</span>
+        </div>
+        <div class="adm-nom-modal__rect-col is-strong">
+          <span class="adm-nom-modal__rect-label">A rectificar</span>
+          <span class="adm-nom-modal__rect-value">{{ contextoModal().seleccionados || '—' }}</span>
+        </div>
+      </div>
+      <p class="adm-nom-modal__rect-nota">{{ contextoModal().notaReferencia }}</p>
+
+      <label class="adm-nom-modal__field">
+        <span class="adm-nom-modal__label">Motivo obligatorio</span>
+        <textarea
+          rows="3"
+          class="adm-nom-modal__input"
+          [value]="motivo()"
+          (input)="onMotivoInput($any($event.target).value)"
+          [disabled]="confirmando()"
+          aria-required="true"
+        ></textarea>
+      </label>
+
+      <p class="adm-nom-modal__contexto">
+        <span class="adm-nom-modal__contexto-label">Trabajadores</span>
+        <span class="adm-nom-modal__contexto-hint">Selecciona el subset a rectificar dentro de la dotación original.</span>
+      </p>
+
+      <div class="adm-nom-modal__lista">
+        @if (cargandoPreview()) {
+          <p class="adm-nom-modal__vacio">Cargando dotación…</p>
+        } @else if (preview(); as p) {
+          @if (p.conflictos.length) {
+            <ul class="adm-nom-modal__lista-items adm-nom-modal__lista-items--compact">
+              @for (conflicto of p.conflictos; track conflicto.motivo) {
+                <li class="adm-nom-modal__lista-item adm-nom-modal__lista-item--danger">{{ conflicto.motivoHumano }}</li>
+              }
+            </ul>
+          }
+          <ul class="adm-nom-modal__lista-items">
+            @for (trab of p.trabajadoresDisponibles; track trab.idPersona) {
+              <li class="adm-nom-modal__lista-item">
+                <label class="adm-nom-modal__check-row">
+                  <input
+                    type="checkbox"
+                    [checked]="seleccionados().has(trab.idPersona)"
+                    (change)="toggleTrabajador(trab.idPersona, $any($event.target).checked)"
+                    [disabled]="confirmando()"
+                  />
+                  <span class="adm-nom-modal__lista-principal">
+                    <strong>{{ trab.nombre }}</strong>
+                    <span class="adm-nom-modal__lista-meta">{{ trab.rut }}</span>
+                  </span>
+                  @if (trab.cargo) {
+                    <span class="adm-nom-modal__lista-aux">{{ trab.cargo }}</span>
+                  }
+                </label>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      @if (error(); as err) {
+        <div class="adm-nom-modal__error" role="alert">{{ err }}</div>
+      }
+    </section>
+
+    <footer class="adm-nom-modal__foot">
+      <button type="button" class="adm-nom-modal__btn" (click)="cerrarModal()" [disabled]="confirmando()">
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="adm-nom-modal__btn adm-nom-modal__btn--primary"
+        (click)="solicitarConfirmacion()"
+        [disabled]="!puedeConfirmar()"
+      >
+        Continuar
+      </button>
+    </footer>
+  </div>
+</div>
+
+@if (confirmacionAbierta()) {
+  <app-message-box
+    mode="modal"
+    variant="warning"
+    eyebrow="Confirmar rectificación"
+    title="¿Crear rectificación diferencial?"
+    [message]="nominaOrigen().empresaNombre + ' · ' + nominaOrigen().periodo"
+    [detail]="detalleConfirmacion()"
+    [primaryLabel]="confirmando() ? 'Creando…' : 'Crear rectificación'"
+    secondaryLabel="Volver"
+    [dismissible]="!confirmando()"
+    [disableClose]="confirmando()"
+    (action)="confirmar()"
+    (secondary)="cancelarConfirmacion()"
+  />
+}

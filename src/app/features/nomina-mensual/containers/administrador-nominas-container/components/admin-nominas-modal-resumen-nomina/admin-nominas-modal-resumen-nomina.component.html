@@ -1,0 +1,90 @@
+<app-message-box
+  [variant]="variantModal()"
+  mode="modal"
+  width="lg"
+  eyebrow="Resumen del cierre"
+  [title]="tituloModal()"
+  [message]="mensajeModal()"
+  [actions]="acciones()"
+  (dismiss)="cerrarModal()"
+  (actionSelect)="onAction($event)"
+>
+  <div class="adm-nom-resumen">
+    @if (!cargando() && !error() && resumen(); as r) {
+      <div class="adm-nom-resumen__contexto" aria-label="Contexto del período">
+        <span
+          class="adm-nom-resumen__chip"
+          [class]="'adm-nom-resumen__chip--' + contextoNomina().estado.variant"
+        >
+          <span class="adm-nom-resumen__chip-dot" aria-hidden="true"></span>
+          {{ contextoNomina().estado.label }}
+        </span>
+        @if (contextoNomina().rango) {
+          <span class="adm-nom-resumen__meta">{{ contextoNomina().rango }}</span>
+        }
+        @if (contextoNomina().meta) {
+          <span class="adm-nom-resumen__meta">{{ contextoNomina().meta }}</span>
+        }
+      </div>
+
+      @if (situacion(); as s) {
+        <p
+          class="adm-nom-resumen__situacion"
+          [class.adm-nom-resumen__situacion--ok]="s.tono === 'ok'"
+          [class.adm-nom-resumen__situacion--pendiente]="s.tono === 'pendiente'"
+          [class.adm-nom-resumen__situacion--info]="s.tono === 'info'"
+        >
+          <lucide-icon [name]="situacionIcono()" aria-hidden="true"></lucide-icon>
+          <span>{{ s.texto }}</span>
+        </p>
+      }
+
+      <section class="adm-nom-resumen__block" aria-labelledby="adm-nom-resumen-totales">
+        <h3 id="adm-nom-resumen-totales" class="adm-nom-resumen__block-title">Totales del período</h3>
+        <ul class="adm-nom-resumen__indicadores">
+          @for (item of indicadores(); track item.id) {
+            <li [class.is-strong]="item.destacado">
+              <span class="adm-nom-resumen__indicador-label">{{ item.label }}</span>
+              <strong>{{ item.valor }}</strong>
+            </li>
+          }
+        </ul>
+      </section>
+
+      @if (esRectificacion() && comparativaRectificacion().length > 0) {
+        <section class="adm-nom-resumen__block" aria-labelledby="adm-nom-resumen-rect">
+          <h3 id="adm-nom-resumen-rect" class="adm-nom-resumen__block-title">Comparación rectificación</h3>
+          <div class="adm-nom-resumen__rect-grid">
+            @for (col of comparativaRectificacion(); track col.id) {
+              <div class="adm-nom-resumen__rect-col" [class.is-strong]="col.destacada">
+                <span class="adm-nom-resumen__rect-label">{{ col.label }}</span>
+                <span class="adm-nom-resumen__rect-liquido">{{ col.liquido }}</span>
+                <span class="adm-nom-resumen__rect-meta">Haberes {{ col.haberes }} · Desc. {{ col.descuentos }}</span>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <section class="adm-nom-resumen__block" aria-labelledby="adm-nom-resumen-obs">
+        @if (totalObservaciones() > 0) {
+          <h3 id="adm-nom-resumen-obs" class="adm-nom-resumen__block-title">Observaciones del cierre</h3>
+          <ul class="adm-nom-resumen__lista">
+            @for (obs of observaciones(); track obs.id) {
+              <li class="adm-nom-resumen__item" [class]="'adm-nom-resumen__item--' + obs.tono">
+                <lucide-icon [name]="obs.icono" aria-hidden="true"></lucide-icon>
+                <span>{{ obs.mensaje }}</span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <h3 id="adm-nom-resumen-obs" class="adm-nom-resumen__block-title">Observaciones del cierre</h3>
+          <p class="adm-nom-resumen__sin-observaciones">
+            <lucide-icon name="circle-check" aria-hidden="true"></lucide-icon>
+            Sin observaciones registradas en el cierre de esta nómina.
+          </p>
+        }
+      </section>
+    }
+  </div>
+</app-message-box>

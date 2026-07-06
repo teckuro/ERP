@@ -1,5 +1,14 @@
 @import '../../form-empleado-shared.css';
 
+:host.labor-layout-inline-record .labor-block-head {
+  display: none;
+}
+
+:host.labor-layout-inline-record .labor-block > .labor-grid,
+:host.labor-layout-inline-record .labor-block > .relation-grid {
+  padding: 0;
+}
+
 :host {
   display: block;
   font-family: var(--erp-font-sans, system-ui, sans-serif);
@@ -69,6 +78,10 @@
 
 .labor-grid--contract {
   grid-template-columns: repeat(3, minmax(13rem, 1fr));
+}
+
+.labor-grid--service {
+  grid-template-columns: repeat(2, minmax(13rem, 1fr));
 }
 
 .labor-grid--schedule,
@@ -420,6 +433,10 @@
   gap: 6px 12px;
 }
 
+:host.labor-layout-advanced .labor-grid--service {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 :host.labor-layout-advanced .labor-grid--contract > :nth-child(1),
 :host.labor-layout-advanced .labor-grid--contract > :nth-child(2),
 :host.labor-layout-advanced .labor-grid--contract > :nth-child(3),
@@ -768,25 +785,47 @@
 
 }
 
-:host .honorarios-note {
+:host .labor-inline-note {
   display: grid;
   gap: 3px;
   margin-top: 10px;
   padding: 10px 12px;
-  border: 1px solid #bfdbfe;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
-  background: #eff6ff;
-  color: #1e3a8a;
+  background: #f9fafb;
+  color: #374151;
   font-size: var(--erp-text-xs, 0.72rem);
   line-height: 1.45;
 }
 
-:host .honorarios-note strong {
-  color: #1d4ed8;
+:host .labor-inline-note strong {
+  color: #111827;
   font-size: var(--erp-text-sm, 0.78rem);
   font-weight: 700;
 }
 
 :host .labor-block--honorarios {
-  border-color: #bfdbfe;
+  border-color: #e5e7eb;
+}
+
+.field-badge {
+  display: inline-flex;
+  min-height: 18px;
+  align-items: center;
+  border: 1px solid #dbeafe;
+  border-radius: 999px;
+  background: #eff6ff;
+  padding: 0 8px;
+  color: #1d4ed8;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.form-field--derived .readonly-field {
+  justify-content: space-between;
+}
+
+.tipo-trabajador-derived {
+  text-transform: uppercase;
 }

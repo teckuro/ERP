@@ -49,13 +49,67 @@ export interface ParametrosCompletitudResultado {
   reconciliacionPendiente: boolean;
 }
 
+export type OficialComparacionOrigen = 'fila_exacta' | 'ultimo_hasta_periodo' | 'referencia_visual';
+
+export interface OficialParaComparacionResult {
+  oficial: ParametroGeneral | null;
+  origen: OficialComparacionOrigen | null;
+  /** Período real del snapshot usado (si difiere del seleccionado, es referencia). */
+  periodoOrigen: string | null;
+}
+
+export interface ResolverOficialParaComparacionInput {
+  periodoSeleccionado: string;
+  filaExacta: ParametroGeneral | null;
+  ultimoHastaPeriodo: ParametroGeneral | null;
+  referenciaVisual: ParametroGeneral | null;
+}
+
 export interface EvaluarCompletitudParametrosInput {
   periodo: string;
   periodoRemuneracion: PeriodoRemuneracionEstadoInfo | null;
+  /** Fila exacta del mes en parametros_generales (completitud de oficiales). */
   oficial: ParametroGeneral | null;
+  /** Baseline para comparar con configuración cliente (puede ser fila, último del mes o referencia). */
+  oficialParaComparacion?: ParametroGeneral | null;
   clienteConfig: ParametrosGeneralesClienteConfig | null;
   catalogos: ParametrosGeneralesCatalogos;
   errorTecnico?: boolean;
+}
+
+/** Umbral relativo para marcar desviación fuerte respecto al valor oficial. */
+export const UMBRAL_DESVIACION_OFICIAL_RELATIVA = 0.2;
+
+export function resolverOficialParaComparacionCliente(
+  input: ResolverOficialParaComparacionInput,
+): OficialParaComparacionResult {
+  const { periodoSeleccionado, filaExacta, ultimoHastaPeriodo, referenciaVisual } = input;
+
+  if (filaExacta?.periodo === periodoSeleccionado) {
+    return {
+      oficial: filaExacta,
+      origen: 'fila_exacta',
+      periodoOrigen: filaExacta.periodo,
+    };
+  }
+
+  if (ultimoHastaPeriodo?.periodo === periodoSeleccionado) {
+    return {
+      oficial: ultimoHastaPeriodo,
+      origen: 'ultimo_hasta_periodo',
+      periodoOrigen: ultimoHastaPeriodo.periodo,
+    };
+  }
+
+  if (referenciaVisual) {
+    return {
+      oficial: { ...referenciaVisual, periodo: periodoSeleccionado },
+      origen: 'referencia_visual',
+      periodoOrigen: referenciaVisual.periodo,
+    };
+  }
+
+  return { oficial: null, origen: null, periodoOrigen: null };
 }
 
 export interface ResolverEstadoVisualParametrosInput {
@@ -156,9 +210,14 @@ export function evaluarCompletitudParametrosMensual(
   const oficiales = evaluarOficiales(input, pendientes);
   const config = evaluarConfigCliente(input, pendientes);
   const vigencias = evaluarVigencias(input, pendientes);
-  const diferencias = compararOficialCliente(input.oficial, input.clienteConfig);
-  const reconciliacionPendiente = diferencias.length > 0 && requiereReconciliacionOficial(input.clienteConfig);
-  const consistencia = grupo('consistencia', reconciliacionPendiente ? 0 : 1, 1);
+  const baselineComparacion = input.oficialParaComparacion ?? input.oficial;
+  const diferencias = compararOficialCliente(baselineComparacion, input.clienteConfig);
+  const consistenciaEvaluable = Boolean(input.oficial && input.clienteConfig);
+  const reconciliacionPendiente = consistenciaEvaluable
+    && hayReconciliacionOficialClientePendiente(input.clienteConfig, diferencias);
+  const consistencia = consistenciaEvaluable
+    ? grupo('consistencia', reconciliacionPendiente ? 0 : 1, 1)
+    : grupoNoAplica('consistencia');
   if (reconciliacionPendiente) {
     advertencias.push('Existen diferencias pendientes entre valores oficiales y configuracion cliente.');
   }
@@ -177,12 +236,14 @@ export function evaluarCompletitudParametrosMensual(
     tecnico,
   };
 
-  const porcentaje = Math.min(100, Math.round(
-    (Object.entries(grupos) as Array<[ParametrosCompletitudGrupoId, ParametrosCompletitudGrupo]>).reduce(
-      (acc, [id, g]) => acc + (g.porcentaje * PESOS[id]) / 100,
-      0,
-    ),
-  ));
+  const gruposEntries = Object.entries(grupos) as Array<[ParametrosCompletitudGrupoId, ParametrosCompletitudGrupo]>;
+  const gruposAplicables = gruposEntries.filter(([, g]) => g.total > 0);
+  const pesosAplicables = gruposAplicables.reduce((acc, [id]) => acc + PESOS[id], 0);
+  const porcentaje = pesosAplicables === 0
+    ? 0
+    : Math.min(100, Math.round(
+      gruposAplicables.reduce((acc, [id, g]) => acc + (g.porcentaje * PESOS[id]) / 100, 0) * (100 / pesosAplicables),
+    ));
 
   return {
     estadoCalculado: resolverEstado(input.periodoRemuneracion?.estado ?? null, grupos, errores, reconciliacionPendiente),
@@ -200,7 +261,7 @@ function evaluarOficiales(
   input: EvaluarCompletitudParametrosInput,
   pendientes: string[],
 ): ParametrosCompletitudGrupo {
-  let total = 5 + CAMPOS_OFICIALES_OBLIGATORIOS.length;
+  let total = 4 + CAMPOS_OFICIALES_OBLIGATORIOS.length;
   let completos = 0;
 
   if (input.oficial) {
@@ -213,7 +274,6 @@ function evaluarOficiales(
   completos += sumaArray(input.catalogos.tramosCarga, 'Faltan tramos de carga familiar.', pendientes);
   completos += sumaArray(input.catalogos.tramosImpuesto, 'Faltan tramos de impuesto unico.', pendientes);
   completos += sumaArray(input.catalogos.tablaImpuestoUnico, 'Falta tabla de impuesto unico del periodo.', pendientes);
-  completos += sumaArray(input.catalogos.ley16744Parametros, 'Faltan parametros Ley 16.744 del periodo.', pendientes);
 
   return grupo('oficialesMensuales', completos, total);
 }
@@ -222,7 +282,7 @@ function evaluarConfigCliente(
   input: EvaluarCompletitudParametrosInput,
   pendientes: string[],
 ): ParametrosCompletitudGrupo {
-  let total = 5 + CAMPOS_CLIENTE_OPERATIVOS.length;
+  let total = 6 + CAMPOS_CLIENTE_OPERATIVOS.length;
   let completos = 0;
   const cfg = input.clienteConfig;
 
@@ -257,10 +317,10 @@ function evaluarConfigCliente(
     pendientes.push('Falta CCAF seleccionada.');
   }
 
-  const requiereMutual = input.catalogos.organismosLey16744.length > 0;
-  completos += !requiereMutual || cfg?.idOrganismoAdministradorLey16744 ? 1 : 0;
-  if (requiereMutual && !cfg?.idOrganismoAdministradorLey16744) {
-    pendientes.push('Falta mutual u organismo administrador Ley 16.744.');
+  const requiereOrganismoLey16744 = input.catalogos.organismosLey16744.length > 0;
+  completos += !requiereOrganismoLey16744 || cfg?.idOrganismoAdministradorLey16744 ? 1 : 0;
+  if (requiereOrganismoLey16744 && !cfg?.idOrganismoAdministradorLey16744) {
+    pendientes.push('Falta mutual seleccionada.');
   }
 
   completos += contarCampos(cfg, CAMPOS_CLIENTE_OPERATIVOS, pendientes, 'Falta configuracion cliente');
@@ -304,7 +364,7 @@ function evaluarVigencias(
   return grupo('vigencias', completos, checks.length);
 }
 
-function compararOficialCliente(
+export function compararOficialCliente(
   oficial: ParametroGeneral | null,
   cliente: ParametrosGeneralesClienteConfig | null,
 ): ParametrosDiferenciaCompletitud[] {
@@ -312,6 +372,10 @@ function compararOficialCliente(
     return [];
   }
 
+  // Un campo solo produce diferencia cuando AMBOS lados tienen valor concreto (number, boolean
+  // distinto de null/undefined/'') y no son equivalentes. Si el oficial es null/undefined para un
+  // campo concreto (p.ej. `gratificacion` aún no normada para el mes) se considera "sin base de
+  // comparación" y no se reporta como diferencia: no se puede afirmar contradicción sin oficial.
   return CAMPOS_COMPARABLES.flatMap((campo) => {
     const oficialValue = normalizable(oficial[campo]) ? oficial[campo] : null;
     const clienteValue = normalizable(cliente[campo]) ? cliente[campo] : null;
@@ -342,6 +406,16 @@ function periodoRango(periodo: string): { inicio: string; fin: string } {
   return { inicio: `${periodo}-01`, fin: `${periodo}-${String(lastDay).padStart(2, '0')}` };
 }
 
+function valorOficialCampoValido(value: unknown): boolean {
+  if (!tieneValor(value)) {
+    return false;
+  }
+  if (typeof value === 'number' && Number.isFinite(value) && value <= 0) {
+    return false;
+  }
+  return true;
+}
+
 function contarCampos<T extends Partial<Record<keyof ParametroGeneral, unknown>>>(
   source: T | null,
   fields: Array<keyof ParametroGeneral>,
@@ -350,8 +424,11 @@ function contarCampos<T extends Partial<Record<keyof ParametroGeneral, unknown>>
 ): number {
   let out = 0;
   for (const field of fields) {
-    if (tieneValor(source?.[field])) {
+    const valor = source?.[field];
+    if (valorOficialCampoValido(valor)) {
       out += 1;
+    } else if (typeof valor === 'number' && Number.isFinite(valor) && valor <= 0) {
+      pendientes.push(`Dato oficial en cero: ${String(field)}.`);
     } else {
       pendientes.push(`${prefix}: ${String(field)}.`);
     }
@@ -395,7 +472,58 @@ function resolverEstado(
 
 function requiereReconciliacionOficial(cliente: ParametrosGeneralesClienteConfig | null): boolean {
   return cliente?.estadoReconciliacionOficial !== 'cliente_confirmado'
-    && cliente?.estadoReconciliacionOficial !== 'actualizado_con_oficiales';
+    && cliente?.estadoReconciliacionOficial !== 'actualizado_con_oficiales'
+    && cliente?.estadoReconciliacionOficial !== 'revisar_despues';
+}
+
+const ESTADOS_DECISION_RECONCILIACION: ReadonlySet<ParametrosGeneralesClienteConfig['estadoReconciliacionOficial']> =
+  new Set(['cliente_confirmado', 'revisar_despues', 'actualizado_con_oficiales']);
+
+/** Configuración cliente guardada después de una decisión de reconciliación previa. */
+export function configuracionClienteModificadaDespuesDeDecisionReconciliacion(
+  cliente: ParametrosGeneralesClienteConfig,
+): boolean {
+  if (!ESTADOS_DECISION_RECONCILIACION.has(cliente.estadoReconciliacionOficial)) {
+    return false;
+  }
+  const actualizacionTs = cliente.fechaActualizacion;
+  if (!actualizacionTs) {
+    return false;
+  }
+  const decisionTs = cliente.fechaReconciliacionOficial;
+  if (!decisionTs) {
+    return true;
+  }
+  return new Date(actualizacionTs).getTime() > new Date(decisionTs).getTime();
+}
+
+export function diferenciasConDesviacionExtrema(
+  diferencias: readonly ParametrosDiferenciaCompletitud[],
+  umbral = UMBRAL_DESVIACION_OFICIAL_RELATIVA,
+): ParametrosDiferenciaCompletitud[] {
+  return diferencias.filter((d) => {
+    if (typeof d.oficial !== 'number' || typeof d.cliente !== 'number') {
+      return false;
+    }
+    const base = Math.abs(d.oficial);
+    if (base < 0.0001) {
+      return false;
+    }
+    return Math.abs(d.cliente - d.oficial) / base > umbral;
+  });
+}
+
+export function hayReconciliacionOficialClientePendiente(
+  cliente: ParametrosGeneralesClienteConfig | null,
+  diferencias: readonly ParametrosDiferenciaCompletitud[],
+): boolean {
+  if (!cliente || diferencias.length === 0) {
+    return false;
+  }
+  if (requiereReconciliacionOficial(cliente)) {
+    return true;
+  }
+  return configuracionClienteModificadaDespuesDeDecisionReconciliacion(cliente);
 }
 
 export function resolverEstadoVisualParametros(input: ResolverEstadoVisualParametrosInput): ParametrosEstadoVisual {
@@ -498,6 +626,10 @@ function grupo(id: ParametrosCompletitudGrupoId, completos: number, total: numbe
   return { id, completo: completos >= safeTotal, porcentaje, total: safeTotal, completos };
 }
 
+function grupoNoAplica(id: ParametrosCompletitudGrupoId): ParametrosCompletitudGrupo {
+  return { id, completo: true, porcentaje: 0, total: 0, completos: 0 };
+}
+
 function tieneValor(value: unknown): boolean {
   return value !== null && value !== undefined && value !== '';
 }
@@ -511,4 +643,66 @@ function sonEquivalentes(left: number | boolean | null, right: number | boolean 
     return Math.abs(left - right) < 0.0001;
   }
   return left === right;
+}
+
+export interface DebeMostrarAvisoDiferenciasOficialesInput {
+  periodoRemuneracion: PeriodoRemuneracionEstadoInfo | null;
+  oficial: ParametroGeneral | null;
+  clienteConfig: ParametrosGeneralesClienteConfig | null;
+  diferencias: ParametrosDiferenciaCompletitud[];
+}
+
+/** Aviso modal al entrar o guardar cuando hay baseline oficial y diferencias con la config cliente. */
+export function debeMostrarAvisoDiferenciasParametrosOficialesMes(
+  input: DebeMostrarAvisoDiferenciasOficialesInput,
+): boolean {
+  if (!input.oficial || !input.clienteConfig || input.diferencias.length === 0) {
+    return false;
+  }
+
+  if (input.periodoRemuneracion?.estado === 'error') {
+    return false;
+  }
+
+  return true;
+}
+
+export function huellaDiferenciasOficialesCliente(
+  diferencias: readonly ParametrosDiferenciaCompletitud[],
+): string {
+  return [...diferencias]
+    .map((d) => `${String(d.campo)}:${String(d.oficial)}:${String(d.cliente)}`)
+    .sort()
+    .join('|');
+}
+
+function debeReabrirAvisoDiferenciasTrasOficialReciente(
+  oficial: ParametroGeneral,
+  cliente: ParametrosGeneralesClienteConfig,
+): boolean {
+  if (cliente.estadoReconciliacionOficial === 'actualizado_con_oficiales') {
+    return false;
+  }
+  if (
+    cliente.estadoReconciliacionOficial !== 'revisar_despues'
+    && cliente.estadoReconciliacionOficial !== 'cliente_confirmado'
+  ) {
+    return false;
+  }
+  return oficialActualizadoDespuesDeDecisionReconciliacion(cliente, oficial);
+}
+
+function oficialActualizadoDespuesDeDecisionReconciliacion(
+  cliente: ParametrosGeneralesClienteConfig,
+  oficial: ParametroGeneral,
+): boolean {
+  const oficialTs = oficial.fechaActualizacion;
+  if (!oficialTs) {
+    return false;
+  }
+  const decisionTs = cliente.fechaReconciliacionOficial;
+  if (!decisionTs) {
+    return true;
+  }
+  return new Date(oficialTs).getTime() > new Date(decisionTs).getTime();
 }

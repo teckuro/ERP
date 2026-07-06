@@ -8,5 +8,17 @@ import { LiquidacionesOficialesContainer } from '../features/liquidaciones-ofici
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LiquidacionesOficialesContainer],
   template: `<app-liquidaciones-oficiales-container />`,
+  styles: `
+    :host {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      width: 100%;
+      min-width: 0;
+      min-height: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+  `,
 })
 export class LiquidacionesPage {}

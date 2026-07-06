@@ -1,0 +1,47 @@
+<section class="preguntor" aria-label="Preguntor operativo">
+  <p class="preguntor__lead">
+    Escribe una consulta de RRHH o remuneraciones. La respuesta es orientativa; la fuente de verdad sigue siendo el ERP.
+  </p>
+
+  <label class="preguntor__label" for="preguntor-input">Pregunta</label>
+  <textarea
+    id="preguntor-input"
+    class="preguntor__input"
+    rows="4"
+    [disabled]="cargando()"
+    [(ngModel)]="preguntaTexto"
+    placeholder="Ej.: ¿Qué revisar antes de cerrar la nómina del período?"
+  ></textarea>
+
+  <div class="preguntor__actions">
+    <app-button
+      variant="primary"
+      size="sm"
+      [disabled]="cargando() || !preguntaTexto.trim()"
+      (click)="enviar()"
+    >
+      {{ cargando() ? 'Consultando…' : 'Preguntar' }}
+    </app-button>
+    <app-button variant="outline" size="sm" [disabled]="cargando()" (click)="limpiar()">
+      Limpiar
+    </app-button>
+  </div>
+
+  @if (cargando()) {
+    <p class="preguntor__estado" role="status">Obteniendo respuesta…</p>
+  }
+
+  @if (error(); as mensaje) {
+    <div class="preguntor__bloque preguntor__bloque--error" role="alert">
+      <h2 class="preguntor__bloque-titulo">No se pudo responder</h2>
+      <p>{{ mensaje }}</p>
+    </div>
+  }
+
+  @if (respuesta(); as texto) {
+    <div class="preguntor__bloque preguntor__bloque--respuesta">
+      <h2 class="preguntor__bloque-titulo">Respuesta</h2>
+      <p class="preguntor__respuesta-texto">{{ texto }}</p>
+    </div>
+  }
+</section>

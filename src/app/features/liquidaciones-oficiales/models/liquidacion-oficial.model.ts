@@ -1,5 +1,7 @@
 export type LiquidacionOficialEstado = 'generada';
 
+import type { LiquidacionAccionUiEstado } from '../rules/liquidaciones-acciones-ui.rules';
+
 export type LiquidacionesPeriodoEstadoUi =
   | 'no_disponible'
   | 'lista_para_generar'
@@ -8,12 +10,27 @@ export type LiquidacionesPeriodoEstadoUi =
   | 'generadas_con_advertencias'
   | 'error';
 
+export type LiquidacionEmisionCanal = 'vista_oficial' | 'impresion_navegador';
+
+export interface LiquidacionEmision {
+  idLiquidacionEmision: number;
+  idLiquidacionTrabajador: number;
+  idLiquidacionPeriodo: number;
+  versionLiquidacion: number;
+  usuarioId: string | null;
+  usuarioLabel: string;
+  canal: LiquidacionEmisionCanal;
+  emitidoEn: string;
+  metadata: Record<string, unknown>;
+}
+
 export interface LiquidacionPeriodo {
   idLiquidacionPeriodo: number;
   idCalculoPeriodo: number;
   periodo: string;
   estado: LiquidacionOficialEstado;
   fechaGeneracion: string;
+  usuarioGeneracionId: string | null;
   usuarioGeneracionLabel: string | null;
   totalTrabajadores: number;
   totalHaberes: number;
@@ -39,6 +56,8 @@ export interface LiquidacionTrabajador {
   totalAportesEmpleadorReferencia: number;
   liquidoPagar: number;
   estado: LiquidacionOficialEstado;
+  /** Estado de revisión RRHH (autorización, pago, documento). */
+  estadoRevision?: LiquidacionAccionUiEstado | null;
   observaciones: unknown[];
   metadata: Record<string, unknown>;
 }

@@ -5,6 +5,32 @@ import type {
 
 import type { ProcesoMensualGrupoParametro } from '../models/proceso-mensual.model';
 
+function campoMensualOficialInvalido(valor: number | null | undefined): boolean {
+  return valor == null || valor === 0;
+}
+
+/** Textos de completitud para UF/UTM/sueldo mínimo (null o cero). */
+export function detallePendientesMensualesOficiales(fila: ParametroGeneral): string {
+  const partes: string[] = [];
+  if (fila.uf == null) {
+    partes.push('Falta dato oficial: uf.');
+  } else if (fila.uf === 0) {
+    partes.push('Dato oficial en cero: uf.');
+  }
+  if (fila.utm == null) {
+    partes.push('Falta dato oficial: utm.');
+  } else if (fila.utm === 0) {
+    partes.push('Dato oficial en cero: utm.');
+  }
+  const sueldo = fila.sueldoMinimo18a65 ?? fila.sueldoMinimo;
+  if (sueldo == null) {
+    partes.push('Falta dato oficial: sueldoMinimo18a65.');
+  } else if (sueldo === 0) {
+    partes.push('Dato oficial en cero: sueldoMinimo18a65.');
+  }
+  return partes.join(' ');
+}
+
 export interface RevisionParametrosMinimosInput {
   periodo: string;
   fila: ParametroGeneral | null;
@@ -53,14 +79,19 @@ export function revisarGruposParametrosMinimos(input: RevisionParametrosMinimosI
       detalle: topesParciales ? 'topes_incompletos' : undefined,
     });
   } else {
-    const nulosMensuales = [fila.uf, fila.utm, fila.sueldoMinimo].filter((v) => v == null).length;
-    if (nulosMensuales === 0) {
+    const invalidosMensuales = [
+      campoMensualOficialInvalido(fila.uf),
+      campoMensualOficialInvalido(fila.utm),
+      campoMensualOficialInvalido(fila.sueldoMinimo18a65 ?? fila.sueldoMinimo),
+    ].filter(Boolean).length;
+    if (invalidosMensuales === 0) {
       out.push({ id: 'mensuales_uf_utm_sueldo', clasificacion: 'OK' });
     } else {
+      const detalleMensual = detallePendientesMensualesOficiales(fila);
       out.push({
         id: 'mensuales_uf_utm_sueldo',
-        clasificacion: nulosMensuales === 3 ? 'FALTANTE' : 'PARCIAL',
-        detalle: `nulos_${nulosMensuales}`,
+        clasificacion: invalidosMensuales === 3 ? 'FALTANTE' : 'PARCIAL',
+        detalle: detalleMensual || `invalidos_${invalidosMensuales}`,
       });
     }
 

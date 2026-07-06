@@ -12,23 +12,30 @@ Describir el flujo **real** de la pantalla **`/empleados/:id`** (`FichaEmpleadoC
 
 ## 1. Principios UX (implementados)
 
-- **Tabs** para áreas de información; cada chip muestra etiqueta de estado (`Completo`, `Revisar`, `Bloqueante`, `Pendiente`) derivada del helper `evaluarCompletitudYAptitudEmpleado`.
-- **Lectura por bloques** dentro del tab activo; **Edición** solo en el bloque elegido (inline, sin modal de ficha completa).
+- **Expediente (rail izquierdo)** para las 7 áreas; chip de estado (`Listo`, `Pendiente`, `Crítico`, `En curso`) derivado de `tabStatus` / bloque activo vía `ficha-empleado-presentacion.rules.ts` y `evaluarCompletitudYAptitudEmpleado`.
+- **Lectura por bloques** en el centro del bloque activo; **Edición** solo en el bloque elegido (inline, sin modal de ficha completa).
+- **Edición integrada:** el mismo `detail-block--editorial` actúa como card en lectura y edición. En lectura: `h3` del bloque + **Editar**. En edición: barra **Guardar cambios** / **Cancelar** sin repetir el título del bloque; el `h2` del tab se oculta (el rail ya indica el bloque activo). Si el seccional expone una sola subsección (`editVisibleBlocks.length === 1`), se oculta la cabecera interna duplicada del `app-card`.
 - **Guardado por sección** al servidor (`guardarSeccionFicha`), no guardado global de toda la ficha en un solo POST.
-- **Panel superior** (`file-state-overview`): estado de ficha, aptitud, pendientes y CTA principal alineados al helper.
-- **Panel lateral** (`file-status-panel`): completitud %, resumen operativo, faltantes, impacto y acciones rápidas (misma lógica de CTA que arriba).
-- **Modales** solo para microacciones: confirmar **Validar para remuneraciones**, confirmar descarte al cambiar de tab con cambios sin guardar (`window.confirm`).
+- **Panel diagnóstico (derecha):** completitud %, resultado remuneraciones, faltantes deduplicados, **Motivo principal** y **una** acción principal (`ejecutarAccionPrincipalPanel`). Sin «Impacto operativo» ni «Editar bloque actual».
+- **Shell:** breadcrumbs y chip de estado; **sin** `primaryAction` duplicado (CTA canónico en panel derecho).
+- **Modales** solo para microacciones: confirmar **Validar para remuneraciones**, confirmar descarte al cambiar de bloque con cambios sin guardar (`window.confirm`).
+
+Fase visual: [`emp-ficha-expediente-noia-01.md`](./emp-ficha-expediente-noia-01.md).
 
 ## 2. Layout real (orden visual)
 
 ```text
-1. Cabecera (file-sheet-head)
-2. Panel estado operativo (file-state-overview)
-3. [Opcional] Feedback validación / error
-4. Cuerpo (file-body): tabs + bloques + panel lateral (file-status-panel)
+1. Toolbar mínima (volver)
+2. [Opcional] Feedback validación / error
+3. employee-record-shell
+   3.1 Header compacto (avatar, nombre, badge, meta en línea)
+   3.2 employee-record-layout
+       - Rail expediente (izquierda)
+       - Bloque activo editorial (centro)
+       - Diagnóstico (derecha)
 ```
 
-## 3. Pestañas — orden, persistencia y bloques
+## 3. Bloques del expediente — orden, persistencia y contenido
 
 Orden en código (`tabs` en `ficha-empleado-container.ts`). **`saveTarget`**: valor enviado a `guardarSeccionFicha` (null = sin persistencia en ese tab).
 
@@ -58,9 +65,10 @@ Al guardar se validan los controles del **`editingBlock`**; el `saveTarget` es e
 
 | Acción | Comportamiento |
 |--------|----------------|
-| CTA principal (cabecera / overview / lateral) | `handlePrimaryFichaAction`: validar remuneraciones, continuar alta, ir a pendiente o `startEditing()`. |
-| Editar sección actual | `startEditing()` en el tab activo. |
-| Cambiar de tab con cambios | `window.confirm`. |
+| CTA principal (panel diagnóstico) | `ejecutarAccionPrincipalPanel`: validar remuneraciones, completar pago, continuar alta o `handlePrimaryFichaAction`. |
+| Editar sección | `startEditing()` en el bloque del tab activo. |
+| Faltante en panel | `navegarFaltante` → `selectTab` del bloque. |
+| Cambiar de bloque con cambios | `window.confirm`. |
 
 ## 6. Referencia de código
 

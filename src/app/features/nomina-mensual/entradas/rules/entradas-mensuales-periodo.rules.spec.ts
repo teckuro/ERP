@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import type { MovimientoVariableListadoFila } from '../../../movimientos-variables/models/movimiento-variable.model';
 import type { NovedadMensual } from '../../novedades/models/novedad-mensual.model';
 import type { EntradaMensualPeriodo } from '../models/entrada-mensual-periodo.model';
@@ -151,5 +152,16 @@ describe('entradas mensuales periodo rules', () => {
     expect(resumen.legacyMovimientos).toBe(1);
     expect(resumen.bloqueantes).toBe(1);
     expect(resumen.conWarnings).toBe(1);
+  });
+
+  it('resumen tolera entradas y warnings ausentes en runtime', () => {
+    expect(construirResumenEntradas(undefined as any).total).toBe(0);
+
+    const resumen = construirResumenEntradas([
+      entrada({ warnings: undefined as any }),
+    ]);
+
+    expect(resumen.total).toBe(1);
+    expect(resumen.conWarnings).toBe(0);
   });
 });

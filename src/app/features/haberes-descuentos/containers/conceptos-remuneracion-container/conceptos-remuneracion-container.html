@@ -1,9 +1,5 @@
 <section class="hd-page" aria-label="Conceptos de remuneración">
   <header class="hd-head">
-    <app-record-breadcrumb
-      [items]="breadcrumbItems"
-      title="Conceptos de remuneración"
-    ></app-record-breadcrumb>
     <p class="hd-lead">
       Catálogo maestro usado por haberes, descuentos y futuras liquidaciones. No es asignación por trabajador ni
       resultado de cálculo cerrado.
@@ -30,6 +26,7 @@
       [selectable]="false"
       [trackBy]="trackCatalogo"
       gridHeight="100%"
+      cardClassName="erp-fullscreen-grid-card"
       (refresh)="refrescar()"
       emptyTitle="No hay conceptos de remuneración registrados."
       emptyDescription="Crea o carga el catálogo maestro antes de asignar haberes o descuentos."
@@ -127,14 +124,24 @@
 
   @if (detalleConceptoFila(); as dRow) {
     <div class="hd-modal-root cr-detalle-root" role="presentation">
-      <div class="hd-modal-backdrop" (click)="cerrarDetalleConcepto()"></div>
+      <div class="hd-modal-backdrop" aria-hidden="true"></div>
       <div
         class="hd-modal cr-detalle-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="cr-detalle-title"
       >
-        <h2 id="cr-detalle-title" class="hd-modal-title">Detalle del concepto</h2>
+        <header class="cr-detalle-head">
+          <h2 id="cr-detalle-title" class="hd-modal-title">Detalle del concepto</h2>
+          <button
+            type="button"
+            class="cr-detalle-close"
+            aria-label="Cerrar"
+            (click)="cerrarDetalleConcepto()"
+          >
+            <lucide-icon name="x" aria-hidden="true"></lucide-icon>
+          </button>
+        </header>
         <div class="hd-modal-body cr-detalle-body">
           <section class="cr-detalle-block" aria-labelledby="cr-det-h-id">
             <h3 id="cr-det-h-id" class="cr-detalle-h">Identificación</h3>
@@ -202,6 +209,26 @@
             </dl>
           </section>
 
+          <section class="cr-detalle-block" aria-labelledby="cr-det-h-reglas">
+            <h3 id="cr-det-h-reglas" class="cr-detalle-h">Reglas de cálculo</h3>
+            @if (cargandoReglasDetalle()) {
+              <p class="cr-detalle-motivo">Cargando reglas…</p>
+            } @else if (reglasCalculoDetalle().length === 0) {
+              <p class="cr-detalle-motivo">Sin reglas de cálculo registradas para este concepto.</p>
+            } @else {
+              <ul class="cr-detalle-reglas">
+                @for (regla of reglasCalculoDetalle(); track regla.idReglaConceptoCalculo) {
+                  <li>
+                    <strong>{{ regla.codigoRegla }}</strong>
+                    · {{ regla.baseCalculo || 'Base no definida' }}
+                    · {{ regla.calculoAutomatico ? 'Automático' : 'Manual' }}
+                    · {{ regla.activo ? 'Activa' : 'Inactiva' }}
+                  </li>
+                }
+              </ul>
+            }
+          </section>
+
           <section class="cr-detalle-block cr-detalle-block--last" aria-labelledby="cr-det-h-act">
             <h3 id="cr-det-h-act" class="cr-detalle-h">Acciones y protección (v1)</h3>
             <ul class="cr-detalle-acciones">
@@ -241,7 +268,6 @@
           </section>
         </div>
         <div class="hd-modal-actions">
-          <button type="button" class="hd-btn hd-btn--ghost" (click)="cerrarDetalleConcepto()">Cerrar</button>
           @if (detalleAcciones()!.puedeEditar) {
             <button type="button" class="hd-btn hd-btn--primary" (click)="cerrarDetalleConcepto(); editarConceptoRow(dRow)">
               Editar
@@ -254,7 +280,7 @@
 
   @if (catalogDialogAbierto()) {
     <div class="hd-modal-root" role="presentation">
-      <div class="hd-modal-backdrop" (click)="cerrarCatalogDialog()"></div>
+      <div class="hd-modal-backdrop" aria-hidden="true"></div>
       <div class="hd-modal hd-modal--wide" role="dialog" aria-modal="true" aria-labelledby="cr-catalog-modal-title">
         <h2 id="cr-catalog-modal-title" class="hd-modal-title">
           {{ catalogEditId() == null ? 'Nuevo concepto' : 'Editar concepto' }}
@@ -499,7 +525,6 @@
     <app-message-box
       [variant]="msg.variant"
       mode="modal"
-      [modalHeadlineSplit]="true"
       [title]="msg.title"
       [message]="msg.message"
       [detail]="msg.detail ?? ''"

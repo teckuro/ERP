@@ -1,0 +1,64 @@
+@if (orquestador.trazabilidadDrawerAbierto()) {
+  <div
+    class="nmv2-trazabilidad-drawer-backdrop"
+    aria-hidden="true"
+    (click)="cerrar()"
+  ></div>
+  <aside
+    class="nmv2-trazabilidad-drawer"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="nmv2-trazabilidad-drawer-title"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="nmv2-trazabilidad-drawer__header">
+      <div>
+        <h2 id="nmv2-trazabilidad-drawer-title">Trazabilidad completa</h2>
+        <p>Acciones registradas en el flujo. Ctrl+clic en un paso del flujo abre su bitácora.</p>
+      </div>
+      <button type="button" class="icon-btn" (click)="cerrar()" aria-label="Cerrar trazabilidad">
+        <lucide-icon name="x" aria-hidden="true"></lucide-icon>
+      </button>
+    </header>
+
+    <div class="nmv2-trazabilidad-drawer__body">
+      @if (orquestador.eventosTrazabilidad().length === 0) {
+        <p class="nmv2-trazabilidad-drawer__empty">
+          Aún no hay acciones registradas. Aparecerán al confirmar pasos del generador.
+        </p>
+      } @else {
+        <ol class="nmv2-trazabilidad-timeline">
+          @for (evento of orquestador.eventosTrazabilidad(); track evento.idEvento) {
+            <li
+              class="nmv2-trazabilidad-timeline__item"
+              [class.nmv2-trazabilidad-timeline__item--invalid]="evento.integridad.estadoIntegridad === 'invalidado'"
+            >
+              <span class="nmv2-trazabilidad-timeline__marker">
+                <lucide-icon
+                  [name]="evento.integridad.estadoIntegridad === 'invalidado' ? 'octagon-alert' : 'circle-check'"
+                  aria-hidden="true"
+                ></lucide-icon>
+              </span>
+              <div class="nmv2-trazabilidad-timeline__content">
+                <strong>{{ tituloPaso(evento.paso) }} · {{ evento.descripcion }}</strong>
+                <span>{{ evento.usuarioNombre }} · {{ formatoFecha(evento.fechaEvento) }}</span>
+                <em>{{ etiquetaIntegridad(evento.integridad.estadoIntegridad, evento.origen) }}</em>
+                <div class="nmv2-trazabilidad-timeline__actions">
+                  <button type="button" class="text-link text-link--left" (click)="abrirDetallePaso(evento.paso, 'history')">
+                    Bitácora
+                  </button>
+                  <button type="button" class="text-link text-link--left" (click)="abrirDetallePaso(evento.paso, 'owner')">
+                    Responsable
+                  </button>
+                  <button type="button" class="text-link text-link--left" (click)="abrirDetallePaso(evento.paso, 'integrity')">
+                    Control
+                  </button>
+                </div>
+              </div>
+            </li>
+          }
+        </ol>
+      }
+    </div>
+  </aside>
+}

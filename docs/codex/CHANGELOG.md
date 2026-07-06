@@ -1,3 +1,478 @@
+# CHANGELOG
+
+## 2026-05-24 - EMP-FICHA-EXPEDIENTE-EDICION-SECCION-UX-04
+
+- **Ficha empleado:** modal de edición por bloque integrado al expediente (acciones en cabecera, sin footer gris, grilla compacta).
+- **Solo presentación** en `ficha-empleado-edit-modal` + copy `saveBlockHint`; sin cambios de guardado ni SQL.
+- **Doc:** `emp-ficha-expediente-edicion-seccion-ux-04.md`.
+
+## 2026-05-24 - EMP-FICHA-EXPEDIENTE-SECCIONES-LECTURA-UX-03
+
+- **Ficha empleado:** jerarquía lectura en bloques editoriales (título, labels secundarios, valores legibles, vacíos suaves); sin mini-cards por sección.
+- **Solo CSS local** + `isMissingValue` de presentación; sin cambios de guardado, servicios ni SQL.
+- **Doc:** `emp-ficha-expediente-secciones-lectura-ux-03.md`.
+
+## 2026-05-22 - EMP-FICHA-EXPEDIENTE-FULLWORKSPACE-UX-02
+
+- **Ficha empleado:** expediente integrado al workspace (shell sin card exterior; bloques tipo sección; header franja).
+- **Solo CSS local** en los 4 `styleUrls` del contenedor; sin cambios HTML/TS de negocio.
+- **Doc:** `emp-ficha-expediente-fullworkspace-ux-02.md`.
+
+## 2026-05-22 - EMP-FICHA-EXPEDIENTE-CSS-BUDGET-01
+
+- **Ficha empleado:** CSS local dividido en cuatro `styleUrls` (`container`, `expediente`, `detalle`, `responsive`); build sin error `anyComponentStyle` en este componente.
+- **Doc:** `emp-ficha-expediente-css-budget-01.md`.
+- **Sin cambio visual ni lógica;** sin `angular.json` ni estilos globales.
+
+## 2026-05-21 - NOMENCLATURA-ES-CAMELCASE-01
+
+- **Empleados:** normalizacion interna en espanol/camelCase para rules y contenedor de ficha; VM de estado expone faltantes, porcentajeAvance, puedeValidarRemuneraciones, etiquetaAccion y ayudaAccion.
+- **Alta avanzada:** aplicabilidad/coherencia usan EstadoAplicabilidadAlta, InconsistenciaCoherenciaAlta, campos/pasos e inconsistencias; form avanzado usa pasoWizardActivo.
+- **Nomina mensual:** capa de presentacion renombra tipos y builders Payroll* a FilaDetalle*Nomina, ItemSeguimientoNomina y construir*Nomina; CSS payroll-* se conserva como contrato visual.
+- **Flujo:** la accion principal del panel respeta la cancelacion por cambios sin guardar antes de abrir edicion en Pago.
+- **Higiene:** logs .angular-dev-server*.log salen del control de version y quedan ignorados.
+- **Validacion:** tsc app/spec y specs completos de empleados/nomina mensual OK; build bloqueado solo por budget CSS preexistente en ficha empleado.
+
+## 2026-05-21 - EMP-FICHA-EXPEDIENTE-NOIA-01
+
+- **Ficha empleado:** layout expediente 3 columnas (rail índice | bloque activo | diagnóstico); header compacto; panel con motivo principal y CTA único; sin tabs horizontales ni CTA duplicado en shell.
+- **Rules:** `ficha-empleado-presentacion.rules.ts` (dedupe faltantes, motivo principal, nav expediente).
+- **Tests:** specs contenedor + presentación (27 tests ficha-empleado*).
+
+## 2026-05-19 - NOM-MENSUAL-DETALLE-MENSUAL-UNIFICADO-01
+
+- **Workspace:** tabbar visible `Detalle mensual | Historial`; franja lateral con parámetros como requisito; movimientos y recurrentes unificados (`Origen / duración`); filtros internos y DataGrid por vista.
+- **Rules:** `proceso-mensual-detalle-mensual.rules.ts`, navegación `suggestNominaWorkspaceNavigation`, meta visible en presentación.
+- **Tests:** specs workspace + detalle-mensual (26 tests).
+
+## 2026-05-18 - ERP-SHELL-CONTEXT-ROLLOUT-02
+
+- **Shell:** `bindShellPageContext`, `shell-route-context.config`, fallback en `layout-shell`.
+- **UI:** migracion de breadcrumbs/cabeceras locales a topbar en dashboard, empleados, parametros, remuneraciones, reportes y licencias.
+- **Tests:** specs binding, route context y header fallback.
+
+## 2026-05-18 - ERP-SHELL-SIDEBAR-TOPBAR-POLISH-01
+
+- **Shell:** `shell-navigation.config`, sidebar 220 px, topbar 52 px, `ShellPageContextService` (breadcrumb, estado, período, CTA).
+- **Nómina:** cabecera de página duplicada eliminada; rail lateral quitado; tabs `resumen` … `historial`; CTA principal solo en topbar.
+- **Tests:** specs sidebar, header, shell-nav y container actualizados.
+
+## 2026-05-19 - NOM-MENSUAL-MASIVO-LAYOUT-01
+
+- **Modal trabajadores:** tab `Trabajadores` pasa a revision masiva con resumen agregado, filtros compactos, busqueda, DataGrid paginado y detalle bajo demanda.
+- **Rules:** `proceso-mensual-masivo-layout.rules.ts` proyecta filas/resumen/detalle desde resultado, expediente, base e `incidenciasPeriodo()`.
+- **Incidencias:** detalle individual solo consume incidencias con `idPersona`; las globales quedan en Resumen.
+- **Tests:** specs de rule masiva y modal cubren filtros, busqueda, detalle unico y empty editorial.
+
+## 2026-05-19 - NOM-MENSUAL-REAPERTURA-ELIMINACION-01
+
+- **Workspace:** acciones Abrir nómina y Descartar nómina generada con guardia por liquidaciones; admin forzado en sección separada.
+- **Persistencia:** RPC `reabrir_nomina_operativa`; descarte vía `anularSnapshotActivo`; consulta liquidaciones en rehidratación.
+- **Rules/tests:** `buildAccionesNominaPeriodo`, `NominaMensualCapabilitiesService`, specs rules y container.
+
+## 2026-05-19 - NOM-MODALES-PERIODO-COPY-LIMPIO-05
+
+- **Copy modal:** `limpiarCopyTecnicoNomina` centraliza diccionario, limpieza de `;` y humanización de snake_case.
+- **Rules:** delegación en modal, grids payroll, resultado preliminar, expediente, información y rail; `limpiarYUnirMensajes` sustituye `join('; ')`.
+- **Tests:** spec dedicado + ampliación DOM modal (sin tokens técnicos ni `;` en listas).
+
+## 2026-05-19 - NOM-MODALES-PERIODO-INCIDENCIAS-QA-05
+
+- **QA:** tests candado en rules y componente del modal (dedupe por código, indicadores = `porDetalleTab`, parámetros sin repetir resumen, expediente sin sección observaciones, proyección seguimiento sin arrays paralelos, orden severidad, copy sin claves técnicas).
+- **Doc:** checklist manual RRHH y matriz criterio → test en `nom-modales-periodo-revision-incidencias-qa-05.md`.
+
+## 2026-05-19 - NOM-MODALES-PERIODO-INCIDENCIAS-04
+
+- **Incidencias:** `buildIncidenciasPeriodo` unifica bloqueos, advertencias y problemas de expediente con dedupe, orden y `porAmbito` / `porDetalleTab`.
+- **Modal:** Resumen «Pendientes del periodo»; tabs de area con enlace al resumen; sin seccion duplicada en expediente.
+- **Rules/facade:** conteos de tabs y observaciones derivados del registro unico; parametros solo muestra contexto de catalogo.
+
+## 2026-05-19 - NOM-MODALES-PERIODO-REVISION-COPY-03
+
+- **Copy modal:** humanizacion de claves tecnicas visibles en revision mensual.
+- **Rules:** `humanizarDetalleRevisionTexto`, resumen coherente con bloqueos globales y accion agrupada de parametros.
+- **UI:** parametros sin accion repetida por fila; resumen con lectura operativa de movimientos/recurrentes.
+- **Tests:** specs del modal amplian cobertura de DOM sin claves tecnicas.
+
+## 2026-05-19 - NOM-MODALES-PERIODO-REVISION-IA-02
+
+- **IA modal:** expediente oficial y CTA quedan solo en `Resumen`; tabs de area muestran lead local, lista, grid o empty segun datos.
+- **Rules:** panel por tab, observaciones deduplicadas, mapper local de parametros bloqueados y umbrales lista/DataGrid.
+- **UI:** sin DataGrid para observaciones; movimientos/recurrentes vacios renderizan empty editorial sin filtros.
+- **Tests:** modal rules/component y container actualizados.
+
+## 2026-05-19 - NOM-MODALES-PERIODO-REVISION-UX-01
+
+- **UI:** modal revisión con tabs por severidad, grillas por área, CTA expediente en franja y empty states.
+- **Rules:** `buildDetalleRevisionTabsMeta`, `buildExpedienteRevisionCta`.
+- **Workspace:** «Ver revisión completa» abre tab contextual.
+- **Tests:** +4 rules, +1 componente; 44 tests modal/container/rules.
+
+## 2026-05-19 - NOM-MENSUAL-FACADE-SLIM-01
+
+- **Refactor:** lógica pura de `resultadoPreliminar`, `revisionAprobacion` y filas payroll/seguimiento movida a `rules/`; etiquetas a `utils/proceso-mensual-presentacion.labels.ts`.
+- **Eliminado:** `snapshotCompletoDetalle` y VMs `SnapshotCompleto*` del contenedor.
+- **Facade:** ~1462 líneas (desde 2295); API pública sin cambios para templates.
+- **Tests:** +7 en rules nuevos; container y expediente siguen verdes; `ng build` OK.
+
+## 2026-05-18 - NOM-MENSUAL-INTEGRIDAD-REGISTRO-01
+
+- **UI:** modal y tab Detalle nunca vacíos; expediente desde `snapshotCompleto` (loading / error / sin detalle / datos).
+- **Rules:** `proceso-mensual-expediente-periodo.rules.ts` + spec (9).
+- **Store/facade:** `asegurarSnapshotCompletoCargado`, `expedienteNominaPeriodo`, fallbacks filas trabajadores.
+- **Infra:** sin cambio SQL (auditoría código OK).
+
+## 2026-05-18 - NOM-MODALES-PERIODO-DETALLE-POLISH-01
+
+- **UI:** pulido modal revisión — footer contextual, sin disclosure técnico, CSS local, sombra suavizada.
+- **Rules:** `proceso-mensual-detalle-modal.rules.ts` (lead + footer por tab).
+- **Tests:** +4 componente, +3 rules; container spec ajustado.
+
+## 2026-05-18 - NOM-CONTAINER-SPEC-REPARO
+
+- **Tests:** eliminado `describe.skip` (43 legacy); `proceso-mensual-container.spec.helpers.ts`; ~31 tests integración container (shell, flujo, overlay, rehidratación).
+- **Docs:** [`modulos/nomina-mensual/flow/nom-mensual-container-spec-reparo-01.md`](./modulos/nomina-mensual/flow/nom-mensual-container-spec-reparo-01.md); matriz MIGRAR/ADAPTAR/RETIRAR.
+- **Build:** `*.spec.helpers.ts` excluido de `tsconfig.app.json`.
+- **Copy:** timeline estado operativo alineado a «Generar nómina» / «Confirmar nómina».
+
+## 2026-05-18 - NOM-MENSUAL-WORKSPACE-LAYOUT-POLISH-01
+
+- **UI:** pulido de layout del workspace (franja, rail editorial, focus operativo, tabs, confirmación sin card, responsive).
+- **Archivos:** `proceso-mensual-workspace.component.html`, `proceso-mensual-container.css`.
+- **Tests:** +1 humo overlay; legacy 43 skipped.
+
+## 2026-05-18 - NOM-MODALES-PERIODO-STATE-03
+
+- **Facade:** signal único `overlay: ProcesoMensualOverlay`; `cerrarOverlay()`; computeds compatibles para templates hijos.
+- **UI:** host `app-proceso-mensual-overlays` (revision, informacion, decision/acta inline); shell sin overlays dispersos.
+- **Tests:** 8 tests overlay OK; 43 tests legacy en `describe.skip` (deuda NOM-CONTAINER-SPEC-REPARO).
+
+## 2026-05-18 - NOM-MODALES-PERIODO-INFO-02
+
+- **UI:** modal informativo `app-proceso-mensual-informacion-modal` para errores/bloqueos post-generación; banner `errorEjecucion` condicionado; rail «Ver detalle» contextual.
+- **Rules:** `proceso-mensual-informacion-periodo.rules.ts` + spec (4 tests).
+- **Facade:** signal `informacionPeriodo` con sincronización y exclusión mutua respecto a confirmación y detalle operativo.
+- **Deuda:** `proceso-mensual-container.spec.ts` pendiente de alinear al DOM modular.
+
+## 2026-05-18 - NOM-MODALES-PERIODO-01
+
+- **Nómina mensual:** matriz NOIA de overlays y modales (revisión vs MessageBox vs inline vs rail).
+- **Documentación:** [`modulos/nomina-mensual/modales-periodo/modales-periodo-01.md`](./modulos/nomina-mensual/modales-periodo/modales-periodo-01.md) — inventario, contrato propuesto `ProcesoMensualOverlay`, entradas, prioridades y fase siguiente `NOM-MODALES-PERIODO-INFO-02`.
+- **Alcance:** solo Codex; sin cambios en HTML/CSS/TS productivo, servicios, SQL, motor ni estilos globales.
+
+## 2026-05-18 - NOM-MENSUAL-WORKSPACE-UI-01
+
+- **Nómina mensual:** la pantalla visible deja de presentarse como `Preparar nómina` y pasa a leerse como workspace operativo del período.
+- **Flujo UI:** `Generar nómina -> Revisar trabajadores -> Confirmar nómina -> Generar liquidaciones`.
+- **Trazabilidad:** la experiencia refuerza que la nómina mensual confirmada es la base oficial para liquidaciones.
+- **Alcance:** UI/copy/maquetación local y documentación; sin SQL/RPC/RLS, motor, servicios, persistencia, rutas, mappers, estilos globales ni liquidaciones productivas nuevas.
+
+## 2026-05-18 - NOM-MENSUAL-CONFIRMACION-FLOW-00
+
+- **Nómina mensual:** se documenta la regla rectora `Nómina mensual confirmada = fuente oficial para generar liquidaciones`.
+- **Producto/UX:** el flujo futuro se entiende como generar nómina, revisar trabajadores, confirmar nómina y generar liquidaciones desde esa versión.
+- **Liquidaciones:** se mantiene la regla de no recalcular; el lenguaje visible debe preferir `nómina mensual confirmada` sobre términos técnicos como snapshot.
+- **Alcance:** fase documental; sin Angular, HTML, CSS, SQL/RPC/RLS, motor, servicios, mappers, persistencia ni estilos globales.
+
+
+### ERP-NOIA-UI-GUARDRAILS-01 (bases sistema + Creación avanzada)
+
+Fecha: 2026-05-18
+
+- `noia-bases-sistema-referencia.md`: jerarquía documental, tokens `--form-*` / `--bitacora-*` / `payroll-*`, ejemplo canónico Creación avanzada vs Preparar nómina.
+- Enlaces desde guardrails, antipatrones, tokens, prompt, README, `creacion-avanzada.md`, `bitacora-operativa-noia.md`.
+
+### ERP-NOIA-UI-GUARDRAILS-01 (ampliación antipatrones)
+
+Fecha: 2026-05-18
+
+- `noia-antipatrones-ia.md`: colores extravagantes, mal uso de espacio, Tailwind improvisado, regla de reutilización.
+- `noia-prompt-cursor.md`: prompt largo y corto para User/Project Rules.
+- Tokens, layout, checklist y regla Cursor reforzados contra UI tipo IA/SaaS.
+
+### ERP-NOIA-UI-GUARDRAILS-01
+
+Fecha: 2026-05-18
+
+- Constitución visual NOIA: guardrails, tokens, layout, componentes y checklist de revisión en `docs/codex/diseno/`.
+- Regla Cursor `erp-ui-visual-guardrails.mdc` (alwaysApply en `src/**`).
+- Índices actualizados: `README.md`, `contexto-rapido.md`, `estado-fases.md`, `peticiones-estilos.md`, `erp-ui-noia.mdc`.
+- Sin cambios en Angular funcional, SQL, motor ni estilos globales.
+
+### NOM-PREPARAR-NOMINA-ESTADOS-VISUALES-PREMIUM-UX-01
+
+Fecha: 2026-05-18
+
+- Estados visuales por etapa del flujo; riesgo sin evaluar antes de validar.
+- Decisión del período como foco; bandeja RRHH agrupada por contexto/severidad.
+- Acta compacta sin validación; evidencia incluida en tono neutro.
+- Eliminada redundancia entre resumen, decisión, acta y bandeja.
+- Bitácora conservada; sin cambios de motor, SQL, servicios ni estilos globales.
+
+### NOM-PREPARAR-NOMINA-ACTA-DISENO-ESTRUCTURADO-UX-01
+
+Fecha: 2026-05-18
+
+- `Acta operativa del periodo` se reorganiza como pieza de cierre operativo: header con estado/accion, franja compacta de contexto, panel dividido decision/evidencia y pie de alcance.
+- El CTA principal queda visible en el header del acta y el estado `PREPARADA` muestra acciones secundarias.
+- El contenido proyectado en `app-message-box` se ordena como confirmacion operativa con secciones y proxima accion.
+- Sin cambios de logica, servicios, persistencia, rutas, motor, SQL/RPC/RLS, estilos globales ni Liquidaciones oficiales.
+
+### NOM-PREPARAR-NOMINA-ACTA-ACCION-UX-01
+
+Fecha: 2026-05-17
+
+- Preparar nomina agrega `Acta operativa del periodo` dentro del acta principal, cerca de la accion recomendada.
+- El acta usa componente local `app-acta-operativa-periodo` y regla pura `buildActaOperativaPeriodoViewModel`.
+- El acta deriva estados locales `BLOQUEADA`, `REQUIERE_REVISION`, `LISTA` y `PREPARADA`.
+- La accion abre `app-message-box` antes de marcar visualmente el acta como preparada en la sesion.
+- La evidencia muestra contexto revisado, decision operativa y respaldo para Liquidaciones oficiales sin persistir actas ni generar liquidaciones.
+- Sin cambios en servicios, rutas, motor, SQL/RPC/RLS, estilos globales, menu lateral ni liquidaciones productivas.
+
+### NOM-LIQ-ACTA-GUIADA-DESIGN-00
+
+Fecha: 2026-05-17
+
+- Fase documental: se define el contrato de acta guiada para el flujo `Preparar nomina -> Liquidaciones oficiales`.
+- Se fija la regla central: cada accion critica debe tener contexto antes y evidencia despues.
+- Se documenta la matriz de actas para validar periodo, generar base, calcular preliminar, aprobar/cerrar nomina y generar/revisar liquidaciones internas.
+- Sin cambios en Angular, servicios, rutas, motor, SQL/RPC/RLS, estilos globales ni DataGrid compartido.
+
+### NOM-PREPARAR-NOMINA-ADMIN-WORKSPACE-DESIGN-00
+
+Fecha: 2026-05-17
+
+- Fase documental: se define la maqueta final de `Preparar nómina` como mesa administrativa del período.
+- Se fija la separación de responsabilidades: pantalla principal para decidir, revisión guiada para entender, modal grande para revisar, DataGrid para listar y panel de apoyo para corregir.
+- Se documentan reglas de acta, panel de apoyo, modal grande, tabs y uso selectivo de DataGrid.
+- Sin cambios en Angular, servicios, rutas, motor, SQL/RPC/RLS, estilos globales ni DataGrid compartido.
+
+### NOM-PREPARAR-NOMINA-ADMIN-WORKSPACE-UX-01
+
+Fecha: 2026-05-17
+
+- Preparar nómina queda ordenada como mesa administrativa: encabezado, estado del período, bitácora, acta, panel de apoyo y registro compacto.
+- `Revisión guiada` abre el modal grande de revisión en tab `Guía`; el modal concentra guía, resumen operativo y tabs con DataGrid.
+- Panel de apoyo separa revisar en pantalla y corregir en otros módulos con labels administrativos.
+- Modal grande con header/body/footer ordenados; DataGrid solo en colecciones revisables.
+- Sin cambios en servicios, rutas, motor, SQL/RPC/RLS, estilos globales ni DataGrid compartido.
+
+### NOM-PREPARAR-NOMINA-DECISION-LAYOUT-UX-01
+
+Fecha: 2026-05-17
+
+- Preparar nómina: acta reorganizada como zona de decisión con cabecera, acción recomendada, CTA principal y acciones secundarias juntas.
+- Revisión resumida pasa a tres accesos compactos para bloqueos, advertencias y prioridades.
+- Panel de apoyo ordena detalles como botonera compacta, evitando enlaces sueltos y mejorando escaneo.
+- Sin cambios en servicios, rutas, motor, SQL/RPC/RLS, estilos globales ni DataGrid compartido.
+
+### NOM-PREPARAR-NOMINA-DETAIL-CTA-UX-01
+
+Fecha: 2026-05-17
+
+- Preparar nómina: resumen superior clickeable abre el detalle operativo en el tab correcto.
+- Revisión resumida y panel de apoyo abren observaciones/trabajadores/movimientos/recurrentes según intención.
+- La bitácora lateral se estira hasta el final útil de la pantalla en desktop.
+- Sin cambios en servicios, rutas, motor, SQL/RPC/RLS, estilos globales ni DataGrid compartido.
+
+### NOM-PREPARAR-NOMINA-BITACORA-V3-CLIENT-SAFE-DATAGRID-UX-01
+
+Fecha: 2026-05-17
+
+- Preparar nómina separa revisión guiada cliente-segura y detalle operativo bajo demanda.
+- El detalle operativo abre en modal ancho con tabs y usa `app-data-grid` para trabajadores, movimientos, recurrentes, observaciones y resultado preliminar.
+- Información interna queda cerrada por defecto; la pantalla principal conserva 5 etapas, acta, panel de apoyo y registro compacto.
+- Sin cambios en DataGrid compartido, servicios, rutas, motor, SQL/RPC/RLS ni estilos globales.
+
+### NOM-PREPARAR-NOMINA-BITACORA-V3-NONLINEAR-FLOW-UX-01
+
+Fecha: 2026-05-17
+
+- Preparar nómina: mesa de decisión sin revisión guiada inline; detalle en modal local.
+- Acta con resumen y «Ver revisión guiada»; panel de apoyo sin duplicar bloqueos/advertencias completos.
+- Registro del período en una línea operativa (`registroPeriodoLinea`).
+- Sin cambios de motor, servicios, SQL, rutas ni estilos globales.
+
+### NOM-PREPARAR-NOMINA-BITACORA-V3-STEPS-FOCUS-UX-01
+
+Fecha: 2026-05-17
+
+- Bitácora del período enfocada: resumen por etapa, subpasos solo en etapa activa (máx. 4), marcas ✓ ● ○.
+- Enlaces «Ver detalle completo» y «Ver en panel de apoyo»; etapas inactivas compactas.
+- View-model `bitacoraEtapas` en contenedor (presentación); sin cambio de lógica de negocio.
+
+### NOM-PREPARAR-NOMINA-BITACORA-V3-COPY-DENSITY-FIX-01
+
+Fecha: 2026-05-17
+
+- Copy visible con acentos y lenguaje RRHH en Preparar nómina (acta, panel, revisión guiada).
+- Densidad visual: shell más compacto, registro del período reforzado, revisión guiada cerrada en estado inicial.
+- Jerarquía acta sin duplicar label de acción; reglas de estado operativo con copy alineado.
+- Sin lógica, motor, servicios, SQL, rutas ni estilos globales.
+
+### NOM-PREPARAR-NOMINA-BITACORA-V3-POLISH-UX-01
+
+Fecha: 2026-05-17
+
+- Pulido visual de **Preparar nómina** (post-V3): bitácora con línea de etapas y subpasos en filas; acta operativa central; panel de apoyo compacto; franja de resumen en grilla.
+- Copy visible con acentos en shell y cabeceras de revisión guiada; sin chips decorativos ni cards extra en navegación.
+- Solo `proceso-mensual-container.html/css`; sin lógica, motor, servicios, SQL, rutas ni estilos globales.
+
+### NOM-PREPARAR-NOMINA-BITACORA-V3-UX-01
+
+Fecha: 2026-05-16
+
+- Se reorganiza visualmente **Preparar nómina** como bitácora operativa del período en un contenedor padre único.
+- Se reemplaza la navegación larga por **5 etapas principales** con subpasos progresivos solo en la etapa activa.
+- Se reduce el uso de cards y chips decorativos en la navegación; acta activa + detalle progresivo + revisión guiada plegable.
+- No se modifica lógica, motor, servicios, SQL, rutas ni estilos globales.
+
+## ERP-MSGBOX-NOIA-UX-01-FIX-02 - MessageBox decisión operativa
+
+Fecha: 2026-05-16
+
+- `app-message-box` modal alineado a NOIA v3.1: panel neutro, header editorial, secciones compactas sin bordes de color por variante, primario `#1e3a8a`.
+- Creación avanzada: borrador inválido usa `sections` (pendiente / por qué / acción) sin lista dominante de campos.
+- Doc: `docs/codex/diseno/erp-msgbox-noia-ux-01.md`.
+- Sin estilos globales, SQL, motor ni payloads.
+
+## DOCS-MOVIMIENTOS-ALIGN-01 - Alineación documental Movimientos
+
+Fecha: 2026-05-16
+
+- Se creó [`orquestador/resumen-trabajo-movimientos-remuneracion.md`](./orquestador/resumen-trabajo-movimientos-remuneracion.md) como context pack para agentes.
+- Se amplió [`modulos/remuneraciones/movimientos-de-remuneracion.md`](./modulos/remuneraciones/movimientos-de-remuneracion.md) como documento vivo del producto.
+- Se actualizaron cierres de fase en `movimientos-remuneracion-simple.md`, §1.1 de `novedades-mensuales.md`, `contexto-rapido.md`, `estado-fases.md` y se redujo duplicidad en `movimientos-variables/README.md`.
+- Sin cambios en `src/`, SQL, motor ni estilos globales.
+
+## DOCS-CODEX-MERGE-PRUNE-QUALITY-01
+
+Fecha: 2026-05-16
+
+- Se eliminaron respaldos `.bak` del repo activo (carpeta `archivo/backups/` ya ausente).
+- Se eliminaron assets antiguos pesados ya archivados (`archivo/assets-antiguos/` ya ausente).
+- Se eliminaron duplicados raíz de prevalidaciones tras confirmar fuentes modulares en `modulos/nomina-mensual/`.
+- Se migraron escenarios útiles de tests raíz a documentos modulares (`modulos/empleados/tests-empleados.md`, `modulos/parametros/tests-parametros.md`).
+- Se corrigieron referencias internas afectadas por la poda (flujos `empleados`/`parametros`, `plan-pruebas`, índices).
+- Se actualizó el mapa de documentación y la regla de lectura para Cursor.
+- Se crearon `modulos/remuneraciones/README.md` y `movimientos-de-remuneracion.md` como punto de entrada del producto.
+- No se tocó `src/`, `bd/`, Angular, SQL, motor, servicios ni estilos globales.
+
+## NOM-MOVIMIENTOS-GESTION-INTEGRAL-01 - Gestión mensual y recurrente por trabajador
+
+Fecha: 2026-05-16
+
+- `Movimientos de remuneración` queda como menú único para gestionar movimientos puntuales del período y recurrentes por trabajador.
+- La grilla por trabajador se mantiene como entrada principal: contadores de movimientos, recurrentes y revisión abren detalle contextual sin navegar fuera de la pantalla.
+- `Gestionar` abre un modal del trabajador con secciones separadas: movimientos del mes, recurrentes y pendientes de revisión.
+- `Agregar movimiento del mes` abre el modal mensual puntual. `Agregar recurrente` abre un modal recurrente separado dentro de la misma pantalla.
+- Las cuotas se muestran solo dentro del flujo recurrente como capacidad preparada, sin cambiar SQL, motor, payloads ni persistencia crítica.
+- Se eliminan navegaciones externas innecesarias hacia recurrentes desde este flujo y se usan acciones locales soportadas por los servicios actuales: crear, editar y finalizar recurrente.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin liquidaciones productivas, sin estilos globales y sin tests nuevos.
+
+## NOM-MOVIMIENTOS-MODAL-MENSUAL-UX-01 - Modal mensual compacto
+
+Fecha: 2026-05-16
+
+- Se pule el modal `Registrar movimiento del mes` dentro de `Movimientos de remuneración`.
+- El modal queda enfocado solo en movimientos puntuales del período activo: trabajador, concepto, tipo, monto, fecha de referencia y detalle administrativo opcional.
+- Se elimina la columna lateral `Antes de guardar`; el resumen queda como bloque inferior antes del footer.
+- Se mantiene fuera del modal mensual cualquier duración, recurrente o cuota. Las cuotas siguen perteneciendo al flujo recurrente.
+- Alcance local: contenedor de novedades mensuales, copy visible relacionado y documentación. Sin SQL, motor, persistencia crítica ni estilos globales.
+## NOM-MOVIMIENTOS-SIMPLE-00 - Unificacion documental de movimientos
+
+Fecha: 2026-05-15
+
+- Se crea el documento rector `docs/codex/modulos/remuneraciones/movimientos-remuneracion-simple.md`.
+- Se define que `Movimientos del mes` y `Asignaciones recurrentes` deben evolucionar a la experiencia visible `Movimientos de remuneracion`.
+- Se fijan tres duraciones visibles: `Solo este mes`, `Recurrente` y `En cuotas`.
+- Se documenta auditoria actual: `nomina_novedad_mensual`, `movimiento_variable_mensual` legacy, `haberdescuento_persona`, `concepto` y `EntradasMensualesPeriodoService`.
+- Alcance respetado: fase documental, sin Angular, SQL/RPC/RLS, rutas, motor, liquidaciones, servicios productivos, mappers, payloads ni estilos globales.
+
+## ERP-NOIA-DECISION-SYSTEM-01 - Sistema de decisiones de diseno NOIA
+
+Fecha: 2026-05-15
+
+- Se crea un sistema documental para que Cursor/Codex evalue tipo de pantalla, fuente de verdad, accion principal, riesgo y patron visual antes de modificar UI.
+- Se define la regla anti-card: no resolver pantallas con cards por defecto.
+- Se documentan patrones alternativos: franja operativa, registro de bitacora, panel dividido, linea de estado, lista de revision, bloque editorial, tabla contextual, MessageBox, disclosure y card justificada.
+- Se agregan arquetipos de pantalla y recetas de componentes.
+- No se toca Angular funcional, HTML/CSS de pantallas, SQL/RPC/RLS, Python, wrapper, motor, nomina, liquidaciones, servicios, mappers ni estilos globales protegidos.
+
+## PARAM-BITACORA-LAYOUT-ALIGN-01 - Parametros alineado a Bitacora Operativa
+
+Fecha: 2026-05-15
+
+- v2 ejecuta la lectura obligatoria NOIA/Parametros, explicita la matriz de decision y refuerza cierre normativo como protagonista visual.
+- Se ordena visualmente la pantalla Parametros para alinearla al patron `Bitacora Operativa / NOIA`.
+- La cabecera del periodo refuerza la lectura normativa: periodo, estado mensual, detalle operativo y accion recomendada.
+- Se ajusta la lectura visual de tabs principales como navegacion normativa compacta, sin cambiar su logica.
+- Se agrega contexto local de la seccion activa y se reduce el peso visual de filtros del DataGrid.
+- `Configurar cliente` queda conectado al estado del periodo y `Modificar configuracion` se mantiene asociado a configuracion cliente, no a datos oficiales.
+- No se crea flujo nuevo, no se cambia reconciliacion oficial/cliente, no se toca Python, wrapper, SQL, servicios, motor, nomina, liquidaciones ni estilos globales protegidos.
+
+## ERP-CONTEXT-OPTIMIZATION-01 - Contexto liviano para Cursor/Codex
+
+Fecha: 2026-05-15
+
+- Se crea `docs/codex/contexto-rapido.md` como resumen oficial corto para iniciar fases sin arrastrar todo el historial.
+- Se agregan reglas persistentes Cursor: `.cursor/rules/erp-ui-noia.mdc` y `.cursor/rules/erp-protected-files.mdc`.
+- Se agrega `.cursorignore` para excluir artefactos pesados, dependencias, logs, zips, entornos locales y resultados de pruebas sin ocultar `docs/codex`, `.cursor`, `src/app`, `bd` ni `scripts`.
+- Se crea `scripts/build-context-pack.ps1` para generar ZIPs pequeños de contexto por módulo o fase.
+- Se documenta la fase en `docs/codex/diseno/erp-context-optimization-01.md`.
+- Alcance respetado: sin Angular funcional, sin HTML/CSS visual de pantallas, sin estilos globales protegidos, sin SQL/RPC/RLS, sin motor, sin nómina, sin liquidaciones, sin servicios, sin mappers, sin payloads y sin dependencias nuevas.
+
+## EMP-ADV-CSS-BUDGET-REDUCE-01 - Reduccion de presupuesto CSS en Creacion avanzada
+
+Fecha: 2026-05-15
+
+- Se reduce y segmenta el CSS local de `app-form-empleado` en tres hojas encapsuladas por el mismo componente: base, wizard/resumen y feedback/diagnosticos.
+- El build productivo deja de fallar por `form-empleado.css`: antes reportaba 36.37 kB contra presupuesto de 24.00 kB; ahora no emite error de componente.
+- Se eliminaron selectores locales sin uso y duplicaciones de overrides Bitacora sin cambiar el diseno ni mover reglas a estilos globales.
+- Se mantiene el warning existente de `contrato.css` en 23.26 kB, fuera del alcance de esta fase y bajo el umbral de error.
+- Alcance respetado: sin `angular.json`, sin estilos globales protegidos, sin Tailwind/PostCSS, sin SQL/RPC/RLS, sin motor, nomina, liquidaciones, servicios, mappers, rutas, reglas ni payloads.
+
+## EMP-ALTA-MSGBOX-ERROR-UX-01 - Mensajes de error estructurados
+
+Fecha: 2026-05-14
+
+- El modal de error de guardado usa el mismo patrón visual del éxito (`modalHeadlineSplit` + paneles de detalle) para evitar mensajes planos o técnicos.
+- Se agregan bloques `Qué revisar`, `Acción recomendada` y `Paso sugerido` cuando el error permite inferirlo.
+- El caso `Sin previsión` se presenta con copy administrativo y recomienda volver a `Previsión y salud` para seleccionar AFP o IPS si el trabajador quedará habilitado para remuneraciones.
+- Se normalizan acentos en mensajes visibles conocidos (`opción`, `previsión`, `cálculo`, `nómina`, `información`).
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, nómina, liquidaciones, ficha empleado, creación básica funcional ni estilos globales.
+
+## EMP-ALTA-DIAGNOSTICO-CONTRACTUAL-UX-01 - Diagnóstico contractual en Resumen final
+
+Fecha: 2026-05-14
+
+- El bloque visible `Matriz de aplicabilidad` pasa a `Diagnóstico contractual`, manteniendo la matriz como lógica interna.
+- El resumen final muestra `Caso detectado` con edad laboral y relación contractual para que RRHH lea el contexto antes de finalizar.
+- Los estados técnicos se traducen a copy operativo (`Definido por sistema`, `Necesario`, `Revisar`) sin exponer la matriz como concepto técnico.
+- Se elimina el patrón visual `border-left` fuerte en los bloques de diagnóstico/coherencia y en la razón de condiciones detectadas; se mantienen fondos suaves y bordes completos coherentes con el ERP.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, nómina, liquidaciones, LRE/Previred, ficha empleado, creación básica ni persistencia final de honorarios.
+
+## EMP-ALTA-COHERENCIA-GLOBAL-01 - Matriz única de aplicabilidad y coherencia
+
+Fecha: 2026-05-14
+
+- Se implementa la regla pura `empleado-alta-aplicabilidad.rules.ts` para centralizar estados `required`, `optional`, `derived`, `not_applicable`, `review`, `warning` y `blocked` en Creación avanzada.
+- La matriz cubre relación laboral, `tipo_trabajador`, contrato, jornada, remuneración/honorarios, Seguro de Cesantía, asignaciones, previsión/salud, APVI, banco, condiciones especiales y resumen final.
+- El wizard consume la matriz para estados claros de `No aplica` y `Opcional`, evitando depender solo de condiciones sueltas repartidas en el componente.
+- El resumen final agrega el bloque `Matriz de aplicabilidad`, separado de `Coherencia administrativa`, para distinguir qué corresponde exigir/mostrar versus qué combinación requiere revisión RRHH.
+- Se agregan tests unitarios de aplicabilidad para contrato dependiente, honorarios, fecha término, previsión `NINGUNA` y menor de edad.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, nómina, liquidaciones, LRE/Previred, ficha empleado, creación básica, persistencia final de honorarios ni estilos globales.
+
+## EMP-ALTA-COHERENCIA-GLOBAL-00 - Auditoría de coherencia del alta avanzada
+
+Fecha: 2026-05-13
+
+- Se agrega documento de auditoría para unificar reglas de aplicabilidad, validación y coherencia administrativa del alta avanzada.
+- Se inventarian campos por relación laboral `CONTRATO` / `HONORARIOS`, distinguiendo datos requeridos, derivados, no aplicables y bajo revisión.
+- Se consolida matriz de comportamiento para `tipo_trabajador`, contrato, jornada, Seguro de Cesantía, previsión/salud, APVI, banco y condiciones especiales.
+- Se documenta qué falta, qué sobra y qué debe alimentar la futura regla pura `empleado-alta-aplicabilidad.rules.ts`.
+- Alcance respetado: fase documental, sin cambios funcionales en Angular, sin SQL/RPC/RLS, sin motor, nómina, liquidaciones, LRE, Previred, ficha empleado ni estilos globales.
+
 ## EMP-PERFIL-LABORAL-SQL-01 - Condiciones especiales del trabajador en BD
 
 Fecha: 2026-05-12
@@ -120,13 +595,13 @@ Fecha: 2026-05-10
 
 Fecha: 2026-05-11
 
-- Se pulen los mensajes de `app-message-box` en Creaci�n avanzada con tono administrativo para RRHH.
-- Se reemplaza `Continuar de todos modos` por `Continuar`, evitando que la acci�n suene riesgosa o culposa.
-- Se reemplaza `Ir al primer bloqueo` por `Ir al primer pendiente`, manteniendo el comportamiento de navegaci�n y foco.
-- Las secciones del modal quedan como `Datos obligatorios pendientes`, `Advertencias de revisi�n` e `Informaci�n �til`.
+- Se pulen los mensajes de `app-message-box` en Creación avanzada con tono administrativo para RRHH.
+- Se reemplaza `Continuar de todos modos` por `Continuar`, evitando que la acción suene riesgosa o culposa.
+- Se reemplaza `Ir al primer bloqueo` por `Ir al primer pendiente`, manteniendo el comportamiento de navegación y foco.
+- Las secciones del modal quedan como `Datos obligatorios pendientes`, `Advertencias de revisión` e `Información útil`.
 - Los listados del MsgBox usan guion visual y frases completas con punto final para mejorar lectura.
 - Se eliminan punto y coma de textos visibles del flujo.
-- Alcance respetado: sin SQL/RPC/RLS/BD, sin payloads/mappers, sin motor, sin creaci�n b�sica, sin ficha empleado ni remuneraciones.
+- Alcance respetado: sin SQL/RPC/RLS/BD, sin payloads/mappers, sin motor, sin creación básica, sin ficha empleado ni remuneraciones.
 
 ## EMP-ADV-VALIDATION-CL-02 - Validaciones chilenas accionadas por MsgBox
 
@@ -184,7 +659,171 @@ Fecha: 2026-05-12
 
 - `Condiciones especiales` en Creacion avanzada ahora separa condiciones declarables manualmente de condiciones pre-marcadas por datos ya capturados.
 - El formulario pre-marca `Trabajador adolescente protegido` cuando fecha de nacimiento + fecha de ingreso detectan menor de 18 anos.
-- El formulario pre-marca condiciones previsionales/administrativas cuando el `Tipo trabajador` seleccionado las informa explicitamente en su nombre: pensionado, pensionado por invalidez parcial/total, exento cotizacion pension, tecnico extranjero exento o discapacidad.
+- El formulario ya no usa `Tipo trabajador` para detectar pensionado/invalidez/extranjero/discapacidad; `tipo_trabajador` se mantiene como categoria base y esas situaciones quedan en Condiciones especiales.
 - Si el regimen previsional queda como `NINGUNA`, se pre-marca `Exento de cotizacion de pension` para que RRHH revise respaldo antes de finalizar.
 - La UI muestra un bloque `pre-marcado desde pasos anteriores` y un chip `Detectada` en cada condicion sugerida; RRHH puede corregir antes de finalizar.
 - No se agregan SQL/RPC/RLS, motor, nomina, liquidaciones ni reglas nuevas de persistencia.
+
+## EMP-ALTA-REGLAS-COHERENCIA-01 - Validaciones asistidas con decision RRHH
+
+Fecha: 2026-05-13
+
+- Se agrega regla pura central `empleado-alta-coherencia.rules.ts` para evaluar coherencia administrativa del alta avanzada sin mezclar reglas en HTML.
+- La regla detecta avisos para Seguro de Cesantia, jornada, regimen previsional `NINGUNA` y condiciones especiales derivadas de menor de edad.
+- `Siguiente` y `Finalizar alta` usan `app-message-box` cuando existe una combinacion corregible: RRHH puede aplicar la recomendacion o mantener la situacion bajo revision administrativa.
+- El formulario muestra avisos inline compactos por paso y un bloque de `Coherencia administrativa` en Resumen final.
+- Se agregan tests unitarios de la regla y casos de componente para aplicar/mantener una decision de coherencia.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin nomina, sin liquidaciones, sin LRE/Previred, sin creacion basica, sin ficha empleado y sin estilos globales.
+
+
+## EMP-TIPO-TRABAJADOR-FLOW-01 - Categoria base derivada
+
+Fecha: 2026-05-13
+
+- Se integra el flujo correcto de `tipo_trabajador` en Creacion avanzada: `CONTRATO` deriva `DEPENDIENTE` y `HONORARIOS` deriva `INDEPENDIENTE`.
+- El campo deja de operar como selector manual de condiciones y se muestra como dato derivado en el paso Contrato/Datos del servicio.
+- Se elimina la autodeteccion de pensionado, invalidez, tecnico extranjero y discapacidad desde texto de `tipo_trabajador`; esas situaciones se mantienen como Condiciones especiales declaradas por RRHH.
+- La autodeteccion actual queda limitada a fuentes reales del flujo: menor de 18 por fechas y regimen previsional `NINGUNA` como exencion de pension a revisar.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin nomina, sin liquidaciones, sin creacion basica, sin ficha empleado y sin estilos globales.
+
+## ERP-AUDIT-REPAIR-UX-01 - Auditoria controlada UX/UI
+
+Fecha: 2026-05-15
+
+- Se acota la reparacion a Nomina mensual / Preparar nomina por hallazgo real: confirmaciones criticas aun usaban `window.confirm`.
+- Guardar resultado preliminar, aprobar resultado preliminar y cerrar nomina ahora usan `app-message-box` modal con motivo, alcance, puntos de revision RRHH y acciones claras.
+- Las acciones de servicio se ejecutan solo despues de confirmar en el modal; cancelar no persiste cambios.
+- Se actualiza el spec del contenedor para cubrir que no guarda, aprueba ni cierra antes de la confirmacion.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin cambios de liquidaciones, sin estilos globales ni configuracion Angular/Tailwind/PostCSS.
+
+## EMP-ADV-BITACORA-LABORAL-UX-01 - Bitácora Laboral en Creación avanzada
+
+Fecha: 2026-05-15
+
+- Creación avanzada adopta el patrón visual local `Bitácora laboral`: alta del trabajador como ficha en construcción, registros agrupados, decisiones visibles y cierre como acta.
+- El mapa lateral se agrupa en `Identidad`, `Relación laboral`, `Pago y previsión` y `Revisión`; los pasos pasan a numeración de registro `01`, `02`, etc.
+- Se ajusta el lenguaje visible de estados para RRHH: `En edición`, `Listo`, `Requiere datos`, `Revisar`, `Solo si aplica` y `No requerido`.
+- El header del paso muestra el tipo de registro (`Registro de identidad`, `Registro laboral`, `Registro de pago y previsión`, `Registro de revisión`, `Acta de revisión`) y separa título/copy con jerarquía más editorial.
+- APVI no requerido/opcional se presenta como tarjeta de decisión con contexto y siguiente acción, evitando alertas genéricas vacías.
+- `Resumen final` pasa a `Acta de revisión de la ficha`; `Estado por etapa` pasa a `Registros de la bitácora`; `Coherencia administrativa` pasa a `Revisión guiada`.
+- Se agregan variables CSS locales scoped a `.advanced-create-shell` para un tono de papel técnico administrativo, sin tocar estilos globales ni cargar fuentes nuevas.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin nómina, sin liquidaciones, sin persistencia crítica, sin mappers, sin creación básica, sin ficha empleado y sin estilos globales protegidos.
+- Validaciones: `npm ci --ignore-scripts` OK; `npx tsc -p tsconfig.app.json --noEmit` OK; `npx tsc -p tsconfig.spec.json --noEmit` OK; `npm run build -- --configuration development` OK con warning preexistente de `@import` en `src/styles/tailwind.css`; `npx vitest run` de reglas empleados OK, 18 tests. `npm test -- --watch=false` quedó en timeout de sandbox durante la ejecución completa.
+
+## ERP-NOIA-BITACORA-OPERATIVA-00 - Identidad global NOIA / Bitacora Operativa
+
+Fecha: 2026-05-15
+
+- Se documenta la identidad global del ERP como `Bitacora Operativa` bajo criterio NOIA: sobria, administrativa, humana, trazable y enfocada en cerrar periodos.
+- Se crea `docs/codex/diseno/bitacora-operativa-noia.md` como guia rectora para pantallas y futuras fases UX.
+- Se define gramatica visual por modulo: Empleados, Nomina mensual, Movimientos de remuneracion, Conceptos, Parametros, Liquidaciones y Reportes.
+- Se registra la decision de evolucion futura: unificar visualmente `Movimientos del mes` y `Asignaciones recurrentes` bajo `Movimientos de remuneracion`, separando conceptos del catalogo.
+- Alcance respetado: fase documental; sin Angular, HTML, CSS, SQL/RPC/RLS, rutas, servicios, motor de nomina, estilos globales ni cambios funcionales.
+
+## ERP-SHELL-BITACORA-OPERATIVA-01 - Shell con Bitacora Operativa
+
+Fecha: 2026-05-15
+
+- Se aplica la identidad `NOIA / Bitacora Operativa` al marco comun: shell, header, sidebar, titulos, breadcrumbs, cards, badges, botones, tablas y empty states base.
+- El header comunica `Bitacora operativa` y mantiene el periodo activo como contexto de trabajo.
+- El sidebar queda agrupado por sentido operativo: Inicio, Personas, Remuneraciones y Administracion, manteniendo rutas existentes.
+- `app-data-grid` adopta paleta administrativa, filtros sobrios, seleccion sin barra lateral fuerte y empty states con causa/accion.
+- `app-search-select` y `app-message-box` se alinean al mismo tono: bordes completos, fondos suaves funcionales y sin sombras o barras decorativas fuertes.
+- Se documenta la fase en `docs/codex/diseno/erp-shell-bitacora-operativa-01.md`.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin servicios de negocio, sin mappers, sin persistencia critica, sin fuentes nuevas y sin unificar movimientos.
+
+## PARAM-NOIA-CIERRE-UX-01 - Cierre operativo de Parametros
+
+Fecha: 2026-05-15
+
+- El modulo Parametros se reorganiza como panel normativo operativo del periodo, con lectura clara de estado, faltantes, impacto y siguiente accion.
+- Se agrega `Cierre normativo del periodo`, estados por pestana y resumen de secciones listas o pendientes.
+- Se aplica criterio `NOIA / Bitacora Operativa`: bordes completos, fondos funcionales, menos azul dominante y lenguaje administrativo.
+- Se incorpora `PARAM-MENSUAL-OVERWRITE-GUARD-01` con wrapper `scripts/run-parametros-mensuales.ps1`.
+- El wrapper genera SQL mensual, no aplica por defecto, revisa datos existentes antes de aplicar y exige `-Force` si detecta registros del periodo.
+- Angular no aplica cargas mensuales full; si la carga se ejecuta desde terminal, la proteccion vive en el wrapper.
+- No se toca SQL estructural, RLS/RPC, motor, nomina, liquidaciones, estilos globales protegidos ni budgets.
+
+## PARAM-CLIENT-CONFIG-SEPARATION-AUDIT-01 - Auditoria oficial vs configuracion cliente
+
+Fecha: 2026-05-15
+
+- Se audita la separacion entre `parametros_generales` como snapshot oficial mensual y `parametros_generales_cliente` como configuracion cliente protegida.
+- Se verifica que el flujo Python mensual no escriba ni reemplace `parametros_generales_cliente`.
+- Se confirma que la UI de Parametros guarda configuracion editable en `parametros_generales_cliente` y mantiene reconciliacion frente a oficiales.
+- Se revisa el wrapper `scripts/run-parametros-mensuales.ps1` para distinguir datos oficiales existentes de configuracion cliente existente antes de aplicar SQL mensual.
+- Se documenta que `-Force` autoriza reemplazar/actualizar snapshot oficial del periodo, pero no debe interpretarse como permiso para pisar configuracion cliente.
+- No se toca SQL estructural, RLS/RPC, motor, nomina/liquidaciones, estilos globales protegidos ni budgets.
+
+## PARAM-CLIENT-CONFIG-SEPARATION-FIX-01 - Ajustes de guardia oficial/cliente
+
+Fecha: 2026-05-15
+
+- Se ajusta la guardia del wrapper para informar configuracion cliente existente sin tratarla como objetivo de reemplazo por la carga oficial.
+- Se separan en consola datos oficiales existentes, configuracion cliente existente y estado operativo del periodo.
+- `-Force` queda descrito como autorizacion operativa para actualizar el snapshot oficial, no para modificar `parametros_generales_cliente`.
+## PARAM-RECONCILIACION-MSGBOX-FIX-01 - Ajuste de decision Revisar despues
+
+Fecha: 2026-05-15
+
+- Se ajusta la reconciliacion oficial/cliente en Parametros para que `Revisar despues` quede como decision explicita y no reabra el MsgBox en bucle.
+- El MsgBox de diferencias mantiene la regla de no actualizar automaticamente `parametros_generales_cliente`.
+- `Actualizar con oficiales` sigue copiando el snapshot oficial hacia la configuracion cliente mediante el flujo existente.
+- `Mantener mi configuracion` conserva los valores cliente y registra la decision.
+- `Revisar despues` conserva los valores cliente, registra la postergacion y deja la revision disponible sin interrumpir repetidamente.
+- No se toca Python, wrapper, SQL estructural, RLS/RPC, motor, nomina, liquidaciones ni estilos globales protegidos.
+## NOM-MOVIMIENTOS-SIMPLE-01 - Primera experiencia visible de movimientos
+
+Fecha: 2026-05-15
+
+- El menu de Remuneraciones simplifica el acceso visible a `Movimientos`.
+- La pantalla mensual se presenta como `Movimientos de remuneracion` con vistas `Este mes`, `Recurrentes` y `Todos` preparado como pendiente.
+- `Asignaciones recurrentes` queda tratada como vista `Recurrentes`, sin eliminar su ruta ni logica actual.
+- Preparar nomina, Dashboard y Reportes alinean enlaces y textos hacia `Movimientos de remuneracion`.
+- `En cuotas` queda explicado como duracion para prestamos, anticipos o descuentos pactados, sin implementar calculo ni persistencia nueva.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin servicios productivos, sin mappers, sin payloads, sin persistencia critica y sin estilos globales protegidos.
+
+## NOM-MOVIMIENTOS-SIMPLE-01-FORM-POLISH - Pulido modal Registrar movimiento
+
+Fecha: 2026-05-15
+
+- El modal `Registrar movimiento` queda organizado en cuatro bloques: Movimiento, Duracion del movimiento, Detalle administrativo opcional y Resumen.
+- Se agrega selector visible de duracion: `Solo este mes`, `Recurrente` y `En cuotas`.
+- `En cuotas` muestra campos UI para cantidad de cuotas, monto por cuota, cuota inicial, periodo de inicio y periodo estimado de termino.
+- `Cantidad` administrativa queda aclarada como dato de unidad, no como cantidad de cuotas.
+- El resumen operativo explica en lenguaje RRHH que se guardara, con resumen parcial si faltan trabajador, concepto o monto.
+- Limite documentado: duracion/cuotas quedan como UI preparada y validacion local; no se agregan payloads, SQL, motor ni persistencia critica.
+
+## NOM-MOVIMIENTOS-POR-TRABAJADOR-01 - Movimientos por trabajador
+
+Fecha: 2026-05-15
+
+- `Movimientos de remuneracion` se reordena como grilla de trabajadores del periodo.
+- Cada fila muestra contadores de movimientos del mes, recurrentes y pendientes de revision.
+- Los contadores mayores a cero abren detalle filtrado; los ceros quedan neutros.
+- `Gestionar`/`Asignar` abre contexto del trabajador antes de formularios.
+- `Agregar movimiento del mes` abre el flujo mensual con trabajador precargado.
+- `Agregar recurrente` navega al flujo recurrente existente filtrado por trabajador.
+- Se corrige el modal mensual: ya no pregunta duracion ni muestra cuotas; cuotas queda como variante del recurrente.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin persistencia critica, sin servicios/mappers/payloads productivos nuevos y sin estilos globales.
+
+## ERP-NOIA-BREADCRUMB-GUARDRAIL-01 - Breadcrumb operativo obligatorio
+
+Fecha: 2026-05-18
+
+- Se integra el breadcrumb operativo al manual NOIA: guardrails, antipatrones, bases del sistema, prompt para Cursor/Codex y checklist de cierre.
+- Regla: toda pantalla ERP nueva o redisenada debe iniciar con breadcrumb arriba a la izquierda, en lenguaje de negocio, con segmentos anteriores navegables y vista actual como texto.
+- Se prohibe usar rutas tecnicas, tablas, RPC, enums, badges/cards o peso de CTA en el breadcrumb.
+- Alcance respetado: fase documental; sin Angular, HTML/CSS productivo, estilos globales, rutas, servicios, motor, SQL/RPC/RLS ni persistencia.
+
+## ERP-NOIA-DOCS-CIERRE-01 - Manual UI NOIA unificado
+
+Fecha: 2026-05-18
+
+- Se crea `docs/codex/diseno/noia-ui-manual.md` como fuente unica de decision UI NOIA.
+- Se ordena la jerarquia documental: manual NOIA, contrato agente, guardrails, tokens/formularios, bases canonicas, antipatrones, modulo/fase y checklist.
+- Se aclara el conflicto historico de "card principal": en NOIA se interpreta como superficie segun arquetipo; card solo si tiene entidad, decision o resumen autonomo.
+- Se consolidan en el manual los antiguos auxiliares NOIA de tokens, layout, componentes, recetas, arquetipos y sistema de decision; esos archivos se retiran del set activo.
+- Se actualizan README, contexto rapido, AGENTS, ui-form-guidelines, guardrails, prompt, bases, antipatrones y checklist para apuntar al manual.
+- `.gitignore` deja versionables solo los documentos activos de `docs/codex/diseno/` y mantiene ignorados los documentos historicos/de fase.
+- Alcance respetado: fase documental; sin Angular, HTML/CSS productivo, estilos globales, rutas, servicios, motor, SQL/RPC/RLS ni persistencia.

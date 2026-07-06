@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proceso mensual de remuneraciones — Prototipo visual</title>
+  <style>
+    /* ========== Reset & tokens ========== */
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      /* Alineado al shell ERP (payroll-ledger-shell) */
+      --bg: #f6f7f4;
+      --surface: #ffffff;
+      --border: #dadfd7;
+      --border-strong: #c5cdc3;
+      --text: #243b53;
+      --text-secondary: #475569;
+      --text-muted: #647084;
+      --blue: #243b53;
+      --blue-soft: #eef1f5;
+      --blue-border: #c5d0dc;
+      --green: #386641;
+      --green-soft: #f1f7ed;
+      --green-border: #b9d2b2;
+      --amber: #8a5a13;
+      --amber-soft: #fff8e7;
+      --amber-border: #dfc383;
+      --red: #9f2f2f;
+      --red-soft: #fff1ee;
+      --navy: #172033;
+      --navy-soft: #f1f5f9;
+      --radius: 12px;
+      --radius-sm: 6px;
+      --radius-ctrl: 3px;
+      --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --mono: ui-monospace, "Cascadia Code", "Segoe UI Mono", Consolas, monospace;
+      --transition: 0.18s ease;
+    }
+    html { font-size: 15px; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font-family: inherit; font-size: inherit; }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ========== App shell ========== */
+    .app-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .app-topbar__brand { font-weight: 650; font-size: 0.9rem; color: var(--text); }
+    .app-topbar__breadcrumb { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .app-topbar__right { display: flex; align-items: center; gap: 12px; font-size: 0.8rem; color: var(--text-secondary); }
+    .badge-demo {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--navy-soft);
+      color: var(--navy);
+      border: 1px solid var(--border);
+    }
+    .avatar {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--navy); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 600;
+    }
+
+    /* ========== Layout ========== */
+    .page { max-width: 1440px; margin: 0 auto; padding: 24px 28px 48px; }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+      .summary-col { order: -1; }
+    }
+
+    /* ========== Cards ========== */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .card__pad { padding: 20px 22px; }
+    .card__title { margin: 0 0 4px; font-size: 1rem; font-weight: 650; }
+    .card__subtitle { margin: 0 0 16px; font-size: 0.8125rem; color: var(--text-muted); }
+
+    /* ========== Hero ========== */
+    .hero { margin-bottom: 20px; }
+    .hero__top {
+      display: flex; flex-wrap: wrap; align-items: flex-start;
+      justify-content: space-between; gap: 16px; margin-bottom: 16px;
+    }
+    .hero__title { margin: 0 0 8px; font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+    .hero__subtitle { margin: 0; max-width: 52rem; font-size: 0.9rem; color: var(--text-secondary); }
+    .hero__meta {
+      display: flex; flex-wrap: wrap; gap: 20px 28px;
+      font-size: 0.8125rem; color: var(--text-secondary);
+      padding-top: 16px; border-top: 1px solid var(--border);
+    }
+    .hero__meta dt { font-weight: 500; color: var(--text-muted); display: inline; }
+    .hero__meta dd { display: inline; margin: 0 0 0 6px; font-weight: 600; color: var(--text); }
+    .hero__actions {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+      margin-top: 18px;
+    }
+
+    /* ========== Badges ========== */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 999px;
+      font-size: 0.75rem; font-weight: 600; white-space: nowrap;
+      border: 1px solid transparent;
+    }
+    .status-badge--neutral { background: #f3f4f6; color: #374151; border-color: var(--border); }
+    .status-badge--blue { background: var(--blue-soft); color: #1d4ed8; border-color: var(--blue-border); }
+    .status-badge--green { background: var(--green-soft); color: var(--green); border-color: var(--green-border); }
+    .status-badge--amber { background: var(--amber-soft); color: #b45309; border-color: var(--amber-border); }
+    .status-badge--navy { background: var(--navy-soft); color: var(--navy); border-color: #cbd5e1; }
+    .row-badge {
+      display: inline-block; padding: 3px 8px; border-radius: 6px;
+      font-size: 0.6875rem; font-weight: 600;
+    }
+    .row-badge--pendiente { background: #f3f4f6; color: #6b7280; }
+    .row-badge--calculado { background: var(--blue-soft); color: #1d4ed8; }
+    .row-badge--guardado { background: #f0fdf4; color: #15803d; }
+    .row-badge--aprobado { background: var(--green-soft); color: var(--green); }
+    .row-badge--emitido { background: #ede9fe; color: #5b21b6; }
+    .row-badge--cerrado { background: var(--navy-soft); color: var(--navy); }
+
+    /* ========== Buttons ========== */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px 18px; border-radius: var(--radius-sm);
+      font-weight: 600; font-size: 0.875rem;
+      border: 1px solid transparent; cursor: pointer;
+      transition: background var(--transition), border-color var(--transition), opacity var(--transition);
+    }
+    .btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+    .btn--primary { background: var(--text); color: #fff; border-radius: var(--radius-ctrl); }
+    .btn--primary:hover:not(:disabled) { background: var(--navy); }
+    .btn--secondary { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
+    .btn--secondary:hover:not(:disabled) { background: #f9fafb; }
+    .btn--lg { padding: 12px 22px; font-size: 0.9375rem; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .dropdown { position: relative; }
+    .dropdown__menu {
+      display: none; position: absolute; top: 100%; right: 0; margin-top: 6px;
+      min-width: 200px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); box-shadow: var(--shadow-md); z-index: 50;
+      padding: 6px;
+    }
+    .dropdown.is-open .dropdown__menu { display: block; }
+    .dropdown__item {
+      display: block; width: 100%; text-align: left; padding: 8px 12px;
+      border: none; background: none; border-radius: 6px; cursor: pointer;
+      font-size: 0.8125rem; color: var(--text);
+    }
+    .dropdown__item:hover { background: #f3f4f6; }
+    .dropdown__item:disabled { opacity: 0.4; cursor: not-allowed; }
+    .helper-text { font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; }
+
+    /* ========== Stepper ========== */
+    .stepper-wrap { margin-bottom: 20px; }
+    .stepper {
+      display: flex; gap: 0; overflow-x: auto; padding-bottom: 8px;
+    }
+    .stepper__step {
+      flex: 1; min-width: 120px; position: relative; padding: 0 8px 0 0;
+    }
+    .stepper__step:not(:last-child)::after {
+      content: ""; position: absolute; top: 16px; left: calc(50% + 20px); right: -8px;
+      height: 2px; background: var(--border); z-index: 0;
+    }
+    .stepper__step.is-done:not(:last-child)::after { background: var(--green); }
+    .stepper__inner { position: relative; z-index: 1; text-align: center; }
+    .stepper__circle {
+      width: 32px; height: 32px; margin: 0 auto 8px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700; border: 2px solid var(--border);
+      background: var(--surface); color: var(--text-muted);
+    }
+    .stepper__step.is-current .stepper__circle {
+      border-color: var(--blue); background: var(--blue-soft); color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+    .stepper__step.is-done .stepper__circle {
+      border-color: var(--green); background: var(--green-soft); color: var(--green);
+    }
+    .stepper__step.is-blocked .stepper__circle { border-color: #fca5a5; background: var(--red-soft); color: var(--red); }
+    .stepper__label { font-size: 0.75rem; font-weight: 600; color: var(--text); line-height: 1.2; }
+    .stepper__desc { font-size: 0.65rem; color: var(--text-muted); margin-top: 4px; line-height: 1.3; }
+    .stepper__caption { font-size: 0.75rem; color: var(--text-muted); margin-top: 12px; }
+
+    /* ========== Banner ========== */
+    .banner {
+      padding: 14px 18px; border-radius: var(--radius-sm);
+      margin-bottom: 20px; border: 1px solid;
+    }
+    .banner__title { margin: 0 0 4px; font-size: 0.9rem; font-weight: 650; }
+    .banner__text { margin: 0; font-size: 0.8125rem; line-height: 1.45; }
+    .banner--neutral { background: var(--blue-soft); border-color: var(--blue-border); color: #1e3a5f; }
+    .banner--success { background: var(--green-soft); border-color: var(--green-border); color: #065f46; }
+    .banner--info { background: #f0f9ff; border-color: #bae6fd; color: #0c4a6e; }
+    .banner--warning { background: var(--amber-soft); border-color: var(--amber-border); color: #92400e; }
+    .banner--final { background: var(--navy-soft); border-color: #94a3b8; color: var(--navy); }
+
+    /* ========== KPIs ========== */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px; margin-bottom: 20px;
+    }
+    @media (max-width: 1200px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 700px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+    .kpi {
+      padding: 16px 18px; border-radius: var(--radius);
+      background: var(--surface); border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .kpi--highlight { border-color: #cbd5e1; background: linear-gradient(180deg, #fff 0%, #f8fafc 100%); }
+    .kpi__label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted); }
+    .kpi__value { font-size: 1.25rem; font-weight: 700; margin: 6px 0 4px; font-variant-numeric: tabular-nums; text-align: right; }
+    .kpi--highlight .kpi__value { font-size: 1.35rem; color: var(--navy); }
+    .kpi__sub { font-size: 0.7rem; color: var(--text-muted); line-height: 1.35; }
+
+    /* ========== Table ========== */
+    .table-toolbar {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+      margin-bottom: 14px;
+    }
+    .table-toolbar input[type="search"] {
+      flex: 1; min-width: 200px; padding: 8px 12px;
+      border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+    }
+    .table-toolbar select {
+      padding: 8px 12px; border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm); background: var(--surface);
+    }
+    .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+    table.payroll-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+    .payroll-table thead { background: #f9fafb; position: sticky; top: 0; z-index: 2; }
+    .payroll-table th {
+      text-align: left; padding: 10px 12px; font-weight: 600;
+      font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.04em;
+      color: var(--text-muted); border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    .payroll-table th.num { text-align: right; }
+    .payroll-table td { padding: 12px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+    .payroll-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .payroll-table tbody tr:hover { background: #fafbfc; }
+    .payroll-table tbody tr.is-expanded { background: #f8fafc; }
+    .payroll-table tfoot td {
+      font-weight: 700; background: #f9fafb; border-top: 2px solid var(--border);
+    }
+    .worker-name { font-weight: 650; color: var(--text); }
+    .worker-role { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .worker-rut { font-family: var(--mono); font-size: 0.75rem; color: var(--text-secondary); }
+    .expand-btn {
+      width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--surface); cursor: pointer; font-size: 0.7rem;
+      transition: transform var(--transition);
+    }
+    .expand-btn.is-open { transform: rotate(90deg); background: var(--blue-soft); border-color: var(--blue-border); }
+    .detail-row td { padding: 0 !important; background: #f8fafc; border-bottom: 1px solid var(--border); }
+    .detail-panel { padding: 16px 20px 20px 48px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 220px; gap: 20px; }
+    @media (max-width: 800px) { .detail-grid { grid-template-columns: 1fr; } }
+    .mini-table { width: 100%; font-size: 0.75rem; border-collapse: collapse; }
+    .mini-table th, .mini-table td { padding: 6px 10px; border-bottom: 1px solid var(--border); text-align: left; }
+    .mini-table th { color: var(--text-muted); font-weight: 600; }
+    .mini-table td.num { text-align: right; }
+    .detail-summary {
+      font-size: 0.75rem; padding: 12px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+    }
+    .detail-summary dt { color: var(--text-muted); margin-top: 8px; }
+    .detail-summary dt:first-child { margin-top: 0; }
+    .detail-summary dd { margin: 2px 0 0; font-weight: 600; }
+
+    /* Skeleton */
+    .skeleton { background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; border-radius: 4px; height: 14px; }
+    .skeleton-row td { padding: 14px 12px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center; padding: 48px 24px;
+    }
+    .empty-state__icon {
+      width: 56px; height: 56px; margin: 0 auto 16px;
+      border: 2px dashed var(--border-strong); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted); font-size: 1.5rem;
+    }
+    .empty-state__title { margin: 0 0 8px; font-size: 1rem; font-weight: 650; }
+    .empty-state__text { margin: 0 0 16px; font-size: 0.875rem; color: var(--text-muted); max-width: 360px; margin-left: auto; margin-right: auto; }
+
+    /* ========== Summary panel ========== */
+    .summary-col { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 16px; }
+    .summary-list { list-style: none; margin: 0; padding: 0; font-size: 0.8125rem; }
+    .summary-list li {
+      display: flex; justify-content: space-between; gap: 12px;
+      padding: 8px 0; border-bottom: 1px solid #f3f4f6;
+    }
+    .summary-list li:last-child { border-bottom: none; }
+    .summary-list span:first-child { color: var(--text-muted); }
+    .summary-list span:last-child { font-weight: 600; text-align: right; }
+    .checklist { list-style: none; margin: 0; padding: 0; }
+    .checklist li {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 0; font-size: 0.8125rem; border-bottom: 1px solid #f3f4f6;
+    }
+    .checklist__mark {
+      width: 18px; height: 18px; flex-shrink: 0; border-radius: 50%;
+      border: 2px solid var(--border); display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem;
+    }
+    .checklist li.is-done .checklist__mark { background: var(--green-soft); border-color: var(--green); color: var(--green); }
+    .checklist li.is-current .checklist__mark { border-color: var(--blue); background: var(--blue-soft); box-shadow: 0 0 0 2px rgba(37,99,235,0.2); }
+    .checklist li.is-pending .checklist__mark { background: #f9fafb; }
+    .risk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .risk-item {
+      padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+    }
+    .risk-item strong { display: block; font-size: 1rem; margin-top: 4px; }
+
+    /* Traceability */
+    .trace-grid {
+      display: grid; grid-template-columns: 140px 1fr; gap: 8px 12px;
+      font-size: 0.8125rem;
+    }
+    .trace-grid dt { color: var(--text-muted); }
+    .trace-grid dd { margin: 0; font-weight: 500; }
+    .hash { font-family: var(--mono); font-size: 0.75rem; color: var(--text-secondary); }
+    .copy-btn {
+      margin-left: 6px; padding: 2px 6px; font-size: 0.65rem;
+      border: 1px solid var(--border); border-radius: 4px; background: var(--surface); cursor: pointer;
+    }
+
+    /* ========== Modal ========== */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45);
+      z-index: 200; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-backdrop.is-open { display: flex; }
+    .modal {
+      width: 100%; max-width: 480px; background: var(--surface);
+      border-radius: var(--radius); box-shadow: var(--shadow-md);
+      max-height: 90vh; overflow: auto;
+    }
+    .modal__header { padding: 20px 22px 0; display: flex; gap: 14px; }
+    .modal__icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+    .modal__icon--warning { background: var(--amber-soft); color: var(--amber); }
+    .modal__title { margin: 0 0 6px; font-size: 1.1rem; font-weight: 700; }
+    .modal__body { padding: 12px 22px 20px; font-size: 0.875rem; color: var(--text-secondary); }
+    .modal__summary {
+      margin: 16px 0; padding: 12px; background: #f9fafb;
+      border-radius: var(--radius-sm); border: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .modal__summary div { display: flex; justify-content: space-between; padding: 4px 0; }
+    .modal__warning {
+      margin: 12px 0 0; padding: 10px 12px; background: var(--amber-soft);
+      border: 1px solid var(--amber-border); border-radius: var(--radius-sm);
+      font-size: 0.75rem; color: #92400e;
+    }
+    .modal__footer {
+      display: flex; justify-content: flex-end; gap: 10px;
+      padding: 16px 22px; border-top: 1px solid var(--border);
+    }
+
+    /* ========== Toast ========== */
+    .toast-container {
+      position: fixed; bottom: 24px; right: 24px; z-index: 300;
+      display: flex; flex-direction: column; gap: 8px; max-width: 360px;
+    }
+    .toast {
+      padding: 12px 16px; background: var(--navy); color: #fff;
+      border-radius: var(--radius-sm); font-size: 0.8125rem; font-weight: 500;
+      box-shadow: var(--shadow-md); animation: toastIn 0.25s ease;
+    }
+    .toast--success { background: var(--green); }
+    .toast--warning { background: var(--amber); color: #422006; }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ========== Acción recomendada ========== */
+    .next-action {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 10px 14px; margin-bottom: 16px;
+      background: var(--blue-soft); border: 1px solid var(--blue-border);
+      border-radius: var(--radius-sm); font-size: 0.8125rem;
+    }
+    .next-action__k { font-size: 0.625rem; font-weight: 750; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+    .next-action__v { font-weight: 650; color: var(--text); margin-top: 2px; }
+    .next-action__hint { color: var(--text-muted); font-size: 0.75rem; max-width: 28rem; text-align: right; }
+
+    /* ========== Bitácora ========== */
+    .bitacora { margin-top: 16px; }
+    .bitacora__list { list-style: none; margin: 0; padding: 0; max-height: 200px; overflow-y: auto; }
+    .bitacora__item {
+      display: grid; grid-template-columns: auto 1fr; gap: 4px 10px;
+      padding: 8px 0; border-bottom: 1px solid #f3f4f6; font-size: 0.75rem;
+    }
+    .bitacora__item:last-child { border-bottom: none; }
+    .bitacora__time { color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .bitacora__text { color: var(--text-secondary); }
+    .bitacora__empty { font-size: 0.75rem; color: var(--text-muted); margin: 0; }
+
+    /* ========== Columnas / orden ========== */
+    .col-picker { position: relative; }
+    .col-picker__menu {
+      display: none; position: absolute; top: 100%; right: 0; margin-top: 6px;
+      min-width: 220px; padding: 10px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-md); z-index: 40;
+    }
+    .col-picker.is-open .col-picker__menu { display: block; }
+    .col-picker__menu label {
+      display: flex; align-items: center; gap: 8px; padding: 6px 4px;
+      font-size: 0.8125rem; cursor: pointer;
+    }
+    .payroll-table th[data-sort] { cursor: pointer; user-select: none; }
+    .payroll-table th[data-sort]:hover { color: var(--text); }
+    .payroll-table th .sort-ind { opacity: 0.35; margin-left: 4px; font-size: 0.6rem; }
+    .payroll-table th.is-sorted .sort-ind { opacity: 1; color: var(--text); }
+    .table-meta { font-size: 0.75rem; color: var(--text-muted); margin: -8px 0 12px; }
+    .toolbar-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-left: auto; }
+
+    .demo-reset {
+      font-size: 0.75rem; padding: 4px 8px; border-radius: var(--radius-ctrl);
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text-muted); cursor: pointer;
+    }
+    .demo-reset:hover { background: #f9fafb; color: var(--text); }
+
+    .dropdown__item-wrap { padding: 2px 0; }
+    .dropdown__hint { display: block; padding: 0 12px 6px; font-size: 0.65rem; color: var(--text-muted); }
+
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+  </style>
+</head>
+<body>
+  <!-- SECTION 1: App header -->
+  <header class="app-topbar" role="banner">
+    <div>
+      <div class="app-topbar__brand">ERP Remuneraciones</div>
+      <nav class="app-topbar__breadcrumb" aria-label="Miga de pan">Inicio / Nómina / Proceso mensual</nav>
+    </div>
+    <div class="app-topbar__right">
+      <span class="badge-demo">Demo visual</span>
+      <button type="button" class="demo-reset" id="demoResetBtn" title="Reiniciar flujo simulado">Reiniciar demo</button>
+      <span>Constructora Los Andes SpA</span>
+      <div class="avatar" aria-label="Usuario">BL</div>
+    </div>
+  </header>
+
+  <main class="page" id="appRoot">
+  </main>
+
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+    <div class="modal" id="modalPanel">
+      <div class="modal__header">
+        <div class="modal__icon modal__icon--warning" id="modalIcon" aria-hidden="true">!</div>
+        <div>
+          <h2 class="modal__title" id="modalTitle">Confirmar</h2>
+        </div>
+      </div>
+      <div class="modal__body" id="modalBody"></div>
+      <div class="modal__footer">
+        <button type="button" class="btn btn--secondary" id="modalCancel">Cancelar</button>
+        <button type="button" class="btn btn--primary" id="modalConfirm">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <script>
+    /* ========== Constants & mock data ========== */
+    const stateOrder = [
+      'periodoPendiente',
+      'periodoValidado',
+      'baseGenerada',
+      'resultadoCalculado',
+      'resultadoGuardado',
+      'nominaAprobada',
+      'liquidacionesEmitidas',
+      'procesoCerrado',
+    ];
+
+    const workerConceptsTemplate = [
+      { concepto: 'Sueldo base', tipo: 'Haber imponible', monto: 1100000, estado: 'Calculado' },
+      { concepto: 'Gratificación legal', tipo: 'Haber imponible', monto: 150000, estado: 'Calculado' },
+      { concepto: 'Colación', tipo: 'Haber no imponible', monto: 80000, estado: 'Informado' },
+      { concepto: 'Movilización', tipo: 'Haber no imponible', monto: 40000, estado: 'Informado' },
+      { concepto: 'AFP', tipo: 'Descuento legal', monto: 125000, estado: 'Calculado' },
+      { concepto: 'Salud', tipo: 'Descuento legal', monto: 87500, estado: 'Calculado' },
+      { concepto: 'Seguro cesantía', tipo: 'Descuento legal', monto: 18500, estado: 'Calculado' },
+      { concepto: 'Anticipo', tipo: 'Otro descuento', monto: 50000, estado: 'Informado' },
+    ];
+
+    const mockWorkersSeed = [
+      { id: 'w1', nombre: 'María González', rut: '12.345.678-9', area: 'Administración', habImp: 1250000, habNoImp: 120000, descLeg: 285000, descOtros: 50000 },
+      { id: 'w2', nombre: 'Pedro Rojas', rut: '15.456.789-0', area: 'Obra gruesa', habImp: 1180000, habNoImp: 100000, descLeg: 268000, descOtros: 45000 },
+      { id: 'w3', nombre: 'Camila Herrera', rut: '17.234.567-8', area: 'Oficina técnica', habImp: 1320000, habNoImp: 130000, descLeg: 298000, descOtros: 55000 },
+      { id: 'w4', nombre: 'José Martínez', rut: '10.987.654-3', area: 'Terreno', habImp: 1090000, habNoImp: 95000, descLeg: 252000, descOtros: 40000 },
+      { id: 'w5', nombre: 'Fernanda Silva', rut: '19.876.543-2', area: 'Prevención de riesgos', habImp: 1280000, habNoImp: 115000, descLeg: 290000, descOtros: 48000 },
+      { id: 'w6', nombre: 'Diego Morales', rut: '16.111.222-3', area: 'Bodega', habImp: 980000, habNoImp: 85000, descLeg: 228000, descOtros: 35000 },
+      { id: 'w7', nombre: 'Valentina Soto', rut: '18.333.444-5', area: 'Contabilidad', habImp: 1350000, habNoImp: 125000, descLeg: 305000, descOtros: 52000 },
+      { id: 'w8', nombre: 'Cristóbal Vega', rut: '14.555.666-7', area: 'Supervisión', habImp: 1420000, habNoImp: 140000, descLeg: 318000, descOtros: 58000 },
+      { id: 'w9', nombre: 'Antonia Reyes', rut: '20.123.456-7', area: 'Recursos humanos', habImp: 1210000, habNoImp: 110000, descLeg: 276000, descOtros: 46000 },
+      { id: 'w10', nombre: 'Felipe Castro', rut: '13.222.333-4', area: 'Instalaciones', habImp: 1150000, habNoImp: 105000, descLeg: 262000, descOtros: 42000 },
+      { id: 'w11', nombre: 'Natalia Muñoz', rut: '21.444.555-6', area: 'Arquitectura', habImp: 1380000, habNoImp: 128000, descLeg: 312000, descOtros: 54000 },
+      { id: 'w12', nombre: 'Sebastián Araya', rut: '11.777.888-9', area: 'Operaciones', habImp: 1120000, habNoImp: 102000, descLeg: 255000, descOtros: 41000 },
+    ];
+
+    const stepLabels = [
+      { label: 'Validar periodo', desc: 'Revisa bloqueos del periodo' },
+      { label: 'Generar base', desc: 'Carga trabajadores y entradas' },
+      { label: 'Calcular resultado', desc: 'Calcula haberes y descuentos' },
+      { label: 'Guardar resultado', desc: 'Registra snapshot y hashes' },
+      { label: 'Aprobar nómina', desc: 'Confirma resultado operativo' },
+      { label: 'Emitir liquidaciones', desc: 'Genera liquidaciones internas' },
+      { label: 'Cerrar proceso', desc: 'Bloquea cambios del periodo' },
+    ];
+
+    const initialTraceability = () => ({
+      snapshotId: 'No registrado',
+      hashResultado: 'No disponible',
+      hashSnapshot: 'No disponible',
+      guardadoPor: 'Pendiente',
+      guardadoEl: '—',
+      aprobadoPor: 'Pendiente',
+      aprobadoEl: '—',
+      liquidacionesEmitidasEl: '—',
+      cerradoPor: 'Pendiente',
+      cerradoEl: '—',
+    });
+
+    const defaultVisibleColumns = {
+      rut: true,
+      estado: true,
+      habImp: true,
+      habNoImp: true,
+      descLeg: true,
+      descOtros: true,
+      liquido: true,
+      acciones: true,
+    };
+
+  /* ========== Application state ========== */
+    const appState = {
+      currentState: 'periodoPendiente',
+      isLoading: false,
+      modalConfirming: false,
+      selectedStatusFilter: 'todos',
+      searchTerm: '',
+      expandedWorkerIds: new Set(),
+      visibleColumns: { ...defaultVisibleColumns },
+      sortColumn: 'nombre',
+      sortDirection: 'asc',
+      traceability: initialTraceability(),
+      workers: [],
+      lastUpdated: new Date(),
+      pendingModalAction: null,
+      activityLog: [],
+    };
+
+    let globalEventsBound = false;
+
+    function cloneWorkersWithStatus(statusKey) {
+      return mockWorkersSeed.map((w) => {
+        const liquido = w.habImp + w.habNoImp - w.descLeg - w.descOtros;
+        return {
+          ...w,
+          liquido,
+          status: statusKey,
+          conceptos: workerConceptsTemplate.map((c) => ({ ...c })),
+        };
+      });
+    }
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('es-CL', {
+        style: 'currency',
+        currency: 'CLP',
+        maximumFractionDigits: 0,
+      }).format(value);
+    }
+
+    function formatDateTime(date) {
+      return new Intl.DateTimeFormat('es-CL', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(date);
+    }
+
+    function getStateIndex(stateKey) {
+      return stateOrder.indexOf(stateKey);
+    }
+
+    function getCurrentStateConfig() {
+      const configs = {
+        periodoPendiente: {
+          statusLabel: 'Periodo pendiente',
+          badgeClass: 'status-badge--neutral',
+          mainLabel: 'Validar periodo',
+          banner: { tone: 'neutral', title: 'Periodo pendiente de validación', text: 'Antes de calcular la nómina, valida que el periodo esté abierto y sin bloqueos críticos.' },
+          workerStatus: null,
+        },
+        periodoValidado: {
+          statusLabel: 'Periodo validado',
+          badgeClass: 'status-badge--blue',
+          mainLabel: 'Generar base',
+          banner: { tone: 'success', title: 'Periodo validado', text: 'Ya puedes generar la base de nómina con los trabajadores activos y entradas mensuales disponibles.' },
+          workerStatus: null,
+        },
+        baseGenerada: {
+          statusLabel: 'Base generada',
+          badgeClass: 'status-badge--blue',
+          mainLabel: 'Calcular resultado',
+          banner: { tone: 'info', title: 'Base de nómina generada', text: 'La base está lista. Revisa trabajadores incluidos antes de calcular el resultado preliminar.' },
+          workerStatus: 'pendiente',
+        },
+        resultadoCalculado: {
+          statusLabel: 'Resultado preliminar',
+          badgeClass: 'status-badge--amber',
+          mainLabel: 'Guardar resultado',
+          banner: { tone: 'warning', title: 'Resultado preliminar calculado', text: 'Guarda el resultado para registrar trazabilidad, snapshot y hash antes de aprobar.' },
+          workerStatus: 'calculado',
+          needsModal: 'guardar',
+        },
+        resultadoGuardado: {
+          statusLabel: 'Resultado guardado',
+          badgeClass: 'status-badge--green',
+          mainLabel: 'Aprobar nómina',
+          banner: { tone: 'success', title: 'Resultado guardado con trazabilidad', text: 'El snapshot fue registrado correctamente. Puedes aprobar la nómina si no hay diferencias pendientes.' },
+          workerStatus: 'guardado',
+          needsModal: 'aprobar',
+        },
+        nominaAprobada: {
+          statusLabel: 'Nómina aprobada',
+          badgeClass: 'status-badge--green',
+          mainLabel: 'Emitir liquidaciones',
+          banner: { tone: 'success', title: 'Nómina aprobada operativamente', text: 'El resultado quedó aprobado. El siguiente paso es emitir las liquidaciones internas.' },
+          workerStatus: 'aprobado',
+          needsModal: 'emitir',
+        },
+        liquidacionesEmitidas: {
+          statusLabel: 'Liquidaciones emitidas',
+          badgeClass: 'status-badge--green',
+          mainLabel: 'Cerrar proceso mensual',
+          banner: { tone: 'success', title: 'Liquidaciones internas emitidas', text: 'Las liquidaciones fueron generadas. Puedes cerrar el proceso mensual cuando corresponda.' },
+          workerStatus: 'emitido',
+          needsModal: 'cerrar',
+        },
+        procesoCerrado: {
+          statusLabel: 'Proceso cerrado',
+          badgeClass: 'status-badge--navy',
+          mainLabel: 'Ver liquidaciones',
+          banner: { tone: 'final', title: 'Proceso mensual cerrado', text: 'El periodo quedó cerrado. La información queda disponible solo para consulta y auditoría.' },
+          workerStatus: 'cerrado',
+        },
+      };
+      return configs[appState.currentState];
+    }
+
+    function getStepStatusFixed(stepIndex) {
+      const stateToStep = {
+        periodoPendiente: 0,
+        periodoValidado: 1,
+        baseGenerada: 2,
+        resultadoCalculado: 3,
+        resultadoGuardado: 4,
+        nominaAprobada: 5,
+        liquidacionesEmitidas: 6,
+        procesoCerrado: 7,
+      };
+      const currentStep = stateToStep[appState.currentState] ?? 0;
+      if (appState.currentState === 'procesoCerrado') return 'done';
+      if (stepIndex < currentStep) return 'done';
+      if (stepIndex === currentStep) return 'current';
+      return 'pending';
+    }
+
+    function updateTraceabilityForState(stateKey) {
+      const now = formatDateTime(new Date());
+      if (getStateIndex(stateKey) >= getStateIndex('resultadoGuardado')) {
+        appState.traceability.snapshotId = 'SNAP-2026-04-00089';
+        appState.traceability.hashResultado = 'a8f43c9d…7b12';
+        appState.traceability.hashSnapshot = 'd91e27aa…3f04';
+        appState.traceability.guardadoPor = 'Benjamín Lucero';
+        appState.traceability.guardadoEl = now;
+      }
+      if (getStateIndex(stateKey) >= getStateIndex('nominaAprobada')) {
+        appState.traceability.aprobadoPor = 'Benjamín Lucero';
+        appState.traceability.aprobadoEl = now;
+      }
+      if (getStateIndex(stateKey) >= getStateIndex('liquidacionesEmitidas')) {
+        appState.traceability.liquidacionesEmitidasEl = now;
+      }
+      if (stateKey === 'procesoCerrado') {
+        appState.traceability.cerradoPor = 'Benjamín Lucero';
+        appState.traceability.cerradoEl = now;
+      }
+    }
+
+    function syncWorkersForState(stateKey) {
+      const cfg = {
+        periodoPendiente: null,
+        periodoValidado: null,
+        baseGenerada: 'pendiente',
+        resultadoCalculado: 'calculado',
+        resultadoGuardado: 'guardado',
+        nominaAprobada: 'aprobado',
+        liquidacionesEmitidas: 'emitido',
+        procesoCerrado: 'cerrado',
+      };
+      const key = cfg[stateKey];
+      appState.workers = key ? cloneWorkersWithStatus(key) : [];
+    }
+
+    function showToast(message, type) {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      const typeClass =
+        type === 'success' ? ' toast--success' : type === 'warning' ? ' toast--warning' : '';
+      el.className = 'toast' + typeClass;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 3800);
+    }
+
+    function addBitacoraEntry(text) {
+      appState.activityLog.unshift({
+        at: new Date(),
+        text,
+      });
+      if (appState.activityLog.length > 12) appState.activityLog.pop();
+    }
+
+    function resetTraceability() {
+      appState.traceability = initialTraceability();
+    }
+
+    function getPeriodoEstadoLabel() {
+      return appState.currentState === 'procesoCerrado' ? 'Cerrado' : 'Abierto';
+    }
+
+    function getKpiTotals() {
+      const showValues = getStateIndex(appState.currentState) >= getStateIndex('resultadoCalculado');
+      if (!showValues || !appState.workers.length) {
+        return { showValues: false, hab: 0, desc: 0, liquido: 0, count: 0, total: 12 };
+      }
+      const totals = computeTotals(appState.workers);
+      return {
+        showValues: true,
+        hab: totals.habImp + totals.habNoImp,
+        desc: totals.descLeg + totals.descOtros,
+        liquido: totals.liquido,
+        count: appState.workers.length,
+        total: 12,
+      };
+    }
+
+    function getSecondaryActionRules() {
+      const idx = getStateIndex(appState.currentState);
+      return {
+        recalcular: {
+          enabled: idx >= getStateIndex('resultadoCalculado') && idx < getStateIndex('procesoCerrado'),
+          hint: 'Disponible tras calcular el resultado preliminar.',
+        },
+        exportar: { enabled: idx >= getStateIndex('baseGenerada'), hint: 'Genera la base antes de exportar.' },
+        trazabilidad: { enabled: true, hint: '' },
+        liquidaciones: {
+          enabled: idx >= getStateIndex('liquidacionesEmitidas'),
+          hint: 'Disponible tras emitir liquidaciones.',
+        },
+      };
+    }
+
+    function sortWorkers(list) {
+      const col = appState.sortColumn;
+      const dir = appState.sortDirection === 'asc' ? 1 : -1;
+      return [...list].sort((a, b) => {
+        let va;
+        let vb;
+        if (col === 'nombre') {
+          va = a.nombre;
+          vb = b.nombre;
+          return va.localeCompare(vb, 'es') * dir;
+        }
+        if (col === 'rut') {
+          va = a.rut;
+          vb = b.rut;
+          return va.localeCompare(vb) * dir;
+        }
+        if (col === 'liquido') {
+          return (a.liquido - b.liquido) * dir;
+        }
+        va = a[col] ?? 0;
+        vb = b[col] ?? 0;
+        return (va - vb) * dir;
+      });
+    }
+
+    function getFilteredWorkers() {
+      let list = appState.workers;
+      const term = appState.searchTerm.trim().toLowerCase();
+      if (term) {
+        list = list.filter(
+          (w) =>
+            w.nombre.toLowerCase().includes(term) ||
+            w.rut.replace(/\./g, '').includes(term.replace(/\./g, '')),
+        );
+      }
+      const f = appState.selectedStatusFilter;
+      if (f !== 'todos') {
+        const map = {
+          pendiente: 'pendiente',
+          calculado: 'calculado',
+          guardado: 'guardado',
+          aprobado: 'aprobado',
+          emitido: 'emitido',
+          cerrado: 'cerrado',
+        };
+        list = list.filter((w) => w.status === map[f]);
+      }
+      return sortWorkers(list);
+    }
+
+    function hasActiveTableFilters() {
+      return appState.searchTerm.trim().length > 0 || appState.selectedStatusFilter !== 'todos';
+    }
+
+    function computeTotals(workers) {
+      return workers.reduce(
+        (acc, w) => {
+          acc.habImp += w.habImp;
+          acc.habNoImp += w.habNoImp;
+          acc.descLeg += w.descLeg;
+          acc.descOtros += w.descOtros;
+          acc.liquido += w.liquido;
+          return acc;
+        },
+        { habImp: 0, habNoImp: 0, descLeg: 0, descOtros: 0, liquido: 0 },
+      );
+    }
+
+    /* ========== Modal ========== */
+    const modalConfigs = {
+      guardar: {
+        title: 'Guardar resultado preliminar',
+        explanation: 'Se registrará un snapshot del cálculo actual para dejar trazabilidad antes de la aprobación.',
+        summary: [
+          ['Periodo', 'Abril 2026'],
+          ['Trabajadores', '12'],
+          ['Líquido a pagar', '$14.060.000'],
+          ['Hash resultado', 'a8f43c9d…7b12'],
+        ],
+        warning: 'Si modificas entradas mensuales después de guardar, deberás recalcular y guardar nuevamente.',
+        confirm: 'Guardar resultado',
+        nextState: 'resultadoGuardado',
+        toast: 'Resultado guardado con snapshot.',
+      },
+      aprobar: {
+        title: 'Aprobar nómina mensual',
+        explanation: 'Esta acción confirma operativamente el resultado guardado para el periodo seleccionado.',
+        summary: [
+          ['Periodo', 'Abril 2026'],
+          ['Snapshot', 'SNAP-2026-04-00089'],
+          ['Trabajadores', '12'],
+          ['Líquido a pagar', '$14.060.000'],
+          ['Diferencias de hash', '0'],
+        ],
+        warning: 'Después de aprobar, el resultado no debe modificarse sin una nueva validación.',
+        confirm: 'Aprobar nómina',
+        nextState: 'nominaAprobada',
+        toast: 'Nómina aprobada operativamente.',
+      },
+      emitir: {
+        title: 'Emitir liquidaciones internas',
+        explanation: 'Se generarán las liquidaciones internas asociadas al resultado aprobado.',
+        summary: [
+          ['Periodo', 'Abril 2026'],
+          ['Trabajadores', '12'],
+          ['Liquidaciones a emitir', '12'],
+          ['Estado', 'Nómina aprobada'],
+        ],
+        warning: 'Verifica que la nómina aprobada corresponde al resultado final antes de emitir.',
+        confirm: 'Emitir liquidaciones',
+        nextState: 'liquidacionesEmitidas',
+        toast: 'Liquidaciones internas emitidas.',
+      },
+      cerrar: {
+        title: 'Cerrar proceso mensual',
+        explanation: 'El periodo quedará cerrado para edición y disponible solo para consulta y auditoría.',
+        summary: [
+          ['Periodo', 'Abril 2026'],
+          ['Liquidaciones emitidas', '12'],
+          ['Bloqueos críticos', '0'],
+          ['Estado final', 'Cerrado'],
+        ],
+        warning: 'Esta acción representa el cierre operativo del mes. No debe ejecutarse si quedan revisiones pendientes.',
+        confirm: 'Cerrar proceso mensual',
+        nextState: 'procesoCerrado',
+        toast: 'Proceso mensual cerrado.',
+      },
+    };
+
+    function openConfirmationModal(actionType) {
+      const cfg = modalConfigs[actionType];
+      if (!cfg) return;
+      appState.pendingModalAction = actionType;
+      document.getElementById('modalTitle').textContent = cfg.title;
+      let html = '<p>' + cfg.explanation + '</p>';
+      html += '<div class="modal__summary">';
+      cfg.summary.forEach(([k, v]) => {
+        html += '<div><span>' + k + '</span><strong>' + v + '</strong></div>';
+      });
+      html += '</div>';
+      html += '<div class="modal__warning">' + cfg.warning + '</div>';
+      document.getElementById('modalBody').innerHTML = html;
+      const confirmBtn = document.getElementById('modalConfirm');
+      confirmBtn.textContent = cfg.confirm;
+      confirmBtn.disabled = false;
+      const backdrop = document.getElementById('modalBackdrop');
+      backdrop.classList.add('is-open');
+      backdrop.hidden = false;
+    }
+
+    function closeModal() {
+      const backdrop = document.getElementById('modalBackdrop');
+      backdrop.classList.remove('is-open');
+      backdrop.hidden = true;
+      appState.pendingModalAction = null;
+      appState.modalConfirming = false;
+      const confirmBtn = document.getElementById('modalConfirm');
+      if (confirmBtn) confirmBtn.disabled = false;
+    }
+
+    async function confirmModalAction() {
+      const action = appState.pendingModalAction;
+      const cfg = modalConfigs[action];
+      if (!cfg || appState.modalConfirming) return;
+      const confirmBtn = document.getElementById('modalConfirm');
+      appState.modalConfirming = true;
+      if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Procesando…';
+      }
+      await new Promise((r) => setTimeout(r, 450));
+      appState.modalConfirming = false;
+      closeModal();
+      advanceToState(cfg.nextState, cfg.toast);
+    }
+
+    /* ========== State transitions ========== */
+    function advanceToState(nextState, toastMessage) {
+      const prev = appState.currentState;
+      appState.currentState = nextState;
+      appState.lastUpdated = new Date();
+      syncWorkersForState(nextState);
+      updateTraceabilityForState(nextState);
+      const cfg = getCurrentStateConfig();
+      addBitacoraEntry(`${cfg.statusLabel}: acción completada.`);
+      if (toastMessage) showToast(toastMessage, 'success');
+      renderApp(true);
+      if (prev !== nextState) {
+        document.getElementById('nextActionBar')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    function resetDemo() {
+      appState.currentState = 'periodoPendiente';
+      appState.isLoading = false;
+      appState.searchTerm = '';
+      appState.selectedStatusFilter = 'todos';
+      appState.expandedWorkerIds = new Set();
+      appState.visibleColumns = { ...defaultVisibleColumns };
+      appState.sortColumn = 'nombre';
+      appState.sortDirection = 'asc';
+      resetTraceability();
+      appState.workers = [];
+      appState.activityLog = [];
+      appState.lastUpdated = new Date();
+      addBitacoraEntry('Demo reiniciada. Periodo pendiente de validación.');
+      renderApp(true);
+      showToast('Flujo reiniciado al estado inicial.');
+    }
+
+    function handleRecalcular() {
+      const rules = getSecondaryActionRules();
+      if (!rules.recalcular.enabled) return;
+      resetTraceability();
+      appState.expandedWorkerIds.clear();
+      appState.currentState = 'baseGenerada';
+      appState.lastUpdated = new Date();
+      syncWorkersForState('baseGenerada');
+      addBitacoraEntry('Recálculo solicitado: la base quedó lista para un nuevo cálculo.');
+      renderApp(true);
+      showToast('Base lista para recalcular. Debes calcular y guardar nuevamente.', 'warning');
+    }
+
+    async function handleMainAction() {
+      if (appState.isLoading) return;
+      const cfg = getCurrentStateConfig();
+      const state = appState.currentState;
+
+      if (state === 'procesoCerrado') {
+        showToast('Mostrando liquidaciones emitidas.');
+        return;
+      }
+
+      if (cfg.needsModal) {
+        openConfirmationModal(cfg.needsModal);
+        return;
+      }
+
+      const transitions = {
+        periodoPendiente: { next: 'periodoValidado', toast: 'Periodo validado correctamente.' },
+        periodoValidado: { next: 'baseGenerada', toast: 'Base de nómina generada.', loading: true, loadingLabel: 'Generando…' },
+        baseGenerada: { next: 'resultadoCalculado', toast: 'Resultado preliminar calculado.', skeleton: true, loadingLabel: 'Calculando…' },
+      };
+
+      const t = transitions[state];
+      if (!t) return;
+
+      if (t.skeleton || t.loading) {
+        appState.isLoading = true;
+        renderApp(true);
+        await new Promise((r) => setTimeout(r, t.skeleton ? 700 : 500));
+        appState.isLoading = false;
+      }
+
+      advanceToState(t.next, t.toast);
+    }
+
+    /* ========== Render functions ========== */
+    function renderNextActionBar(config) {
+      if (appState.currentState === 'procesoCerrado') {
+        return `
+          <div class="next-action" id="nextActionBar" role="status">
+            <div>
+              <div class="next-action__k">Consulta</div>
+              <div class="next-action__v">Proceso cerrado — solo lectura y auditoría</div>
+            </div>
+            <p class="next-action__hint">Usa «Ver liquidaciones» o exporta el resumen para revisión.</p>
+          </div>
+        `;
+      }
+      return `
+        <div class="next-action" id="nextActionBar" role="status">
+          <div>
+            <div class="next-action__k">Acción recomendada</div>
+            <div class="next-action__v">${config.mainLabel}</div>
+          </div>
+          <p class="next-action__hint">${config.banner.text}</p>
+        </div>
+      `;
+    }
+
+    function renderSecondaryMenuItem(actionKey, label, rules) {
+      const rule = rules[actionKey];
+      const disabled = !rule.enabled;
+      return `
+        <div class="dropdown__item-wrap">
+          <button type="button" class="dropdown__item" role="menuitem" data-action="${actionKey}" ${disabled ? 'disabled' : ''}>${label}</button>
+          ${disabled && rule.hint ? `<span class="dropdown__hint">${rule.hint}</span>` : ''}
+        </div>
+      `;
+    }
+
+    function renderHeader(config) {
+      const mainDisabled = appState.isLoading;
+      const rules = getSecondaryActionRules();
+      const loadingLabel =
+        appState.currentState === 'baseGenerada' ? 'Calculando…' : 'Generando…';
+
+      return `
+        <section class="card hero">
+          <div class="card__pad">
+            <div class="hero__top">
+              <div>
+                <h1 class="hero__title">Proceso mensual de remuneraciones</h1>
+                <p class="hero__subtitle">Gestiona el cálculo, aprobación, emisión y cierre de la nómina mensual con trazabilidad completa.</p>
+              </div>
+              <span class="status-badge ${config.badgeClass}">${config.statusLabel}</span>
+            </div>
+            <dl class="hero__meta">
+              <div><dt>Periodo:</dt><dd>Abril 2026</dd></div>
+              <div><dt>Empresa:</dt><dd>Constructora Los Andes SpA</dd></div>
+              <div><dt>Trabajadores:</dt><dd>12</dd></div>
+              <div><dt>Moneda:</dt><dd>CLP</dd></div>
+              <div><dt>Última actualización:</dt><dd id="heroLastUpdated">${formatDateTime(appState.lastUpdated)}</dd></div>
+            </dl>
+            <div class="hero__actions">
+              <button type="button" class="btn btn--primary btn--lg" id="mainActionBtn" ${mainDisabled ? 'disabled' : ''}>
+                ${appState.isLoading ? loadingLabel : config.mainLabel}
+              </button>
+              <div class="dropdown" id="moreActionsDropdown">
+                <button type="button" class="btn btn--secondary" id="moreActionsBtn" aria-haspopup="true" aria-expanded="false">Más acciones</button>
+                <div class="dropdown__menu" role="menu">
+                  ${renderSecondaryMenuItem('recalcular', 'Recalcular', rules)}
+                  ${renderSecondaryMenuItem('exportar', 'Exportar resumen', rules)}
+                  ${renderSecondaryMenuItem('trazabilidad', 'Ver trazabilidad', rules)}
+                  ${renderSecondaryMenuItem('liquidaciones', 'Ver liquidaciones', rules)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderStepper() {
+      const stepsHtml = stepLabels
+        .map((s, i) => {
+          const st = getStepStatusFixed(i);
+          const circle =
+            st === 'done'
+              ? '✓'
+              : st === 'blocked'
+                ? '!'
+                : String(i + 1);
+          return `
+            <div class="stepper__step is-${st}">
+              <div class="stepper__inner">
+                <div class="stepper__circle" aria-hidden="true">${circle}</div>
+                <div class="stepper__label">${s.label}</div>
+                <div class="stepper__desc">${s.desc}</div>
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+
+      return `
+        <section class="card stepper-wrap">
+          <div class="card__pad">
+            <div class="stepper" role="list">${stepsHtml}</div>
+            <p class="stepper__caption">El flujo avanza solo cuando la etapa anterior queda validada.</p>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderBanner(config) {
+      const b = config.banner;
+      return `
+        <div class="banner banner--${b.tone}" role="status">
+          <p class="banner__title">${b.title}</p>
+          <p class="banner__text">${b.text}</p>
+        </div>
+      `;
+    }
+
+    function renderKpis() {
+      const kpi = getKpiTotals();
+      const hab = kpi.showValues ? formatCurrency(kpi.hab) : '—';
+      const desc = kpi.showValues ? formatCurrency(kpi.desc) : '—';
+      const liq = kpi.showValues ? formatCurrency(kpi.liquido) : '—';
+      const proc = kpi.showValues ? `${kpi.count} de ${kpi.total}` : '—';
+
+      return `
+        <div class="kpi-grid" id="kpiGrid">
+          <div class="kpi">
+            <div class="kpi__label">Total haberes</div>
+            <div class="kpi__value">${hab}</div>
+            <div class="kpi__sub">Incluye haberes imponibles y no imponibles</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi__label">Total descuentos</div>
+            <div class="kpi__value">${desc}</div>
+            <div class="kpi__sub">Descuentos legales y otros descuentos</div>
+          </div>
+          <div class="kpi kpi--highlight">
+            <div class="kpi__label">Líquido a pagar</div>
+            <div class="kpi__value">${liq}</div>
+            <div class="kpi__sub">Monto estimado para pago</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi__label">Trabajadores procesados</div>
+            <div class="kpi__value">${proc}</div>
+            <div class="kpi__sub">Sin trabajadores excluidos</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi__label">Alertas</div>
+            <div class="kpi__value">0 críticas</div>
+            <div class="kpi__sub">2 observaciones informativas</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function statusBadgeClass(status) {
+      const map = {
+        pendiente: 'row-badge--pendiente',
+        calculado: 'row-badge--calculado',
+        guardado: 'row-badge--guardado',
+        aprobado: 'row-badge--aprobado',
+        emitido: 'row-badge--emitido',
+        cerrado: 'row-badge--cerrado',
+      };
+      return map[status] || 'row-badge--pendiente';
+    }
+
+    function statusLabel(status) {
+      const map = {
+        pendiente: 'Pendiente',
+        calculado: 'Calculado',
+        guardado: 'Guardado',
+        aprobado: 'Aprobado',
+        emitido: 'Emitido',
+        cerrado: 'Cerrado',
+      };
+      return map[status] || status;
+    }
+
+    function renderDetailPanel(worker) {
+      const rows = worker.conceptos
+        .map(
+          (c) =>
+            `<tr><td>${c.concepto}</td><td>${c.tipo}</td><td class="num">${formatCurrency(c.monto)}</td><td>${c.estado}</td></tr>`,
+        )
+        .join('');
+      return `
+        <div class="detail-panel">
+          <div class="detail-grid">
+            <div>
+              <strong style="font-size:0.8125rem;">Detalle de conceptos</strong>
+              <table class="mini-table" style="margin-top:8px;">
+                <thead><tr><th>Concepto</th><th>Tipo</th><th>Monto</th><th>Estado</th></tr></thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+            <dl class="detail-summary">
+              <dt>Días trabajados</dt><dd>30</dd>
+              <dt>Ausencias</dt><dd>0</dd>
+              <dt>Entradas mensuales</dt><dd>2</dd>
+              <dt>Observaciones</dt><dd>Sin bloqueos</dd>
+            </dl>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSkeletonRows() {
+      const colCount = Math.max(countVisibleCols(), 6);
+      let html = '';
+      for (let i = 0; i < 6; i++) {
+        html += `<tr class="skeleton-row"><td><div class="skeleton" style="width:24px"></div></td>`;
+        for (let j = 1; j < colCount; j++) html += `<td><div class="skeleton"></div></td>`;
+        html += '</tr>';
+      }
+      return html;
+    }
+
+    function footerLabelColspan() {
+      const c = appState.visibleColumns;
+      let n = 2;
+      if (c.rut) n += 1;
+      if (c.estado) n += 1;
+      return n;
+    }
+
+    function renderPayrollTable() {
+      const showTable = getStateIndex(appState.currentState) >= getStateIndex('baseGenerada');
+      const part = renderTableBodyAndFoot();
+      return buildTableSection(part.body, part.foot, showTable, part.meta);
+    }
+
+    function patchPayrollTable() {
+      const showTable = getStateIndex(appState.currentState) >= getStateIndex('baseGenerada');
+      const part = renderTableBodyAndFoot();
+      const tbody = document.getElementById('payrollTableBody');
+      const table = tbody?.closest('table');
+      if (!tbody || !table) return false;
+
+      tbody.innerHTML = part.body;
+      const existingFoot = table.querySelector('tfoot');
+      if (existingFoot) existingFoot.remove();
+      if (part.foot) table.insertAdjacentHTML('beforeend', part.foot);
+      const meta = document.getElementById('tableMeta');
+      if (meta) meta.textContent = part.meta || '';
+      const thead = document.getElementById('payrollTableHead');
+      if (thead) thead.innerHTML = renderTableHead();
+      return true;
+    }
+
+    function patchKpis() {
+      const kpi = getKpiTotals();
+      const grid = document.getElementById('kpiGrid');
+      if (!grid) return;
+      const values = grid.querySelectorAll('.kpi__value');
+      if (values.length < 4) return;
+      values[0].textContent = kpi.showValues ? formatCurrency(kpi.hab) : '—';
+      values[1].textContent = kpi.showValues ? formatCurrency(kpi.desc) : '—';
+      values[2].textContent = kpi.showValues ? formatCurrency(kpi.liquido) : '—';
+      values[3].textContent = kpi.showValues ? `${kpi.count} de ${kpi.total}` : '—';
+    }
+
+    function renderTableHead() {
+      const cols = appState.visibleColumns;
+      const sortMark = (key) => {
+        if (appState.sortColumn !== key) return '<span class="sort-ind">↕</span>';
+        return `<span class="sort-ind">${appState.sortDirection === 'asc' ? '↑' : '↓'}</span>`;
+      };
+      const th = (key, label, cls) =>
+        `<th scope="col" class="${cls || ''} ${appState.sortColumn === key ? 'is-sorted' : ''}" data-sort="${key}">${label}${sortMark(key)}</th>`;
+
+      return `
+        <tr>
+          <th scope="col" style="width:40px"></th>
+          ${th('nombre', 'Trabajador', '')}
+          ${cols.rut ? th('rut', 'RUT', '') : ''}
+          ${cols.estado ? '<th scope="col">Estado</th>' : ''}
+          ${cols.habImp ? th('habImp', 'Haberes imponibles', 'num') : ''}
+          ${cols.habNoImp ? th('habNoImp', 'Haberes no imponibles', 'num') : ''}
+          ${cols.descLeg ? th('descLeg', 'Descuentos legales', 'num') : ''}
+          ${cols.descOtros ? th('descOtros', 'Otros descuentos', 'num') : ''}
+          ${cols.liquido ? th('liquido', 'Líquido a pagar', 'num') : ''}
+          ${cols.acciones ? '<th scope="col">Acciones</th>' : ''}
+        </tr>
+      `;
+    }
+
+    function countVisibleCols() {
+      const c = appState.visibleColumns;
+      return 2 + (c.rut ? 1 : 0) + (c.estado ? 1 : 0) + (c.habImp ? 1 : 0) + (c.habNoImp ? 1 : 0) + (c.descLeg ? 1 : 0) + (c.descOtros ? 1 : 0) + (c.liquido ? 1 : 0) + (c.acciones ? 1 : 0);
+    }
+
+    function renderWorkerRow(w) {
+      const cols = appState.visibleColumns;
+      const expanded = appState.expandedWorkerIds.has(w.id);
+      let row = `
+        <tr class="${expanded ? 'is-expanded' : ''}" data-worker-id="${w.id}">
+          <td>
+            <button type="button" class="expand-btn ${expanded ? 'is-open' : ''}" data-expand="${w.id}" aria-expanded="${expanded}" aria-label="Expandir detalle de ${w.nombre}">▸</button>
+          </td>
+          <td>
+            <div class="worker-name">${w.nombre}</div>
+            <div class="worker-role">${w.area}</div>
+          </td>
+      `;
+      if (cols.rut) row += `<td><span class="worker-rut">${w.rut}</span></td>`;
+      if (cols.estado) row += `<td><span class="row-badge ${statusBadgeClass(w.status)}">${statusLabel(w.status)}</span></td>`;
+      if (cols.habImp) row += `<td class="num">${formatCurrency(w.habImp)}</td>`;
+      if (cols.habNoImp) row += `<td class="num">${formatCurrency(w.habNoImp)}</td>`;
+      if (cols.descLeg) row += `<td class="num">${formatCurrency(w.descLeg)}</td>`;
+      if (cols.descOtros) row += `<td class="num">${formatCurrency(w.descOtros)}</td>`;
+      if (cols.liquido) row += `<td class="num"><strong>${formatCurrency(w.liquido)}</strong></td>`;
+      if (cols.acciones) {
+        row += `<td><button type="button" class="btn btn--secondary" style="padding:6px 10px;font-size:0.75rem" data-expand="${w.id}">Ver detalle</button></td>`;
+      }
+      row += '</tr>';
+      if (expanded) {
+        row += `<tr class="detail-row" data-detail-for="${w.id}"><td colspan="${countVisibleCols()}">${renderDetailPanel(w)}</td></tr>`;
+      }
+      return row;
+    }
+
+    function renderTableBodyAndFoot() {
+      const showTable = getStateIndex(appState.currentState) >= getStateIndex('baseGenerada');
+      const filtered = getFilteredWorkers();
+      const colspan = countVisibleCols();
+
+      if (!showTable) {
+        const canGen = getStateIndex(appState.currentState) >= getStateIndex('periodoValidado');
+        return {
+          body: `
+            <tr><td colspan="${colspan}">
+              <div class="empty-state">
+                <div class="empty-state__icon" aria-hidden="true">◇</div>
+                <h3 class="empty-state__title">Aún no hay base de nómina</h3>
+                <p class="empty-state__text">Valida el periodo y genera la base para cargar trabajadores y entradas mensuales.</p>
+                <button type="button" class="btn btn--primary" id="emptyGenBase" ${canGen ? '' : 'disabled'}>Generar base</button>
+              </div>
+            </td></tr>
+          `,
+          foot: '',
+          meta: 'Sin base generada',
+        };
+      }
+      if (appState.isLoading) {
+        return { body: renderSkeletonRows(), foot: '', meta: 'Calculando…' };
+      }
+      if (filtered.length === 0 && hasActiveTableFilters()) {
+        return {
+          body: `
+            <tr><td colspan="${colspan}">
+              <div class="empty-state">
+                <div class="empty-state__icon" aria-hidden="true">?</div>
+                <h3 class="empty-state__title">No encontramos trabajadores</h3>
+                <p class="empty-state__text">Prueba con otro nombre, RUT o limpia los filtros aplicados.</p>
+                <button type="button" class="btn btn--secondary" id="clearFiltersBtn">Limpiar filtros</button>
+              </div>
+            </td></tr>
+          `,
+          foot: '',
+          meta: '0 coincidencias',
+        };
+      }
+
+      const list = filtered.length ? filtered : appState.workers;
+      const totals = computeTotals(list);
+      const cols = appState.visibleColumns;
+      let body = '';
+      list.forEach((w) => {
+        body += renderWorkerRow(w);
+      });
+
+      const labelSpan = footerLabelColspan();
+      let foot = `<tfoot><tr><td colspan="${labelSpan}"><strong>Totales (${list.length})</strong></td>`;
+      if (cols.habImp) foot += `<td class="num">${formatCurrency(totals.habImp)}</td>`;
+      if (cols.habNoImp) foot += `<td class="num">${formatCurrency(totals.habNoImp)}</td>`;
+      if (cols.descLeg) foot += `<td class="num">${formatCurrency(totals.descLeg)}</td>`;
+      if (cols.descOtros) foot += `<td class="num">${formatCurrency(totals.descOtros)}</td>`;
+      if (cols.liquido) foot += `<td class="num"><strong>${formatCurrency(totals.liquido)}</strong></td>`;
+      if (cols.acciones) foot += '<td></td>';
+      foot += '</tr></tfoot>';
+
+      return {
+        body,
+        foot,
+        meta: `Mostrando ${list.length} de ${appState.workers.length} trabajadores`,
+      };
+    }
+
+    function buildTableSection(bodyHtml, footHtml, showTable, tableMeta) {
+      const cols = appState.visibleColumns;
+      const colMenu = Object.entries({
+        rut: 'RUT',
+        estado: 'Estado',
+        habImp: 'Haberes imponibles',
+        habNoImp: 'Haberes no imponibles',
+        descLeg: 'Descuentos legales',
+        descOtros: 'Otros descuentos',
+        liquido: 'Líquido a pagar',
+        acciones: 'Acciones',
+      })
+        .map(
+          ([key, label]) =>
+            `<label><input type="checkbox" data-col="${key}" ${cols[key] ? 'checked' : ''} /> ${label}</label>`,
+        )
+        .join('');
+
+      return `
+        <section class="card" id="payrollTableCard">
+          <div class="card__pad">
+            <h2 class="card__title">Resultado de nómina</h2>
+            <p class="card__subtitle">Detalle de trabajadores incluidos en el proceso mensual.</p>
+            <p class="table-meta" id="tableMeta">${tableMeta || ''}</p>
+            <div class="table-toolbar">
+              <label class="sr-only" for="searchWorkers">Buscar trabajador</label>
+              <input type="search" id="searchWorkers" placeholder="Buscar por trabajador o RUT…" value="${appState.searchTerm.replace(/"/g, '&quot;')}" ${!showTable ? 'disabled' : ''} />
+              <label class="sr-only" for="statusFilter">Filtrar por estado</label>
+              <select id="statusFilter" ${!showTable ? 'disabled' : ''}>
+                <option value="todos" ${appState.selectedStatusFilter === 'todos' ? 'selected' : ''}>Todos</option>
+                <option value="pendiente" ${appState.selectedStatusFilter === 'pendiente' ? 'selected' : ''}>Pendiente</option>
+                <option value="calculado" ${appState.selectedStatusFilter === 'calculado' ? 'selected' : ''}>Calculado</option>
+                <option value="guardado" ${appState.selectedStatusFilter === 'guardado' ? 'selected' : ''}>Guardado</option>
+                <option value="aprobado" ${appState.selectedStatusFilter === 'aprobado' ? 'selected' : ''}>Aprobado</option>
+                <option value="emitido" ${appState.selectedStatusFilter === 'emitido' ? 'selected' : ''}>Emitido</option>
+                <option value="cerrado" ${appState.selectedStatusFilter === 'cerrado' ? 'selected' : ''}>Cerrado</option>
+              </select>
+              <div class="toolbar-actions">
+                <button type="button" class="btn btn--secondary" id="toggleExpandAll" ${!showTable ? 'disabled' : ''}>Expandir todo</button>
+                <button type="button" class="btn btn--secondary" id="exportBtn" ${!showTable ? 'disabled' : ''}>Exportar</button>
+                <div class="col-picker" id="colPicker">
+                  <button type="button" class="btn btn--secondary" id="colPickerBtn" ${!showTable ? 'disabled' : ''} aria-haspopup="true">Columnas</button>
+                  <div class="col-picker__menu" id="colPickerMenu">${colMenu}</div>
+                </div>
+              </div>
+            </div>
+            <div class="table-scroll">
+              <table class="payroll-table" aria-label="Resultado de nómina por trabajador">
+                <thead id="payrollTableHead">${renderTableHead()}</thead>
+                <tbody id="payrollTableBody">${bodyHtml}</tbody>
+                ${footHtml}
+              </table>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function getChecklistItemClass(atState) {
+      const cur = getStateIndex(appState.currentState);
+      const at = getStateIndex(atState);
+      if (appState.currentState === 'procesoCerrado') return 'is-done';
+      if (cur > at) return 'is-done';
+      if (cur === at) return 'is-current';
+      return 'is-pending';
+    }
+
+    function renderBitacora() {
+      if (!appState.activityLog.length) {
+        return '<p class="bitacora__empty">Aún no hay movimientos registrados en esta sesión.</p>';
+      }
+      return `<ul class="bitacora__list" role="list">${appState.activityLog
+        .map(
+          (e) =>
+            `<li class="bitacora__item"><time class="bitacora__time">${formatDateTime(e.at)}</time><span class="bitacora__text">${e.text}</span></li>`,
+        )
+        .join('')}</ul>`;
+    }
+
+    function renderSummaryPanel() {
+      const checklistItems = [
+        { label: 'Periodo validado', at: 'periodoValidado' },
+        { label: 'Base generada', at: 'baseGenerada' },
+        { label: 'Resultado calculado', at: 'resultadoCalculado' },
+        { label: 'Snapshot guardado', at: 'resultadoGuardado' },
+        { label: 'Hash validado', at: 'resultadoGuardado' },
+        { label: 'Nómina aprobada', at: 'nominaAprobada' },
+        { label: 'Liquidaciones emitidas', at: 'liquidacionesEmitidas' },
+        { label: 'Proceso cerrado', at: 'procesoCerrado' },
+      ];
+
+      const checklistHtml = checklistItems
+        .map((item) => {
+          const cls = getChecklistItemClass(item.at);
+          const mark = cls === 'is-done' ? '✓' : cls === 'is-current' ? '●' : '';
+          return `<li class="${cls}"><span class="checklist__mark" aria-hidden="true">${mark}</span><span>${item.label}</span></li>`;
+        })
+        .join('');
+
+      const config = getCurrentStateConfig();
+
+      return `
+        <div class="summary-col">
+          <section class="card">
+            <div class="card__pad">
+              <h2 class="card__title">Resumen del proceso</h2>
+              <ul class="summary-list">
+                <li><span>Periodo</span><span>Abril 2026</span></li>
+                <li><span>Estado del periodo</span><span>${getPeriodoEstadoLabel()}</span></li>
+                <li><span>Estado de nómina</span><span>${config.statusLabel}</span></li>
+                <li><span>Trabajadores incluidos</span><span>12</span></li>
+                <li><span>Última acción</span><span>${config.mainLabel}</span></li>
+                <li><span>Responsable actual</span><span>Benjamín Lucero</span></li>
+                <li><span>Fecha simulada</span><span>${formatDateTime(appState.lastUpdated)}</span></li>
+              </ul>
+            </div>
+          </section>
+          <section class="card">
+            <div class="card__pad">
+              <h2 class="card__title">Checklist operativo</h2>
+              <ul class="checklist">${checklistHtml}</ul>
+            </div>
+          </section>
+          <section class="card">
+            <div class="card__pad">
+              <h2 class="card__title">Control de riesgos</h2>
+              <div class="risk-grid">
+                <div class="risk-item">Bloqueos críticos<strong>0</strong></div>
+                <div class="risk-item">Observaciones<strong>2</strong></div>
+                <div class="risk-item">Sin cálculo<strong>0</strong></div>
+                <div class="risk-item">Diferencias hash<strong>0</strong></div>
+              </div>
+            </div>
+          </section>
+          <section class="card bitacora" id="bitacoraCard">
+            <div class="card__pad">
+              <h2 class="card__title">Bitácora de la sesión</h2>
+              <p class="card__subtitle">Movimientos simulados del flujo en esta demostración.</p>
+              <div id="bitacoraContent">${renderBitacora()}</div>
+            </div>
+          </section>
+          ${renderTraceability()}
+        </div>
+      `;
+    }
+
+    function renderTraceability() {
+      const t = appState.traceability;
+      return `
+        <section class="card" id="traceCard">
+          <div class="card__pad">
+            <h2 class="card__title">Trazabilidad</h2>
+            <p class="card__subtitle">Registro visual de snapshot, hashes y aprobaciones del proceso.</p>
+            <dl class="trace-grid">
+              <dt>Snapshot ID</dt><dd>${t.snapshotId}</dd>
+              <dt>Hash resultado</dt><dd><span class="hash">${t.hashResultado}</span>${t.hashResultado !== 'No disponible' ? '<button type="button" class="copy-btn" data-copy="' + t.hashResultado + '">Copiar</button>' : ''}</dd>
+              <dt>Hash snapshot</dt><dd><span class="hash">${t.hashSnapshot}</span>${t.hashSnapshot !== 'No disponible' ? '<button type="button" class="copy-btn" data-copy="' + t.hashSnapshot + '">Copiar</button>' : ''}</dd>
+              <dt>Guardado por</dt><dd>${t.guardadoPor}</dd>
+              <dt>Guardado el</dt><dd>${t.guardadoEl}</dd>
+              <dt>Aprobado por</dt><dd>${t.aprobadoPor}</dd>
+              <dt>Aprobado el</dt><dd>${t.aprobadoEl}</dd>
+              <dt>Liquidaciones emitidas el</dt><dd>${t.liquidacionesEmitidasEl}</dd>
+              <dt>Cerrado por</dt><dd>${t.cerradoPor}</dd>
+              <dt>Cerrado el</dt><dd>${t.cerradoEl}</dd>
+            </dl>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderApp(fullRender) {
+      const config = getCurrentStateConfig();
+      const root = document.getElementById('appRoot');
+
+      if (!fullRender && patchPayrollTable()) {
+        patchKpis();
+        const heroUpd = document.getElementById('heroLastUpdated');
+        if (heroUpd) heroUpd.textContent = formatDateTime(appState.lastUpdated);
+        return;
+      }
+
+      root.innerHTML = `
+        ${renderHeader(config)}
+        ${renderNextActionBar(config)}
+        ${renderStepper()}
+        ${renderBanner(config)}
+        <div class="layout">
+          <div class="main-col">
+            ${renderKpis()}
+            ${renderPayrollTable()}
+          </div>
+          ${renderSummaryPanel()}
+        </div>
+      `;
+    }
+
+    function refreshTableView() {
+      const search = document.getElementById('searchWorkers');
+      const selStart = search?.selectionStart;
+      const selEnd = search?.selectionEnd;
+      if (patchPayrollTable()) {
+        patchKpis();
+        const searchAfter = document.getElementById('searchWorkers');
+        if (searchAfter && document.activeElement === search) {
+          searchAfter.focus();
+          if (selStart != null && selEnd != null) {
+            searchAfter.setSelectionRange(selStart, selEnd);
+          }
+        }
+        return;
+      }
+      renderApp(true);
+    }
+
+    function closeAllPopovers() {
+      document.getElementById('moreActionsDropdown')?.classList.remove('is-open');
+      document.getElementById('moreActionsBtn')?.setAttribute('aria-expanded', 'false');
+      document.getElementById('colPicker')?.classList.remove('is-open');
+    }
+
+    function handleRootClick(e) {
+      const target = e.target;
+
+      if (target.id === 'mainActionBtn' || target.closest('#mainActionBtn')) {
+        handleMainAction();
+        return;
+      }
+      if (target.id === 'moreActionsBtn') {
+        const dropdown = document.getElementById('moreActionsDropdown');
+        dropdown.classList.toggle('is-open');
+        target.setAttribute('aria-expanded', dropdown.classList.contains('is-open'));
+        document.getElementById('colPicker')?.classList.remove('is-open');
+        return;
+      }
+      if (target.id === 'colPickerBtn') {
+        document.getElementById('colPicker')?.classList.toggle('is-open');
+        document.getElementById('moreActionsDropdown')?.classList.remove('is-open');
+        return;
+      }
+      if (target.id === 'exportBtn') {
+        showToast('Exportación simulada. En producción se generaría un archivo.');
+        return;
+      }
+      if (target.id === 'clearFiltersBtn') {
+        appState.searchTerm = '';
+        appState.selectedStatusFilter = 'todos';
+        renderApp(true);
+        return;
+      }
+      if (target.id === 'emptyGenBase') {
+        if (getStateIndex(appState.currentState) >= getStateIndex('periodoValidado')) {
+          advanceToState('baseGenerada', 'Base de nómina generada.');
+        }
+        return;
+      }
+      if (target.id === 'toggleExpandAll') {
+        const allExpanded = appState.workers.length && appState.expandedWorkerIds.size === appState.workers.length;
+        if (allExpanded) appState.expandedWorkerIds.clear();
+        else appState.workers.forEach((w) => appState.expandedWorkerIds.add(w.id));
+        refreshTableView();
+        const btn = document.getElementById('toggleExpandAll');
+        if (btn) btn.textContent = allExpanded ? 'Expandir todo' : 'Contraer todo';
+        return;
+      }
+
+      const expandBtn = target.closest('[data-expand]');
+      if (expandBtn) {
+        const id = expandBtn.getAttribute('data-expand');
+        if (appState.expandedWorkerIds.has(id)) appState.expandedWorkerIds.delete(id);
+        else appState.expandedWorkerIds.add(id);
+        refreshTableView();
+        return;
+      }
+
+      const copyBtn = target.closest('[data-copy]');
+      if (copyBtn) {
+        showToast('Hash copiado al portapapeles.');
+        return;
+      }
+
+      const sortTh = target.closest('th[data-sort]');
+      if (sortTh) {
+        const col = sortTh.getAttribute('data-sort');
+        if (appState.sortColumn === col) {
+          appState.sortDirection = appState.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+          appState.sortColumn = col;
+          appState.sortDirection = 'asc';
+        }
+        refreshTableView();
+        return;
+      }
+
+      const menuItem = target.closest('.dropdown__item[data-action]');
+      if (menuItem && !menuItem.disabled) {
+        const action = menuItem.getAttribute('data-action');
+        closeAllPopovers();
+        if (action === 'recalcular') handleRecalcular();
+        if (action === 'exportar') showToast('Exportación simulada.');
+        if (action === 'trazabilidad') {
+          document.getElementById('traceCard')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        if (action === 'liquidaciones') showToast('Mostrando liquidaciones emitidas.');
+        return;
+      }
+
+      if (!target.closest('#moreActionsDropdown')) {
+        document.getElementById('moreActionsDropdown')?.classList.remove('is-open');
+        document.getElementById('moreActionsBtn')?.setAttribute('aria-expanded', 'false');
+      }
+      if (!target.closest('#colPicker')) {
+        document.getElementById('colPicker')?.classList.remove('is-open');
+      }
+    }
+
+    function handleRootInput(e) {
+      if (e.target.id === 'searchWorkers') {
+        appState.searchTerm = e.target.value;
+        refreshTableView();
+      }
+    }
+
+    function handleRootChange(e) {
+      if (e.target.id === 'statusFilter') {
+        appState.selectedStatusFilter = e.target.value;
+        refreshTableView();
+      }
+      if (e.target.matches('[data-col]')) {
+        const key = e.target.getAttribute('data-col');
+        const checked = e.target.checked;
+        const visibleCount = Object.values(appState.visibleColumns).filter(Boolean).length;
+        if (!checked && visibleCount <= 2) {
+          e.target.checked = true;
+          showToast('Debe quedar al menos una columna visible.', 'warning');
+          return;
+        }
+        appState.visibleColumns[key] = checked;
+        renderApp(true);
+      }
+    }
+
+    function bindGlobalEvents() {
+      if (globalEventsBound) return;
+      globalEventsBound = true;
+
+      document.getElementById('demoResetBtn')?.addEventListener('click', resetDemo);
+
+      const root = document.getElementById('appRoot');
+      root.addEventListener('click', handleRootClick);
+      root.addEventListener('input', handleRootInput);
+      root.addEventListener('change', handleRootChange);
+
+      document.getElementById('modalBackdrop')?.addEventListener('click', (ev) => {
+        if (ev.target.id === 'modalBackdrop') closeModal();
+      });
+      document.getElementById('modalCancel')?.addEventListener('click', closeModal);
+      document.getElementById('modalConfirm')?.addEventListener('click', confirmModalAction);
+
+      document.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape') closeModal();
+      });
+    }
+
+    /* ========== Init ========== */
+    syncWorkersForState(appState.currentState);
+    addBitacoraEntry('Sesión de demostración iniciada.');
+    bindGlobalEvents();
+    renderApp(true);
+  </script>
+</body>
+</html>

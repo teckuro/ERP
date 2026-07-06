@@ -1,0 +1,87 @@
+@let f = facade;
+@let componente = componenteEdicion();
+@let visibles = bloquesVisibles();
+
+<div class="ficha-edit-form">
+@if (componente === 'datos') {
+  <app-empleado-datos-personales
+    [formGroup]="f.form.controls.datosPersonales"
+    [contactoFormGroup]="f.form.controls.contacto"
+    [sexos]="f.catalogos().sexos"
+    [estadosCivil]="f.catalogos().estadosCivil"
+    [paises]="f.catalogos().paises"
+    [bloquesVisibles]="visibles"
+    [grillaAvanzada]="true"
+    [disposicionInlineFicha]="true"
+  ></app-empleado-datos-personales>
+} @else if (componente === 'contacto') {
+  <app-empleado-contacto
+    [formGroup]="f.form.controls.contacto"
+    [comunas]="f.catalogos().comunas"
+    [bloquesVisibles]="visibles"
+    [domicilioAvanzado]="true"
+    [grillaAvanzada]="true"
+    [disposicionInlineFicha]="true"
+  ></app-empleado-contacto>
+} @else if (componente === 'contrato') {
+  <app-empleado-contrato
+    [formGroup]="f.form.controls.contrato"
+    [centrosCosto]="f.catalogos().centrosCosto"
+    [sucursales]="f.catalogos().sucursales"
+    [departamentos]="f.catalogos().departamentos"
+    [tiposTrabajador]="f.catalogos().tiposTrabajador"
+    [tiposJornada]="f.catalogos().tiposJornada"
+    [tiposContrato]="f.catalogos().tiposContrato"
+    [tiposGratificacion]="f.catalogos().tiposGratificacion"
+    [monedas]="f.catalogos().monedas"
+    [tramosCarga]="f.catalogos().tramosCarga"
+    [bloquesVisibles]="visibles"
+    [grillaAvanzada]="true"
+    [disposicionInlineFicha]="true"
+  ></app-empleado-contrato>
+} @else if (componente === 'prevision') {
+  <app-empleado-prevision-salud
+    [formGroup]="f.form.controls.previsionSalud"
+    [tiposRegimenPrevisional]="f.catalogos().tiposRegimenPrevisional"
+    [regimenesPrevisionales]="f.catalogos().regimenesPrevisionales"
+    [entidadesPrevisionalesIps]="f.catalogos().entidadesPrevisionalesIps"
+    [exCajasPrevisionales]="f.catalogos().exCajasPrevisionales"
+    [regimenesExCaja]="f.catalogos().regimenesExCaja"
+    [afps]="f.catalogos().afps"
+    [entidadesSalud]="f.catalogos().entidadesSalud"
+    [monedas]="f.catalogos().monedas"
+    [institucionesApv]="f.catalogos().institucionesApv"
+    [formasPagoApv]="f.catalogos().formasPagoApv"
+    [bloquesVisibles]="visibles"
+    [grillaAvanzada]="true"
+    [disposicionInlineFicha]="true"
+  ></app-empleado-prevision-salud>
+} @else if (componente === 'bancario') {
+  <app-empleado-bancario
+    [formGroup]="f.form.controls.bancario"
+    [bancos]="f.catalogos().bancos"
+    [tiposCuentaBancaria]="f.catalogos().tiposCuentaBancaria"
+    [bloquesVisibles]="visibles"
+    [grillaAvanzada]="true"
+    [disposicionInlineFicha]="true"
+  ></app-empleado-bancario>
+} @else if (componente === 'perfil-laboral') {
+  @if (f.perfilLaboralError(); as perfilError) {
+    <p class="ficha-edit-form__perfil-hint ficha-edit-form__perfil-hint--warning">
+      {{ perfilError }}
+    </p>
+  }
+
+  <app-empleado-perfil-laboral
+    [formGroup]="f.form.controls.perfilLaboral"
+    [fechaNacimiento]="f.form.controls.datosPersonales.controls.fechaNacimiento.value"
+    [fechaIngreso]="f.form.controls.contrato.controls.fechaIngreso.value"
+    [relacionLaboral]="f.form.controls.contrato.controls.relacionLaboral.value"
+    [tipoTrabajadorLabel]="f.perfilLaboralTipoTrabajadorLabel()"
+    [autoDetectedConditions]="f.deteccionesAutomaticasPerfilLaboral()"
+    [edadDetectadaLabel]="f.perfilLaboralEdadDetectadaLabel()"
+    [edadDetectadaDescripcion]="f.perfilLaboralEdadDetectadaDescripcion()"
+    [disposicionInlineFicha]="true"
+  ></app-empleado-perfil-laboral>
+}
+</div>

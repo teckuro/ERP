@@ -24,22 +24,28 @@ function pushMotivoUnico(list: string[], msg: string): void {
   }
 }
 
-/** Acciones permitidas y motivos de bloqueo para blindaje de botonera y detalle (Fase 9.2B). Ver decisiones operativas del módulo Conceptos §2–§7. */
+/** Acciones permitidas y motivos de bloqueo para blindaje de botonera y detalle (Fase 9.2B / CONC-02). */
 export function evaluarConceptoAccionesPermitidas(
   row: ConceptoAccionesInput,
   ref: Date,
-  puedeEditarModoAdmin: boolean,
+  opciones: { puedeEditarModoAdmin: boolean; esAdministrador: boolean },
 ): ConceptoAccionesPermitidas {
   const motivosBloqueo: string[] = [];
   const protegido = row.esSistema || row.calculoAutomatico;
 
   const puedeRevisar = true;
   const puedeAsignar = esConceptoAsignable(row as ConceptoAsignableInput, ref);
-  /** Fase 9.2B: sin alta desde catálogo hasta alinear roles y formulario (decisiones operativas §4). */
-  const puedeCrear = false;
+  const puedeCrear = opciones.esAdministrador;
 
-  const puedeEditar = !protegido || puedeEditarModoAdmin;
-  if (!puedeEditar) {
+  const puedeEditarBase = !protegido || opciones.puedeEditarModoAdmin;
+  const puedeEditar =
+    puedeEditarBase && (row.tipo !== 'APORTE_EMPLEADOR' || opciones.esAdministrador);
+  if (!puedeEditar && row.tipo === 'APORTE_EMPLEADOR' && !opciones.esAdministrador) {
+    pushMotivoUnico(
+      motivosBloqueo,
+      'Los aportes empleador solo pueden editarse con perfil administrador de remuneraciones.',
+    );
+  } else if (!puedeEditar) {
     pushMotivoUnico(
       motivosBloqueo,
       'Edición bloqueada: concepto de sistema o marcado como automático en liquidación, sin perfil administrador.',

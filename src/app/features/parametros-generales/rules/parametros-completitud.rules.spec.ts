@@ -7,14 +7,32 @@ import type {
 import { describe, expect, it } from 'vitest';
 
 import {
+  compararOficialCliente,
   crearClienteConfigDesdeOficiales,
+  debeMostrarAvisoDiferenciasParametrosOficialesMes,
   evaluarCompletitudParametrosMensual,
+  hayReconciliacionOficialClientePendiente,
+  huellaDiferenciasOficialesCliente,
   resolverEstadoVisualParametros,
+  resolverOficialParaComparacionCliente,
   resolverOpcionesBaseConfigCliente,
 } from './parametros-completitud.rules';
 
 describe('parametros-completitud.rules', () => {
   const periodo = '2026-05';
+
+  it('marca pendiente oficial sanna si el snapshot parametros_generales viene null', () => {
+    const resultado = evaluarCompletitudParametrosMensual({
+      periodo,
+      periodoRemuneracion: periodoInfo('cargado'),
+      oficial: parametroOficial({ sanna: null }),
+      clienteConfig: clienteConfig(),
+      catalogos: catalogosCompletos(),
+    });
+
+    expect(resultado.grupos.oficialesMensuales.completo).toBe(false);
+    expect(resultado.pendientes.some((p) => p.includes('sanna'))).toBe(true);
+  });
 
   it('marca cerrado solo cuando oficiales, configuracion, vigencias y consistencia estan completos', () => {
     const resultado = evaluarCompletitudParametrosMensual({
@@ -70,6 +88,20 @@ describe('parametros-completitud.rules', () => {
     expect(resultado.estadoCalculado).toBe('pendiente');
     expect(resultado.grupos.oficialesMensuales.completo).toBe(false);
     expect(resultado.pendientes).toContain('Faltan datos oficiales mensuales del periodo.');
+  });
+
+  it('mes sin datos oficiales no evalua consistencia (no 1/1 artificial)', () => {
+    const resultado = evaluarCompletitudParametrosMensual({
+      periodo,
+      periodoRemuneracion: periodoInfo('pendiente'),
+      oficial: null,
+      clienteConfig: null,
+      catalogos: catalogosCompletos(),
+    });
+
+    expect(resultado.grupos.consistencia.total).toBe(0);
+    expect(resultado.grupos.consistencia.completos).toBe(0);
+    expect(resultado.grupos.consistencia.porcentaje).toBe(0);
   });
 
   it('no marca cargado ni 100% cuando la UI muestra referencia anterior pero los oficiales actuales faltan', () => {
@@ -140,6 +172,19 @@ describe('parametros-completitud.rules', () => {
     expect(resultado.pendientes).toContain('Falta vigencia aplicable de trabajo pesado.');
   });
 
+  it('marca valores oficiales en cero como pendientes (p. ej. UF del mes)', () => {
+    const resultado = evaluarCompletitudParametrosMensual({
+      periodo,
+      periodoRemuneracion: periodoInfo('parcial'),
+      oficial: parametroOficial({ uf: 0 }),
+      clienteConfig: clienteConfig(),
+      catalogos: catalogosCompletos(),
+    });
+
+    expect(resultado.pendientes).toContain('Dato oficial en cero: uf.');
+    expect(resultado.grupos.oficialesMensuales.completo).toBe(false);
+  });
+
   it('detecta diferencias oficial cliente y no marca cerrado', () => {
     const resultado = evaluarCompletitudParametrosMensual({
       periodo,
@@ -202,7 +247,12 @@ describe('parametros-completitud.rules', () => {
       periodo,
       periodoRemuneracion: periodoInfo('cargado'),
       oficial: parametroOficial(),
-      clienteConfig: clienteConfig({ uf: 40000, estadoReconciliacionOficial: 'cliente_confirmado' }),
+      clienteConfig: clienteConfig({
+        uf: 40000,
+        estadoReconciliacionOficial: 'cliente_confirmado',
+        fechaReconciliacionOficial: '2026-05-02T12:00:00',
+        fechaActualizacion: '2026-05-02T12:00:00',
+      }),
       catalogos: catalogosCompletos(),
     });
 
@@ -212,23 +262,234 @@ describe('parametros-completitud.rules', () => {
     expect(resultado.advertencias).toEqual([]);
   });
 
-  it('revisar despues mantiene pendiente la reconciliacion', () => {
+  it('reconciliacion pendiente si config cliente se edito despues de mantener configuracion', () => {
+    const oficial = parametroOficial();
+    const cliente = clienteConfig({
+      uf: 40000,
+      topeAfpUf: 99,
+      estadoReconciliacionOficial: 'cliente_confirmado',
+      fechaReconciliacionOficial: '2026-05-02T12:00:00',
+      fechaActualizacion: '2026-05-20T08:00:00',
+    });
+    const resultado = evaluarCompletitudParametrosMensual({
+      periodo,
+      periodoRemuneracion: periodoInfo('cargado'),
+      oficial,
+      clienteConfig: cliente,
+      catalogos: catalogosCompletos(),
+    });
+
+    expect(resultado.reconciliacionPendiente).toBe(true);
+    expect(resultado.grupos.consistencia.completo).toBe(false);
+    expect(
+      debeMostrarAvisoDiferenciasParametrosOficialesMes({
+        periodoRemuneracion: periodoInfo('cargado'),
+        oficial,
+        clienteConfig: cliente,
+        diferencias: resultado.diferencias,
+      }),
+    ).toBe(true);
+  });
+
+  it('compara con ultimo hasta periodo cuando no hay fila exacta del mes', () => {
+    const ultimoMes = parametroOficial({ periodo: '2026-05', uf: 38000 });
+    const cliente = clienteConfig({ uf: 6_000_000 });
+    const resuelto = resolverOficialParaComparacionCliente({
+      periodoSeleccionado: periodo,
+      filaExacta: null,
+      ultimoHastaPeriodo: ultimoMes,
+      referenciaVisual: null,
+    });
+
+    expect(resuelto.origen).toBe('ultimo_hasta_periodo');
+    expect(compararOficialCliente(resuelto.oficial, cliente)).toEqual([
+      { campo: 'uf', oficial: 38000, cliente: 6_000_000 },
+    ]);
+
+    const resultado = evaluarCompletitudParametrosMensual({
+      periodo,
+      periodoRemuneracion: periodoInfo('cargado'),
+      oficial: null,
+      oficialParaComparacion: resuelto.oficial,
+      clienteConfig: cliente,
+      catalogos: catalogosCompletos(),
+    });
+
+    expect(resultado.diferencias).toEqual([{ campo: 'uf', oficial: 38000, cliente: 6_000_000 }]);
+    expect(
+      debeMostrarAvisoDiferenciasParametrosOficialesMes({
+        periodoRemuneracion: periodoInfo('cargado'),
+        oficial: resuelto.oficial,
+        clienteConfig: cliente,
+        diferencias: resultado.diferencias,
+      }),
+    ).toBe(true);
+  });
+
+  it('reconciliacion pendiente tras actualizar con oficiales y volver a editar', () => {
+    const oficial = parametroOficial();
+    const cliente = clienteConfig({
+      uf: 40000,
+      estadoReconciliacionOficial: 'actualizado_con_oficiales',
+      fechaReconciliacionOficial: '2026-05-10T12:00:00',
+      fechaActualizacion: '2026-05-20T08:00:00',
+    });
+    const diferencias = compararOficialCliente(oficial, cliente);
+
+    expect(diferencias.length).toBeGreaterThan(0);
+    expect(hayReconciliacionOficialClientePendiente(cliente, diferencias)).toBe(true);
+  });
+
+  it('debe mostrar aviso aunque el calendario del periodo este pendiente', () => {
+    const oficial = parametroOficial();
+    const cliente = clienteConfig({ uf: 40000, estadoReconciliacionOficial: 'pendiente' });
+    const diferencias = [{ campo: 'uf' as const, oficial: 38000, cliente: 40000 }];
+
+    expect(
+      debeMostrarAvisoDiferenciasParametrosOficialesMes({
+        periodoRemuneracion: periodoInfo('pendiente'),
+        oficial,
+        clienteConfig: cliente,
+        diferencias,
+      }),
+    ).toBe(true);
+  });
+
+  it('no debe mostrar aviso si el calendario del periodo esta en error', () => {
+    const oficial = parametroOficial();
+    const cliente = clienteConfig({ uf: 40000 });
+    const diferencias = [{ campo: 'uf' as const, oficial: 38000, cliente: 40000 }];
+
+    expect(
+      debeMostrarAvisoDiferenciasParametrosOficialesMes({
+        periodoRemuneracion: periodoInfo('error'),
+        oficial,
+        clienteConfig: cliente,
+        diferencias,
+      }),
+    ).toBe(false);
+  });
+
+  it('reconciliacion pendiente si confirmo sin fecha de decision y hay diferencias', () => {
     const resultado = evaluarCompletitudParametrosMensual({
       periodo,
       periodoRemuneracion: periodoInfo('cargado'),
       oficial: parametroOficial(),
       clienteConfig: clienteConfig({
         uf: 40000,
-        estadoReconciliacionOficial: 'pendiente',
-        origenReconciliacion: 'revisar_despues',
+        estadoReconciliacionOficial: 'cliente_confirmado',
+        fechaReconciliacionOficial: null,
+        fechaActualizacion: '2026-05-20T08:00:00',
       }),
       catalogos: catalogosCompletos(),
     });
 
     expect(resultado.reconciliacionPendiente).toBe(true);
-    expect(resultado.advertencias).toContain(
-      'Existen diferencias pendientes entre valores oficiales y configuracion cliente.',
+  });
+
+  it('debe mostrar aviso en periodo parcial si hay diferencias tras editar config', () => {
+    const oficial = parametroOficial();
+    const cliente = clienteConfig({
+      uf: 40000,
+      estadoReconciliacionOficial: 'cliente_confirmado',
+      fechaReconciliacionOficial: '2026-05-01T10:00:00',
+      fechaActualizacion: '2026-05-18T14:00:00',
+    });
+    const diferencias = [{ campo: 'uf' as const, oficial: 38000, cliente: 40000 }];
+
+    expect(
+      debeMostrarAvisoDiferenciasParametrosOficialesMes({
+        periodoRemuneracion: periodoInfo('parcial'),
+        oficial,
+        clienteConfig: cliente,
+        diferencias,
+      }),
+    ).toBe(true);
+  });
+
+  it('debe mostrar aviso cuando el periodo esta cargado y hay diferencias sin decision', () => {
+    const oficial = parametroOficial();
+    const cliente = clienteConfig({ uf: 40000, estadoReconciliacionOficial: 'pendiente' });
+    const diferencias = [{ campo: 'uf' as const, oficial: 38000, cliente: 40000 }];
+
+    expect(
+      debeMostrarAvisoDiferenciasParametrosOficialesMes({
+        periodoRemuneracion: periodoInfo('cargado'),
+        oficial,
+        clienteConfig: cliente,
+        diferencias,
+      }),
+    ).toBe(true);
+  });
+
+  it('debe mostrar aviso cuando hay diferencias aunque ya confirmo mantener configuracion', () => {
+    const oficial = parametroOficial({ fechaActualizacion: '2026-05-01T10:00:00' });
+    const cliente = clienteConfig({
+      uf: 40000,
+      estadoReconciliacionOficial: 'cliente_confirmado',
+      fechaReconciliacionOficial: '2026-05-02T12:00:00',
+    });
+    const diferencias = [{ campo: 'uf' as const, oficial: 38000, cliente: 40000 }];
+
+    expect(
+      debeMostrarAvisoDiferenciasParametrosOficialesMes({
+        periodoRemuneracion: periodoInfo('cargado'),
+        oficial,
+        clienteConfig: cliente,
+        diferencias,
+      }),
+    ).toBe(true);
+  });
+
+  it('debe mostrar aviso tras revisar despues si persisten diferencias', () => {
+    const oficial = parametroOficial({ fechaActualizacion: '2026-05-10T08:00:00' });
+    const cliente = clienteConfig({
+      uf: 40000,
+      estadoReconciliacionOficial: 'revisar_despues',
+      fechaReconciliacionOficial: '2026-05-01T12:00:00',
+    });
+    const diferencias = [{ campo: 'uf' as const, oficial: 38000, cliente: 40000 }];
+
+    expect(
+      debeMostrarAvisoDiferenciasParametrosOficialesMes({
+        periodoRemuneracion: periodoInfo('cargado'),
+        oficial,
+        clienteConfig: cliente,
+        diferencias,
+      }),
+    ).toBe(true);
+  });
+
+  it('genera huella estable para no repetir el mismo aviso en la sesion', () => {
+    const diferencias = [
+      { campo: 'uf' as const, oficial: 38000, cliente: 40000 },
+      { campo: 'sanna' as const, oficial: 0.03, cliente: 0.04 },
+    ];
+
+    expect(huellaDiferenciasOficialesCliente(diferencias)).toBe(
+      huellaDiferenciasOficialesCliente([...diferencias].reverse()),
     );
+  });
+
+  it('revisar despues registra decision y no mantiene la reconciliacion en bucle', () => {
+    const resultado = evaluarCompletitudParametrosMensual({
+      periodo,
+      periodoRemuneracion: periodoInfo('cargado'),
+      oficial: parametroOficial(),
+      clienteConfig: clienteConfig({
+        uf: 40000,
+        estadoReconciliacionOficial: 'revisar_despues',
+        origenReconciliacion: 'revisar_despues',
+        fechaReconciliacionOficial: '2026-05-10T12:00:00',
+        fechaActualizacion: '2026-05-10T12:00:00',
+      }),
+      catalogos: catalogosCompletos(),
+    });
+
+    expect(resultado.diferencias).toEqual([{ campo: 'uf', oficial: 38000, cliente: 40000 }]);
+    expect(resultado.reconciliacionPendiente).toBe(false);
+    expect(resultado.grupos.consistencia.completo).toBe(true);
+    expect(resultado.advertencias).toEqual([]);
   });
 
   it('decision cliente_confirmado no se muestra como pendiente bloqueante', () => {
@@ -236,7 +497,12 @@ describe('parametros-completitud.rules', () => {
       periodo,
       periodoRemuneracion: periodoInfo('cargado'),
       oficial: parametroOficial(),
-      clienteConfig: clienteConfig({ uf: 40000, estadoReconciliacionOficial: 'cliente_confirmado' }),
+      clienteConfig: clienteConfig({
+        uf: 40000,
+        estadoReconciliacionOficial: 'cliente_confirmado',
+        fechaReconciliacionOficial: '2026-05-10T12:00:00',
+        fechaActualizacion: '2026-05-10T12:00:00',
+      }),
       catalogos: catalogosCompletos(),
     });
 

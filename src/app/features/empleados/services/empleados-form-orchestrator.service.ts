@@ -6,6 +6,9 @@ import { EmpleadoEstado } from '../models/empleado-listado.model';
 import { EmpleadoFormCatalogos, TramoCargaCatalogOption } from '../models/empleado-catalogos.model';
 import { EmpleadoFormGroup } from '../models/empleado-form.model';
 import {
+  CasaParticularModalidad,
+  CasaParticularRegistroDtEstado,
+  CausalExclusionJornada,
   EmpleadoSexo,
   RelacionLaboral,
   TipoContrato,
@@ -79,11 +82,11 @@ export class EmpleadosFormOrchestratorService {
       contacto: new FormGroup({
         email: new FormControl('', {
           nonNullable: true,
-          validators: [Validators.email],
+          validators: [Validators.required, Validators.email, Validators.maxLength(120)],
         }),
         telefono: new FormControl('', {
           nonNullable: true,
-          validators: [Validators.maxLength(20), phoneFormatValidator],
+          validators: [Validators.required, Validators.maxLength(20), phoneFormatValidator],
         }),
         direccion: new FormControl('', {
           nonNullable: true,
@@ -131,6 +134,34 @@ export class EmpleadosFormOrchestratorService {
         seguroCesantia: new FormControl(true, {
           nonNullable: true,
         }),
+        excluidoLimiteJornada: new FormControl(false, {
+          nonNullable: true,
+        }),
+        causalExclusionJornada: new FormControl<CausalExclusionJornada | null>(null),
+        justificacionExclusionJornada: new FormControl('', {
+          nonNullable: true,
+          validators: [Validators.maxLength(500)],
+        }),
+        casaParticularModalidad: new FormControl<CasaParticularModalidad | null>(null),
+        casaParticularLabores: new FormControl('', {
+          nonNullable: true,
+          validators: [Validators.maxLength(500)],
+        }),
+        casaParticularDomicilioEspecifico: new FormControl('', {
+          nonNullable: true,
+          validators: [Validators.maxLength(250)],
+        }),
+        casaParticularAsistenciaCuidado: new FormControl(false, {
+          nonNullable: true,
+        }),
+        casaParticularRegistroDtEstado: new FormControl<CasaParticularRegistroDtEstado | null>(null),
+        casaParticularRegistroDtFecha: new FormControl('', {
+          nonNullable: true,
+        }),
+        casaParticularRegistroDtFolio: new FormControl('', {
+          nonNullable: true,
+          validators: [Validators.maxLength(100)],
+        }),
         fechaIngreso: new FormControl(buildTodayValue(), {
           nonNullable: true,
           validators: [Validators.required],
@@ -149,7 +180,7 @@ export class EmpleadosFormOrchestratorService {
           validators: [Validators.min(0)],
         }),
         horasSemanales: new FormControl<number | null>(null, {
-          validators: [Validators.required, Validators.min(1), Validators.max(168)],
+          validators: [Validators.required, Validators.min(1)],
         }),
         diasSemanales: new FormControl<number | null>(5, {
           validators: [Validators.required, Validators.min(1), Validators.max(7)],
@@ -299,6 +330,17 @@ export class EmpleadosFormOrchestratorService {
     this.updateBancarioValidators(form);
   }
 
+  /** Re-sincroniza validadores tras cambio de relación laboral (p. ej. honorarios sin emitEvent). */
+  sincronizarValidadoresPorRelacionLaboral(
+    form: EmpleadoFormGroup,
+    catalogos: EmpleadoFormCatalogos,
+  ): void {
+    this.updateContratoValidators(form);
+    this.updatePrevisionSaludValidators(form, catalogos);
+    this.updateBancarioValidators(form);
+    form.updateValueAndValidity({ emitEvent: false });
+  }
+
   /**
    * No autocompletar catálogos: la opción vacía y null en controles marcan pendiente explícito.
    * (Defaults técnicos solo en payload de borrador si la persistencia lo exige; ver mapper borrador.)
@@ -339,7 +381,7 @@ export class EmpleadosFormOrchestratorService {
 
     controls.relacionLaboral.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe(() => {
       this.updateContratoValidators(form);
-      this.updatePrevisionSaludValidators(form);
+      this.updatePrevisionSaludValidators(form, getCatalogos());
       this.updateBancarioValidators(form);
     });
 
@@ -348,8 +390,40 @@ export class EmpleadosFormOrchestratorService {
         controls.fechaTermino.setValue('', { emitEvent: false });
       }
 
+      if (tipo !== 'CASA_PARTICULAR') {
+        controls.casaParticularModalidad.setValue(null, { emitEvent: false });
+        controls.casaParticularLabores.setValue('', { emitEvent: false });
+        controls.casaParticularDomicilioEspecifico.setValue('', { emitEvent: false });
+        controls.casaParticularAsistenciaCuidado.setValue(false, { emitEvent: false });
+        controls.casaParticularRegistroDtEstado.setValue(null, { emitEvent: false });
+        controls.casaParticularRegistroDtFecha.setValue('', { emitEvent: false });
+        controls.casaParticularRegistroDtFolio.setValue('', { emitEvent: false });
+      }
+
       this.updateContratoValidators(form);
     });
+
+    controls.excluidoLimiteJornada.valueChanges
+      .pipe(takeUntilDestroyed(destroyRef))
+      .subscribe((enabled) => {
+        if (!enabled) {
+          controls.causalExclusionJornada.setValue(null, { emitEvent: false });
+          controls.justificacionExclusionJornada.setValue('', { emitEvent: false });
+        }
+
+        this.updateContratoValidators(form);
+      });
+
+    controls.casaParticularRegistroDtEstado.valueChanges
+      .pipe(takeUntilDestroyed(destroyRef))
+      .subscribe((estado) => {
+        if (estado !== 'REGISTRADO') {
+          controls.casaParticularRegistroDtFecha.setValue('', { emitEvent: false });
+          controls.casaParticularRegistroDtFolio.setValue('', { emitEvent: false });
+        }
+
+        this.updateContratoValidators(form);
+      });
 
     controls.idSucursal.valueChanges
       .pipe(takeUntilDestroyed(destroyRef))
@@ -413,9 +487,15 @@ export class EmpleadosFormOrchestratorService {
     const controls = form.controls.contrato.controls;
     const esHonorarios = controls.relacionLaboral.value === 'HONORARIOS';
     const requiereTermino =
-      !esHonorarios && controls.tipoContrato.value !== null && controls.tipoContrato.value !== 'INDEFINIDO';
+      !esHonorarios &&
+      controls.tipoContrato.value !== null &&
+      controls.tipoContrato.value !== 'INDEFINIDO' &&
+      controls.tipoContrato.value !== 'CASA_PARTICULAR';
     const semanaCorridaActiva = !esHonorarios && controls.semanaCorridaActiva.value;
     const zonaExtremaActiva = !esHonorarios && controls.zonaExtremaActiva.value;
+    const casaParticularActiva = !esHonorarios && controls.tipoContrato.value === 'CASA_PARTICULAR';
+    const registroDtActivo = casaParticularActiva && controls.casaParticularRegistroDtEstado.value === 'REGISTRADO';
+    const exclusionJornadaActiva = !esHonorarios && controls.excluidoLimiteJornada.value === true;
 
     this.setControlValidators(
       controls.tipoContrato,
@@ -435,8 +515,48 @@ export class EmpleadosFormOrchestratorService {
     );
     this.setControlValidators(controls.fechaTermino, requiereTermino ? [Validators.required] : []);
     this.setControlValidators(
+      controls.causalExclusionJornada,
+      exclusionJornadaActiva ? [Validators.required] : [],
+    );
+    this.setControlValidators(
+      controls.justificacionExclusionJornada,
+      exclusionJornadaActiva
+        ? [Validators.required, Validators.maxLength(500)]
+        : [Validators.maxLength(500)],
+    );
+    this.setControlValidators(
+      controls.casaParticularModalidad,
+      casaParticularActiva ? [Validators.required] : [],
+    );
+    this.setControlValidators(
+      controls.casaParticularLabores,
+      casaParticularActiva
+        ? [Validators.required, Validators.maxLength(500)]
+        : [Validators.maxLength(500)],
+    );
+    this.setControlValidators(
+      controls.casaParticularDomicilioEspecifico,
+      casaParticularActiva
+        ? [Validators.required, Validators.maxLength(250)]
+        : [Validators.maxLength(250)],
+    );
+    this.setControlValidators(
+      controls.casaParticularRegistroDtEstado,
+      casaParticularActiva ? [Validators.required] : [],
+    );
+    this.setControlValidators(
+      controls.casaParticularRegistroDtFecha,
+      registroDtActivo ? [Validators.required] : [],
+    );
+    this.setControlValidators(
+      controls.casaParticularRegistroDtFolio,
+      registroDtActivo
+        ? [Validators.required, Validators.maxLength(100)]
+        : [Validators.maxLength(100)],
+    );
+    this.setControlValidators(
       controls.horasSemanales,
-      esHonorarios ? [] : [Validators.required, Validators.min(1), Validators.max(168)],
+      esHonorarios ? [] : [Validators.required, Validators.min(1)],
     );
     this.setControlValidators(
       controls.diasSemanales,
@@ -476,7 +596,7 @@ export class EmpleadosFormOrchestratorService {
         this.handleTipoRegimenChange(form, previousTipo, tipo);
         previousTipo = tipo;
         this.ensurePrevisionDefaults(form, getCatalogos());
-        this.updatePrevisionSaludValidators(form);
+        this.updatePrevisionSaludValidators(form, getCatalogos());
       });
 
     controls.tieneApv.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe((enabled) => {
@@ -485,16 +605,21 @@ export class EmpleadosFormOrchestratorService {
       }
 
       this.ensurePrevisionDefaults(form, getCatalogos());
-      this.updatePrevisionSaludValidators(form);
+      this.updatePrevisionSaludValidators(form, getCatalogos());
     });
 
     controls.idMonedaCuenta2.valueChanges
       .pipe(takeUntilDestroyed(destroyRef))
-      .subscribe(() => this.updatePrevisionSaludValidators(form));
+      .subscribe(() => this.updatePrevisionSaludValidators(form, getCatalogos()));
 
     controls.valorCuenta2.valueChanges
       .pipe(takeUntilDestroyed(destroyRef))
-      .subscribe(() => this.updatePrevisionSaludValidators(form));
+      .subscribe(() => this.updatePrevisionSaludValidators(form, getCatalogos()));
+
+    controls.idSalud.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe(() => {
+      this.syncSaludPlanFields(form, getCatalogos());
+      this.updatePrevisionSaludValidators(form, getCatalogos());
+    });
 
     controls.idExCajaPrevisional.valueChanges
       .pipe(takeUntilDestroyed(destroyRef))
@@ -504,7 +629,8 @@ export class EmpleadosFormOrchestratorService {
       .pipe(takeUntilDestroyed(destroyRef))
       .subscribe(() => this.syncRegimenExCajaFields(form, getCatalogos()));
 
-    this.updatePrevisionSaludValidators(form);
+    this.syncSaludPlanFields(form, getCatalogos());
+    this.updatePrevisionSaludValidators(form, getCatalogos());
   }
 
   private handleTipoRegimenChange(
@@ -529,11 +655,17 @@ export class EmpleadosFormOrchestratorService {
     }
   }
 
-  private updatePrevisionSaludValidators(form: EmpleadoFormGroup): void {
+  private updatePrevisionSaludValidators(
+    form: EmpleadoFormGroup,
+    catalogos: EmpleadoFormCatalogos,
+  ): void {
     const controls = form.controls.previsionSalud.controls;
     const esHonorarios = form.controls.contrato.controls.relacionLaboral.value === 'HONORARIOS';
     const tipo = controls.tipoRegimenPrevisional.value;
     const requiereSalud = tipo !== null && tipo !== 'NINGUNA';
+    const tipoSalud = this.resolveSaludTipo(controls.idSalud.value, catalogos);
+    const esFonasa = requiereSalud && tipoSalud === 'FONASA';
+    const esIsapre = requiereSalud && tipoSalud === 'ISAPRE';
     const tieneCuenta2 =
       tipo === 'AFP' &&
       (controls.idMonedaCuenta2.value !== null || controls.valorCuenta2.value !== null);
@@ -601,11 +733,15 @@ export class EmpleadosFormOrchestratorService {
     this.setControlValidators(controls.idMonedaPlan, requiereSalud ? [Validators.required] : []);
     this.setControlValidators(
       controls.valorPlan,
-      requiereSalud ? [Validators.required, Validators.min(0)] : [Validators.min(0)],
+      esIsapre ? [Validators.required, Validators.min(0)] : [Validators.min(0)],
     );
     this.setControlValidators(
       controls.adicionalAugeGes,
-      requiereSalud ? [Validators.required, Validators.min(0)] : [Validators.min(0)],
+      esFonasa
+        ? [Validators.min(0)]
+        : requiereSalud
+          ? [Validators.required, Validators.min(0)]
+          : [Validators.min(0)],
     );
     this.setControlValidators(controls.idInstitucionApv, requiereApvi ? [Validators.required] : []);
     this.setControlValidators(controls.idMonedaApv, requiereApvi ? [Validators.required] : []);
@@ -626,6 +762,65 @@ export class EmpleadosFormOrchestratorService {
     if (controls.tipoRegimenPrevisional.value === 'IPS') {
       this.ensureRegimenExCajaDefault(form, catalogos);
     }
+
+    this.syncSaludPlanFields(form, catalogos);
+  }
+
+  private syncSaludPlanFields(form: EmpleadoFormGroup, catalogos: EmpleadoFormCatalogos): void {
+    const controls = form.controls.previsionSalud.controls;
+
+    if (this.resolveSaludTipo(controls.idSalud.value, catalogos) !== 'FONASA') {
+      return;
+    }
+
+    const monedaPesos = this.resolvePesoMonedaId(catalogos);
+
+    if (monedaPesos !== null && controls.idMonedaPlan.value !== monedaPesos) {
+      controls.idMonedaPlan.setValue(monedaPesos, { emitEvent: false });
+    }
+
+    if (controls.valorPlan.value !== 0) {
+      controls.valorPlan.setValue(0, { emitEvent: false });
+    }
+
+    if (controls.adicionalAugeGes.value !== 0) {
+      controls.adicionalAugeGes.setValue(0, { emitEvent: false });
+    }
+  }
+
+  private resolveSaludTipo(
+    idSalud: number | null,
+    catalogos: EmpleadoFormCatalogos,
+  ): 'FONASA' | 'ISAPRE' | null {
+    const option = catalogos.entidadesSalud.find((item) => item.value === idSalud);
+    const normalized = this.normalizeCatalogText(`${option?.tipo ?? ''} ${option?.label ?? ''}`);
+
+    if (normalized.includes('FONASA')) {
+      return 'FONASA';
+    }
+
+    if (normalized.includes('ISAPRE')) {
+      return 'ISAPRE';
+    }
+
+    return null;
+  }
+
+  private resolvePesoMonedaId(catalogos: EmpleadoFormCatalogos): number | null {
+    return (
+      catalogos.monedas.find((moneda) => {
+        const normalized = this.normalizeCatalogText(`${moneda.codigo ?? ''} ${moneda.label}`);
+        return normalized.includes('CLP') || normalized.includes('PESO');
+      })?.value ?? null
+    );
+  }
+
+  private normalizeCatalogText(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase()
+      .trim();
   }
 
   private ensureDepartamentoDefault(

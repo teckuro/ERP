@@ -12,6 +12,7 @@ import {
   EmpleadoListado,
 } from '../models/empleado-listado.model';
 import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
+import type { PerfilLaboralPersona } from '../models/empleado-perfil-laboral-rpc.model';
 import { EmpleadosCatalogosService } from './empleados-catalogos.service';
 import { EmpleadosWriteService } from './empleados-write.service';
 
@@ -35,6 +36,13 @@ export class EmpleadosService {
 
   obtenerPorId(id: number): Promise<EmpleadoFichaDetalle | null> {
     return this.empleadosRepository.obtenerPorId(id);
+  }
+
+  obtenerPerfilLaboralPersona(
+    idPersona: number,
+    periodoYm: string,
+  ): Promise<PerfilLaboralPersona | null> {
+    return this.empleadosRepository.obtenerPerfilLaboralPersona(idPersona, periodoYm);
   }
 
   guardarSeccionFicha(

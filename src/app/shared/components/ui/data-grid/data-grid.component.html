@@ -1,0 +1,1077 @@
+    <app-card [className]="gridCardClass" [ngStyle]="gridCardStyle">
+      @if (filtersEnabled && showFilters) {
+        <div class="data-grid-filter-panel border-b border-neutral-200 bg-white px-4 py-3">
+          <div class="data-grid-filter-shell flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+            <div class="min-w-0 flex-1">
+              <div class="data-grid-filter-grid" [ngStyle]="filterGridStyle">
+                @for (filter of visibleFilters; track filter.id) {
+                  <label
+                    class="data-grid-filter-field"
+                    [class.data-grid-filter-field--wide]="isDateRangeFilter(filter)"
+                    [attr.data-grid-filter-id]="filter.id"
+                  >
+                    <span class="data-grid-filter-label">
+                      {{ filter.label }}
+                    </span>
+                    @if (isDateRangeFilter(filter)) {
+                      <div class="data-grid-filter-range">
+                        <app-calendar-input
+                          class="data-grid-filter-range-slot"
+                          class="data-grid-date-control"
+                          [ngModel]="filterDateRangeValue(filter, 'from')"
+                          (ngModelChange)="updateDateRangeFilterValue(filter, 'from', $event)"
+                          [min]="dateFilterMin(filter)"
+                          [max]="rangeBoundMax(filter, 'from')"
+                          [invalid]="isInvalidDateRangeFilter(filter)"
+                          placeholder="dd/mm/aaaa"
+                          sideLabel="Desde"
+                        ></app-calendar-input>
+                        <app-calendar-input
+                          class="data-grid-filter-range-slot"
+                          class="data-grid-date-control"
+                          [ngModel]="filterDateRangeValue(filter, 'to')"
+                          (ngModelChange)="updateDateRangeFilterValue(filter, 'to', $event)"
+                          [min]="rangeBoundMin(filter, 'to')"
+                          [max]="dateFilterMax(filter)"
+                          [invalid]="isInvalidDateRangeFilter(filter)"
+                          placeholder="dd/mm/aaaa"
+                          sideLabel="Hasta"
+                        ></app-calendar-input>
+                      </div>
+                      @if (isInvalidDateRangeFilter(filter)) {
+                        <p class="mt-1 text-[0.68rem] font-semibold text-red-600">
+                          “Hasta” no puede ser menor que “Desde”.
+                        </p>
+                      }
+                    } @else if (isDateFilter(filter)) {
+                      <app-calendar-input
+                        [ngModel]="filterTextValue(filter)"
+                        (ngModelChange)="updateFilterModelValue(filter, $event)"
+                        [min]="dateFilterMin(filter)"
+                        [max]="dateFilterMax(filter)"
+                        placeholder="dd/mm/aaaa"
+                        class="data-grid-date-control"
+                      ></app-calendar-input>
+                    } @else if (isSelectFilter(filter)) {
+                      <select
+                        class="data-grid-filter-control"
+                        [value]="filterTextValue(filter)"
+                        (change)="updateFilterValue(filter, $event)"
+                      >
+                        <option value="">{{ emptyFilterLabel(filter) }}</option>
+                        @for (option of filterOptions(filter); track filterOptionValue(option)) {
+                          <option [value]="filterOptionValue(option)">{{ filterOptionLabel(option) }}</option>
+                        }
+                      </select>
+                    } @else {
+                      <input
+                        type="text"
+                        class="data-grid-filter-control"
+                        [value]="filterTextValue(filter)"
+                        [placeholder]="filterPlaceholder(filter)"
+                        (input)="updateFilterValue(filter, $event)"
+                      />
+                    }
+                  </label>
+                }
+              </div>
+            </div>
+
+            <div class="data-grid-filter-actions flex shrink-0 items-center justify-end gap-2 self-end pb-0.5 xl:pl-3">
+              <button
+                type="button"
+                class="data-grid-filter-action"
+                (click)="clearAllFilters()"
+                [disabled]="loading || (!hasActiveDraftFilters && !hasActiveAppliedFilters)"
+              >
+                <lucide-icon class="h-3.5 w-3.5" [img]="clearIcon"></lucide-icon>
+                Limpiar
+              </button>
+              <button
+                type="button"
+                class="data-grid-filter-action data-grid-filter-action--primary"
+                [disabled]="loading || visibleFilters.some((filter) => isInvalidDateRangeFilter(filter))"
+                (click)="applyFilters()"
+              >
+                <lucide-icon class="h-3.5 w-3.5" [img]="searchIcon"></lucide-icon>
+                Buscar
+              </button>
+            </div>
+          </div>
+
+          @if (activeFilterChips.length > 0) {
+            @if (shouldShowFilterChipsRow) {
+              <div class="data-grid-filter-chips-row mt-3 flex w-full min-w-0 flex-col gap-2 lg:flex-row lg:items-center lg:justify-start">
+                <div class="data-grid-filter-chips" aria-label="Filtros activos">
+                  @for (chip of activeFilterChips; track chip.id) {
+                    <button
+                      type="button"
+                      class="data-grid-filter-chip"
+                      [attr.aria-label]="'Quitar filtro ' + chip.label"
+                      (click)="removeFilterChip(chip.id)"
+                    >
+                      <span class="data-grid-filter-chip__label">{{ chip.label }}</span>
+                      <span class="data-grid-filter-chip__value">{{ chip.value }}</span>
+                      <lucide-icon class="h-3 w-3" [img]="clearIcon"></lucide-icon>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+      }
+
+      @if (showHeader && toolbarLayout === 'operativa' && (serverSide ? totalRowCount > 0 : filteredRows.length > 0)) {
+        <div class="data-grid-toolbar data-grid-toolbar--operativa" aria-label="Paginación de la grilla">
+          <div class="data-grid-toolbar--operativa__page">
+            <span class="data-grid-toolbar--operativa__label">Página</span>
+            <input
+              class="data-grid-toolbar--operativa__page-input"
+              type="number"
+              min="1"
+              [max]="totalPages"
+              [value]="pageInput"
+              aria-label="Número de página"
+              [disabled]="loading"
+              (input)="updatePageInput($event)"
+              (keydown.enter)="confirmOperativaPageInput()"
+              (blur)="confirmOperativaPageInput()"
+            />
+            <span class="data-grid-toolbar--operativa__label">de {{ totalPages }}</span>
+          </div>
+
+          <div class="data-grid-toolbar--operativa__actions">
+            <label class="data-grid-toolbar--operativa__page-size">
+              <span class="data-grid-toolbar--operativa__label">Registros por página</span>
+              <select
+                class="data-grid-toolbar--operativa__page-size-select"
+                [value]="pageSize"
+                aria-label="Registros por página"
+                [disabled]="loading"
+                (change)="updatePageSize($event)"
+              >
+                @for (option of pageSizeOptions; track option) {
+                  <option [value]="option">{{ option }}</option>
+                }
+              </select>
+            </label>
+
+            <div class="data-grid-toolbar--operativa__nav" aria-label="Navegación entre páginas">
+              <button
+                type="button"
+                class="data-grid-toolbar--operativa__nav-btn"
+                aria-label="Primera página"
+                [disabled]="loading || currentPage <= 1"
+                (click)="firstPage()"
+              >
+                <lucide-icon class="data-grid-toolbar--operativa__nav-icon" [img]="firstPageIcon"></lucide-icon>
+              </button>
+              <button
+                type="button"
+                class="data-grid-toolbar--operativa__nav-btn"
+                aria-label="Página anterior"
+                [disabled]="loading || currentPage <= 1"
+                (click)="previousPage()"
+              >
+                <lucide-icon class="data-grid-toolbar--operativa__nav-icon" [img]="previousIcon"></lucide-icon>
+              </button>
+              <button
+                type="button"
+                class="data-grid-toolbar--operativa__nav-btn"
+                aria-label="Página siguiente"
+                [disabled]="loading || currentPage >= totalPages"
+                (click)="nextPage()"
+              >
+                <lucide-icon class="data-grid-toolbar--operativa__nav-icon" [img]="nextIcon"></lucide-icon>
+              </button>
+              <button
+                type="button"
+                class="data-grid-toolbar--operativa__nav-btn"
+                aria-label="Última página"
+                [disabled]="loading || currentPage >= totalPages"
+                (click)="lastPage()"
+              >
+                <lucide-icon class="data-grid-toolbar--operativa__nav-icon" [img]="lastPageIcon"></lucide-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if ((rows.length > 0 || title) && showHeader && toolbarLayout !== 'operativa') {
+        <div class="border-b border-neutral-100 bg-white px-4 pb-4 pt-3.5">
+          <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <p class="text-sm font-medium uppercase text-neutral-900">{{ title || 'Registros' }}</p>
+                @if (headerCountDisplay === 'text') {
+                  <span class="text-xs font-medium text-neutral-600">· {{ headerCountText }}</span>
+                } @else {
+                  <span class="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-0.5 text-xs font-medium text-neutral-700">
+                      {{ filteredRows.length }}
+                    </span>
+                }
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 lg:justify-end">
+              <label class="data-grid-toolbar-control data-grid-toolbar-control--show flex h-8 items-center gap-2 rounded-md border border-neutral-200 bg-white px-2.5">
+                <span class="text-xs font-medium text-neutral-600">Mostrar</span>
+                <select
+                  class="h-6 rounded-md border-0 bg-neutral-50 px-1.5 text-xs font-medium text-neutral-900 outline-none focus:ring-2 focus:ring-blue-500"
+                  [value]="pageSize"
+                  aria-label="Cantidad de elementos por pagina"
+                  [disabled]="loading"
+                  (change)="updatePageSize($event)"
+                >
+                  @for (option of pageSizeOptions; track option) {
+                    <option [value]="option">{{ option }}</option>
+                  }
+                </select>
+              </label>
+
+              @if (primaryActionLabel) {
+                <div class="relative" data-grid-primary-action-root>
+                  <button
+                    type="button"
+                    class="inline-flex h-8 items-center gap-1.5 rounded-md border border-blue-600 bg-blue-600 px-3 text-xs font-medium text-white transition-colors hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    aria-haspopup="menu"
+                    [attr.aria-expanded]="primaryActionMenuOpen"
+                    (click)="primaryAction.emit()"
+                  >
+                    <lucide-icon class="h-3.5 w-3.5" [img]="plusIcon"></lucide-icon>
+                    {{ primaryActionLabel }}
+                  </button>
+
+                  @if (primaryActionMenuTemplate) {
+                    <ng-container *ngTemplateOutlet="primaryActionMenuTemplate" />
+                  }
+                </div>
+              }
+
+              @if (filtersEnabled && filtersCollapsible) {
+                <button
+                  type="button"
+                  class="data-grid-toolbar-icon-button inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  aria-label="Mostrar u ocultar filtros"
+                  title="Mostrar u ocultar filtros"
+                  [attr.aria-expanded]="showFilters"
+                  (click)="showFilters = !showFilters"
+                >
+                  <lucide-icon class="h-3.5 w-3.5" [img]="filterIcon"></lucide-icon>
+                </button>
+              }
+
+              @if (showExportAction) {
+                <div class="relative data-grid-toolbar-icon-wrap" data-grid-overlay-root>
+                  <button
+                    type="button"
+                    class="data-grid-toolbar-icon-button inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    aria-label="Exportar registros"
+                    title="Exportar registros"
+                    [attr.aria-expanded]="showExportPanel"
+                    (click)="toggleExportPanel()"
+                  >
+                    <lucide-icon class="h-3.5 w-3.5" [img]="downloadIcon"></lucide-icon>
+                  </button>
+
+                  @if (showExportPanel) {
+                    <div
+                      class="absolute right-0 top-10 z-50 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border border-neutral-200 bg-white text-sm shadow-[0_8px_20px_rgba(15,23,42,0.08)] ring-1 ring-black/[0.02]"
+                      role="menu"
+                      aria-label="Opciones de exportacion"
+                    >
+                      <div class="border-b border-neutral-100 bg-neutral-50 px-3 py-2.5">
+                        <p class="text-xs font-medium uppercase text-neutral-500">
+                          Exportar
+                        </p>
+                        <p class="mt-0.5 text-xs font-medium text-neutral-500">
+                          Elige el alcance de los datos
+                        </p>
+                      </div>
+
+                      <div class="p-1.5">
+                        <button
+                          type="button"
+                          class="flex w-full items-start gap-2 rounded-md px-2 py-2 text-left transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          role="menuitem"
+                          [disabled]="pagedRows.length === 0"
+                          (click)="exportPageRows()"
+                        >
+                          <lucide-icon class="mt-0.5 h-3.5 w-3.5 text-neutral-500" [img]="downloadIcon"></lucide-icon>
+                          <span>
+                            <span class="block text-xs font-medium text-neutral-800">Exportar pagina actual</span>
+                            <span class="mt-0.5 block text-xs text-neutral-500">Solo registros visibles</span>
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          class="flex w-full items-start gap-2 rounded-md border border-transparent px-2 py-2 text-left transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          [class.border-blue-200]="selectedRows.length > 0"
+                          [class.bg-blue-50]="selectedRows.length > 0"
+                          role="menuitem"
+                          [disabled]="selectedRows.length === 0"
+                          (click)="exportSelectedRows()"
+                        >
+                          <lucide-icon class="mt-0.5 h-3.5 w-3.5" [class.text-blue-600]="selectedRows.length > 0" [class.text-neutral-500]="selectedRows.length === 0" [img]="downloadIcon"></lucide-icon>
+                          <span>
+                            <span class="block text-xs font-medium text-neutral-800">Exportar seleccionados ({{ selectedRows.length }})</span>
+                            <span class="mt-0.5 block text-xs text-neutral-500">Solo los marcados manualmente</span>
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          class="flex w-full items-start gap-2 rounded-md px-2 py-2 text-left transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          role="menuitem"
+                          [disabled]="filteredRows.length === 0"
+                          (click)="exportFilteredRows()"
+                        >
+                          <lucide-icon class="mt-0.5 h-3.5 w-3.5 text-neutral-500" [img]="downloadIcon"></lucide-icon>
+                          <span>
+                            <span class="block text-xs font-medium text-neutral-800">Exportar todos los resultados (filtrados)</span>
+                            <span class="mt-0.5 block text-xs text-neutral-500">Incluye todos los registros que cumplen los filtros</span>
+                          </span>
+                        </button>
+                      </div>
+
+                      <label class="flex cursor-pointer items-start gap-2 border-t border-neutral-100 bg-neutral-50 px-3 py-2.5">
+                        <input
+                          type="checkbox"
+                          class="mt-0.5 h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
+                          [checked]="exportAllColumns"
+                          (change)="toggleExportColumns($event)"
+                        />
+                        <span>
+                          <span class="block text-xs font-medium text-neutral-800">Exportar con todas las columnas</span>
+                          <span class="mt-0.5 block text-xs text-neutral-500">
+                            Por defecto se exportan solo las columnas visibles.
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+                  }
+                </div>
+              }
+
+              <button
+                type="button"
+                class="data-grid-toolbar-icon-button inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                aria-label="Refrescar grilla"
+                title="Refrescar grilla"
+                [disabled]="loading"
+                (click)="refresh.emit()"
+              >
+                <lucide-icon class="h-3.5 w-3.5" [img]="refreshIcon"></lucide-icon>
+              </button>
+
+              <div class="relative data-grid-toolbar-icon-wrap" data-grid-overlay-root>
+                <button
+                  type="button"
+                  class="data-grid-toolbar-icon-button inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  aria-label="Configurar columnas visibles"
+                  title="Columnas visibles"
+                  [attr.aria-expanded]="showColumnPanel"
+                  (click)="toggleColumnPanel()"
+                >
+                  <lucide-icon class="h-3.5 w-3.5" [img]="settingsIcon"></lucide-icon>
+                </button>
+
+                @if (showColumnPanel) {
+                  <div
+                    class="absolute right-0 top-10 z-50 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border border-slate-200 bg-white text-sm shadow-[0_8px_20px_rgba(15,23,42,0.08)] ring-1 ring-slate-950/[0.03]"
+                    role="dialog"
+                    aria-label="Columnas visibles"
+                  >
+                    <div class="border-b border-slate-100 bg-slate-50 px-3.5 py-2.5">
+                      <div class="flex items-start justify-between gap-3">
+                        <div>
+                          <p class="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
+                            Columnas
+                          </p>
+                        </div>
+
+                        <div class="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            class="inline-flex h-7 items-center rounded-full border border-slate-200 bg-white px-2.5 text-[0.68rem] font-medium text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                            (click)="showAllColumns()"
+                          >
+                            Todo
+                          </button>
+                          <button
+                            type="button"
+                            class="inline-flex h-7 items-center rounded-full border border-slate-200 bg-white px-2.5 text-[0.68rem] font-medium text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                            (click)="restoreDefaultColumns()"
+                          >
+                            Restaurar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="max-h-64 overflow-auto p-1.5">
+                      @for (column of columns; track column.id) {
+                        <button
+                          type="button"
+                          class="flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-55"
+                          [disabled]="isColumnFixed(column) || isLastVisibleColumn(column.id)"
+                          [attr.title]="isColumnFixed(column) ? 'Esta columna siempre queda visible' : isLastVisibleColumn(column.id) ? 'Debe quedar al menos una columna visible' : column.header"
+                          (click)="toggleColumn(column.id)"
+                        >
+                          <span class="min-w-0">
+                            <span class="block truncate text-sm font-medium text-slate-800">
+                              {{ column.header }}
+                            </span>
+                          </span>
+
+                          <span
+                            class="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors"
+                            [class.border-blue-600]="isColumnVisible(column.id)"
+                            [class.bg-blue-500]="isColumnVisible(column.id)"
+                            [class.border-slate-300]="!isColumnVisible(column.id)"
+                            [class.bg-slate-100]="!isColumnVisible(column.id)"
+                          >
+                            <span
+                              class="h-4 w-4 rounded-full bg-white shadow-sm ring-1 ring-black/5 transition-transform"
+                              [class.translate-x-4]="isColumnVisible(column.id)"
+                              [class.translate-x-0.5]="!isColumnVisible(column.id)"
+                            ></span>
+                          </span>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (bulkBarVisible) {
+        <div
+          class="flex flex-col gap-3 border-b border-blue-100 bg-blue-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+          role="region"
+          aria-label="Acciones masivas"
+          aria-live="polite"
+        >
+          <div class="flex flex-wrap items-center gap-2 text-sm font-medium text-blue-900">
+            <lucide-icon class="h-4 w-4" [img]="selectionIcon"></lucide-icon>
+            @if (bulkScopeAllFiltered) {
+              <span>{{ bulkSelectionCount }} {{ selectionLabel }} del filtro actual seleccionados</span>
+              <button
+                type="button"
+                class="text-xs font-medium text-blue-700 underline underline-offset-2 hover:text-blue-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                (click)="limitSelectionToPage()"
+              >
+                Limitar a esta página
+              </button>
+            } @else {
+              <span>{{ selectedRows.length }} {{ selectionLabel }} seleccionados</span>
+              @if (canExtendSelectionToAllFiltered) {
+                <button
+                  type="button"
+                  class="text-xs font-medium text-blue-700 underline underline-offset-2 hover:text-blue-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  (click)="extendSelectionToAllFiltered()"
+                >
+                  Seleccionar los {{ totalRowCount }} {{ selectionLabel }} del filtro
+                </button>
+              }
+            }
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 sm:justify-end">
+            <span class="text-xs font-medium uppercase text-blue-700">Cambiar estado a</span>
+            @for (action of bulkActions; track action.id) {
+              <button
+                type="button"
+                class="inline-flex h-8 items-center gap-1.5 rounded-md border bg-white px-2.5 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                [ngClass]="bulkActionButtonClass(action)"
+                [disabled]="bulkActionLoading"
+                (click)="requestBulkAction(action)"
+              >
+                @if (bulkActionLoading && activeBulkAction === action.id) {
+                  <span class="data-grid-button-spinner"></span>
+                }
+                {{ action.label }}
+              </button>
+            }
+            <button
+              type="button"
+              class="inline-flex h-8 items-center rounded-md border border-transparent px-2.5 text-xs font-medium text-blue-800 transition hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+              [disabled]="bulkActionLoading"
+              (click)="clearSelection()"
+            >
+              Limpiar seleccion
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (pendingBulkAction) {
+        <app-message-box
+          mode="modal"
+          [variant]="bulkConfirmationVariant"
+          [title]="bulkConfirmationTitle"
+          [message]="bulkConfirmationMessage"
+          [sections]="bulkConfirmationSections"
+          [actions]="bulkConfirmationActions"
+          (action)="confirmBulkAction()"
+          (secondary)="cancelBulkAction()"
+        ></app-message-box>
+      }
+
+      @if (notice) {
+        <div class="absolute right-4 top-4 z-40 w-80 max-w-[calc(100%-2rem)]">
+          <app-message-box
+            [variant]="notice.variant"
+            [title]="notice.title"
+            [message]="notice.message"
+            [dismissible]="true"
+            (dismiss)="clearNotice()"
+          ></app-message-box>
+        </div>
+      }
+
+      <div class="data-grid-scroll w-full min-w-0 flex-1 overflow-auto bg-white" [ngStyle]="gridBodyStyle">
+        @if (mensajeError && !loading) {
+          <div class="data-grid-state data-grid-state--error">
+            <div
+              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-red-100 bg-red-50"
+            >
+              <span class="text-lg font-semibold text-red-600">!</span>
+            </div>
+            <h3 class="mb-1 text-lg font-medium text-neutral-900">{{ mensajeError }}</h3>
+            <p class="text-sm text-neutral-600">Intenta nuevamente para actualizar la informacion.</p>
+            <button
+              type="button"
+              class="mt-4 inline-flex h-9 items-center rounded-md border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              (click)="retry.emit()"
+            >
+              Reintentar
+            </button>
+          </div>
+        } @else if (filteredRows.length > 0 || loading) {
+          <div class="data-grid-table-region" [class.is-loading]="loading">
+            @if (loading) {
+              <span class="sr-only" role="status" aria-live="polite">{{ loadingLabel }}</span>
+            }
+            <table
+              class="data-grid-table-view w-full border-separate border-spacing-0"
+              [class.data-grid-table-view--fit]="shouldFitColumns"
+              [class.data-grid-table-view--scroll]="!shouldFitColumns"
+              [style.--data-grid-table-min-width]="tableMinWidth"
+            >
+              <colgroup>
+                <col class="data-grid-row-number-col" />
+                @if (expandColumnDedicated) {
+                  <col class="data-grid-expand-col" />
+                }
+                @if (selectable) {
+                  <col class="data-grid-selection-col" />
+                }
+                @for (column of visibleColumns; track column.id) {
+                  <col [ngStyle]="columnSizingStyle(column)" />
+                }
+              </colgroup>
+              <thead class="data-grid-head sticky top-0 z-10 bg-neutral-100 shadow-[0_1px_0_rgba(229,229,229,1)]">
+                <tr>
+                  <th
+                    scope="col"
+                    class="data-grid-row-number-cell data-grid-head-num border-b border-r border-neutral-200 text-[0.68rem] font-medium uppercase text-neutral-600"
+                  >
+                    N°
+                  </th>
+                  @if (expandColumnDedicated) {
+                    <th
+                      scope="col"
+                      class="data-grid-expand-head w-9 border-b border-r border-neutral-200"
+                      aria-label="Detalle"
+                    ></th>
+                  }
+                  @if (selectable) {
+                    <th scope="col" class="data-grid-selection-head w-11 border-b border-r border-neutral-200">
+                      <input
+                        class="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                        type="checkbox"
+                        aria-label="Seleccionar registros visibles"
+                        [checked]="allPageRowsSelected"
+                        [indeterminate]="somePageRowsSelected && !allPageRowsSelected"
+                        [disabled]="loading"
+                        (change)="togglePageSelection($event)"
+                      />
+                    </th>
+                  }
+                  @for (column of visibleColumns; track column.id) {
+                    <th
+                      scope="col"
+                      class="data-grid-head-cell whitespace-nowrap border-b border-r border-neutral-200 text-[0.68rem] font-medium uppercase text-neutral-600 last:border-r-0"
+                      [ngClass]="[alignmentHeaderClass(column), column.headerClass ?? '', column.widthClass ?? '']"
+                    >
+                      @if (isSortable(column)) {
+                        <button
+                          type="button"
+                          class="inline-flex items-center gap-1.5 rounded-md text-left transition-colors hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                          [class.justify-end]="column.align === 'right'"
+                          [class.justify-center]="column.align === 'center'"
+                          [attr.aria-sort]="sortAriaValue(column)"
+                          [disabled]="loading"
+                          (click)="toggleSort(column)"
+                        >
+                          <span>{{ column.header }}</span>
+                          <lucide-icon class="h-3.5 w-3.5" [img]="sortIcon(column)"></lucide-icon>
+                        </button>
+                      } @else {
+                        <span class="block">{{ column.header }}</span>
+                      }
+                    </th>
+                  }
+                </tr>
+              </thead>
+
+              <tbody class="bg-white">
+                @if (loading) {
+                  @for (skeletonRow of skeletonRows; track skeletonRow) {
+                    <tr class="data-grid-skeleton-row" aria-hidden="true">
+                      <td class="data-grid-row-number-cell data-grid-skel-num border-b border-r border-neutral-100">
+                        <span class="data-grid-skeleton-line data-grid-skeleton-line--number"></span>
+                      </td>
+                      @if (expandColumnDedicated) {
+                        <td class="data-grid-expand-cell w-9 border-b border-r border-neutral-100">
+                          <span class="data-grid-skeleton-box h-4 w-4 rounded"></span>
+                        </td>
+                      }
+                      @if (selectable) {
+                        <td class="data-grid-skel-select w-11 border-b border-r border-neutral-100">
+                          <span class="data-grid-skeleton-box h-4 w-4 rounded"></span>
+                        </td>
+                      }
+                      @for (column of visibleColumns; track column.id) {
+                        <td
+                          class="data-grid-skel-cell border-b border-r border-neutral-100 last:border-r-0"
+                          [ngClass]="[alignmentCellClass(column), column.cellClass ?? '', column.widthClass ?? '']"
+                        >
+                          <span class="data-grid-skeleton-line" [class.data-grid-skeleton-line--short]="column.align === 'right' || column.align === 'center'"></span>
+                        </td>
+                      }
+                    </tr>
+                  }
+                } @else {
+                  @for (row of pagedRows; track trackPagedRow($index, row); let rowIndex = $index) {
+                    <tr
+                      class="data-grid-row group transition-colors duration-150"
+                      [class.hover:bg-neutral-50]="hoverRows"
+                      [class.data-grid-row-selected]="isRowSelected(row)"
+                      [class.data-grid-row--expanded]="expansionEnabled && isRowExpanded(row)"
+                    >
+                      <td
+                        class="data-grid-row-number-cell data-grid-body-num border-b border-r border-neutral-100 text-[0.72rem] font-semibold text-slate-500 transition-colors"
+                        [class.bg-blue-50]="isRowSelected(row)"
+                      >
+                        {{ absoluteIndex(rowIndex) + 1 }}
+                      </td>
+                      @if (expandColumnDedicated) {
+                        <td
+                          class="data-grid-expand-cell w-9 border-b border-r border-neutral-100 transition-colors"
+                          [class.bg-blue-50]="isRowSelected(row)"
+                        >
+                          <div class="data-grid-expand-inline-wrap">
+                            <button
+                              type="button"
+                              class="data-grid-expand-btn"
+                              [class.is-expanded]="isRowExpanded(row)"
+                              [attr.aria-label]="isRowExpanded(row) ? collapseRowLabel : expandRowLabel"
+                              [attr.aria-expanded]="isRowExpanded(row)"
+                              (click)="toggleRowExpansion(row, $event)"
+                            >
+                              <lucide-icon
+                                class="h-3.5 w-3.5"
+                                [img]="isRowExpanded(row) ? expandedIcon : expandIcon"
+                              ></lucide-icon>
+                            </button>
+                            @if (shouldShowExpandHint(absoluteIndex(rowIndex))) {
+                              <div class="data-grid-expand-hint" role="status">
+                                <p class="data-grid-expand-hint__text">{{ expandHint!.text }}</p>
+                                <button
+                                  type="button"
+                                  class="data-grid-expand-hint__dismiss"
+                                  (click)="onExpandHintDismiss($event)"
+                                >
+                                  {{ expandHintDismissLabel() }}
+                                </button>
+                              </div>
+                            }
+                          </div>
+                        </td>
+                      }
+                      @if (selectable) {
+                        <td
+                          class="data-grid-selection-cell w-11 border-b border-r border-neutral-100 transition-colors"
+                          [class.bg-blue-50]="isRowSelected(row)"
+                        >
+                          <input
+                            class="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                            type="checkbox"
+                            [attr.aria-label]="'Seleccionar registro ' + (absoluteIndex(rowIndex) + 1)"
+                            [checked]="isRowSelected(row)"
+                            (click)="$event.stopPropagation()"
+                            (change)="toggleRowSelection(row, $event)"
+                          />
+                        </td>
+                      }
+                      @for (column of visibleColumns; track column.id) {
+                        <td
+                          class="data-grid-body-cell border-b border-r border-neutral-100 text-[0.76rem] text-neutral-900 transition-colors last:border-r-0"
+                          [class.bg-blue-50]="isRowSelected(row)"
+                          [ngClass]="[alignmentCellClass(column), column.cellClass ?? '', column.widthClass ?? '']"
+                        >
+                          @if (isExpandAnchorColumn(column.id)) {
+                            <div class="data-grid-cell-with-expand">
+                              <div class="data-grid-expand-inline-wrap">
+                                <button
+                                  type="button"
+                                  class="data-grid-expand-btn data-grid-expand-btn--inline"
+                                  [class.is-expanded]="isRowExpanded(row)"
+                                  [attr.aria-label]="isRowExpanded(row) ? collapseRowLabel : expandRowLabel"
+                                  [attr.aria-expanded]="isRowExpanded(row)"
+                                  (click)="toggleRowExpansion(row, $event)"
+                                >
+                                  <lucide-icon
+                                    class="h-3.5 w-3.5"
+                                    [img]="isRowExpanded(row) ? expandedIcon : expandIcon"
+                                  ></lucide-icon>
+                                </button>
+                                @if (shouldShowExpandHint(absoluteIndex(rowIndex))) {
+                                  <div class="data-grid-expand-hint" role="status">
+                                    <p class="data-grid-expand-hint__text">{{ expandHint!.text }}</p>
+                                    <button
+                                      type="button"
+                                      class="data-grid-expand-hint__dismiss"
+                                      (click)="onExpandHintDismiss($event)"
+                                    >
+                                      {{ expandHintDismissLabel() }}
+                                    </button>
+                                  </div>
+                                }
+                              </div>
+                              <div class="data-grid-cell-with-expand-body">
+                                @if (cellTemplate(column.id); as customTemplate) {
+                                  <ng-container
+                                    *ngTemplateOutlet="
+                                      customTemplate;
+                                      context: cellContext(row, column, absoluteIndex(rowIndex))
+                                    "
+                                  />
+                                } @else {
+                                  <span
+                                    class="block truncate"
+                                    [attr.title]="formattedValue(row, column, absoluteIndex(rowIndex))"
+                                    >{{ formattedValue(row, column, absoluteIndex(rowIndex)) }}</span
+                                  >
+                                }
+                              </div>
+                            </div>
+                          } @else {
+                            @if (cellTemplate(column.id); as customTemplate) {
+                              <div>
+                                <ng-container
+                                  *ngTemplateOutlet="
+                                    customTemplate;
+                                    context: cellContext(row, column, absoluteIndex(rowIndex))
+                                  "
+                                />
+                              </div>
+                            } @else {
+                              <span
+                                class="block truncate"
+                                [attr.title]="formattedValue(row, column, absoluteIndex(rowIndex))"
+                                >{{ formattedValue(row, column, absoluteIndex(rowIndex)) }}</span
+                              >
+                            }
+                          }
+                        </td>
+                      }
+                    </tr>
+                    @if (expansionEnabled && isRowExpanded(row) && rowDetailTemplate; as detailTpl) {
+                      <tr class="data-grid-row-detail" aria-label="Detalle de fila">
+                        <td
+                          class="data-grid-row-detail-cell border-b border-neutral-100"
+                          [attr.colspan]="rowDetailColspan"
+                        >
+                          <div class="data-grid-row-detail-body">
+                            <ng-container
+                              *ngTemplateOutlet="
+                                detailTpl;
+                                context: rowDetailContext(row, absoluteIndex(rowIndex))
+                              "
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  }
+                }
+              </tbody>
+            </table>
+
+            <div class="data-grid-card-list" [attr.aria-label]="title || 'Registros'">
+              @if (loading) {
+                @for (skeletonRow of mobileSkeletonRows; track skeletonRow) {
+                  <article class="data-grid-mobile-card data-grid-mobile-card--loading" aria-hidden="true">
+                    <span class="data-grid-skeleton-line data-grid-skeleton-line--title"></span>
+                    <span class="data-grid-skeleton-line"></span>
+                    <span class="data-grid-skeleton-line data-grid-skeleton-line--short"></span>
+                  </article>
+                }
+              } @else {
+                @for (row of pagedRows; track trackPagedRow($index, row); let rowIndex = $index) {
+                  <article
+                    class="data-grid-mobile-card"
+                    [class.data-grid-mobile-card--selected]="isRowSelected(row)"
+                    [class.data-grid-mobile-card--expanded]="expansionEnabled && isRowExpanded(row)"
+                  >
+                    @if (expansionEnabled) {
+                      <div class="data-grid-mobile-card-head">
+                        <span class="data-grid-mobile-counter">N° {{ absoluteIndex(rowIndex) + 1 }}</span>
+                        <div class="data-grid-expand-inline-wrap">
+                          <button
+                            type="button"
+                            class="data-grid-expand-btn data-grid-expand-btn--mobile"
+                            [class.is-expanded]="isRowExpanded(row)"
+                            [attr.aria-label]="isRowExpanded(row) ? collapseRowLabel : expandRowLabel"
+                            [attr.aria-expanded]="isRowExpanded(row)"
+                            (click)="toggleRowExpansion(row, $event)"
+                          >
+                            <lucide-icon
+                              class="h-3.5 w-3.5"
+                              [img]="isRowExpanded(row) ? expandedIcon : expandIcon"
+                            ></lucide-icon>
+                            <span>{{ isRowExpanded(row) ? collapseRowLabel : expandRowLabel }}</span>
+                          </button>
+                          @if (shouldShowExpandHint(absoluteIndex(rowIndex))) {
+                            <div class="data-grid-expand-hint data-grid-expand-hint--mobile" role="status">
+                              <p class="data-grid-expand-hint__text">{{ expandHint!.text }}</p>
+                              <button
+                                type="button"
+                                class="data-grid-expand-hint__dismiss"
+                                (click)="onExpandHintDismiss($event)"
+                              >
+                                {{ expandHintDismissLabel() }}
+                              </button>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    } @else {
+                      <span class="data-grid-mobile-counter">N° {{ absoluteIndex(rowIndex) + 1 }}</span>
+                    }
+                    @if (selectable) {
+                      <label class="data-grid-mobile-select">
+                        <input
+                          class="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                          type="checkbox"
+                          [checked]="isRowSelected(row)"
+                          (change)="toggleRowSelection(row, $event)"
+                        />
+                        <span>Seleccionar registro</span>
+                      </label>
+                    }
+
+                    <dl class="data-grid-mobile-fields">
+                      @for (column of mobileColumns; track column.id) {
+                        <div class="data-grid-mobile-field" [class.data-grid-mobile-field--primary]="isMobilePrimaryColumn(column)">
+                          <dt>{{ column.header }}</dt>
+                          <dd [ngClass]="alignmentCellClass(column)">
+                            @if (cellTemplate(column.id); as customTemplate) {
+                              <ng-container
+                                *ngTemplateOutlet="
+                                  customTemplate;
+                                  context: cellContext(row, column, absoluteIndex(rowIndex))
+                                "
+                              />
+                            } @else {
+                              {{ formattedValue(row, column, absoluteIndex(rowIndex)) }}
+                            }
+                          </dd>
+                        </div>
+                      }
+                    </dl>
+
+                    @if (mobileActionColumn; as actionColumn) {
+                      <div class="data-grid-mobile-actions">
+                        @if (cellTemplate(actionColumn.id); as actionTemplate) {
+                          <ng-container
+                            *ngTemplateOutlet="
+                              actionTemplate;
+                              context: cellContext(row, actionColumn, absoluteIndex(rowIndex))
+                            "
+                          />
+                        }
+                      </div>
+                    }
+                    @if (expansionEnabled && isRowExpanded(row) && rowDetailTemplate; as detailTpl) {
+                      <div class="data-grid-mobile-row-detail" role="region" aria-label="Detalle">
+                        <ng-container
+                          *ngTemplateOutlet="
+                            detailTpl;
+                            context: rowDetailContext(row, absoluteIndex(rowIndex))
+                          "
+                        />
+                      </div>
+                    }
+                  </article>
+                }
+              }
+            </div>
+          </div>
+        } @else {
+          <div
+            class="data-grid-state data-grid-state--empty"
+            [class.data-grid-state--filtered]="hasActiveFilters"
+          >
+            <div class="data-grid-state-panel">
+              <div class="data-grid-state-mark" aria-hidden="true">
+                <lucide-icon [img]="emptyIcon"></lucide-icon>
+              </div>
+              <p class="data-grid-state-kicker">
+                {{ hasActiveFilters ? 'Filtro sin resultados' : 'Registro pendiente' }}
+              </p>
+              <h3>{{ resolvedEmptyTitle }}</h3>
+              <p>{{ resolvedEmptyDescription }}</p>
+
+              @if (hasActiveFilters) {
+                <button
+                  type="button"
+                  class="data-grid-state-action"
+                  (click)="clearAllFilters()"
+                >
+                  Limpiar filtros
+                </button>
+              } @else if (primaryActionLabel) {
+                <button
+                  type="button"
+                  class="data-grid-state-action data-grid-state-action--primary"
+                  (click)="primaryAction.emit()"
+                >
+                  <lucide-icon class="h-4 w-4" [img]="plusIcon"></lucide-icon>
+                  {{ primaryActionLabel }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      @if (filteredRows.length > 0 && toolbarLayout !== 'operativa') {
+        <div
+          class="data-grid-footer flex flex-col gap-3 border-t border-neutral-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p class="text-xs font-medium text-neutral-600">
+            Pagina {{ currentPage }} de {{ totalPages }}
+          </p>
+
+          <div class="flex flex-wrap items-center gap-3 sm:justify-end">
+            <div
+              class="inline-flex items-center overflow-hidden rounded-md border border-neutral-200 bg-white"
+              aria-label="Paginacion inferior"
+            >
+              <button
+                type="button"
+                class="inline-flex h-8 items-center gap-1.5 border-r border-neutral-200 px-2.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 disabled:opacity-70"
+                aria-label="Pagina anterior"
+                [disabled]="currentPage <= 1"
+                (click)="previousPage()"
+              >
+                <lucide-icon class="h-3.5 w-3.5" [img]="previousIcon"></lucide-icon>
+                Atras
+              </button>
+
+              <span
+                class="inline-flex h-8 min-w-20 items-center justify-center border-r border-neutral-200 bg-neutral-50 px-2.5 text-xs font-medium text-neutral-900"
+                aria-live="polite"
+                aria-label="Pagina actual"
+              >
+                {{ currentPage }} / {{ totalPages }}
+              </span>
+
+              <button
+                type="button"
+                class="inline-flex h-8 items-center gap-1.5 px-2.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 disabled:opacity-70"
+                aria-label="Pagina siguiente"
+                [disabled]="currentPage >= totalPages"
+                (click)="nextPage()"
+              >
+                Siguiente
+                <lucide-icon class="h-3.5 w-3.5" [img]="nextIcon"></lucide-icon>
+              </button>
+            </div>
+
+            <div class="relative border-l border-neutral-200 pl-2" data-grid-overlay-root>
+              <button
+                type="button"
+                class="inline-flex h-8 items-center justify-center rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                aria-label="Ir a una pagina especifica"
+                [attr.aria-expanded]="showPagePopover"
+                (click)="togglePagePopover()"
+              >
+                Ir a pagina
+              </button>
+
+              @if (showPagePopover) {
+                <div
+                  class="absolute bottom-11 right-0 z-50 w-60 max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border border-neutral-200 bg-white text-sm shadow-[0_8px_20px_rgba(15,23,42,0.08)] ring-1 ring-black/[0.02]"
+                  role="dialog"
+                  aria-label="Ir a pagina"
+                >
+                  <div class="border-b border-neutral-100 bg-neutral-50 px-3 py-2.5">
+                    <p class="text-xs font-medium uppercase text-neutral-500">
+                      Ir a pagina
+                    </p>
+                    <p class="mt-0.5 text-xs font-medium text-neutral-500">
+                      Rango 1-{{ totalPages }}
+                    </p>
+                  </div>
+
+                  <div class="p-3">
+                    <input
+                      class="h-9 w-full rounded-md border border-neutral-200 bg-white px-2.5 text-sm font-medium text-neutral-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                      type="number"
+                      min="1"
+                      [max]="totalPages"
+                      [value]="pageInput"
+                      aria-label="Numero de pagina"
+                      (input)="updatePageInput($event)"
+                      (keydown.enter)="confirmPagePopover()"
+                    />
+
+                    @if (pageInputError) {
+                      <p class="mt-2 text-xs font-medium text-red-600">{{ pageInputError }}</p>
+                    }
+
+                    <div class="mt-3 flex justify-end gap-2">
+                      <button
+                        type="button"
+                        class="inline-flex h-8 items-center rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        (click)="closePagePopover()"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        class="inline-flex h-8 items-center rounded-md border border-blue-600 bg-blue-600 px-3 text-xs font-medium text-white transition-colors hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        (click)="confirmPagePopover()"
+                      >
+                        Ir
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </app-card>

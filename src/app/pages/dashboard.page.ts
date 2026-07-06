@@ -1,41 +1,33 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, DestroyRef, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
-import { BadgeComponent } from '../shared/components/ui/badge.component';
-import { CardComponent, CardContentComponent, CardHeaderComponent } from '../shared/components/ui/card.component';
+import { bindShellPageContext } from '../layout/shell-page-context.binding';
+import { BadgeComponent } from '../shared/components/ui/primitives/badge.component';
+import { CardComponent, CardContentComponent, CardHeaderComponent } from '../shared/components/ui/primitives/card.component';
 
 @Component({
   selector: 'app-dashboard-page',
   standalone: true,
   imports: [CommonModule, RouterLink, LucideAngularModule, CardComponent, CardHeaderComponent, CardContentComponent, BadgeComponent],
   template: `
-    <div class="space-y-4">
-      <header class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <nav class="text-xs text-gray-500">Inicio / Dashboard</nav>
-          <h1 class="text-xl font-semibold text-gray-900">Dashboard operativo</h1>
-          <p class="mt-1 text-sm text-gray-600">
-            Vista de entrada para operar el periodo {{ periodoActivo.etiqueta() }} sin mezclar salidas futuras.
-          </p>
-        </div>
-        <a
-          routerLink="/remuneraciones/proceso-mensual"
-          class="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-blue-600 bg-blue-600 px-3 text-sm font-semibold text-white hover:bg-blue-700"
-        >
-          <lucide-icon class="h-4 w-4" name="calculator"></lucide-icon>
-          Preparar nomina
-        </a>
+    <section class="erp-fullscreen-page dashboard-page" aria-label="Resumen operativo">
+      <div class="erp-fullscreen-frame dashboard-frame">
+      <header class="erp-fullscreen-header dashboard-page-lead">
+        <p class="text-sm text-gray-600">
+          Vista de entrada para operar el periodo {{ periodoActivo.etiqueta() }} sin mezclar salidas futuras.
+        </p>
       </header>
 
+      <div class="erp-fullscreen-scroll dashboard-content">
       <section class="dashboard-status-strip" aria-label="Estado operativo del periodo">
         <div>
           <strong>Periodo {{ periodoActivo.etiqueta() }}</strong>
-          <span>Siguiente accion: validar y preparar nomina</span>
+          <span>Siguiente acción: verificar el período y generar la nómina mensual</span>
         </div>
-        <a routerLink="/remuneraciones/proceso-mensual">Ir a preparar nomina</a>
+        <a routerLink="/remuneraciones/nominas">Ir al administrador de nóminas</a>
       </section>
 
       <section>
@@ -50,10 +42,10 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
             </div>
 
             <div class="dashboard-quick-links">
-              <a routerLink="/remuneraciones/proceso-mensual" class="dashboard-tile">
+              <a routerLink="/remuneraciones/nominas" class="dashboard-tile">
                 <span>
-                  <strong>Preparar nomina</strong>
-                  <small>Valida trabajadores, parametros, movimientos y asignaciones del periodo.</small>
+                  <strong>Administrador de nóminas</strong>
+                  <small>Verifique trabajadores, parámetros y movimientos del período antes de confirmar.</small>
                 </span>
                 <lucide-icon class="h-4 w-4 shrink-0 text-gray-400" name="arrow-up-right"></lucide-icon>
               </a>
@@ -66,22 +58,15 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
               </a>
               <a routerLink="/remuneraciones/novedades-mensuales" class="dashboard-tile">
                 <span>
-                  <strong>Movimientos del mes</strong>
-                  <small>Registra bonos, descuentos, anticipos y ajustes puntuales antes del calculo.</small>
-                </span>
-                <lucide-icon class="h-4 w-4 shrink-0 text-gray-400" name="arrow-up-right"></lucide-icon>
-              </a>
-              <a routerLink="/remuneraciones/haberes-descuentos" class="dashboard-tile">
-                <span>
-                  <strong>Asignaciones recurrentes</strong>
-                  <small>Mantiene haberes, descuentos y aportes vigentes por trabajador.</small>
+                  <strong>Movimientos</strong>
+                  <small>Registra bonos, descuentos, anticipos y recurrentes del período.</small>
                 </span>
                 <lucide-icon class="h-4 w-4 shrink-0 text-gray-400" name="arrow-up-right"></lucide-icon>
               </a>
               <a routerLink="/empleados" class="dashboard-tile">
                 <span>
                   <strong>Empleados</strong>
-                  <small>Completa fichas y datos necesarios antes de preparar el periodo.</small>
+                  <small>Complete fichas y datos necesarios antes de cerrar el período en nómina mensual.</small>
                 </span>
                 <lucide-icon class="h-4 w-4 shrink-0 text-gray-400" name="arrow-up-right"></lucide-icon>
               </a>
@@ -145,17 +130,26 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
             <div>
               <h2 class="text-sm font-semibold text-gray-900">Actividad del dashboard</h2>
               <p class="mt-1 text-sm text-gray-600">
-                Esta vista no inventa montos, vencimientos ni eventos. La trazabilidad detallada queda en Preparar nomina
+                Esta vista no inventa montos, vencimientos ni eventos. La trazabilidad detallada queda en el Administrador de nóminas
                 y Liquidaciones oficiales.
               </p>
             </div>
           </div>
         </app-card-content>
       </app-card>
-    </div>
+      </div>
+      </div>
+    </section>
   `,
   styles: [
     `
+      .dashboard-content {
+        display: grid;
+        gap: 1rem;
+        padding: 12px;
+        align-content: start;
+      }
+
       .dashboard-tile {
         display: flex;
         min-height: 4rem;
@@ -304,4 +298,24 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
 })
 export class DashboardPage {
   readonly periodoActivo = inject(PeriodoActivoService);
+  private readonly router = inject(Router);
+
+  constructor() {
+    const destroyRef = inject(DestroyRef);
+    bindShellPageContext(
+      destroyRef,
+      () => ({
+        breadcrumbs: [{ label: 'Resumen' }],
+        primaryAction: {
+          label: 'Ir al administrador de nóminas',
+          actionId: 'ruta:/remuneraciones/nominas',
+        },
+      }),
+      {
+        onPrimaryAction: () => {
+          void this.router.navigateByUrl('/remuneraciones/nominas');
+        },
+      },
+    );
+  }
 }

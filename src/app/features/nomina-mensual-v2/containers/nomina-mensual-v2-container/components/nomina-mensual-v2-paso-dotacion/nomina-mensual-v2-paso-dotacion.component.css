@@ -1,0 +1,343 @@
+:host {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+}
+
+.paso-dotacion {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 16px 16px;
+  background: #ffffff;
+  min-height: 0;
+}
+
+.paso-dotacion__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.paso-dotacion__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.paso-dotacion__eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.paso-dotacion__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.paso-dotacion__subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+  max-width: 60ch;
+}
+
+.paso-dotacion__head-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.paso-dotacion__primary {
+  appearance: none;
+  background: #1d4ed8;
+  color: #ffffff;
+  border: 1px solid #1d4ed8;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.paso-dotacion__primary:hover:not(:disabled) {
+  background: #1e40af;
+}
+
+.paso-dotacion__primary:disabled {
+  background: #94a3b8;
+  border-color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Franja KPI inline sobria (mismo patrón que `.nmv2-paso-parametros__summary`).
+   El color se aplica solo al número, no al fondo, para evitar la apariencia
+   de chip de color decorativo. Separadores finos entre métricas. */
+.paso-dotacion__stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  padding: 6px 0;
+  border-top: 1px solid #eef0eb;
+  border-bottom: 1px solid #eef0eb;
+  background: #ffffff;
+}
+
+.paso-dotacion__stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-right: 14px;
+  border-right: 1px solid #eef0eb;
+  line-height: 1.2;
+  color: #647084;
+  font-variant-numeric: tabular-nums;
+}
+
+.paso-dotacion__stat:last-child {
+  border-right: 0;
+  padding-right: 0;
+}
+
+.paso-dotacion__stat strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.paso-dotacion__stat small {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #647084;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.paso-dotacion__stat.is-listo strong {
+  color: #047857;
+}
+.paso-dotacion__stat.is-advertencia strong {
+  color: #b45309;
+}
+.paso-dotacion__stat.is-critico strong {
+  color: #b91c1c;
+}
+.paso-dotacion__stat.is-bloqueado strong {
+  color: #475569;
+}
+
+.paso-dotacion__error {
+  margin: 0;
+  padding: 8px 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  color: #991b1b;
+  font-size: 12px;
+}
+
+.paso-dotacion__grid-wrapper {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 360px;
+}
+
+.paso-dotacion__data-grid {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.paso-dotacion__data-grid-card {
+  border-radius: 6px;
+  border-color: #e2e8f0;
+}
+
+.paso-dotacion__estado {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.paso-dotacion__estado[data-estado='listo'] {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.paso-dotacion__estado[data-estado='advertencia'] {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.paso-dotacion__estado[data-estado='critico'] {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.paso-dotacion__estado[data-estado='bloqueado'] {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.paso-dotacion__link {
+  background: none;
+  border: none;
+  color: #1d4ed8;
+  cursor: pointer;
+  font-size: 12px;
+  text-decoration: underline;
+}
+
+.paso-dotacion__chip {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.paso-dotacion__chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paso-dotacion__chip.is-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: #475569;
+}
+
+.paso-dotacion__placeholder {
+  padding: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.paso-dotacion__detalle {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  bottom: 24px;
+  width: min(420px, 100vw - 48px);
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 16px;
+  outline: none;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  overflow-y: auto;
+}
+
+.paso-dotacion__detalle:focus-visible {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18), 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+.paso-dotacion__detalle-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.paso-dotacion__detalle-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.paso-dotacion__detalle-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.paso-dotacion__detalle-meta strong {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.paso-dotacion__detalle-rut {
+  font-size: 12px;
+  color: #475569;
+  font-variant-numeric: tabular-nums;
+}
+
+.paso-dotacion__detalle-subtitle {
+  margin: 8px 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #475569;
+}
+
+.paso-dotacion__detalle-list {
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #1e293b;
+}
+
+.paso-dotacion__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  min-height: 16px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 12px;
+  color: #475569;
+}
+
+.paso-dotacion__footer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.paso-dotacion__warning {
+  color: #b45309;
+}
+
+.paso-dotacion__hint {
+  color: #475569;
+}

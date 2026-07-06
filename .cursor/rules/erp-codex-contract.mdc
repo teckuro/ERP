@@ -1,0 +1,13 @@
+---
+description: Contrato ERP UI y docs/codex — aclarar, leer, autorevisar
+alwaysApply: true
+---
+
+# ERP Angular — contrato con `docs/codex`
+
+1. **Constitución técnica:** leer `docs/codex/estandares/EST-008-ia.md` y los EST de la capa tocada (EST-001…007) antes de codificar.
+2. **Seguir la skill del proyecto** leyendo y aplicando `.cursor/skills/erp-codex-docs/SKILL.md` en tareas de UI, flujos ERP, estilos o módulos alineados a empleados/parámetros.
+3. **Si falta alcance** (pantalla/archivo, solo UI vs lógica, bitácora, criterio de listo), **preguntar al usuario** antes de implementar a gran escala.
+4. **Antes de codificar:** mínimo `docs/codex/AGENTS.md` + guías del tema + EST aplicables. UI: NOIA. Angular estructural: `docs/codex/arquitectura/frontend-interfaces.md` y EST-005.
+5. **Antes de cerrar:** checklists EST-008 + AGENTS + `ui-form-guidelines.md` si hubo formularios; `peticiones-estilos.md` si hubo cambio visual.
+6. En la respuesta final, indicar **en una frase** qué se contrastó con `docs/codex` (incl. estándares si aplicó).

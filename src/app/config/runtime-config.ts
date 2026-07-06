@@ -1,14 +1,20 @@
 type AppConfig = {
   supabaseUrl: string;
   supabaseAnonKey: string;
+  /** Edge Function slug en Supabase (dashboard: super-service) */
+  asistentePreguntorFunction?: string;
 };
+
+const DEFAULT_ASISTENTE_FUNCTION = 'super-service';
 
 let runtimeConfig: AppConfig | null = null;
 
 function normalizeConfig(input: Partial<AppConfig> | null | undefined): AppConfig {
+  const fn = input?.asistentePreguntorFunction?.trim();
   return {
     supabaseUrl: input?.supabaseUrl?.trim().replace(/\/$/, '') ?? '',
     supabaseAnonKey: input?.supabaseAnonKey?.trim() ?? '',
+    asistentePreguntorFunction: fn || DEFAULT_ASISTENTE_FUNCTION,
   };
 }
 

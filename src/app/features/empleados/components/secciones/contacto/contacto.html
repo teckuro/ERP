@@ -1,28 +1,34 @@
 <section class="employee-section-shell employee-section-shell--compact" [formGroup]="formGroup">
-  @if (isBlockVisible('contacto')) {
+  @if (esBloqueVisible('contacto')) {
     <app-card className="employee-block">
       <div class="employee-block-head">
         <h4>Contacto</h4>
-        <p class="employee-block-lead">Email y teléfono para notificaciones o coordinación interna.</p>
+        <p class="employee-block-lead">Correo y teléfono para notificaciones o coordinación interna.</p>
       </div>
 
       <div class="employee-grid employee-grid--two">
         <div class="form-field">
           <div class="field-label-row">
-            <label for="empleado-email">Email (opcional)</label>
+            <label for="empleado-email">Correo</label>
+            @if (isRequired('email')) {
+              <app-empleado-field-required />
+            }
           </div>
           <input
             id="empleado-email"
             type="email"
             inputmode="email"
+            data-field-path="contacto.email"
             formControlName="email"
             placeholder="Ej: nombre@empresa.cl"
             [class]="controlClass('email')"
           />
-          @if (hasError('email', 'email')) {
-            <p class="field-message">Ingresa un email válido.</p>
+          @if (hasError('email', 'required')) {
+            <p class="field-message">El correo es obligatorio.</p>
+          } @else if (hasError('email', 'email')) {
+            <p class="field-message">Ingresa un correo válido.</p>
           } @else if (hasError('email', 'maxlength')) {
-            <p class="field-message">El email supera el largo permitido.</p>
+            <p class="field-message">El correo supera el largo permitido.</p>
           } @else {
             <p class="field-message"></p>
           }
@@ -30,18 +36,24 @@
 
         <div class="form-field">
           <div class="field-label-row">
-            <label for="empleado-telefono">Teléfono (opcional)</label>
+            <label for="empleado-telefono">Teléfono</label>
+            @if (isRequired('telefono')) {
+              <app-empleado-field-required />
+            }
           </div>
           <input
             id="empleado-telefono"
             type="text"
             inputmode="tel"
             maxlength="30"
+            data-field-path="contacto.telefono"
             formControlName="telefono"
             placeholder="Ej: +56 9 1234 5678"
             [class]="controlClass('telefono')"
           />
-          @if (hasError('telefono', 'phone')) {
+          @if (hasError('telefono', 'required')) {
+            <p class="field-message">El teléfono es obligatorio.</p>
+          } @else if (hasError('telefono', 'phoneFormat')) {
             <p class="field-message">Ingresa un teléfono válido.</p>
           } @else if (hasError('telefono', 'maxlength')) {
             <p class="field-message">El teléfono supera el largo permitido.</p>
@@ -53,7 +65,7 @@
     </app-card>
   }
 
-  @if (isBlockVisible('ubicacion')) {
+  @if (esBloqueVisible('ubicacion')) {
     <app-card className="employee-block" [class.employee-block--domicilio-avanzado]="domicilioAvanzado">
       <div class="employee-block-head">
         <h4>Domicilio particular</h4>
@@ -66,13 +78,13 @@
 
       <div
         class="employee-grid employee-grid--four"
-        [class.employee-grid-adv-domicilio]="advancedGridLayout"
+        [class.employee-grid-adv-domicilio]="grillaAvanzada"
       >
         <div class="form-field form-field--wide">
           <div class="field-label-row">
             <label for="empleado-direccion">Calle o avenida</label>
             @if (isRequired('direccion')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <input
@@ -133,7 +145,7 @@
           <div class="field-label-row">
             <label for="empleado-comuna">Comuna</label>
             @if (isRequired('idComuna')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <app-search-select

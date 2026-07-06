@@ -1,0 +1,27 @@
+@if (eyebrow || title || subtitle) {
+  <header class="pf-head">
+    <div class="pf-head__copy">
+      @if (eyebrow) {
+        <p class="pf-head__eyebrow">{{ eyebrow }}</p>
+      }
+      @if (title) {
+        <h1 class="pf-head__title">{{ title }}</h1>
+      }
+      @if (subtitle) {
+        <p class="pf-head__subtitle">{{ subtitle }}</p>
+      }
+    </div>
+    <div class="pf-head__actions">
+      <ng-content select="[pageFrameActions]"></ng-content>
+    </div>
+  </header>
+}
+
+<ng-content select="[pageFrameSummary]"></ng-content>
+<ng-content select="[pageFrameToolbar]"></ng-content>
+
+<div class="pf-body">
+  <ng-content></ng-content>
+</div>
+
+<ng-content select="[pageFrameFooter]"></ng-content>

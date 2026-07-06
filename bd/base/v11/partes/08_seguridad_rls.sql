@@ -131,8 +131,6 @@ DECLARE
         'ley_16744_parametros',
         'organismo_administrador_ley_16744',
         'ccaf_entidad',
-        'catalogo_lre',
-        'empresa_ley_16744',
         'banco',
         'tipo_cuenta_bancaria',
         'zona_extrema_catalogo'

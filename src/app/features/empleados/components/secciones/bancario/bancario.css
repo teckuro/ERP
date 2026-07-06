@@ -1,5 +1,13 @@
 @import '../../form-empleado-shared.css';
 
+:host.employee-layout-inline-record .employee-block-head {
+  display: none;
+}
+
+:host.employee-layout-inline-record .employee-block > .employee-grid {
+  padding: 0;
+}
+
 :host:not(.employee-layout-advanced) .employee-grid--four {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }

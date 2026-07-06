@@ -101,7 +101,7 @@ Varios `.md` en la **raíz de `temas/`** son **solo redirección** (“Documento
 
 | Página / flujo | Documento |
 |----------------|------------|
-| Proceso / nómina futura | [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md), [`../modulos/nomina-mensual/vision-futura.md`](../modulos/nomina-mensual/vision-futura.md) |
+| Proceso / nómina futura | [`../modulos/nomina-mensual/preparar-nomina/README.md`](../modulos/nomina-mensual/preparar-nomina/README.md), [`../modulos/nomina-mensual/vision/vision-futura.md`](../modulos/nomina-mensual/vision/vision-futura.md) |
 
 ---
 

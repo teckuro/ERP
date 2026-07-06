@@ -3,8 +3,7 @@ import { Component, Input } from '@angular/core';
 import {
   DataGridColumn,
   DataGridComponent,
-  DataGridFilter,
-} from '../../../../shared/components/ui/data-grid.component';
+} from '../../../../shared/components/ui/data-grid';
 import { AfpParametro } from '../../models/parametro-general.model';
 
 @Component({
@@ -19,8 +18,7 @@ import { AfpParametro } from '../../models/parametro-general.model';
           [rows]="rows"
           [columns]="columns"
           [loading]="loading"
-          [filters]="afpFilters"
-          [filtersEnabled]="true"
+          [filtersEnabled]="false"
           [showExportAction]="true"
           [maxItems]="10"
           gridHeight="100%"
@@ -39,46 +37,5 @@ export class ParametrosAfpTabComponent {
   @Input() loading = false;
   @Input() gridPersistenceKey = 'parametros.afp.dg';
   @Input() refresh: (() => void) | null = null;
-
-  readonly afpFilters: DataGridFilter<AfpParametro>[] = [
-    {
-      id: 'vigenciaInicio',
-      label: 'Vigencia inicio',
-      field: 'vigenciaInicio',
-      type: 'text',
-      operator: 'startsWith',
-      placeholder: 'Ej: 2026-05',
-      emptyLabel: 'Todos',
-    },
-    {
-      id: 'codigo',
-      label: 'Codigo',
-      field: 'codigo',
-      type: 'text',
-      operator: 'contains',
-      placeholder: 'Filtrar por codigo',
-      emptyLabel: 'Todos',
-    },
-    {
-      id: 'nombre',
-      label: 'Nombre',
-      field: 'nombre',
-      type: 'text',
-      operator: 'contains',
-      placeholder: 'Filtrar por nombre',
-      emptyLabel: 'Todos',
-    },
-    {
-      id: 'vigente',
-      label: 'Estado',
-      field: 'vigente',
-      type: 'select',
-      emptyLabel: 'Todos',
-      options: [
-        { label: 'Vigente', value: 'true' },
-        { label: 'Inactivo', value: 'false' },
-      ],
-    },
-  ];
 }
 

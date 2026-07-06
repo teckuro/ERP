@@ -1,6 +1,10 @@
 import type { MovimientoVariableEstado } from '../../movimientos-variables/models/movimiento-variable.model';
 import type { HaberDescuentoAsignacionPrevalidacionMensualFila } from '../../haberes-descuentos/models/haber-descuento-asignacion.model';
-import type { EmpleadoFichaDetalle, EmpleadoListado } from '../../empleados/models/empleado-listado.model';
+import type {
+  EmpleadoEstadoFicha,
+  EmpleadoFichaDetalle,
+  EmpleadoListado,
+} from '../../empleados/models/empleado-listado.model';
 import type {
   EntradaMensualEstado,
   EntradaMensualOrigen,
@@ -97,6 +101,21 @@ export interface ProcesoMensualResumen {
   recurrentesFueraDelMes: number;
 }
 
+export interface TrabajadorPendienteRevisionPeriodo {
+  idPersona: number;
+  nombre: string;
+  rut: string;
+  motivo: string;
+  /** Detalle RRHH (1–2 frases) para modal y revisión por trabajador. */
+  detalleCorreccion?: string;
+  estadoFicha: EmpleadoEstadoFicha;
+  aptoParaRemuneraciones: boolean;
+  aptoFicha?: boolean;
+  listoParaNomina?: boolean;
+  bloqueanteParaNomina?: boolean;
+  motivoBloqueoNomina?: string;
+}
+
 export interface ProcesoMensualPrevalidacion {
   periodo: string;
   estado: ProcesoMensualEstado;
@@ -107,6 +126,9 @@ export interface ProcesoMensualPrevalidacion {
   informaciones: ProcesoMensualMensaje[];
   items: ProcesoMensualItem[];
   entradasMensuales?: EntradaMensualPeriodo[];
+  trabajadoresPendientesRevision: TrabajadorPendienteRevisionPeriodo[];
+  /** Moneda del contrato por idPersona (CLP, UF, …). */
+  monedaContratoPorPersona?: Record<string, string | null>;
 }
 
 export type ProcesoMensualPreNominaEstado =
@@ -124,6 +146,10 @@ export interface BaseNominaTrabajadorResumen {
   rutLabel: string;
   contratoLabel: string;
   estado: BaseNominaTrabajadorEstado;
+  aptoFicha?: boolean;
+  listoParaNomina?: boolean;
+  bloqueadoParaNomina?: boolean;
+  motivoBloqueoNomina?: string;
   asignacionesRecurrentes: number;
   movimientosDelMes: number;
   observacion: string;
@@ -213,10 +239,13 @@ export interface TrabajadorMotorCalculoSnapshot {
   idTramoCarga: number | null;
   tipoGratificacion: string | null;
   gratificacionProporcional: boolean | null;
+  /** Fecha de ingreso del contrato ('YYYY-MM-DD'); acota dias trabajados del periodo. */
+  fechaIngreso?: string | null;
+  /** Fecha de retiro/termino del contrato ('YYYY-MM-DD'); acota dias trabajados del periodo. */
+  fechaRetiro?: string | null;
 }
 
 export interface EmpresaLey16744CalculoSnapshot {
-  idEmpresaLey16744: number;
   idEmpresa: number | null;
   idOrganismoAdministradorLey16744: number | null;
   tasaAdicionalDiferenciada: number | null;
@@ -241,6 +270,10 @@ export interface EntradaMensualMotor {
   moneda: string | null;
   estado: EntradaMensualEstado;
   afectaBase: boolean | null;
+  /** Imponibilidad del haber/descuento segun snapshot del concepto; null = sin dato, el motor aplica su fallback. */
+  imponible?: boolean | null;
+  /** Tributabilidad del haber/descuento segun snapshot del concepto; null = sin dato, el motor aplica su fallback. */
+  tributable?: boolean | null;
   metadata: Record<string, unknown>;
 }
 
@@ -346,6 +379,26 @@ export interface CerrarNominaOperativamenteParams {
   observacion?: string | null;
 }
 
+export interface ReabrirNominaOperativamenteParams {
+  idCalculoPeriodo: number;
+  periodo: string;
+  observacion?: string | null;
+  forzar?: boolean;
+  metadata?: Record<string, unknown>;
+}
+
+/** Parametro congelado del periodo (snapshot auditable de lo usado por el motor). */
+export interface NominaCalculoParametroSnapshot {
+  idCalculoParametro?: number;
+  idCalculoPeriodo?: number;
+  grupo: string;
+  clave: string;
+  valor: string | null;
+  valorNumerico: number | null;
+  vigencia: string | null;
+  origen: string;
+}
+
 export interface NominaCalculoConceptoSnapshot {
   idCalculoConcepto?: number;
   idCalculoTrabajador?: number;
@@ -416,8 +469,18 @@ export interface NominaCalculoTrabajadorSnapshot {
   trazabilidad: NominaCalculoTrazabilidadSnapshot[];
 }
 
+export interface BorradorPersistContext {
+  entradasMensuales: EntradaMensualPeriodo[];
+  resumenPrevalidacion: ProcesoMensualResumen | null;
+  prevalidacionEstado: ProcesoMensualPrevalidacion['estado'] | null;
+  trabajadoresPendientesRevision?: TrabajadorPendienteRevisionPeriodo[];
+  bloqueos?: ProcesoMensualMensaje[];
+  advertencias?: ProcesoMensualMensaje[];
+}
+
 export interface NominaCalculoPeriodoSnapshot {
   idCalculoPeriodo?: number;
+  nominaPeriodoId?: string | null;
   periodo: string;
   idEmpresa: number | null;
   estado: NominaCalculoSnapshotEstado;
@@ -431,14 +494,41 @@ export interface NominaCalculoPeriodoSnapshot {
   totalAdvertencias: number;
   versionMotor: string;
   hashSnapshot: string | null;
+  /** Huella de los parametros congelados usados por el motor. */
+  hashParametros?: string | null;
+  /** Huella de las entradas mensuales usadas por el motor. */
+  hashEntradas?: string | null;
   origen: NominaCalculoSnapshotOrigen;
   activo: boolean;
   reemplazadoPor: number | null;
   aprobacionOperativa: AprobacionOperativaPersistida | null;
   cierreOperativo: NominaCierreOperativo | null;
+  reaperturaOperativa?: NominaReaperturaOperativa | null;
+  anulacion?: NominaAnulacionOperativa | null;
   trabajadores: NominaCalculoTrabajadorSnapshot[];
   issues: NominaCalculoIssueSnapshot[];
   trazabilidad: NominaCalculoTrazabilidadSnapshot[];
+  /** Parametros congelados del periodo (auditoria de lo usado por el motor). */
+  parametros?: NominaCalculoParametroSnapshot[];
+  /** Contexto rehidratable guardado en metadata del período (borrador). */
+  borradorPersist?: BorradorPersistContext | null;
+  /** Metadata cruda de cierre_operativo_metadata (p. ej. base de parámetros V2). */
+  metadataOperativa?: Record<string, unknown> | null;
+}
+
+export interface NominaReaperturaOperativa {
+  fecha: string;
+  usuarioId: string | null;
+  usuarioLabel: string | null;
+  observacion: string | null;
+  metadata: Record<string, unknown> | null;
+}
+
+export interface NominaAnulacionOperativa {
+  fecha: string;
+  usuarioId: string | null;
+  usuarioLabel: string | null;
+  observacion: string | null;
 }
 
 export interface GuardarSnapshotPreliminarResult {
@@ -502,5 +592,7 @@ export function trabajadorSnapshotDesdeFicha(ficha: EmpleadoFichaDetalle): Traba
       typeof contrato['gratificacionProporcional'] === 'boolean'
         ? contrato['gratificacionProporcional']
         : null,
+    fechaIngreso: asString(contrato['fechaIngreso']) ?? asString(ficha.fechaIngreso),
+    fechaRetiro: asString(contrato['fechaTermino']) ?? asString(contrato['fechaRetiro']),
   };
 }

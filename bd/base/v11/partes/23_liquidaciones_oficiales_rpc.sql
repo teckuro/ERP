@@ -1,5 +1,6 @@
 -- LIQ-OFICIAL-01: generacion atomica de liquidaciones oficiales internas.
--- Copia/materializa un snapshot cerrado. No recalcula y no genera PDF/Previred/LRE/banco/contabilidad.
+-- Orden del flujo: aprobar -> emitir (esta funcion) -> cerrar.
+-- Copia/materializa un snapshot aprobado. No recalcula y no genera PDF/Previred/LRE/banco/contabilidad.
 
 CREATE OR REPLACE FUNCTION public.generar_liquidaciones_oficiales(
     p_id_calculo_periodo BIGINT,
@@ -17,6 +18,8 @@ DECLARE
     v_usuario_id UUID;
     v_usuario_label TEXT;
     v_total_trabajadores INT;
+    v_preparacion public.nomina_preparacion%ROWTYPE;
+    v_tipo_liquidacion TEXT;
 BEGIN
     v_usuario_id := auth.uid();
 
@@ -41,8 +44,30 @@ BEGIN
         RAISE EXCEPTION 'El snapshot debe estar aprobado operativamente';
     END IF;
 
-    IF v_snapshot.cierre_operativo_estado IS DISTINCT FROM 'cerrado_operativamente' THEN
-        RAISE EXCEPTION 'La nomina debe estar cerrada operativamente';
+    -- El cierre es el bloqueo final del flujo: se emite antes de cerrar.
+    IF v_snapshot.cierre_operativo_estado IS NOT NULL THEN
+        RAISE EXCEPTION 'La nomina ya esta cerrada; no se pueden emitir nuevas liquidaciones';
+    END IF;
+
+    IF v_snapshot.id_preparacion_nomina IS NOT NULL THEN
+        SELECT *
+        INTO v_preparacion
+        FROM public.nomina_preparacion
+        WHERE id_preparacion_nomina = v_snapshot.id_preparacion_nomina
+          AND activo = TRUE
+        FOR UPDATE;
+
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'El snapshot referencia una preparacion inexistente o inactiva';
+        END IF;
+
+        IF v_preparacion.estado IS DISTINCT FROM 'confirmada' THEN
+            RAISE EXCEPTION 'La preparacion debe estar confirmada antes de generar liquidaciones';
+        END IF;
+
+        IF v_preparacion.tipo_preparacion NOT IN ('mensualCompleta', 'porCentroCosto', 'seleccionManual') THEN
+            RAISE EXCEPTION 'El tipo de preparacion requiere adaptador de liquidacion antes de generar documentos';
+        END IF;
     END IF;
 
     IF EXISTS (
@@ -64,11 +89,19 @@ BEGIN
     END IF;
 
     v_usuario_label := COALESCE(NULLIF(auth.jwt() ->> 'email', ''), 'Usuario no disponible en esta sesion');
+    v_tipo_liquidacion := CASE
+        WHEN v_snapshot.tipo_preparacion IN ('complementaria', 'reproceso', 'retroactiva', 'finiquito', 'especial')
+            THEN v_snapshot.tipo_preparacion
+        ELSE 'mensual'
+    END;
 
     INSERT INTO public.nomina_liquidacion_periodo (
         id_empresa,
         periodo,
         id_calculo_periodo,
+        id_preparacion_nomina,
+        tipo_liquidacion,
+        version,
         estado,
         usuario_generacion_id,
         usuario_generacion_label,
@@ -82,6 +115,9 @@ BEGIN
         v_snapshot.id_empresa,
         v_snapshot.periodo,
         v_snapshot.id_calculo_periodo,
+        v_snapshot.id_preparacion_nomina,
+        v_tipo_liquidacion,
+        1,
         'generada',
         v_usuario_id,
         v_usuario_label,
@@ -92,10 +128,13 @@ BEGIN
         COALESCE(p_metadata, '{}'::JSONB)
             || jsonb_build_object(
                 'origen', 'nomina_calculo_periodo',
+                'idPreparacionNomina', v_snapshot.id_preparacion_nomina,
+                'tipoPreparacion', v_snapshot.tipo_preparacion,
+                'tipoLiquidacion', v_tipo_liquidacion,
                 'idCalculoPeriodo', v_snapshot.id_calculo_periodo,
                 'versionMotor', v_snapshot.version_motor,
                 'hashSnapshot', v_snapshot.hash_snapshot,
-                'notaAlcance', 'Liquidacion oficial interna generada desde snapshot cerrado; no recalcula montos.'
+                'notaAlcance', 'Liquidacion oficial interna generada desde snapshot aprobado; no recalcula montos.'
             )
     )
     RETURNING * INTO v_liquidacion;
@@ -205,6 +244,37 @@ BEGIN
       ON lt.id_liquidacion_periodo = v_liquidacion.id_liquidacion_periodo
      AND lt.metadata ->> 'idCalculoTrabajador' = ct.id_calculo_trabajador::TEXT
     WHERE ct.id_calculo_periodo = p_id_calculo_periodo;
+
+    IF v_snapshot.id_preparacion_nomina IS NOT NULL THEN
+        UPDATE public.nomina_preparacion
+        SET estado = 'liquidaciones_generadas',
+            metadata = COALESCE(metadata, '{}'::JSONB)
+                || jsonb_build_object(
+                    'idLiquidacionPeriodo', v_liquidacion.id_liquidacion_periodo,
+                    'tipoLiquidacion', v_tipo_liquidacion
+                ),
+            updated_at = NOW()
+        WHERE id_preparacion_nomina = v_snapshot.id_preparacion_nomina;
+
+        INSERT INTO public.nomina_preparacion_evento (
+            id_preparacion_nomina,
+            tipo_evento,
+            usuario_id,
+            usuario_label,
+            metadata
+        )
+        VALUES (
+            v_snapshot.id_preparacion_nomina,
+            'LIQUIDACIONES_GENERADAS',
+            v_usuario_id,
+            v_usuario_label,
+            jsonb_build_object(
+                'idCalculoPeriodo', p_id_calculo_periodo,
+                'idLiquidacionPeriodo', v_liquidacion.id_liquidacion_periodo,
+                'tipoLiquidacion', v_tipo_liquidacion
+            )
+        );
+    END IF;
 
     RETURN v_liquidacion;
 END;

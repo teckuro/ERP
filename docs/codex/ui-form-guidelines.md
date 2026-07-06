@@ -1,6 +1,6 @@
 # UI y Formularios - Guia Central
 
-Este archivo es la fuente unica para reglas visuales, formularios, loading, botones, mensajes y checklist de UI del ERP.
+Este archivo es la referencia de tokens, formularios, loading, botones, mensajes y grillas de captura del ERP. Para decidir jerarquia NOIA, anti-card, arquetipo de pantalla y cierre documental, usar primero [`diseno/noia-ui-manual.md`](./diseno/noia-ui-manual.md).
 
 Para el índice padre de documentación y enlaces por tema, usar [`README.md`](./README.md).
 
@@ -15,7 +15,7 @@ Documentos relacionados:
 - Estados usan color para informar, no para decorar.
 - Sin gradientes decorativos, orbs, fondos saturados ni sombras pesadas.
 - Cards con radio maximo `8px`; controles compactos con `5px` o `6px`.
-- No usar cards dentro de cards salvo modales, items repetidos o herramientas realmente enmarcadas.
+- No usar cards dentro de cards salvo modales, items repetidos o herramientas realmente enmarcadas. NOIA prohibe cards por defecto cuando solo agregan marco visual.
 
 ## Tokens
 
@@ -59,7 +59,7 @@ Todas las pantallas deben mantener:
 
 1. Header con breadcrumb arriba a la izquierda y titulo de la vista.
 2. Botonera separada debajo del header, alineada a la derecha.
-3. Contenido principal en una superficie blanca con borde cuando la vista lo requiera.
+3. Contenido principal en una superficie acorde al arquetipo: formulario, tabla, consola, bitacora, panel dividido o franja operativa. Una card blanca con borde aplica solo cuando la vista lo requiera.
 
 Regla adicional (altura):
 

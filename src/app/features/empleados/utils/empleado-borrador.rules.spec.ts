@@ -33,6 +33,16 @@ function basePayload(over: Partial<CrearEmpleadoPayload> = {}): CrearEmpleadoPay
     idTipoTrabajador: 1,
     idTipoJornada: 1,
     seguroCesantia: false,
+    excluidoLimiteJornada: false,
+    causalExclusionJornada: null,
+    justificacionExclusionJornada: null,
+    casaParticularModalidad: null,
+    casaParticularLabores: null,
+    casaParticularDomicilioEspecifico: null,
+    casaParticularAsistenciaCuidado: false,
+    casaParticularRegistroDtEstado: null,
+    casaParticularRegistroDtFecha: null,
+    casaParticularRegistroDtFolio: null,
     fechaIngreso: '2024-01-01',
     fechaTermino: null,
     sueldoBase: 0,
@@ -64,6 +74,7 @@ function basePayload(over: Partial<CrearEmpleadoPayload> = {}): CrearEmpleadoPay
     regimenExCaja: null,
     tasaExCaja: null,
     idSalud: null,
+    tipoSalud: null,
     idMonedaPlan: null,
     valorPlan: null,
     adicionalAugeGes: null,
@@ -77,6 +88,7 @@ function basePayload(over: Partial<CrearEmpleadoPayload> = {}): CrearEmpleadoPay
     idTipoCuentaBancaria: 1,
     numeroCuenta: '1',
     ...over,
+    relacionLaboral: over.relacionLaboral ?? 'CONTRATO',
   };
 }
 

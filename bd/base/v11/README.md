@@ -42,6 +42,12 @@ Estados validos:
 
 13. Para habilitar condiciones especiales del trabajador y perfil laboral/previsional derivado, ejecutar `partes/26_empleados_condiciones_trabajador.sql` despues de `25_lre_concept_rules.sql`. Crea `tipo_condicion_trabajador`, `persona_condicion_trabajador`, seeds minimos, RLS/permisos locales y `fn_obtener_perfil_laboral_persona`; no modifica HTML, motor ni liquidaciones.
 
+14. Para habilitar campos normativos de contrato en Empleados, ejecutar `partes/28_empleados_contrato_normativo.sql` despues de `27_nomina_periodo_diagnostico.sql`. Agrega exclusion de limite de jornada/art. 22 y datos de casa particular sobre `contrato` con `CHECK` de textos permitidos; no modifica liquidaciones ni catalogos.
+
+15. Para persistir el vinculo laboral (dependiente u honorarios) en `contrato`, ejecutar `partes/29_relacion_laboral_contrato.sql` despues de `28_empleados_contrato_normativo.sql`. Agrega `relacion_laboral` con valores `CONTRATO` o `HONORARIOS`; espejo de `supabase/migrations/20260524224000_add_relacion_laboral_contrato.sql`.
+
+16. Para habilitar preparaciones/lotes de nomina V11, ejecutar `partes/30_nomina_preparacion.sql` antes de `15_nomina_calculo_snapshot.sql`, y luego `partes/33_nomina_preparacion_fks.sql`, `partes/31_nomina_preparacion_rls.sql` y `partes/32_nomina_preparacion_rpc.sql` despues de liquidaciones oficiales. El modelo mantiene compatibilidad legacy para snapshots sin preparacion y exige `id_empresa` en preparaciones nuevas.
+
 `12_migracion_lre_datos_incremental.sql` requiere que existan `persona`/`contrato` con IDs coherentes si se dejan los datos demo.
 
 ### Orden de ejecucion fresh local (`partes/`)
@@ -60,17 +66,24 @@ Estados validos:
 12. `11_parametros_generales_ampliacion.sql`: columnas extendidas de `parametros_generales`.
 13. `13_persona_paso_alta_avanzada.sql`: soporte para continuar alta avanzada.
 14. `14_movimiento_variable_mensual.sql`: tabla movimientos variables mensuales (Fase 9.4C); solo para BD ya creada sin pasar por `02_tablas.sql` actualizado (idempotente).
-15. `15_nomina_calculo_snapshot.sql`: tablas de snapshots preliminares de nomina mensual (MOTOR-03B/MOTOR-03C), sin liquidacion oficial ni cierre.
-16. `17_parametros_reconciliacion_cliente.sql`: columnas de decision de reconciliacion en `parametros_generales_cliente`.
-17. `18_novedades_mensuales.sql`: tabla base `novedad_remuneracion_periodo` para hechos del periodo, sin calculo ni resultado de liquidacion.
-18. `19_novedades_mensuales_rls.sql`: RLS y permisos minimos para Novedades mensuales (`authenticated`; sin `anon` ni `DELETE` directo).
-19. `20_nomina_calculo_snapshot_rpc.sql`: RPC `guardar_nomina_calculo_snapshot` para guardar/reemplazar snapshots preliminares de forma atomica (`authenticated`; sin `anon`).
-20. `21_nomina_cierre_operativo_rpc.sql`: RPC `cerrar_nomina_operativa` para congelar el snapshot activo aprobado operativamente (`authenticated`; sin `anon`, sin reapertura v1).
-21. `22_liquidaciones_oficiales.sql`: tablas `nomina_liquidacion_periodo`, `nomina_liquidacion_trabajador` y `nomina_liquidacion_concepto`, con RLS minima para `authenticated`.
-22. `23_liquidaciones_oficiales_rpc.sql`: RPC `generar_liquidaciones_oficiales`, atomica, `SECURITY INVOKER`, sin `anon`, desde snapshot cerrado sin recalculo.
-23. `24_lre_catalogo_oficial.sql`: catalogo LRE oficial y mapeo base de conceptos directos.
-24. `25_lre_concept_rules.sql`: estrategia LRE para conceptos no directos o ambiguos.
-25. `26_empleados_condiciones_trabajador.sql`: condiciones especiales del trabajador y perfil laboral/previsional derivado.
+15. `30_nomina_preparacion.sql`: tablas base de preparaciones/lotes de nomina, sin FK tardias hacia calculo/liquidacion.
+16. `15_nomina_calculo_snapshot.sql`: tablas de snapshots preliminares de nomina mensual (MOTOR-03B/MOTOR-03C), con enlace opcional a preparacion V11 y compatibilidad legacy.
+17. `17_parametros_reconciliacion_cliente.sql`: columnas de decision de reconciliacion en `parametros_generales_cliente`.
+18. `18_novedades_mensuales.sql`: tabla base `novedad_remuneracion_periodo` para hechos del periodo, sin calculo ni resultado de liquidacion.
+19. `19_novedades_mensuales_rls.sql`: RLS y permisos minimos para Novedades mensuales (`authenticated`; sin `anon` ni `DELETE` directo).
+20. `20_nomina_calculo_snapshot_rpc.sql`: RPC `guardar_nomina_calculo_snapshot` para guardar/reemplazar snapshots preliminares de forma atomica (`authenticated`; sin `anon`), resolviendo preparacion default cuando hay empresa.
+21. `21_nomina_cierre_operativo_rpc.sql`: RPC `cerrar_nomina_operativa` para congelar el snapshot activo aprobado operativamente (`authenticated`; sin `anon`, sin reapertura v1).
+22. `22_liquidaciones_oficiales.sql`: tablas `nomina_liquidacion_periodo`, `nomina_liquidacion_trabajador` y `nomina_liquidacion_concepto`, con enlace opcional a preparacion y RLS minima para `authenticated`.
+23. `23_liquidaciones_oficiales_rpc.sql`: RPC `generar_liquidaciones_oficiales`, atomica, `SECURITY INVOKER`, sin `anon`, desde snapshot aprobado sin recalculo; exige preparacion confirmada cuando el snapshot la tiene.
+24. `33_nomina_preparacion_fks.sql`: FK tardias desde preparacion hacia calculo/liquidacion origen.
+25. `31_nomina_preparacion_rls.sql`: RLS y permisos minimos para preparaciones.
+26. `32_nomina_preparacion_rpc.sql`: RPC para crear, definir alcance, confirmar y anular preparaciones.
+27. `24_lre_catalogo_oficial.sql`: catalogo LRE oficial y mapeo base de conceptos directos.
+28. `25_lre_concept_rules.sql`: estrategia LRE para conceptos no directos o ambiguos.
+29. `26_empleados_condiciones_trabajador.sql`: condiciones especiales del trabajador y perfil laboral/previsional derivado.
+30. `27_nomina_periodo_diagnostico.sql`: diagnostico operativo de periodos de nomina.
+31. `28_empleados_contrato_normativo.sql`: campos normativos de contrato para casa particular y exclusion de limite de jornada.
+32. `29_relacion_laboral_contrato.sql`: columna `relacion_laboral` en `contrato` (`CONTRATO` / `HONORARIOS`).
 
 ### Ejecucion fresh local
 

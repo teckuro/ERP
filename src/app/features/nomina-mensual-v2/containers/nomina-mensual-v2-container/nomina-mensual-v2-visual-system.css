@@ -1,0 +1,18 @@
+/* Nómina V2 — utilidades shell compartidas (importado por nomina-mensual-v2-container.css) */
+
+.nmv2-stepper-card {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.nmv2-stepper-card::-webkit-scrollbar {
+  height: 4px;
+}
+
+.nmv2-stepper-card::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #cbd5e1;
+}

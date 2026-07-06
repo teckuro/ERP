@@ -2,6 +2,15 @@
 -- La funcion escribe el snapshot completo en una sola llamada transaccional.
 -- No cierra periodo, no emite liquidaciones, no genera Previred, LRE, banco ni PDF.
 
+-- Drop de la firma previa (7 args) para evitar overload ambiguo con la nueva (8 args, p_parametros).
+DROP FUNCTION IF EXISTS guardar_nomina_calculo_snapshot(
+    TEXT, INT, JSONB, JSONB, JSONB, JSONB, JSONB
+);
+
+DROP FUNCTION IF EXISTS guardar_nomina_calculo_snapshot(
+    TEXT, INT, JSONB, JSONB, JSONB, JSONB, JSONB, JSONB
+);
+
 CREATE OR REPLACE FUNCTION guardar_nomina_calculo_snapshot(
     p_periodo TEXT,
     p_id_empresa INT,
@@ -9,7 +18,9 @@ CREATE OR REPLACE FUNCTION guardar_nomina_calculo_snapshot(
     p_trabajadores JSONB,
     p_conceptos JSONB DEFAULT '[]'::JSONB,
     p_observaciones JSONB DEFAULT '[]'::JSONB,
-    p_trazabilidad JSONB DEFAULT '[]'::JSONB
+    p_trazabilidad JSONB DEFAULT '[]'::JSONB,
+    p_parametros JSONB DEFAULT '[]'::JSONB,
+    p_id_preparacion_nomina BIGINT DEFAULT NULL
 )
 RETURNS INT
 LANGUAGE plpgsql
@@ -23,7 +34,14 @@ DECLARE
     v_worker RECORD;
     v_item JSONB;
     v_trabajador_index INT;
+    v_id_preparacion_nomina BIGINT;
+    v_tipo_preparacion TEXT;
+    v_usuario_id UUID;
+    v_usuario_label TEXT;
 BEGIN
+    v_usuario_id := auth.uid();
+    v_usuario_label := COALESCE(NULLIF(auth.jwt() ->> 'email', ''), 'Usuario no disponible en esta sesion');
+
     IF p_periodo IS NULL OR btrim(p_periodo) = '' OR p_periodo !~ '^[0-9]{4}-(0[1-9]|1[0-2])$' THEN
         RAISE EXCEPTION 'Periodo de snapshot invalido';
     END IF;
@@ -48,8 +66,93 @@ BEGIN
         RAISE EXCEPTION 'Trazabilidad de snapshot invalida';
     END IF;
 
+    IF p_parametros IS NULL OR jsonb_typeof(p_parametros) <> 'array' THEN
+        RAISE EXCEPTION 'Parametros congelados de snapshot invalidos';
+    END IF;
+
     IF NULLIF(p_cabecera->>'version_motor', '') IS NULL THEN
         RAISE EXCEPTION 'Version de motor requerida para guardar snapshot';
+    END IF;
+
+    IF p_id_preparacion_nomina IS NOT NULL THEN
+        SELECT id_preparacion_nomina, tipo_preparacion
+        INTO v_id_preparacion_nomina, v_tipo_preparacion
+        FROM public.nomina_preparacion
+        WHERE id_preparacion_nomina = p_id_preparacion_nomina
+          AND periodo_pago = p_periodo
+          AND id_empresa = p_id_empresa
+          AND activo = TRUE
+        FOR UPDATE;
+
+        IF v_id_preparacion_nomina IS NULL THEN
+            RAISE EXCEPTION 'Preparacion de nomina no existe o no corresponde al periodo/empresa';
+        END IF;
+    ELSIF p_id_empresa IS NOT NULL
+          AND to_regclass('public.nomina_preparacion') IS NOT NULL THEN
+        SELECT id_preparacion_nomina, tipo_preparacion
+        INTO v_id_preparacion_nomina, v_tipo_preparacion
+        FROM public.nomina_preparacion
+        WHERE periodo_pago = p_periodo
+          AND id_empresa = p_id_empresa
+          AND tipo_preparacion = 'mensualCompleta'
+          AND activo = TRUE
+        ORDER BY id_preparacion_nomina DESC
+        LIMIT 1
+        FOR UPDATE;
+
+        IF v_id_preparacion_nomina IS NULL THEN
+            INSERT INTO public.nomina_preparacion (
+                periodo_pago,
+                id_empresa,
+                tipo_preparacion,
+                metodo_alcance,
+                estado,
+                metadata,
+                created_by,
+                created_by_label
+            )
+            VALUES (
+                p_periodo,
+                p_id_empresa,
+                'mensualCompleta',
+                'todaEmpresa',
+                'lista_para_calculo',
+                jsonb_build_object(
+                    'origen', 'guardar_nomina_calculo_snapshot',
+                    'creacionAutomatica', TRUE,
+                    'notaAlcance', 'Preparacion mensual default creada para compatibilidad V11.'
+                ),
+                v_usuario_id,
+                v_usuario_label
+            )
+            RETURNING id_preparacion_nomina, tipo_preparacion
+            INTO v_id_preparacion_nomina, v_tipo_preparacion;
+
+            INSERT INTO public.nomina_preparacion_evento (
+                id_preparacion_nomina,
+                tipo_evento,
+                usuario_id,
+                usuario_label,
+                metadata
+            )
+            VALUES (
+                v_id_preparacion_nomina,
+                'PREPARACION_DEFAULT_CREADA',
+                v_usuario_id,
+                v_usuario_label,
+                jsonb_build_object('periodo', p_periodo, 'idEmpresa', p_id_empresa)
+            );
+        END IF;
+    END IF;
+
+    IF v_id_preparacion_nomina IS NOT NULL
+       AND EXISTS (
+            SELECT 1
+            FROM public.nomina_preparacion
+            WHERE id_preparacion_nomina = v_id_preparacion_nomina
+              AND estado IN ('cerrada', 'anulada', 'liquidaciones_generadas')
+       ) THEN
+        RAISE EXCEPTION 'La preparacion no permite nuevos calculos en su estado actual';
     END IF;
 
     CREATE TEMP TABLE IF NOT EXISTS tmp_nomina_snapshot_trab_map (
@@ -64,8 +167,18 @@ BEGIN
     WHERE periodo = p_periodo
       AND activo = TRUE
       AND (
-        (p_id_empresa IS NULL AND id_empresa IS NULL)
-        OR id_empresa = p_id_empresa
+        (
+            v_id_preparacion_nomina IS NOT NULL
+            AND id_preparacion_nomina = v_id_preparacion_nomina
+        )
+        OR (
+            v_id_preparacion_nomina IS NULL
+            AND id_preparacion_nomina IS NULL
+            AND (
+                (p_id_empresa IS NULL AND id_empresa IS NULL)
+                OR id_empresa = p_id_empresa
+            )
+        )
       )
     ORDER BY id_calculo_periodo DESC
     LIMIT 1
@@ -74,6 +187,8 @@ BEGIN
     INSERT INTO nomina_calculo_periodo (
         periodo,
         id_empresa,
+        id_preparacion_nomina,
+        tipo_preparacion,
         estado,
         fecha_generacion,
         usuario_generador,
@@ -85,6 +200,8 @@ BEGIN
         total_advertencias,
         version_motor,
         hash_snapshot,
+        hash_parametros,
+        hash_entradas,
         origen,
         activo,
         aprobacion_operativa_estado,
@@ -97,6 +214,8 @@ BEGIN
     VALUES (
         p_periodo,
         p_id_empresa,
+        v_id_preparacion_nomina,
+        v_tipo_preparacion,
         CASE WHEN v_id_calculo_anterior IS NULL THEN COALESCE(NULLIF(p_cabecera->>'estado', ''), 'preliminar') ELSE 'recalculado' END,
         COALESCE((p_cabecera->>'fecha_generacion')::TIMESTAMPTZ, NOW()),
         NULLIF(p_cabecera->>'usuario_generador', '')::UUID,
@@ -108,6 +227,8 @@ BEGIN
         COALESCE((p_cabecera->>'total_advertencias')::INT, 0),
         p_cabecera->>'version_motor',
         NULLIF(p_cabecera->>'hash_snapshot', ''),
+        NULLIF(p_cabecera->>'hash_parametros', ''),
+        NULLIF(p_cabecera->>'hash_entradas', ''),
         CASE WHEN v_id_calculo_anterior IS NULL THEN COALESCE(NULLIF(p_cabecera->>'origen', ''), 'preliminar') ELSE 'recalculo' END,
         FALSE,
         NULL,
@@ -297,6 +418,28 @@ BEGIN
         );
     END LOOP;
 
+    FOR v_item IN SELECT value FROM jsonb_array_elements(p_parametros)
+    LOOP
+        INSERT INTO nomina_calculo_parametro (
+            id_calculo_periodo,
+            grupo,
+            clave,
+            valor,
+            valor_numerico,
+            vigencia,
+            origen
+        )
+        VALUES (
+            v_id_calculo_periodo,
+            COALESCE(NULLIF(v_item->>'grupo', ''), 'parametros_generales'),
+            v_item->>'clave',
+            NULLIF(v_item->>'valor', ''),
+            NULLIF(v_item->>'valor_numerico', '')::NUMERIC,
+            NULLIF(v_item->>'vigencia', '')::DATE,
+            COALESCE(NULLIF(v_item->>'origen', ''), 'parametros_generales')
+        );
+    END LOOP;
+
     IF v_id_calculo_anterior IS NOT NULL THEN
         IF EXISTS (
             SELECT 1
@@ -320,6 +463,45 @@ BEGIN
         updated_at = NOW()
     WHERE id_calculo_periodo = v_id_calculo_periodo;
 
+    IF v_id_preparacion_nomina IS NOT NULL THEN
+        UPDATE public.nomina_preparacion
+        SET estado = CASE
+                WHEN COALESCE((p_cabecera->>'total_bloqueados')::INT, 0) > 0 THEN 'con_bloqueos'
+                ELSE 'calculada'
+            END,
+            metadata = COALESCE(metadata, '{}'::JSONB)
+                || jsonb_build_object(
+                    'idCalculoPeriodo', v_id_calculo_periodo,
+                    'hashSnapshot', NULLIF(p_cabecera->>'hash_snapshot', ''),
+                    'versionMotor', p_cabecera->>'version_motor',
+                    'totalTrabajadores', COALESCE((p_cabecera->>'total_trabajadores')::INT, jsonb_array_length(p_trabajadores)),
+                    'totalBloqueados', COALESCE((p_cabecera->>'total_bloqueados')::INT, 0)
+                ),
+            updated_at = NOW()
+        WHERE id_preparacion_nomina = v_id_preparacion_nomina;
+
+        INSERT INTO public.nomina_preparacion_evento (
+            id_preparacion_nomina,
+            tipo_evento,
+            usuario_id,
+            usuario_label,
+            metadata
+        )
+        VALUES (
+            v_id_preparacion_nomina,
+            CASE
+                WHEN COALESCE((p_cabecera->>'total_bloqueados')::INT, 0) > 0 THEN 'CALCULO_BLOQUEADO'
+                ELSE 'CALCULO_EJECUTADO'
+            END,
+            v_usuario_id,
+            v_usuario_label,
+            jsonb_build_object(
+                'idCalculoPeriodo', v_id_calculo_periodo,
+                'reemplazoSnapshotAnterior', v_id_calculo_anterior IS NOT NULL
+            )
+        );
+    END IF;
+
     RETURN v_id_calculo_periodo;
 END;
 $$;
@@ -331,7 +513,9 @@ REVOKE ALL ON FUNCTION guardar_nomina_calculo_snapshot(
     JSONB,
     JSONB,
     JSONB,
-    JSONB
+    JSONB,
+    JSONB,
+    BIGINT
 ) FROM PUBLIC;
 
 REVOKE ALL ON FUNCTION guardar_nomina_calculo_snapshot(
@@ -341,7 +525,9 @@ REVOKE ALL ON FUNCTION guardar_nomina_calculo_snapshot(
     JSONB,
     JSONB,
     JSONB,
-    JSONB
+    JSONB,
+    JSONB,
+    BIGINT
 ) FROM anon;
 
 GRANT EXECUTE ON FUNCTION guardar_nomina_calculo_snapshot(
@@ -351,5 +537,7 @@ GRANT EXECUTE ON FUNCTION guardar_nomina_calculo_snapshot(
     JSONB,
     JSONB,
     JSONB,
-    JSONB
+    JSONB,
+    JSONB,
+    BIGINT
 ) TO authenticated;

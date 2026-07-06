@@ -3,6 +3,8 @@ import { ReactiveFormsModule, Validators } from '@angular/forms';
 
 import {
   EmpleadoCatalogOption,
+  EmpleadoMonedaCatalogOption,
+  EmpleadoSaludCatalogOption,
   EmpleadoStringCatalogOption,
   RegimenExCajaCatalogOption,
 } from '../../../models/empleado-catalogos.model';
@@ -12,13 +14,14 @@ import {
   CardComponent,
   CardContentComponent,
   CardHeaderComponent,
-} from '../../../../../shared/components/ui/card.component';
+} from '../../../../../shared/components/ui/primitives/card.component';
 import {
   SearchSelectComponent,
   type SearchSelectOption,
-} from '../../../../../shared/components/ui/search-select.component';
+} from '../../../../../shared/components/ui/forms/search-select.component';
 import { withEmptyNumberCatalog, withEmptyStringCatalog } from '../../../utils/empleado-select-options';
 import { LucideAngularModule } from 'lucide-angular';
+import { EmpleadoFieldRequiredComponent } from '../../empleado-field-required/empleado-field-required.component';
 
 type PrevisionSaludControlName = keyof PrevisionSaludFormGroup['controls'];
 @Component({
@@ -30,6 +33,7 @@ type PrevisionSaludControlName = keyof PrevisionSaludFormGroup['controls'];
     CardContentComponent,
     CardHeaderComponent,
     SearchSelectComponent,
+    EmpleadoFieldRequiredComponent,
   ],
   templateUrl: './prevision-salud.html',
   styleUrl: './prevision-salud.css',
@@ -42,17 +46,24 @@ export class PrevisionSaludComponent {
   @Input() exCajasPrevisionales: EmpleadoCatalogOption[] = [];
   @Input() regimenesExCaja: RegimenExCajaCatalogOption[] = [];
   @Input() afps: EmpleadoCatalogOption[] = [];
-  @Input() entidadesSalud: EmpleadoCatalogOption[] = [];
-  @Input() monedas: EmpleadoCatalogOption[] = [];
+  @Input() entidadesSalud: EmpleadoSaludCatalogOption[] = [];
+  @Input() monedas: EmpleadoMonedaCatalogOption[] = [];
   @Input() institucionesApv: EmpleadoCatalogOption[] = [];
   @Input() formasPagoApv: EmpleadoCatalogOption[] = [];
-  @Input() visibleBlocks: string[] | null = null;
+  @Input() bloquesVisibles: string[] | null = null;
   /** Grilla 8 columnas y spans (solo alta avanzada). */
-  @Input() advancedGridLayout = false;
+  @Input() grillaAvanzada = false;
+  /** Edicion inline desde ficha: la card exterior ya aporta el titulo del bloque. */
+  @Input() disposicionInlineFicha = false;
 
   @HostBinding('class.employee-layout-advanced')
   protected get employeeLayoutAdvanced(): boolean {
-    return this.advancedGridLayout;
+    return this.grillaAvanzada;
+  }
+
+  @HostBinding('class.employee-layout-inline-record')
+  protected get employeeLayoutInlineRecord(): boolean {
+    return this.disposicionInlineFicha;
   }
 
   controlClass(controlName: PrevisionSaludControlName): string {
@@ -149,7 +160,44 @@ export class PrevisionSaludComponent {
   }
 
   get monedaPlanSelectOptions(): SearchSelectOption[] {
-    return withEmptyNumberCatalog(this.monedas, 'Seleccione moneda plan salud');
+    return withEmptyNumberCatalog(this.monedasFiltradasPlanSalud, 'Seleccione moneda plan salud');
+  }
+
+  get saludSeleccionadaTipo(): 'FONASA' | 'ISAPRE' | null {
+    const option = this.entidadesSalud.find(
+      (item) => item.value === this.formGroup.controls.idSalud.value,
+    );
+    const normalized = this.normalizeCatalogText(`${option?.tipo ?? ''} ${option?.label ?? ''}`);
+
+    if (normalized.includes('FONASA')) {
+      return 'FONASA';
+    }
+
+    if (normalized.includes('ISAPRE')) {
+      return 'ISAPRE';
+    }
+
+    return null;
+  }
+
+  get esFonasaSalud(): boolean {
+    return this.saludSeleccionadaTipo === 'FONASA';
+  }
+
+  get esIsapreSalud(): boolean {
+    return this.saludSeleccionadaTipo === 'ISAPRE';
+  }
+
+  private get monedasFiltradasPlanSalud(): EmpleadoMonedaCatalogOption[] {
+    if (this.esFonasaSalud) {
+      return this.monedas.filter((moneda) => this.isPesoMoneda(moneda));
+    }
+
+    if (this.esIsapreSalud) {
+      return this.monedas.filter((moneda) => this.isPesoMoneda(moneda) || this.isUfMoneda(moneda));
+    }
+
+    return this.monedas;
   }
 
   get institucionApvSelectOptions(): SearchSelectOption[] {
@@ -178,7 +226,25 @@ export class PrevisionSaludComponent {
     return this.formGroup.controls[controlName].hasValidator(Validators.required);
   }
 
-  isBlockVisible(blockId: string): boolean {
-    return this.visibleBlocks === null || this.visibleBlocks.includes(blockId);
+  esBloqueVisible(blockId: string): boolean {
+    return this.bloquesVisibles === null || this.bloquesVisibles.includes(blockId);
+  }
+
+  private isPesoMoneda(moneda: EmpleadoMonedaCatalogOption): boolean {
+    const normalized = this.normalizeCatalogText(`${moneda.codigo ?? ''} ${moneda.label}`);
+    return normalized.includes('CLP') || normalized.includes('PESO');
+  }
+
+  private isUfMoneda(moneda: EmpleadoMonedaCatalogOption): boolean {
+    const normalized = this.normalizeCatalogText(`${moneda.codigo ?? ''} ${moneda.label}`);
+    return normalized === 'UF' || normalized.includes('UNIDAD DE FOMENTO');
+  }
+
+  private normalizeCatalogText(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase()
+      .trim();
   }
 }

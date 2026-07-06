@@ -10,6 +10,20 @@
   --erp-title-sm: 0.92rem;
   --erp-title-md: 1.08rem;
 
+  /* Acción primaria ERP (alineada a MessageBox NOIA / AGENTS) */
+  --erp-primary: #2563eb;
+  --erp-primary-hover: #1d4ed8;
+  --erp-primary-soft: #eff6ff;
+  --erp-primary-ring: rgba(37, 99, 235, 0.18);
+  --bitacora-bg: #f6f7f4;
+  --bitacora-surface: #ffffff;
+  --bitacora-surface-soft: #fafaf7;
+  --bitacora-border: #dadfd7;
+  --bitacora-text: #172033;
+  --bitacora-muted: #647084;
+  --bitacora-primary: #2563eb;
+  --bitacora-primary-soft: #eff6ff;
+
   /* ERP form controls (fuente de verdad: docs/codex/ui-form-guidelines.md) */
   --erp-control-height: 22px;
   --erp-field-min-width: 190px;
@@ -40,10 +54,248 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Reserva hueco para la barra vertical y evita saltos al mostrar/ocultar scroll */
-.app-outlet-scroll {
-  scrollbar-gutter: stable;
+/* Layout operativo full-screen para rutas dentro del shell ERP. */
+.erp-fullscreen-page {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  gap: 0;
+  overflow: hidden;
 }
+
+.erp-fullscreen-frame {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.erp-fullscreen-header {
+  flex: 0 0 auto;
+  border-bottom: 1px solid #d7dde5;
+  background: #ffffff;
+  padding: 10px 14px;
+}
+
+.erp-fullscreen-layout {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.erp-fullscreen-rail {
+  flex: 0 0 304px;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  border-right: 1px solid #d7dde5;
+  background: #f9fafb;
+}
+
+.erp-fullscreen-content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.erp-fullscreen-scroll {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.erp-fullscreen-grid-card {
+  display: flex !important;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid #d7dde5 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 1024px) {
+  .erp-fullscreen-frame {
+    min-height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
+    border-radius: 0;
+  }
+
+  .erp-fullscreen-layout {
+    flex-direction: column;
+  }
+
+  .erp-fullscreen-rail {
+    flex: 0 0 auto;
+    border-right: 0;
+    border-bottom: 1px solid #d7dde5;
+  }
+}
+
+app-dashboard-page,
+app-reportes-page,
+app-licencias-medicas-page,
+app-detalle-liquidacion-page,
+app-listado-empleados,
+app-crear-empleado-container,
+app-ficha-empleado-container,
+app-liquidaciones-oficiales-container,
+app-movimientos-variables-container,
+app-haberes-descuentos-container,
+app-conceptos-remuneracion-container,
+app-novedades-mensuales-container,
+app-proceso-mensual-container {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  background: #ffffff;
+}
+
+app-parametros-page {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  background: #ffffff;
+}
+
+app-parametros-page .parametros-page {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+app-parametros-page app-card.parametros-shell.erp-fullscreen-frame {
+  max-width: none;
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+:is(
+  app-listado-empleados,
+  app-ficha-empleado-container,
+  app-liquidaciones-oficiales-container,
+  app-movimientos-variables-container,
+  app-haberes-descuentos-container,
+  app-conceptos-remuneracion-container,
+  app-novedades-mensuales-container,
+  app-proceso-mensual-container
+) > :is(.listado-page, .employee-file-page, .liq-page, .mv-page, .hd-page, .nm-page, .payroll-page) {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
+  overflow: hidden;
+}
+
+:is(app-listado-empleados, app-ficha-empleado-container, app-crear-empleado-container) {
+  background: #ffffff;
+}
+
+:is(app-listado-empleados, app-ficha-empleado-container) > :is(.listado-page, .employee-file-page),
+app-crear-empleado-container > .page-shell {
+  min-height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+app-listado-empleados .erp-fullscreen-grid-card,
+app-listado-empleados app-data-grid > app-card.empleados-grid-card,
+:is(app-movimientos-variables-container, app-haberes-descuentos-container, app-conceptos-remuneracion-container, app-novedades-mensuales-container) .erp-fullscreen-grid-card {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+app-listado-empleados app-data-grid > app-card.empleados-grid-card > div:first-child {
+  border-bottom: 1px solid #d7dde5;
+}
+
+:is(
+  app-liquidaciones-oficiales-container,
+  app-movimientos-variables-container,
+  app-haberes-descuentos-container,
+  app-conceptos-remuneracion-container,
+  app-novedades-mensuales-container
+) > :is(.liq-page, .mv-page, .hd-page, .nm-page) {
+  gap: 0;
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+:is(.liq-page, .mv-page, .hd-page, .nm-page) > :is(.liq-lead, .liq-actions, .mv-head, .hd-head, .cr-note, .nm-head) {
+  flex: 0 0 auto;
+  border-bottom: 1px solid #d7dde5;
+  background: #ffffff;
+  padding: 10px 14px;
+}
+
+:is(.liq-page, .mv-page, .hd-page, .nm-page) > :is(.mv-grid-wrap, .cr-grid-wrap, .hd-view-folder, .nm-view-folder) {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+:is(.mv-grid-wrap, .cr-grid-wrap) app-data-grid,
+:is(.hd-view-panel, .nm-view-panel) app-data-grid {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+:is(.mv-grid-wrap, .cr-grid-wrap, .hd-view-panel, .nm-view-panel) app-data-grid > app-card {
+  min-height: 0;
+}
+
+/* Reserva hueco para la barra vertical y evita saltos al mostrar/ocultar scroll */
+/* Funciona pero queda espacio sobrante en el scroll */
+/* .app-outlet-scroll {
+  scrollbar-gutter: stable;
+} */
 
 /* Parametros: banda de periodo (dos zonas: contexto izquierda, estado mensual derecha) */
 .parametros-page .period-row,
@@ -402,6 +654,24 @@ body {
   line-height: 0;
 }
 
+/* Lucide Angular: centrado óptico en contenedores flex/grid/cuadrados */
+lucide-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+  vertical-align: middle;
+}
+
+lucide-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: visible;
+}
+
 .erp-action-button {
   display: inline-flex;
   min-height: 38px;
@@ -425,9 +695,9 @@ app-form-empleado {
   --emp-muted: #6b7280;
   --emp-line: #e5e7eb;
   --emp-soft: #f8fafc;
-  --emp-blue: #2563eb;
-  --emp-blue-hover: #1d4ed8;
-  --emp-blue-soft: #eff6ff;
+  --emp-blue: var(--erp-primary);
+  --emp-blue-hover: var(--erp-primary-hover);
+  --emp-blue-soft: var(--erp-primary-soft);
   --emp-error: #dc2626;
   --emp-warning: #f59e0b;
   --emp-success: #16a34a;
@@ -450,6 +720,71 @@ app-form-empleado .editor-shell {
   max-width: 100%;
   /* Rellena el alto del contenedor principal (main con h-full) */
   min-height: 100%;
+}
+
+.page-shell.erp-fullscreen-page {
+  gap: 0;
+  flex: 1 1 auto;
+  min-height: 100%;
+}
+
+/* Alta avanzada (crear): cadena flex hasta el fondo del outlet scroll */
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell) {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 100%;
+  height: 100%;
+}
+
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell) app-form-empleado {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell) app-form-empleado form.form-shell,
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell) app-form-empleado .form-stack,
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell) app-form-empleado app-card.editor-shell--advanced,
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell)
+  app-form-empleado
+  app-card.editor-shell--advanced
+  app-card-content.editor-frame--advanced {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell)
+  app-form-empleado
+  .workspace-grid.workspace-grid--advanced {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0 !important;
+}
+
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell)
+  app-form-empleado
+  .workspace-main.workspace-main--advanced,
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell)
+  app-form-empleado
+  .content-shell.content-shell--advanced,
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell)
+  app-form-empleado
+  .advanced-create-shell,
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell)
+  app-form-empleado
+  .advanced-create-inner,
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell)
+  app-form-empleado
+  app-card-content.editor-frame--advanced {
+  flex: 1 1 auto;
+  min-height: 0 !important;
 }
 
 .page-shell app-form-empleado {
@@ -507,7 +842,12 @@ app-form-empleado .editor-shell {
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
-  padding: 12px 0;
+  padding: 0;
+}
+
+.page-shell app-form-empleado .workspace-grid--advanced,
+.page-shell app-form-empleado .workspace-grid:has(.advanced-create-shell) {
+  padding: 0;
 }
 
 .page-shell app-form-empleado .workspace-main {
@@ -518,7 +858,7 @@ app-form-empleado .editor-shell {
   max-width: 100%;
 }
 
-.page-shell app-form-empleado .content-shell {
+.page-shell app-form-empleado .content-shell:not(.content-shell--advanced) {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
@@ -532,22 +872,35 @@ app-form-empleado .editor-shell {
   box-shadow: none;
 }
 
+.page-shell app-form-empleado .content-shell.content-shell--advanced {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0 !important;
+  max-height: none !important;
+  height: 100% !important;
+  width: 100%;
+  max-width: 100%;
+  border: 0;
+  box-shadow: none;
+}
+
 .page-shell app-form-empleado .content-body {
   flex: 1 1 auto;
   min-height: auto;
   overflow: visible;
   display: flex;
   flex-direction: column;
-  margin: 0 10px 12px;
+  margin: 0;
   /* Sin segundo trazo: separación por fondo + sombra muy suave */
   border: 0;
   /* Avanzado: pegado visual a las tabs (misma curva que el diseño global) */
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .page-shell app-form-empleado .content-shell--basic .content-body {
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 /* Área de pasos: alto según contenido; el scroll vive en .app-outlet-scroll */
@@ -575,7 +928,7 @@ app-form-empleado .validation-group {
 }
 
 app-form-empleado .form-stack {
-  gap: 12px;
+  gap: 0;
 }
 
 app-form-empleado .form-page-head {
@@ -603,8 +956,23 @@ app-form-empleado .form-page-head h1 {
 app-form-empleado .editor-shell {
   display: block;
   width: 100%;
-  border-color: var(--emp-line);
-  background: var(--emp-panel);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+app-form-empleado .editor-shell:has(.advanced-create-shell) {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+app-form-empleado .editor-shell--advanced {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   box-shadow: none;
 }
 
@@ -613,10 +981,69 @@ app-form-empleado .editor-frame {
   gap: 0;
   overflow: hidden;
   padding: 0;
-  border: 1px solid var(--emp-line);
-  border-radius: 8px;
+  border: 0;
+  border-radius: 0;
   background: #ffffff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
+}
+
+app-form-empleado .editor-frame:has(.advanced-create-shell) {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+app-form-empleado .editor-frame--advanced {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+app-form-empleado .editor-frame--advanced,
+app-form-empleado .editor-frame:has(.advanced-create-shell) {
+  display: flex;
+  flex-direction: column;
+  grid-template-rows: unset;
+  min-height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
+  padding: 0;
+}
+
+app-form-empleado .editor-frame--advanced > .status-stack {
+  flex: 0 0 auto;
+}
+
+app-form-empleado .editor-frame--advanced > .workspace-grid,
+app-form-empleado .editor-frame:has(.advanced-create-shell) > section.workspace-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-shell app-form-empleado app-card.editor-shell.editor-shell--advanced,
+.page-shell app-form-empleado app-card.editor-shell app-card-content.editor-frame.editor-frame--advanced,
+app-form-empleado .editor-shell--advanced,
+app-form-empleado .editor-frame--advanced,
+.page-shell app-form-empleado app-card.editor-shell,
+.page-shell app-form-empleado app-card.editor-shell app-card-content.editor-frame {
+  flex: 1 1 auto;
+  min-height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
+}
+
+app-form-empleado .content-shell:has(.advanced-create-shell) {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+app-form-empleado .content-shell--advanced {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 app-form-empleado .summary-identity {
@@ -755,10 +1182,55 @@ app-form-empleado .flow-tab {
 app-form-empleado .workspace-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 12px;
-  align-items: start;
-  padding: 12px;
-  background: var(--emp-soft);
+  gap: 0;
+  align-items: stretch;
+  padding: 0;
+  background: #ffffff;
+}
+
+app-form-empleado .workspace-grid--advanced,
+app-form-empleado .workspace-grid:has(.advanced-create-shell) {
+  gap: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.page-shell app-form-empleado .workspace-grid.workspace-grid--advanced,
+.page-shell app-form-empleado .workspace-main.workspace-main--advanced,
+.page-shell app-form-empleado .content-shell.content-shell--advanced,
+app-form-empleado .workspace-grid.workspace-grid--advanced,
+app-form-empleado .workspace-main.workspace-main--advanced,
+app-form-empleado .content-shell.content-shell--advanced {
+  min-height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem)) !important;
+}
+
+.page-shell app-form-empleado .workspace-grid.workspace-grid--advanced,
+app-form-empleado .workspace-grid.workspace-grid--advanced {
+  align-items: stretch;
+}
+
+.page-shell app-form-empleado .workspace-main.workspace-main--advanced,
+app-form-empleado .workspace-main.workspace-main--advanced {
+  align-content: stretch;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+app-form-empleado .content-shell.content-shell--advanced {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  max-height: none;
+}
+
+.page-shell app-form-empleado .workspace-main:has(.advanced-create-shell),
+app-form-empleado .workspace-main:has(.advanced-create-shell) {
+  width: 100%;
+  max-width: none;
 }
 
 app-form-empleado .workspace-main {
@@ -772,9 +1244,9 @@ app-form-empleado .content-shell {
   width: 100%;
   min-width: 0;
   min-height: min(42rem, calc(100vh - 14rem));
-  border: 1px solid var(--emp-line);
-  border-radius: 8px;
-  background: var(--emp-soft);
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
   box-shadow: none;
 }
 
@@ -904,7 +1376,7 @@ app-form-empleado .flow-tab.is-active p {
 }
 
 app-form-empleado .flow-tab.is-active::after {
-  background: #2563eb;
+  background: var(--erp-primary);
   opacity: 1;
 }
 
@@ -955,12 +1427,34 @@ app-form-empleado .form-button-spinner {
   height: 16px;
 }
 
+.employee-form-panel,
 app-form-empleado .step-panel {
   min-height: 30rem;
   padding: 16px;
   border-radius: inherit;
   background: #ffffff;
   animation: form-panel-enter 170ms ease-out both;
+}
+
+.employee-form-panel {
+  min-height: 0;
+  border: 1px solid var(--bitacora-border, #dadfd7);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.employee-form-panel--inline {
+  padding: 14px;
+  background: var(--bitacora-surface, #ffffff);
+}
+
+.employee-form-panel--inline-record {
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 16px;
+  background: #ffffff;
+  animation: none;
 }
 
 app-form-empleado .content-shell--basic {
@@ -1397,13 +1891,18 @@ app-ficha-empleado-container .section-validation-list {
   color: #92400e;
 }
 
-app-ficha-empleado-container .inline-edit-actions {
+app-ficha-empleado-container .inline-edit-actions:not(.inline-edit-actions--head) {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.5rem;
   border-top: 1px solid #e5e7eb;
   padding-top: 0.9rem;
+}
+
+app-ficha-empleado-container .detail-block-head--editorial .inline-edit-actions--head {
+  border-top: 0;
+  padding-top: 0;
 }
 
 app-ficha-empleado-container .inline-action {
@@ -1435,113 +1934,53 @@ app-ficha-empleado-container .inline-action--secondary {
   color: #374151;
 }
 
-app-ficha-empleado-container .detail-block-list {
-  display: grid;
-  gap: 0.75rem;
-}
-
-app-ficha-empleado-container .detail-block {
-  overflow: hidden;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #ffffff;
-  box-shadow: none;
-}
-
-app-ficha-empleado-container .detail-block.is-editing {
-  border-color: #bfdbfe;
-  box-shadow: 0 0 0 3px #eff6ff;
-}
-
-app-ficha-empleado-container .detail-block-head {
-  display: flex;
-  min-height: 2.75rem;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  border-bottom: 1px solid #f1f5f9;
-  background: #ffffff;
-  padding: 0.58rem 0.78rem;
-}
-
-app-ficha-empleado-container .detail-block-head h3 {
-  margin: 0;
-  color: #1f2937;
-  font-size: 0.84rem;
-  font-weight: 600;
-  letter-spacing: 0;
-}
-
-app-ficha-empleado-container .detail-block .inline-edit-shell {
-  padding: 0.85rem;
-}
-
 /*
- * Edición en ficha (mismos seccionales que el alta): compactar rejillas sin tocar alta básica/avanzada ni app-form-empleado.
- * Requiere .detail-block.is-editing (solo existe en ficha).
+ * Edición en ficha: compactar seccionales internos (alta avanzada) sin tocar app-form-empleado.
  */
-app-ficha-empleado-container .detail-block.is-editing .inline-edit-shell {
-  gap: 0.75rem;
-  padding-inline: 0.65rem;
-  padding-bottom: 0.75rem;
-}
-
-app-ficha-empleado-container .detail-block.is-editing app-empleado-datos-personales .employee-section-shell,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contacto .employee-section-shell,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contrato .employee-section-shell,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-prevision-salud .employee-section-shell,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-bancario .employee-section-shell {
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-datos-personales .employee-section-shell,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-contacto .employee-section-shell,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-contrato .employee-section-shell,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-prevision-salud .employee-section-shell,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-bancario .employee-section-shell {
   gap: 12px;
 }
 
-app-ficha-empleado-container .detail-block.is-editing app-empleado-datos-personales .employee-block,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contacto .employee-block,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contrato .employee-block,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-prevision-salud .employee-block,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-bancario .employee-block {
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-datos-personales .employee-block,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-contacto .employee-block,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-contrato .employee-block,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-prevision-salud .employee-block,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-bancario .employee-block {
   border-color: #ebeff5;
 }
 
-app-ficha-empleado-container .detail-block.is-editing app-empleado-datos-personales .employee-block-head,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contacto .employee-block-head,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contrato .employee-block-head,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-prevision-salud .employee-block-head,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-bancario .employee-block-head {
+app-ficha-empleado-container
+  .detail-block--editorial.is-editing
+  .inline-edit-shell:not(.inline-edit-shell--single-sub)
+  :is(app-empleado-datos-personales, app-empleado-contacto, app-empleado-contrato, app-empleado-prevision-salud, app-empleado-bancario)
+  .employee-block-head {
   gap: 2px;
   padding: 10px 12px 8px;
 }
 
-app-ficha-empleado-container .detail-block.is-editing app-empleado-datos-personales .employee-block > .employee-grid,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contacto .employee-block > .employee-grid,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contrato .employee-block > .employee-grid,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-prevision-salud .employee-block > .employee-grid,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-bancario .employee-block > .employee-grid {
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-datos-personales .employee-block > .employee-grid,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-contacto .employee-block > .employee-grid,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-contrato .employee-block > .employee-grid,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-prevision-salud .employee-block > .employee-grid,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-bancario .employee-block > .employee-grid {
   gap: 10px 12px;
   padding: 10px 12px 12px;
 }
 
-/* Cabeceras de subtema alineadas con el bloque de la ficha (sin segundo título sobredimensionado) */
-app-ficha-empleado-container .detail-block.is-editing app-empleado-datos-personales .employee-block-head h4,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contacto .employee-block-head h4,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contrato .employee-block-head h4,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-prevision-salud .employee-block-head h4,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-bancario .employee-block-head h4 {
+app-ficha-empleado-container
+  .detail-block--editorial.is-editing
+  .inline-edit-shell:not(.inline-edit-shell--single-sub)
+  :is(app-empleado-datos-personales, app-empleado-contacto, app-empleado-contrato, app-empleado-prevision-salud, app-empleado-bancario)
+  .employee-block-head
+  h4 {
   font-size: 0.838rem;
 }
 
-app-ficha-empleado-container .detail-block.is-editing .inline-edit-actions {
-  margin-top: 0.35rem;
-  padding-top: 0.72rem;
-  gap: 0.45rem;
-}
-
-/* Titular del bloque de ficha: más compacto mientras hay formulario abierto debajo */
-app-ficha-empleado-container .detail-block.is-editing > .detail-block-head {
-  min-height: 0;
-  padding: 0.55rem 0.72rem;
-}
-
-app-ficha-empleado-container .detail-block .section-edit-button {
+app-ficha-empleado-container .detail-block--editorial .section-edit-button {
   min-height: 2rem;
   border-color: #e5e7eb;
   padding: 0 0.65rem;
@@ -1550,17 +1989,17 @@ app-ficha-empleado-container .detail-block .section-edit-button {
   font-size: 0.76rem;
 }
 
-app-ficha-empleado-container .detail-grid {
+app-ficha-empleado-container .detail-grid:not(.detail-grid--editorial) {
   gap: 0;
   background: #ffffff;
 }
 
-app-ficha-empleado-container .detail-grid div {
+app-ficha-empleado-container .detail-grid:not(.detail-grid--editorial) div {
   border-top: 1px solid #f8fafc;
   padding: 0.68rem 0.78rem;
 }
 
-app-ficha-empleado-container .detail-grid div:nth-child(-n + 4) {
+app-ficha-empleado-container .detail-grid:not(.detail-grid--editorial) div:nth-child(-n + 4) {
   border-top: 0;
 }
 
@@ -1831,4 +2270,177 @@ app-message-box .message-detail:not(.erp-md) code {
   background: oklch(0.269 0 0);
   border-color: oklch(0.369 0 0);
   color: oklch(0.92 0 0);
+}
+
+.inline-edit-shell--employee-fields {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+  max-width: 100%;
+  --erp-control-height: 22px;
+  --form-border: #e5e7eb;
+  --form-primary: #2563eb;
+  --form-primary-soft: #eff6ff;
+  --form-bg: #f8fafc;
+  --form-surface: #ffffff;
+  --form-text: #111827;
+  --form-muted: #64748b;
+}
+
+.inline-edit-shell--inline-record {
+  gap: 10px;
+  --form-bg: #ffffff;
+  --form-border: #e5e7eb;
+  --form-muted: var(--employee-exp-muted, #647084);
+  --form-text: var(--employee-exp-text, #172033);
+}
+
+.inline-edit-shell--employee-fields :is(.employee-section-shell, .labor-shell, .prevision-shell) {
+  gap: 16px;
+}
+
+.inline-edit-shell--inline-record :is(.employee-section-shell, .labor-shell, .prevision-shell) {
+  gap: 0;
+}
+
+.inline-edit-shell--in-card :is(app-card.employee-block, app-card.labor-block, app-card.prevision-card) {
+  border-width: 1px 0 0;
+  border-radius: 0;
+}
+
+.inline-edit-shell--in-card :is(app-card.employee-block, app-card.labor-block, app-card.prevision-card):first-of-type {
+  border-top: 0;
+}
+
+.inline-edit-shell--inline-record :is(app-card.employee-block, app-card.labor-block, app-card.prevision-card) {
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.inline-edit-shell--inline-record :is(.employee-block-head, .labor-block-head, .prevision-card-header) {
+  display: none;
+}
+
+.inline-edit-shell--inline-record :is(.employee-block > .employee-grid, .labor-block > .labor-grid, .labor-block > .relation-grid, .prevision-card-content) {
+  padding: 0;
+}
+
+.inline-edit-shell--inline-record :is(.employee-grid, .labor-grid, .prevision-grid, .prevision-grid-adv) {
+  gap: 10px 14px;
+}
+
+.inline-edit-shell--inline-record .field-label-row {
+  min-height: 14px;
+}
+
+.inline-edit-shell--inline-record .field-label-row label {
+  color: var(--employee-exp-muted, #647084);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.inline-edit-shell--inline-record .employee-control,
+.inline-edit-shell--inline-record .readonly-field,
+.inline-edit-shell--inline-record .relation-option,
+.inline-edit-shell--inline-record .employee-checkbox-row {
+  background: #ffffff;
+  border-color: #dfe5ec;
+  color: var(--employee-exp-text, #172033);
+  font-size: 0.78rem;
+  font-weight: 550;
+}
+
+.inline-edit-shell--inline-record .field-message {
+  min-height: 14px;
+  font-size: 0.64rem;
+}
+
+.inline-edit-shell--employee-fields :is(.section-error-summary, .section-validation-list) {
+  margin: 0;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fff7f7;
+  color: #991b1b;
+  font-size: 0.72rem;
+}
+
+.inline-edit-shell--employee-fields .section-error-summary {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+}
+
+.inline-edit-shell--employee-fields .section-validation-list {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px 8px 24px;
+}
+
+.inline-edit-shell--employee-fields .detail-block-head--editorial .inline-action,
+.detail-block-head--editorial .inline-edit-actions--head .inline-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  border: 1px solid #dbe3ee;
+  border-radius: 6px;
+  padding: 0 10px;
+  background: #ffffff;
+  color: #374151;
+  font: inherit;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.inline-edit-shell--employee-fields .inline-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  border: 1px solid #dbe3ee;
+  border-radius: 6px;
+  padding: 0 14px;
+  background: #ffffff;
+  color: var(--employee-exp-blue, #0c447c);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.inline-edit-shell--employee-fields .inline-action:hover:not(:disabled) {
+  border-color: #c9d7e6;
+  background: #f8fafc;
+}
+
+.inline-edit-shell--employee-fields .inline-action--primary {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.inline-edit-shell--employee-fields .inline-action--primary:hover:not(:disabled) {
+  border-color: #1d4ed8;
+  background: #1d4ed8;
+}
+
+.inline-edit-shell--employee-fields .inline-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+@media (max-width: 720px) {
+  .inline-edit-shell--employee-fields .inline-edit-actions {
+    justify-content: stretch;
+  }
+
+  .inline-edit-shell--employee-fields .inline-action {
+    flex: 1 1 auto;
+  }
 }

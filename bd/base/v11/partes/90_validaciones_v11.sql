@@ -95,6 +95,20 @@ SELECT periodo
 FROM parametros_generales
 WHERE periodo !~ '^[0-9]{4}-(0[1-9]|1[0-2])$';
 
+\echo '05b_snapshot_sanna_null_periodo_cargado'
+SELECT
+    pr.codigo AS periodo,
+    pr.estado,
+    pg.sanna AS sanna_snapshot,
+    pl.valor_decimal AS sanna_legal
+FROM periodo_remuneracion pr
+JOIN parametros_generales pg ON pg.periodo = pr.codigo
+LEFT JOIN parametros_legales pl ON pl.nombre = 'SANNA'
+    AND pl.vigencia_inicio <= (pr.codigo || '-01')::date
+    AND (pl.vigencia_fin IS NULL OR pl.vigencia_fin >= (pr.codigo || '-01')::date)
+WHERE pr.estado IN ('cargado', 'corregido', 'cerrado')
+  AND pg.sanna IS NULL;
+
 \echo '06_tramo_carga_duplicados'
 SELECT
     periodo,
@@ -164,10 +178,10 @@ JOIN salud_plan b
 
 \echo '12_vigencias_reforma_previsional_solapadas'
 SELECT
-    a.codigo AS codigo_a,
+    a.id_reforma_previsional_parametro AS id_a,
     a.vigencia_inicio AS inicio_a,
     a.vigencia_fin AS fin_a,
-    b.codigo AS codigo_b,
+    b.id_reforma_previsional_parametro AS id_b,
     b.vigencia_inicio AS inicio_b,
     b.vigencia_fin AS fin_b
 FROM reforma_previsional_parametro a
@@ -235,24 +249,18 @@ WHERE vigencia_fin IS NOT NULL AND vigencia_fin < vigencia_inicio;
 
 \echo '16_gradualidad_sumas_inconsistentes'
 SELECT
-    codigo,
+    id_reforma_previsional_parametro,
     vigencia_inicio,
     vigencia_fin,
     cuenta_capitalizacion_individual,
-    cotizacion_rentabilidad_protegida,
-    seguro_social_sis_cev,
     fapp_seguro_social,
     aporte_empleador_total
 FROM reforma_previsional_parametro
 WHERE ROUND((
         cuenta_capitalizacion_individual
-        + cotizacion_rentabilidad_protegida
-        + seguro_social_sis_cev
+        + fapp_seguro_social
     )::numeric, 4) <> ROUND(aporte_empleador_total::numeric, 4)
-   OR ROUND((
-        cotizacion_rentabilidad_protegida
-        + seguro_social_sis_cev
-    )::numeric, 4) <> ROUND(fapp_seguro_social::numeric, 4);
+   OR fapp_seguro_social > aporte_empleador_total;
 
 \echo '17_gradualidad_tramos_esperados'
 WITH expected(vigencia_inicio, vigencia_fin, total_esperado) AS (
@@ -512,3 +520,75 @@ WHERE EXISTS (SELECT 1 FROM persona WHERE id_persona = 1)
         AND es_adulto_18_65 = TRUE
         AND aplica_imm_general = TRUE
   );
+
+\echo '33_nomina_preparacion_tablas_requeridas'
+WITH expected(tabla) AS (
+    VALUES
+        ('nomina_preparacion'),
+        ('nomina_preparacion_trabajador'),
+        ('nomina_preparacion_evento')
+)
+SELECT e.tabla AS tabla_faltante
+FROM expected e
+WHERE to_regclass('public.' || e.tabla) IS NULL;
+
+\echo '34_nomina_calculos_v11_sin_preparacion'
+SELECT
+    id_calculo_periodo,
+    periodo,
+    id_empresa,
+    estado,
+    created_at
+FROM nomina_calculo_periodo
+WHERE id_preparacion_nomina IS NULL
+  AND id_empresa IS NOT NULL
+  AND created_at >= TIMESTAMPTZ '2026-05-30 00:00:00+00';
+
+\echo '35_nomina_liquidaciones_v11_sin_preparacion'
+SELECT
+    l.id_liquidacion_periodo,
+    l.periodo,
+    l.id_calculo_periodo,
+    l.created_at
+FROM nomina_liquidacion_periodo l
+JOIN nomina_calculo_periodo c
+  ON c.id_calculo_periodo = l.id_calculo_periodo
+WHERE l.id_preparacion_nomina IS NULL
+  AND c.id_preparacion_nomina IS NOT NULL;
+
+\echo '36_nomina_liquidaciones_preparacion_no_coincide_con_calculo'
+SELECT
+    l.id_liquidacion_periodo,
+    l.id_calculo_periodo,
+    l.id_preparacion_nomina AS id_preparacion_liquidacion,
+    c.id_preparacion_nomina AS id_preparacion_calculo
+FROM nomina_liquidacion_periodo l
+JOIN nomina_calculo_periodo c
+  ON c.id_calculo_periodo = l.id_calculo_periodo
+WHERE l.id_preparacion_nomina IS DISTINCT FROM c.id_preparacion_nomina
+  AND c.id_preparacion_nomina IS NOT NULL;
+
+\echo '37_nomina_preparaciones_mensual_duplicadas_activas'
+SELECT
+    periodo_pago,
+    id_empresa,
+    COUNT(*) AS cantidad
+FROM nomina_preparacion
+WHERE tipo_preparacion = 'mensualCompleta'
+  AND activo = TRUE
+GROUP BY periodo_pago, id_empresa
+HAVING COUNT(*) > 1;
+
+\echo '38_nomina_preparaciones_bloqueadas_con_calculo_activo'
+SELECT
+    p.id_preparacion_nomina,
+    p.periodo_pago,
+    p.tipo_preparacion,
+    p.estado,
+    c.id_calculo_periodo
+FROM nomina_preparacion p
+JOIN nomina_calculo_periodo c
+  ON c.id_preparacion_nomina = p.id_preparacion_nomina
+WHERE p.estado IN ('cerrada', 'anulada')
+  AND c.activo = TRUE
+  AND c.reemplazado_por IS NULL;

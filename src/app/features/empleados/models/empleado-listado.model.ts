@@ -19,6 +19,8 @@ export interface EmpleadoListado {
   departamento: string;
   fechaIngreso: string;
   sueldoBase: number;
+  /** Código de moneda del contrato (CLP, UF, …). */
+  monedaContrato: string | null;
   estado: EmpleadoEstado;
   estadoFicha: EmpleadoEstadoFicha;
   aptoParaRemuneraciones: boolean;

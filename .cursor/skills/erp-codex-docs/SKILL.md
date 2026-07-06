@@ -40,11 +40,13 @@ No contradecir la jerarquía siguiente.
 
 ## Jerarquía (en conflicto gana el primero)
 
-1. `docs/codex/AGENTS.md` — contrato del agente: stack, layout obligatorio, tokens resumidos, anti‑patrones, checklist.
-2. `docs/codex/README.md` — índice padre: cómo pedir alcance, enlaces por módulo.
-3. `docs/codex/arquitectura/frontend-interfaces.md` — estructura Angular (páginas wrapper, contenedores, capas, anti‑patrones); leer si el alcance toca `src/app/pages/` o organización de `features/`.
-4. `docs/codex/ui-form-guidelines.md` — tokens completos, formularios, MessageBox, loading, checklist visual.
-5. Guías de flujo concretas bajo `docs/codex/modulos/<módulo>/` (p. ej. `docs/codex/modulos/empleados/creacion-basica.md`); `docs/codex/temas/` para flujos transversales o stubs.
+1. `docs/codex/diseno/noia-ui-manual.md` — UI visible (NOIA).
+2. `docs/codex/AGENTS.md` — contrato del agente: stack, layout obligatorio, tokens resumidos, anti‑patrones, checklist.
+3. `docs/codex/estandares/README.md` — constitución técnica EST-001…EST-008 (agentes: `EST-008-ia.md` primero).
+4. `docs/codex/README.md` — índice padre: cómo pedir alcance, enlaces por módulo.
+5. `docs/codex/arquitectura/frontend-interfaces.md` — estructura Angular (páginas wrapper, contenedores, capas, anti‑patrones); leer si el alcance toca `src/app/pages/` o organización de `features/`.
+6. `docs/codex/ui-form-guidelines.md` — tokens completos, formularios, MessageBox, loading, checklist visual.
+7. Guías de flujo concretas bajo `docs/codex/modulos/<módulo>/` (p. ej. `docs/codex/modulos/empleados/creacion-basica.md`); `docs/codex/temas/` para flujos transversales o stubs.
 
 ## Cómo pedir trabajo (alinear con el README)
 
@@ -63,7 +65,11 @@ No contradecir la jerarquía siguiente.
 
 | Situación | Leer primero |
 |-----------|----------------|
-| Pantalla nueva o refino UI general | `AGENTS.md` → `arquitectura/frontend-interfaces.md` (si afecta rutas/contenedor/feature) → `ui-form-guidelines.md` → `ui-button-guidelines.md` |
+| Cualquier tarea (agente / código) | `estandares/EST-008-ia.md` → `contexto-rapido.md` → EST de capa (001…007) |
+| SQL / migración / RLS | `estandares/EST-002-base-de-datos.md`, `EST-003-sql-postgresql.md`, `EST-006-supabase.md` |
+| TypeScript / repository | `estandares/EST-004-typescript.md` |
+| Feature Angular nuevo | `estandares/EST-005-angular.md` → `arquitectura/frontend-interfaces.md` |
+| Pantalla nueva o refino UI general | `AGENTS.md` → NOIA (`diseno/noia-ui-manual.md` …) → `EST-005-angular.md` → `ui-form-guidelines.md` → `diseno/noia-ui-review-checklist.md` |
 | Grilla / anchos / checklist 7 ítems | `docs/codex/estilos/README.md` |
 | Dónde está CSS y componentes compartidos | `docs/codex/temas/implementacion-ui.md` |
 | Módulos al estilo empleados | `docs/codex/temas/base-angular-empleados.md` |
@@ -87,7 +93,7 @@ Formularios en muchas columnas; inputs sin label; placeholder como label; sideba
 
 1. **Aclarar** alcance y tipo de cambio si no están claros (sección “pedir y aclarar”).
 2. **Identificar** tema: UI general, botones, empleados, parámetros, BD, etc.
-3. **Read** los archivos de la tabla “Orden de lectura” (mínimo `AGENTS.md` + el específico del tema).
+3. **Read** los archivos de la tabla “Orden de lectura” (mínimo `EST-008-ia.md` + `AGENTS.md` + EST de capa + el específico del tema).
 4. **Implementar** con tokens y patrones ya presentes en el repo (`ui-form-guidelines.md` enlaza referencias de código cuando aplique).
 5. **Autorevisar** con la sección “revisar antes de cerrar”; ajustar si algo falla el checklist.
 6. **Responder** al usuario con resultado y, si aplica, qué quedó validado contra `docs/codex`.

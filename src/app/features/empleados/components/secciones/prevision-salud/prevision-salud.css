@@ -1,5 +1,13 @@
 @import '../../form-empleado-shared.css';
 
+:host.employee-layout-inline-record .prevision-card-header {
+  display: none;
+}
+
+:host.employee-layout-inline-record .prevision-card-content {
+  padding: 0;
+}
+
 .apvi-step-lead {
   margin: 0 0 12px;
   max-width: 36rem;

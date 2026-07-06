@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, HostBinding, Input } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 
 import {
@@ -7,8 +7,11 @@ import {
 } from '../../../models/empleado-perfil-laboral.model';
 import { PerfilLaboralFormGroup } from '../../../models/empleado-form.model';
 import { RelacionLaboral } from '../../../models/empleado.model';
-import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
-import { CardComponent } from '../../../../../shared/components/ui/card.component';
+import { CalendarInputComponent } from '../../../../../shared/components/ui/forms/calendar-input/calendar-input.component';
+import { CardComponent } from '../../../../../shared/components/ui/primitives/card.component';
+import { EmpleadoFieldRequiredComponent } from '../../empleado-field-required/empleado-field-required.component';
+import { EmpleadoFieldTipComponent } from '../../empleado-field-tip/empleado-field-tip.component';
+import { buildTodayValue } from '../../../utils/empleado-form-defaults';
 
 interface EdadLaboralInfo {
   label: string;
@@ -17,14 +20,20 @@ interface EdadLaboralInfo {
   edad: number | null;
 }
 
-interface PerfilLaboralAutoDetection {
+interface DeteccionAutomaticaPerfilLaboral {
   controlName: CondicionTrabajadorControlName;
   reason: string;
 }
 
 @Component({
   selector: 'app-empleado-perfil-laboral',
-  imports: [ReactiveFormsModule, CalendarInputComponent, CardComponent],
+  imports: [
+    ReactiveFormsModule,
+    CalendarInputComponent,
+    CardComponent,
+    EmpleadoFieldTipComponent,
+    EmpleadoFieldRequiredComponent,
+  ],
   templateUrl: './perfil-laboral.html',
   styleUrl: './perfil-laboral.css',
 })
@@ -34,9 +43,24 @@ export class PerfilLaboralComponent {
   @Input() fechaIngreso = '';
   @Input() relacionLaboral: RelacionLaboral = 'CONTRATO';
   @Input() tipoTrabajadorLabel = 'Tipo trabajador pendiente';
-  @Input() autoDetectedConditions: readonly PerfilLaboralAutoDetection[] = [];
+  @Input() autoDetectedConditions: readonly DeteccionAutomaticaPerfilLaboral[] = [];
+  /** Edicion inline desde ficha: sin cabeceras de card ni layout de wizard. */
+  @Input() disposicionInlineFicha = false;
+  /** Etiqueta de edad/tramo desde RPC (periodo activo) en ficha. */
+  @Input() edadDetectadaLabel = '';
+  @Input() edadDetectadaDescripcion = '';
+
+  @HostBinding('class.perfil-layout-inline-record')
+  protected get perfilLayoutInlineRecord(): boolean {
+    return this.disposicionInlineFicha;
+  }
 
   readonly condiciones = CONDICIONES_TRABAJADOR_UI;
+  readonly todayIso = buildTodayValue();
+
+  get minVigenciaFin(): string {
+    return this.formGroup.controls.vigenciaInicio.value?.trim() || '';
+  }
 
   get hasAutoDetectedConditions(): boolean {
     return this.autoDetectedConditions.length > 0;
@@ -67,7 +91,18 @@ export class PerfilLaboralComponent {
   }
 
   get edadLaboralInfo(): EdadLaboralInfo {
-    const edad = this.calcularEdad(this.fechaNacimiento, this.fechaIngreso || this.today());
+    if (this.disposicionInlineFicha && this.edadDetectadaLabel.trim()) {
+      return {
+        label: this.edadDetectadaLabel.trim(),
+        description:
+          this.edadDetectadaDescripcion.trim() ||
+          'Perfil detectado según el período activo del sistema.',
+        tone: this.edadDetectadaTone(),
+        edad: null,
+      };
+    }
+
+    const edad = this.calcularEdad(this.fechaNacimiento, this.fechaIngreso || this.todayIso);
 
     if (edad === null) {
       return {
@@ -233,6 +268,20 @@ export class PerfilLaboralComponent {
     return edad;
   }
 
+  private edadDetectadaTone(): EdadLaboralInfo['tone'] {
+    const label = this.edadDetectadaLabel.toLowerCase();
+
+    if (label.includes('menor')) {
+      return 'warning';
+    }
+
+    if (label.includes('mayor')) {
+      return 'review';
+    }
+
+    return 'neutral';
+  }
+
   private parseDate(value: string): Date | null {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
       return null;
@@ -242,9 +291,5 @@ export class PerfilLaboralComponent {
     const parsed = new Date(year, month - 1, day);
 
     return Number.isNaN(parsed.getTime()) ? null : parsed;
-  }
-
-  private today(): string {
-    return new Date().toISOString().slice(0, 10);
   }
 }

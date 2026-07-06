@@ -15,26 +15,29 @@ Conjunto de documentos **globales y breves** para que Codex, Cursor, ChatGPT u o
 ## Orden recomendado de lectura
 
 1. [`contexto-proyecto.md`](./contexto-proyecto.md) — mapa global del producto, stack, UI, módulos y camino oficial.
-2. [`roadmap-operativo.md`](./roadmap-operativo.md) — orden oficial: ORDEN-01 cerrada, SEG-01 siguiente, CONC-02 despues, MOTOR-00 antes de motor.
-3. [`dependencias-fases.md`](./dependencias-fases.md) — bloqueadores entre seguridad, conceptos, motor, liquidaciones, cierre, Previred y LRE.
-4. [`criterios-cierre-fases.md`](./criterios-cierre-fases.md) — estados permitidos y criterios para cerrar fases.
-5. [`orden-prioridades.md`](./orden-prioridades.md) — prioridades altas, medias, bajas y regla visual.
-6. [`estado-fases.md`](./estado-fases.md) — tablero vivo de fases y siguiente paso oficial.
-7. [`mapa-documentacion.md`](./mapa-documentacion.md) — lista de documentos globales, por módulo, vigentes en `temas/`, stubs y archivo.
-8. [`diseno-operativo-erp.md`](./diseno-operativo-erp.md) — diseño operativo: estado, pendientes, acciones y camino SEG-01 -> CONC-02 -> MOTOR-00.
-9. [`matriz-roles-permisos.md`](./matriz-roles-permisos.md) — placeholder vigente de SEG-01.
-10. [`../AGENTS.md`](../AGENTS.md) — contrato del agente (stack, layout, anti‑patrones, checklist).
-11. [`../arquitectura/frontend-interfaces.md`](../arquitectura/frontend-interfaces.md) — si el trabajo afecta estructura Angular (`pages/` vs `features/`, contenedores).
-12. [`../README.md`](../README.md) — índice padre y jerarquía.
-13. **[`../modulos/<módulo>/README.md`](../modulos/empleados/README.md)** y luego el **documento del subflujo** que corresponda.
+2. [`estado-fases.md`](./estado-fases.md) — tablero vivo de fases y siguiente paso oficial.
+3. [`../estandares/README.md`](../estandares/README.md) — constitución técnica EST-001…EST-008 (agentes: [`EST-008-ia.md`](../estandares/EST-008-ia.md)).
+4. [`roadmap-operativo.md`](./roadmap-operativo.md) — orden oficial del producto.
+5. [`dependencias-fases.md`](./dependencias-fases.md) — bloqueadores entre fases.
+6. [`criterios-cierre-fases.md`](./criterios-cierre-fases.md) — criterios para cerrar fases.
+7. [`orden-prioridades.md`](./orden-prioridades.md) — prioridades altas, medias, bajas.
+8. [`mapa-documentacion.md`](./mapa-documentacion.md) — inventario global de documentos.
+9. [`diseno-operativo-erp.md`](./diseno-operativo-erp.md) — diseño operativo UX.
+10. [`../AGENTS.md`](../AGENTS.md) — contrato del agente.
+11. [`../arquitectura/frontend-interfaces.md`](../arquitectura/frontend-interfaces.md) — estructura Angular si aplica.
+12. [`../README.md`](../README.md) — índice padre.
+13. [`../modulos/<módulo>/README.md`](../modulos/empleados/README.md) + subflujo concreto.
 
-Siempre debe quedar claro: primero **contexto + roadmap + dependencias + fases + mapa**, despues **contrato (`AGENTS` + UI + arquitectura frontend si aplica)**, despues **modulo**, despues **pantalla**. Los recorridos por ruta siguen en [`../temas/flujos/README.md`](../temas/flujos/README.md).
+**Movimientos de remuneración:** antes del detalle en `modulos/remuneraciones/`, leer [`resumen-trabajo-movimientos-remuneracion.md`](./resumen-trabajo-movimientos-remuneracion.md).
+
+Siempre debe quedar claro: primero **contexto + fases + estándares**, después **roadmap + mapa**, después **contrato (`AGENTS` + EST + UI + arquitectura frontend si aplica)**, después **módulo**, después **pantalla**.
 
 ## Relación con `docs/codex/modulos` y `docs/codex/temas`
 
 | Carpeta / doc | Rol |
 |-----------------|-----|
 | `orquestador/` | Contexto global, diseño operativo, orden del producto, qué no construir aún. |
+| `estandares/` | Constitución técnica EST-001…EST-008 (nomenclatura, BD, Angular, IA). |
 | `arquitectura/` | Contratos de código transversal (p. ej. [`../arquitectura/frontend-interfaces.md`](../arquitectura/frontend-interfaces.md)). |
 | `modulos/` | Contratos y guías **por módulo y subflujo** (fuente vigente para empleados, parámetros, etc.). |
 | `temas/` | Flujos por app, UI transversal, menú; **stubs** hacia `modulos/` donde aplica; ver [`../temas/README.md`](../temas/README.md). |

@@ -72,7 +72,7 @@ CREATE INDEX idx_ips_ex_caja_tasa_basica_fecha ON ips_ex_caja_tasa_basica(vigenc
 CREATE INDEX idx_trabajo_pesado_parametro_fecha ON trabajo_pesado_parametro(vigencia_inicio, vigencia_fin);
 CREATE INDEX idx_reforma_previsional_parametro_fecha ON reforma_previsional_parametro(vigencia_inicio, vigencia_fin);
 CREATE INDEX idx_ley_16744_parametros_fecha ON ley_16744_parametros(vigencia_inicio, vigencia_fin);
-CREATE INDEX idx_empresa_ley_16744_empresa_fecha ON empresa_ley_16744(id_empresa, vigencia_inicio, vigencia_fin);
+CREATE INDEX idx_empresa_mutual_vigencia ON empresa(id_empresa, vigencia_inicio, vigencia_fin) WHERE aplica_ley_16744 = TRUE;
 CREATE INDEX idx_prevision_ex_caja ON prevision(id_ex_caja_previsional, id_regimen_ex_caja);
 CREATE INDEX idx_salud_trabajador_plan ON salud_trabajador(id_salud_plan, vigencia_inicio, vigencia_fin);
 CREATE INDEX idx_movimiento_tipo_motivo ON movimiento(id_tipo_movimiento, id_motivo_inasistencia, fecha);

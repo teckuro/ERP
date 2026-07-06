@@ -1,12 +1,20 @@
 import { inject, Injectable } from '@angular/core';
 
+import { AuthService } from '../../../core/auth/auth.service';
+import {
+  resolverUsuarioResponsableActual,
+  usuarioResponsableDisponible,
+} from '../../../core/auth/auth-user-label';
 import { NominaCalculoSnapshotRepository } from '../../nomina-mensual/data-access/nomina-calculo-snapshot.repository';
 import type { NominaCalculoPeriodoSnapshot } from '../../nomina-mensual/models/proceso-mensual.model';
 import { LiquidacionesOficialesRepository } from '../data-access/liquidaciones-oficiales.repository';
 import type {
   LiquidacionesEstadoPeriodo,
+  LiquidacionEmision,
+  LiquidacionEmisionCanal,
   LiquidacionTrabajador,
 } from '../models/liquidacion-oficial.model';
+import type { LiquidacionAccionUiEstado } from '../rules/liquidaciones-acciones-ui.rules';
 import {
   clasificarAdvertenciasLiquidacion,
   determinarEstadoLiquidaciones,
@@ -17,6 +25,7 @@ import {
 export class LiquidacionesOficialesService {
   private readonly liquidaciones = inject(LiquidacionesOficialesRepository);
   private readonly snapshots = inject(NominaCalculoSnapshotRepository);
+  private readonly auth = inject(AuthService);
 
   async consultarEstadoPeriodo(periodo: string): Promise<LiquidacionesEstadoPeriodo> {
     const p = periodo.trim();
@@ -48,7 +57,7 @@ export class LiquidacionesOficialesService {
   async generarLiquidaciones(periodo: string): Promise<LiquidacionesEstadoPeriodo> {
     const estado = await this.consultarEstadoPeriodo(periodo);
     if (!estado.snapshot?.idCalculoPeriodo) {
-      throw new Error('No se pudo consultar el estado de la nomina cerrada.');
+      throw new Error('No se pudo consultar una nómina mensual confirmada para este período.');
     }
     if (estado.motivoNoPuedeGenerar) {
       throw new Error(estado.motivoNoPuedeGenerar);
@@ -57,13 +66,41 @@ export class LiquidacionesOficialesService {
     await this.liquidaciones.generarLiquidacionesOficiales({
       idCalculoPeriodo: estado.snapshot.idCalculoPeriodo,
       periodo: estado.periodo,
-      metadata: buildMetadataGeneracion(estado),
+      metadata: {
+        ...buildMetadataGeneracion(estado),
+        ...(await this.metadataUsuarioResponsable()),
+      },
     });
     return this.consultarEstadoPeriodo(estado.periodo);
   }
 
   obtenerDetalleTrabajador(idLiquidacionTrabajador: number) {
     return this.liquidaciones.obtenerDetalleTrabajador(idLiquidacionTrabajador);
+  }
+
+  listarTrabajadoresLiquidacion(idLiquidacionPeriodo: number): Promise<LiquidacionTrabajador[]> {
+    return this.liquidaciones.obtenerLiquidacionesTrabajadores(idLiquidacionPeriodo);
+  }
+
+  guardarEstadoRevisionTrabajador(
+    idLiquidacionTrabajador: number,
+    estadoRevision: LiquidacionAccionUiEstado,
+  ): Promise<LiquidacionTrabajador> {
+    return this.liquidaciones.actualizarEstadoRevisionTrabajador(idLiquidacionTrabajador, estadoRevision);
+  }
+
+  async registrarEmisionLiquidacionTrabajador(
+    idLiquidacionTrabajador: number,
+    canal: LiquidacionEmisionCanal,
+  ): Promise<LiquidacionEmision> {
+    const metadata = await this.metadataUsuarioResponsable();
+    return this.liquidaciones.emitirLiquidacionTrabajador(idLiquidacionTrabajador, canal, metadata);
+  }
+
+  private async metadataUsuarioResponsable(): Promise<Record<string, unknown>> {
+    const user = this.auth.currentUser() ?? (await this.auth.getSession())?.user ?? null;
+    const usuario = resolverUsuarioResponsableActual(user);
+    return usuarioResponsableDisponible(usuario) ? { usuarioResponsable: usuario } : {};
   }
 }
 
@@ -90,6 +127,6 @@ function buildMetadataGeneracion(estado: LiquidacionesEstadoPeriodo): Record<str
     totalTrabajadoresSnapshot: estado.snapshot?.totalTrabajadores ?? 0,
     versionMotor: estado.snapshot?.versionMotor ?? null,
     hashSnapshot: estado.snapshot?.hashSnapshot ?? null,
-    notaAlcance: 'Generacion interna desde nomina cerrada; sin recalculo ni salidas legales.',
+    notaAlcance: 'Generacion interna desde nómina mensual confirmada. Sin recalculo ni salidas legales.',
   };
 }

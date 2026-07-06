@@ -1,0 +1,4 @@
+/* El host no participa en el flex del contenedor; modales/backdrops siguen visibles. */
+:host {
+  display: contents;
+}

@@ -1,0 +1,80 @@
+<div class="nomina-workflow-header nmv2-stepper-card nomina-shell">
+  <div class="nmv2-stepper__back-slot" aria-label="Retroceder en el flujo">
+    @if (pasoAnterior(); as anterior) {
+      <app-tooltip preferredPlacement="bottom" [text]="etiquetaPasoAnterior() ?? ''">
+        <button
+          type="button"
+          class="nmv2-stepper__back"
+          (click)="emitirVolverPasoAnterior()"
+          [attr.aria-label]="etiquetaPasoAnterior()"
+        >
+          <lucide-icon name="arrow-left" aria-hidden="true"></lucide-icon>
+        </button>
+      </app-tooltip>
+    }
+  </div>
+
+  <div class="nmv2-stepper__track">
+    <nav class="nmv2-stepper nomina-stepper nomina-stepper-compact" aria-label="Flujo de nómina mensual">
+      @for (vista of vistasStepper(); track vista.clave) {
+        <button
+          type="button"
+          class="step nomina-step"
+          [class]="claseEstadoPaso(estadoPaso(vista.clave))"
+          [class.active]="estadoPaso(vista.clave) === 'active'"
+          [class.completed]="estadoPaso(vista.clave) === 'completed'"
+          [class.nomina-step--advance-blocked]="pasoAvanceBloqueado(vista.clave)"
+          [class.nomina-step--frozen]="pasoCongelado(vista.clave)"
+          [class.nomina-step--locked]="pasoNoAccesible(vista.clave)"
+          [disabled]="pasoAvanceBloqueado(vista.clave) || pasoCongelado(vista.clave) || pasoNoAccesible(vista.clave)"
+          [attr.aria-disabled]="pasoAvanceBloqueado(vista.clave) || pasoCongelado(vista.clave) || pasoNoAccesible(vista.clave) ? 'true' : null"
+          [attr.title]="tooltipPaso(vista)"
+          (click)="seleccionarPaso(vista.clave, $event)"
+        >
+          <span class="step-index">
+            <span class="step-number">
+              <span>{{ vista.numero }}</span>
+            </span>
+          </span>
+          <span class="step-copy">
+            <strong>{{ vista.titulo }}</strong>
+            <small>{{ vista.accion }}</small>
+          </span>
+          <span
+            class="step-status step-status--icon-only"
+            [class.step-status--ready]="vista.estado === 'completo'"
+            [class.step-status--waiting]="vista.estado === 'pendiente' || vista.estado === 'activo'"
+            [class.step-status--warning]="vista.estado === 'advertencia'"
+            [class.step-status--frozen]="pasoCongelado(vista.clave)"
+            [class.step-status--locked]="pasoNoAccesible(vista.clave)"
+          >
+            @if (pasoCongelado(vista.clave)) {
+              <lucide-icon name="lock" aria-label="Próximamente"></lucide-icon>
+            } @else if (pasoNoAccesible(vista.clave)) {
+              <lucide-icon name="lock" aria-label="Completa el paso anterior para desbloquear"></lucide-icon>
+            } @else if (vista.estado === 'completo') {
+              <lucide-icon name="check" aria-label="Listo"></lucide-icon>
+            } @else if (vista.estado === 'advertencia') {
+              <lucide-icon name="triangle-alert" aria-label="Revisión requerida"></lucide-icon>
+            } @else {
+              <lucide-icon name="clock-3" aria-label="No listo"></lucide-icon>
+            }
+          </span>
+        </button>
+      }
+    </nav>
+  </div>
+
+  <div class="nmv2-stepper__user-slot" aria-label="Trazabilidad del período">
+    <app-tooltip preferredPlacement="bottom" [text]="tooltipTrazabilidad()">
+      <button
+        type="button"
+        class="nmv2-stepper__user nmv2-stepper__user-btn"
+        (click)="abrirTrazabilidadCompleta()"
+        [attr.aria-label]="ariaLabelTrazabilidad()"
+      >{{
+        inicialesUsuario()
+      }}</button>
+    </app-tooltip>
+  </div>
+</div>

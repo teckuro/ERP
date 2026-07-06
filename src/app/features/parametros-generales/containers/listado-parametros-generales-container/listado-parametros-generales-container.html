@@ -10,7 +10,6 @@
     <app-message-box
       variant="error"
       mode="modal"
-      [modalHeadlineSplit]="true"
       title="No fue posible completar la operación"
       message="No fue posible cargar el listado de parámetros generales."
       [detail]="errDet"
@@ -24,7 +23,7 @@
       class="block w-full min-w-0"
       [rows]="rows()"
       [loading]="isLoading()"
-      [errorMessage]="''"
+      [mensajeError]="''"
     ></app-tabla-parametros-generales>
   </div>
 </section>

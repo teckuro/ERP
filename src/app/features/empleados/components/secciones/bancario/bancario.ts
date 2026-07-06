@@ -3,18 +3,19 @@ import { ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { EmpleadoCatalogOption } from '../../../models/empleado-catalogos.model';
 import { BancarioFormGroup } from '../../../models/empleado-form.model';
-import { CardComponent } from '../../../../../shared/components/ui/card.component';
+import { CardComponent } from '../../../../../shared/components/ui/primitives/card.component';
 import {
   SearchSelectComponent,
   type SearchSelectOption,
-} from '../../../../../shared/components/ui/search-select.component';
+} from '../../../../../shared/components/ui/forms/search-select.component';
 import { withEmptyNumberCatalog } from '../../../utils/empleado-select-options';
+import { EmpleadoFieldRequiredComponent } from '../../empleado-field-required/empleado-field-required.component';
 
 type BancarioControlName = keyof BancarioFormGroup['controls'];
 
 @Component({
   selector: 'app-empleado-bancario',
-  imports: [ReactiveFormsModule, CardComponent, SearchSelectComponent],
+  imports: [ReactiveFormsModule, CardComponent, SearchSelectComponent, EmpleadoFieldRequiredComponent],
   templateUrl: './bancario.html',
   styleUrl: './bancario.css',
 })
@@ -22,12 +23,19 @@ export class BancarioComponent {
   @Input({ required: true }) formGroup!: BancarioFormGroup;
   @Input() bancos: EmpleadoCatalogOption[] = [];
   @Input() tiposCuentaBancaria: EmpleadoCatalogOption[] = [];
-  @Input() visibleBlocks: string[] | null = null;
-  @Input() advancedGridLayout = false;
+  @Input() bloquesVisibles: string[] | null = null;
+  @Input() grillaAvanzada = false;
+  /** Edicion inline desde ficha: la card exterior ya aporta el titulo del bloque. */
+  @Input() disposicionInlineFicha = false;
 
   @HostBinding('class.employee-layout-advanced')
   protected get employeeLayoutAdvanced(): boolean {
-    return this.advancedGridLayout;
+    return this.grillaAvanzada;
+  }
+
+  @HostBinding('class.employee-layout-inline-record')
+  protected get employeeLayoutInlineRecord(): boolean {
+    return this.disposicionInlineFicha;
   }
 
   controlClass(controlName: BancarioControlName): string {
@@ -50,8 +58,8 @@ export class BancarioComponent {
     return this.formGroup.controls[controlName].hasValidator(Validators.required);
   }
 
-  isBlockVisible(blockId: string): boolean {
-    return this.visibleBlocks === null || this.visibleBlocks.includes(blockId);
+  esBloqueVisible(blockId: string): boolean {
+    return this.bloquesVisibles === null || this.bloquesVisibles.includes(blockId);
   }
 
   get bancoSelectOptions(): SearchSelectOption[] {

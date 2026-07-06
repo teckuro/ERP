@@ -31,4 +31,28 @@ Fases **1** y **2** del tablero cerradas (UI período/vigencia/catálogo; Python
 
 ## Auditoria PARAM-CHILE-01 (proceso mensual vs demo)
 
-La pantalla **Proceso mensual** (`/remuneraciones/proceso-mensual`) no debe mostrar cifras normativas demo: quedo alineado en **PARAM-CHILE-01** con enlace a **`/parametros`** como fuente de valores. Informe ASCII: [`../../auditorias/param-chile-01-parametros-y-demo-proceso.md`](../../auditorias/param-chile-01-parametros-y-demo-proceso.md). La lectura automatica en ese flujo usa `obtenerUltimoHastaPeriodo`, `obtenerPeriodoRemuneracion` y **`listarCatalogos`** para prevalidaciones (**9.5A** + **9.5B**); ver [`../nomina-mensual/prevalidaciones-9-5A.md`](../nomina-mensual/prevalidaciones-9-5A.md) y [`../nomina-mensual/prevalidaciones-9-5B.md`](../nomina-mensual/prevalidaciones-9-5B.md).
+La pantalla **Proceso mensual** (`/remuneraciones/proceso-mensual`) no debe mostrar cifras normativas demo: quedo alineado en **PARAM-CHILE-01** con enlace a **`/parametros`** como fuente de valores. Informe ASCII: [`../../auditorias/param-chile-01-parametros-y-demo-proceso.md`](../../auditorias/param-chile-01-parametros-y-demo-proceso.md). La lectura automatica en ese flujo usa `obtenerUltimoHastaPeriodo`, `obtenerPeriodoRemuneracion` y **`listarCatalogos`** para prevalidaciones (**9.5A** + **9.5B**); ver [`../nomina-mensual/prevalidaciones/prevalidaciones-9-5A.md`](../nomina-mensual/prevalidaciones/prevalidaciones-9-5A.md) y [`../nomina-mensual/prevalidaciones/prevalidaciones-9-5B.md`](../nomina-mensual/prevalidaciones/prevalidaciones-9-5B.md).
+## ERP-NOIA-BITACORA-OPERATIVA-00 - Lectura de modulo
+
+Parametros queda alineado a [`NOIA / Bitacora Operativa`](../../diseno/bitacora-operativa-noia.md) como `Registro normativo`.
+
+- Las pantallas deben mostrar vigencia, fuente normativa, estado y efecto operacional sobre nomina.
+- Evitar presentar parametros como catalogos genericos sin contexto de periodo o impacto.
+- Esta referencia es documental; no modifica semillas, SQL, servicios, motor ni estilos globales.
+
+## PARAM-NOIA-CIERRE-UX-01
+
+Parametros incorpora `Cierre normativo del periodo`, estados por pestana y una guardia terminal para evitar que una carga mensual full pise datos existentes sin advertencia. Ver [`cierre-operativo-parametros.md`](./cierre-operativo-parametros.md) y [`../../diseno/param-noia-cierre-ux-01.md`](../../diseno/param-noia-cierre-ux-01.md).
+
+## PARAM-CLIENT-CONFIG-SEPARATION-AUDIT-01
+
+La regla vigente queda documentada en [`separacion-oficial-cliente.md`](./separacion-oficial-cliente.md): `parametros_generales` es snapshot oficial mensual, `parametros_generales_cliente` es configuracion cliente protegida y la reconciliacion siempre debe ser una decision explicita del usuario.
+## PARAM-RECONCILIACION-MSGBOX-FIX-01
+
+La reconciliacion oficial/cliente registra `Revisar despues` como decision explicita y evita reabrir el MsgBox en bucle. Ver [`../../diseno/param-reconciliacion-msgbox-fix-01.md`](../../diseno/param-reconciliacion-msgbox-fix-01.md).
+
+## PARAM-BITACORA-LAYOUT-ALIGN-01
+
+Parametros alinea su layout visible al patron `Bitacora Operativa / NOIA`: cabecera normativa del periodo, accion de configuracion cliente mas clara, tabs compactos, contexto humano de la seccion activa y filtros con menor peso visual. No cambia la separacion oficial/cliente, reconciliacion, Python, wrapper, SQL ni servicios. Ver [`../../diseno/param-bitacora-layout-align-01.md`](../../diseno/param-bitacora-layout-align-01.md).
+
+La v2 deja Parametros como cierre normativo protagonista: distingue lectura oficial de configuracion cliente y mantiene el scope solo en layout local/documentacion.

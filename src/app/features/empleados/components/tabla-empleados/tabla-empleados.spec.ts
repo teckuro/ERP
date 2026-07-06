@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 
+import { DataGridComponent } from '../../../../shared/components/ui/data-grid';
 import { EmpleadoListado } from '../../models/empleado-listado.model';
 import { TablaEmpleadosComponent } from './tabla-empleados';
 
@@ -14,6 +16,7 @@ function fila(over: Partial<EmpleadoListado>): EmpleadoListado {
     departamento: 'CC',
     fechaIngreso: '2020-01-01',
     sueldoBase: 0,
+    monedaContrato: null,
     estado: 'borrador',
     estadoFicha: 'BORRADOR',
     aptoParaRemuneraciones: false,
@@ -23,10 +26,13 @@ function fila(over: Partial<EmpleadoListado>): EmpleadoListado {
 }
 
 describe('TablaEmpleadosComponent', () => {
+  const persistenceKey = 'empleados.data-grid.preferences';
   let component: TablaEmpleadosComponent;
   let fixture: ComponentFixture<TablaEmpleadosComponent>;
 
   beforeEach(async () => {
+    localStorage.removeItem(persistenceKey);
+
     await TestBed.configureTestingModule({
       imports: [TablaEmpleadosComponent],
       providers: [provideRouter([])],
@@ -35,6 +41,10 @@ describe('TablaEmpleadosComponent', () => {
     fixture = TestBed.createComponent(TablaEmpleadosComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
+  });
+
+  afterEach(() => {
+    localStorage.removeItem(persistenceKey);
   });
 
   it('should create', () => {
@@ -86,6 +96,14 @@ describe('TablaEmpleadosComponent', () => {
     expect(component.rowPrimaryActionLabel(e)).toBe('Ver ficha');
   });
 
+  it('popover: Continuar alta o Ver ficha segun paso avanzado', () => {
+    expect(component.menuPrimaryActionLabel(fila({ pasoAltaAvanzada: 2 }))).toBe('Continuar alta');
+    expect(component.menuPrimaryActionLabel(fila({ estadoFicha: 'INCOMPLETO' }))).toBe('Ver ficha');
+    expect(component.menuPrimaryActionLabel(fila({ estado: 'activo', estadoFicha: 'VALIDO' }))).toBe(
+      'Ver ficha',
+    );
+  });
+
   it('Activo no apto muestra Revisar pendientes', () => {
     const e = fila({
       estado: 'activo',
@@ -97,5 +115,35 @@ describe('TablaEmpleadosComponent', () => {
     expect(component.labelEstadoVisual(e)).toBe('Activo / No apto');
     expect(component.rowPrimaryActionLabel(e)).toBe('Revisar pendientes');
     expect(component.pendingLabel(e)).toBe('No apto');
+  });
+
+  it('deja filtros persistidos como borrador cuando no hay empleados', async () => {
+    fixture.destroy();
+    localStorage.setItem(
+      persistenceKey,
+      JSON.stringify({
+        filterValues: { nombre: 'Ana', estado: 'activo' },
+        pageSize: 10,
+        sortColumnId: '',
+        sortDirection: 'asc',
+        visibleColumnIds: [],
+      }),
+    );
+
+    fixture = TestBed.createComponent(TablaEmpleadosComponent);
+    component = fixture.componentInstance;
+    component.empleados = [];
+    component.loading = false;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const grid = fixture.debugElement.query(By.directive(DataGridComponent))
+      .componentInstance as DataGridComponent<EmpleadoListado>;
+
+    expect(grid.hasActiveFilters).toBeFalsy();
+    expect(grid.hasActiveDraftFilters).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.data-grid-filter-panel')).not.toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Aún no hay empleados registrados.');
   });
 });

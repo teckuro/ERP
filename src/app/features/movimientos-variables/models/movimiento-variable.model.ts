@@ -46,6 +46,8 @@ export interface MovimientoVariableConceptoSnapshot {
   tipo: string | null;
   calculoAutomatico?: boolean;
   esSistema?: boolean;
+  codigo?: string | null;
+  nombre?: string | null;
 }
 
 export interface MovimientoVariableCrearPayload {

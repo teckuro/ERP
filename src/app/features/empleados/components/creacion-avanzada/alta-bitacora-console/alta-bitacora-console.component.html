@@ -1,0 +1,160 @@
+@if (vm.visible) {
+  <aside
+    class="alta-bitacora-console"
+    [class.alta-bitacora-console--expanded]="expanded()"
+    aria-label="Pendientes del alta y bitácora"
+  >
+    <button
+      type="button"
+      class="alta-bitacora-console__toggle"
+      [attr.aria-expanded]="expanded()"
+      aria-controls="alta-bitacora-console-body"
+      (click)="toggleExpanded()"
+    >
+      <span class="alta-bitacora-console__toggle-label">{{ vm.collapsedLabel }}</span>
+      <lucide-icon
+        class="alta-bitacora-console__toggle-icon"
+        [img]="expanded() ? chevronDownIcon : chevronUpIcon"
+        aria-hidden="true"
+      />
+    </button>
+
+    @if (expanded()) {
+      <div id="alta-bitacora-console-body" class="alta-bitacora-console__body">
+        @if (vm.faltantes.length > 0) {
+          <section class="alta-bitacora-console__section" aria-labelledby="alta-console-expediente-title">
+            <header class="alta-bitacora-console__section-head">
+              <h3 id="alta-console-expediente-title" class="alta-bitacora-console__section-title">
+                Pendientes del expediente
+              </h3>
+              @if (vm.motivoPrincipal) {
+                <p class="alta-bitacora-console__section-lead">{{ vm.motivoPrincipal }}</p>
+              }
+            </header>
+            <ul class="alta-bitacora-console__list">
+              @for (issue of vm.faltantes; track issue.claveBloque + issue.mensaje) {
+                <li>
+                  <button
+                    type="button"
+                    class="alta-bitacora-console__issue"
+                    (click)="navegarFaltante.emit(issue)"
+                  >
+                    <span class="alta-bitacora-console__issue-block">{{ issue.etiquetaBloque }}</span>
+                    <span class="alta-bitacora-console__issue-msg">{{ issue.mensaje }}</span>
+                  </button>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        @if (vm.revisionesNormativas.length > 0) {
+          <section
+            class="alta-bitacora-console__section alta-bitacora-console__section--normativa"
+            aria-labelledby="alta-console-normativa-title"
+          >
+            <header class="alta-bitacora-console__section-head">
+              <h3 id="alta-console-normativa-title" class="alta-bitacora-console__section-title">
+                Revisiones normativas
+              </h3>
+              <p class="alta-bitacora-console__section-lead">
+                Criterio administrativo chileno: revisa, aplica la sugerencia o mantén bajo revisión RRHH.
+              </p>
+            </header>
+            <ul class="alta-bitacora-console__list alta-bitacora-console__list--normativa">
+              @for (rev of vm.revisionesNormativas; track rev.id) {
+                <li class="alta-bitacora-console__normativa-item">
+                  <div class="alta-bitacora-console__normativa-copy">
+                    <strong class="alta-bitacora-console__normativa-title">{{ rev.titulo }}</strong>
+                    <p class="alta-bitacora-console__normativa-detail">{{ rev.detalle }}</p>
+                    @if (rev.bajoRevision) {
+                      <span class="alta-bitacora-console__normativa-badge">Bajo revisión RRHH</span>
+                    }
+                  </div>
+                  <div class="alta-bitacora-console__normativa-actions">
+                    <button
+                      type="button"
+                      class="alta-bitacora-console__review"
+                      (click)="revisarPaso.emit(rev.stepIndex)"
+                    >
+                      Revisar
+                    </button>
+                    @if (rev.puedeAplicarCorreccion) {
+                      <button
+                        type="button"
+                        class="alta-bitacora-console__apply"
+                        (click)="aplicarRevisionNormativa.emit(rev)"
+                      >
+                        Aplicar sugerencia
+                      </button>
+                    }
+                    @if (rev.origen === 'coherencia' && !rev.bajoRevision) {
+                      <button
+                        type="button"
+                        class="alta-bitacora-console__keep"
+                        (click)="mantenerRevisionNormativa.emit(rev)"
+                      >
+                        Mantener revisión
+                      </button>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        @if (vm.registrosPendientes.length > 0) {
+          <section class="alta-bitacora-console__section" aria-labelledby="alta-console-bitacora-title">
+            <header class="alta-bitacora-console__section-head">
+              <h3 id="alta-console-bitacora-title" class="alta-bitacora-console__section-title">
+                Registros de la bitácora
+              </h3>
+            </header>
+            <ul class="alta-bitacora-console__list alta-bitacora-console__list--rows">
+              @for (row of vm.registrosPendientes; track row.stepIndex) {
+                <li class="alta-bitacora-console__row">
+                  <div class="alta-bitacora-console__row-copy">
+                    <span class="alta-bitacora-console__row-label">{{ row.label }}</span>
+                    <span class="alta-bitacora-console__row-state">
+                      {{ row.stateLabel }}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    class="alta-bitacora-console__review"
+                    [class.alta-bitacora-console__review--attention]="
+                      row.kind === 'pendiente' || row.kind === 'errores'
+                    "
+                    (click)="revisarPaso.emit(row.stepIndex)"
+                  >
+                    Revisar
+                  </button>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        @if (vm.pendientesCierre.length > 0) {
+          <section
+            class="alta-bitacora-console__section alta-bitacora-console__section--alert"
+            role="alert"
+            aria-labelledby="alta-console-cierre-title"
+          >
+            <header class="alta-bitacora-console__section-head">
+              <h3 id="alta-console-cierre-title" class="alta-bitacora-console__section-title">
+                Pendientes para cierre
+              </h3>
+            </header>
+            <ul class="alta-bitacora-console__list alta-bitacora-console__list--plain">
+              @for (msg of vm.pendientesCierre; track msg) {
+                <li>{{ msg }}</li>
+              }
+            </ul>
+          </section>
+        }
+      </div>
+    }
+  </aside>
+}

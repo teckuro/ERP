@@ -35,6 +35,10 @@ function errorFuente(nombre: string, error: unknown): Error {
   return new Error(`No se pudieron listar entradas mensuales desde ${nombre}: ${detalle}`);
 }
 
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
+}
+
 @Injectable({ providedIn: 'root' })
 export class EntradasMensualesPeriodoService {
   private readonly novedadesMensualesService = inject(NovedadesMensualesService);
@@ -63,7 +67,7 @@ export class EntradasMensualesPeriodoService {
     assertPeriodo(periodo);
     try {
       const novedades = await this.novedadesMensualesService.listarNovedadesPeriodo(periodo.trim());
-      return novedades.map((novedad) => normalizarEntradaNovedadMensual(novedad));
+      return asArray(novedades).map((novedad) => normalizarEntradaNovedadMensual(novedad));
     } catch (error) {
       throw errorFuente('Movimientos del mes', error);
     }
@@ -73,7 +77,7 @@ export class EntradasMensualesPeriodoService {
     assertPeriodo(periodo);
     try {
       const movimientos = await this.movimientosVariablesService.listarPorPeriodo(periodo.trim());
-      return movimientos.map((movimiento) => normalizarEntradaMovimientoLegacy(movimiento));
+      return asArray(movimientos).map((movimiento) => normalizarEntradaMovimientoLegacy(movimiento));
     } catch (error) {
       throw errorFuente('Movimientos del mes legacy', error);
     }
@@ -83,7 +87,7 @@ export class EntradasMensualesPeriodoService {
     assertPeriodo(periodo);
     try {
       const recurrentes = await this.haberesDescuentosService.listarAsignacionesParaPrevalidacionMensual(periodo.trim());
-      return recurrentes
+      return asArray(recurrentes)
         .map((fila) => normalizarEntradaRecurrente(fila, periodo.trim()))
         .filter((entrada): entrada is EntradaMensualPeriodo => entrada != null);
     } catch (error) {

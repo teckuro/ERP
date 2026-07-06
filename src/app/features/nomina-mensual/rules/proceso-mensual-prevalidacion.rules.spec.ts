@@ -1,11 +1,14 @@
+import { describe, expect, it } from 'vitest';
 import type { ParametroGeneral, PeriodoRemuneracionEstadoInfo } from '../../parametros-generales/models/parametro-general.model';
 import type { MovimientoVariableListadoFila } from '../../movimientos-variables/models/movimiento-variable.model';
 import type { EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
 
+import type { EmpleadoListado } from '../../empleados/models/empleado-listado.model';
 import {
   construirPrevalidacionMensual,
   type ProcesoMensualHechosPrevalidacion,
 } from './proceso-mensual-prevalidacion.rules';
+import { buildTrabajadoresPendientesRevision } from './proceso-mensual-trabajadores-prevalidacion.rules';
 
 function filaPgBase(): ParametroGeneral {
   return {
@@ -35,6 +38,7 @@ function baseHechos(over: Partial<ProcesoMensualHechosPrevalidacion> = {}): Proc
     parametrosGrupos: [],
     empleadosActivosAptos: 2,
     empleadosActivosNoAptos: 0,
+    trabajadoresPendientesRevision: [],
     lecturaEmpleados: 'ok',
     totalConceptosMantenimiento: 3,
     lecturaConceptos: 'ok',
@@ -44,6 +48,8 @@ function baseHechos(over: Partial<ProcesoMensualHechosPrevalidacion> = {}): Proc
     lecturaEntradasMensuales: 'ok',
     movimientos: [],
     lecturaMovimientos: 'ok',
+    conceptosCatalogo: [],
+    monedaContratoPorPersona: {},
     ...over,
   };
 }
@@ -156,7 +162,7 @@ describe('proceso-mensual-prevalidacion.rules', () => {
     expect(r.advertencias.filter((a) => a.area === 'ENTRADAS_MENSUALES').length).toBe(0);
   });
 
-  it('combinacion de bloqueos -> BLOQUEADO', () => {
+  it('sin parametros y entradas bloqueantes -> BLOQUEADO por parametros y entradas', () => {
     const r = construirPrevalidacionMensual(
       baseHechos({
         ultimoPg: null,
@@ -165,10 +171,11 @@ describe('proceso-mensual-prevalidacion.rules', () => {
       }),
     );
     expect(r.estado).toBe('BLOQUEADO');
-    expect(r.bloqueos.length).toBeGreaterThan(1);
+    expect(r.bloqueos.some((b) => b.codigo === 'PARAMETROS_SIN_FILA')).toBe(true);
+    expect(r.bloqueos.some((a) => a.codigo === 'ENTRADAS_BLOQUEANTES')).toBe(true);
   });
 
-  it('solo advertencias reales -> CON_ADVERTENCIAS (INFO no cuenta)', () => {
+  it('trabajadores bloqueados para nomina -> BLOQUEADO', () => {
     const r = construirPrevalidacionMensual(
       baseHechos({
         empleadosActivosNoAptos: 1,
@@ -176,7 +183,8 @@ describe('proceso-mensual-prevalidacion.rules', () => {
         movimientos: [mv('VALIDADO')],
       }),
     );
-    expect(r.estado).toBe('CON_ADVERTENCIAS');
+    expect(r.estado).toBe('BLOQUEADO');
+    expect(r.bloqueos.some((b) => b.codigo === 'TRABAJADORES_BLOQUEADOS_NOMINA')).toBe(true);
     expect(r.informaciones.length).toBeGreaterThan(0);
   });
 
@@ -186,6 +194,28 @@ describe('proceso-mensual-prevalidacion.rules', () => {
     expect(r.bloqueos.length).toBe(0);
     expect(r.advertencias.length).toBe(0);
     expect(r.resumen.parametrosOperativos).toBe(true);
+  });
+
+  it('presenta liquidaciones oficiales como salida desde nomina confirmada', () => {
+    const r = construirPrevalidacionMensual(baseHechos());
+    const proceso = r.items.find((item) => item.area === 'PROCESO');
+
+    expect(r.informaciones.some((msg) => msg.codigo === 'PROCESO_LIQUIDACIONES_OFICIALES')).toBe(true);
+    expect(proceso?.etiqueta).toBe('Liquidaciones oficiales');
+    expect(proceso?.detalle).toBe('Disponibles al confirmar la nómina mensual');
+  });
+
+  it('bloquea si el estado visual de Parámetros no está operativo aunque la fila y calendario existan', () => {
+    const r = construirPrevalidacionMensual(
+      baseHechos({
+        parametrosOperativos: false,
+        parametrosEstadoVisual: 'oficial_sin_config',
+        parametrosEstadoDetalle: 'Parámetros del período pendientes: falta completar la configuración cliente.',
+      }),
+    );
+    expect(r.estado).toBe('BLOQUEADO');
+    expect(r.resumen.parametrosOperativos).toBe(false);
+    expect(r.bloqueos.some((b) => b.codigo === 'PARAMETROS_CONFIG_CLIENTE_INCOMPLETA')).toBe(true);
   });
 
   it('resumen de entradas calcula totales canónicos y legacy', () => {
@@ -211,16 +241,18 @@ describe('proceso-mensual-prevalidacion.rules', () => {
     expect(r.resumen.resumenEntradasMensuales?.legacyMovimientos).toBe(1);
     expect(r.resumen.resumenEntradasMensuales?.bloqueantes).toBe(1);
     expect(r.bloqueos.some((b) => b.codigo === 'ENTRADAS_BLOQUEANTES')).toBe(true);
+    expect(r.advertencias.some((a) => a.codigo === 'ENTRADAS_BLOQUEANTES')).toBe(false);
   });
 
-  it('recurrentes invalidas -> BLOQUEADO', () => {
+  it('recurrentes invalidas -> CON_ADVERTENCIAS (no bloquea generar nómina)', () => {
     const r = construirPrevalidacionMensual(
       baseHechos({
         recurrentesConteo: { lectura: 'ok', aplicables: 0, invalidas: 2, cerradas: 0, fueraDelMes: 0 },
       }),
     );
-    expect(r.estado).toBe('BLOQUEADO');
-    expect(r.bloqueos.some((b) => b.codigo === 'RECURRENTES_INVALIDAS')).toBe(true);
+    expect(r.estado).toBe('CON_ADVERTENCIAS');
+    expect(r.bloqueos.some((b) => b.codigo === 'RECURRENTES_INVALIDAS')).toBe(false);
+    expect(r.advertencias.some((a) => a.codigo === 'RECURRENTES_INVALIDAS')).toBe(true);
   });
 
   it('recurrentes aplicables sin invalidas -> no bloquea por recurrentes', () => {
@@ -230,5 +262,90 @@ describe('proceso-mensual-prevalidacion.rules', () => {
       }),
     );
     expect(r.bloqueos.some((b) => b.codigo === 'RECURRENTES_INVALIDAS')).toBe(false);
+  });
+
+  it('expone trabajadoresPendientesRevision en la prevalidación', () => {
+    const listado = [
+      {
+        id: 1,
+        estado: 'activo',
+        nombre: 'Ana',
+        rut: '1-9',
+        aptoParaRemuneraciones: false,
+        estadoFicha: 'VALIDO',
+      },
+    ] as EmpleadoListado[];
+    const pendientes = buildTrabajadoresPendientesRevision(listado);
+    const r = construirPrevalidacionMensual(
+      baseHechos({
+        empleadosActivosNoAptos: 1,
+        trabajadoresPendientesRevision: pendientes,
+      }),
+    );
+    expect(r.trabajadoresPendientesRevision).toHaveLength(1);
+    expect(r.trabajadoresPendientesRevision[0].nombre).toBe('Ana');
+  });
+
+  it('tolera colecciones ausentes durante verificar periodo', () => {
+    const r = construirPrevalidacionMensual(
+      baseHechos({
+        parametrosGrupos: undefined as any,
+        trabajadoresPendientesRevision: undefined as any,
+        entradasMensuales: undefined as any,
+        movimientos: undefined as any,
+      }),
+    );
+
+    expect(r.estado).toBe('LISTO_PARA_CALCULO');
+    expect(r.resumen.totalEntradasMensuales).toBe(0);
+    expect(r.trabajadoresPendientesRevision).toEqual([]);
+  });
+
+  it('tolera entrada sin warnings durante verificar periodo', () => {
+    const r = construirPrevalidacionMensual(
+      baseHechos({
+        entradasMensuales: [entrada({ warnings: undefined as any })],
+      }),
+    );
+
+    expect(r.resumen.resumenEntradasMensuales?.conWarnings).toBe(0);
+    expect(r.bloqueos).toEqual([]);
+  });
+
+  it('advierte entradas con concepto reservado de sueldo base', () => {
+    const r = construirPrevalidacionMensual(
+      baseHechos({
+        entradasMensuales: [entrada({ idConcepto: 99 })],
+        conceptosCatalogo: [{
+          idConcepto: 99,
+          codigo: 'SUELDO_BASE',
+          codigoMotor: null,
+          nombre: 'Sueldo base',
+          tipo: 'HABER',
+          naturaleza: 'IMPONIBLE',
+          idCatalogoLre: null,
+          codigoLre: null,
+          nombreLre: null,
+          moduloLre: null,
+          grupoLre: null,
+          clasificacionLre: null,
+          imponible: true,
+          tributable: true,
+          afectaAfp: false,
+          afectaSalud: false,
+          afectaAfc: false,
+          afectaSis: false,
+          afectaLiquido: false,
+          esSistema: false,
+          calculoAutomatico: false,
+          vigente: true,
+          vigenciaInicio: null,
+          vigenciaFin: null,
+          ordenImpresion: 0,
+        }],
+      }),
+    );
+
+    expect(r.advertencias.some((msg) => msg.codigo === 'ENTRADAS_CONCEPTO_SUELDO_BASE')).toBe(true);
   });
 });

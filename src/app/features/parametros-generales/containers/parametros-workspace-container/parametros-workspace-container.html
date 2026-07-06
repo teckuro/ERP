@@ -1,0 +1,48 @@
+<section class="parametros-page" aria-label="Mantenedor de parámetros">
+  <app-card className="parametros-shell erp-fullscreen-frame">
+    <app-card-content className="parametros-frame">
+      <app-parametros-workspace-periodo-banda />
+
+      <div class="parametros-content">
+        @if (orq.isLoading()) {
+          <app-message-box
+            variant="loading"
+            mode="modal"
+            title="Cargando parámetros"
+            message="Obteniendo parámetros mensuales y cargas externas."
+          ></app-message-box>
+        } @else if (orq.isLoadingPlantilla()) {
+          <app-message-box
+            variant="loading"
+            mode="modal"
+            title="Obteniendo plantilla"
+            message="Consultando el último período registrado para usarlo solo como base en el formulario. No se guarda nada automáticamente."
+          ></app-message-box>
+        }
+
+        @if (orq.dialogState(); as dlg) {
+          <app-message-box
+            [variant]="dlg.variant"
+            mode="modal"
+            [title]="dlg.title"
+            [message]="dlg.message"
+            [detail]="dlg.detail ?? ''"
+            [primaryLabel]="dlg.primaryLabel ?? 'Aceptar'"
+            [secondaryLabel]="dlg.secondaryLabel ?? ''"
+            [tertiaryLabel]="dlg.tertiaryLabel ?? ''"
+            [fourthLabel]="dlg.fourthLabel ?? ''"
+            [dismissible]="dlg.kind === 'confirmar-config-cliente-extendido'"
+            dismissLabel="Cerrar"
+            (action)="orq.onDialogoAccionPrimaria()"
+            (secondary)="orq.onDialogoAccionSecundaria()"
+            (tertiary)="orq.onDialogoAccionTerciaria()"
+            (fourth)="orq.onDialogoAccionCuarta()"
+            (dismiss)="orq.cerrarDialogo()"
+          ></app-message-box>
+        }
+
+        <app-parametros-workspace-tabs-panel />
+      </div>
+    </app-card-content>
+  </app-card>
+</section>

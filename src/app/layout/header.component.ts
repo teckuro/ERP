@@ -1,75 +1,148 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
+import type { ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { LucideAngularModule } from 'lucide-angular';
+import { Router, RouterLink } from '@angular/router';
+import {
+  CalendarIcon,
+  ChevronDownIcon,
+  ClockIcon,
+  HomeIcon,
+  LucideAngularModule,
+  PlayIcon,
+} from 'lucide-angular';
 
 import { AuthService } from '../core/auth/auth.service';
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
+import {
+  SHELL_HEADER_HEIGHT_PX,
+  SHELL_NAV_WIDTH_PX,
+  SHELL_STRIP_PADDING_X_PX,
+} from './shell-navigation.config';
+import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-context.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, RouterLink, LucideAngularModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <header class="fixed left-64 right-0 top-0 z-10 h-16 border-b border-gray-200 bg-white">
-      <div class="flex h-full items-center justify-between px-6">
-        <div class="flex min-w-0 flex-1 items-center gap-3">
-          <lucide-icon name="calendar" class="h-5 w-5 shrink-0 text-gray-500"></lucide-icon>
-          <div class="flex min-w-0 flex-col gap-0.5">
-            <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-500">Período activo</span>
-            <div class="periodo-header-dual flex flex-wrap items-center gap-2">
-              <label class="sr-only" for="header-periodo-anio">Año</label>
-              <select
-                id="header-periodo-anio"
-                class="periodo-header-select periodo-header-year"
-                [ngModel]="anioPeriodo()"
-                (ngModelChange)="onAnioChange($event)"
-                aria-label="Año del período activo"
-              >
-                <option *ngFor="let y of yearOptions(); trackBy: trackYear" [value]="stringYear(y)">{{ y }}</option>
-              </select>
-              <label class="sr-only" for="header-periodo-mes">Mes</label>
-              <select
-                id="header-periodo-mes"
-                class="periodo-header-select periodo-header-month"
-                [ngModel]="mesPeriodo()"
-                (ngModelChange)="onMesChange($event)"
-                aria-label="Mes del período activo"
-              >
-                <option *ngFor="let m of monthOptions; trackBy: trackMonth" [value]="m.value">{{ m.label }}</option>
-              </select>
-            </div>
+    <header
+      class="erp-shell-header"
+      [class.erp-shell-header--with-title]="!!pageTitle()"
+      [style.left.px]="navWidth"
+      [style.height.px]="headerHeight"
+    >
+      <div class="erp-shell-header__inner" [class.erp-shell-header__inner--with-title]="!!pageTitle()">
+        <nav class="erp-shell-header__breadcrumb" aria-label="Ruta actual">
+          <a routerLink="/" class="erp-shell-header__crumb-home" aria-label="Inicio">
+            <lucide-icon [img]="homeIcon"></lucide-icon>
+          </a>
+          @for (crumb of breadcrumbs(); track crumb.label; let last = $last) {
+            <span class="erp-shell-header__crumb-sep" aria-hidden="true">/</span>
+            @if (!last && crumb.path) {
+              <a [routerLink]="crumb.path" class="erp-shell-header__crumb">{{ crumb.label }}</a>
+            } @else {
+              <span class="erp-shell-header__crumb erp-shell-header__crumb--current">{{ crumb.label }}</span>
+            }
+          }
+        </nav>
+
+        @if (pageTitle(); as title) {
+          <div class="erp-shell-header__title">
+            <h1>{{ title }}</h1>
+            @if (pageSubtitle()) {
+              <p>{{ pageSubtitle() }}</p>
+            }
           </div>
-        </div>
+        }
 
-        <div class="flex items-center gap-4">
-          <button
-            type="button"
-            class="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-transparent transition-colors hover:border-gray-200 hover:bg-gray-50"
-            aria-label="Notificaciones"
-          >
-            <lucide-icon name="bell" class="h-5 w-5 text-gray-600"></lucide-icon>
-            <span class="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-600"></span>
-          </button>
+        <div class="erp-shell-header__actions">
+          @if (statusChip(); as chip) {
+            <span class="erp-shell-header__chip" [class]="chipClass(chip.tone)">
+              <lucide-icon [img]="clockIcon" aria-hidden="true"></lucide-icon>
+              <span>{{ chip.label }}</span>
+            </span>
+          }
 
-          <div class="flex items-center gap-3 border-l border-gray-200 pl-4">
-            <div class="text-right">
-              <p class="max-w-52 truncate text-sm font-semibold text-gray-900">{{ usuarioLabel() }}</p>
-              <p class="text-xs text-gray-500">Sesion activa</p>
+          <details #periodPicker class="erp-shell-header__period-edit">
+            <summary
+              class="erp-shell-header__period-trigger"
+              title="Cambiar período activo"
+              [attr.aria-label]="'Cambiar período activo. Actual: ' + periodoActivo.etiqueta()"
+            >
+              <span class="erp-shell-header__chip erp-shell-header__chip--period">
+                <lucide-icon [img]="calendarIcon" aria-hidden="true"></lucide-icon>
+                <span>{{ periodoActivo.etiqueta() }}</span>
+                <lucide-icon
+                  [img]="chevronDownIcon"
+                  class="erp-shell-header__period-chevron"
+                  aria-hidden="true"
+                ></lucide-icon>
+              </span>
+            </summary>
+            <div class="erp-shell-header__period-panel">
+              <p class="erp-shell-header__period-hint">
+                Elija mes y año para revisar otro período. Si ya existe nómina guardada, se cargará automáticamente.
+              </p>
+              <div class="erp-shell-header__period-controls">
+                <label class="erp-shell-header__period-label" for="header-periodo-anio">Año</label>
+                <select
+                  id="header-periodo-anio"
+                  class="periodo-header-select periodo-header-year"
+                  [ngModel]="anioPeriodo()"
+                  (ngModelChange)="onAnioChange($event)"
+                >
+                  @for (y of yearOptions(); track y) {
+                    <option [value]="stringYear(y)">{{ y }}</option>
+                  }
+                </select>
+                <label class="erp-shell-header__period-label" for="header-periodo-mes">Mes</label>
+                <select
+                  id="header-periodo-mes"
+                  class="periodo-header-select periodo-header-month"
+                  [ngModel]="mesPeriodo()"
+                  (ngModelChange)="onMesChange($event)"
+                >
+                  @for (m of monthOptions; track m.value) {
+                    <option [value]="m.value">{{ m.label }}</option>
+                  }
+                </select>
+              </div>
             </div>
-            <div class="flex h-9 w-9 items-center justify-center rounded-md bg-blue-600">
-              <span class="text-sm font-semibold text-white">{{ inicialUsuario() }}</span>
-            </div>
+          </details>
+
+          @if (primaryAction(); as action) {
             <button
               type="button"
-              class="inline-flex h-9 items-center gap-2 rounded-md border border-gray-200 px-3 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+              class="erp-shell-header__cta"
+              [attr.data-testid]="action.actionId"
+              [attr.title]="action.tooltip ?? null"
+              [attr.aria-label]="action.tooltip ?? null"
+              [disabled]="action.disabled || action.loading"
+              (click)="onPrimaryAction()"
+            >
+              <lucide-icon [img]="playIcon" aria-hidden="true"></lucide-icon>
+              <span>{{ action.loading ? 'Procesando...' : action.label }}</span>
+            </button>
+          }
+
+          <div class="erp-shell-header__user" aria-label="Sesión">
+            <span class="erp-shell-header__avatar" aria-hidden="true">{{ inicialUsuario() }}</span>
+            <button
+              type="button"
+              class="erp-shell-header__logout"
               [disabled]="cerrandoSesion()"
               (click)="cerrarSesion()"
             >
-              <lucide-icon name="lock" class="h-4 w-4 text-gray-500"></lucide-icon>
-              {{ cerrandoSesion() ? 'Cerrando...' : 'Cerrar sesion' }}
+              {{ cerrandoSesion() ? 'Cerrando...' : 'Salir' }}
             </button>
           </div>
         </div>
@@ -78,39 +151,391 @@ import { PeriodoActivoService } from '../core/services/periodo-activo.service';
   `,
   styles: [
     `
-      .periodo-header-select {
-        height: 2.35rem;
-        border-radius: 0.375rem;
-        border: 1px solid #e5e7eb;
-        padding: 0 0.65rem;
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #111827;
-        background: #fff;
+      .erp-shell-header {
+        position: fixed;
+        top: 0;
+        right: 0;
+        z-index: 10;
+        box-sizing: border-box;
+        border-bottom: 1px solid #e2e8f0;
+        background: #ffffff;
       }
 
-      .periodo-header-select:focus-visible {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+      .erp-shell-header__inner {
+        display: flex;
+        height: 100%;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 0 ${SHELL_STRIP_PADDING_X_PX}px;
+      }
+
+      .erp-shell-header__inner--with-title {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto;
+        align-items: center;
+        gap: 10px 14px;
+      }
+
+      .erp-shell-header__breadcrumb {
+        display: flex;
+        min-width: 0;
+        flex: 1 1 auto;
+        align-items: center;
+        gap: 6px;
+        overflow: hidden;
+      }
+
+      .erp-shell-header__inner--with-title .erp-shell-header__breadcrumb {
+        flex: none;
+        justify-self: start;
+      }
+
+      .erp-shell-header__title {
+        min-width: 0;
+        justify-self: center;
+        text-align: center;
+      }
+
+      .erp-shell-header__title h1 {
+        margin: 0;
+        overflow: hidden;
+        color: #0f172a;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .erp-shell-header__title p {
+        margin: 1px 0 0;
+        overflow: hidden;
+        color: #64748b;
+        font-size: 10.5px;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .erp-shell-header__inner--with-title .erp-shell-header__actions {
+        flex: none;
+        justify-self: end;
+        width: max-content;
+        max-width: 100%;
+        min-width: 0;
+        flex-wrap: nowrap;
+      }
+
+      .erp-shell-header__crumb-home {
+        display: inline-flex;
+        color: #94a3b8;
+        text-decoration: none;
+      }
+
+      .erp-shell-header__crumb-home lucide-icon {
+        width: 14px;
+        height: 14px;
+      }
+
+      .erp-shell-header__crumb-sep {
+        color: #cbd5e1;
+        font-size: 13px;
+      }
+
+      .erp-shell-header__crumb {
+        overflow: hidden;
+        color: #64748b;
+        font-size: 13px;
+        line-height: 1.2;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .erp-shell-header__crumb:hover {
+        color: #0f172a;
+      }
+
+      .erp-shell-header__crumb--current {
+        color: #0f172a;
+        font-weight: 500;
+        pointer-events: none;
+      }
+
+      .erp-shell-header__actions {
+        display: flex;
+        flex: 0 0 auto;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .erp-shell-header__chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.2;
+        white-space: nowrap;
+      }
+
+      .erp-shell-header__chip lucide-icon {
+        width: 13px;
+        height: 13px;
+      }
+
+      .erp-shell-header__chip--warning {
+        border: 0.5px solid #ef9f27;
+        background: #faeeda;
+        color: #633806;
+      }
+
+      .erp-shell-header__chip--success {
+        border: 0.5px solid #86efac;
+        background: #ecfdf5;
+        color: #065f46;
+      }
+
+      .erp-shell-header__chip--danger {
+        border: 0.5px solid #fecaca;
+        background: #fef2f2;
+        color: #991b1b;
+      }
+
+      .erp-shell-header__chip--neutral,
+      .erp-shell-header__chip--period {
+        border: 0.5px solid #e2e8f0;
+        background: #f8fafc;
+        color: #64748b;
+      }
+
+      .erp-shell-header__period-edit {
+        position: relative;
+      }
+
+      .erp-shell-header__period-trigger {
+        list-style: none;
+        cursor: pointer;
+      }
+
+      .erp-shell-header__period-trigger::-webkit-details-marker {
+        display: none;
+      }
+
+      .erp-shell-header__period-trigger:hover .erp-shell-header__chip--period {
+        border-color: #cbd5e1;
+        background: #ffffff;
+        color: #0f172a;
+      }
+
+      .erp-shell-header__period-chevron {
+        width: 12px;
+        height: 12px;
+        opacity: 0.7;
+        transition: transform 120ms ease;
+      }
+
+      .erp-shell-header__period-edit[open] .erp-shell-header__period-chevron {
+        transform: rotate(180deg);
+      }
+
+      .erp-shell-header__period-panel {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        z-index: 20;
+        display: grid;
+        gap: 8px;
+        width: min(18rem, calc(100vw - 24px));
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #ffffff;
+        padding: 10px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      }
+
+      .erp-shell-header__period-hint {
+        margin: 0;
+        color: #64748b;
+        font-size: 0.72rem;
+        line-height: 1.4;
+      }
+
+      .erp-shell-header__period-controls {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 6px 8px;
+        align-items: center;
+      }
+
+      .erp-shell-header__period-label {
+        color: #64748b;
+        font-size: 0.72rem;
+        font-weight: 650;
+      }
+
+      .periodo-header-select {
+        height: 32px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        background: #ffffff;
+        padding: 0 8px;
+        color: #0f172a;
+        font-size: 12px;
+        font-weight: 500;
       }
 
       .periodo-header-year {
-        width: 5.25rem;
-        min-width: 5.25rem;
+        width: 5rem;
       }
 
       .periodo-header-month {
-        min-width: 8.5rem;
+        min-width: 7.5rem;
+      }
+
+      .erp-shell-header__cta {
+        display: inline-flex;
+        flex: 0 0 auto;
+        height: 28px;
+        align-items: center;
+        gap: 5px;
+        border: 0.5px solid var(--erp-primary);
+        border-radius: 6px;
+        background: var(--erp-primary);
+        padding: 0 10px;
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1;
+        white-space: nowrap;
+        cursor: pointer;
+        transition:
+          background-color 150ms ease,
+          border-color 150ms ease,
+          transform 80ms ease;
+      }
+
+      .erp-shell-header__cta:hover:not(:disabled) {
+        border-color: var(--erp-primary-hover);
+        background: var(--erp-primary-hover);
+      }
+
+      .erp-shell-header__cta:active:not(:disabled) {
+        transform: scale(0.98);
+      }
+
+      .erp-shell-header__cta:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+
+      .erp-shell-header__cta lucide-icon {
+        width: 12px;
+        height: 12px;
+        flex: 0 0 12px;
+      }
+
+      .erp-shell-header__user {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: 4px;
+        padding-left: 8px;
+        border-left: 1px solid #e2e8f0;
+      }
+
+      .erp-shell-header__avatar {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        place-items: center;
+        border-radius: 999px;
+        background: #e6f1fb;
+        color: #0c447c;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .erp-shell-header__logout {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      .erp-shell-header__logout:hover:not(:disabled) {
+        color: #0f172a;
+      }
+
+      @media (max-width: 1024px) {
+        .erp-shell-header {
+          left: 0 !important;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .erp-shell-header__logout {
+          display: none;
+        }
+
+        .erp-shell-header__period-panel {
+          right: auto;
+          left: 0;
+        }
+
+        .erp-shell-header__title p {
+          display: none;
+        }
+
+        .erp-shell-header__inner--with-title {
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+        }
+
+        .erp-shell-header__inner--with-title .erp-shell-header__title {
+          text-align: left;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .erp-shell-header__cta {
+          transition: none;
+        }
+
+        .erp-shell-header__cta:active:not(:disabled) {
+          transform: none;
+        }
       }
     `,
   ],
 })
 export class HeaderComponent {
+  readonly homeIcon = HomeIcon;
+  readonly clockIcon = ClockIcon;
+  readonly calendarIcon = CalendarIcon;
+  readonly chevronDownIcon = ChevronDownIcon;
+  readonly playIcon = PlayIcon;
+
+  private readonly periodPicker = viewChild<ElementRef<HTMLDetailsElement>>('periodPicker');
+  readonly navWidth = SHELL_NAV_WIDTH_PX;
+  readonly headerHeight = SHELL_HEADER_HEIGHT_PX;
+
   readonly periodoActivo = inject(PeriodoActivoService);
+  readonly shellContext = inject(ShellPageContextService);
   readonly auth = inject(AuthService);
   readonly router = inject(Router);
   readonly cerrandoSesion = signal(false);
+
+  readonly breadcrumbs = this.shellContext.breadcrumbs;
+  readonly pageTitle = this.shellContext.pageTitle;
+  readonly pageSubtitle = this.shellContext.pageSubtitle;
+  readonly statusChip = this.shellContext.statusChip;
+  readonly primaryAction = this.shellContext.primaryAction;
 
   readonly monthOptions: readonly { value: string; label: string }[] = [
     { value: '01', label: 'Enero' },
@@ -139,11 +564,9 @@ export class HeaderComponent {
     return /^(0[1-9]|1[0-2])$/.test(month) ? month : String(new Date().getMonth() + 1).padStart(2, '0');
   });
 
-  readonly usuarioLabel = computed(() => this.auth.currentEmail() ?? 'Usuario conectado');
-
   readonly inicialUsuario = computed(() => {
-    const label = this.usuarioLabel().trim();
-    return label ? label[0].toUpperCase() : 'U';
+    const label = this.auth.currentEmail() ?? 'U';
+    return label.trim() ? label[0].toUpperCase() : 'U';
   });
 
   readonly yearOptions = computed(() => {
@@ -160,26 +583,38 @@ export class HeaderComponent {
     return [...s].sort((a, b) => b - a);
   });
 
+  chipClass(tone: ShellStatusChipTone): string {
+    return `erp-shell-header__chip--${tone}`;
+  }
+
   stringYear(y: number): string {
     return String(y);
   }
 
-  trackYear(_index: number, y: number): number {
-    return y;
-  }
-
-  trackMonth(_index: number, m: { value: string; label: string }): string {
-    return m.value;
-  }
-
   onAnioChange(raw: string): void {
     const mes = this.periodoActivo.periodoYm().slice(5, 7);
-    this.periodoActivo.setPeriodoYm(`${raw}-${mes}`);
+    this.aplicarPeriodoYm(`${raw}-${mes}`);
   }
 
   onMesChange(raw: string): void {
     const anio = this.periodoActivo.periodoYm().slice(0, 4);
-    this.periodoActivo.setPeriodoYm(`${anio}-${raw}`);
+    this.aplicarPeriodoYm(`${anio}-${raw}`);
+  }
+
+  private aplicarPeriodoYm(ym: string): void {
+    this.periodoActivo.setPeriodoYm(ym);
+    this.cerrarSelectorPeriodo();
+  }
+
+  private cerrarSelectorPeriodo(): void {
+    const el = this.periodPicker()?.nativeElement;
+    if (el) {
+      el.open = false;
+    }
+  }
+
+  onPrimaryAction(): void {
+    this.shellContext.invokePrimaryAction();
   }
 
   async cerrarSesion(): Promise<void> {

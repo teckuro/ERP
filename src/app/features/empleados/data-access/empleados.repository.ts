@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { Tables } from '../../../core/models/database.types';
+import { Tables, TablesUpdate } from '../../../core/models/database.types';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import { ESTADO_CIVIL_OPTIONS } from '../catalogs/estado-civil.options';
 import { TIPO_GRATIFICACION_OPTIONS } from '../catalogs/tipo-gratificacion.options';
@@ -13,7 +13,13 @@ import {
   EmpleadoHistorialCambio,
   EmpleadoListado,
 } from '../models/empleado-listado.model';
+import type { RelacionLaboral } from '../models/empleado.model';
 import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
+import type { PerfilLaboralPersona } from '../models/empleado-perfil-laboral-rpc.model';
+import {
+  mapPerfilLaboralRpcRow,
+  type PerfilLaboralRpcRow,
+} from '../rules/empleado-perfil-laboral.rules';
 import {
   EntidadPrevisionalIpsCatalogRow,
   ExCajaPrevisionalCatalogRow,
@@ -21,6 +27,7 @@ import {
   InstitucionApvCatalogRow,
   mapCatalog,
   mapDepartamentosCatalog,
+  mapMonedaCatalog,
   mapRegimenExCajaCatalog,
   mapSaludCatalog,
   mapTipoContratoCatalog,
@@ -66,6 +73,7 @@ import {
   buildPersonaMetaBorradorUpdate,
   puedePersistirPrevisionBorrador,
 } from '../utils/empleado-borrador.rules';
+import { assertPayloadIdentificacionValida } from '../utils/empleado-payload-guard.rules';
 import {
   EmpleadoAptitudInvalidaError,
   evaluarCompletitudYAptitudEmpleado,
@@ -187,7 +195,7 @@ export class EmpleadosRepository {
         .from('salud')
         .select('id_salud,nombre,tipo')
         .order('nombre', { ascending: true }),
-      this.supabase.from('moneda').select('id_moneda,nombre').order('nombre', { ascending: true }),
+      this.supabase.from('moneda').select('id_moneda,nombre,codigo').order('nombre', { ascending: true }),
       this.supabase
         .from('tramo_carga')
         .select('id_tramo,periodo,desde,hasta,valor,tramo')
@@ -371,7 +379,7 @@ export class EmpleadosRepository {
       ),
       afps: mapCatalog(afpsResult.data ?? [], 'id_afp'),
       entidadesSalud: mapSaludCatalog(saludResult.data ?? []),
-      monedas: mapCatalog(monedasResult.data ?? [], 'id_moneda'),
+      monedas: mapMonedaCatalog(monedasResult.data ?? []),
       tramosCarga: pickLatestTramosCarga(tramosCargaResult.data ?? []),
       institucionesApv: mapCatalog(
         (institucionesApvResult.data ?? []) as InstitucionApvCatalogRow[],
@@ -402,13 +410,18 @@ export class EmpleadosRepository {
       (row): row is PersonaFactorRow & { id_persona: number } => typeof row.id_persona === 'number',
     );
 
-    const departamentos = await this.fetchDepartamentos(rows.map((row) => row.id_contrato));
-    const pasos = await this.fetchPasosAltaAvanzada(rows.map((row) => row.id_persona));
+    const contractIds = rows.map((row) => row.id_contrato);
+    const [departamentos, monedasContrato, pasos] = await Promise.all([
+      this.fetchDepartamentos(contractIds),
+      this.fetchMonedaContratoPorContrato(contractIds),
+      this.fetchPasosAltaAvanzada(rows.map((row) => row.id_persona)),
+    ]);
 
     return rows.map((row) =>
       mapPersonaFactorToEmpleado(
         { ...row, paso_alta_avanzada: pasos.get(row.id_persona) ?? null },
         departamentos,
+        row.id_contrato == null ? null : (monedasContrato.get(row.id_contrato) ?? null),
       ),
     );
   }
@@ -443,6 +456,26 @@ export class EmpleadosRepository {
     return this.obtenerFichaDetalle(resumen);
   }
 
+  async obtenerPerfilLaboralPersona(
+    idPersona: number,
+    periodoYm: string,
+  ): Promise<PerfilLaboralPersona | null> {
+    const { data, error } = await this.supabase.rpc('fn_obtener_perfil_laboral_persona', {
+      p_id_persona: idPersona,
+      p_periodo: periodoYm,
+    });
+
+    if (error) {
+      throw buildRepositoryError(
+        'No fue posible cargar el perfil laboral del trabajador.',
+        error.message,
+      );
+    }
+
+    const row = (data as PerfilLaboralRpcRow[] | null)?.[0];
+    return row ? mapPerfilLaboralRpcRow(row) : null;
+  }
+
   async guardarSeccionFicha(
     personaId: number,
     seccion: 'general' | 'laboral' | 'remuneracion' | 'prevision' | 'pago',
@@ -464,12 +497,16 @@ export class EmpleadosRepository {
 
     if (seccion === 'laboral' || seccion === 'remuneracion') {
       await this.upsertRemuneracionDesdePayload(contratoId!, payload);
-      await this.upsertSemanaCorridaDesdePayload(contratoId!, payload);
-      await this.upsertZonaExtremaDesdePayload(contratoId!, payload);
-      await this.reemplazarCondicionesTrabajador(personaId, contratoId!, payload);
+      if (payload.relacionLaboral === 'HONORARIOS') {
+        await this.limpiarBloquesDependientesHonorarios(personaId, contratoId!);
+      } else {
+        await this.upsertSemanaCorridaDesdePayload(contratoId!, payload);
+        await this.upsertZonaExtremaDesdePayload(contratoId!, payload);
+        await this.reemplazarCondicionesTrabajador(personaId, contratoId!, payload);
+      }
     }
 
-    if (seccion === 'prevision') {
+    if (seccion === 'prevision' && payload.relacionLaboral !== 'HONORARIOS') {
       await this.upsertPrevisionDesdePayload(contratoId!, payload);
       await this.upsertSaludDesdePayload(contratoId!, payload);
       await this.upsertCuenta2DesdePayload(contratoId!, payload);
@@ -488,6 +525,13 @@ export class EmpleadosRepository {
     personaId: number,
     payload: CrearEmpleadoPayload,
   ): Promise<EmpleadoFichaDetalle | null> {
+    if (payload.relacionLaboral === 'HONORARIOS') {
+      throw buildRepositoryError(
+        'Honorarios no participa en nomina dependiente.',
+        'La modalidad HONORARIOS no puede habilitar aptitud para remuneraciones dependientes.',
+      );
+    }
+
     const persona = await this.fetchPersonaEstadoValidacion(personaId);
 
     if (!persona) {
@@ -588,6 +632,7 @@ export class EmpleadosRepository {
   }
 
   async insertarPersona(payload: CrearEmpleadoPayload, rut: RutParts): Promise<number> {
+    assertPayloadIdentificacionValida(payload);
     const { data, error } = await this.supabase
       .from('persona')
       .insert(buildPersonaInsert(payload, rut))
@@ -658,6 +703,7 @@ export class EmpleadosRepository {
     rut: RutParts,
     pasoWizard: number,
   ): Promise<number> {
+    assertPayloadIdentificacionValida(payload);
     const { data, error } = await this.supabase
       .from('persona')
       .insert(buildPersonaBorradorAvanzadoInsert(payload, rut, pasoWizard))
@@ -715,18 +761,24 @@ export class EmpleadosRepository {
     personaId: number,
     payload: CrearEmpleadoPayload,
   ): Promise<void> {
+    const esHonorarios = payload.relacionLaboral === 'HONORARIOS';
+
     await this.actualizarPersonaDesdePayload(personaId, payload);
     const contratoId = await this.ensureContratoId(personaId, payload);
     await this.actualizarContratoDesdePayload(contratoId, payload);
     await this.upsertContratoCentroCostoDesdePayload(contratoId, payload);
     await this.upsertRemuneracionDesdePayload(contratoId, payload);
-    await this.upsertSemanaCorridaDesdePayload(contratoId, payload);
-    await this.upsertZonaExtremaDesdePayload(contratoId, payload);
-    await this.reemplazarCondicionesTrabajador(personaId, contratoId, payload);
-    await this.upsertPrevisionDesdePayload(contratoId, payload);
-    await this.upsertSaludDesdePayload(contratoId, payload);
-    await this.upsertCuenta2DesdePayload(contratoId, payload);
-    await this.upsertApvDesdePayload(contratoId, payload);
+    if (esHonorarios) {
+      await this.limpiarBloquesDependientesHonorarios(personaId, contratoId);
+    } else {
+      await this.upsertSemanaCorridaDesdePayload(contratoId, payload);
+      await this.upsertZonaExtremaDesdePayload(contratoId, payload);
+      await this.reemplazarCondicionesTrabajador(personaId, contratoId, payload);
+      await this.upsertPrevisionDesdePayload(contratoId, payload);
+      await this.upsertSaludDesdePayload(contratoId, payload);
+      await this.upsertCuenta2DesdePayload(contratoId, payload);
+      await this.upsertApvDesdePayload(contratoId, payload);
+    }
     await this.upsertCuentaBancariaDesdePayload(personaId, payload);
     await this.activarPersonaCreada(payload, personaId);
 
@@ -781,10 +833,14 @@ export class EmpleadosRepository {
     await this.actualizarContratoDesdePayload(contratoId, payload);
     await this.upsertContratoCentroCostoDesdePayload(contratoId, payload);
     await this.upsertRemuneracionDesdePayload(contratoId, payload);
-    await this.upsertSemanaCorridaDesdePayload(contratoId, payload);
-    await this.upsertZonaExtremaDesdePayload(contratoId, payload);
-    await this.reemplazarCondicionesTrabajador(personaId, contratoId, payload);
-    if (puedePersistirPrevisionBorrador(payload)) {
+    if (payload.relacionLaboral === 'HONORARIOS') {
+      await this.limpiarBloquesDependientesHonorarios(personaId, contratoId);
+    } else {
+      await this.upsertSemanaCorridaDesdePayload(contratoId, payload);
+      await this.upsertZonaExtremaDesdePayload(contratoId, payload);
+      await this.reemplazarCondicionesTrabajador(personaId, contratoId, payload);
+    }
+    if (payload.relacionLaboral !== 'HONORARIOS' && puedePersistirPrevisionBorrador(payload)) {
       await this.upsertPrevisionDesdePayload(contratoId, payload);
       await this.upsertSaludDesdePayload(contratoId, payload);
       await this.upsertCuenta2DesdePayload(contratoId, payload);
@@ -1231,7 +1287,7 @@ export class EmpleadosRepository {
       );
     }
 
-    const contrato = contratoResult.data;
+    const contrato = contratoResult.data as ContratoRow | null;
     const contratoId = contrato?.id_contrato ?? null;
     const [
       remuneracion,
@@ -1352,6 +1408,35 @@ export class EmpleadosRepository {
       throw buildRepositoryError(
         'No fue posible registrar las condiciones laborales del trabajador.',
         insertResult.error.message,
+      );
+    }
+  }
+
+  private async limpiarBloquesDependientesHonorarios(
+    personaId: number,
+    contratoId: number,
+  ): Promise<void> {
+    const supabase = this.supabase as any;
+    const operaciones = [
+      supabase.from('prevision').delete().eq('id_contrato', contratoId),
+      supabase.from('salud_trabajador').delete().eq('id_contrato', contratoId),
+      supabase.from('cuenta2_afp').delete().eq('id_contrato', contratoId),
+      supabase.from('apv').delete().eq('id_contrato', contratoId),
+      supabase.from('semana_corrida').delete().eq('id_contrato', contratoId),
+      supabase.from('zona_extrema').delete().eq('id_contrato', contratoId),
+      supabase
+        .from('persona_condicion_trabajador')
+        .delete()
+        .eq('id_persona', personaId)
+        .eq('id_contrato', contratoId),
+    ];
+    const resultados = await Promise.all(operaciones);
+    const error = resultados.find((result) => result.error)?.error;
+
+    if (error) {
+      throw buildRepositoryError(
+        'No fue posible limpiar datos dependientes para honorarios.',
+        error.message,
       );
     }
   }
@@ -1611,7 +1696,7 @@ export class EmpleadosRepository {
         idComuna: persona.id_comuna,
       },
       contrato: {
-        relacionLaboral: 'CONTRATO',
+        relacionLaboral: contrato?.relacion_laboral ?? 'CONTRATO',
         idSucursal: contrato?.id_sucursal ?? null,
         idDepartamentoEmpresa: contrato?.id_departamento_empresa ?? null,
         idCentroCosto: centroCosto?.id_centro_costo ?? null,
@@ -1623,6 +1708,16 @@ export class EmpleadosRepository {
         idTipoTrabajador: contrato?.id_tipo_trabajador ?? null,
         idTipoJornada: contrato?.id_tipo_jornada ?? null,
         seguroCesantia: contrato?.seguro_cesantia ?? true,
+        excluidoLimiteJornada: contrato?.excluido_limite_jornada ?? false,
+        causalExclusionJornada: contrato?.causal_exclusion_jornada ?? null,
+        justificacionExclusionJornada: contrato?.justificacion_exclusion_jornada ?? '',
+        casaParticularModalidad: contrato?.casa_particular_modalidad ?? null,
+        casaParticularLabores: contrato?.casa_particular_labores ?? '',
+        casaParticularDomicilioEspecifico: contrato?.casa_particular_domicilio_especifico ?? '',
+        casaParticularAsistenciaCuidado: contrato?.casa_particular_asistencia_cuidado ?? false,
+        casaParticularRegistroDtEstado: contrato?.casa_particular_registro_dt_estado ?? null,
+        casaParticularRegistroDtFecha: contrato?.casa_particular_registro_dt_fecha ?? '',
+        casaParticularRegistroDtFolio: contrato?.casa_particular_registro_dt_folio ?? '',
         fechaIngreso: contrato?.fecha_inicio ?? '',
         fechaTermino: contrato?.fecha_termino ?? '',
         sueldoBase: remuneracion?.sueldo_base ?? null,
@@ -1707,6 +1802,7 @@ export class EmpleadosRepository {
     personaId: number,
     payload: CrearEmpleadoPayload,
   ): Promise<void> {
+    assertPayloadIdentificacionValida(payload);
     const rut = formatRutPartsFromInput(payload.rut);
     const { error } = await this.supabase
       .from('persona')
@@ -1742,20 +1838,51 @@ export class EmpleadosRepository {
     contratoId: number,
     payload: CrearEmpleadoPayload,
   ): Promise<void> {
+    const data: TablesUpdate<'contrato'> = {
+      relacion_laboral: payload.relacionLaboral,
+      id_sucursal: payload.idSucursal,
+      id_departamento_empresa: payload.idDepartamentoEmpresa,
+      id_tipo_trabajador: payload.idTipoTrabajador,
+      id_tipo_jornada: payload.idTipoJornada,
+      codigo_tipo_contrato: payload.tipoContrato,
+      cargo: payload.cargo.trim(),
+      seguro_cesantia: payload.seguroCesantia,
+      excluido_limite_jornada: payload.excluidoLimiteJornada,
+      causal_exclusion_jornada: payload.excluidoLimiteJornada
+        ? payload.causalExclusionJornada
+        : null,
+      justificacion_exclusion_jornada: payload.excluidoLimiteJornada
+        ? payload.justificacionExclusionJornada
+        : null,
+      casa_particular_modalidad: payload.tipoContrato === 'CASA_PARTICULAR'
+        ? payload.casaParticularModalidad
+        : null,
+      casa_particular_labores: payload.tipoContrato === 'CASA_PARTICULAR'
+        ? payload.casaParticularLabores
+        : null,
+      casa_particular_domicilio_especifico: payload.tipoContrato === 'CASA_PARTICULAR'
+        ? payload.casaParticularDomicilioEspecifico
+        : null,
+      casa_particular_asistencia_cuidado: payload.tipoContrato === 'CASA_PARTICULAR'
+        ? payload.casaParticularAsistenciaCuidado
+        : false,
+      casa_particular_registro_dt_estado: payload.tipoContrato === 'CASA_PARTICULAR'
+        ? payload.casaParticularRegistroDtEstado
+        : null,
+      casa_particular_registro_dt_fecha: payload.tipoContrato === 'CASA_PARTICULAR'
+        ? payload.casaParticularRegistroDtFecha
+        : null,
+      casa_particular_registro_dt_folio: payload.tipoContrato === 'CASA_PARTICULAR'
+        ? payload.casaParticularRegistroDtFolio
+        : null,
+      fecha_inicio: payload.fechaIngreso,
+      fecha_contrato: payload.fechaContrato,
+      fecha_termino: payload.fechaTermino,
+    };
+
     const { error } = await this.supabase
       .from('contrato')
-      .update({
-        id_sucursal: payload.idSucursal,
-        id_departamento_empresa: payload.idDepartamentoEmpresa,
-        id_tipo_trabajador: payload.idTipoTrabajador,
-        id_tipo_jornada: payload.idTipoJornada,
-        codigo_tipo_contrato: payload.tipoContrato,
-        cargo: payload.cargo.trim(),
-        seguro_cesantia: payload.seguroCesantia,
-        fecha_inicio: payload.fechaIngreso,
-        fecha_contrato: payload.fechaContrato,
-        fecha_termino: payload.fechaTermino,
-      })
+      .update(data)
       .eq('id_contrato', contratoId);
 
     if (error) {
@@ -2016,6 +2143,21 @@ export class EmpleadosRepository {
       pasoAltaAvanzada: pasos.get(personaId) ?? null,
     });
 
+    if (payload.relacionLaboral === 'HONORARIOS') {
+      const { error } = await this.supabase
+        .from('persona')
+        .update({
+          estado_ficha: evaluacion.estadoFicha,
+          apto_para_remuneraciones: false,
+        })
+        .eq('id_persona', personaId);
+
+      if (error) {
+        throw buildRepositoryError('No fue posible recalcular el estado de ficha.', error.message);
+      }
+      return;
+    }
+
     if (evaluacion.aptoParaRemuneraciones) {
       return;
     }
@@ -2055,6 +2197,42 @@ export class EmpleadosRepository {
     }
 
     return data;
+  }
+
+  private async fetchMonedaContratoPorContrato(
+    contractIds: Array<number | null>,
+  ): Promise<Map<number, string>> {
+    const normalizedIds = contractIds.filter((id): id is number => typeof id === 'number');
+
+    if (normalizedIds.length === 0) {
+      return new Map<number, string>();
+    }
+
+    const { data, error } = await this.supabase
+      .from('remuneracion')
+      .select('id_contrato, id_remuneracion, moneda(codigo)')
+      .in('id_contrato', normalizedIds)
+      .order('id_remuneracion', { ascending: false });
+
+    if (error) {
+      throw buildRepositoryError(
+        'No fue posible cargar la moneda del contrato de los empleados.',
+        error.message,
+      );
+    }
+
+    const monedas = new Map<number, string>();
+
+    for (const row of (data ?? []) as Array<{
+      id_contrato: number;
+      moneda: { codigo: string } | null;
+    }>) {
+      if (!monedas.has(row.id_contrato) && row.moneda?.codigo) {
+        monedas.set(row.id_contrato, row.moneda.codigo);
+      }
+    }
+
+    return monedas;
   }
 
   private async fetchDepartamentos(

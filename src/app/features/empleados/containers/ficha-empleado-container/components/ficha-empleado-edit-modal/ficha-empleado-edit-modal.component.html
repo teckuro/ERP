@@ -1,0 +1,46 @@
+@let f = facade;
+
+<div class="ficha-edit-modal-backdrop" role="presentation">
+  <section
+    class="ficha-edit-modal"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="'ficha-edit-modal-title'"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="ficha-edit-modal__head">
+      <div class="ficha-edit-modal__head-copy">
+        <h3 id="ficha-edit-modal-title" class="ficha-edit-modal__title">{{ tituloBloque() }}</h3>
+        <p class="ficha-edit-modal__hint">{{ f.saveBlockHint(tituloBloque()) }}</p>
+      </div>
+
+      <div class="ficha-edit-modal__actions">
+        <button
+          type="button"
+          class="ficha-edit-modal__action ficha-edit-modal__action--secondary"
+          [disabled]="f.isSavingSection()"
+          (click)="cerrarEdicion()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="ficha-edit-modal__action ficha-edit-modal__action--primary"
+          form="ficha-edit-modal-form"
+          [disabled]="f.isSavingSection() || f.cargandoCatalogos()"
+        >
+          {{ f.saveBlockButtonLabel() }}
+        </button>
+      </div>
+    </header>
+
+    <form
+      id="ficha-edit-modal-form"
+      class="ficha-edit-modal__body"
+      [formGroup]="f.form"
+      (ngSubmit)="enviarFormulario()"
+    >
+      <app-ficha-empleado-edit-form [blockId]="blockId()" />
+    </form>
+  </section>
+</div>

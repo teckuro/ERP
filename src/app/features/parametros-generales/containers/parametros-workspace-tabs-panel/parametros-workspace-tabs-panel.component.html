@@ -1,0 +1,238 @@
+<nav class="parametros-area-tabs" aria-label="Áreas de parámetros">
+  @for (area of ws.areas; track area.id) {
+    <button
+      type="button"
+      class="parametros-area-tab"
+      [class.parametros-area-tab--active]="ws.activeArea() === area.id"
+      [attr.aria-current]="ws.activeArea() === area.id ? 'page' : null"
+      (click)="seleccionarArea(area.id)"
+    >
+      <span>{{ area.label }}</span>
+    </button>
+  }
+</nav>
+
+@if (ws.activeAreaHasSubTabs()) {
+  <nav class="parametros-subtabs" aria-label="Secciones de parámetros">
+    @for (tab of ws.activeAreaTabs(); track tab.id) {
+      <button
+        type="button"
+        class="parametros-subtab"
+        [class.parametros-subtab--active]="ws.activeTab() === tab.id"
+        [attr.aria-current]="ws.activeTab() === tab.id ? 'page' : null"
+        (click)="seleccionarTab(tab.id)"
+      >
+        <span>{{ etiquetaTab(tab.id) }}</span>
+      </button>
+    }
+  </nav>
+}
+
+<div class="parametros-tab-body" role="region" aria-label="Contenido de la sección">
+  @if (ws.activeArea() !== 'cierrePeriodo' && ws.activeRecordDetail()) {
+    <header class="param-record-header" aria-label="Contexto de la sección activa">
+      <p>
+        <span class="param-eyebrow">{{ ws.activeRecordKind() }}</span>
+        {{ ws.activeRecordDetail() }}
+      </p>
+    </header>
+  }
+
+  @if (ws.activeArea() === 'cierrePeriodo') {
+    <section class="parametros-cierre" aria-label="Cierre del período">
+      <div class="parametros-cierre-hero">
+        <div class="parametros-cierre-copy">
+          <span class="param-eyebrow">{{ ws.periodoSeleccionadoLabel() }}</span>
+          <h3>{{ ws.periodoEstadoTitulo() }}</h3>
+          <p>{{ ws.cierreImpacto() }}</p>
+        </div>
+        <div class="parametros-cierre-score" aria-label="Completitud del período">
+          <span>Completitud</span>
+          <strong>{{ ws.completitudParametros().porcentaje }}%</strong>
+        </div>
+      </div>
+
+      <div class="parametros-cierre-grid">
+        <article class="parametros-cierre-summary">
+          <div class="parametros-cierre-summary__head">
+            <span class="param-eyebrow">Pendiente principal</span>
+            @if (ws.cierreAccionVisible()) {
+              <div class="parametros-cierre-summary__actions">
+                <app-tooltip
+                  preferredPlacement="top"
+                  text="Te lleva directo a la sección que falta completar. Si el período aún no está listo, puede tardar un momento en preparar la edición."
+                >
+                  <button type="button" class="parametros-cierre-action" (click)="ws.ejecutarAccionCierre()">
+                    {{ ws.cierreAccionSiguienteLabel() }}
+                  </button>
+                </app-tooltip>
+              </div>
+            }
+          </div>
+          <p>{{ ws.cierrePendientePrincipal() }}</p>
+        </article>
+      </div>
+
+      <section class="parametros-cierre-groups" aria-label="Resumen de completitud">
+        @for (grupo of ws.cierreGrupos(); track grupo.id) {
+          <article class="parametros-cierre-group" [class.parametros-cierre-group--ok]="grupo.completo">
+            <div>
+              <strong>{{ grupo.label }}</strong>
+              <span>{{ grupo.detail }}</span>
+            </div>
+            <div class="parametros-cierre-meter" aria-label="Avance {{ grupo.label }}">
+              <span>{{ grupo.completos }}/{{ grupo.total }}</span>
+              <strong>{{ grupo.porcentaje }}%</strong>
+            </div>
+          </article>
+        }
+      </section>
+
+      <section class="parametros-cierre-alertas" aria-label="Pendientes del período">
+        @if (ws.cierreAlertas().length === 0) {
+          <p>No hay pendientes visibles para el período.</p>
+        } @else {
+          @for (alerta of ws.cierreAlertas(); track alerta.kind + alerta.mensaje) {
+            <p [class]="'parametros-cierre-alerta parametros-cierre-alerta--' + alerta.kind">
+              {{ alerta.mensaje }}
+            </p>
+          }
+        }
+      </section>
+    </section>
+  } @else {
+    @switch (ws.activeTab()) {
+    @case ('configCliente') {
+      <app-parametros-config-cliente-tab
+        [form]="ws.form"
+        [catalogos]="ws.catalogos()"
+        [editable]="ws.generalesEditando()"
+        [hasClienteConfig]="ws.clienteConfig() !== null"
+        [periodoLabel]="ws.periodoSeleccionadoLabel()"
+        [selectedCcafId]="ws.selectedCcafId()"
+        [selectedOrganismoLey16744Id]="ws.selectedOrganismoLey16744Id()"
+        [selectedLey16744CotizacionBasica]="ws.cotizacionLey16744Seleccionada()"
+        [fechaActualizacionLabel]="ws.fechaActualizacionLabel()"
+        [bloquearSiLectura]="ws.bloquearSiLectura.bind(ws)"
+        [setDescuentosBaseFn]="ws.setDescuentosBase.bind(ws)"
+        [seleccionarCcaf]="ws.seleccionarCcaf.bind(ws)"
+        [seleccionarOrganismoLey16744]="ws.seleccionarOrganismoLey16744.bind(ws)"
+        [enviarFormulario]="ws.guardar.bind(ws)"
+      ></app-parametros-config-cliente-tab>
+    }
+
+    @case ('valores') {
+      <app-parametros-valores-tab
+        [form]="ws.form"
+        [editable]="ws.generalesEditando()"
+        [officialEditable]="ws.generalesEditando()"
+        [configEditable]="ws.generalesEditando()"
+        [hasPeriodoData]="ws.hasSelectedInRows()"
+        [hasClienteConfig]="ws.clienteConfig() !== null"
+        [periodoLabel]="ws.periodoSeleccionadoLabel()"
+        [referenciaPeriodoLabel]="ws.referenciaParametrosGeneralesLabel()"
+        [fechaActualizacionLabel]="ws.fechaActualizacionLabel()"
+        [enviarFormulario]="ws.guardar.bind(ws)"
+        [verReferenciaPeriodoAnterior]="ws.verReferenciaPeriodoAnterior.bind(ws)"
+        [capturarValores]="ws.editarParametros.bind(ws)"
+      ></app-parametros-valores-tab>
+    }
+
+    @case ('remuneraciones') {
+      <app-parametros-remuneraciones-tab
+        [form]="ws.form"
+        [editable]="ws.generalesEditando()"
+        [hasPeriodoData]="ws.hasSelectedInRows()"
+        [hasClienteConfig]="ws.clienteConfig() !== null"
+        [periodoLabel]="ws.periodoSeleccionadoLabel()"
+        [referenciaPeriodoLabel]="ws.referenciaParametrosGeneralesLabel()"
+        [fechaActualizacionLabel]="ws.fechaActualizacionLabel()"
+        [enviarFormulario]="ws.guardar.bind(ws)"
+        [verReferenciaPeriodoAnterior]="ws.verReferenciaPeriodoAnterior.bind(ws)"
+      >
+      </app-parametros-remuneraciones-tab>
+    }
+
+    @case ('ccafMutual') {
+      <app-parametros-ccaf-mutuales-tab
+        [activeSub]="ws.ccafMutualSubTab()"
+        (activeSubChange)="ws.ccafMutualSubTab.set($event)"
+        [catalogos]="ws.catalogos()"
+        [ccafColumns]="ws.ccafColumns"
+        [organismosLeyColumns]="ws.organismosLeyColumns"
+        [loading]="ws.isLoading()"
+        [periodoLabel]="ws.periodoSeleccionadoLabel()"
+        [gridPersistenceKeyCcaf]="ws.gridPersistenceKey('parametros.ccaf.dg')"
+        [gridPersistenceKeyMutuales]="ws.gridPersistenceKey('parametros.mutuales.dg')"
+        [refresh]="ws.cargar.bind(ws)"
+      ></app-parametros-ccaf-mutuales-tab>
+    }
+
+    @case ('tramosCarga') {
+      <app-parametros-tramos-carga-tab
+        [rows]="ws.tramosCargaPorPeriodo()"
+        [columns]="ws.tramosCargaColumns"
+        [loading]="ws.isLoading()"
+        [gridPersistenceKey]="ws.gridPersistenceKey('parametros.tramos-carga.dg')"
+        [periodoLabel]="ws.periodoSeleccionadoLabel()"
+        [referenciaPeriodoLabel]="ws.referenciaTramosCargaLabel()"
+        [verReferenciaPeriodoAnterior]="ws.verReferenciaPeriodoAnterior.bind(ws)"
+        [refresh]="ws.cargar.bind(ws)"
+      ></app-parametros-tramos-carga-tab>
+    }
+
+    @case ('impuestoUnico') {
+      <app-parametros-tramos-renta-tab
+        [activeSub]="ws.impuestoSubTab()"
+        (activeSubChange)="ws.impuestoSubTab.set($event)"
+        [tablaRows]="ws.tablaImpuestoPorPeriodo()"
+        [tablaColumns]="ws.tablaImpuestoColumns"
+        [tramosRows]="ws.tramosImpuestoPorPeriodo()"
+        [tramosColumns]="ws.tramosImpuestoColumns"
+        [loading]="ws.isLoading()"
+        [gridPersistenceKeyTabla]="ws.gridPersistenceKey('parametros.tabla-impuesto.dg')"
+        [gridPersistenceKeyTramos]="ws.gridPersistenceKey('parametros.tramos-impuesto.dg')"
+        [periodoLabel]="ws.periodoSeleccionadoLabel()"
+        [referenciaTramosPeriodoLabel]="ws.referenciaTramosImpuestoLabel()"
+        [referenciaTablaPeriodoLabel]="ws.referenciaTablaImpuestoUnicoLabel()"
+        [verReferenciaPeriodoAnterior]="ws.verReferenciaPeriodoAnterior.bind(ws)"
+        [refresh]="ws.cargar.bind(ws)"
+      ></app-parametros-tramos-renta-tab>
+    }
+
+    @case ('salud') {
+      <app-parametros-salud-tab
+        [activeSub]="ws.saludSubTab()"
+        (activeSubChange)="ws.saludSubTab.set($event)"
+        [isapreRows]="ws.isapresPorPeriodo()"
+        [institucionesRows]="ws.saludOtrasInstitucionesPorPeriodo()"
+        [columns]="ws.isapreColumns"
+        [loading]="ws.isLoading()"
+        [gridPersistenceKeyIsapre]="ws.gridPersistenceKey('parametros.isapre.dg')"
+        [gridPersistenceKeyInstituciones]="ws.gridPersistenceKey('parametros.salud-instituciones.dg')"
+        [refresh]="ws.cargar.bind(ws)"
+      ></app-parametros-salud-tab>
+    }
+
+    @case ('prevision') {
+      <app-parametros-afp-tab
+        [rows]="ws.afpPorPeriodo()"
+        [columns]="ws.afpColumns"
+        [loading]="ws.isLoading()"
+        [gridPersistenceKey]="ws.gridPersistenceKey('parametros.afp.dg')"
+        [refresh]="ws.cargar.bind(ws)"
+      ></app-parametros-afp-tab>
+    }
+
+    @case ('reforma') {
+      <app-parametros-reforma-tab
+        [reformaPrevisional]="ws.reformaPrevisionalPorPeriodo()"
+        [reformaPrevisionalColumns]="ws.reformaPrevisionalColumns"
+        [loading]="ws.isLoading()"
+        [gridPersistenceKeyPrevisional]="ws.gridPersistenceKey('parametros.reforma-previsional.dg')"
+        [refresh]="ws.cargar.bind(ws)"
+      ></app-parametros-reforma-tab>
+    }
+  }
+  }
+</div>

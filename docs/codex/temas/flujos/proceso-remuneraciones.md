@@ -19,7 +19,7 @@ Pantalla de **proceso mensual**: prevalidaciones por periodo (`9.5A`); motor y l
 
 | Tipo | Enlace |
 |------|--------|
-| Contrato modulo Nomina mensual | [`../../modulos/nomina-mensual/contrato-general.md`](../../modulos/nomina-mensual/contrato-general.md), [`../../modulos/nomina-mensual/prevalidaciones-9-5A.md`](../../modulos/nomina-mensual/prevalidaciones-9-5A.md) |
+| Contrato modulo Nomina mensual | [`../../modulos/nomina-mensual/contrato-general.md`](../../modulos/nomina-mensual/contrato-general.md), [`../../modulos/nomina-mensual/prevalidaciones/prevalidaciones-9-5A.md`](../../modulos/nomina-mensual/prevalidaciones/prevalidaciones-9-5A.md), [`../../modulos/nomina-mensual/prevalidaciones/prevalidaciones-9-5B.md`](../../modulos/nomina-mensual/prevalidaciones/prevalidaciones-9-5B.md) |
 | Auditoria demo vs parametros (PARAM-CHILE-01) | [`../../auditorias/param-chile-01-parametros-y-demo-proceso.md`](../../auditorias/param-chile-01-parametros-y-demo-proceso.md) |
 | Orquestador — camino oficial | [`../../orquestador/contexto-proyecto.md`](../../orquestador/contexto-proyecto.md) §12 |
 | UI general | [`../../AGENTS.md`](../../AGENTS.md) |

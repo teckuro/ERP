@@ -1,13 +1,99 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { EMPTY_EMPLEADO_FORM_CATALOGOS } from '../../models/empleado-catalogos.model';
+import { EMPTY_EMPLEADO_FORM_CATALOGOS, type EmpleadoFormCatalogos } from '../../models/empleado-catalogos.model';
 import { EmpleadosCatalogosService } from '../../services/empleados-catalogos.service';
 import { EmpleadosService } from '../../services/empleados.service';
+import { ShellPageContextService } from '../../../../layout/shell-page-context.service';
 import { FormEmpleadoComponent } from './form-empleado';
 
+function shellPageContextMock() {
+  let token = 0;
+  return {
+    claimOwnership: vi.fn(() => ++token),
+    releaseOwnership: vi.fn(),
+    setContextWithToken: vi.fn(),
+    registerPrimaryActionHandlerWithToken: vi.fn(),
+    setPageContext: vi.fn(),
+    setContext: vi.fn(),
+    registerPrimaryActionHandler: vi.fn(),
+    setBindingActive: vi.fn(),
+    clearContext: vi.fn(),
+    applyRouteFallback: vi.fn(),
+  };
+}
+
 describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
-  async function setup() {
+  beforeEach(() => {
+    HTMLElement.prototype.scrollIntoView = vi.fn();
+  });
+
+  function catalogoMinimoBorrador(): EmpleadoFormCatalogos {
+    return {
+      ...EMPTY_EMPLEADO_FORM_CATALOGOS,
+      tiposTrabajador: [{ value: 10, label: 'Dependiente' }],
+      tiposJornada: [{ value: 20, label: 'Completa' }],
+      paises: [{ value: 1, label: 'Chile' }],
+      comunas: [{ value: 100, label: 'Santiago' }],
+      bancos: [{ value: 5, label: 'Banco Test' }],
+      tiposCuentaBancaria: [{ value: 6, label: 'Corriente' }],
+      regimenesPrevisionales: [{ value: 202, label: 'NINGUNA' }],
+    };
+  }
+
+  async function setup(catalogos = EMPTY_EMPLEADO_FORM_CATALOGOS) {
+    const queryParamMapGet = vi.fn().mockReturnValue(null);
+    await TestBed.configureTestingModule({
+      imports: [FormEmpleadoComponent],
+      providers: [
+        {
+          provide: EmpleadosService,
+          useValue: {
+            obtenerPorId: vi.fn(),
+            guardarBorradorAvanzado: vi.fn(),
+            finalizarAltaAvanzadaExistente: vi.fn(),
+            crear: vi.fn(),
+            crearBasico: vi.fn(),
+          },
+        },
+        {
+          provide: EmpleadosCatalogosService,
+          useValue: {
+            obtenerFormulario: vi.fn().mockResolvedValue(catalogos),
+          },
+        },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              queryParamMap: {
+                get: queryParamMapGet,
+              },
+            },
+          },
+        },
+        {
+          provide: Router,
+          useValue: {
+            navigate: vi.fn(),
+          },
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(FormEmpleadoComponent);
+    const component = fixture.componentInstance;
+    component.cargandoCatalogos.set(false);
+    component.modo.set('avanzado');
+    return component;
+  }
+
+  async function setupFixture(options: { modo?: 'basico' | 'avanzado' } = {}) {
+    const queryParamMapGet = vi.fn((key: string) => {
+      if (key === 'modo' && options.modo === 'basico') return 'basico';
+      return null;
+    });
     await TestBed.configureTestingModule({
       imports: [FormEmpleadoComponent],
       providers: [
@@ -31,9 +117,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
           provide: ActivatedRoute,
           useValue: {
             snapshot: {
-              queryParamMap: {
-                get: vi.fn().mockReturnValue(null),
-              },
+              queryParamMap: { get: queryParamMapGet },
             },
           },
         },
@@ -41,6 +125,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
           provide: Router,
           useValue: {
             navigate: vi.fn(),
+            url: '/empleados/nuevo',
           },
         },
       ],
@@ -48,8 +133,10 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     const fixture = TestBed.createComponent(FormEmpleadoComponent);
     const component = fixture.componentInstance;
-    component.isLoadingCatalogs.set(false);
-    return component;
+    component.cargandoCatalogos.set(false);
+    component.modo.set(options.modo === 'basico' ? 'basico' : 'avanzado');
+    fixture.detectChanges();
+    return { fixture, component, shell: TestBed.inject(ShellPageContextService) };
   }
 
   it('cargo Sin cargo no completa el paso Contrato y organizacion', async () => {
@@ -64,10 +151,10 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
       },
     } as never);
 
-    const summary = component.getWizardStepValidationSummary(2);
+    const summary = component.obtenerResumenValidacionPasoAsistente(2);
 
     expect(summary.blockingPending).toBeGreaterThan(0);
-    expect(component.wizardStepUiKind(2)).toBe('pendiente');
+    expect(component.tipoUiPasoAsistente(2)).toBe('pendiente');
     expect(component.cargoVisible()).toBe('Sin informacion');
   });
 
@@ -84,17 +171,17 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
       },
     } as never);
 
-    const summary = component.getWizardStepValidationSummary(3);
+    const summary = component.obtenerResumenValidacionPasoAsistente(3);
 
     expect(summary.blockingPending).toBeGreaterThan(0);
-    expect(component.wizardStepUiKind(3)).toBe('pendiente');
+    expect(component.tipoUiPasoAsistente(3)).toBe('pendiente');
   });
 
   it('jornada semanal parte pendiente y no usa 45 como default tecnico', async () => {
     const component = await setup();
 
     expect(component.form.controls.contrato.controls.horasSemanales.value).toBeNull();
-    expect(component.getWizardStepValidationSummary(3).blockingPending).toBeGreaterThan(0);
+    expect(component.obtenerResumenValidacionPasoAsistente(3).blockingPending).toBeGreaterThan(0);
   });
 
   it('cuenta DRAFT no completa el paso Bancario', async () => {
@@ -107,25 +194,151 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
       },
     } as never);
 
-    const summary = component.getWizardStepValidationSummary(7);
+    const summary = component.obtenerResumenValidacionPasoAsistente(7);
 
     expect(summary.blockingPending).toBeGreaterThan(0);
-    expect(component.wizardStepUiKind(7)).toBe('pendiente');
+    expect(component.tipoUiPasoAsistente(7)).toBe('pendiente');
   });
 
-  it('Siguiente muestra MsgBox de revision cuando el paso tiene pendientes y permite continuar', async () => {
+  it('publica Guardar borrador en el shell durante la bitacora avanzada', async () => {
+    const { shell } = await setupFixture();
+
+    expect(shell.primaryAction()?.label).toBe('Guardar borrador');
+    expect(shell.primaryAction()?.actionId).toBe('empleado-alta-avanzada-guardar');
+  });
+
+  it('el CTA del shell guarda borrador fuera del resumen', async () => {
+    const { component, shell } = await setupFixture();
+    const guardarSpy = vi.spyOn(component, 'onGuardarBorrador').mockResolvedValue();
+
+    shell.invokePrimaryAction();
+
+    expect(guardarSpy).toHaveBeenCalled();
+  });
+
+  it('en resumen dependiente el CTA del shell finaliza alta', async () => {
+    const { component, fixture, shell } = await setupFixture();
+    const submitSpy = vi.spyOn(component, 'enviarFormulario').mockResolvedValue();
+
+    component.seleccionarPasoAsistente(component.indicePasoResumenAsistente());
+    fixture.detectChanges();
+    shell.invokePrimaryAction();
+
+    expect(shell.primaryAction()?.label).toBe('Finalizar alta');
+    expect(submitSpy).toHaveBeenCalled();
+  });
+
+  it('en resumen de honorarios el CTA del shell finaliza honorarios', async () => {
+    const { component, fixture, shell } = await setupFixture();
+    const submitSpy = vi.spyOn(component, 'enviarFormulario').mockResolvedValue();
+
+    component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
+    component.seleccionarPasoAsistente(component.indicePasoResumenAsistente());
+    fixture.detectChanges();
+    shell.invokePrimaryAction();
+
+    expect(shell.primaryAction()?.label).toBe('Finalizar honorarios');
+    expect(submitSpy).toHaveBeenCalled();
+  });
+
+  it('publica CTA de borrador en creacion basica', async () => {
+    const { shell } = await setupFixture({ modo: 'basico' });
+
+    expect(shell.primaryAction()).toMatchObject({
+      label: 'Guardar borrador',
+      disabled: true,
+      loading: false,
+      actionId: 'empleado-alta-basica-guardar-borrador',
+    });
+  });
+
+  it('no renderiza acciones locales duplicadas en la cabecera avanzada ni en resumen', async () => {
+    const { component, fixture } = await setupFixture();
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('[data-testid="guardar-borrador-avanzado"]')).toBeNull();
+
+    component.seleccionarPasoAsistente(component.indicePasoResumenAsistente());
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-testid="finalizar-alta"]')).toBeNull();
+  });
+
+  it('Siguiente con bloqueos: primario enfoca el primer fieldItem del modal', async () => {
+    const { component, fixture } = await setupFixture();
+    const scrollIntoView = vi.fn();
+    const focus = vi.fn();
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+    HTMLElement.prototype.focus = focus;
+
+    component.irAPestanaSiguiente();
+    const firstPath = component.modalAccionAvanzada()?.fieldItems?.[0]?.controlPath;
+    expect(firstPath).toBe('datosPersonales.rut');
+
+    component.manejarPrimariaModalAccionAvanzada();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise((resolve) => window.setTimeout(resolve, 120));
+    fixture.detectChanges();
+
+    expect(component.modalAccionAvanzada()).toBeNull();
+    expect(component.pasoWizardActivo()).toBe(0);
+    expect(
+      fixture.nativeElement.querySelector(
+        `[data-field-path="${firstPath}"]`,
+      ),
+    ).toBeTruthy();
+    expect(scrollIntoView).toHaveBeenCalled();
+    expect(focus).toHaveBeenCalled();
+  });
+
+  it('Siguiente con bloqueos: secundario continua con pendiente', async () => {
     const component = await setup();
 
-    component.goToNextTab();
+    component.irAPestanaSiguiente();
 
-    expect(component.activeWizardStep()).toBe(0);
-    expect(component.advancedActionModal()?.kind).toBe('next-step-review');
-    expect(component.advancedActionModal()?.primaryLabel).toBe('Continuar');
+    expect(component.modalAccionAvanzada()?.secondaryLabel).toBe('Continuar con pendiente');
 
-    component.handleAdvancedActionModalPrimary();
+    component.manejarSecundariaModalAccionAvanzada();
 
-    expect(component.advancedActionModal()).toBeNull();
-    expect(component.activeWizardStep()).toBe(1);
+    expect(component.modalAccionAvanzada()).toBeNull();
+    expect(component.pasoWizardActivo()).toBe(1);
+  });
+
+  it('Siguiente mantiene fieldItems para foco sin listado embebido', async () => {
+    const { component, fixture } = await setupFixture();
+
+    component.irAPestanaSiguiente();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const modal = component.modalAccionAvanzada();
+    expect(modal?.kind).toBe('next-step-review');
+    expect(modal?.fieldItems?.length).toBeGreaterThan(1);
+    expect(modal?.fieldItems?.[0]).toMatchObject({
+      sectionTitle: 'Identificacion legal',
+      actionLabel: 'Ir al campo',
+      controlPath: 'datosPersonales.rut',
+    });
+    expect(modal?.message).toContain('Datos personales');
+  });
+
+  it('accion de pendiente del modal navega al paso y cierra el modal', async () => {
+    const { component } = await setupFixture();
+    component.seleccionarPasoAsistente(component.indicePasoResumenAsistente());
+
+    await component.enviarFormulario();
+
+    const bankItem = component
+      .modalAccionAvanzada()
+      ?.fieldItems?.find((item) => item.controlPath === 'bancario.idBanco');
+    expect(bankItem).toBeTruthy();
+
+    component.manejarItemCampoModalAvanzada(bankItem!);
+
+    expect(component.modalAccionAvanzada()).toBeNull();
+    expect(component.pasoWizardActivo()).toBe(7);
   });
 
   it('Guardar borrador usa MsgBox cuando falta validacion minima', async () => {
@@ -133,24 +346,86 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     await component.onGuardarBorrador();
 
-    expect(component.advancedActionModal()?.kind).toBe('draft-invalid');
-    expect(component.advancedActionModal()?.title).toBe('No se puede guardar el borrador');
-    expect(component.errorMessage()).toBeNull();
+    const modal = component.modalAccionAvanzada();
+    expect(modal?.kind).toBe('draft-invalid');
+    expect(modal?.title).toBe('No se puede guardar el borrador');
+    expect(modal?.sections?.length).toBe(3);
+    expect(modal?.fieldItems?.length).toBeGreaterThan(0);
+    expect(modal?.fieldItems?.[0]?.controlPath).toBe('datosPersonales.rut');
+    expect(modal?.message).toContain('RUT');
+    expect(component.mensajeError()).toBeNull();
+  });
+
+  it('Guardar borrador persiste el mayor paso visitado aunque el activo sea el primero', async () => {
+    const component = await setup(catalogoMinimoBorrador());
+    component.modo.set('avanzado');
+    component.catalogos.set(catalogoMinimoBorrador());
+    const empleadosService = TestBed.inject(EmpleadosService) as unknown as {
+      guardarBorradorAvanzado: ReturnType<typeof vi.fn>;
+    };
+    empleadosService.guardarBorradorAvanzado.mockResolvedValue({
+      id: 123,
+      pasoAltaAvanzada: 7,
+    });
+    component.form.patchValue({
+      datosPersonales: {
+        rut: '12.345.678-5',
+        nombres: 'Test',
+        apellidoPaterno: 'Borrador',
+        fechaNacimiento: '1990-01-01',
+        sexo: 'F',
+        estadoCivil: 'SOLTERO',
+        idPais: 1,
+      },
+      contacto: {
+        email: 'borrador@test.cl',
+        telefono: '56912345678',
+      },
+    } as never);
+
+    component.seleccionarPasoAsistente(7);
+    component.seleccionarPasoAsistente(0);
+    await component.onGuardarBorrador();
+
+    expect(empleadosService.guardarBorradorAvanzado).toHaveBeenCalledWith(
+      null,
+      expect.objectContaining({ rut: '12.345.678-5', estado: 'borrador' }),
+      7,
+    );
   });
 
   it('Finalizar alta usa MsgBox y no cambia de paso hasta elegir ir al bloqueo', async () => {
     const component = await setup();
-    component.selectWizardStep(8);
+    component.seleccionarPasoAsistente(8);
 
-    await component.onSubmit();
+    await component.enviarFormulario();
 
-    expect(component.activeWizardStep()).toBe(8);
-    expect(component.advancedActionModal()?.kind).toBe('finish-invalid');
+    expect(component.pasoWizardActivo()).toBe(8);
+    expect(component.modalAccionAvanzada()?.kind).toBe('finish-invalid');
 
-    component.handleAdvancedActionModalPrimary();
+    component.manejarPrimariaModalAccionAvanzada();
 
-    expect(component.advancedActionModal()).toBeNull();
-    expect(component.activeWizardStep()).toBe(0);
+    expect(component.modalAccionAvanzada()).toBeNull();
+    expect(component.pasoWizardActivo()).toBe(0);
+  });
+
+  it('Finalizar alta lista bloqueos de distintas secciones como campos accionables', async () => {
+    const { component, fixture } = await setupFixture();
+    component.seleccionarPasoAsistente(component.indicePasoResumenAsistente());
+
+    await component.enviarFormulario();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const modal = component.modalAccionAvanzada();
+    const sectionTitles = new Set(
+      modal?.fieldItems?.map((item) => item.sectionTitle) ?? [],
+    );
+    expect(modal?.kind).toBe('finish-invalid');
+    expect(modal?.fieldItems?.length).toBeGreaterThan(5);
+    expect(sectionTitles.size).toBeGreaterThan(1);
+    expect(modal?.sections?.[0]?.items ?? []).not.toContain('Además hay');
   });
 
 
@@ -159,48 +434,362 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
 
-    expect(component.linearWizardSequence()).toEqual([0, 1, 2, 3, 7, 8]);
-    expect(component.wizardStepUiKind(4)).toBe('no-aplica');
-    expect(component.wizardStepUiKind(5)).toBe('no-aplica');
-    expect(component.wizardStepUiKind(6)).toBe('no-aplica');
+    expect(component.secuenciaLinealAsistente()).toEqual([0, 1, 2, 3, 7, 9]);
+    expect(component.tipoUiPasoAsistente(4)).toBe('no-aplica');
+    expect(component.tipoUiPasoAsistente(5)).toBe('no-aplica');
+    expect(component.tipoUiPasoAsistente(6)).toBe('no-aplica');
   });
 
-  it('Boleta de honorarios bloquea finalizar alta activa y ofrece guardar borrador', async () => {
+  it('Boleta de honorarios incompleta bloquea finalizacion sin modal de borrador', async () => {
     const component = await setup();
 
     component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
-    component.selectWizardStep(8);
+    component.seleccionarPasoAsistente(8);
 
-    await component.onSubmit();
+    await component.enviarFormulario();
 
-    expect(component.advancedActionModal()?.kind).toBe('honorarios-finish-blocked');
-    expect(component.advancedActionModal()?.title).toBe('Guardar borrador de honorarios');
-    expect(component.advancedActionModal()?.primaryLabel).toBe('Guardar como borrador');
-    expect(component.advancedActionModal()?.secondaryLabel).toBe('Cerrar');
+    expect(component.modalAccionAvanzada()?.kind).toBe('finish-invalid');
+    expect(component.modalAccionAvanzada()?.primaryAction).toBe('focus-first-blocking');
   });
 
-  it('Boleta de honorarios usa accion final de borrador en el resumen', async () => {
+  it('Boleta de honorarios usa accion final propia en el resumen', async () => {
     const component = await setup();
 
-    expect(component.finalWizardActionLabel()).toBe('Finalizar alta');
+    expect(component.etiquetaAccionFinalAsistente()).toBe('Finalizar alta');
 
     component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
 
-    expect(component.finalWizardActionLabel()).toBe('Guardar borrador');
+    expect(component.etiquetaAccionFinalAsistente()).toBe('Finalizar honorarios');
   });
 
   it('Confirmar honorarios mueve una etapa no aplicable al siguiente paso util', async () => {
     const component = await setup();
     await component.ngOnInit();
 
-    component.selectWizardStep(5);
+    component.seleccionarPasoAsistente(5);
     component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
 
-    expect(component.advancedActionModal()?.kind).toBe('honorarios-confirm');
+    expect(component.modalAccionAvanzada()?.kind).toBe('honorarios-confirm');
 
-    component.handleAdvancedActionModalPrimary();
+    component.manejarPrimariaModalAccionAvanzada();
 
-    expect(component.activeWizardStep()).toBe(7);
+    expect(component.pasoWizardActivo()).toBe(7);
   });
 
+  it('Boleta de honorarios completa emite modal de exito al finalizar', async () => {
+    const finalizarAltaAvanzadaExistente = vi.fn().mockResolvedValue(undefined);
+    const catalogos = {
+      ...EMPTY_EMPLEADO_FORM_CATALOGOS,
+      tiposTrabajador: [
+        { value: 1, label: 'DEPENDIENTE' },
+        { value: 2, label: 'INDEPENDIENTE' },
+      ],
+      tiposJornada: [{ value: 20, label: 'Completa' }],
+      monedas: [{ value: 1, label: 'CLP', codigo: 'CLP' }],
+      bancos: [{ value: 5, label: 'Banco Test' }],
+      tiposCuentaBancaria: [{ value: 6, label: 'Corriente' }],
+      regimenesPrevisionales: [{ value: 202, label: 'NINGUNA' }],
+    };
+    const queryParamMapGet = vi.fn().mockReturnValue(null);
+    await TestBed.configureTestingModule({
+      imports: [FormEmpleadoComponent],
+      providers: [
+        {
+          provide: EmpleadosService,
+          useValue: {
+            obtenerPorId: vi.fn(),
+            guardarBorradorAvanzado: vi.fn(),
+            finalizarAltaAvanzadaExistente,
+            crear: vi.fn(),
+            crearBasico: vi.fn(),
+          },
+        },
+        {
+          provide: EmpleadosCatalogosService,
+          useValue: {
+            obtenerFormulario: vi.fn().mockResolvedValue(catalogos),
+          },
+        },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { queryParamMap: { get: queryParamMapGet } },
+          },
+        },
+        { provide: Router, useValue: { navigate: vi.fn() } },
+        {
+          provide: ShellPageContextService,
+          useValue: shellPageContextMock(),
+        },
+      ],
+    }).compileComponents();
+
+    const component = TestBed.createComponent(FormEmpleadoComponent).componentInstance;
+    component.cargandoCatalogos.set(false);
+    component.modo.set('avanzado');
+    component.borradorPersonaId.set(99);
+    component.catalogos.set(catalogos);
+    await component.ngOnInit();
+
+    component.form.patchValue({
+      datosPersonales: {
+        rut: '12.345.678-5',
+        nombres: 'Prestador',
+        apellidoPaterno: 'Honorarios',
+        fechaNacimiento: '1990-01-01',
+        sexo: 'M',
+        estadoCivil: 'SOLTERO',
+        idPais: 1,
+      },
+      contacto: {
+        email: 'honorarios@test.local',
+        telefono: '56912345678',
+        direccion: 'Calle 1',
+        idComuna: 100,
+      },
+    } as never);
+
+    component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
+    expect(component.modalAccionAvanzada()?.kind).toBe('honorarios-confirm');
+    component.manejarPrimariaModalAccionAvanzada();
+
+    component.form.patchValue({
+      contrato: {
+        cargo: 'Servicio consultoria E2E',
+        fechaIngreso: '2024-06-01',
+        sueldoBase: 500000,
+        idMoneda: 1,
+      },
+      bancario: {
+        idBanco: 5,
+        idTipoCuentaBancaria: 6,
+        numeroCuenta: '123456789012',
+      },
+    } as never);
+
+    component.seleccionarPasoAsistente(component.indicePasoResumenAsistente());
+    await component.enviarFormulario();
+
+    expect(component.modalAccionAvanzada()?.kind).toBe('finish-confirm');
+    expect(component.modalAccionAvanzada()?.primaryLabel).toBe('Finalizar honorarios');
+
+    await component.manejarPrimariaModalAccionAvanzada();
+
+    expect(finalizarAltaAvanzadaExistente).toHaveBeenCalledWith(
+      99,
+      expect.objectContaining({ relacionLaboral: 'HONORARIOS', tipoPrevision: 'NINGUNA' }),
+    );
+    expect(component.mensajeExito()).toMatch(/guardada correctamente/i);
+  });
+
+  it('Siguiente muestra MsgBox de coherencia y permite activar seguro de cesantía', async () => {
+    const component = await setup();
+    component.seleccionarPasoAsistente(3);
+    component.form.patchValue({
+      contrato: {
+        tipoContrato: 'INDEFINIDO',
+        idTipoJornada: 1,
+        sueldoBase: 500000,
+        idMoneda: 1,
+        horasSemanales: 42,
+        diasSemanales: 5,
+        seguroCesantia: false,
+      },
+    } as never);
+
+    component.irAPestanaSiguiente();
+
+    expect(component.modalAccionAvanzada()?.kind).toBe('coherence-decision');
+    expect(component.modalAccionAvanzada()?.primaryLabel).toBe('Activar seguro de cesantía');
+
+    component.manejarPrimariaModalAccionAvanzada();
+
+    expect(component.form.controls.contrato.controls.seguroCesantia.value).toBe(true);
+    expect(component.pasoWizardActivo()).toBe(3);
+  });
+
+  it('Mantener revision de coherencia permite continuar sin cambiar el dato', async () => {
+    const component = await setup();
+    component.seleccionarPasoAsistente(3);
+    component.form.patchValue({
+      contrato: {
+        tipoContrato: 'INDEFINIDO',
+        idTipoJornada: 1,
+        sueldoBase: 500000,
+        idMoneda: 1,
+        horasSemanales: 42,
+        diasSemanales: 5,
+        seguroCesantia: false,
+      },
+    } as never);
+
+    component.irAPestanaSiguiente();
+    component.manejarSecundariaModalAccionAvanzada();
+
+    expect(component.form.controls.contrato.controls.seguroCesantia.value).toBe(false);
+    expect(component.pasoWizardActivo()).toBe(4);
+    expect(component.coherenciaResumenItems()).toContain('Seguro de Cesantía desactivado en contrato indefinido.');
+  });
+
+  it('honorarios con datos minimos deja el formulario valido tras confirmar modalidad', async () => {
+    const component = await setup({
+      ...EMPTY_EMPLEADO_FORM_CATALOGOS,
+      tiposTrabajador: [
+        { value: 1, label: 'DEPENDIENTE' },
+        { value: 2, label: 'INDEPENDIENTE' },
+      ],
+      tiposJornada: [{ value: 20, label: 'Completa' }],
+      monedas: [{ value: 1, label: 'CLP', codigo: 'CLP' }],
+      bancos: [{ value: 5, label: 'Banco Test' }],
+      tiposCuentaBancaria: [{ value: 6, label: 'Corriente' }],
+      regimenesPrevisionales: [{ value: 202, label: 'NINGUNA' }],
+    });
+
+    await component.ngOnInit();
+
+    component.form.patchValue({
+      datosPersonales: {
+        rut: '12.345.678-5',
+        nombres: 'Prestador',
+        apellidoPaterno: 'Honorarios',
+        fechaNacimiento: '1990-01-01',
+        sexo: 'M',
+        estadoCivil: 'SOLTERO',
+        idPais: 1,
+      },
+      contacto: {
+        email: 'honorarios@test.local',
+        telefono: '56912345678',
+        direccion: 'Calle 1',
+        idComuna: 100,
+      },
+      contrato: {
+        cargo: 'Servicio consultoria E2E',
+        fechaIngreso: '2024-06-01',
+        sueldoBase: 500000,
+        idMoneda: 1,
+      },
+      bancario: {
+        idBanco: 5,
+        idTipoCuentaBancaria: 6,
+        numeroCuenta: '123456789012',
+      },
+    } as never);
+
+    component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
+    expect(component.modalAccionAvanzada()?.kind).toBe('honorarios-confirm');
+    component.manejarPrimariaModalAccionAvanzada();
+
+    expect(component.form.valid).toBe(true);
+  });
+
+  it('sincroniza tipo trabajador base desde relacion laboral', async () => {
+    const component = await setup({
+      ...EMPTY_EMPLEADO_FORM_CATALOGOS,
+      tiposTrabajador: [
+        { value: 1, label: 'DEPENDIENTE' },
+        { value: 2, label: 'INDEPENDIENTE' },
+      ],
+    });
+
+    await component.ngOnInit();
+
+    expect(component.form.controls.contrato.controls.idTipoTrabajador.value).toBe(1);
+
+    component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
+
+    expect(component.form.controls.contrato.controls.idTipoTrabajador.value).toBe(2);
+    expect(component.modalAccionAvanzada()?.kind).toBe('honorarios-confirm');
+
+    component.manejarSecundariaModalAccionAvanzada();
+
+    expect(component.form.controls.contrato.controls.relacionLaboral.value).toBe('CONTRATO');
+    expect(component.form.controls.contrato.controls.idTipoTrabajador.value).toBe(1);
+  });
+});
+
+describe('FormEmpleadoComponent - consola bitácora pendientes', () => {
+  beforeEach(() => {
+    HTMLElement.prototype.scrollIntoView = vi.fn();
+  });
+
+  async function setupAvanzado() {
+    const queryParamMapGet = vi.fn().mockReturnValue(null);
+    await TestBed.configureTestingModule({
+      imports: [FormEmpleadoComponent],
+      providers: [
+        {
+          provide: EmpleadosService,
+          useValue: {
+            obtenerPorId: vi.fn(),
+            guardarBorradorAvanzado: vi.fn(),
+            finalizarAltaAvanzadaExistente: vi.fn(),
+            crear: vi.fn(),
+            crearBasico: vi.fn(),
+          },
+        },
+        {
+          provide: EmpleadosCatalogosService,
+          useValue: {
+            obtenerFormulario: vi.fn().mockResolvedValue(EMPTY_EMPLEADO_FORM_CATALOGOS),
+          },
+        },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { queryParamMap: { get: queryParamMapGet } },
+          },
+        },
+        {
+          provide: Router,
+          useValue: { navigate: vi.fn(), url: '/empleados/nuevo' },
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(FormEmpleadoComponent);
+    const component = fixture.componentInstance;
+    component.cargandoCatalogos.set(false);
+    component.modo.set('avanzado');
+    return { fixture, component };
+  }
+
+  it('altaBitacoraConsoleVm une faltantes de expediente y registros pendientes', async () => {
+    const { component } = await setupAvanzado();
+    component.form.patchValue({
+      contrato: {
+        cargo: 'Sin cargo',
+        sueldoBase: 0,
+        horasSemanales: 45,
+        diasSemanales: 5,
+        idMoneda: 1,
+      },
+    } as never);
+
+    const vm = component.altaBitacoraConsoleVm();
+
+    expect(vm.visible).toBe(true);
+    expect(vm.totalVisible).toBeGreaterThan(0);
+    expect(vm.faltantes.length).toBeGreaterThan(0);
+    expect(vm.registrosPendientes.length).toBeGreaterThan(0);
+    expect(vm.revisionesNormativas.length).toBeGreaterThan(0);
+  });
+
+  it('altaBitacoraConsoleVm expande por defecto en paso resumen con pendientes', async () => {
+    const { component } = await setupAvanzado();
+    component.form.patchValue({
+      contrato: {
+        cargo: 'Sin cargo',
+        sueldoBase: 0,
+        horasSemanales: 45,
+        diasSemanales: 5,
+        idMoneda: 1,
+      },
+    } as never);
+
+    component.seleccionarPasoAsistente(component.indicePasoResumenAsistente());
+    const vm = component.altaBitacoraConsoleVm();
+
+    expect(vm.expandedByDefault).toBe(true);
+  });
 });

@@ -1,0 +1,208 @@
+<section class="paso-dotacion" aria-labelledby="paso-dotacion-title">
+  <header class="paso-dotacion__head">
+    <div class="paso-dotacion__copy">
+      <p class="paso-dotacion__eyebrow">Paso 2 · Dotación</p>
+      <h2 id="paso-dotacion-title" class="paso-dotacion__title">Dotación del período</h2>
+      <p class="paso-dotacion__subtitle">
+        Agrega los trabajadores que participan, revisa la grilla y atiende excepciones
+        antes de pasar a movimientos.
+      </p>
+    </div>
+    <div class="paso-dotacion__head-actions">
+      <button
+        type="button"
+        class="paso-dotacion__primary"
+        (click)="abrirPicker()"
+        [disabled]="!nominaPeriodoId() || loading()"
+      >
+        Agregar trabajadores
+      </button>
+    </div>
+  </header>
+
+  <div class="paso-dotacion__stats" role="group" aria-label="Resumen de dotación">
+    <span class="paso-dotacion__stat">
+      <strong>{{ stats().total }}</strong>
+      <small>trabajadores</small>
+    </span>
+    <span class="paso-dotacion__stat is-listo">
+      <strong>{{ stats().listos }}</strong>
+      <small>listos</small>
+    </span>
+    <span class="paso-dotacion__stat is-advertencia">
+      <strong>{{ stats().conAdvertencias }}</strong>
+      <small>con advertencia</small>
+    </span>
+    <span class="paso-dotacion__stat is-critico">
+      <strong>{{ stats().conCriticos }}</strong>
+      <small>con incidencia crítica</small>
+    </span>
+    <span class="paso-dotacion__stat is-bloqueado">
+      <strong>{{ stats().bloqueados }}</strong>
+      <small>bloqueados</small>
+    </span>
+  </div>
+
+  @if (errorMensaje(); as msg) {
+    <p class="paso-dotacion__error" role="alert">{{ msg }}</p>
+  }
+
+  <div class="paso-dotacion__grid-wrapper">
+    <app-data-grid
+      title=""
+      [columns]="columnas"
+      [rows]="vista().filas"
+      [filters]="filtros()"
+      [filtersEnabled]="true"
+      [filtersCollapsible]="false"
+      filterChipsDisplay="whenFiltersHidden"
+      headerCountDisplay="text"
+      headerCountNoun="trabajadores"
+      [headerShowActiveFiltersCount]="true"
+      [selectable]="true"
+      selectionLabel="trabajadores"
+      [bulkSelectAllFiltered]="true"
+      [bulkActions]="accionesMasivas"
+      [bulkActionLoading]="aplicandoMasiva()"
+      [loading]="loading() && !preparacionExterna()"
+      loadingLabel="Cargando dotación…"
+      [trackBy]="trackFila"
+      [persistenceKey]="persistenceKey"
+      toolbarLayout="operativa"
+      [gridHeight]="'100%'"
+      [serverSide]="true"
+      [totalRowCount]="vista().total"
+      [maxItems]="pageSize()"
+      emptyTitle="Aún no hay trabajadores en esta dotación"
+      emptyDescription="Usa “Agregar trabajadores” para incluir personas en este período."
+      emptyTitleWhenFiltered="Sin resultados con los filtros actuales"
+      emptyDescriptionWhenFiltered="Cambia o limpia los filtros para ampliar la búsqueda."
+      className="paso-dotacion__data-grid"
+      cardClassName="paso-dotacion__data-grid-card"
+      (bulkAction)="manejarAccionMasiva($event)"
+      (serverQueryChange)="manejarConsultaServidor($event)"
+    >
+      <ng-template appDataGridCell="estado" let-fila>
+        <span class="paso-dotacion__estado" [attr.data-estado]="fila.estado">
+          {{ etiquetaEstado(fila.estado) }}
+        </span>
+      </ng-template>
+      <ng-template appDataGridCell="totalIncidenciasCriticas" let-fila>
+        @if (fila.totalIncidenciasCriticas + fila.totalAdvertencias > 0) {
+          {{ fila.totalIncidenciasCriticas + fila.totalAdvertencias }}
+        } @else {
+          —
+        }
+      </ng-template>
+      <ng-template appDataGridCell="totalMovimientos" let-fila>
+        {{ fila.totalMovimientos || '—' }}
+      </ng-template>
+      <ng-template appDataGridCell="acciones" let-fila>
+        <button
+          type="button"
+          class="paso-dotacion__link"
+          (click)="abrirDetalle(fila.trabajadorId)"
+        >Ver detalle</button>
+      </ng-template>
+    </app-data-grid>
+  </div>
+
+  @if (trabajadorSeleccionado(); as tid) {
+    <aside
+      #detalleAside
+      class="paso-dotacion__detalle"
+      tabindex="-1"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="paso-dotacion-detalle-title"
+      (keydown.escape)="cerrarDetalle()"
+    >
+      <header class="paso-dotacion__detalle-head">
+        <h3 id="paso-dotacion-detalle-title" class="paso-dotacion__detalle-title">
+          Detalle del trabajador
+        </h3>
+        <button
+          type="button"
+          class="paso-dotacion__chip is-ghost paso-dotacion__detalle-close"
+          (click)="cerrarDetalle()"
+          aria-label="Cerrar detalle"
+        >&times;</button>
+      </header>
+      @if (detalleLoading()) {
+        <p class="paso-dotacion__placeholder">Cargando…</p>
+      } @else if (detalleTrabajador(); as det) {
+        @if (detalleTrabajadorIdentidad(); as id) {
+          <p class="paso-dotacion__detalle-meta">
+            <strong>{{ id.nombre }}</strong>
+            <span class="paso-dotacion__detalle-rut">{{ id.rut }}</span>
+          </p>
+        } @else {
+          <p class="paso-dotacion__detalle-meta">
+            <strong>Trabajador sin identificar</strong>
+            <span class="paso-dotacion__detalle-rut" [attr.data-trabajador-id]="det.trabajadorId">
+              Identidad no disponible en la página actual
+            </span>
+          </p>
+        }
+        <section>
+          <h4 class="paso-dotacion__detalle-subtitle">Movimientos del período</h4>
+          @if (det.movimientos.length === 0) {
+            <p class="paso-dotacion__placeholder">Sin movimientos registrados.</p>
+          } @else {
+            <ul class="paso-dotacion__detalle-list">
+              @for (mov of det.movimientos; track mov.id) {
+                <li>
+                  <strong>{{ mov.tipo }}</strong>
+                  @if (mov.monto != null) {
+                    · ${{ mov.monto | number:'1.0-0' }}
+                  }
+                  · {{ mov.estado }}
+                </li>
+              }
+            </ul>
+          }
+        </section>
+        <section>
+          <h4 class="paso-dotacion__detalle-subtitle">Incidencias</h4>
+          @if (det.incidencias.length === 0) {
+            <p class="paso-dotacion__placeholder">Sin incidencias.</p>
+          } @else {
+            <ul class="paso-dotacion__detalle-list">
+              @for (inc of det.incidencias; track inc.id) {
+                <li>
+                  <strong>{{ inc.severidad }}</strong> · {{ inc.mensaje }}
+                </li>
+              }
+            </ul>
+          }
+        </section>
+      } @else {
+        <p class="paso-dotacion__placeholder">No fue posible cargar el detalle.</p>
+      }
+    </aside>
+  }
+
+  <footer class="paso-dotacion__footer">
+    <div class="paso-dotacion__footer-info" aria-live="polite">
+      @if (motivoBloqueo(); as motivo) {
+        <span class="paso-dotacion__warning">{{ motivo }}</span>
+      } @else if (stats().total === 0) {
+        <span class="paso-dotacion__hint">
+          Aún no hay trabajadores en la dotación. Usa “Agregar trabajadores” para empezar.
+        </span>
+      } @else {
+        <span class="paso-dotacion__hint">
+          Para continuar a movimientos, usa la acción principal del shell.
+        </span>
+      }
+    </div>
+  </footer>
+</section>
+
+@if (pickerAbierto()) {
+  <app-nomina-mensual-v2-modal-incluir-trabajadores
+    [nominaPeriodoId]="nominaPeriodoId()"
+    (incluir)="incluirTrabajadores($event)"
+    (cerrar)="cerrarPicker()"
+  />
+}

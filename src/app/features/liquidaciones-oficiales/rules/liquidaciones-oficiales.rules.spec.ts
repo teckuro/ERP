@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import {
   clasificarAdvertenciasLiquidacion,
   determinarEstadoLiquidaciones,
@@ -6,24 +8,30 @@ import {
 } from './liquidaciones-oficiales.rules';
 
 describe('liquidaciones-oficiales.rules', () => {
+  // Orden del flujo: aprobar -> emitir -> cerrar. Se emite con la nómina aprobada y sin cerrar.
   const snapshot = {
     idCalculoPeriodo: 15,
     totalTrabajadores: 2,
     aprobadoOperativamente: true,
-    cerradoOperativamente: true,
+    cerradoOperativamente: false,
   };
 
-  it('queda no disponible sin snapshot cerrado', () => {
+  it('queda no disponible sin nómina mensual aprobada', () => {
     expect(determinarEstadoLiquidaciones({ snapshot: null, liquidacion: null })).toBe('no_disponible');
-    expect(obtenerMotivoNoPuedeGenerar(null, null)).toBe('No se pudo consultar el estado de la nomina cerrada.');
+    expect(obtenerMotivoNoPuedeGenerar(null, null)).toBe('No se pudo consultar una nómina mensual aprobada para este período.');
   });
 
-  it('bloquea si la nomina aun no esta cerrada operativamente', () => {
-    const motivo = obtenerMotivoNoPuedeGenerar({ ...snapshot, cerradoOperativamente: false }, null);
-    expect(motivo).toBe('Primero debes cerrar operativamente la nomina del periodo.');
+  it('bloquea si la nomina mensual aun no esta aprobada', () => {
+    const motivo = obtenerMotivoNoPuedeGenerar({ ...snapshot, aprobadoOperativamente: false }, null);
+    expect(motivo).toBe('Primero aprueba la nómina mensual del período.');
   });
 
-  it('habilita generacion con snapshot aprobado, cerrado y sin liquidaciones', () => {
+  it('bloquea la emision si la nomina ya esta cerrada', () => {
+    const motivo = obtenerMotivoNoPuedeGenerar({ ...snapshot, cerradoOperativamente: true }, null);
+    expect(motivo).toBe('La nómina del período ya está cerrada; no se pueden emitir nuevas liquidaciones.');
+  });
+
+  it('habilita generacion con snapshot aprobado, sin cerrar y sin liquidaciones', () => {
     expect(puedeGenerarLiquidaciones(snapshot, null)).toBe(true);
     expect(determinarEstadoLiquidaciones({ snapshot, liquidacion: null })).toBe('lista_para_generar');
   });
@@ -35,6 +43,7 @@ describe('liquidaciones-oficiales.rules', () => {
       periodo: '2026-04',
       estado: 'generada' as const,
       fechaGeneracion: '2026-05-10T10:00:00.000Z',
+      usuarioGeneracionId: '00000000-0000-0000-0000-000000000001',
       usuarioGeneracionLabel: 'rrhh@empresa.cl',
       totalTrabajadores: 2,
       totalHaberes: 100,
@@ -54,9 +63,9 @@ describe('liquidaciones-oficiales.rules', () => {
       trabajadoresSinConceptos: 1,
       conceptosSinCodigoLre: 1,
     })).toEqual([
-      'El snapshot cerrado tenia advertencias operativas visibles al aprobar.',
+      'La nómina mensual aprobada tenía advertencias visibles al aprobar.',
       'Hay trabajadores sin conceptos materializados en la liquidacion.',
-      'Existen conceptos sin codigo LRE; LRE operativo queda para una fase posterior.',
+      'Existen conceptos sin codigo LRE. LRE operativo queda para una fase posterior.',
     ]);
   });
 });

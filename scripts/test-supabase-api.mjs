@@ -16,7 +16,7 @@ if (!fs.existsSync(configPath)) {
 }
 
 const raw = fs.readFileSync(configPath, 'utf8');
-const parsed = JSON.parse(raw);
+const parsed = JSON.parse(raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw);
 const supabaseUrl = (parsed.supabaseUrl ?? '').replace(/\/$/, '');
 const supabaseAnonKey = parsed.supabaseAnonKey ?? '';
 
