@@ -43,7 +43,7 @@ export interface NovedadMensual {
   periodo: string;
   idPersona: number;
   idContrato: number | null;
-  idConcepto: number;
+  idConcepto: number | null;
   categoria: NovedadMensualCategoria;
   tipoMovimiento: NovedadMensualTipoMovimiento;
   cantidad: number | null;
@@ -55,6 +55,8 @@ export interface NovedadMensual {
   estado: NovedadMensualEstado;
   observacion: string | null;
   referenciaExterna: string | null;
+  codigoMotivoAusencia: string | null;
+  idLicencia: number | null;
   creadoPor: string | null;
   aprobadoPor: string | null;
   fechaAprobacion: string | null;
@@ -66,7 +68,7 @@ export interface CrearNovedadMensualInput {
   periodo: string;
   idPersona: number;
   idContrato?: number | null;
-  idConcepto: number;
+  idConcepto?: number | null;
   categoria: NovedadMensualCategoria;
   tipoMovimiento: NovedadMensualTipoMovimiento;
   cantidad?: number | null;
@@ -77,6 +79,8 @@ export interface CrearNovedadMensualInput {
   fechaEvento?: string | null;
   observacion?: string | null;
   referenciaExterna?: string | null;
+  codigoMotivoAusencia?: string | null;
+  idLicencia?: number | null;
   creadoPor?: string | null;
 }
 
@@ -84,7 +88,7 @@ export interface ActualizarNovedadMensualInput {
   periodo?: string;
   idPersona?: number;
   idContrato?: number | null;
-  idConcepto?: number;
+  idConcepto?: number | null;
   categoria?: NovedadMensualCategoria;
   tipoMovimiento?: NovedadMensualTipoMovimiento;
   cantidad?: number | null;
@@ -95,6 +99,8 @@ export interface ActualizarNovedadMensualInput {
   fechaEvento?: string | null;
   observacion?: string | null;
   referenciaExterna?: string | null;
+  codigoMotivoAusencia?: string | null;
+  idLicencia?: number | null;
 }
 
 export interface CambiarEstadoNovedadMensualInput {

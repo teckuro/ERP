@@ -35,8 +35,6 @@ import {
   MessageBoxVariant,
 } from '../../../../../shared/components/ui/feedback/message-box/message-box.component';
 import type { MessageBoxSection } from '../../../../../shared/components/ui/feedback/message-box/message-box.types';
-import { CalendarInputComponent } from '../../../../../shared/components/ui/forms/calendar-input/calendar-input.component';
-import { FieldHelpTipComponent } from '../../../../../shared/components/ui/forms/field-help-tip.component';
 import { bindShellPageContext } from '../../../../../layout/shell-page-context.binding';
 import {
   buildNominaFlowReturnUrl,
@@ -104,15 +102,40 @@ import {
   tituloModalAsignacionMasiva,
 } from '../../presenters/novedades-asignacion-masiva.presenter';
 import {
+  aplicarMotivoAusenciaLicencia,
+  pendientesFormularioAusenciaLicenciaIndividual,
+  resumenFormularioAusenciaLicenciaIndividual,
+} from '../../presenters/novedades-formulario-ausencia-licencia.presenter';
+import {
   avisoFormularioPendienteUi,
   formatearMontoFormulario,
+  hintModoRegistroMes,
+  OPCIONES_MODO_REGISTRO_MES,
   pendientesFormularioMasivoCompleto,
   pendientesFormularioMensualIndividual,
   resumenFormularioMasivo,
   resumenFormularioMensualIndividual,
+  tabIdModoRegistroMes,
 } from '../../presenters/novedades-formulario-mensual.presenter';
+import {
+  pendientesFormularioRecurrenteIndividual,
+  resumenFormularioRecurrenteIndividual,
+} from '../../presenters/novedades-formulario-recurrente.presenter';
+import { NovedadesFormularioRecurrenteComponent } from '../../components/novedades-formulario-recurrente/novedades-formulario-recurrente.component';
+import type { FormularioRecurrenteCambio } from '../../components/novedades-formulario-recurrente/novedades-formulario-recurrente.component';
+import { NovedadesFormularioAusenciaLicenciaComponent } from '../../components/novedades-formulario-ausencia-licencia/novedades-formulario-ausencia-licencia.component';
+import type { FormularioAusenciaLicenciaCambio } from '../../components/novedades-formulario-ausencia-licencia/novedades-formulario-ausencia-licencia.component';
 import { NovedadesFormularioMovimientoMesComponent } from '../../components/novedades-formulario-movimiento-mes/novedades-formulario-movimiento-mes.component';
 import type { FormularioMovimientoMesCambio } from '../../components/novedades-formulario-movimiento-mes/novedades-formulario-movimiento-mes.component';
+import {
+  calcularDiasAusenciaEnPeriodo,
+  fechaHastaDesdeCantidad,
+} from '../../utils/novedades-ausencia-rango.util';
+import {
+  esCodigoMotivoAusencia,
+  esRegistroAusenciaLicencia,
+  etiquetaMotivoAusencia,
+} from '../../models/motivo-ausencia.model';
 import {
   type FormularioNovedadMasiva,
   type ResultadoFilaAsignacionMasiva,
@@ -169,11 +192,14 @@ type MovimientoGestionUnificadoRow = {
   recurrente: RecurrenteDetalleRow | null;
 };
 
+type ModoFormularioMensual = 'monetario' | 'ausencia_licencia';
+
 type NovedadForm = {
   periodo: string;
   idPersona: number | null;
   idContrato: number | null;
   idConcepto: number | null;
+  codigoMotivoAusencia: string;
   categoria: NovedadMensualCategoria;
   tipoMovimiento: NovedadMensualTipoMovimiento;
   cantidad: number | null;
@@ -182,6 +208,7 @@ type NovedadForm = {
   moneda: string;
   origen: NovedadMensualOrigen;
   fechaEvento: string;
+  fechaHasta: string;
   observacion: string;
   referenciaExterna: string;
 };
@@ -261,6 +288,7 @@ function formInicial(periodo: string): NovedadForm {
     idPersona: null,
     idContrato: null,
     idConcepto: null,
+    codigoMotivoAusencia: '',
     categoria: 'haber_variable',
     tipoMovimiento: 'haber',
     cantidad: null,
@@ -269,6 +297,7 @@ function formInicial(periodo: string): NovedadForm {
     moneda: 'CLP',
     origen: 'manual',
     fechaEvento: '',
+    fechaHasta: '',
     observacion: '',
     referenciaExterna: '',
   };
@@ -285,10 +314,9 @@ function formInicial(periodo: string): NovedadForm {
     DataGridComponent,
     DataGridCellDirective,
     MessageBoxComponent,
-    SearchSelectComponent,
-    CalendarInputComponent,
-    FieldHelpTipComponent,
     NovedadesFormularioMovimientoMesComponent,
+    NovedadesFormularioAusenciaLicenciaComponent,
+    NovedadesFormularioRecurrenteComponent,
   ],
   templateUrl: './novedades-mensuales-container.html',
   styleUrl: './novedades-mensuales-container.css',
@@ -317,8 +345,6 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly categorias = NOVEDAD_MENSUAL_CATEGORIAS;
   readonly origenes = NOVEDAD_MENSUAL_ORIGENES;
   readonly tiposMovimiento = NOVEDAD_MENSUAL_TIPOS_MOVIMIENTO;
-  readonly periodicidadesHd = PERIODICIDADES_HD;
-
   readonly periodoActual = computed(() => this.periodoActivo.periodoYm());
   readonly fechaReferenciaConceptos = computed(() => new Date(`${this.periodoActual()}-01T00:00:00`));
   readonly periodoFechaMin = computed(() => primerDiaSqlDesdeYm(this.periodoActual()));
@@ -362,8 +388,10 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly recurrenteVigenciaFin = signal<string>('');
   readonly recurrenteObservacion = signal<string>('');
   readonly recurrenteErrores = signal<RecurrenteFormErrores>({});
+  readonly recurrenteValidacionActiva = signal(false);
   readonly recurrenteCerrarPendiente = signal<RecurrenteAccionPendiente>(null);
   readonly novedadEditando = signal<NovedadMensual | null>(null);
+  readonly modoFormularioMensual = signal<ModoFormularioMensual>('monetario');
   readonly form = signal<NovedadForm>(formInicial(''));
   readonly formSnapshot = signal('');
   readonly formErrores = signal<NovedadFormErrores>({});
@@ -501,57 +529,55 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       });
   });
   readonly formConCambios = computed(() => this.formAbierto() && this.serializarForm(this.form()) !== this.formSnapshot());
+  readonly esFormularioAusenciaLicencia = computed(() => this.modoFormularioMensual() === 'ausencia_licencia');
+  readonly modosRegistroMes = OPCIONES_MODO_REGISTRO_MES;
+  readonly hintModoRegistroMesActivo = computed(() => hintModoRegistroMes(this.modoFormularioMensual()));
+  readonly tabActivoRegistroMes = computed(() => tabIdModoRegistroMes(this.modoFormularioMensual()));
   readonly modalMensualDesdeGestion = computed(() => this.retornoGestionTrabajador() != null);
+  readonly modalRecurrenteDesdeGestion = computed(() => this.retornoGestionTrabajador() != null);
+  readonly recurrenteFormularioValores = computed(() => ({
+    idConcepto: this.recurrenteConceptoId(),
+    idContrato: this.recurrenteIdContrato(),
+    tipoValor: this.recurrenteTipoValor(),
+    periodicidad: this.recurrentePeriodicidad(),
+    monto: this.recurrenteMonto(),
+    porcentaje: this.recurrentePorcentaje(),
+    vigenciaInicio: this.recurrenteVigenciaInicio(),
+    vigenciaFin: this.recurrenteVigenciaFin(),
+    observacion: this.recurrenteObservacion(),
+  }));
   readonly resumenFormulario = computed(() => {
     const form = this.form();
     const trabajadorCtx = this.retornoGestionTrabajador();
     const trabajador =
       trabajadorCtx?.trabajador ?? (form.idPersona == null ? '' : this.etiquetaTrabajador(form.idPersona));
-    return resumenFormularioMensualIndividual(form, {
+    const ctxBase = {
       requiereTrabajador: !this.formTrabajadorBloqueado(),
       trabajadorEtiqueta: trabajador,
       periodoEtiqueta: this.periodoActivo.etiqueta(),
+      ocultarPeriodoEnResumen: this.modalMensualDesdeGestion(),
+      tieneContextoTrabajador: !!trabajadorCtx,
+    };
+    if (this.esFormularioAusenciaLicencia()) {
+      return resumenFormularioAusenciaLicenciaIndividual(form, ctxBase);
+    }
+    return resumenFormularioMensualIndividual(form, {
+      ...ctxBase,
       tipoEtiqueta: this.etiquetaTipoMovimiento(form.tipoMovimiento),
       conceptoEtiqueta: form.idConcepto == null ? '' : this.etiquetaConcepto(form.idConcepto),
       montoFormateado: formatearMontoFormulario(form.monto, form.moneda),
-      ocultarPeriodoEnResumen: this.modalMensualDesdeGestion(),
-      tieneContextoTrabajador: !!trabajadorCtx,
     });
   });
   readonly resumenRecurrenteFormulario = computed(() => {
     const trabajador = this.recurrenteTrabajador();
     const concepto = this.conceptoRecurrenteSeleccionado();
-    const conceptoEtiqueta = concepto ? `${concepto.nombre} (${concepto.codigo})` : '';
-    const valor =
-      this.recurrenteTipoValor() === 'FIJO'
-        ? this.recurrenteMonto() > 0
-          ? `CLP ${Number(this.recurrenteMonto()).toLocaleString('es-CL')}`
-          : ''
-        : this.recurrentePorcentaje() > 0
-          ? `${this.recurrentePorcentaje()}%`
-          : '';
-    const vigenciaInicio = this.recurrenteVigenciaInicio();
-    const faltantes: string[] = [];
-    if (!conceptoEtiqueta) {
-      faltantes.push('seleccionar concepto');
-    }
-    if (!valor) {
-      faltantes.push('indicar valor');
-    }
-    if (!vigenciaInicio) {
-      faltantes.push('indicar vigencia inicio');
-    }
-    const listo = !!trabajador && !!conceptoEtiqueta && !!valor && !!vigenciaInicio;
-    const vigenciaEtiqueta = vigenciaInicio ? this.formatearFecha(vigenciaInicio.slice(0, 10)) : '';
-    return {
-      trabajador: trabajador?.trabajador ?? '',
-      concepto: conceptoEtiqueta,
-      valor,
-      periodo: this.periodoActivo.etiqueta(),
-      principal: listo ? `${conceptoEtiqueta} · ${valor} · desde ${vigenciaEtiqueta}` : '',
-      faltante: faltantes.length > 0 ? `Falta ${faltantes.join(' y ')}.` : '',
-      visible: !!trabajador && (!!conceptoEtiqueta || !!valor || !!vigenciaInicio),
-    };
+    return resumenFormularioRecurrenteIndividual(this.recurrenteFormularioValores(), {
+      trabajadorEtiqueta: trabajador?.trabajador ?? '',
+      conceptoEtiqueta: concepto ? `${concepto.nombre} (${concepto.codigo})` : '',
+      periodoEtiqueta: this.periodoActivo.etiqueta(),
+      ocultarPeriodoEnResumen: this.modalRecurrenteDesdeGestion(),
+      tieneContextoTrabajador: !!trabajador,
+    });
   });
 
   readonly resumenFormularioMasivo = computed(() => {
@@ -1106,6 +1132,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
 
   abrirNuevo(): void {
     this.novedadEditando.set(null);
+    this.modoFormularioMensual.set('monetario');
     this.contratosPersona.set([]);
     this.abrirFormularioCon(formInicial(this.periodoActual()));
   }
@@ -1525,6 +1552,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     this.recurrenteVigenciaFin.set(recurrente?.asignacion.vigenciaFin ?? '');
     this.recurrenteObservacion.set(recurrente?.asignacion.observacion ?? '');
     this.recurrenteErrores.set({});
+    this.recurrenteValidacionActiva.set(false);
     this.contratosPersona.set([]);
     this.recurrenteIdContrato.set(recurrente?.asignacion.idContrato ?? null);
     this.recurrenteFormAbierto.set(true);
@@ -1623,11 +1651,15 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       return;
     }
     this.novedadEditando.set(novedad);
+    this.modoFormularioMensual.set(
+      esRegistroAusenciaLicencia(novedad.categoria) ? 'ausencia_licencia' : 'monetario',
+    );
     this.abrirFormularioCon({
       periodo: novedad.periodo,
       idPersona: novedad.idPersona,
       idContrato: novedad.idContrato,
       idConcepto: novedad.idConcepto,
+      codigoMotivoAusencia: novedad.codigoMotivoAusencia ?? '',
       categoria: novedad.categoria,
       tipoMovimiento: novedad.tipoMovimiento,
       cantidad: novedad.cantidad,
@@ -1636,6 +1668,9 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       moneda: novedad.moneda,
       origen: novedad.origen,
       fechaEvento: novedad.fechaEvento ?? '',
+      fechaHasta: esRegistroAusenciaLicencia(novedad.categoria)
+        ? fechaHastaDesdeCantidad(novedad.fechaEvento, novedad.cantidad)
+        : '',
       observacion: novedad.observacion ?? '',
       referenciaExterna: novedad.referenciaExterna ?? '',
     });
@@ -1652,6 +1687,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     this.recurrenteEditandoId.set(null);
     this.recurrenteTrabajador.set(null);
     this.recurrenteErrores.set({});
+    this.recurrenteValidacionActiva.set(false);
     this.contratosPersona.set([]);
     this.restaurarScrollPagina();
   }
@@ -1766,7 +1802,11 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
 
   actualizarRecurrenteVigenciaInicio(valor: string): void {
     this.recurrenteVigenciaInicio.set(valor);
+    if (this.recurrenteVigenciaFin() && valor > this.recurrenteVigenciaFin()) {
+      this.recurrenteVigenciaFin.set('');
+    }
     this.limpiarErrorRecurrente('vigenciaInicio');
+    this.limpiarErrorRecurrente('vigenciaFin');
   }
 
   actualizarRecurrenteVigenciaFin(valor: string): void {
@@ -1774,8 +1814,47 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     this.limpiarErrorRecurrente('vigenciaFin');
   }
 
+  manejarCambioCampoFormularioRecurrente(event: FormularioRecurrenteCambio): void {
+    const campo = event.campo;
+    switch (campo) {
+      case 'vigenciaInicio':
+        this.actualizarRecurrenteVigenciaInicio(String(event.valor ?? ''));
+        return;
+      case 'vigenciaFin':
+        this.actualizarRecurrenteVigenciaFin(String(event.valor ?? ''));
+        return;
+      case 'monto':
+        this.actualizarRecurrenteMonto(Number(event.valor ?? 0));
+        return;
+      case 'porcentaje':
+        this.actualizarRecurrentePorcentaje(Number(event.valor ?? 0));
+        return;
+      case 'periodicidad':
+        this.actualizarRecurrentePeriodicidad(event.valor as PeriodicidadHd);
+        return;
+      case 'tipoValor':
+        this.onTipoValorRecurrenteChange(String(event.valor));
+        return;
+      case 'idContrato':
+        this.recurrenteIdContrato.set(event.valor as number | null);
+        return;
+      case 'observacion':
+        this.recurrenteObservacion.set(String(event.valor ?? ''));
+        return;
+      default:
+        return;
+    }
+  }
+
   errorRecurrente(campo: RecurrenteFormCampo): string {
-    return this.recurrenteErrores()[campo] ?? '';
+    return this.recurrenteValidacionActiva() ? (this.recurrenteErrores()[campo] ?? '') : '';
+  }
+
+  etiquetaGuardarRecurrente(): string {
+    if (this.recurrenteGuardando()) {
+      return 'Guardando...';
+    }
+    return this.recurrenteEditandoId() == null ? 'Registrar recurrente' : 'Guardar cambios';
   }
 
   async guardarRecurrente(): Promise<void> {
@@ -1784,13 +1863,21 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       return;
     }
 
+    this.recurrenteValidacionActiva.set(true);
+    const pendientes = pendientesFormularioRecurrenteIndividual(this.recurrenteFormularioValores());
     const payload = this.payloadRecurrente(trabajador.idPersona);
     const errores = this.validarRecurrente(payload);
+    if (pendientes.length > 0) {
+      this.avisoFormularioPendiente.set(avisoFormularioPendienteUi(pendientes));
+    }
     if (Object.keys(errores).length > 0) {
       this.recurrenteErrores.set(errores);
+    }
+    if (pendientes.length > 0 || Object.keys(errores).length > 0) {
       return;
     }
 
+    this.recurrenteErrores.set({});
     this.recurrenteGuardando.set(true);
     try {
       const editandoId = this.recurrenteEditandoId();
@@ -1902,9 +1989,93 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     this.actualizarForm('idConcepto', idConcepto);
   }
 
+  cambiarModoFormularioMensual(modo: ModoFormularioMensual): void {
+    if (this.novedadEditando() || this.modoFormularioMensual() === modo) {
+      return;
+    }
+    this.modoFormularioMensual.set(modo);
+    this.formValidacionActiva.set(false);
+    this.formErrores.set({});
+    if (modo === 'monetario') {
+      this.form.update((actual) => ({
+        ...actual,
+        codigoMotivoAusencia: '',
+        categoria: 'haber_variable',
+        tipoMovimiento: 'haber',
+        cantidad: null,
+        unidad: '',
+        monto: null,
+        referenciaExterna: '',
+        fechaEvento: '',
+        fechaHasta: '',
+      }));
+      return;
+    }
+    this.form.update((actual) => ({
+      ...actual,
+      idConcepto: null,
+      codigoMotivoAusencia: '',
+      categoria: 'licencia_permiso',
+      tipoMovimiento: 'informativo',
+      cantidad: null,
+      unidad: 'dias',
+      monto: null,
+      moneda: 'CLP',
+      fechaEvento: '',
+      fechaHasta: '',
+    }));
+  }
+
+  onMotivoAusenciaChange(codigo: string): void {
+    if (!esCodigoMotivoAusencia(codigo)) {
+      this.actualizarForm('codigoMotivoAusencia', codigo);
+      return;
+    }
+    const resuelto = aplicarMotivoAusenciaLicencia(codigo);
+    this.form.update((actual) => ({
+      ...actual,
+      ...resuelto,
+      unidad: 'dias',
+      monto: null,
+      idConcepto: null,
+    }));
+    this.limpiarErrorCampo('codigoMotivoAusencia');
+  }
+
+  manejarCambioCampoFormularioAusencia(event: FormularioAusenciaLicenciaCambio): void {
+    const campo = event.campo;
+    if (campo === 'fechaEvento' || campo === 'fechaHasta') {
+      this.actualizarRangoAusencia(campo, String(event.valor ?? ''));
+      return;
+    }
+    this.actualizarFormCampo(campo as NovedadFormCampo, event.valor as NovedadForm[NovedadFormCampo]);
+  }
+
+  private actualizarRangoAusencia(campo: 'fechaEvento' | 'fechaHasta', valor: string): void {
+    this.form.update((actual) => {
+      const next = { ...actual, [campo]: valor };
+      if (campo === 'fechaEvento' && next.fechaHasta && valor > next.fechaHasta) {
+        next.fechaHasta = '';
+      }
+      next.cantidad = calcularDiasAusenciaEnPeriodo(
+        next.fechaEvento,
+        next.fechaHasta,
+        this.periodoActual(),
+      );
+      return next;
+    });
+    this.limpiarErrorCampo(campo);
+    this.limpiarErrorCampo('cantidad');
+    if (campo === 'fechaEvento') {
+      this.limpiarErrorCampo('fechaHasta');
+    }
+  }
+
   async guardarFormulario(): Promise<void> {
     this.formValidacionActiva.set(true);
-    const pendientes = pendientesFormularioMensualIndividual(this.form(), !this.formTrabajadorBloqueado());
+    const pendientes = this.esFormularioAusenciaLicencia()
+      ? pendientesFormularioAusenciaLicenciaIndividual(this.form(), !this.formTrabajadorBloqueado())
+      : pendientesFormularioMensualIndividual(this.form(), !this.formTrabajadorBloqueado());
     const input = this.inputDesdeForm();
     const resultado = validarNovedadMensualInput({ ...input, estado: this.novedadEditando()?.estado ?? 'borrador' });
     if (pendientes.length > 0) {
@@ -2405,21 +2576,23 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
 
   private inputDesdeForm(): CrearNovedadMensualInput & ActualizarNovedadMensualInput {
     const form = this.form();
+    const esAusencia = this.esFormularioAusenciaLicencia();
     return {
       periodo: this.periodoActual().trim(),
       idPersona: form.idPersona ?? 0,
       idContrato: form.idContrato,
-      idConcepto: form.idConcepto ?? 0,
+      idConcepto: esAusencia ? null : (form.idConcepto ?? 0),
       categoria: form.categoria,
       tipoMovimiento: form.tipoMovimiento,
       cantidad: form.cantidad,
-      unidad: form.unidad.trim() || null,
-      monto: form.monto,
+      unidad: esAusencia ? 'dias' : form.unidad.trim() || null,
+      monto: esAusencia ? null : form.monto,
       moneda: form.moneda.trim() || 'CLP',
       origen: form.origen,
       fechaEvento: form.fechaEvento.trim() || null,
       observacion: form.observacion.trim() || null,
       referenciaExterna: form.referenciaExterna.trim() || null,
+      codigoMotivoAusencia: esAusencia ? form.codigoMotivoAusencia.trim() || null : null,
     };
   }
 
@@ -2461,10 +2634,10 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       errores.periodicidad = 'Selecciona una periodicidad válida.';
     }
     if (!payload.vigenciaInicio) {
-      errores.vigenciaInicio = 'Indica la fecha de inicio.';
+      errores.vigenciaInicio = 'Indica la fecha desde.';
     }
     if (payload.vigenciaFin && payload.vigenciaInicio && payload.vigenciaFin < payload.vigenciaInicio) {
-      errores.vigenciaFin = 'La vigencia fin debe ser mayor o igual al inicio.';
+      errores.vigenciaFin = 'La fecha hasta debe ser mayor o igual a la fecha desde.';
     }
     if (payload.tipoValor === 'FIJO' && (payload.monto == null || payload.monto < 0)) {
       errores.monto = 'El monto debe ser mayor o igual a 0.';
@@ -2527,6 +2700,12 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
         case 'NOVEDAD_CANTIDAD_REQUERIDA':
           formErrores.cantidad ??= mensaje;
           break;
+        case 'NOVEDAD_MOTIVO_AUSENCIA_REQUERIDO':
+          formErrores.codigoMotivoAusencia ??= mensaje;
+          break;
+        case 'NOVEDAD_FOLIO_LICENCIA_REQUERIDO':
+          formErrores.referenciaExterna ??= mensaje;
+          break;
         case 'NOVEDAD_MONEDA_INVALIDA':
           formErrores.moneda ??= mensaje;
           break;
@@ -2583,7 +2762,12 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
 
   private aGridRow(novedad: NovedadMensual): NovedadGridRow {
     const trabajadorEtiqueta = this.etiquetaTrabajador(novedad.idPersona);
-    const conceptoEtiqueta = this.etiquetaConcepto(novedad.idConcepto);
+    const conceptoEtiqueta =
+      novedad.idConcepto != null
+        ? this.etiquetaConcepto(novedad.idConcepto)
+        : novedad.codigoMotivoAusencia
+          ? `${etiquetaMotivoAusencia(novedad.codigoMotivoAusencia)}${novedad.cantidad != null ? ` · ${novedad.cantidad} días` : ''}`
+          : this.etiquetaCategoria(novedad.categoria);
     const categoriaEtiqueta = this.etiquetaCategoria(novedad.categoria);
     const tipoCategoriaEtiqueta = `${this.etiquetaTipoMovimiento(novedad.tipoMovimiento)} / ${categoriaEtiqueta}`;
     const estadoEtiqueta = this.etiquetaEstado(novedad.estado);

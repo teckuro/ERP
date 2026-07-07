@@ -26,6 +26,8 @@ function novedad(over: Partial<NovedadMensual> = {}): NovedadMensual {
     estado: 'aprobada',
     observacion: null,
     referenciaExterna: null,
+    codigoMotivoAusencia: null,
+    idLicencia: null,
     creadoPor: null,
     aprobadoPor: null,
     fechaAprobacion: null,

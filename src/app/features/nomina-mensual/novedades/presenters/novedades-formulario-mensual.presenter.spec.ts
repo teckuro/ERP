@@ -4,6 +4,8 @@ import {
   avisoFormularioPendienteUi,
   formularioMasivoListo,
   formularioMensualIndividualListo,
+  hintModoRegistroMes,
+  OPCIONES_MODO_REGISTRO_MES,
   pendientesFormularioMasivo,
   pendientesFormularioMasivoCompleto,
   pendientesFormularioMensualIndividual,
@@ -87,5 +89,14 @@ describe('novedades-formulario-mensual.presenter', () => {
     expect(pendientesFormularioMasivoCompleto({ idConcepto: 1, monto: 1 }, 0)).toEqual([
       'Trabajadores seleccionados',
     ]);
+  });
+
+  it('expone opciones y pistas del selector de registro del mes', () => {
+    expect(OPCIONES_MODO_REGISTRO_MES.map((item) => item.label)).toEqual([
+      'Haber o descuento',
+      'Ausencia o licencia',
+    ]);
+    expect(hintModoRegistroMes('monetario')).toContain('ajuste puntual');
+    expect(hintModoRegistroMes('ausencia_licencia')).toContain('licencia médica');
   });
 });

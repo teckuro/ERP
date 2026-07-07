@@ -18,7 +18,7 @@ export function mapRowToNovedadMensual(row: NovedadRemuneracionPeriodoRow): Nove
     periodo: row.periodo.trim(),
     idPersona: row.id_persona,
     idContrato: row.id_contrato ?? null,
-    idConcepto: row.id_concepto,
+    idConcepto: row.id_concepto ?? null,
     categoria: row.categoria as NovedadMensualCategoria,
     tipoMovimiento: row.tipo_movimiento as NovedadMensualTipoMovimiento,
     cantidad: row.cantidad == null ? null : Number(row.cantidad),
@@ -30,6 +30,8 @@ export function mapRowToNovedadMensual(row: NovedadRemuneracionPeriodoRow): Nove
     estado: row.estado as NovedadMensualEstado,
     observacion: row.observacion ?? null,
     referenciaExterna: row.referencia_externa ?? null,
+    codigoMotivoAusencia: row.codigo_motivo_ausencia ?? null,
+    idLicencia: row.id_licencia ?? null,
     creadoPor: row.creado_por ?? null,
     aprobadoPor: row.aprobado_por ?? null,
     fechaAprobacion: row.fecha_aprobacion ?? null,
@@ -45,7 +47,7 @@ export function mapCrearNovedadMensualToInsert(
     periodo: input.periodo.trim(),
     id_persona: input.idPersona,
     id_contrato: input.idContrato ?? null,
-    id_concepto: input.idConcepto,
+    id_concepto: input.idConcepto ?? null,
     categoria: input.categoria,
     tipo_movimiento: input.tipoMovimiento,
     cantidad: input.cantidad ?? null,
@@ -57,6 +59,8 @@ export function mapCrearNovedadMensualToInsert(
     estado: 'borrador',
     observacion: input.observacion?.trim() ? input.observacion.trim() : null,
     referencia_externa: input.referenciaExterna?.trim() ? input.referenciaExterna.trim() : null,
+    codigo_motivo_ausencia: input.codigoMotivoAusencia?.trim() ? input.codigoMotivoAusencia.trim() : null,
+    id_licencia: input.idLicencia ?? null,
     creado_por: input.creadoPor ?? null,
   };
 }
@@ -84,6 +88,12 @@ export function mapActualizarNovedadMensualToUpdate(
   }
   if (input.referenciaExterna !== undefined) {
     patch.referencia_externa = input.referenciaExterna?.trim() ? input.referenciaExterna.trim() : null;
+  }
+  if (input.codigoMotivoAusencia !== undefined) {
+    patch.codigo_motivo_ausencia = input.codigoMotivoAusencia?.trim() ? input.codigoMotivoAusencia.trim() : null;
+  }
+  if (input.idLicencia !== undefined) {
+    patch.id_licencia = input.idLicencia;
   }
   return patch;
 }

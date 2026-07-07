@@ -9,6 +9,36 @@
 
 ---
 
+## 2026-07-07 — Movimientos: tabbar registro del mes
+
+- **Selector tipo de registro:** control segmentado (paridad filtros Gestionar), pista contextual según modo activo, ARIA tab/tabpanel.
+- **Archivos:** presenter modos, container HTML/CSS local; sin globales.
+
+---
+
+## 2026-07-07 — Movimientos: modal recurrente alineado a mensual
+
+- **Formulario extraído** a `novedades-formulario-recurrente` con patrón `nfm-form` (Desde/Hasta, periodicidad en español).
+- **Pie:** resumen operativo, **Volver a gestión** desde hub, aviso MessageBox al guardar con pendientes.
+- **Archivos:** presenter + componente recurrente, container HTML/TS; sin globales.
+
+---
+
+## 2026-07-07 — Movimientos: rango desde/hasta en ausencia/licencia
+
+- **Formulario ausencia:** campos Desde y Hasta (calendar); Días calculado automáticamente y acotado al mes del período.
+- **Archivos:** `novedades-ausencia-rango.util.ts`, formulario ausencia, container; sin globales.
+
+---
+
+## 2026-07-07 — Movimientos: flujo ausencia/licencia
+
+- **Modal:** selector Haber o descuento | Ausencia o licencia; formulario días sin concepto catálogo.
+- **Copy:** motivo RRHH, días, folio LM; grilla muestra «Licencia médica · N días».
+- **Archivos:** `novedades-formulario-ausencia-licencia/*`, container, rules, migración SQL; sin globales.
+
+---
+
 ## 2026-07-07 — Movimientos: asignación masiva en grilla
 
 - **Grilla:** selección múltiple + acción «Asignar movimiento del mes»; modal compartido; incompletos no seleccionables.

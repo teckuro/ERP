@@ -1,0 +1,195 @@
+<form class="nfm-form" novalidate>
+  <h3 class="nfm-form__title">Datos del recurrente</h3>
+
+  <div class="nfm-form__grid">
+    <label class="nfm-field nfm-field--full" [attr.data-nfm-error]="!!errorCampo('idConcepto')">
+      <span class="nfm-field__label">Concepto</span>
+      <app-search-select
+        [id]="idCampo('concepto')"
+        placeholder="Seleccione concepto"
+        searchPlaceholder="Buscar concepto"
+        emptyText="No hay conceptos disponibles"
+        [options]="conceptoOptions"
+        [ngModel]="formulario.idConcepto"
+        [ngModelOptions]="{ standalone: true }"
+        [disabled]="disabled || soporteLoading"
+        [clearable]="true"
+        (ngModelChange)="onConceptoChange($event)"
+      ></app-search-select>
+      @if (errorCampo('idConcepto')) {
+        <p class="nfm-field__error">{{ errorCampo('idConcepto') }}</p>
+      }
+    </label>
+
+    @if (contratosPersona.length > 1) {
+      <label class="nfm-field nfm-field--full">
+        <span class="nfm-field__label">Contrato</span>
+        <select
+          class="nfm-input"
+          [disabled]="disabled || contratosLoading"
+          [ngModel]="formulario.idContrato"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="emitirCampo('idContrato', $event == null || $event === '' ? null : +$event)"
+        >
+          <option [ngValue]="null">Sin contrato específico</option>
+          @for (contrato of contratosPersona; track contrato.idContrato) {
+            <option [ngValue]="contrato.idContrato">{{ contrato.etiqueta }}</option>
+          }
+        </select>
+      </label>
+    }
+
+    <label class="nfm-field" [attr.data-nfm-error]="!!errorCampo('tipoValor')">
+      <span class="nfm-field__label">Modalidad</span>
+      <select
+        class="nfm-input"
+        [disabled]="disabled"
+        [ngModel]="formulario.tipoValor"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="emitirCampo('tipoValor', $event === 'PORCENTAJE' ? 'PORCENTAJE' : 'FIJO')"
+      >
+        <option value="FIJO">Monto fijo</option>
+        <option value="PORCENTAJE">Porcentaje</option>
+      </select>
+    </label>
+
+    <label class="nfm-field" [attr.data-nfm-error]="!!errorCampo('periodicidad')">
+      <span class="nfm-field__label">Periodicidad</span>
+      <select
+        class="nfm-input"
+        [class.nfm-input--invalid]="!!errorCampo('periodicidad')"
+        [disabled]="disabled"
+        [ngModel]="formulario.periodicidad"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="onPeriodicidadChange($event)"
+      >
+        @for (periodicidad of periodicidades; track periodicidad) {
+          <option [ngValue]="periodicidad">{{ etiquetaPeriodicidad(periodicidad) }}</option>
+        }
+      </select>
+      @if (errorCampo('periodicidad')) {
+        <p class="nfm-field__error">{{ errorCampo('periodicidad') }}</p>
+      }
+    </label>
+
+    @if (formulario.tipoValor === 'FIJO') {
+      <label class="nfm-field" [attr.data-nfm-error]="!!errorCampo('monto')">
+        <span class="nfm-field__label">Monto</span>
+        <input
+          type="number"
+          min="0"
+          step="1"
+          class="nfm-input"
+          placeholder="Ej: 80000"
+          [class.nfm-input--invalid]="!!errorCampo('monto')"
+          [disabled]="disabled"
+          [ngModel]="formulario.monto"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="onMontoChange($event)"
+        />
+        @if (errorCampo('monto')) {
+          <p class="nfm-field__error">{{ errorCampo('monto') }}</p>
+        }
+      </label>
+    } @else {
+      <label class="nfm-field" [attr.data-nfm-error]="!!errorCampo('porcentaje')">
+        <span class="nfm-field__label">Porcentaje</span>
+        <input
+          type="number"
+          min="0"
+          max="100"
+          step="0.01"
+          class="nfm-input"
+          placeholder="Ej: 7,5"
+          [class.nfm-input--invalid]="!!errorCampo('porcentaje')"
+          [disabled]="disabled"
+          [ngModel]="formulario.porcentaje"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="onPorcentajeChange($event)"
+        />
+        @if (errorCampo('porcentaje')) {
+          <p class="nfm-field__error">{{ errorCampo('porcentaje') }}</p>
+        }
+      </label>
+    }
+
+    <label class="nfm-field" [attr.data-nfm-error]="!!errorCampo('vigenciaInicio')">
+      <span class="nfm-field__label-row">
+        <span>Desde</span>
+        <app-field-help-tip text="Inicio de la vigencia del recurrente."></app-field-help-tip>
+      </span>
+      <app-calendar-input
+        [id]="idCampo('desde')"
+        placeholder="dd/mm/aaaa"
+        [invalid]="!!errorCampo('vigenciaInicio')"
+        [disabled]="disabled"
+        [ngModel]="formulario.vigenciaInicio"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="emitirCampo('vigenciaInicio', $event ?? '')"
+      ></app-calendar-input>
+      @if (errorCampo('vigenciaInicio')) {
+        <p class="nfm-field__error">{{ errorCampo('vigenciaInicio') }}</p>
+      }
+    </label>
+
+    <label class="nfm-field" [attr.data-nfm-error]="!!errorCampo('vigenciaFin')">
+      <span class="nfm-field__label-row">
+        <span>Hasta</span>
+        <app-field-help-tip text="Opcional. Dejar vacío si no tiene término definido."></app-field-help-tip>
+      </span>
+      <app-calendar-input
+        [id]="idCampo('hasta')"
+        placeholder="dd/mm/aaaa"
+        [min]="minFechaHasta"
+        [invalid]="!!errorCampo('vigenciaFin')"
+        [disabled]="disabled"
+        [clearable]="true"
+        [ngModel]="formulario.vigenciaFin"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="emitirCampo('vigenciaFin', $event ?? '')"
+      ></app-calendar-input>
+      @if (errorCampo('vigenciaFin')) {
+        <p class="nfm-field__error">{{ errorCampo('vigenciaFin') }}</p>
+      }
+    </label>
+
+    <label class="nfm-field nfm-field--full">
+      <span class="nfm-field__label">Observación</span>
+      <textarea
+        class="nfm-textarea"
+        rows="2"
+        [disabled]="disabled"
+        [ngModel]="formulario.observacion"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="emitirCampo('observacion', $event)"
+      ></textarea>
+    </label>
+  </div>
+
+  @if (mostrarCuotas) {
+    <details class="nfm-details">
+      <summary class="nfm-details__summary">Cuotas (préstamo o anticipo)</summary>
+      <p class="nfm-details__help">
+        Para préstamos o descuentos pactados en varios meses, use cuotas al registrar el recurrente. Este bloque se habilitará en una fase posterior.
+      </p>
+      <div class="nfm-form__grid nfm-form__grid--cuotas" aria-disabled="true">
+        <label class="nfm-field">
+          <span class="nfm-field__label">Cantidad de cuotas</span>
+          <input type="number" class="nfm-input" disabled />
+        </label>
+        <label class="nfm-field">
+          <span class="nfm-field__label">Monto por cuota</span>
+          <input type="number" class="nfm-input" disabled />
+        </label>
+        <label class="nfm-field">
+          <span class="nfm-field__label">Cuota inicial</span>
+          <input type="month" class="nfm-input" disabled />
+        </label>
+        <label class="nfm-field">
+          <span class="nfm-field__label">Saldo referencial</span>
+          <input type="number" class="nfm-input" disabled />
+        </label>
+      </div>
+    </details>
+  }
+</form>

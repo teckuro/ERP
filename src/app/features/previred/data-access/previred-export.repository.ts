@@ -212,7 +212,7 @@ export class PreviredExportRepository {
   ): Promise<PreviredExportacionRegistro> {
     const { data, error } = await this.supabase.rpc('registrar_exportacion_previred', {
       p_id_liquidacion_periodo: params.idLiquidacionPeriodo,
-      p_id_nomina_periodo: params.idNominaPeriodo,
+      p_id_nomina_periodo: params.idNominaPeriodo ?? undefined,
       p_total_lineas: params.totalLineas,
       p_total_trabajadores: params.totalTrabajadores,
       p_conceptos_sin_mapeo: params.conceptosSinMapeo,

@@ -15,6 +15,11 @@ import {
   motivoConceptoReservadoContrato,
   type ConceptoReservadoContratoInput,
 } from '../../../haberes-descuentos/rules/concepto-contrato-reservado.rules';
+import {
+  esMotivoLicenciaMedicaMotor,
+  esRegistroAusenciaLicencia,
+  requiereFolioLicencia,
+} from '../models/motivo-ausencia.model';
 
 export const NOVEDAD_MENSUAL_ERRORES = [
   'NOVEDAD_PERIODO_INVALIDO',
@@ -33,6 +38,8 @@ export const NOVEDAD_MENSUAL_ERRORES = [
   'NOVEDAD_MONTO_REQUERIDO',
   'NOVEDAD_OBSERVACION_REQUERIDA',
   'NOVEDAD_CONCEPTO_RESERVADO',
+  'NOVEDAD_MOTIVO_AUSENCIA_REQUERIDO',
+  'NOVEDAD_FOLIO_LICENCIA_REQUERIDO',
 ] as const;
 
 export type NovedadMensualErrorCodigo = (typeof NOVEDAD_MENSUAL_ERRORES)[number];
@@ -104,6 +111,18 @@ export function esTipoMovimientoNovedadMensualValido(
 export function normalizarMoneda(moneda: string | null | undefined): string {
   const value = moneda?.trim().toUpperCase();
   return value ? value : 'CLP';
+}
+
+export function requiereConceptoCatalogo(
+  categoria: NovedadMensualCategoria | string | null | undefined,
+): boolean {
+  return !esRegistroAusenciaLicencia(categoria ?? '');
+}
+
+export function requiereMotivoAusencia(
+  categoria: NovedadMensualCategoria | string | null | undefined,
+): boolean {
+  return esRegistroAusenciaLicencia(categoria ?? '');
 }
 
 export function requiereCantidad(
@@ -207,10 +226,33 @@ export function validarNovedadMensualInput(
   if (input.idPersona == null || input.idPersona <= 0) {
     errores.push(error('NOVEDAD_PERSONA_REQUERIDA', 'Debe indicar un trabajador valido.'));
   }
-  if (input.idConcepto == null || input.idConcepto <= 0) {
+  const requiereConcepto = esCategoriaNovedadMensualValida(categoria) && requiereConceptoCatalogo(categoria);
+  if (requiereConcepto && (input.idConcepto == null || input.idConcepto <= 0)) {
     errores.push(error('NOVEDAD_CONCEPTO_REQUERIDO', 'Debe indicar un concepto valido.'));
   }
-  if (options.concepto && esConceptoReservadoContrato(options.concepto)) {
+  if (
+    esCategoriaNovedadMensualValida(categoria)
+    && requiereMotivoAusencia(categoria)
+    && !input.codigoMotivoAusencia?.trim()
+  ) {
+    errores.push(error('NOVEDAD_MOTIVO_AUSENCIA_REQUERIDO', 'Debe indicar el motivo de ausencia o licencia.'));
+  }
+  if (
+    esCategoriaNovedadMensualValida(categoria)
+    && requiereMotivoAusencia(categoria)
+    && requiereFolioLicencia(input.codigoMotivoAusencia)
+    && !input.referenciaExterna?.trim()
+  ) {
+    errores.push(error('NOVEDAD_FOLIO_LICENCIA_REQUERIDO', 'Debe indicar el folio de la licencia medica.'));
+  }
+  if (
+    esCategoriaNovedadMensualValida(categoria)
+    && requiereMotivoAusencia(categoria)
+    && (input.cantidad == null || input.cantidad <= 0)
+  ) {
+    errores.push(error('NOVEDAD_CANTIDAD_REQUERIDA', 'Debe indicar la cantidad de dias.'));
+  }
+  if (options.concepto && input.idConcepto != null && esConceptoReservadoContrato(options.concepto)) {
     errores.push(error('NOVEDAD_CONCEPTO_RESERVADO', motivoConceptoReservadoContrato(options.concepto)));
   }
   if (!esCategoriaNovedadMensualValida(categoria)) {
@@ -241,6 +283,9 @@ export function validarNovedadMensualInput(
     }
     if (requiereMonto(categoria, tipoMovimiento) && input.monto == null) {
       errores.push(error('NOVEDAD_MONTO_REQUERIDO', 'La novedad requiere monto antes de aprobarse.'));
+    }
+    if (requiereMotivoAusencia(categoria) && esMotivoLicenciaMedicaMotor(input.codigoMotivoAusencia) && !input.referenciaExterna?.trim()) {
+      errores.push(error('NOVEDAD_FOLIO_LICENCIA_REQUERIDO', 'La licencia medica requiere folio antes de aprobarse.'));
     }
   }
 

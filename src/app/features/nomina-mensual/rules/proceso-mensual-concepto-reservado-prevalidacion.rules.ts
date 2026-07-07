@@ -23,6 +23,9 @@ export function advertenciasEntradasConceptoReservadoContrato(
   const conceptosVistos = new Set<number>();
 
   for (const entrada of asArray(entradas)) {
+    if (entrada.idConcepto == null || entrada.idConcepto <= 0) {
+      continue;
+    }
     if (conceptosVistos.has(entrada.idConcepto)) {
       continue;
     }

@@ -54,6 +54,8 @@ function novedad(over: Partial<NovedadMensual> = {}): NovedadMensual {
     estado: 'borrador',
     observacion: null,
     referenciaExterna: null,
+    codigoMotivoAusencia: null,
+    idLicencia: null,
     creadoPor: null,
     aprobadoPor: null,
     fechaAprobacion: null,
@@ -337,6 +339,22 @@ describe('NovedadesMensualesContainer', () => {
     expect(text).not.toContain('Concepto / idConcepto');
   });
 
+  it('selector de tipo de registro muestra pista según modo activo', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    component.abrirNuevo();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Tipo de registro');
+    expect(fixture.nativeElement.textContent).toContain('ajuste puntual');
+
+    component.cambiarModoFormularioMensual('ausencia_licencia');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('licencia médica');
+    expect(fixture.nativeElement.querySelector('#nm-registro-mes-ausencia')?.getAttribute('aria-selected')).toBe('true');
+  });
+
   it('accion por trabajador abre gestion y permite agregar movimiento del mes', async () => {
     fixture.detectChanges();
     await esperarCargaInicial(fixture);
@@ -382,6 +400,8 @@ describe('NovedadesMensualesContainer', () => {
     expect(modal).not.toBeNull();
     expect(modal?.textContent).toContain('Registrar recurrente');
     expect(modal?.textContent).toContain('Ana Perez');
+    expect(modal?.textContent).toContain('Volver a gestión');
+    expect(modal?.textContent).toContain('Desde');
     expect(component.trabajadorDetalle()).not.toBeNull();
   });
 

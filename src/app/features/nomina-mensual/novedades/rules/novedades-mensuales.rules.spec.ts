@@ -26,6 +26,8 @@ function novedad(over: Partial<NovedadMensual> = {}): NovedadMensual {
     estado: 'pendiente_revision',
     observacion: null,
     referenciaExterna: null,
+    codigoMotivoAusencia: null,
+    idLicencia: null,
     creadoPor: null,
     aprobadoPor: null,
     fechaAprobacion: null,
@@ -201,5 +203,58 @@ describe('novedades-mensuales.rules', () => {
     );
 
     expect(result.errores.some((e) => e.codigo === 'NOVEDAD_MONTO_REQUERIDO')).toBe(true);
+  });
+
+  it('licencia medica sin concepto valida con dias y folio', () => {
+    const result = validarNovedadMensualInput({
+      periodo: '2026-05',
+      idPersona: 10,
+      idConcepto: null,
+      categoria: 'licencia_permiso',
+      tipoMovimiento: 'informativo',
+      cantidad: 5,
+      unidad: 'dias',
+      codigoMotivoAusencia: 'LICENCIA_MEDICA',
+      referenciaExterna: '1234567890',
+    });
+
+    expect(result.valido).toBe(true);
+  });
+
+  it('ausencia injustificada exige dias y motivo', () => {
+    const sinMotivo = validarNovedadMensualInput({
+      periodo: '2026-05',
+      idPersona: 10,
+      idConcepto: null,
+      categoria: 'ausencia_descuento_tiempo',
+      tipoMovimiento: 'descuento',
+      cantidad: 2,
+      unidad: 'dias',
+    });
+    expect(sinMotivo.errores.some((e) => e.codigo === 'NOVEDAD_MOTIVO_AUSENCIA_REQUERIDO')).toBe(true);
+
+    const sinDias = validarNovedadMensualInput({
+      periodo: '2026-05',
+      idPersona: 10,
+      idConcepto: null,
+      categoria: 'ausencia_descuento_tiempo',
+      tipoMovimiento: 'descuento',
+      codigoMotivoAusencia: 'AUSENCIA_INJUSTIFICADA',
+    });
+    expect(sinDias.errores.some((e) => e.codigo === 'NOVEDAD_CANTIDAD_REQUERIDA')).toBe(true);
+  });
+
+  it('licencia medica exige folio', () => {
+    const result = validarNovedadMensualInput({
+      periodo: '2026-05',
+      idPersona: 10,
+      idConcepto: null,
+      categoria: 'licencia_permiso',
+      tipoMovimiento: 'informativo',
+      cantidad: 3,
+      codigoMotivoAusencia: 'LICENCIA_MEDICA',
+    });
+
+    expect(result.errores.some((e) => e.codigo === 'NOVEDAD_FOLIO_LICENCIA_REQUERIDO')).toBe(true);
   });
 });

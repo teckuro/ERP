@@ -38,6 +38,7 @@
     "reparar:plantilla-mes-bd": "node scripts/reparar-plantilla-mes-bd.mjs",
     "reparar:jwt-empresa-bd": "node scripts/reparar-jwt-empresa-bd.mjs",
     "apply:nomina-motivo-cierre-bd": "node scripts/apply-nomina-motivo-cierre-bd.mjs",
+    "apply:nomina-ausencia-f08-bd": "node scripts/apply-nomina-ausencia-f08-bd.mjs",
     "apply:previred-105-bd": "node scripts/apply-previred-105-bd.mjs",
     "seed:lre:chain": "node scripts/seed-lre-export-chain.mjs verify",
     "seed:lre:chain:empleados": "node scripts/seed-lre-export-chain.mjs verify --seed-empleados",

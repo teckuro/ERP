@@ -1,0 +1,138 @@
+<form class="nfm-form" novalidate>
+  <h3 class="nfm-form__title">Ausencia, licencia o permiso</h3>
+
+  <div class="nfm-form__grid">
+    @if (mostrarTrabajador) {
+      <label class="nfm-field nfm-field--full" [attr.data-nfm-error]="!!errorCampo('idPersona')">
+        <span class="nfm-field__label">Trabajador</span>
+        <app-search-select
+          [id]="idCampo('trabajador')"
+          placeholder="Seleccione trabajador"
+          searchPlaceholder="Buscar por nombre o RUT"
+          emptyText="No hay trabajadores disponibles"
+          [options]="empleadoOptions"
+          [ngModel]="formulario.idPersona ?? null"
+          [ngModelOptions]="{ standalone: true }"
+          [disabled]="disabled || soporteLoading"
+          [clearable]="true"
+          (ngModelChange)="cambioTrabajador.emit($event)"
+        ></app-search-select>
+        @if (errorCampo('idPersona')) {
+          <p class="nfm-field__error">{{ errorCampo('idPersona') }}</p>
+        }
+      </label>
+    }
+
+    <label class="nfm-field nfm-field--full" [attr.data-nfm-error]="!!errorCampo('codigoMotivoAusencia')">
+      <span class="nfm-field__label" [attr.for]="idCampo('motivo')">Motivo</span>
+      <select
+        class="nfm-input"
+        [id]="idCampo('motivo')"
+        [disabled]="disabled"
+        [ngModel]="formulario.codigoMotivoAusencia"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="onMotivoChange($event)"
+      >
+        <option value="">Seleccione motivo</option>
+        @for (motivo of motivos; track motivo.codigo) {
+          <option [value]="motivo.codigo">{{ motivo.etiqueta }}</option>
+        }
+      </select>
+      @if (errorCampo('codigoMotivoAusencia')) {
+        <p class="nfm-field__error">{{ errorCampo('codigoMotivoAusencia') }}</p>
+      }
+    </label>
+
+    <label class="nfm-field" [attr.data-nfm-error]="!!errorCampo('fechaEvento')">
+      <span class="nfm-field__label-row" [attr.for]="idCampo('desde')">
+        <span>Desde</span>
+        <app-field-help-tip text="Inicio del periodo de ausencia o licencia dentro del mes activo."></app-field-help-tip>
+      </span>
+      <app-calendar-input
+        [id]="idCampo('desde')"
+        placeholder="dd/mm/aaaa"
+        [min]="periodoMin"
+        [max]="periodoMax"
+        [disabled]="disabled"
+        [ngModel]="formulario.fechaEvento"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="emitirCampo('fechaEvento', $event ?? '')"
+      ></app-calendar-input>
+      @if (errorCampo('fechaEvento')) {
+        <p class="nfm-field__error">{{ errorCampo('fechaEvento') }}</p>
+      }
+    </label>
+
+    <label class="nfm-field" [attr.data-nfm-error]="!!errorCampo('fechaHasta')">
+      <span class="nfm-field__label-row" [attr.for]="idCampo('hasta')">
+        <span>Hasta</span>
+        <app-field-help-tip text="Término del periodo de ausencia o licencia."></app-field-help-tip>
+      </span>
+      <app-calendar-input
+        [id]="idCampo('hasta')"
+        placeholder="dd/mm/aaaa"
+        [min]="minFechaHasta"
+        [max]="periodoMax"
+        [disabled]="disabled"
+        [ngModel]="formulario.fechaHasta"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="emitirCampo('fechaHasta', $event ?? '')"
+      ></app-calendar-input>
+      @if (errorCampo('fechaHasta')) {
+        <p class="nfm-field__error">{{ errorCampo('fechaHasta') }}</p>
+      }
+    </label>
+
+    <label class="nfm-field">
+      <span class="nfm-field__label-row" [attr.for]="idCampo('dias')">
+        <span>Días</span>
+        <app-field-help-tip text="Se calculan automáticamente según el rango, acotados al mes del período."></app-field-help-tip>
+      </span>
+      <input
+        class="nfm-input nfm-input--readonly"
+        type="text"
+        readonly
+        tabindex="-1"
+        [id]="idCampo('dias')"
+        [value]="etiquetaDiasCalculados"
+      />
+      @if (errorCampo('cantidad')) {
+        <p class="nfm-field__error">{{ errorCampo('cantidad') }}</p>
+      }
+    </label>
+
+    @if (requiereFolioLicencia(formulario.codigoMotivoAusencia)) {
+      <label class="nfm-field nfm-field--full" [attr.data-nfm-error]="!!errorCampo('referenciaExterna')">
+        <span class="nfm-field__label-row" [attr.for]="idCampo('folio')">
+          <span>Folio de licencia</span>
+          <app-field-help-tip text="Número de folio entregado por COMPIN o Isapre."></app-field-help-tip>
+        </span>
+        <input
+          class="nfm-input"
+          type="text"
+          [id]="idCampo('folio')"
+          [disabled]="disabled"
+          [ngModel]="formulario.referenciaExterna ?? ''"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="emitirCampo('referenciaExterna', $event)"
+        />
+        @if (errorCampo('referenciaExterna')) {
+          <p class="nfm-field__error">{{ errorCampo('referenciaExterna') }}</p>
+        }
+      </label>
+    }
+
+    <label class="nfm-field nfm-field--full">
+      <span class="nfm-field__label" [attr.for]="idCampo('observacion')">Observación</span>
+      <textarea
+        class="nfm-textarea"
+        rows="2"
+        [id]="idCampo('observacion')"
+        [disabled]="disabled"
+        [ngModel]="formulario.observacion ?? ''"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="emitirCampo('observacion', $event)"
+      ></textarea>
+    </label>
+  </div>
+</form>

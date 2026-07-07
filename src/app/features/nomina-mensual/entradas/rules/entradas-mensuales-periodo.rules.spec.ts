@@ -31,6 +31,8 @@ function novedad(over: Partial<NovedadMensual> = {}): NovedadMensual {
     estado: 'aprobada',
     observacion: null,
     referenciaExterna: null,
+    codigoMotivoAusencia: null,
+    idLicencia: null,
     creadoPor: null,
     aprobadoPor: null,
     fechaAprobacion: null,
@@ -137,6 +139,23 @@ describe('entradas mensuales periodo rules', () => {
     expect(out.idEntrada).toBe('novedad:7');
     expect(out.origen).toBe('novedad_mensual');
     expect(out.metadata['origenTecnico']).toBe('novedad_remuneracion_periodo');
+  });
+
+  it('marca licencia medica en metadata cuando motivo es LM', () => {
+    const out = normalizarEntradaNovedadMensual(
+      novedad({
+        idConcepto: null,
+        categoria: 'licencia_permiso',
+        tipoMovimiento: 'informativo',
+        cantidad: 5,
+        codigoMotivoAusencia: 'LICENCIA_MEDICA',
+        referenciaExterna: '1234567890',
+      }),
+    );
+
+    expect(out.tipoEntrada).toBe('licencia');
+    expect(out.metadata['licenciaMedica']).toBe(true);
+    expect(out.metadata['codigoMotivoAusencia']).toBe('LICENCIA_MEDICA');
   });
 
   it('resumen cuenta total, aprobadas, pendientes, legacy y bloqueantes', () => {

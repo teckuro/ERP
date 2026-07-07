@@ -4,6 +4,7 @@ import type {
   MovimientoVariableListadoFila,
 } from '../../../movimientos-variables/models/movimiento-variable.model';
 import type { NovedadMensual, NovedadMensualEstado } from '../../novedades/models/novedad-mensual.model';
+import { esMotivoLicenciaMedicaMotor } from '../../novedades/models/motivo-ausencia.model';
 import type {
   EntradaMensualEstado,
   EntradaMensualPeriodo,
@@ -114,7 +115,7 @@ export function normalizarEntradaNovedadMensual(novedad: NovedadMensual): Entrad
     periodo: novedad.periodo,
     idPersona: novedad.idPersona,
     idContrato: novedad.idContrato,
-    idConcepto: novedad.idConcepto,
+    idConcepto: novedad.idConcepto ?? 0,
     tipoEntrada: normalizarTipoDesdeCategoria(novedad.categoria, novedad.tipoMovimiento),
     categoria: novedad.categoria,
     tipoMovimiento: novedad.tipoMovimiento,
@@ -133,6 +134,9 @@ export function normalizarEntradaNovedadMensual(novedad: NovedadMensual): Entrad
       origenTecnico: 'novedad_remuneracion_periodo',
       origenNovedad: novedad.origen,
       fechaAprobacion: novedad.fechaAprobacion,
+      codigoMotivoAusencia: novedad.codigoMotivoAusencia,
+      licenciaMedica:
+        novedad.categoria === 'licencia_permiso' && esMotivoLicenciaMedicaMotor(novedad.codigoMotivoAusencia),
     },
   };
 }

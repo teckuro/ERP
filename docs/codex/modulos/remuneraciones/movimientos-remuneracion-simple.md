@@ -348,6 +348,10 @@ Se retira **Recurrentes** del menú lateral (`Gestión`). La administración de 
 
 Formulario mensual unificado en componente `app-novedades-formulario-movimiento-mes` (individual + masivo). Grid corregido (tipo/monto/fecha en una fila). Header compacto desde Gestionar; pie con resumen positivo al completar; aviso de pendientes vía MessageBox al guardar; presenter `novedades-formulario-mensual.presenter.ts`.
 
+### Cierre NOM-MOVIMIENTOS-AUSENCIA-LM-01 (2026-07-07)
+
+Modal mensual con selector **Haber o descuento** | **Ausencia o licencia**. Segundo flujo usa motivo RRHH + días (+ folio LM), sin concepto de catálogo. Ver [`ausencias-licencias-chile.md`](./ausencias-licencias-chile.md).
+
 ---
 
 **Context pack operativo (estado UI consolidado):** [`../../orquestador/resumen-trabajo-movimientos-remuneracion.md`](../../orquestador/resumen-trabajo-movimientos-remuneracion.md).

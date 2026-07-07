@@ -151,3 +151,35 @@ export function formatearMontoFormulario(monto: number | null, moneda = 'CLP'): 
   }
   return `${moneda} ${Number(monto).toLocaleString('es-CL')}`;
 }
+
+export type ModoRegistroMesId = 'monetario' | 'ausencia_licencia';
+
+export interface OpcionModoRegistroMes {
+  id: ModoRegistroMesId;
+  label: string;
+  hint: string;
+  tabId: string;
+}
+
+export const OPCIONES_MODO_REGISTRO_MES: readonly OpcionModoRegistroMes[] = [
+  {
+    id: 'monetario',
+    label: 'Haber o descuento',
+    hint: 'Haber, descuento o ajuste puntual del período activo.',
+    tabId: 'nm-registro-mes-monetario',
+  },
+  {
+    id: 'ausencia_licencia',
+    label: 'Ausencia o licencia',
+    hint: 'Días de ausencia, licencia médica o permiso en el mes.',
+    tabId: 'nm-registro-mes-ausencia',
+  },
+] as const;
+
+export function hintModoRegistroMes(modo: ModoRegistroMesId): string {
+  return OPCIONES_MODO_REGISTRO_MES.find((item) => item.id === modo)?.hint ?? '';
+}
+
+export function tabIdModoRegistroMes(modo: ModoRegistroMesId): string {
+  return OPCIONES_MODO_REGISTRO_MES.find((item) => item.id === modo)?.tabId ?? 'nm-registro-mes-monetario';
+}

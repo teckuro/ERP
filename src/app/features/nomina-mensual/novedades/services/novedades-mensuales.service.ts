@@ -15,6 +15,7 @@ import {
   puedeCambiarEstadoNovedad,
   puedeEditarNovedad,
   puedeEliminarNovedad,
+  requiereConceptoCatalogo,
   validarNovedadMensualInput,
   validarObservacionRechazo,
   validarPeriodoNovedad,
@@ -83,6 +84,9 @@ function mergeParaValidacion(
     observacion: input.observacion !== undefined ? input.observacion : actual.observacion,
     referenciaExterna:
       input.referenciaExterna !== undefined ? input.referenciaExterna : actual.referenciaExterna,
+    codigoMotivoAusencia:
+      input.codigoMotivoAusencia !== undefined ? input.codigoMotivoAusencia : actual.codigoMotivoAusencia,
+    idLicencia: input.idLicencia !== undefined ? input.idLicencia : actual.idLicencia,
     estado: actual.estado,
   };
 }
@@ -127,7 +131,9 @@ export class NovedadesMensualesService {
   async crearNovedad(input: CrearNovedadMensualInput): Promise<NovedadMensual> {
     const normalizado = normalizarCrearInput(input);
     assertValidacion(validarNovedadMensualInput({ ...normalizado, estado: 'borrador' }));
-    await this.assertConceptoPermiteNovedad(normalizado.idConcepto, normalizado.periodo);
+    if (requiereConceptoCatalogo(normalizado.categoria) && normalizado.idConcepto != null) {
+      await this.assertConceptoPermiteNovedad(normalizado.idConcepto, normalizado.periodo);
+    }
     return this.repository.crear(normalizado);
   }
 
@@ -137,7 +143,9 @@ export class NovedadesMensualesService {
     assertValidacion(puedeEditarNovedad(actual));
     const merged = mergeParaValidacion(actual, input);
     assertValidacion(validarNovedadMensualInput(merged));
-    await this.assertConceptoPermiteNovedad(merged.idConcepto!, merged.periodo!);
+    if (requiereConceptoCatalogo(merged.categoria!) && merged.idConcepto != null) {
+      await this.assertConceptoPermiteNovedad(merged.idConcepto, merged.periodo!);
+    }
     return this.repository.actualizar(idNovedad, input);
   }
 

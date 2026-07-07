@@ -375,6 +375,7 @@ export type Database = {
       }
       catalogo_previred: {
         Row: {
+          campo_archivo: number | null
           codigo_lre: string
           codigo_previred: string
           created_at: string
@@ -385,6 +386,7 @@ export type Database = {
           vigente: boolean
         }
         Insert: {
+          campo_archivo?: number | null
           codigo_lre: string
           codigo_previred: string
           created_at?: string
@@ -395,6 +397,7 @@ export type Database = {
           vigente?: boolean
         }
         Update: {
+          campo_archivo?: number | null
           codigo_lre?: string
           codigo_previred?: string
           created_at?: string
@@ -1719,6 +1722,83 @@ export type Database = {
         }
         Relationships: []
       }
+      licencia_medica: {
+        Row: {
+          creado_por: string | null
+          dias: number
+          estado: string
+          fecha_creacion: string
+          fecha_inicio: string
+          fecha_termino: string
+          folio: string
+          id_contrato: number | null
+          id_licencia: number
+          id_persona: number
+          monto_subsidio: number | null
+          observacion: string | null
+          tipo: string
+        }
+        Insert: {
+          creado_por?: string | null
+          dias: number
+          estado?: string
+          fecha_creacion?: string
+          fecha_inicio: string
+          fecha_termino: string
+          folio: string
+          id_contrato?: number | null
+          id_licencia?: number
+          id_persona: number
+          monto_subsidio?: number | null
+          observacion?: string | null
+          tipo: string
+        }
+        Update: {
+          creado_por?: string | null
+          dias?: number
+          estado?: string
+          fecha_creacion?: string
+          fecha_inicio?: string
+          fecha_termino?: string
+          folio?: string
+          id_contrato?: number | null
+          id_licencia?: number
+          id_persona?: number
+          monto_subsidio?: number | null
+          observacion?: string | null
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "licencia_medica_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "licencia_medica_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "licencia_medica_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "licencia_medica_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+        ]
+      }
       liquidacion: {
         Row: {
           afc_empleador: number | null
@@ -1947,6 +2027,33 @@ export type Database = {
           id_moneda?: number
           nombre?: string
           simbolo?: string
+        }
+        Relationships: []
+      }
+      motivo_ausencia: {
+        Row: {
+          codigo: string
+          descuenta_dias: boolean
+          es_licencia_medica: boolean
+          id_motivo_ausencia: number
+          nombre: string
+          vigente: boolean
+        }
+        Insert: {
+          codigo: string
+          descuenta_dias?: boolean
+          es_licencia_medica?: boolean
+          id_motivo_ausencia?: number
+          nombre: string
+          vigente?: boolean
+        }
+        Update: {
+          codigo?: string
+          descuenta_dias?: boolean
+          es_licencia_medica?: boolean
+          id_motivo_ausencia?: number
+          nombre?: string
+          vigente?: boolean
         }
         Relationships: []
       }
@@ -3072,72 +3179,6 @@ export type Database = {
           },
         ]
       }
-      nomina_previred_exportacion: {
-        Row: {
-          canal: string
-          conceptos_sin_codigo: number
-          conceptos_sin_mapeo: number
-          exportado_en: string
-          id_liquidacion_periodo: number
-          id_nomina_periodo: string | null
-          id_previred_exportacion: number
-          metadata: Json
-          periodo: string
-          total_lineas: number
-          total_trabajadores: number
-          usuario_id: string | null
-          usuario_label: string
-          version_liquidacion: number
-        }
-        Insert: {
-          canal?: string
-          conceptos_sin_codigo?: number
-          conceptos_sin_mapeo?: number
-          exportado_en?: string
-          id_liquidacion_periodo: number
-          id_nomina_periodo?: string | null
-          id_previred_exportacion?: number
-          metadata?: Json
-          periodo: string
-          total_lineas?: number
-          total_trabajadores?: number
-          usuario_id?: string | null
-          usuario_label: string
-          version_liquidacion?: number
-        }
-        Update: {
-          canal?: string
-          conceptos_sin_codigo?: number
-          conceptos_sin_mapeo?: number
-          exportado_en?: string
-          id_liquidacion_periodo?: number
-          id_nomina_periodo?: string | null
-          id_previred_exportacion?: number
-          metadata?: Json
-          periodo?: string
-          total_lineas?: number
-          total_trabajadores?: number
-          usuario_id?: string | null
-          usuario_label?: string
-          version_liquidacion?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "nomina_previred_exportacion_id_liquidacion_periodo_fkey"
-            columns: ["id_liquidacion_periodo"]
-            isOneToOne: false
-            referencedRelation: "nomina_liquidacion_periodo"
-            referencedColumns: ["id_liquidacion_periodo"]
-          },
-          {
-            foreignKeyName: "nomina_previred_exportacion_id_nomina_periodo_fkey"
-            columns: ["id_nomina_periodo"]
-            isOneToOne: false
-            referencedRelation: "nomina_periodo"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       nomina_liquidacion_periodo: {
         Row: {
           activo: boolean
@@ -3381,6 +3422,7 @@ export type Database = {
           id_empresa: number
           maximo_paso_completado: string | null
           maximo_paso_completado_at: string | null
+          motivo_cierre: string | null
           naturaleza: string
           nomina_origen_id: string | null
           paso_visitado_at: string | null
@@ -3417,6 +3459,7 @@ export type Database = {
           id_empresa: number
           maximo_paso_completado?: string | null
           maximo_paso_completado_at?: string | null
+          motivo_cierre?: string | null
           naturaleza: string
           nomina_origen_id?: string | null
           paso_visitado_at?: string | null
@@ -3453,6 +3496,7 @@ export type Database = {
           id_empresa?: number
           maximo_paso_completado?: string | null
           maximo_paso_completado_at?: string | null
+          motivo_cierre?: string | null
           naturaleza?: string
           nomina_origen_id?: string | null
           paso_visitado_at?: string | null
@@ -3833,19 +3877,87 @@ export type Database = {
           },
         ]
       }
+      nomina_previred_exportacion: {
+        Row: {
+          canal: string
+          conceptos_sin_codigo: number
+          conceptos_sin_mapeo: number
+          exportado_en: string
+          id_liquidacion_periodo: number
+          id_nomina_periodo: string | null
+          id_previred_exportacion: number
+          metadata: Json
+          periodo: string
+          total_lineas: number
+          total_trabajadores: number
+          usuario_id: string | null
+          usuario_label: string
+          version_liquidacion: number
+        }
+        Insert: {
+          canal?: string
+          conceptos_sin_codigo?: number
+          conceptos_sin_mapeo?: number
+          exportado_en?: string
+          id_liquidacion_periodo: number
+          id_nomina_periodo?: string | null
+          id_previred_exportacion?: number
+          metadata?: Json
+          periodo: string
+          total_lineas?: number
+          total_trabajadores?: number
+          usuario_id?: string | null
+          usuario_label: string
+          version_liquidacion?: number
+        }
+        Update: {
+          canal?: string
+          conceptos_sin_codigo?: number
+          conceptos_sin_mapeo?: number
+          exportado_en?: string
+          id_liquidacion_periodo?: number
+          id_nomina_periodo?: string | null
+          id_previred_exportacion?: number
+          metadata?: Json
+          periodo?: string
+          total_lineas?: number
+          total_trabajadores?: number
+          usuario_id?: string | null
+          usuario_label?: string
+          version_liquidacion?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_previred_exportacion_id_liquidacion_periodo_fkey"
+            columns: ["id_liquidacion_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_liquidacion_periodo"
+            referencedColumns: ["id_liquidacion_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_previred_exportacion_id_nomina_periodo_fkey"
+            columns: ["id_nomina_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_periodo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       novedad_remuneracion_periodo: {
         Row: {
           aprobado_por: string | null
           cantidad: number | null
           categoria: string
+          codigo_motivo_ausencia: string | null
           creado_por: string | null
           estado: string
           fecha_actualizacion: string
           fecha_aprobacion: string | null
           fecha_creacion: string
           fecha_evento: string | null
-          id_concepto: number
+          id_concepto: number | null
           id_contrato: number | null
+          id_licencia: number | null
           id_novedad_remuneracion_periodo: number
           id_persona: number
           moneda: string
@@ -3861,14 +3973,16 @@ export type Database = {
           aprobado_por?: string | null
           cantidad?: number | null
           categoria: string
+          codigo_motivo_ausencia?: string | null
           creado_por?: string | null
           estado?: string
           fecha_actualizacion?: string
           fecha_aprobacion?: string | null
           fecha_creacion?: string
           fecha_evento?: string | null
-          id_concepto: number
+          id_concepto?: number | null
           id_contrato?: number | null
+          id_licencia?: number | null
           id_novedad_remuneracion_periodo?: number
           id_persona: number
           moneda?: string
@@ -3884,14 +3998,16 @@ export type Database = {
           aprobado_por?: string | null
           cantidad?: number | null
           categoria?: string
+          codigo_motivo_ausencia?: string | null
           creado_por?: string | null
           estado?: string
           fecha_actualizacion?: string
           fecha_aprobacion?: string | null
           fecha_creacion?: string
           fecha_evento?: string | null
-          id_concepto?: number
+          id_concepto?: number | null
           id_contrato?: number | null
+          id_licencia?: number | null
           id_novedad_remuneracion_periodo?: number
           id_persona?: number
           moneda?: string
@@ -3904,6 +4020,13 @@ export type Database = {
           unidad?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "novedad_remuneracion_periodo_codigo_motivo_ausencia_fkey"
+            columns: ["codigo_motivo_ausencia"]
+            isOneToOne: false
+            referencedRelation: "motivo_ausencia"
+            referencedColumns: ["codigo"]
+          },
           {
             foreignKeyName: "novedad_remuneracion_periodo_id_concepto_fkey"
             columns: ["id_concepto"]
@@ -3924,6 +4047,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_persona_factores"
             referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "novedad_remuneracion_periodo_id_licencia_fkey"
+            columns: ["id_licencia"]
+            isOneToOne: false
+            referencedRelation: "licencia_medica"
+            referencedColumns: ["id_licencia"]
           },
           {
             foreignKeyName: "novedad_remuneracion_periodo_id_persona_fkey"
@@ -6043,10 +6173,7 @@ export type Database = {
         Returns: string
       }
       actualizar_estado_revision_liquidacion_trabajador: {
-        Args: {
-          p_estado_revision: string
-          p_id_liquidacion_trabajador: number
-        }
+        Args: { p_estado_revision: string; p_id_liquidacion_trabajador: number }
         Returns: {
           base_imponible: number
           base_tributable: number
@@ -6079,64 +6206,6 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      emitir_liquidacion_trabajador: {
-        Args: {
-          p_canal?: string
-          p_id_liquidacion_trabajador: number
-          p_metadata?: Json
-        }
-        Returns: {
-          canal: string
-          emitido_en: string
-          id_liquidacion_emision: number
-          id_liquidacion_periodo: number
-          id_liquidacion_trabajador: number
-          metadata: Json
-          usuario_id: string | null
-          usuario_label: string
-          version_liquidacion: number
-        }
-        SetofOptions: {
-          from: "*"
-          to: "nomina_liquidacion_emision"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
-      registrar_exportacion_previred: {
-        Args: {
-          p_canal?: string
-          p_conceptos_sin_codigo?: number
-          p_conceptos_sin_mapeo?: number
-          p_id_liquidacion_periodo: number
-          p_id_nomina_periodo?: string | null
-          p_metadata?: Json
-          p_total_lineas?: number
-          p_total_trabajadores?: number
-        }
-        Returns: {
-          canal: string
-          conceptos_sin_codigo: number
-          conceptos_sin_mapeo: number
-          exportado_en: string
-          id_liquidacion_periodo: number
-          id_nomina_periodo: string | null
-          id_previred_exportacion: number
-          metadata: Json
-          periodo: string
-          total_lineas: number
-          total_trabajadores: number
-          usuario_id: string | null
-          usuario_label: string
-          version_liquidacion: number
-        }
-        SetofOptions: {
-          from: "*"
-          to: "nomina_previred_exportacion"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
       actualizar_maximo_paso_completado_nomina: {
         Args: { p_nomina_id: string; p_paso: string }
         Returns: {
@@ -6156,6 +6225,7 @@ export type Database = {
           id_empresa: number
           maximo_paso_completado: string | null
           maximo_paso_completado_at: string | null
+          motivo_cierre: string | null
           naturaleza: string
           nomina_origen_id: string | null
           paso_visitado_at: string | null
@@ -6201,6 +6271,7 @@ export type Database = {
           id_empresa: number
           maximo_paso_completado: string | null
           maximo_paso_completado_at: string | null
+          motivo_cierre: string | null
           naturaleza: string
           nomina_origen_id: string | null
           paso_visitado_at: string | null
@@ -6290,6 +6361,7 @@ export type Database = {
           id_empresa: number
           maximo_paso_completado: string | null
           maximo_paso_completado_at: string | null
+          motivo_cierre: string | null
           naturaleza: string
           nomina_origen_id: string | null
           paso_visitado_at: string | null
@@ -6335,6 +6407,7 @@ export type Database = {
           id_empresa: number
           maximo_paso_completado: string | null
           maximo_paso_completado_at: string | null
+          motivo_cierre: string | null
           naturaleza: string
           nomina_origen_id: string | null
           paso_visitado_at: string | null
@@ -6620,6 +6693,30 @@ export type Database = {
         }
       }
       eliminar_nomina_completa: { Args: { p_nomina_id: string }; Returns: Json }
+      emitir_liquidacion_trabajador: {
+        Args: {
+          p_canal?: string
+          p_id_liquidacion_trabajador: number
+          p_metadata?: Json
+        }
+        Returns: {
+          canal: string
+          emitido_en: string
+          id_liquidacion_emision: number
+          id_liquidacion_periodo: number
+          id_liquidacion_trabajador: number
+          metadata: Json
+          usuario_id: string | null
+          usuario_label: string
+          version_liquidacion: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_liquidacion_emision"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       empleado_historial_changed_fields: {
         Args: { p_new: Json; p_old: Json }
         Returns: string[]
@@ -7343,6 +7440,40 @@ export type Database = {
         }
         Returns: string
       }
+      registrar_exportacion_previred: {
+        Args: {
+          p_canal?: string
+          p_conceptos_sin_codigo?: number
+          p_conceptos_sin_mapeo?: number
+          p_id_liquidacion_periodo: number
+          p_id_nomina_periodo?: string
+          p_metadata?: Json
+          p_total_lineas?: number
+          p_total_trabajadores?: number
+        }
+        Returns: {
+          canal: string
+          conceptos_sin_codigo: number
+          conceptos_sin_mapeo: number
+          exportado_en: string
+          id_liquidacion_periodo: number
+          id_nomina_periodo: string | null
+          id_previred_exportacion: number
+          metadata: Json
+          periodo: string
+          total_lineas: number
+          total_trabajadores: number
+          usuario_id: string | null
+          usuario_label: string
+          version_liquidacion: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_previred_exportacion"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       resumen_calculo_nomina: {
         Args: { p_nomina_id: string }
         Returns: {
@@ -7418,6 +7549,7 @@ export type Database = {
           id_empresa: number
           maximo_paso_completado: string | null
           maximo_paso_completado_at: string | null
+          motivo_cierre: string | null
           naturaleza: string
           nomina_origen_id: string | null
           paso_visitado_at: string | null
@@ -7464,6 +7596,7 @@ export type Database = {
           id_empresa: number
           maximo_paso_completado: string | null
           maximo_paso_completado_at: string | null
+          motivo_cierre: string | null
           naturaleza: string
           nomina_origen_id: string | null
           paso_visitado_at: string | null

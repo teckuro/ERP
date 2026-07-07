@@ -12,11 +12,10 @@ import {
   mapActualizarNovedadMensualToUpdate,
   mapCrearNovedadMensualToInsert,
   mapRowToNovedadMensual,
-  type NovedadRemuneracionPeriodoRow,
 } from './novedades-mensuales.mapper';
 
 const SELECT_NOVEDAD =
-  'id_novedad_remuneracion_periodo, periodo, id_persona, id_contrato, id_concepto, categoria, tipo_movimiento, cantidad, unidad, monto, moneda, origen, fecha_evento, estado, observacion, referencia_externa, creado_por, aprobado_por, fecha_aprobacion, fecha_creacion, fecha_actualizacion';
+  'id_novedad_remuneracion_periodo, periodo, id_persona, id_contrato, id_concepto, categoria, tipo_movimiento, cantidad, unidad, monto, moneda, origen, fecha_evento, estado, observacion, referencia_externa, codigo_motivo_ausencia, id_licencia, creado_por, aprobado_por, fecha_aprobacion, fecha_creacion, fecha_actualizacion';
 
 function errorSupabase(contexto: string, message: string): Error {
   return new Error(`${contexto}: ${message}`);
@@ -34,7 +33,7 @@ export class NovedadesMensualesRepository {
       .order('id_novedad_remuneracion_periodo', { ascending: true });
 
     if (error) throw errorSupabase('No fue posible listar novedades del periodo', error.message);
-    return (data ?? []).map((row) => mapRowToNovedadMensual(row as NovedadRemuneracionPeriodoRow));
+    return (data ?? []).map((row) => mapRowToNovedadMensual(row));
   }
 
   async listarPorPeriodoYPersona(periodo: string, idPersona: number): Promise<NovedadMensual[]> {
@@ -46,7 +45,7 @@ export class NovedadesMensualesRepository {
       .order('id_novedad_remuneracion_periodo', { ascending: true });
 
     if (error) throw errorSupabase('No fue posible listar novedades del trabajador', error.message);
-    return (data ?? []).map((row) => mapRowToNovedadMensual(row as NovedadRemuneracionPeriodoRow));
+    return (data ?? []).map((row) => mapRowToNovedadMensual(row));
   }
 
   async obtenerPorId(idNovedad: number): Promise<NovedadMensual | null> {
@@ -57,7 +56,7 @@ export class NovedadesMensualesRepository {
       .maybeSingle();
 
     if (error) throw errorSupabase('No fue posible obtener la novedad', error.message);
-    return data ? mapRowToNovedadMensual(data as NovedadRemuneracionPeriodoRow) : null;
+    return data ? mapRowToNovedadMensual(data) : null;
   }
 
   async crear(input: CrearNovedadMensualInput): Promise<NovedadMensual> {
@@ -69,7 +68,7 @@ export class NovedadesMensualesRepository {
       .single();
 
     if (error) throw errorSupabase('No fue posible crear la novedad', error.message);
-    return mapRowToNovedadMensual(data as NovedadRemuneracionPeriodoRow);
+    return mapRowToNovedadMensual(data);
   }
 
   async actualizar(idNovedad: number, input: ActualizarNovedadMensualInput): Promise<NovedadMensual> {
@@ -82,7 +81,7 @@ export class NovedadesMensualesRepository {
       .single();
 
     if (error) throw errorSupabase('No fue posible actualizar la novedad', error.message);
-    return mapRowToNovedadMensual(data as NovedadRemuneracionPeriodoRow);
+    return mapRowToNovedadMensual(data);
   }
 
   async cambiarEstado(
@@ -112,7 +111,7 @@ export class NovedadesMensualesRepository {
       .single();
 
     if (error) throw errorSupabase('No fue posible cambiar el estado de la novedad', error.message);
-    return mapRowToNovedadMensual(data as NovedadRemuneracionPeriodoRow);
+    return mapRowToNovedadMensual(data);
   }
 
   async anular(idNovedad: number, observacion?: string | null): Promise<NovedadMensual> {

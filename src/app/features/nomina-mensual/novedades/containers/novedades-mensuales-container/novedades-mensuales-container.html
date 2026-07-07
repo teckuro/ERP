@@ -335,12 +335,64 @@
           </button>
         </header>
 
-        <div class="nm-modal-body nm-modal-body--form nm-bitacora-form">
+        @if (!novedadEditando()) {
+          <div class="nm-modal-registro-mes">
+            <div class="nm-modal-registro-mes__head">
+              <p class="nm-modal-registro-mes__label" id="nm-registro-mes-label">Tipo de registro</p>
+              <p class="nm-modal-registro-mes__hint">{{ hintModoRegistroMesActivo() }}</p>
+            </div>
+            <div
+              class="nm-modal-modo"
+              role="tablist"
+              aria-labelledby="nm-registro-mes-label"
+            >
+              @for (modo of modosRegistroMes; track modo.id) {
+                <button
+                  type="button"
+                  class="nm-modal-modo__btn"
+                  role="tab"
+                  [id]="modo.tabId"
+                  [class.nm-modal-modo__btn--active]="modoFormularioMensual() === modo.id"
+                  [attr.aria-selected]="modoFormularioMensual() === modo.id"
+                  [attr.tabindex]="modoFormularioMensual() === modo.id ? 0 : -1"
+                  (click)="cambiarModoFormularioMensual(modo.id)"
+                >
+                  {{ modo.label }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <div
+          class="nm-modal-body nm-modal-body--form nm-bitacora-form"
+          role="tabpanel"
+          id="nm-registro-mes-panel"
+          [attr.aria-labelledby]="tabActivoRegistroMes()"
+        >
           @if (formErrores().general && formValidacionActiva()) {
             <div class="nm-form-alert" role="alert">{{ formErrores().general }}</div>
           }
 
-          <app-novedades-formulario-movimiento-mes
+          @if (esFormularioAusenciaLicencia()) {
+            <app-novedades-formulario-ausencia-licencia
+              [formulario]="form()"
+              [mostrarTrabajador]="!formTrabajadorBloqueado()"
+              [errores]="formErrores()"
+              [validacionActiva]="formValidacionActiva()"
+              [camposTocados]="formCamposTocados()"
+              [disabled]="guardando()"
+              [soporteLoading]="soporteLoading()"
+              [periodoMin]="periodoFechaMin()"
+              [periodoMax]="periodoFechaMax()"
+              [periodoEtiqueta]="periodoActivo.etiqueta()"
+              [empleadoOptions]="empleadoOptions()"
+              (cambioTrabajador)="onTrabajadorChange($event)"
+              (cambioMotivo)="onMotivoAusenciaChange($event)"
+              (cambioCampo)="manejarCambioCampoFormularioAusencia($event)"
+            ></app-novedades-formulario-ausencia-licencia>
+          } @else {
+            <app-novedades-formulario-movimiento-mes
             [formulario]="form()"
             [mostrarTrabajador]="!formTrabajadorBloqueado()"
             [detalleAdminCompleto]="true"
@@ -361,6 +413,7 @@
             (cambioCampo)="manejarCambioCampoFormulario($event)"
             (campoTocado)="onCampoTocadoFormulario($event)"
           ></app-novedades-formulario-movimiento-mes>
+          }
         </div>
         <footer class="nm-modal-footer nm-modal-footer--sticky nm-modal-footer--split">
           @if (resumenFormulario(); as resumen) {
@@ -404,7 +457,9 @@
           <div class="nm-modal-header-copy">
             <p class="nm-modal-breadcrumb">{{ breadcrumbModalRecurrente() }}</p>
             <h2 id="nm-recurrente-title">{{ recurrenteEditandoId() == null ? 'Registrar recurrente' : 'Editar recurrente' }}</h2>
-            <p class="nm-modal-sub">Movimiento que se repetirá según su vigencia.</p>
+            @if (!modalRecurrenteDesdeGestion()) {
+              <p class="nm-modal-sub">Haber o descuento que se repetirá según su vigencia.</p>
+            }
           </div>
           <button type="button" class="nm-modal-close" [attr.aria-label]="etiquetaCerrarModalHijo()" (click)="cancelarRecurrente()">
             <lucide-icon [img]="closeIcon"></lucide-icon>
@@ -420,203 +475,24 @@
         </div>
 
         <div class="nm-modal-body nm-modal-body--form nm-bitacora-form">
-          <section class="nm-bitacora-block nm-bitacora-block--datos">
-            <header class="nm-bitacora-block-head">
-              <h3>Datos del recurrente</h3>
-            </header>
-            <div class="nm-form-grid nm-form-grid--modal">
-              <label class="nm-field nm-form-span2" [attr.data-nm-error]="!!errorRecurrente('idConcepto')">
-                <span class="nm-field-label">Concepto</span>
-                <app-search-select
-                  id="nm-recurrente-concepto"
-                  placeholder="Selecciona concepto"
-                  searchPlaceholder="Buscar concepto"
-                  emptyText="No hay conceptos disponibles"
-                  [options]="conceptoOptions()"
-                  [ngModel]="recurrenteConceptoId()"
-                  (ngModelChange)="onConceptoRecurrenteChange($event == null ? null : +$event)"
-                  [disabled]="recurrenteGuardando() || soporteLoading()"
-                  [clearable]="true"
-                ></app-search-select>
-                @if (errorRecurrente('idConcepto')) {
-                  <small class="nm-field-error">{{ errorRecurrente('idConcepto') }}</small>
-                }
-              </label>
-
-              @if (contratosPersona().length > 1) {
-                <label class="nm-field nm-form-span2">
-                  <span class="nm-field-label">Contrato</span>
-                  <select
-                    class="nm-input"
-                    [ngModel]="recurrenteIdContrato()"
-                    (ngModelChange)="recurrenteIdContrato.set($event == null || $event === '' ? null : +$event)"
-                    [disabled]="recurrenteGuardando() || contratosLoading()"
-                  >
-                    <option [ngValue]="null">Sin contrato específico</option>
-                    @for (contrato of contratosPersona(); track contrato.idContrato) {
-                      <option [ngValue]="contrato.idContrato">{{ contrato.etiqueta }}</option>
-                    }
-                  </select>
-                </label>
-              }
-
-              <label class="nm-field" [attr.data-nm-error]="!!errorRecurrente('tipoValor')">
-                <span class="nm-field-label">Modalidad</span>
-                <select
-                  class="nm-input"
-                  [ngModel]="recurrenteTipoValor()"
-                  (ngModelChange)="onTipoValorRecurrenteChange($event)"
-                >
-                  <option value="FIJO">Monto fijo</option>
-                  <option value="PORCENTAJE">Porcentaje</option>
-                </select>
-              </label>
-
-              <label class="nm-field" [attr.data-nm-error]="!!errorRecurrente('periodicidad')">
-                <span class="nm-field-label">Periodicidad</span>
-                <select
-                  class="nm-input"
-                  [class.nm-input--invalid]="!!errorRecurrente('periodicidad')"
-                  [ngModel]="recurrentePeriodicidad()"
-                  (ngModelChange)="actualizarRecurrentePeriodicidad($event)"
-                >
-                  @for (periodicidad of periodicidadesHd; track periodicidad) {
-                    <option [ngValue]="periodicidad">{{ periodicidad }}</option>
-                  }
-                </select>
-                @if (errorRecurrente('periodicidad')) {
-                  <small class="nm-field-error">{{ errorRecurrente('periodicidad') }}</small>
-                }
-              </label>
-
-              @if (recurrenteTipoValor() === 'FIJO') {
-                <label class="nm-field" [attr.data-nm-error]="!!errorRecurrente('monto')">
-                  <span class="nm-field-label">Monto</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    class="nm-input"
-                    [class.nm-input--invalid]="!!errorRecurrente('monto')"
-                    [ngModel]="recurrenteMonto()"
-                    (ngModelChange)="actualizarRecurrenteMonto($event == null || $event === '' ? 0 : +$event)"
-                  />
-                  @if (errorRecurrente('monto')) {
-                    <small class="nm-field-error">{{ errorRecurrente('monto') }}</small>
-                  }
-                </label>
-              } @else {
-                <label class="nm-field" [attr.data-nm-error]="!!errorRecurrente('porcentaje')">
-                  <span class="nm-field-label">Porcentaje</span>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    class="nm-input"
-                    [class.nm-input--invalid]="!!errorRecurrente('porcentaje')"
-                    [ngModel]="recurrentePorcentaje()"
-                    (ngModelChange)="actualizarRecurrentePorcentaje($event == null || $event === '' ? 0 : +$event)"
-                  />
-                  @if (errorRecurrente('porcentaje')) {
-                    <small class="nm-field-error">{{ errorRecurrente('porcentaje') }}</small>
-                  }
-                </label>
-              }
-
-              <label class="nm-field" [attr.data-nm-error]="!!errorRecurrente('vigenciaInicio')">
-                <span class="nm-field-label-row">
-                  <span class="nm-field-label">Vigencia inicio</span>
-                  <app-field-help-tip
-                    text="Desde cuándo aplica el recurrente."
-                    ariaLabel="Ayuda: vigencia inicio"
-                  ></app-field-help-tip>
-                </span>
-                <app-calendar-input
-                  id="nm-recurrente-vigencia-inicio"
-                  placeholder="dd/mm/aaaa"
-                  [invalid]="!!errorRecurrente('vigenciaInicio')"
-                  [disabled]="recurrenteGuardando()"
-                  [ngModel]="recurrenteVigenciaInicio()"
-                  (ngModelChange)="actualizarRecurrenteVigenciaInicio($event)"
-                ></app-calendar-input>
-                @if (errorRecurrente('vigenciaInicio')) {
-                  <small class="nm-field-error">{{ errorRecurrente('vigenciaInicio') }}</small>
-                }
-              </label>
-
-              <label class="nm-field" [attr.data-nm-error]="!!errorRecurrente('vigenciaFin')">
-                <span class="nm-field-label-row">
-                  <span class="nm-field-label">Vigencia fin</span>
-                  <app-field-help-tip
-                    text="Opcional. Dejar vacío si no tiene término."
-                    ariaLabel="Ayuda: vigencia fin"
-                  ></app-field-help-tip>
-                </span>
-                <app-calendar-input
-                  id="nm-recurrente-vigencia-fin"
-                  placeholder="dd/mm/aaaa"
-                  [min]="recurrenteVigenciaFinMin()"
-                  [invalid]="!!errorRecurrente('vigenciaFin')"
-                  [disabled]="recurrenteGuardando()"
-                  [clearable]="true"
-                  [ngModel]="recurrenteVigenciaFin()"
-                  (ngModelChange)="actualizarRecurrenteVigenciaFin($event)"
-                ></app-calendar-input>
-                @if (errorRecurrente('vigenciaFin')) {
-                  <small class="nm-field-error">{{ errorRecurrente('vigenciaFin') }}</small>
-                }
-              </label>
-
-              <label class="nm-field nm-form-span2">
-                <span class="nm-field-label">Observación</span>
-                <textarea
-                  rows="3"
-                  class="nm-input nm-textarea"
-                  [ngModel]="recurrenteObservacion()"
-                  (ngModelChange)="recurrenteObservacion.set($event)"
-                ></textarea>
-              </label>
-            </div>
-          </section>
-
-          @if (mostrarCuotasRecurrente()) {
-            <details class="nm-details nm-form-section nm-form-section--admin">
-              <summary>
-                <span class="nm-details-summary-inner">
-                  <span class="nm-details-chevron-wrap" aria-hidden="true">
-                    <lucide-icon class="nm-details-chevron" [img]="chevronRightIcon"></lucide-icon>
-                  </span>
-                  <span class="nm-details-summary-label">Cuotas (préstamo o anticipo)</span>
-                </span>
-              </summary>
-              <p class="nm-section-help">
-                Las cuotas se configuran al crear un recurrente. Este bloque está preparado; consulte al administrador si aplica un préstamo en cuotas.
-              </p>
-              <label class="nm-check-row">
-                <input type="checkbox" disabled />
-                <span>¿Tiene cuotas?</span>
-              </label>
-              <div class="nm-form-grid nm-form-grid--compact" aria-disabled="true">
-                <label class="nm-field">
-                  <span class="nm-field-label">Cantidad de cuotas</span>
-                  <input type="number" class="nm-input" disabled />
-                </label>
-                <label class="nm-field">
-                  <span class="nm-field-label">Monto por cuota</span>
-                  <input type="number" class="nm-input" disabled />
-                </label>
-                <label class="nm-field">
-                  <span class="nm-field-label">Cuota inicial</span>
-                  <input type="month" class="nm-input" disabled />
-                </label>
-                <label class="nm-field">
-                  <span class="nm-field-label">Saldo referencial</span>
-                  <input type="number" class="nm-input" disabled />
-                </label>
-              </div>
-            </details>
+          @if (recurrenteErrores().general && recurrenteValidacionActiva()) {
+            <div class="nm-form-alert" role="alert">{{ recurrenteErrores().general }}</div>
           }
+
+          <app-novedades-formulario-recurrente
+            [formulario]="recurrenteFormularioValores()"
+            [errores]="recurrenteErrores()"
+            [validacionActiva]="recurrenteValidacionActiva()"
+            [disabled]="recurrenteGuardando()"
+            [soporteLoading]="soporteLoading()"
+            [contratosLoading]="contratosLoading()"
+            [vigenciaFinMin]="recurrenteVigenciaFinMin()"
+            [mostrarCuotas]="mostrarCuotasRecurrente()"
+            [conceptoOptions]="conceptoOptions()"
+            [contratosPersona]="contratosPersona()"
+            (cambioConcepto)="onConceptoRecurrenteChange($event)"
+            (cambioCampo)="manejarCambioCampoFormularioRecurrente($event)"
+          ></app-novedades-formulario-recurrente>
         </div>
 
         <footer class="nm-modal-footer nm-modal-footer--sticky nm-modal-footer--split">
@@ -625,16 +501,21 @@
               <div class="nm-modal-resumen" aria-live="polite">
                 @if (resumen.principal) {
                   <p class="nm-modal-resumen-principal">{{ resumen.principal }}</p>
-                } @else if (resumen.faltante) {
-                  <p class="nm-modal-resumen-pendiente">{{ resumen.faltante }}</p>
                 }
-                <p class="nm-modal-resumen-meta">Período {{ resumen.periodo }}</p>
+                @if (resumen.mostrarPeriodo) {
+                  <p class="nm-modal-resumen-meta">Período {{ resumen.periodo }}</p>
+                }
               </div>
             }
           }
           <div class="nm-modal-footer-actions">
+            @if (modalRecurrenteDesdeGestion()) {
+              <app-button variant="outline" size="md" [disabled]="recurrenteGuardando()" (click)="cancelarRecurrente()">
+                Volver a gestión
+              </app-button>
+            }
             <app-button variant="primary" size="md" [disabled]="recurrenteGuardando()" (click)="guardarRecurrente()">
-              {{ recurrenteGuardando() ? 'Guardando...' : recurrenteEditandoId() == null ? 'Registrar recurrente' : 'Guardar cambios' }}
+              {{ etiquetaGuardarRecurrente() }}
             </app-button>
           </div>
         </footer>

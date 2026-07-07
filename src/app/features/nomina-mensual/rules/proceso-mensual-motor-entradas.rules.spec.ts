@@ -203,6 +203,20 @@ describe('clasificarEntradaMensualMotor', () => {
     expect(dias).toBe(3);
   });
 
+  it('suma dias de licencia medica desde metadata licenciaMedica', () => {
+    const dias = calcularDiasLicenciaMedicaEntradas([
+      entradaMotor({
+        tipoEntrada: 'licencia',
+        categoria: 'licencia_permiso',
+        cantidad: 4,
+        unidad: 'dias',
+        monto: null,
+        metadata: { licenciaMedica: true },
+      }),
+    ]);
+    expect(dias).toBe(4);
+  });
+
   it('expone dias base mes 30', () => {
     expect(DIAS_BASE_MES).toBe(30);
   });

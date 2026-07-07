@@ -40,6 +40,7 @@ const FILA_BASE: NominaPeriodoRow = {
   calculado_at: null,
   validado_at: null,
   aprobado_at: null,
+  motivo_cierre: null,
   ultimo_paso_visitado: null,
   paso_visitado_at: null,
   maximo_paso_completado: null,
