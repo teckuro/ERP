@@ -30,6 +30,7 @@ import { LiquidacionesOficialesService } from '../../services/liquidaciones-ofic
 import { NominaPeriodoService } from '../../../nomina-mensual/services/nomina-periodo.service';
 import { crearNomina, crearNominaResumen } from '../../../nomina-mensual/models/nomina-periodo.models';
 import { LiquidacionesOficialesContainer } from './liquidaciones-oficiales-container';
+import { PreviredExportService } from '../../../previred/services/previred-export.service';
 
 describe('LiquidacionesOficialesContainer', () => {
   let fixture: ComponentFixture<LiquidacionesOficialesContainer>;
@@ -100,6 +101,13 @@ describe('LiquidacionesOficialesContainer', () => {
         PeriodoActivoService,
         { provide: LiquidacionesOficialesService, useValue: service },
         { provide: NominaPeriodoService, useValue: nominaService },
+        {
+          provide: PreviredExportService,
+          useValue: {
+            construirBorradorDesdeNomina: vi.fn().mockResolvedValue(null),
+            registrarDescarga: vi.fn().mockResolvedValue({}),
+          },
+        },
         {
           provide: ActivatedRoute,
           useValue: { queryParams: of(queryParams) },
@@ -287,7 +295,7 @@ describe('LiquidacionesOficialesContainer', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('[title="Exportar Previred"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('[title="Descargar archivo Previred"]')).toBeTruthy();
   });
 
   it('feedback de acción de trabajador incluye tono según estado', async () => {

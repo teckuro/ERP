@@ -9,6 +9,46 @@
 
 ---
 
+## 2026-07-07 — Movimientos: asignación masiva en grilla
+
+- **Grilla:** selección múltiple + acción «Asignar movimiento del mes»; modal compartido; incompletos no seleccionables.
+- **Archivos:** `novedades-asignacion-masiva.rules.ts`, `novedades-mensuales-container.*`; sin SQL/motor.
+
+---
+
+## 2026-07-07 — Movimientos: grilla 100% + skill layout
+
+- **Fix:** cadena flex page → container → `nm-grid-shell`; sin `nm-view-panel` ni padding intermedio; `nm-grid-card` sin bordes lateral/inferior.
+- **Skill:** `.cursor/skills/erp-fullscreen-data-grid/SKILL.md` (patrón administrador-nominas obligatorio).
+- **Archivos:** `novedades-mensuales-container.*`, `novedades-mensuales.page.ts`; sin globales.
+
+---
+
+## 2026-07-07 — Movimientos: franja sin duplicados ni actualizar manual
+
+- **Retirado:** botón «Actualizar», franja «Estado del período», eyebrow duplicado del mes, icono refrescar en grilla.
+- **Mantiene:** métricas y CTA «Revisar pendientes» en encabezado; grilla a altura completa bajo el lead; recarga automática al guardar.
+- **Archivos:** `novedades-mensuales-container.*`, `novedades-periodo-estado.presenter.ts`; CSS local; sin globales.
+
+---
+
+## 2026-07-07 — Modal Previred: secciones reordenadas (archivo vs observaciones)
+
+- **Antes:** mezclaba aptitud 105, liquidados, movimientos borrador y estado en un solo bloque «Resumen»; «Revisiones» quedaba en columna paralela poco legible.
+- **Ahora:** bloque **Archivo para Previred** (trabajadores incluidos + período/formato); bloque **Observaciones** aparte con texto «no impiden descarga»; bloqueo usa **Trabajadores incompletos** + **Acción recomendada**.
+- **Copy:** sin «(es)»; sin detalle técnico de borrador interno en descarga 105; botón **Ver conceptos afectados** abre modal detalle (trabajador · concepto · monto · motivo).
+- **Archivos:** `previred-exportacion-modal.presenter.ts`, modal component, `previred-export.rules.ts`.
+
+---
+
+## 2026-07-07 — Liquidaciones: modal Previred con resumen aptitud N/M
+
+- **Cambio:** modal exportación Previred muestra resumen `N listo(s) · M incompleto(s)` antes del borrador 105; sección **Incompletos** lista bloqueos por trabajador; descarga bloqueada si hay incompletos.
+- **Archivos:** `previred-exportacion-modal.component.ts`; sin globales.
+- **Validación:** reglas en `previred-trabajador-validacion.rules.ts`; motor `previred-export-105.rules.ts`.
+
+---
+
 ## 2026-07-06 — Liquidaciones: MessageBox en modal (sin inline)
 
 - **Cambio:** avisos, errores, feedback y vacíos intermedios usan `mode="modal"` (overlay delante de la pantalla).
@@ -3570,3 +3610,66 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **Iconos**: franja de acción, stats, checklist, liquidaciones, alertas y botones secundarios (refresh, detalle, reabrir).
 - **Checklist**: al 100% muestra una sola fila resumen; si hay pendientes, solo esas filas.
 - **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-06 - Previred export: UI operativa con modales
+
+- **Alertas**: una sola franja inline priorizada; advertencias detalladas en modal (`Revisar advertencias`).
+- **Panel operativo**: origen + métricas compactas (trabajadores, movimientos, archivo 105); sin duplicar resumen, audit y origen apilados.
+- **Modales**: movimientos exportables (DataGrid), advertencias agrupadas y confirmación de descarga cuando hay revisiones pendientes.
+- **Toolbar**: lead sin subtítulo; enlace secundario acortado a «Liquidaciones».
+- **E2E**: clases `prev-page` y `prev-resumen` en contenedor.
+- **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-07 - Previred desde Liquidaciones (sin menú lateral)
+
+- **Exportación directa**: botón `upload` en grilla entrada (columna acciones) y toolbar de nómina abierta; modal con resumen, advertencias y descarga 105 campos.
+- **Menú**: se retira «Previred» del sidebar; la ruta `/remuneraciones/previred` queda como pantalla técnica/legacy.
+- **Iconos Previred**: `table-2` reemplazado por `list` (no registrado en Lucide global).
+- **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-07 - Movimientos modales hijo: identidad + resumen pie
+
+- **Mensual y recurrente**: franja identidad (iniciales + trabajador · período); bloques bitácora compactos.
+- **Pie dividido**: resumen vivo a la izquierda (listo / pendiente + período) y CTA a la derecha.
+- **Recurrente**: misma estructura que mensual; contexto antiguo retirado.
+- **Sin tocar**: lógica de guardado, servicios, estilos globales.
+
+- **Franja período**: grid editorial (copy + mini-stats tabulares + CTA); eyebrow «Período MM/AAAA»; sin pills sueltas.
+- **Header**: fila compacta lead + Actualizar; hint redundante retirado.
+- **Gestionar**: identidad trabajador con marca tipográfica; hub con filtros segmentados + CTAs cortos; leyenda en `<details>` colapsada.
+- **Grilla**: contadores y estados con radios 6px; acciones bloqueadas en etiqueta corta + tooltip.
+- **Modales**: breadcrumb más sutil; sombras contenidas; sin gradientes decorativos.
+- **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-07 - DataGrid: selección masiva y columna checkbox
+
+- **Checkbox**: columna de selección centrada vertical y horizontalmente (cabecera, filas y skeleton).
+- **Barra masiva**: franja compacta neutra (`data-grid-bulk-bar`); badge con conteo; copy singular/plural; «Quitar selección»; sin franja azul ni icono decorativo.
+- **Acciones**: etiqueta «Cambiar estado a» solo si hay más de una acción masiva; botones con clases locales NOIA.
+- **Alcance**: componente compartido `app-data-grid` (Movimientos y demás grillas seleccionables).
+- **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-07 - Movimientos: acción por fila icon-only
+
+- **Grilla trabajadores**: botones `Asignar` / `Gestionar` reemplazados por iconos con `title` y `aria-label` (`Plus` / `ChevronRight`); variante suave para asignar.
+- **Columna acciones**: ancho mínimo reducido para densidad compacta.
+- **Sin tocar**: estilos globales, SQL, motor, lógica de modales.
+
+## 2026-07-07 - Movimientos modal masivo: lista seleccionados
+
+- **Trabajadores seleccionados**: viñetas (`disc`), nombre + RUT en dos líneas, orden alfabético y grid `auto-fit` para distribuir bien con pocos ítems.
+- **Sin tocar**: estilos globales, SQL, motor, guardado masivo.
+
+## 2026-07-07 - Formulario movimiento mensual (individual + masivo)
+
+- **Componente** `app-novedades-formulario-movimiento-mes`: campos compartidos, grid 3 columnas (concepto full; tipo/monto/fecha en fila).
+- **Modal individual desde Gestionar**: sin franja identidad duplicada ni subtítulo; breadcrumb único; **Volver a gestión** en pie.
+- **Pie**: chips de pendientes (Concepto, Monto…); CTA deshabilitada hasta formulario listo.
+- **Masivo**: reutiliza mismo componente (`detalleAdminCompleto=false`).
+- **Sin tocar**: estilos globales, SQL, motor, servicios.
+
+## 2026-07-07 - Formulario movimiento mensual: aviso al guardar
+
+- **Pie**: sin chips de pendientes; solo resumen positivo cuando el formulario está listo.
+- **Guardar**: CTA siempre habilitada (salvo loading); pendientes se informan con MessageBox `warning` al intentar guardar.
+- **Sin tocar**: estilos globales, SQL, motor, servicios.

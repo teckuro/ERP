@@ -10,10 +10,12 @@ import { parseRut } from '../utils/empleado-rut';
 import {
   buildContratoInsert,
   buildCuentaBancariaInsert,
+  buildPersonaActivacionUpdate,
   buildPersonaInsert,
   buildPrevisionInsert,
   buildRemuneracionInsert,
   buildSaludTrabajadorInsert,
+  mapCreatedEmpleado,
 } from './empleado-write.mapper';
 
 describe('empleado-write.mapper persistencia', () => {
@@ -99,5 +101,37 @@ describe('empleado-write.mapper persistencia', () => {
 
     expect(contrato.casa_particular_modalidad).toBeNull();
     expect(contrato.casa_particular_labores).toBeNull();
+  });
+
+  it('buildPersonaActivacionUpdate: apto true solo si evaluación lo permite', () => {
+    const payload = payloadUsuarioDependienteCompleto({ estado: 'activo' });
+    const update = buildPersonaActivacionUpdate(payload, '2026-01-01T00:00:00.000Z', true, 'VALIDO');
+
+    expect(update.apto_para_remuneraciones).toBe(true);
+    expect(update.estado_ficha).toBe('VALIDO');
+  });
+
+  it('buildPersonaActivacionUpdate: honorarios nunca quedan aptos aunque evaluación pase', () => {
+    const payload = payloadUsuarioHonorarios({ estado: 'activo' });
+    const update = buildPersonaActivacionUpdate(payload, '2026-01-01T00:00:00.000Z', true, 'VALIDO');
+
+    expect(update.apto_para_remuneraciones).toBe(false);
+  });
+
+  it('buildPersonaActivacionUpdate: evaluación negativa deja ficha incompleta', () => {
+    const payload = payloadUsuarioDependienteCompleto({ estado: 'activo' });
+    const update = buildPersonaActivacionUpdate(payload, '2026-01-01T00:00:00.000Z', false, 'INCOMPLETO');
+
+    expect(update.apto_para_remuneraciones).toBe(false);
+    expect(update.estado_ficha).toBe('INCOMPLETO');
+  });
+
+  it('mapCreatedEmpleado: respeta apto explícito del registro', () => {
+    const payload = payloadUsuarioDependienteCompleto({ estado: 'activo' });
+    const rut = parseRut(payload.rut);
+    const creado = mapCreatedEmpleado(payload, personaId, rut, 'Finanzas', false);
+
+    expect(creado.aptoParaRemuneraciones).toBe(false);
+    expect(creado.estadoFicha).toBe('INCOMPLETO');
   });
 });

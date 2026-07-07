@@ -57,7 +57,7 @@ export function mapPersonaFactorToEmpleado(
       mapEstadoFichaToEmpleadoEstado(row.estado_ficha) ??
       mapContratoEstadoToEmpleadoEstado(row.estado_contrato),
     estadoFicha: row.estado_ficha ?? 'INCOMPLETO',
-    aptoParaRemuneraciones: row.apto_para_remuneraciones ?? row.estado_ficha === 'VALIDO',
+    aptoParaRemuneraciones: row.apto_para_remuneraciones === true,
     pasoAltaAvanzada:
       typeof row.paso_alta_avanzada === 'number' ? row.paso_alta_avanzada : null,
   };

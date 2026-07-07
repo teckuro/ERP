@@ -151,7 +151,8 @@ import {
 } from '../../presenters/liquidaciones-oficiales.presenter';
 
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
-import { rutaPreviredNomina } from '../../../remuneraciones-salidas/presenters/salida-externa-layout.presenter';
+import { PreviredExportacionModalComponent } from '../../../previred/components/previred-exportacion-modal/previred-exportacion-modal.component';
+import { puedeExportarPreviredNomina } from '../../../previred/rules/previred-exportacion-ui.rules';
 import { construirActaVaciaLiquidaciones } from '../../rules/liquidaciones-vacio.rules';
 
 export type LiquidacionFeedbackAccionUi = {
@@ -195,6 +196,8 @@ export type LiquidacionFeedbackAccionUi = {
     LiquidacionesModalSeleccionNominaComponent,
 
     LiquidacionesModalDetalleTrabajadorComponent,
+
+    PreviredExportacionModalComponent,
 
   ],
 
@@ -253,6 +256,12 @@ export class LiquidacionesOficialesContainer {
   readonly modalSeleccionNominaAbierto = signal(false);
 
   readonly modalDetalleTrabajadorAbierto = signal(false);
+
+  readonly modalExportPreviredAbierto = signal(false);
+
+  readonly nominaExportPreviredId = signal<string | null>(null);
+
+  readonly etiquetaExportPrevired = signal('');
 
   readonly trabajadoresLiquidacion = signal<LiquidacionTrabajador[]>([]);
 
@@ -406,11 +415,11 @@ export class LiquidacionesOficialesContainer {
     const nomina = this.nominaInterna();
     const id = this.nominaPeriodoId();
     if (!nomina || !id) return false;
-    if (nomina.estado !== 'liquidada' && nomina.estado !== 'cerrada') return false;
-    return this.filasLiquidacionesInternas().length > 0;
+    if (this.filasLiquidacionesInternas().length === 0) return false;
+    return puedeExportarPreviredNomina(nomina);
   });
 
-  readonly rutaPrevired = computed(() => rutaPreviredNomina(this.nominaPeriodoId()));
+  readonly puedeExportarPreviredNomina = puedeExportarPreviredNomina;
 
   readonly contextoOrigen = computed(() => {
 
@@ -1016,6 +1025,28 @@ export class LiquidacionesOficialesContainer {
 
     this.modalSeleccionNominaAbierto.set(false);
 
+  }
+
+  abrirExportPreviredNomina(fila: NominaPeriodoResumen): void {
+    if (!puedeExportarPreviredNomina(fila)) return;
+    this.nominaExportPreviredId.set(fila.id);
+    this.etiquetaExportPrevired.set(`${fila.empresaNombre} · ${fila.periodo}`);
+    this.modalExportPreviredAbierto.set(true);
+  }
+
+  abrirExportPreviredNominaActual(): void {
+    const nomina = this.nominaInterna();
+    const id = this.nominaPeriodoId();
+    if (!nomina || !id || !this.puedeExportarPrevired()) return;
+    this.nominaExportPreviredId.set(id);
+    this.etiquetaExportPrevired.set(this.etiquetaNominaActiva() ?? `${nomina.empresaNombre} · ${nomina.periodo}`);
+    this.modalExportPreviredAbierto.set(true);
+  }
+
+  cerrarExportPreviredNomina(): void {
+    this.modalExportPreviredAbierto.set(false);
+    this.nominaExportPreviredId.set(null);
+    this.etiquetaExportPrevired.set('');
   }
 
 

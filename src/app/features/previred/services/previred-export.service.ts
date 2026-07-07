@@ -91,10 +91,11 @@ export class PreviredExportService {
       }
     }
 
-    const [enriquecidos, rentasMesAnterior] = await Promise.all([
+    const [enriquecimiento, rentasMesAnterior] = await Promise.all([
       this.previredRepo.obtenerTrabajadoresEnriquecidos(idsPersona, nombresFallback),
       this.obtenerRentasImponiblesMesAnterior(nomina.periodo),
     ]);
+    const { porClave: enriquecidosPorClave, porPersona: enriquecidosPorPersona } = enriquecimiento;
 
     const novedadesPorPersona = new Map<number, typeof novedadesPeriodo>();
     for (const novedad of novedadesPeriodo) {
@@ -113,10 +114,16 @@ export class PreviredExportService {
           idPersona != null
             ? claveTrabajadorPrevired(idPersona, fila.trabajador.idContrato)
             : null;
+        const enriquecido =
+          idPersona != null
+            ? (clave ? enriquecidosPorClave.get(clave) : null)
+              ?? enriquecidosPorPersona.get(idPersona)
+              ?? null
+            : null;
         return {
           trabajador: fila.trabajador,
           conceptos: fila.conceptos,
-          enriquecido: clave ? (enriquecidos.get(clave) ?? null) : null,
+          enriquecido,
           novedades: idPersona != null ? (novedadesPorPersona.get(idPersona) ?? []) : [],
           rentaImponibleMesAnterior:
             idPersona != null ? (rentasMesAnterior.get(idPersona) ?? null) : null,

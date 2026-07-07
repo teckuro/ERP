@@ -12,10 +12,10 @@ import {
   untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { LucideAngularModule } from 'lucide-angular';
-import { ChevronRight, Plus, RefreshCw, X } from 'lucide-angular/src/icons';
+import { ChevronRight, Info, Plus, X } from 'lucide-angular/src/icons';
 
 import {
   PeriodoActivoService,
@@ -28,6 +28,7 @@ import {
   DataGridColumn,
   DataGridComponent,
   DataGridFilter,
+  type DataGridBulkActionEvent,
 } from '../../../../../shared/components/ui/data-grid';
 import {
   MessageBoxComponent,
@@ -82,6 +83,43 @@ import {
   validarPeriodoNovedad,
 } from '../../rules/novedades-mensuales.rules';
 import { NovedadesMensualesService } from '../../services/novedades-mensuales.service';
+import {
+  breadcrumbGestionModalHijo,
+  leyendaEstadosGestion,
+  mensajeAccionBloqueadaCorto,
+  mensajeAccionBloqueadaMensual,
+  mensajeAccionBloqueadaRecurrente,
+} from '../../presenters/novedades-gestion-ui.presenter';
+import {
+  mensajeDetalleMovimiento,
+  seccionesDetalleMovimiento,
+  tituloDetalleMovimiento,
+  type NovedadesDetalleMovimientoInput,
+} from '../../presenters/novedades-movimientos-detalle.presenter';
+import { presentarEstadoPeriodoNovedades } from '../../presenters/novedades-periodo-estado.presenter';
+import {
+  ACCIONES_MASIVAS_TRABAJADORES_MOVIMIENTOS,
+  etiquetaTrabajadoresSeleccionados,
+  ordenarTrabajadoresSeleccionadosMasivo,
+  tituloModalAsignacionMasiva,
+} from '../../presenters/novedades-asignacion-masiva.presenter';
+import {
+  avisoFormularioPendienteUi,
+  formatearMontoFormulario,
+  pendientesFormularioMasivoCompleto,
+  pendientesFormularioMensualIndividual,
+  resumenFormularioMasivo,
+  resumenFormularioMensualIndividual,
+} from '../../presenters/novedades-formulario-mensual.presenter';
+import { NovedadesFormularioMovimientoMesComponent } from '../../components/novedades-formulario-movimiento-mes/novedades-formulario-movimiento-mes.component';
+import type { FormularioMovimientoMesCambio } from '../../components/novedades-formulario-movimiento-mes/novedades-formulario-movimiento-mes.component';
+import {
+  type FormularioNovedadMasiva,
+  type ResultadoFilaAsignacionMasiva,
+  puedeSeleccionarTrabajadorMovimiento,
+  prepararAsignacionMasiva,
+  resumirResultadoAsignacionMasiva,
+} from '../../rules/novedades-asignacion-masiva.rules';
 
 type NovedadGridRow = NovedadMensual & {
   trabajadorEtiqueta: string;
@@ -150,6 +188,8 @@ type NovedadForm = {
 
 type NovedadFormCampo = keyof NovedadForm;
 type NovedadFormErrores = Partial<Record<NovedadFormCampo | 'general', string>>;
+type FormularioMasivoCampo = keyof FormularioNovedadMasiva;
+type FormularioMasivoErrores = Partial<Record<FormularioMasivoCampo | 'general', string>>;
 type RecurrenteFormCampo = 'idConcepto' | 'tipoValor' | 'monto' | 'porcentaje' | 'periodicidad' | 'vigenciaInicio' | 'vigenciaFin';
 type RecurrenteFormErrores = Partial<Record<RecurrenteFormCampo | 'general', string>>;
 type RecurrenteAccionPendiente = {
@@ -199,6 +239,22 @@ const TIPO_MOVIMIENTO_LABELS: Record<NovedadMensualTipoMovimiento, string> = {
   informativo: 'Informativo',
 };
 
+function formMasivoInicial(fechaEvento = ''): FormularioNovedadMasiva {
+  return {
+    idConcepto: null,
+    categoria: 'haber_variable',
+    tipoMovimiento: 'haber',
+    cantidad: null,
+    unidad: '',
+    monto: null,
+    moneda: 'CLP',
+    origen: 'manual',
+    fechaEvento,
+    observacion: '',
+    referenciaExterna: '',
+  };
+}
+
 function formInicial(periodo: string): NovedadForm {
   return {
     periodo,
@@ -232,6 +288,7 @@ function formInicial(periodo: string): NovedadForm {
     SearchSelectComponent,
     CalendarInputComponent,
     FieldHelpTipComponent,
+    NovedadesFormularioMovimientoMesComponent,
   ],
   templateUrl: './novedades-mensuales-container.html',
   styleUrl: './novedades-mensuales-container.css',
@@ -243,6 +300,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   private readonly haberesDescuentosService = inject(HaberesDescuentosService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   readonly periodoActivo = inject(PeriodoActivoService);
   private readonly flowQueryParams = toSignal(this.route.queryParams, { initialValue: {} });
   private pantallaInicializada = false;
@@ -250,9 +308,10 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   private bodyOverflowAnterior: string | null = null;
 
   readonly plusIcon = Plus;
-  readonly refreshIcon = RefreshCw;
   readonly closeIcon = X;
   readonly chevronRightIcon = ChevronRight;
+  readonly infoIcon = Info;
+  readonly leyendaEstados = leyendaEstadosGestion();
 
   readonly estados = NOVEDAD_MENSUAL_ESTADOS;
   readonly categorias = NOVEDAD_MENSUAL_CATEGORIAS;
@@ -261,6 +320,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly periodicidadesHd = PERIODICIDADES_HD;
 
   readonly periodoActual = computed(() => this.periodoActivo.periodoYm());
+  readonly fechaReferenciaConceptos = computed(() => new Date(`${this.periodoActual()}-01T00:00:00`));
   readonly periodoFechaMin = computed(() => primerDiaSqlDesdeYm(this.periodoActual()));
   readonly periodoFechaMax = computed(() => ultimoDiaSqlDesdeYm(this.periodoActual()));
   readonly recurrenteVigenciaFinMin = computed(() => this.recurrenteVigenciaInicio() || this.periodoFechaMin());
@@ -280,6 +340,13 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly trabajadorDetalle = signal<TrabajadorDetalleState | null>(null);
   readonly retornoGestionTrabajador = signal<TrabajadorMovimientoRow | null>(null);
   readonly retornoGestionFiltro = signal<GestionFiltro>('todos');
+  readonly accionesMasivasTrabajadores = ACCIONES_MASIVAS_TRABAJADORES_MOVIMIENTOS;
+  readonly asignacionMasivaAbierta = signal(false);
+  readonly asignacionMasivaTrabajadores = signal<TrabajadorMovimientoRow[]>([]);
+  readonly asignacionMasivaLoading = signal(false);
+  readonly formMasivo = signal<FormularioNovedadMasiva>(formMasivoInicial());
+  readonly formMasivoErrores = signal<FormularioMasivoErrores>({});
+  readonly formMasivoValidacionActiva = signal(false);
   readonly formAbierto = signal(false);
   readonly recurrenteFormAbierto = signal(false);
   readonly recurrenteGuardando = signal(false);
@@ -309,6 +376,19 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     () => this.recurrenteFormAbierto() && this.serializarRecurrente() !== this.recurrenteSnapshot(),
   );
   readonly observacionAccion = signal('');
+  readonly observacionPendiente = signal<NovedadMensual | null>(null);
+  readonly observacionMotivo = signal('');
+  readonly observacionMotivoError = signal('');
+  readonly detalleMovimientoUi = signal<{
+    titulo: string;
+    mensaje: string;
+    secciones: MessageBoxSection[];
+  } | null>(null);
+  readonly avisoFormularioPendiente = signal<{
+    titulo: string;
+    mensaje: string;
+    secciones: MessageBoxSection[];
+  } | null>(null);
   readonly mensaje = signal<{
     variant: MessageBoxVariant;
     title: string;
@@ -357,6 +437,34 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       { label: 'Por revisar', total: trabajadores.filter((row) => row.revisar > 0).length },
     ];
   });
+  readonly movimientosListosNomina = computed(
+    () =>
+      this.filas().filter(
+        (fila) => fila.estado === 'aprobada' || fila.estado === 'incorporada_a_pre_nomina',
+      ).length,
+  );
+  readonly estadoPeriodoPresentacion = computed(() => {
+    const trabajadores = this.trabajadoresMovimientos();
+    const params = this.flowQueryParams() as Record<string, string | undefined>;
+    return presentarEstadoPeriodoNovedades({
+      periodoEtiqueta: this.periodoActivo.etiqueta(),
+      totalTrabajadores: trabajadores.length,
+      conMovimientos: trabajadores.filter((row) => row.movimientosMes > 0).length,
+      conRecurrentes: trabajadores.filter((row) => row.recurrentes > 0).length,
+      porRevisar: trabajadores.filter((row) => row.revisar > 0).length,
+      listosNomina: this.movimientosListosNomina(),
+      desdeFlowNomina: debeRehidratarDesdeFlowQuery(params),
+    });
+  });
+  readonly urlRetornoNominaFlow = computed(() => {
+    const params = this.flowQueryParams() as Record<string, string | undefined>;
+    if (!debeRehidratarDesdeFlowQuery(params)) {
+      return null;
+    }
+    const periodo = periodoYmDesdeFlowQuery(params) ?? this.periodoActual();
+    const idPersona = idPersonaDesdeFlowQuery(params);
+    return buildNominaFlowReturnUrl(periodo, idPersona ?? undefined);
+  });
   readonly trabajadoresMovimientos = computed<TrabajadorMovimientoRow[]>(() => {
     const movimientos = this.filas();
     const recurrentes = this.recurrentesPeriodo();
@@ -393,36 +501,81 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       });
   });
   readonly formConCambios = computed(() => this.formAbierto() && this.serializarForm(this.form()) !== this.formSnapshot());
+  readonly modalMensualDesdeGestion = computed(() => this.retornoGestionTrabajador() != null);
   readonly resumenFormulario = computed(() => {
     const form = this.form();
     const trabajadorCtx = this.retornoGestionTrabajador();
     const trabajador =
       trabajadorCtx?.trabajador ?? (form.idPersona == null ? '' : this.etiquetaTrabajador(form.idPersona));
-    const concepto = form.idConcepto == null ? '' : this.etiquetaConcepto(form.idConcepto);
-    const monto = form.monto == null ? '' : `${form.moneda || 'CLP'} ${Number(form.monto).toLocaleString('es-CL')}`;
-    const tipo = this.etiquetaTipoMovimiento(form.tipoMovimiento);
+    return resumenFormularioMensualIndividual(form, {
+      requiereTrabajador: !this.formTrabajadorBloqueado(),
+      trabajadorEtiqueta: trabajador,
+      periodoEtiqueta: this.periodoActivo.etiqueta(),
+      tipoEtiqueta: this.etiquetaTipoMovimiento(form.tipoMovimiento),
+      conceptoEtiqueta: form.idConcepto == null ? '' : this.etiquetaConcepto(form.idConcepto),
+      montoFormateado: formatearMontoFormulario(form.monto, form.moneda),
+      ocultarPeriodoEnResumen: this.modalMensualDesdeGestion(),
+      tieneContextoTrabajador: !!trabajadorCtx,
+    });
+  });
+  readonly resumenRecurrenteFormulario = computed(() => {
+    const trabajador = this.recurrenteTrabajador();
+    const concepto = this.conceptoRecurrenteSeleccionado();
+    const conceptoEtiqueta = concepto ? `${concepto.nombre} (${concepto.codigo})` : '';
+    const valor =
+      this.recurrenteTipoValor() === 'FIJO'
+        ? this.recurrenteMonto() > 0
+          ? `CLP ${Number(this.recurrenteMonto()).toLocaleString('es-CL')}`
+          : ''
+        : this.recurrentePorcentaje() > 0
+          ? `${this.recurrentePorcentaje()}%`
+          : '';
+    const vigenciaInicio = this.recurrenteVigenciaInicio();
     const faltantes: string[] = [];
-    if (!concepto) {
+    if (!conceptoEtiqueta) {
       faltantes.push('seleccionar concepto');
     }
-    if (form.monto == null) {
-      faltantes.push('indicar monto');
+    if (!valor) {
+      faltantes.push('indicar valor');
     }
-    if (!trabajador && form.idPersona == null) {
-      faltantes.push('seleccionar trabajador');
+    if (!vigenciaInicio) {
+      faltantes.push('indicar vigencia inicio');
     }
-    const datosPrincipales = trabajador && concepto && form.monto != null;
+    const listo = !!trabajador && !!conceptoEtiqueta && !!valor && !!vigenciaInicio;
+    const vigenciaEtiqueta = vigenciaInicio ? this.formatearFecha(vigenciaInicio.slice(0, 10)) : '';
     return {
-      trabajador,
-      concepto,
-      monto,
-      tipo,
+      trabajador: trabajador?.trabajador ?? '',
+      concepto: conceptoEtiqueta,
+      valor,
       periodo: this.periodoActivo.etiqueta(),
-      principal: datosPrincipales ? `${tipo} de ${monto} para ${trabajador}.` : '',
-      faltante: faltantes.length > 0 ? `Falta ${faltantes.join(' y ')} para completar el resumen.` : '',
-      visible: form.idPersona != null || form.idConcepto != null || form.monto != null || !!trabajadorCtx,
+      principal: listo ? `${conceptoEtiqueta} · ${valor} · desde ${vigenciaEtiqueta}` : '',
+      faltante: faltantes.length > 0 ? `Falta ${faltantes.join(' y ')}.` : '',
+      visible: !!trabajador && (!!conceptoEtiqueta || !!valor || !!vigenciaInicio),
     };
   });
+
+  readonly resumenFormularioMasivo = computed(() => {
+    const form = this.formMasivo();
+    const cantidad = this.asignacionMasivaTrabajadores().length;
+    return resumenFormularioMasivo(form, {
+      cantidadTrabajadores: cantidad,
+      periodoEtiqueta: this.periodoActivo.etiqueta(),
+      tipoEtiqueta: this.etiquetaTipoMovimiento(form.tipoMovimiento),
+      conceptoEtiqueta: form.idConcepto == null ? '' : this.etiquetaConcepto(form.idConcepto),
+      montoFormateado: formatearMontoFormulario(form.monto, form.moneda),
+    });
+  });
+  readonly tituloAsignacionMasiva = computed(() =>
+    tituloModalAsignacionMasiva(this.asignacionMasivaTrabajadores().length),
+  );
+  readonly etiquetaSeleccionMasiva = computed(() =>
+    etiquetaTrabajadoresSeleccionados(this.asignacionMasivaTrabajadores().length),
+  );
+  readonly trabajadoresSeleccionadosOrdenados = computed(() =>
+    ordenarTrabajadoresSeleccionadosMasivo(this.asignacionMasivaTrabajadores()),
+  );
+  readonly trabajadorSeleccionBloqueado = (row: TrabajadorMovimientoRow): boolean =>
+    !puedeSeleccionarTrabajadorMovimiento(row);
 
   readonly trabajadorColumns: DataGridColumn<TrabajadorMovimientoRow>[] = [
     {
@@ -490,7 +643,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       sortable: false,
       hideable: false,
       filterable: false,
-      minWidth: '7rem',
+      minWidth: '3.25rem',
     },
   ];
 
@@ -675,6 +828,15 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       sortable: true,
       filterable: false,
       minWidth: '8rem',
+    },
+    {
+      id: 'detalle',
+      header: 'Detalle',
+      align: 'center',
+      sortable: false,
+      hideable: false,
+      filterable: false,
+      minWidth: '5rem',
     },
     {
       id: 'acciones',
@@ -869,6 +1031,8 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       untracked(() => {
         this.formAbierto.set(false);
         this.recurrenteFormAbierto.set(false);
+        this.asignacionMasivaAbierta.set(false);
+        this.asignacionMasivaTrabajadores.set([]);
         this.recurrenteCerrarPendiente.set(null);
         this.restaurarScrollPagina();
         this.novedadEditando.set(null);
@@ -879,6 +1043,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
         this.observacionAccion.set('');
         this.mensaje.set(null);
         this.filas.set([]);
+        void this.recargarConceptosPeriodo();
         void this.cargarNovedades();
       });
     });
@@ -945,6 +1110,162 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     this.abrirFormularioCon(formInicial(this.periodoActual()));
   }
 
+  manejarAsignacionMasiva(event: DataGridBulkActionEvent<TrabajadorMovimientoRow>): void {
+    if (event.action !== 'asignar-movimiento-mes') {
+      return;
+    }
+    if (this.formAbierto() || this.recurrenteFormAbierto() || this.asignacionMasivaAbierta()) {
+      return;
+    }
+    const seleccionados = event.rows.filter((row) => puedeSeleccionarTrabajadorMovimiento(row));
+    if (seleccionados.length === 0) {
+      this.mensaje.set({
+        variant: 'warning',
+        title: 'Sin trabajadores aplicables',
+        message: 'Seleccione trabajadores con ficha válida para asignar movimientos.',
+      });
+      return;
+    }
+    this.asignacionMasivaTrabajadores.set(seleccionados);
+    this.formMasivo.set(formMasivoInicial(this.periodoFechaMin()));
+    this.formMasivoErrores.set({});
+    this.formMasivoValidacionActiva.set(false);
+    this.asignacionMasivaAbierta.set(true);
+    this.bloquearScrollPagina();
+  }
+
+  cerrarAsignacionMasiva(): void {
+    if (this.asignacionMasivaLoading()) {
+      return;
+    }
+    this.cerrarAsignacionMasivaDirecto();
+  }
+
+  private cerrarAsignacionMasivaDirecto(): void {
+    this.asignacionMasivaAbierta.set(false);
+    this.asignacionMasivaTrabajadores.set([]);
+    this.formMasivo.set(formMasivoInicial());
+    this.formMasivoErrores.set({});
+    this.formMasivoValidacionActiva.set(false);
+    this.restaurarScrollPagina();
+  }
+
+  actualizarFormMasivo<K extends FormularioMasivoCampo>(campo: K, valor: FormularioNovedadMasiva[K]): void {
+    this.actualizarFormMasivoCampo(campo, valor);
+  }
+
+  manejarCambioCampoFormularioMasivo(evento: FormularioMovimientoMesCambio): void {
+    const campo = evento.campo as FormularioMasivoCampo;
+    this.actualizarFormMasivoCampo(campo, evento.valor as FormularioNovedadMasiva[FormularioMasivoCampo]);
+  }
+
+  private actualizarFormMasivoCampo<K extends FormularioMasivoCampo>(
+    campo: K,
+    valor: FormularioNovedadMasiva[K],
+  ): void {
+    this.formMasivo.update((actual) => ({ ...actual, [campo]: valor }));
+    if (this.formMasivoErrores()[campo]) {
+      this.formMasivoErrores.update((actual) => {
+        const next = { ...actual };
+        delete next[campo];
+        return next;
+      });
+    }
+    if (this.formMasivoErrores().general) {
+      this.formMasivoErrores.update((actual) => {
+        const next = { ...actual };
+        delete next.general;
+        return next;
+      });
+    }
+  }
+
+  onConceptoMasivoChange(idConcepto: number | null): void {
+    this.actualizarFormMasivo('idConcepto', idConcepto);
+  }
+
+  errorCampoMasivo(campo: FormularioMasivoCampo): string {
+    if (!this.formMasivoValidacionActiva()) {
+      return '';
+    }
+    return this.formMasivoErrores()[campo] ?? '';
+  }
+
+  async guardarAsignacionMasiva(): Promise<void> {
+    this.formMasivoValidacionActiva.set(true);
+    const trabajadores = this.asignacionMasivaTrabajadores();
+    const pendientes = pendientesFormularioMasivoCompleto(this.formMasivo(), trabajadores.length);
+    if (pendientes.length > 0) {
+      this.avisoFormularioPendiente.set(avisoFormularioPendienteUi(pendientes));
+      return;
+    }
+
+    const preparadas = prepararAsignacionMasiva(
+      this.periodoActual(),
+      this.formMasivo(),
+      trabajadores,
+      this.empleadosListado(),
+    );
+    const aplicables = preparadas.filter((fila) => fila.input);
+
+    if (aplicables.length === 0) {
+      const detalle =
+        preparadas.find((fila) => fila.errorPrevio)?.errorPrevio ??
+        'No se pudo preparar el movimiento para los trabajadores seleccionados.';
+      this.avisoFormularioPendiente.set({
+        titulo: 'No se puede registrar',
+        mensaje: detalle,
+        secciones: [],
+      });
+      return;
+    }
+
+    this.formMasivoErrores.set({});
+    this.asignacionMasivaLoading.set(true);
+    const resultados: ResultadoFilaAsignacionMasiva[] = [];
+
+    try {
+      for (const fila of preparadas) {
+        if (!fila.input) {
+          resultados.push({
+            idPersona: fila.trabajador.idPersona,
+            trabajador: fila.trabajador.trabajador,
+            ok: false,
+            mensaje: fila.errorPrevio ?? 'No se pudo preparar el movimiento.',
+          });
+          continue;
+        }
+        try {
+          await this.novedadesService.crearNovedad(fila.input);
+          resultados.push({
+            idPersona: fila.trabajador.idPersona,
+            trabajador: fila.trabajador.trabajador,
+            ok: true,
+          });
+        } catch (err) {
+          resultados.push({
+            idPersona: fila.trabajador.idPersona,
+            trabajador: fila.trabajador.trabajador,
+            ok: false,
+            mensaje: this.extractMensajeError(err, 'No se pudo registrar el movimiento.'),
+          });
+        }
+      }
+
+      this.cerrarAsignacionMasivaDirecto();
+      await this.cargarNovedades();
+      const resumen = resumirResultadoAsignacionMasiva(resultados);
+      this.mensaje.set({
+        variant: resumen.fallos === 0 ? 'success' : resumen.exitos === 0 ? 'error' : 'warning',
+        title: resumen.titulo,
+        message: resumen.mensaje,
+        detail: resumen.detalle,
+      });
+    } finally {
+      this.asignacionMasivaLoading.set(false);
+    }
+  }
+
   tonoResumenPeriodo(label: string): string {
     const normalizado = label.toLowerCase();
     if (normalizado.includes('revisar')) {
@@ -957,6 +1278,160 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       return 'nm-context-card--ok';
     }
     return 'nm-context-card--neutral';
+  }
+
+  claseMetricaPeriodo(tono: 'neutral' | 'info' | 'ok' | 'review'): string {
+    switch (tono) {
+      case 'review':
+        return 'nm-metric-chip--review';
+      case 'info':
+        return 'nm-metric-chip--info';
+      case 'ok':
+        return 'nm-metric-chip--ok';
+      default:
+        return 'nm-metric-chip--neutral';
+    }
+  }
+
+  ejecutarAccionRecomendadaPeriodo(): void {
+    if (this.estadoPeriodoPresentacion().accionRecomendada.tipo !== 'revisar_pendientes') {
+      return;
+    }
+    const pendiente = this.trabajadoresMovimientos().find((row) => row.revisar > 0);
+    if (pendiente) {
+      this.abrirDetalleTrabajador(pendiente, 'revision');
+    }
+  }
+
+  volverANominaFlow(): void {
+    const url = this.urlRetornoNominaFlow();
+    if (url) {
+      void this.router.navigateByUrl(url);
+    }
+  }
+
+  breadcrumbModalMensual(): string {
+    const trabajador = this.retornoGestionTrabajador()?.trabajador ?? 'Trabajador';
+    return breadcrumbGestionModalHijo({
+      trabajador,
+      accion: 'mensual',
+      editando: this.novedadEditando() != null,
+    });
+  }
+
+  breadcrumbModalRecurrente(): string {
+    const trabajador = this.recurrenteTrabajador()?.trabajador ?? this.retornoGestionTrabajador()?.trabajador ?? 'Trabajador';
+    return breadcrumbGestionModalHijo({
+      trabajador,
+      accion: 'recurrente',
+      editando: this.recurrenteEditandoId() != null,
+    });
+  }
+
+  abrirDetalleMovimiento(row: MovimientoGestionUnificadoRow): void {
+    const detalle = this.trabajadorDetalle();
+    if (!detalle) {
+      return;
+    }
+    if (this.formAbierto() || this.recurrenteFormAbierto()) {
+      return;
+    }
+    const input = this.inputDetalleMovimiento(row, detalle.row);
+    this.detalleMovimientoUi.set({
+      titulo: tituloDetalleMovimiento(input.ambito),
+      mensaje: mensajeDetalleMovimiento(input),
+      secciones: seccionesDetalleMovimiento(input),
+    });
+  }
+
+  cerrarDetalleMovimiento(): void {
+    this.detalleMovimientoUi.set(null);
+  }
+
+  mensajeAccionesBloqueadas(row: MovimientoGestionUnificadoRow): string {
+    if (row.novedad) {
+      return mensajeAccionBloqueadaMensual(row.estadoEtiqueta);
+    }
+    return mensajeAccionBloqueadaRecurrente();
+  }
+
+  mensajeAccionesBloqueadasCorto(row: MovimientoGestionUnificadoRow): string {
+    return mensajeAccionBloqueadaCorto(row.estadoEtiqueta, row.ambito);
+  }
+
+  inicialesTrabajador(row: TrabajadorMovimientoRow): string {
+    return row.trabajador
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((parte) => parte[0]?.toUpperCase() ?? '')
+      .join('');
+  }
+
+  pedirObservarDesdeDetalle(novedad: NovedadMensual): void {
+    if (!this.puedeRechazar(novedad)) {
+      return;
+    }
+    this.observacionPendiente.set(novedad);
+    this.observacionMotivo.set('');
+    this.observacionMotivoError.set('');
+  }
+
+  cerrarObservacionPendiente(): void {
+    this.observacionPendiente.set(null);
+    this.observacionMotivo.set('');
+    this.observacionMotivoError.set('');
+  }
+
+  async confirmarObservar(): Promise<void> {
+    const novedad = this.observacionPendiente();
+    const motivo = this.observacionMotivo().trim();
+    if (!novedad) {
+      return;
+    }
+    if (!motivo) {
+      this.observacionMotivoError.set('Indique el motivo de la observación.');
+      return;
+    }
+    this.observacionMotivoError.set('');
+    this.observacionAccion.set(motivo);
+    await this.rechazar(novedad);
+    this.cerrarObservacionPendiente();
+  }
+
+  private inputDetalleMovimiento(
+    row: MovimientoGestionUnificadoRow,
+    trabajador: TrabajadorMovimientoRow,
+  ): NovedadesDetalleMovimientoInput {
+    if (row.novedad) {
+      return {
+        trabajador: trabajador.trabajador,
+        rut: trabajador.rut,
+        periodoEtiqueta: this.periodoActivo.etiqueta(),
+        ambito: 'mensual',
+        concepto: row.concepto,
+        tipo: row.tipo,
+        monto: row.monto,
+        vigencia: row.vigencia,
+        estadoEtiqueta: row.estadoEtiqueta,
+        detalle: row.detalle,
+        origen: row.novedad.origenEtiqueta,
+        observacion: row.novedad.observacion,
+      };
+    }
+    return {
+      trabajador: trabajador.trabajador,
+      rut: trabajador.rut,
+      periodoEtiqueta: this.periodoActivo.etiqueta(),
+      ambito: 'recurrente',
+      concepto: row.concepto,
+      tipo: row.tipo,
+      monto: row.monto,
+      vigencia: row.vigencia,
+      estadoEtiqueta: row.estadoEtiqueta,
+      detalle: row.detalle,
+      observacion: row.recurrente?.asignacion.observacion ?? null,
+    };
   }
 
   claseEstadoTrabajador(estado: TrabajadorMovimientoRow['estado']): string {
@@ -1037,6 +1512,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     recurrente?: HaberDescuentoAsignacionPrevalidacionMensualFila,
     filtro: GestionFiltro = 'recurrente',
   ): void {
+    this.cerrarDetalleMovimiento();
     this.prepararRetornoGestion(row, filtro);
     this.recurrenteTrabajador.set(row);
     this.recurrenteEditandoId.set(recurrente?.asignacion.idAsignacion ?? null);
@@ -1116,7 +1592,22 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     this.abrirDetalleTrabajador(row, 'recurrente');
   }
 
+  esAsignarTrabajadorGrilla(row: TrabajadorMovimientoRow): boolean {
+    return row.movimientosMes === 0 && row.recurrentes === 0;
+  }
+
+  tituloAccionTrabajadorGrilla(row: TrabajadorMovimientoRow): string {
+    return this.esAsignarTrabajadorGrilla(row)
+      ? `Asignar movimiento del mes — ${row.trabajador}`
+      : `Gestionar movimientos — ${row.trabajador}`;
+  }
+
+  iconoAccionTrabajadorGrilla(row: TrabajadorMovimientoRow): typeof Plus | typeof ChevronRight {
+    return this.esAsignarTrabajadorGrilla(row) ? this.plusIcon : this.chevronRightIcon;
+  }
+
   private abrirFormularioCon(form: NovedadForm): void {
+    this.cerrarDetalleMovimiento();
     this.form.set(form);
     this.formErrores.set({});
     this.formValidacionActiva.set(false);
@@ -1156,6 +1647,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   }
 
   cerrarRecurrente(): void {
+    this.cerrarDetalleMovimiento();
     this.recurrenteFormAbierto.set(false);
     this.recurrenteEditandoId.set(null);
     this.recurrenteTrabajador.set(null);
@@ -1207,6 +1699,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
 
   confirmarDescartarRecurrente(): void {
     this.confirmarCancelarRecurrenteAbierto.set(false);
+    this.cerrarDetalleMovimiento();
     const restaurar = this.retornoGestionTrabajador() != null;
     this.cerrarRecurrente();
     if (restaurar && !this.trabajadorDetalle()) {
@@ -1295,11 +1788,6 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     const errores = this.validarRecurrente(payload);
     if (Object.keys(errores).length > 0) {
       this.recurrenteErrores.set(errores);
-      this.mensaje.set({
-        variant: 'warning',
-        title: 'Datos incompletos',
-        message: errores.general ?? 'Revisa los datos del movimiento recurrente.',
-      });
       return;
     }
 
@@ -1311,15 +1799,6 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       } else {
         await this.haberesDescuentosService.actualizar(editandoId, payload);
       }
-      this.mensaje.set({
-        variant: 'success',
-        title: editandoId == null ? 'Recurrente registrado' : 'Recurrente actualizado',
-        message:
-          editandoId == null
-            ? 'El movimiento recurrente fue registrado correctamente.'
-            : 'El movimiento recurrente fue actualizado correctamente.',
-        detail: trabajador.trabajador,
-      });
       await this.cargarNovedades();
       this.cerrarRecurrente();
       if (this.trabajadorDetalle()) {
@@ -1344,6 +1823,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   }
 
   editarMovimientoDesdeDetalle(novedad: NovedadMensual): void {
+    this.cerrarDetalleMovimiento();
     const detalle = this.trabajadorDetalle();
     if (detalle) {
       this.prepararRetornoGestion(detalle.row, detalle.filtro);
@@ -1361,6 +1841,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
 
   confirmarDescartarFormulario(): void {
     this.confirmarCancelarAbierto.set(false);
+    this.cerrarDetalleMovimiento();
     this.cerrarFormularioDirecto();
     if (!this.trabajadorDetalle()) {
       this.restaurarGestionSiCorresponde();
@@ -1372,6 +1853,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   }
 
   cerrarFormularioDirecto(): void {
+    this.cerrarDetalleMovimiento();
     this.formAbierto.set(false);
     this.restaurarScrollPagina();
     this.novedadEditando.set(null);
@@ -1388,6 +1870,15 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   }
 
   actualizarForm<K extends keyof NovedadForm>(campo: K, valor: NovedadForm[K]): void {
+    this.actualizarFormCampo(campo, valor);
+  }
+
+  manejarCambioCampoFormulario(evento: FormularioMovimientoMesCambio): void {
+    const campo = evento.campo as keyof NovedadForm;
+    this.actualizarFormCampo(campo, evento.valor as NovedadForm[keyof NovedadForm]);
+  }
+
+  private actualizarFormCampo<K extends keyof NovedadForm>(campo: K, valor: NovedadForm[K]): void {
     this.form.update((actual) => ({ ...actual, [campo]: valor }));
     this.limpiarErrorCampo(campo);
   }
@@ -1413,15 +1904,19 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
 
   async guardarFormulario(): Promise<void> {
     this.formValidacionActiva.set(true);
+    const pendientes = pendientesFormularioMensualIndividual(this.form(), !this.formTrabajadorBloqueado());
     const input = this.inputDesdeForm();
     const resultado = validarNovedadMensualInput({ ...input, estado: this.novedadEditando()?.estado ?? 'borrador' });
+    if (pendientes.length > 0) {
+      if (!resultado.valido) {
+        this.formErrores.set(this.erroresDesdeValidacion(resultado.errores));
+        this.enfocarPrimerError();
+      }
+      this.avisoFormularioPendiente.set(avisoFormularioPendienteUi(pendientes));
+      return;
+    }
     if (!resultado.valido) {
       this.formErrores.set(this.erroresDesdeValidacion(resultado.errores));
-      this.mensaje.set({
-        variant: 'warning',
-        title: 'Datos incompletos',
-        message: this.mensajeOperativo(resultado.errores[0]?.mensaje) ?? 'Revise los datos del movimiento del mes.',
-      });
       this.enfocarPrimerError();
       return;
     }
@@ -1432,18 +1927,8 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       const editando = this.novedadEditando();
       if (editando) {
         await this.novedadesService.actualizarNovedad(editando.idNovedad, input);
-        this.mensaje.set({
-          variant: 'success',
-          title: 'Movimiento actualizado',
-          message: 'El movimiento quedo actualizado.',
-        });
       } else {
         await this.novedadesService.crearNovedad(input);
-        this.mensaje.set({
-          variant: 'success',
-          title: 'Movimiento guardado',
-          message: 'Movimiento guardado correctamente.',
-        });
       }
       this.cerrarFormularioDirecto();
       await this.cargarNovedades();
@@ -1517,8 +2002,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   }
 
   async observarDesdeDetalle(novedad: NovedadMensual): Promise<void> {
-    this.observacionAccion.set('Observado desde Movimientos de remuneración.');
-    await this.rechazar(novedad);
+    this.pedirObservarDesdeDetalle(novedad);
   }
 
   async anular(novedad: NovedadMensual): Promise<void> {
@@ -1544,6 +2028,10 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     this.mensaje.set(null);
   }
 
+  cerrarAvisoFormularioPendiente(): void {
+    this.avisoFormularioPendiente.set(null);
+  }
+
   errorCampo(campo: NovedadFormCampo): string {
     const errores = this.formErrores();
     if (!errores[campo]) {
@@ -1555,7 +2043,11 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     return errores[campo] ?? '';
   }
 
-  marcarCampoFormularioTocado(campo: NovedadFormCampo): void {
+  onCampoTocadoFormulario(campo: keyof FormularioNovedadMasiva | NovedadFormCampo): void {
+    this.marcarCampoFormularioTocadoInterno(campo as NovedadFormCampo);
+  }
+
+  private marcarCampoFormularioTocadoInterno(campo: NovedadFormCampo): void {
     if (!this.formCamposTocados()[campo]) {
       this.formCamposTocados.update((actual) => ({ ...actual, [campo]: true }));
     }
@@ -1872,7 +2364,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     try {
       const [empleados, conceptos] = await Promise.all([
         this.empleadosService.listar(),
-        this.haberesDescuentosService.listarConceptos(),
+        this.haberesDescuentosService.listarConceptos(this.fechaReferenciaConceptos()),
       ]);
       this.empleadosListado.set(empleados);
       this.empleadoOptions.set(
@@ -1887,6 +2379,15 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       this.mostrarError(err, 'No se pudieron cargar los datos necesarios para registrar movimientos del mes.');
     } finally {
       this.soporteLoading.set(false);
+    }
+  }
+
+  private async recargarConceptosPeriodo(): Promise<void> {
+    try {
+      const conceptos = await this.haberesDescuentosService.listarConceptos(this.fechaReferenciaConceptos());
+      this.conceptos.set(conceptos);
+    } catch (err) {
+      this.mostrarError(err, 'No se pudieron cargar los conceptos del período.');
     }
   }
 
@@ -2150,12 +2651,16 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   }
 
   private mostrarError(err: unknown, fallback: string): void {
-    const message = err instanceof Error && err.message.trim() ? err.message : fallback;
     this.mensaje.set({
       variant: 'error',
       title: 'Error',
-      message: this.mensajeOperativo(message) ?? fallback,
+      message: this.extractMensajeError(err, fallback),
     });
+  }
+
+  private extractMensajeError(err: unknown, fallback: string): string {
+    const message = err instanceof Error && err.message.trim() ? err.message : fallback;
+    return this.mensajeOperativo(message) ?? fallback;
   }
 
   private mensajeOperativo(message: string | undefined): string | undefined {

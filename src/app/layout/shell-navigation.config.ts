@@ -32,7 +32,6 @@ export const SHELL_NAV_SECTIONS: ShellNavSection[] = [
         icon: 'clipboard-list',
       },
       { path: '/remuneraciones/liquidaciones', label: 'Liquidaciones', icon: 'file-check-2' },
-      { path: '/remuneraciones/previred', label: 'Previred', icon: 'upload' },
       { path: '/remuneraciones/lre', label: 'Libro remuneraciones', icon: 'file-text' },
       { path: '/parametros', label: 'Parámetros', icon: 'settings' },
     ],
@@ -41,7 +40,6 @@ export const SHELL_NAV_SECTIONS: ShellNavSection[] = [
     label: 'Gestión',
     items: [
       { path: '/remuneraciones/novedades-mensuales', label: 'Movimientos', icon: 'calendar-plus' },
-      { path: '/remuneraciones/haberes-descuentos', label: 'Recurrentes', icon: 'repeat' },
       { path: '/remuneraciones/conceptos', label: 'Conceptos', icon: 'tags', exact: true },
     ],
   },

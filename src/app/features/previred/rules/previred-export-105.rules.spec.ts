@@ -91,4 +91,52 @@ describe('previred-export-105.rules', () => {
     expect(linea.length).toBe(861);
     expect(linea.slice(748, 756)).toBe('00000001');
   });
+
+  it('bloquea exportación cuando falta sexo registral en ficha', () => {
+    const archivo = construirArchivo105Previred({
+      periodo: '2026-08',
+      catalogoCampoArchivo: [],
+      parametrosEmpresa: {
+        codigoCcaf: '01',
+        codigoMutual: '01',
+        tasaExpectativaVida: 0.009,
+      },
+      trabajadores: [
+        {
+          trabajador: trabajador(),
+          conceptos: [],
+          enriquecido: {
+            idPersona: 10,
+            idContrato: 20,
+            rut: '11111111',
+            dv: '1',
+            apellidoPaterno: 'Pérez',
+            apellidoMaterno: 'López',
+            nombres: 'Ana',
+            sexo: null,
+            nacionalidad: 0,
+            regimenPrevisional: 'AFP',
+            tipoTrabajador: 0,
+            tipoJornada: 1,
+            codigoAfp: '33',
+            saludTipo: 'FONASA',
+            codigoSalud: '07',
+            seguroCesantia: false,
+            cargasSimples: 0,
+            cargasMaternales: 0,
+            cargasInvalidas: 0,
+            tramoAsignacionFamiliar: 'D',
+            centroCosto: 'CC01',
+          },
+          novedades: [],
+          rentaImponibleMesAnterior: null,
+        },
+      ],
+    });
+
+    expect(archivo.totalLineas).toBe(0);
+    expect(archivo.trabajadoresSinDatos).toBe(1);
+    expect(archivo.listoParaEnvio105).toBe(false);
+    expect(archivo.advertencias.some((a) => a.nivel === 'bloqueo')).toBe(true);
+  });
 });

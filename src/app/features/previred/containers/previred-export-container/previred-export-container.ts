@@ -12,7 +12,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
-import type { MessageBoxSection } from '../../../../shared/components/ui/feedback/message-box/message-box.types';
+import type {
+  MessageBoxSection,
+  MessageBoxVariantInput,
+} from '../../../../shared/components/ui/feedback/message-box/message-box.types';
 import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { DataGridComponent } from '../../../../shared/components/ui/data-grid/data-grid.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
@@ -49,6 +52,20 @@ import {
   rutaLiquidacionesNomina,
 } from '../../../remuneraciones-salidas/presenters/salida-externa-layout.presenter';
 import { construirEmptySalidaExterna } from '../../../remuneraciones-salidas/rules/salida-externa-vacio.rules';
+
+type PreviredAlertaInlineActionId = 'nomina' | 'advertencias' | 'none';
+type PreviredAlertaInlineDismissId = 'feedback' | 'none';
+type PreviredDescargaPendiente = 'archivo_105' | 'csv' | 'archivo_rem';
+
+interface PreviredAlertaInlineVm {
+  variant: MessageBoxVariantInput;
+  title: string;
+  message: string;
+  primaryLabel?: string;
+  actionId: PreviredAlertaInlineActionId;
+  dismissible?: boolean;
+  dismissId?: PreviredAlertaInlineDismissId;
+}
 
 @Component({
   selector: 'app-previred-export-container',
@@ -87,6 +104,10 @@ export class PreviredExportContainer {
   readonly errorCarga = signal<string | null>(null);
   readonly feedbackDescarga = signal<string | null>(null);
   readonly modalNominaAbierto = signal(false);
+  readonly modalAdvertenciasAbierto = signal(false);
+  readonly modalMovimientosAbierto = signal(false);
+  readonly modalConfirmarDescargaAbierto = signal(false);
+  readonly descargaPendiente = signal<PreviredDescargaPendiente | null>(null);
   readonly avisoFaseBd = signal<string | null>(null);
   readonly avisoNominaQuery = signal<string | null>(null);
 
@@ -153,20 +174,127 @@ export class PreviredExportContainer {
     () => !this.cargaInicial() && !this.errorCarga() && this.nominasExportables().length > 0,
   );
 
-  readonly seccionesAdvertencia = computed((): MessageBoxSection[] => {
+  readonly advertenciasConsolidadas = computed(() => {
     const borrador = this.borrador();
     const archivo = this.archivo105();
-    const advertencias = [
-      ...(borrador?.advertencias ?? []),
-      ...(archivo?.advertencias ?? []),
-    ];
+    return [...(borrador?.advertencias ?? []), ...(archivo?.advertencias ?? [])];
+  });
+
+  readonly totalAdvertencias = computed(() => this.advertenciasConsolidadas().length);
+
+  readonly tieneBloqueoExportacion = computed(() =>
+    this.advertenciasConsolidadas().some((advertencia) => advertencia.nivel === 'bloqueo'),
+  );
+
+  readonly seccionesAdvertencia = computed((): MessageBoxSection[] => {
+    const advertencias = this.advertenciasConsolidadas();
     if (!advertencias.length) return [];
 
     return advertencias.map((advertencia) => ({
-      title: advertencia.nivel === 'bloqueo' ? 'No se puede exportar' : 'Revisar antes de exportar',
+      title: advertencia.nivel === 'bloqueo' ? 'Bloqueo' : 'Revisión',
       tone: advertencia.nivel === 'bloqueo' ? 'danger' : 'attention',
       items: [advertencia.mensaje],
     }));
+  });
+
+  readonly origenNotaOperativa = computed(() => {
+    const origen = this.contextoOrigen();
+    if (this.ultimaExportacion()) return null;
+    return origen?.nota ?? null;
+  });
+
+  readonly alertaInline = computed((): PreviredAlertaInlineVm | null => {
+    const query = this.avisoNominaQuery();
+    if (query) {
+      return {
+        variant: 'info',
+        title: 'Nómina no disponible',
+        message: query,
+        primaryLabel: 'Buscar nómina',
+        actionId: 'nomina',
+      };
+    }
+
+    const fase = this.avisoFaseBd();
+    if (fase) {
+      return {
+        variant: 'warning',
+        title: 'Servidor sin fase completa',
+        message: fase,
+        primaryLabel: 'Ver advertencias',
+        actionId: 'advertencias',
+      };
+    }
+
+    const feedback = this.feedbackDescarga();
+    if (feedback) {
+      return {
+        variant: 'warning',
+        title: 'Descarga con advertencia',
+        message: feedback,
+        dismissible: true,
+        dismissId: 'feedback',
+        actionId: 'none',
+      };
+    }
+
+    const total = this.totalAdvertencias();
+    if (total === 0) return null;
+
+    if (this.tieneBloqueoExportacion()) {
+      return {
+        variant: 'blocked',
+        title: 'Exportación bloqueada',
+        message: `${total} punto(s) impiden descargar el archivo. Revise el detalle antes de continuar.`,
+        primaryLabel: 'Ver advertencias',
+        actionId: 'advertencias',
+      };
+    }
+
+    return {
+      variant: 'warning',
+      title: 'Revisar antes de exportar',
+      message: `${total} punto(s) requieren revisión administrativa. Puede descargar igual, pero conviene revisarlos.`,
+      primaryLabel: 'Ver advertencias',
+      actionId: 'advertencias',
+    };
+  });
+
+  readonly mensajeModalAdvertencias = computed(() => {
+    const total = this.totalAdvertencias();
+    if (this.tieneBloqueoExportacion()) {
+      return `${total} punto(s) bloquean la exportación hasta corregir o completar datos.`;
+    }
+    return `${total} punto(s) para revisar antes o después de descargar el archivo.`;
+  });
+
+  readonly mensajeConfirmarDescarga = computed(() => {
+    const pendiente = this.descargaPendiente();
+    if (pendiente === 'archivo_105') {
+      return 'Se descargará el archivo oficial de 105 campos para subir al portal Previred.';
+    }
+    if (pendiente === 'archivo_rem') {
+      return 'Se descargará el archivo interno REM del borrador.';
+    }
+    return 'Se descargará el CSV de borrador para revisión interna.';
+  });
+
+  readonly seccionesConfirmarDescarga = computed((): MessageBoxSection[] => {
+    const borrador = this.borrador();
+    const archivo = this.archivo105();
+    if (!borrador) return [];
+
+    const items = [
+      `${borrador.totalTrabajadores} trabajador(es) · ${borrador.lineas.length} movimiento(s)`,
+    ];
+    if (this.descargaPendiente() === 'archivo_105' && archivo) {
+      items.push(`${archivo.totalTrabajadores} registro(s) en formato 105 posiciones`);
+    }
+    if (this.totalAdvertencias() > 0) {
+      items.push(`${this.totalAdvertencias()} advertencia(s) registradas en el borrador`);
+    }
+
+    return [{ title: 'Resumen', tone: 'neutral', items }];
   });
 
   readonly resumenBorrador = computed(() => {
@@ -244,14 +372,14 @@ export class PreviredExportContainer {
       {
         onPrimaryAction: () => {
           if (this.puedeDescargarArchivo105()) {
-            void this.descargarArchivo105();
+            this.solicitarDescargaArchivo105();
             return;
           }
           if (this.puedeDescargarArchivoRem()) {
-            void this.descargarArchivoOficial();
+            this.solicitarDescargaArchivoRem();
             return;
           }
-          void this.descargarBorradorCsv();
+          this.solicitarDescargaCsv();
         },
       },
     );
@@ -265,6 +393,93 @@ export class PreviredExportContainer {
 
   cerrarModalNomina(): void {
     this.modalNominaAbierto.set(false);
+  }
+
+  abrirModalAdvertencias(): void {
+    this.modalAdvertenciasAbierto.set(true);
+  }
+
+  cerrarModalAdvertencias(): void {
+    this.modalAdvertenciasAbierto.set(false);
+  }
+
+  abrirModalMovimientos(): void {
+    this.modalMovimientosAbierto.set(true);
+  }
+
+  cerrarModalMovimientos(): void {
+    this.modalMovimientosAbierto.set(false);
+  }
+
+  cerrarModalConfirmarDescarga(): void {
+    this.modalConfirmarDescargaAbierto.set(false);
+    this.descargaPendiente.set(null);
+  }
+
+  onAlertaInlineAction(actionId: PreviredAlertaInlineActionId): void {
+    if (actionId === 'nomina') {
+      this.abrirModalNomina();
+      return;
+    }
+    if (actionId === 'advertencias') {
+      this.abrirModalAdvertencias();
+    }
+  }
+
+  onAlertaInlineDismiss(dismissId?: PreviredAlertaInlineDismissId): void {
+    if (dismissId === 'feedback') {
+      this.feedbackDescarga.set(null);
+    }
+  }
+
+  solicitarDescargaCsv(): void {
+    if (!this.puedeDescargarCsv()) return;
+    if (this.debeConfirmarDescarga()) {
+      this.descargaPendiente.set('csv');
+      this.modalConfirmarDescargaAbierto.set(true);
+      return;
+    }
+    void this.descargarBorradorCsv();
+  }
+
+  solicitarDescargaArchivo105(): void {
+    if (!this.puedeDescargarArchivo105()) return;
+    if (this.debeConfirmarDescarga()) {
+      this.descargaPendiente.set('archivo_105');
+      this.modalConfirmarDescargaAbierto.set(true);
+      return;
+    }
+    void this.descargarArchivo105();
+  }
+
+  solicitarDescargaArchivoRem(): void {
+    if (!this.puedeDescargarArchivoRem()) return;
+    if (this.debeConfirmarDescarga()) {
+      this.descargaPendiente.set('archivo_rem');
+      this.modalConfirmarDescargaAbierto.set(true);
+      return;
+    }
+    void this.descargarArchivoOficial();
+  }
+
+  confirmarDescargaPendiente(): void {
+    const pendiente = this.descargaPendiente();
+    this.cerrarModalConfirmarDescarga();
+    if (pendiente === 'archivo_105') {
+      void this.descargarArchivo105();
+      return;
+    }
+    if (pendiente === 'archivo_rem') {
+      void this.descargarArchivoOficial();
+      return;
+    }
+    if (pendiente === 'csv') {
+      void this.descargarBorradorCsv();
+    }
+  }
+
+  private debeConfirmarDescarga(): boolean {
+    return this.totalAdvertencias() > 0 && !this.tieneBloqueoExportacion();
   }
 
   onNominaSeleccionadaEnModal(nomina: NominaPeriodoResumen): void {

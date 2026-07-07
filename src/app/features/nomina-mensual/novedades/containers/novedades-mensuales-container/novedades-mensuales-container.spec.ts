@@ -70,6 +70,10 @@ async function esperarCargaInicial(fixture: ComponentFixture<NovedadesMensualesC
   fixture.detectChanges();
 }
 
+function clickAccionTrabajadorGrilla(root: HTMLElement): void {
+  (root.querySelector('.nm-grid-icon-btn') as HTMLButtonElement | null)?.click();
+}
+
 describe('NovedadesMensualesContainer', () => {
   let fixture: ComponentFixture<NovedadesMensualesContainer>;
   let component: NovedadesMensualesContainer;
@@ -250,10 +254,29 @@ describe('NovedadesMensualesContainer', () => {
     await esperarCargaInicial(fixture);
 
     expect(empleadosService.listar).toHaveBeenCalled();
-    expect(haberesDescuentosService.listarConceptos).toHaveBeenCalled();
+    expect(haberesDescuentosService.listarConceptos).toHaveBeenCalledWith(
+      expect.objectContaining({ getFullYear: expect.any(Function) }),
+    );
+    const refConceptos = haberesDescuentosService.listarConceptos.mock.calls[0][0] as Date;
+    expect(refConceptos.getFullYear()).toBe(2026);
+    expect(refConceptos.getMonth()).toBe(4);
     expect(haberesDescuentosService.listarAsignacionesParaPrevalidacionMensual).toHaveBeenCalledWith('2026-05');
     expect(service.listarNovedadesPeriodo).toHaveBeenCalledWith('2026-05');
     expect(component.totalNovedades()).toBe(1);
+  });
+
+  it('recarga conceptos al cambiar el periodo activo', async () => {
+    fixture.detectChanges();
+    await esperarCargaInicial(fixture);
+    haberesDescuentosService.listarConceptos.mockClear();
+
+    periodoActivo.setPeriodoYm('2026-06');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(haberesDescuentosService.listarConceptos).toHaveBeenCalled();
+    const refConceptos = haberesDescuentosService.listarConceptos.mock.calls.at(-1)?.[0] as Date;
+    expect(refConceptos.getMonth()).toBe(5);
   });
 
   it('muestra grilla de trabajadores cuando no hay movimientos del periodo', async () => {
@@ -282,7 +305,7 @@ describe('NovedadesMensualesContainer', () => {
     expect(text).not.toContain('Movimientos variables');
   });
 
-  it('usa periodo en franja operativa sin caja Periodo activo local ni selector mes', async () => {
+  it('usa encabezado compacto sin franja de estado ni selector local', async () => {
     fixture.detectChanges();
     await esperarCargaInicial(fixture);
 
@@ -292,8 +315,11 @@ describe('NovedadesMensualesContainer', () => {
 
     expect(input).toBeNull();
     expect(root.querySelector('.nm-period-global')).toBeNull();
-    expect(text).toContain('Mayo 2026');
+    expect(root.querySelector('.nm-periodo-estado')).toBeNull();
+    expect(root.querySelector('.nm-grid-shell')).toBeTruthy();
+    expect(text).toContain('Trabajadores');
     expect(text).not.toContain('Periodo (YYYY-MM)');
+    expect(text).not.toContain('Actualizar');
   });
 
   it('no muestra labels tecnicos para identificar trabajador, contrato ni concepto', async () => {
@@ -315,21 +341,20 @@ describe('NovedadesMensualesContainer', () => {
     fixture.detectChanges();
     await esperarCargaInicial(fixture);
 
-    const buttons = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
-    buttons.find((button) => button.textContent?.includes('Gestionar') || button.textContent?.includes('Asignar'))?.click();
+    clickAccionTrabajadorGrilla(fixture.nativeElement);
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Gestionar movimientos');
 
     const modalButtons = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
-    modalButtons.find((button) => button.textContent?.includes('Agregar movimiento del mes'))?.click();
+    modalButtons.find((button) => button.textContent?.includes('Movimiento del mes'))?.click();
     fixture.detectChanges();
 
     const modal = fixture.nativeElement.querySelector('.nm-modal-movimiento') as HTMLElement | null;
     expect(modal).not.toBeNull();
     expect(modal?.getAttribute('role')).toBe('dialog');
     expect(modal?.textContent).toContain('Registrar movimiento del mes');
-    expect(modal?.textContent).toContain('período activo');
+    expect(modal?.textContent).toContain('Volver a gestión');
     expect(fixture.componentInstance.periodoActivo.etiqueta()).toBe('Mayo 2026');
     expect(
       modal?.querySelector('button[aria-label="Ayuda: fecha de referencia"]'),
@@ -344,12 +369,11 @@ describe('NovedadesMensualesContainer', () => {
     fixture.detectChanges();
     await esperarCargaInicial(fixture);
 
-    const buttons = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
-    buttons.find((button) => button.textContent?.includes('Gestionar') || button.textContent?.includes('Asignar'))?.click();
+    clickAccionTrabajadorGrilla(fixture.nativeElement);
     fixture.detectChanges();
 
     const modalButtons = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
-    modalButtons.find((button) => button.textContent?.includes('Agregar recurrente'))?.click();
+    modalButtons.find((button) => button.textContent?.trim() === 'Recurrente')?.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -441,8 +465,8 @@ describe('NovedadesMensualesContainer', () => {
     expect(input.idPersona).toBe(10);
     expect(input.idContrato).toBe(100);
     expect(input.idConcepto).toBe(20);
-    expect(component.mensaje()?.title).toBe('Movimiento guardado');
-    expect(component.mensaje()?.message).not.toContain('Novedad');
+    expect(component.formAbierto()).toBe(false);
+    expect(component.mensaje()).toBeNull();
   });
 
   it('guardar exitoso cierra modal, limpia formulario y recarga datos', async () => {
@@ -462,7 +486,7 @@ describe('NovedadesMensualesContainer', () => {
     expect(service.listarNovedadesPeriodo).toHaveBeenCalledWith('2026-05');
   });
 
-  it('errores de validacion mantienen modal abierto y muestran errores por campo', async () => {
+  it('errores de validacion mantienen modal abierto, muestran errores por campo y aviso', async () => {
     fixture.detectChanges();
     await fixture.whenStable();
     component.abrirNuevo();
@@ -474,6 +498,12 @@ describe('NovedadesMensualesContainer', () => {
     expect(service.crearNovedad).not.toHaveBeenCalled();
     expect(component.errorCampo('idPersona')).toContain('trabajador');
     expect(component.errorCampo('idConcepto')).toContain('concepto');
+    expect(component.avisoFormularioPendiente()?.titulo).toBe('Faltan datos obligatorios');
+    expect(component.avisoFormularioPendiente()?.secciones[0]?.items).toEqual([
+      'Trabajador',
+      'Concepto',
+      'Monto',
+    ]);
     expect(fixture.nativeElement.textContent).toContain('Debe indicar un trabajador valido.');
   });
 
@@ -641,5 +671,145 @@ describe('NovedadesMensualesContainer', () => {
 
     expect(component.mensaje()?.variant).toBe('error');
     expect(component.mensaje()?.message).toBe('Fallo remoto');
+  });
+
+  it('prioriza accion revisar pendientes en encabezado del periodo', async () => {
+    service.listarNovedadesPeriodo.mockResolvedValue([
+      novedad({ idNovedad: 1, estado: 'pendiente_revision' }),
+      novedad({ idNovedad: 2, estado: 'pendiente_revision' }),
+    ]);
+
+    fixture.detectChanges();
+    await esperarCargaInicial(fixture);
+
+    expect(component.estadoPeriodoPresentacion().accionRecomendada.tipo).toBe('revisar_pendientes');
+    expect(fixture.nativeElement.textContent).toContain('Revisar pendientes');
+  });
+
+  it('abre modal de detalle al pulsar icono en gestion unificada', async () => {
+    service.listarNovedadesPeriodo.mockResolvedValue([novedad()]);
+
+    fixture.detectChanges();
+    await esperarCargaInicial(fixture);
+
+    const row = component.trabajadoresMovimientos()[0];
+    component.abrirDetalleTrabajador(row, 'todos');
+    fixture.detectChanges();
+
+    const fila = component.filasGestionUnificada(row.idPersona, 'todos')[0];
+    component.abrirDetalleMovimiento(fila);
+    fixture.detectChanges();
+
+    expect(component.detalleMovimientoUi()?.titulo).toContain('Detalle del movimiento del mes');
+    expect(fixture.nativeElement.textContent).toContain('Bono puntual (BONO)');
+  });
+
+  it('modal mensual muestra breadcrumb de retorno a gestion', async () => {
+    fixture.detectChanges();
+    await esperarCargaInicial(fixture);
+
+    const row = component.trabajadoresMovimientos()[0];
+    component.abrirNuevoParaTrabajador(row, 'mensual');
+    fixture.detectChanges();
+
+    expect(component.breadcrumbModalMensual()).toContain('Gestionar · Ana Perez · Registrar movimiento del mes');
+  });
+
+  it('observar exige motivo antes de rechazar', async () => {
+    await component.pedirObservarDesdeDetalle(novedad({ estado: 'pendiente_revision' }));
+    await component.confirmarObservar();
+
+    expect(service.rechazarNovedad).not.toHaveBeenCalled();
+    expect(component.observacionMotivoError()).toContain('motivo');
+
+    component.observacionMotivo.set('Falta respaldo');
+    await component.confirmarObservar();
+
+    expect(service.rechazarNovedad).toHaveBeenCalledWith(1, 'Falta respaldo');
+  });
+
+  it('bloquea seleccion masiva para trabajadores incompletos', async () => {
+    empleadosService.listar.mockResolvedValue([
+      {
+        id: 10,
+        idContrato: 100,
+        rut: '11.111.111-1',
+        nombre: 'Ana Perez',
+        cargo: 'Analista',
+        departamento: 'RRHH',
+        fechaIngreso: '2026-01-01',
+        sueldoBase: 800000,
+        estado: 'activo',
+        estadoFicha: 'VALIDO',
+        aptoParaRemuneraciones: true,
+        pasoAltaAvanzada: null,
+      },
+      {
+        id: 11,
+        idContrato: null,
+        rut: '22.222.222-2',
+        nombre: 'Incompleta QA',
+        cargo: 'Analista',
+        departamento: 'RRHH',
+        fechaIngreso: '2026-01-01',
+        sueldoBase: 800000,
+        estado: 'activo',
+        estadoFicha: 'BORRADOR',
+        aptoParaRemuneraciones: false,
+        pasoAltaAvanzada: null,
+      },
+    ]);
+
+    fixture.detectChanges();
+    await esperarCargaInicial(fixture);
+
+    const incompleta = component.trabajadoresMovimientos().find((row) => row.idPersona === 11);
+    expect(incompleta?.estado).toBe('Incompleto');
+    expect(component.trabajadorSeleccionBloqueado(incompleta!)).toBe(true);
+  });
+
+  it('abre modal masivo al ejecutar accion bulk de asignacion', async () => {
+    fixture.detectChanges();
+    await esperarCargaInicial(fixture);
+
+    const row = component.trabajadoresMovimientos()[0];
+    component.manejarAsignacionMasiva({
+      action: 'asignar-movimiento-mes',
+      rows: [row],
+      label: 'Asignar movimiento del mes',
+    });
+    fixture.detectChanges();
+
+    expect(component.asignacionMasivaAbierta()).toBe(true);
+    expect(component.asignacionMasivaTrabajadores()).toHaveLength(1);
+    expect(fixture.nativeElement.textContent).toContain('Registrar para seleccionados');
+  });
+
+  it('guardar asignacion masiva crea novedad por trabajador seleccionado', async () => {
+    fixture.detectChanges();
+    await esperarCargaInicial(fixture);
+
+    const row = component.trabajadoresMovimientos()[0];
+    component.manejarAsignacionMasiva({
+      action: 'asignar-movimiento-mes',
+      rows: [row],
+      label: 'Asignar movimiento del mes',
+    });
+    component.actualizarFormMasivo('idConcepto', 20);
+    component.actualizarFormMasivo('monto', 75000);
+    component.actualizarFormMasivo('fechaEvento', '2026-05-01');
+
+    await component.guardarAsignacionMasiva();
+
+    expect(service.crearNovedad).toHaveBeenCalledTimes(1);
+    expect(service.crearNovedad).toHaveBeenCalledWith(
+      expect.objectContaining({
+        idPersona: 10,
+        idConcepto: 20,
+        monto: 75000,
+      }),
+    );
+    expect(component.asignacionMasivaAbierta()).toBe(false);
+    expect(component.mensaje()?.title).toContain('Asignación completada');
   });
 });

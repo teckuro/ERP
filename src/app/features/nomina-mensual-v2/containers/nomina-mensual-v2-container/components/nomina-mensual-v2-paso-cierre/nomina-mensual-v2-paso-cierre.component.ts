@@ -570,7 +570,6 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
       queryParams: {
         periodo: nomina.periodo,
         nominaPeriodoId: id,
-        origen: 'cierre',
         idCalculoPeriodo: nomina.evidenciaCalculo.idCalculoPeriodo,
       },
     });

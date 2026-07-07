@@ -35,11 +35,8 @@ function rutDv(body) {
 const FECHA_INICIO = '2025-05-01';
 const RUT_BODIES = ['25050001', '25050002', '25050003', '25050004', '25050005', '25050006', '25050007', '25050008'];
 
-// 2026-06-02: U6/U7/U8 se degradan a `dependiente_activo` para que queden
-// aptos. Quedan 6 aptos (U1, U4, U5, U6, U7, U8) + 2 borradores (U2, U3),
-// suficiente para poblar el alcance de Nomina V2 sin perder cobertura de
-// borradores. Casos antiguos (honorarios F10, basico F2, ficha incompleta F12)
-// se cubren por separado en `scripts/seed-empleados-prueba-errores.mjs`.
+// U6–U8: dependientes activos con previsión AFP + salud completas (aptos nómina y Previred).
+// Borradores U2/U3 y casos de error van en seed-empleados-prueba-errores.mjs.
 const USERS = [
   { key: 'U1', nombres: 'Dependiente Activo', flujo: 'F5/F7', tipo: 'dependiente_activo' },
   { key: 'U2', nombres: 'Borrador Paso Dos', flujo: 'F3', tipo: 'borrador_paso2' },

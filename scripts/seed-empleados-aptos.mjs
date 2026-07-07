@@ -1,6 +1,7 @@
 /**
  * Siembra 10 empleados productivos puros (RUT 27.000.001–010) marcados como
- * `apto_para_remuneraciones = true`, con contrato indefinido, jornada completa,
+ * `apto_para_remuneraciones = true` con ficha completa (nómina + Previred).
+ * Post-seed verifica vw_persona_factores (sexo, AFP, salud).
  * AFP + ISAPRE/Fonasa + cuenta bancaria. Pensado para poblar el alcance del
  * paso 3 de Nómina mensual V2 sin depender de la auditoría (`U1–U8`) ni del
  * seed de errores (`ERR01–ERR10`).
@@ -372,7 +373,9 @@ async function main() {
 
   const { data: listado, error: listError } = await supabase
     .from('vw_persona_factores')
-    .select('rut,dv,nombres,estado_ficha,apto_para_remuneraciones,base,horas_semanales,tipo_prevision')
+    .select(
+      'rut,dv,nombres,estado_ficha,apto_para_remuneraciones,base,horas_semanales,tipo_prevision,sexo,salud_tipo,afp_nombre',
+    )
     .in('rut', rutsQa)
     .order('rut');
 
@@ -385,11 +388,26 @@ async function main() {
       nombres: r.nombres,
       estado_ficha: r.estado_ficha,
       apto: r.apto_para_remuneraciones,
+      sexo: r.sexo,
+      prevision: r.tipo_prevision,
+      afp: r.afp_nombre,
+      salud: r.salud_tipo,
       base: r.base,
       horas: r.horas_semanales,
-      prevision: r.tipo_prevision,
     })),
   );
+
+  const incompletosPrevired = (listado ?? []).filter((r) => {
+    const sexoOk = r.sexo === 'M' || r.sexo === 'F';
+    const saludOk = !!r.salud_tipo;
+    const afpOk = r.tipo_prevision !== 'AFP' || (r.afp_nombre && !/sin|ninguna/i.test(r.afp_nombre));
+    return !sexoOk || !saludOk || !afpOk;
+  });
+  if (incompletosPrevired.length) {
+    console.warn(
+      `\nAdvertencia: ${incompletosPrevired.length} fixture(s) APTOS no pasan checklist Previred. Revise con: node scripts/diag-previred-personales.mjs`,
+    );
+  }
 
   const reportPath = resolve(process.cwd(), 'tmp', 'seed-empleados-aptos-result.json');
   fs.mkdirSync(resolve(process.cwd(), 'tmp'), { recursive: true });

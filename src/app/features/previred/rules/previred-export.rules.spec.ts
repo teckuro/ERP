@@ -84,6 +84,15 @@ describe('previred-export.rules', () => {
     expect(resultado.omitidas).toBe(2);
     expect(resultado.sinCodigo).toBe(1);
     expect(resultado.sinMapeoCatalogo).toBe(1);
+    expect(resultado.conceptosObservacion).toHaveLength(2);
+    expect(resultado.conceptosObservacion[0]).toMatchObject({
+      nombreConcepto: 'Bono sin código',
+      tipo: 'sin_codigo_previred',
+    });
+    expect(resultado.conceptosObservacion[1]).toMatchObject({
+      nombreConcepto: 'Bono sin catálogo',
+      tipo: 'mapeo_provisional',
+    });
   });
 
   it('construye borrador con bloqueo cuando no hay líneas exportables', () => {
@@ -103,6 +112,8 @@ describe('previred-export.rules', () => {
 
     expect(borrador.lineas).toHaveLength(0);
     expect(borrador.conceptosSinCodigo).toBe(1);
+    expect(borrador.conceptosObservacion).toHaveLength(1);
+    expect(borrador.conceptosObservacion[0]?.nombreConcepto).toBeTruthy();
     expect(borrador.listoParaEnvio).toBe(false);
     expect(borrador.advertencias[0]?.nivel).toBe('bloqueo');
     expect(puedeDescargarBorradorPrevired(borrador)).toBe(false);

@@ -1,0 +1,180 @@
+app-novedades-formulario-movimiento-mes {
+  display: block;
+  --nfm-control-height: var(--nm-control-height, var(--erp-control-height, 22px));
+  --nfm-text-xs: var(--nm-text-xs, var(--erp-text-xs, 0.665rem));
+  --nfm-text-sm: var(--nm-text-sm, var(--erp-text-sm, 0.72rem));
+  --nfm-border: var(--nm-border, #dadfd7);
+  --nfm-ink: var(--nm-ink, #172033);
+  --nfm-muted: var(--nm-muted, #647084);
+  --nfm-review: var(--nm-review, #a16207);
+  --nfm-surface-soft: var(--nm-surface-soft, #fafaf7);
+  --nfm-danger: var(--nm-danger, #b91c1c);
+}
+
+.nfm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.nfm-form__title {
+  margin: 0;
+  color: var(--nfm-ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.nfm-form__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem 0.85rem;
+  align-items: stretch;
+}
+
+.nfm-form__grid--admin {
+  margin-top: 0.55rem;
+}
+
+.nfm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  min-width: 0;
+}
+
+.nfm-field--full {
+  grid-column: 1 / -1;
+}
+
+.nfm-field__label,
+.nfm-field__label-row {
+  display: flex;
+  align-items: center;
+  min-height: 1.25rem;
+  margin: 0;
+  color: var(--nfm-ink);
+  font-size: var(--nfm-text-sm);
+  font-weight: 600;
+}
+
+.nfm-field__label-row {
+  gap: 0.25rem;
+}
+
+.nfm-field__error {
+  margin: 0;
+  color: var(--nfm-danger);
+  font-size: var(--nfm-text-xs);
+  line-height: 1.3;
+}
+
+.nfm-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--nfm-control-height);
+  height: var(--nfm-control-height);
+  border: 1px solid var(--nfm-border);
+  border-radius: 6px;
+  background: #fff;
+  padding: 0 0.55rem;
+  color: var(--nfm-ink);
+  font-size: var(--nfm-text-sm);
+}
+
+.nfm-input--invalid {
+  border-color: var(--nfm-danger);
+}
+
+.nfm-textarea {
+  min-height: 3.25rem;
+  height: auto;
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+  resize: vertical;
+}
+
+app-novedades-formulario-movimiento-mes app-search-select .select-root,
+app-novedades-formulario-movimiento-mes app-calendar-input .calendar-root {
+  width: 100%;
+}
+
+app-novedades-formulario-movimiento-mes app-search-select .select-field,
+app-novedades-formulario-movimiento-mes app-calendar-input .calendar-field {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--nfm-control-height);
+  height: var(--nfm-control-height);
+}
+
+.nfm-details {
+  border: 1px solid var(--nfm-border);
+  border-radius: 8px;
+  background: var(--nfm-surface-soft);
+}
+
+.nfm-details > summary {
+  display: flex;
+  align-items: center;
+  padding: 0.65rem 0.75rem;
+  margin: 0;
+  list-style: none;
+  cursor: pointer;
+  color: var(--nfm-ink);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.nfm-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.nfm-details__summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 1.375rem;
+}
+
+.nfm-details__chevron-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+  color: var(--nfm-muted);
+}
+
+.nfm-details__chevron {
+  display: block;
+  transition: transform 0.15s ease;
+}
+
+.nfm-details[open] .nfm-details__chevron {
+  transform: rotate(90deg);
+}
+
+.nfm-details__help {
+  margin: 0;
+  padding: 0 0.75rem 0.55rem;
+  color: var(--nfm-muted);
+  font-size: var(--nfm-text-xs);
+  line-height: 1.35;
+}
+
+.nfm-details .nfm-form__grid--admin {
+  padding: 0 0.75rem 0.75rem;
+}
+
+@media (max-width: 720px) {
+  .nfm-form__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nfm-field--full {
+    grid-column: 1 / -1;
+  }
+}

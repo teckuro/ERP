@@ -185,7 +185,7 @@ Remuneraciones
 
 - `/remuneraciones/novedades-mensuales` es la ruta canonica visible para `Movimientos del mes`.
 - `/remuneraciones/movimientos-variables` queda como redirect legacy hacia `novedades-mensuales`.
-- `/remuneraciones/haberes-descuentos` mantiene `Asignaciones recurrentes`.
+- `/remuneraciones/haberes-descuentos` mantiene la pantalla técnica de asignaciones recurrentes (acceso por deep link o flujos internos; **sin ítem en menú lateral**).
 - `/remuneraciones/proceso-mensual` consume entradas del periodo en `Preparar nomina`.
 
 ### Fuentes tecnicas reutilizables
@@ -323,6 +323,30 @@ Los modales mensual y recurrente incorporan franja de contexto, fechas con `app-
 ### Cierre NOM-MOVIMIENTOS-RECURRENTES-PARITY-01
 
 Paridad entre Movimientos y Haberes en bloque Cuotas (UI), query params `persona` / `accion=registrar`, y enlaces desde Preparar nómina y ficha empleado hacia recurrentes con trabajador preseleccionado. Haberes deja de usar tabbar como pantalla principal de recurrentes.
+
+### Cierre NOM-MOVIMIENTOS-UX-ORIENTACION-01 (2026-07-07)
+
+Diagnóstico flujos × NOIA aplicado a `/remuneraciones/novedades-mensuales`:
+
+| Flujo | Orientación | Detalle | Modales | Período |
+| --- | --- | --- | --- | --- |
+| Grilla trabajadores | Mejorado: línea estado + acción recomendada | Contadores abren Gestionar filtrado | — | Distingue listos vs pendientes |
+| Gestionar hub | Chips filtro + leyenda estados | Icono Detalle → MessageBox | Padre atenuado con hijos | Contexto trabajador · período |
+| Modal mensual/recurrente | Breadcrumb visible | Resumen en pie | Volver a gestión + confirmación descartar | Copy RRHH |
+
+Patrón detalle elegido: **MessageBox** (paridad Previred). Acción home con revisión pendiente: **Revisar pendientes**.
+
+### Cierre NOM-MOVIMIENTOS-ASIGNACION-MASIVA-01 (2026-07-07)
+
+La grilla principal de trabajadores habilita selección múltiple (solo página visible) con acción masiva **Asignar movimiento del mes**. Abre directamente el formulario compartido (sin MessageBox previo), registra novedades puntuales por trabajador vía `NovedadesMensualesService.crearNovedad`, con resumen de éxitos/errores y recarga automática. Trabajadores **Incompleto** no son seleccionables.
+
+### Cierre NOM-MOVIMIENTOS-MENU-RECURRENTES-01 (2026-07-07)
+
+Se retira **Recurrentes** del menú lateral (`Gestión`). La administración de recurrentes queda integrada en **Movimientos** (contadores, filtros del modal Gestionar y formulario recurrente). La ruta `/remuneraciones/haberes-descuentos` permanece para enlaces internos y compatibilidad.
+
+### Cierre NOM-MOVIMIENTOS-FORM-MENSUAL-02 (2026-07-07)
+
+Formulario mensual unificado en componente `app-novedades-formulario-movimiento-mes` (individual + masivo). Grid corregido (tipo/monto/fecha en una fila). Header compacto desde Gestionar; pie con resumen positivo al completar; aviso de pendientes vía MessageBox al guardar; presenter `novedades-formulario-mensual.presenter.ts`.
 
 ---
 

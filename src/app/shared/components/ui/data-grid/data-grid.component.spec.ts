@@ -350,3 +350,54 @@ describe('DataGridComponent selección bloqueada (opt-in)', () => {
     expect(component.selectedRows.map((row) => row.id)).toEqual([1]);
   });
 });
+
+describe('DataGridComponent barra masiva', () => {
+  interface Row {
+    id: number;
+  }
+
+  const columns: DataGridColumn<Row>[] = [{ id: 'id', header: 'Id', field: 'id' }];
+  const rows: Row[] = [{ id: 1 }, { id: 2 }];
+
+  it('resume selección con copy singular y plural', () => {
+    const fixture = TestBed.createComponent(DataGridComponent<Row>);
+    const component = fixture.componentInstance;
+    component.columns = columns;
+    component.rows = rows;
+    component.selectable = true;
+    component.selectionLabel = 'trabajadores';
+    fixture.detectChanges();
+
+    component.toggleRowSelection(rows[0]!, { target: { checked: true } } as unknown as Event);
+    expect(component.bulkSelectionSummary).toBe('trabajador seleccionado');
+
+    component.toggleRowSelection(rows[1]!, { target: { checked: true } } as unknown as Event);
+    expect(component.bulkSelectionSummary).toBe('trabajadores seleccionados');
+  });
+
+  it('emite bulkAction sin confirmación cuando skipConfirm es true', () => {
+    const fixture = TestBed.createComponent(DataGridComponent<Row>);
+    const component = fixture.componentInstance;
+    component.columns = columns;
+    component.rows = rows;
+    component.selectable = true;
+    component.bulkActions = [
+      { id: 'custom', label: 'Asignar', skipConfirm: true },
+    ];
+    fixture.detectChanges();
+
+    const emitSpy = vi.spyOn(component.bulkAction, 'emit');
+    component.toggleRowSelection(rows[0]!, { target: { checked: true } } as unknown as Event);
+    component.requestBulkAction({ id: 'custom', label: 'Asignar', skipConfirm: true });
+
+    expect(component.pendingBulkAction).toBeNull();
+    expect(emitSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'custom',
+        rows: [rows[0]],
+        label: 'Asignar',
+        scope: 'page',
+      }),
+    );
+  });
+});

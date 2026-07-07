@@ -83,8 +83,8 @@ export const COLUMNAS_SELECCION_NOMINA_LIQUIDACION: DataGridColumn<NominaPeriodo
   {
     id: 'acciones',
     header: '',
-    width: '2.75rem',
-    minWidth: '2.75rem',
+    width: '4.5rem',
+    minWidth: '4.5rem',
     align: 'center',
     sortable: false,
     hideable: false,

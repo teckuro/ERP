@@ -748,6 +748,35 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     return this.selectable && (this.selectedRows.length > 0 || this.bulkScopeAllFiltered);
   }
 
+  get bulkSelectionSummary(): string {
+    const count = this.bulkScopeAllFiltered ? this.bulkSelectionCount : this.selectedRows.length;
+    const label = this.selectionLabel.trim() || 'registros';
+    const singularLabel = this.singularSelectionLabel(label);
+
+    if (this.bulkScopeAllFiltered) {
+      if (count === 1) {
+        return `${singularLabel} del filtro actual seleccionado`;
+      }
+      return `${label} del filtro actual seleccionados`;
+    }
+
+    if (count === 1) {
+      return `${singularLabel} seleccionado`;
+    }
+
+    return `${label} seleccionados`;
+  }
+
+  private singularSelectionLabel(label: string): string {
+    if (label.endsWith('es')) {
+      return label.slice(0, -2);
+    }
+    if (label.endsWith('s')) {
+      return label.slice(0, -1);
+    }
+    return label;
+  }
+
   extendSelectionToAllFiltered(): void {
     if (!this.canExtendSelectionToAllFiltered) return;
     this.bulkScopeAllFiltered = true;
@@ -881,6 +910,10 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     }
 
     this.closePanels();
+    if (action.skipConfirm) {
+      this.emitBulkAction(action);
+      return;
+    }
     this.pendingBulkAction = action;
   }
 
@@ -890,8 +923,12 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     }
 
     const action = this.pendingBulkAction;
-    const rows = this.selectedRows;
     this.pendingBulkAction = null;
+    this.emitBulkAction(action);
+  }
+
+  private emitBulkAction(action: DataGridBulkActionOption): void {
+    const rows = this.selectedRows;
 
     if (rows.length === 0 && !this.bulkScopeAllFiltered) {
       return;
@@ -971,17 +1008,17 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   bulkActionButtonClass(action: DataGridBulkActionOption): string {
     switch (action.tone) {
       case 'success':
-        return 'border-green-200 text-green-700 hover:bg-green-50';
+        return 'data-grid-bulk-bar__action--success';
       case 'warning':
-        return 'border-yellow-200 text-yellow-700 hover:bg-yellow-50';
+        return 'data-grid-bulk-bar__action--warning';
       case 'danger':
-        return 'border-red-200 text-red-700 hover:bg-red-50';
+        return 'data-grid-bulk-bar__action--danger';
       case 'blocked':
-        return 'border-neutral-300 text-neutral-700 hover:bg-neutral-50';
+        return 'data-grid-bulk-bar__action--blocked';
       case 'info':
-        return 'border-blue-200 text-blue-700 hover:bg-blue-50';
+        return 'data-grid-bulk-bar__action--info';
       default:
-        return 'border-neutral-200 text-neutral-700 hover:bg-neutral-50';
+        return 'data-grid-bulk-bar__action--neutral';
     }
   }
 

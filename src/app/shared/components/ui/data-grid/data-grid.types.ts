@@ -144,6 +144,8 @@ export interface DataGridBulkActionOption {
   label: string;
   value?: string;
   tone?: 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'blocked';
+  /** Si es true, emite `bulkAction` sin modal de confirmación previo. */
+  skipConfirm?: boolean;
   confirmLabel?: string;
   confirmTitle?: string;
   confirmMessage?: string;

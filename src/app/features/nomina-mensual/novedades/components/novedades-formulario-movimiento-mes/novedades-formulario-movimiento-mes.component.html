@@ -1,0 +1,238 @@
+<section class="nfm-form">
+  <h3 class="nfm-form__title">Datos del movimiento</h3>
+
+  <div class="nfm-form__grid">
+    @if (mostrarTrabajador) {
+      <label class="nfm-field nfm-field--full" [attr.data-nfm-error]="!!errorCampo('idPersona')">
+        <span class="nfm-field__label-row">
+          <span class="nfm-field__label">Trabajador</span>
+          <app-field-help-tip
+            text="Selecciona quién recibe el movimiento."
+            ariaLabel="Ayuda: trabajador"
+          ></app-field-help-tip>
+        </span>
+        <app-search-select
+          [id]="idCampo('trabajador')"
+          placeholder="Selecciona trabajador"
+          searchPlaceholder="Buscar por nombre o RUT"
+          emptyText="No hay trabajadores disponibles"
+          [options]="empleadoOptions"
+          [ngModel]="formulario.idPersona ?? null"
+          (ngModelChange)="onTrabajadorChange($event)"
+          (blur)="marcarTocado('idPersona')"
+          [disabled]="disabled || soporteLoading"
+          [clearable]="true"
+        ></app-search-select>
+        @if (errorCampo('idPersona')) {
+          <small class="nfm-field__error">{{ errorCampo('idPersona') }}</small>
+        }
+      </label>
+    }
+
+    <label class="nfm-field nfm-field--full nfm-field--concepto" [attr.data-nfm-error]="!!errorCampo('idConcepto')">
+      <span class="nfm-field__label">Concepto</span>
+      <app-search-select
+        [id]="idCampo('concepto')"
+        placeholder="Selecciona concepto"
+        searchPlaceholder="Buscar concepto"
+        emptyText="No hay conceptos disponibles"
+        [options]="conceptoOptions"
+        [ngModel]="formulario.idConcepto"
+        (ngModelChange)="onConceptoChange($event)"
+        [disabled]="disabled || soporteLoading"
+        [clearable]="true"
+      ></app-search-select>
+      @if (errorCampo('idConcepto')) {
+        <small class="nfm-field__error">{{ errorCampo('idConcepto') }}</small>
+      }
+    </label>
+
+    <label class="nfm-field" [attr.data-nfm-error]="!!errorCampo('tipoMovimiento')">
+      <span class="nfm-field__label">Tipo de movimiento</span>
+      <select
+        class="nfm-input"
+        [class.nfm-input--invalid]="!!errorCampo('tipoMovimiento')"
+        [ngModel]="formulario.tipoMovimiento"
+        (ngModelChange)="emitCampo('tipoMovimiento', $event)"
+        [disabled]="disabled"
+      >
+        @for (tipo of tiposMovimiento; track tipo) {
+          <option [ngValue]="tipo">{{ etiquetaTipoMovimiento(tipo) }}</option>
+        }
+      </select>
+      @if (errorCampo('tipoMovimiento')) {
+        <small class="nfm-field__error">{{ errorCampo('tipoMovimiento') }}</small>
+      }
+    </label>
+
+    <label class="nfm-field" [attr.data-nfm-error]="!!errorCampo('monto')">
+      <span class="nfm-field__label">Monto</span>
+      <input
+        type="number"
+        min="0"
+        step="1"
+        class="nfm-input"
+        placeholder="Ej: 80000"
+        [class.nfm-input--invalid]="!!errorCampo('monto')"
+        [ngModel]="formulario.monto"
+        (ngModelChange)="onMontoChange($event)"
+        [disabled]="disabled"
+      />
+      @if (errorCampo('monto')) {
+        <small class="nfm-field__error">{{ errorCampo('monto') }}</small>
+      }
+    </label>
+
+    <label class="nfm-field" [attr.data-nfm-error]="!!errorCampo('fechaEvento')">
+      <span class="nfm-field__label-row">
+        <span class="nfm-field__label">Fecha de referencia</span>
+        <app-field-help-tip
+          [text]="periodoEtiqueta ? 'Dentro de ' + periodoEtiqueta + '.' : 'Dentro del período activo.'"
+          ariaLabel="Ayuda: fecha de referencia"
+        ></app-field-help-tip>
+      </span>
+      <app-calendar-input
+        [id]="idCampo('fecha-evento')"
+        placeholder="dd/mm/aaaa"
+        [min]="periodoMin"
+        [max]="periodoMax"
+        [invalid]="!!errorCampo('fechaEvento')"
+        [disabled]="disabled"
+        [ngModel]="formulario.fechaEvento"
+        (ngModelChange)="emitCampo('fechaEvento', $event)"
+      ></app-calendar-input>
+      @if (errorCampo('fechaEvento')) {
+        <small class="nfm-field__error">{{ errorCampo('fechaEvento') }}</small>
+      }
+    </label>
+  </div>
+
+  @if (mostrarDetalleAdmin) {
+    <details class="nfm-details">
+      <summary>
+        <span class="nfm-details__summary">
+          <span class="nfm-details__chevron-wrap" aria-hidden="true">
+            <lucide-icon class="nfm-details__chevron" [img]="chevronRightIcon"></lucide-icon>
+          </span>
+          <span>Detalle administrativo opcional</span>
+        </span>
+      </summary>
+      @if (detalleAdminCompleto) {
+        <p class="nfm-details__help">
+          Solo si necesitas referencia interna, contrato asociado u observación administrativa.
+        </p>
+      }
+      <div class="nfm-form__grid nfm-form__grid--admin">
+        <label class="nfm-field" [attr.data-nfm-error]="!!errorCampo('categoria')">
+          <span class="nfm-field__label">Categoría</span>
+          <select
+            class="nfm-input"
+            [class.nfm-input--invalid]="!!errorCampo('categoria')"
+            [ngModel]="formulario.categoria"
+            (ngModelChange)="emitCampo('categoria', $event)"
+            [disabled]="disabled"
+          >
+            @for (categoria of categorias; track categoria) {
+              <option [ngValue]="categoria">{{ etiquetaCategoria(categoria) }}</option>
+            }
+          </select>
+          @if (errorCampo('categoria')) {
+            <small class="nfm-field__error">{{ errorCampo('categoria') }}</small>
+          }
+        </label>
+
+        @if (detalleAdminCompleto) {
+          <label class="nfm-field">
+            <span class="nfm-field__label">Contrato</span>
+            <select
+              class="nfm-input"
+              [ngModel]="formulario.idContrato ?? null"
+              (ngModelChange)="onContratoChange($event)"
+              [disabled]="disabled || contratosLoading || formulario.idPersona == null || contratosPersona.length <= 1"
+            >
+              <option [ngValue]="null">
+                {{ formulario.idPersona ? 'Sin contrato específico' : 'Selecciona trabajador primero' }}
+              </option>
+              @for (contrato of contratosPersona; track contrato.idContrato) {
+                <option [ngValue]="contrato.idContrato">{{ contrato.etiqueta }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="nfm-field">
+            <span class="nfm-field__label">Referencia</span>
+            <input
+              type="text"
+              class="nfm-input"
+              [ngModel]="formulario.referenciaExterna ?? ''"
+              (ngModelChange)="emitCampo('referenciaExterna', $event)"
+              [disabled]="disabled"
+            />
+          </label>
+        }
+
+        <label class="nfm-field">
+          <span class="nfm-field__label">Origen</span>
+          <select
+            class="nfm-input"
+            [ngModel]="formulario.origen"
+            (ngModelChange)="emitCampo('origen', $event)"
+            [disabled]="disabled"
+          >
+            @for (origen of origenes; track origen) {
+              <option [ngValue]="origen">{{ etiquetaOrigen(origen) }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="nfm-field nfm-field--full">
+          <span class="nfm-field__label">Observación</span>
+          <textarea
+            rows="2"
+            class="nfm-input nfm-textarea"
+            [ngModel]="formulario.observacion ?? ''"
+            (ngModelChange)="emitCampo('observacion', $event)"
+            [disabled]="disabled"
+          ></textarea>
+        </label>
+
+        @if (detalleAdminCompleto) {
+          <label class="nfm-field">
+            <span class="nfm-field__label">Unidad</span>
+            <input
+              type="text"
+              class="nfm-input"
+              [ngModel]="formulario.unidad ?? ''"
+              (ngModelChange)="emitCampo('unidad', $event)"
+              [disabled]="disabled"
+            />
+          </label>
+
+          <label class="nfm-field" [attr.data-nfm-error]="!!errorCampo('cantidad')">
+            <span class="nfm-field__label-row">
+              <span class="nfm-field__label">Cantidad</span>
+              <app-field-help-tip
+                text="Cantidad administrativa; no corresponde a cantidad de cuotas."
+                ariaLabel="Ayuda: cantidad"
+              ></app-field-help-tip>
+            </span>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              class="nfm-input"
+              [class.nfm-input--invalid]="!!errorCampo('cantidad')"
+              [ngModel]="formulario.cantidad ?? null"
+              (ngModelChange)="onCantidadChange($event)"
+              (blur)="marcarTocado('cantidad')"
+              [disabled]="disabled"
+            />
+            @if (errorCampo('cantidad')) {
+              <small class="nfm-field__error">{{ errorCampo('cantidad') }}</small>
+            }
+          </label>
+        }
+      </div>
+    </details>
+  }
+</section>

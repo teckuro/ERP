@@ -591,14 +591,23 @@ export class EmpleadosRepository {
       return [];
     }
 
+    const updatePayload =
+      estado === 'activo'
+        ? {
+            estado: mapEmpleadoEstadoToPersonaEstado(estado),
+            apto_para_remuneraciones: false,
+            fecha_activacion: new Date().toISOString(),
+          }
+        : {
+            estado: mapEmpleadoEstadoToPersonaEstado(estado),
+            estado_ficha: mapEmpleadoEstadoToEstadoFicha(estado),
+            apto_para_remuneraciones: false,
+            fecha_activacion: null,
+          };
+
     const { data, error } = await this.supabase
       .from('persona')
-      .update({
-        estado: mapEmpleadoEstadoToPersonaEstado(estado),
-        estado_ficha: mapEmpleadoEstadoToEstadoFicha(estado),
-        apto_para_remuneraciones: estado === 'activo',
-        fecha_activacion: estado === 'activo' ? new Date().toISOString() : null,
-      })
+      .update(updatePayload)
       .in('id_persona', normalizedIds)
       .select('id_persona');
 
@@ -893,9 +902,21 @@ export class EmpleadosRepository {
   }
 
   async activarPersonaCreada(payload: CrearEmpleadoPayload, personaId: number): Promise<void> {
+    const evaluacion = evaluarCompletitudYAptitudEmpleado({
+      payload,
+      pasoAltaAvanzada: null,
+    });
+
     const { error } = await this.supabase
       .from('persona')
-      .update(buildPersonaActivacionUpdate(payload, new Date().toISOString()))
+      .update(
+        buildPersonaActivacionUpdate(
+          payload,
+          new Date().toISOString(),
+          evaluacion.aptoParaRemuneraciones,
+          evaluacion.estadoFicha === 'VALIDO' ? 'VALIDO' : 'INCOMPLETO',
+        ),
+      )
       .eq('id_persona', personaId);
 
     if (error) {

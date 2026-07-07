@@ -84,7 +84,35 @@ Catálogo `catalogo_previred` actual (PREVIRED-01b) mapea `codigo_lre → codigo
 | **02b** | Catálogo LRE → campo archivo + reglas agregación montos | ✅ |
 | **02c** | Enriquecimiento datos trabajador (persona/contrato vía `vw_persona_factores`) | ✅ |
 | **02d** | UI descarga `.txt` oficial + canal BD `archivo_oficial_105_posicion` | ✅ |
-| **02e** | Validaciones reforma (RIMA, jornada, expectativa vida) + tests | ✅ parcial |
+| **02e** | Validaciones reforma (RIMA, jornada, expectativa vida) + aptitud previa export | ✅ |
+
+## 02e — Aptitud previa a export (personales y previsionales)
+
+Antes de generar una línea de 105 posiciones, el motor evalúa cada trabajador liquidado con `previred-trabajador-validacion.rules.ts`. **No se rellenan defaults silenciosos** (sexo, AFP `00`, salud genérica).
+
+### Bloqueos (impiden descarga)
+
+| Campo / condición | Mensaje operativo |
+|-------------------|-------------------|
+| Sin `id_persona` en liquidación | Sin persona vinculada |
+| Sin fila en `vw_persona_factores` | Ficha no disponible para Previred |
+| RUT inválido | RUT no válido para archivo |
+| Apellido paterno / nombres vacíos o placeholder | Falta identificación en ficha |
+| Sexo distinto de `M` / `F` | Falta sexo registral |
+| Régimen AFP con código `00` | AFP no reconocida |
+| Sin `salud_tipo` o código salud `00` | Falta o no reconoce institución de salud |
+
+### Regla de lote
+
+`listoParaEnvio105` es `true` solo si **todos** los trabajadores liquidados generan registro válido (`registros.length === totalLiquidados` y sin advertencias de bloqueo).
+
+### Relación con empleados
+
+- Dotación nómina confía en `persona.apto_para_remuneraciones` (RPC elegibles).
+- Aptitud Previred es **más estricta** y se evalúa al exportar desde Liquidaciones.
+- El flag apto solo debe quedar `true` tras `evaluarCompletitudYAptitudEmpleado` o `validarFichaParaRemuneraciones` — no por activación masiva ni heurística de origen de creación.
+
+Diagnóstico local: `node scripts/diag-previred-personales.mjs --periodo YYYY-MM`
 
 ## Fuera de alcance
 

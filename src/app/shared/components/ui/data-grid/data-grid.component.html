@@ -453,42 +453,45 @@
 
       @if (bulkBarVisible) {
         <div
-          class="flex flex-col gap-3 border-b border-blue-100 bg-blue-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+          class="data-grid-bulk-bar"
           role="region"
           aria-label="Acciones masivas"
           aria-live="polite"
         >
-          <div class="flex flex-wrap items-center gap-2 text-sm font-medium text-blue-900">
-            <lucide-icon class="h-4 w-4" [img]="selectionIcon"></lucide-icon>
+          <div class="data-grid-bulk-bar__summary">
+            <span class="data-grid-bulk-bar__count">
+              <span class="data-grid-bulk-bar__count-badge" aria-hidden="true">
+                {{ bulkScopeAllFiltered ? bulkSelectionCount : selectedRows.length }}
+              </span>
+              <span>{{ bulkSelectionSummary }}</span>
+            </span>
             @if (bulkScopeAllFiltered) {
-              <span>{{ bulkSelectionCount }} {{ selectionLabel }} del filtro actual seleccionados</span>
               <button
                 type="button"
-                class="text-xs font-medium text-blue-700 underline underline-offset-2 hover:text-blue-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                class="data-grid-bulk-bar__link"
                 (click)="limitSelectionToPage()"
               >
                 Limitar a esta página
               </button>
-            } @else {
-              <span>{{ selectedRows.length }} {{ selectionLabel }} seleccionados</span>
-              @if (canExtendSelectionToAllFiltered) {
-                <button
-                  type="button"
-                  class="text-xs font-medium text-blue-700 underline underline-offset-2 hover:text-blue-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                  (click)="extendSelectionToAllFiltered()"
-                >
-                  Seleccionar los {{ totalRowCount }} {{ selectionLabel }} del filtro
-                </button>
-              }
+            } @else if (canExtendSelectionToAllFiltered) {
+              <button
+                type="button"
+                class="data-grid-bulk-bar__link"
+                (click)="extendSelectionToAllFiltered()"
+              >
+                Seleccionar los {{ totalRowCount }} {{ selectionLabel }} del filtro
+              </button>
             }
           </div>
 
-          <div class="flex flex-wrap items-center gap-2 sm:justify-end">
-            <span class="text-xs font-medium uppercase text-blue-700">Cambiar estado a</span>
+          <div class="data-grid-bulk-bar__actions">
+            @if (bulkActions.length > 1) {
+              <span class="data-grid-bulk-bar__actions-label">Cambiar estado a</span>
+            }
             @for (action of bulkActions; track action.id) {
               <button
                 type="button"
-                class="inline-flex h-8 items-center gap-1.5 rounded-md border bg-white px-2.5 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                class="data-grid-bulk-bar__action"
                 [ngClass]="bulkActionButtonClass(action)"
                 [disabled]="bulkActionLoading"
                 (click)="requestBulkAction(action)"
@@ -501,11 +504,11 @@
             }
             <button
               type="button"
-              class="inline-flex h-8 items-center rounded-md border border-transparent px-2.5 text-xs font-medium text-blue-800 transition hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+              class="data-grid-bulk-bar__clear"
               [disabled]="bulkActionLoading"
               (click)="clearSelection()"
             >
-              Limpiar seleccion
+              Quitar selección
             </button>
           </div>
         </div>

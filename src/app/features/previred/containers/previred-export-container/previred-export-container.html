@@ -1,10 +1,9 @@
-<div class="sal-ext-page">
+<div class="sal-ext-page prev-page">
   @if (mostrarToolbar()) {
   <header class="sal-ext-toolbar" aria-label="Exportación Previred">
     <div class="sal-ext-toolbar__fields">
       <div class="sal-ext-toolbar__lead">
         <strong>Exportación Previred</strong>
-        <span>Revise advertencias y descargue. Para detalle por trabajador, use Liquidaciones oficiales.</span>
       </div>
 
       <div class="sal-ext-toolbar__field">
@@ -38,8 +37,9 @@
         class="sal-ext-secondary-link"
         [routerLink]="rutaLiquidaciones().path"
         [queryParams]="rutaLiquidaciones().queryParams"
+        title="Revisar liquidaciones oficiales"
       >
-        Liquidaciones oficiales
+        Liquidaciones
       </a>
       @if (puedeDescargarArchivo105() && puedeDescargarCsv()) {
         <button
@@ -47,7 +47,7 @@
           class="sal-ext-secondary-btn"
           data-testid="previred:descargar-csv"
           [disabled]="registrandoDescarga() || cargandoBorrador()"
-          (click)="descargarBorradorCsv()"
+          (click)="solicitarDescargaCsv()"
         >
           CSV borrador
         </button>
@@ -100,135 +100,111 @@
         </div>
       </section>
     } @else {
-      @if (seccionesAdvertencia().length > 0 || feedbackDescarga() || avisoFaseBd() || avisoNominaQuery()) {
-        <div class="sal-ext-feedback">
-          @if (avisoNominaQuery()) {
-            <app-message-box
-              variant="info"
-              title="Nómina no disponible"
-              [message]="avisoNominaQuery()!"
-              primaryLabel="Buscar nómina"
-              (action)="abrirModalNomina()"
-            />
-          }
-          @if (avisoFaseBd()) {
-            <app-message-box
-              variant="warning"
-              title="Fase no desplegada en servidor"
-              [message]="avisoFaseBd()!"
-            />
-          }
-          @if (seccionesAdvertencia().length > 0) {
-            <app-message-box variant="warning" [sections]="seccionesAdvertencia()" />
-          }
-          @if (feedbackDescarga()) {
-            <app-message-box
-              variant="warning"
-              title="Descarga con advertencia"
-              [message]="feedbackDescarga()!"
-            />
-          }
+      @if (alertaInline(); as alerta) {
+        <div class="prev-alerta-inline">
+          <app-message-box
+            [variant]="alerta.variant"
+            [title]="alerta.title"
+            [message]="alerta.message"
+            [primaryLabel]="alerta.primaryLabel ?? ''"
+            [dismissible]="alerta.dismissible ?? false"
+            (action)="onAlertaInlineAction(alerta.actionId)"
+            (dismiss)="onAlertaInlineDismiss(alerta.dismissId)"
+          />
         </div>
       }
 
-      @if (contextoOrigen(); as origen) {
-        <section class="sal-ext-origen" role="status" aria-label="Origen del borrador">
-          <div class="sal-ext-origen__main">
-            <p class="sal-ext-origen__eyebrow">{{ origen.eyebrow }}</p>
-            <strong class="sal-ext-origen__title">{{ origen.titulo }}</strong>
-            <span class="sal-ext-origen__meta">
-              <span class="sal-ext-origen__chip sal-ext-origen__chip--{{ origen.estadoVariant }}">
-                {{ origen.estadoLabel }}
-              </span>
-              <span class="sal-ext-origen__chip">{{ origen.versionLabel }}</span>
-              <span class="sal-ext-origen__note">{{ origen.nota }}</span>
-            </span>
-          </div>
-          <dl class="sal-ext-origen__metrics">
-            @for (metrica of origen.metricas; track metrica.label) {
-              <div>
-                <dt>{{ metrica.label }}</dt>
-                <dd>{{ metrica.value }}</dd>
+      @if (borrador(); as datos) {
+        <section class="prev-operativa" aria-label="Estado del borrador Previred">
+          @if (contextoOrigen(); as origen) {
+            <div class="prev-operativa__origen sal-ext-origen">
+              <div class="sal-ext-origen__main">
+                <p class="sal-ext-origen__eyebrow">{{ origen.eyebrow }}</p>
+                <strong class="sal-ext-origen__title">{{ origen.titulo }}</strong>
+                <span class="sal-ext-origen__meta">
+                  <span class="sal-ext-origen__chip sal-ext-origen__chip--{{ origen.estadoVariant }}">
+                    {{ origen.estadoLabel }}
+                  </span>
+                  <span class="sal-ext-origen__chip">{{ origen.versionLabel }}</span>
+                </span>
               </div>
+              @if (resumenBorrador(); as resumen) {
+                <dl class="prev-resumen sal-ext-resumen sal-ext-origen__metrics">
+                  <div>
+                    <dt>Trabajadores</dt>
+                    <dd>{{ resumen.trabajadores }}</dd>
+                  </div>
+                  <div>
+                    <dt>Movimientos</dt>
+                    <dd>{{ resumen.lineas }}</dd>
+                  </div>
+                  @if (archivo105(); as archivo) {
+                    <div [class.sal-ext-resumen__ok]="archivo.listoParaEnvio105">
+                      <dt>Archivo 105</dt>
+                      <dd>{{ archivo.listoParaEnvio105 ? 'Listo' : (archivo.trabajadoresSinDatos > 0 ? archivo.trabajadoresSinDatos + ' sin datos' : 'Por revisar') }}</dd>
+                    </div>
+                  }
+                  @if (resumen.sinCodigo > 0) {
+                    <div class="sal-ext-resumen__danger">
+                      <dt>Sin código</dt>
+                      <dd>{{ resumen.sinCodigo }}</dd>
+                    </div>
+                  }
+                  @if (resumen.sinMapeo > 0) {
+                    <div class="sal-ext-resumen__warn">
+                      <dt>Mapeo prov.</dt>
+                      <dd>{{ resumen.sinMapeo }}</dd>
+                    </div>
+                  }
+                </dl>
+              }
+            </div>
+          }
+
+          <div class="prev-operativa__acciones">
+            @if (datos.lineas.length) {
+              <button
+                type="button"
+                class="prev-operativa__btn"
+                data-testid="previred:ver-movimientos"
+                title="Ver movimientos del borrador"
+                (click)="abrirModalMovimientos()"
+              >
+                <lucide-icon name="list" aria-hidden="true"></lucide-icon>
+                Ver movimientos ({{ datos.lineas.length }})
+              </button>
             }
-          </dl>
+            @if (totalAdvertencias() > 0) {
+              <button
+                type="button"
+                class="prev-operativa__btn prev-operativa__btn--warn"
+                data-testid="previred:ver-advertencias"
+                [title]="tieneBloqueoExportacion() ? 'Hay bloqueos para exportar' : 'Revisar advertencias antes de descargar'"
+                (click)="abrirModalAdvertencias()"
+              >
+                <lucide-icon name="alert-triangle" aria-hidden="true"></lucide-icon>
+                Revisar advertencias ({{ totalAdvertencias() }})
+              </button>
+            }
+            @if (ultimaExportacion(); as exportacion) {
+              <p class="prev-operativa__audit" [title]="origenNotaOperativa()">
+                <lucide-icon name="clock-3" aria-hidden="true"></lucide-icon>
+                Última descarga: {{ formatearFechaExportacionPrevired(exportacion.exportadoEn) }}
+                · {{ exportacion.usuarioLabel }}
+              </p>
+            } @else if (origenNotaOperativa(); as nota) {
+              <p class="prev-operativa__audit">{{ nota }}</p>
+            }
+          </div>
         </section>
-      }
 
-      @if (ultimaExportacion(); as exportacion) {
-        <div class="sal-ext-audit" aria-label="Última exportación registrada">
-          <lucide-icon name="clock-3" aria-hidden="true"></lucide-icon>
-          <span>Última exportación: {{ formatearFechaExportacionPrevired(exportacion.exportadoEn) }}</span>
-          <span class="sal-ext-audit__sep">·</span>
-          <span>{{ exportacion.usuarioLabel }}</span>
-          <span class="sal-ext-audit__sep">·</span>
-          <span>v{{ exportacion.versionLiquidacion }} · {{ exportacion.totalLineas }} línea(s)</span>
-        </div>
-      }
-
-      @if (resumenBorrador(); as resumen) {
-        <dl class="sal-ext-resumen" aria-label="Resumen del borrador">
-          <div>
-            <dt>Líneas</dt>
-            <dd>{{ resumen.lineas }}</dd>
-          </div>
-          <div>
-            <dt>Trabajadores</dt>
-            <dd>{{ resumen.trabajadores }}</dd>
-          </div>
-          <div>
-            <dt>Versión liquidación</dt>
-            <dd>v{{ resumen.version }}</dd>
-          </div>
-          @if (resumen.sinCodigo > 0) {
-            <div class="sal-ext-resumen__danger">
-              <dt>Sin código</dt>
-              <dd>{{ resumen.sinCodigo }}</dd>
-            </div>
-          }
-          @if (resumen.sinMapeo > 0) {
-            <div class="sal-ext-resumen__warn">
-              <dt>Mapeo provisional</dt>
-              <dd>{{ resumen.sinMapeo }}</dd>
-            </div>
-          }
-          @if (resumen.listoParaEnvio || (archivo105()?.listoParaEnvio105)) {
-            <div class="sal-ext-resumen__ok">
-              <dt>Estado</dt>
-              <dd>{{ archivo105()?.listoParaEnvio105 ? 'Listo para Previred' : 'Listo para envío' }}</dd>
-            </div>
-          }
-        </dl>
-      }
-
-      @if (borrador()?.lineas?.length) {
-        <details class="sal-ext-preview-disclosure" open>
-          <summary>
-            Vista previa del archivo ({{ borrador()!.lineas.length }} movimiento{{ borrador()!.lineas.length === 1 ? '' : 's' }})
-          </summary>
-          <div class="sal-ext-preview-disclosure__wrap">
-            <app-data-grid
-              title=""
-              [columns]="columnas"
-              [rows]="borrador()!.lineas"
-              [persistenceKey]="persistenciaGrilla"
-              [filtersEnabled]="true"
-              toolbarLayout="operativa"
-              headerCountDisplay="text"
-              headerCountNoun="movimientos"
-              [gridHeight]="'min(24rem, 50vh)'"
-              emptyTitle="No hay líneas para mostrar."
-              className="prev-movimientos-grid"
-              cardClassName="prev-movimientos-grid__card"
-            />
-          </div>
-        </details>
-      } @else if (borrador()) {
-        <app-message-box
-          variant="blocked"
-          title="Sin líneas exportables"
-          message="La liquidación no tiene movimientos exportables para Previred. Revise el catálogo y los mapeos de conceptos en Liquidaciones oficiales."
-        />
+        @if (!datos.lineas.length) {
+          <app-message-box
+            variant="blocked"
+            title="Sin líneas exportables"
+            message="La liquidación no tiene movimientos exportables para Previred. Revise el catálogo y los mapeos de conceptos en Liquidaciones oficiales."
+          />
+        }
       } @else if (!cargandoBorrador() && !nominaSeleccionadaId()) {
         <app-message-box
           variant="info"
@@ -262,4 +238,68 @@
     (cerrar)="cerrarModalNomina()"
     (seleccionar)="onNominaSeleccionadaEnModal($event)"
   />
+
+  @if (modalAdvertenciasAbierto()) {
+    <app-message-box
+      mode="modal"
+      [variant]="tieneBloqueoExportacion() ? 'blocked' : 'warning'"
+      width="lg"
+      panelClass="prev-adv-modal"
+      eyebrow="Previred"
+      [title]="tieneBloqueoExportacion() ? 'No se puede exportar' : 'Revisar antes de exportar'"
+      [message]="mensajeModalAdvertencias()"
+      [sections]="seccionesAdvertencia()"
+      primaryLabel="Entendido"
+      (action)="cerrarModalAdvertencias()"
+      (dismiss)="cerrarModalAdvertencias()"
+    />
+  }
+
+  @if (modalMovimientosAbierto() && borrador(); as datos) {
+    <app-message-box
+      mode="modal"
+      variant="info"
+      width="lg"
+      panelClass="prev-mov-modal"
+      eyebrow="Previred"
+      title="Movimientos exportables"
+      [message]="etiquetaNominaActiva()"
+      (dismiss)="cerrarModalMovimientos()"
+    >
+      <div class="prev-mov-modal__grid-wrap">
+        <app-data-grid
+          title=""
+          [columns]="columnas"
+          [rows]="datos.lineas"
+          [persistenceKey]="persistenciaGrilla"
+          [filtersEnabled]="true"
+          toolbarLayout="operativa"
+          headerCountDisplay="text"
+          headerCountNoun="movimientos"
+          [gridHeight]="'100%'"
+          emptyTitle="No hay líneas para mostrar."
+          className="prev-movimientos-grid"
+          cardClassName="prev-movimientos-grid__card"
+        />
+      </div>
+    </app-message-box>
+  }
+
+  @if (modalConfirmarDescargaAbierto()) {
+    <app-message-box
+      mode="modal"
+      variant="decision"
+      width="md"
+      panelClass="prev-confirm-modal"
+      eyebrow="Previred"
+      title="Confirmar descarga"
+      [message]="mensajeConfirmarDescarga()"
+      [sections]="seccionesConfirmarDescarga()"
+      primaryLabel="Descargar archivo"
+      secondaryLabel="Cancelar"
+      (action)="confirmarDescargaPendiente()"
+      (secondary)="cerrarModalConfirmarDescarga()"
+      (dismiss)="cerrarModalConfirmarDescarga()"
+    />
+  }
 </div>

@@ -54,16 +54,16 @@
 
     <div class="liq-toolbar__actions">
       @if (puedeExportarPrevired()) {
-        <a
+        <button
+          type="button"
           class="liq-icon-btn"
           data-testid="liquidaciones:exportar-previred"
-          title="Exportar Previred"
-          aria-label="Exportar Previred"
-          [routerLink]="rutaPrevired().path"
-          [queryParams]="rutaPrevired().queryParams"
+          title="Descargar archivo Previred"
+          aria-label="Descargar archivo Previred"
+          (click)="abrirExportPreviredNominaActual()"
         >
           <lucide-icon name="upload" aria-hidden="true"></lucide-icon>
-        </a>
+        </button>
       }
       <a
         class="liq-icon-btn"
@@ -219,15 +219,29 @@
           </ng-template>
 
           <ng-template appDataGridCell="acciones" let-fila="row">
-            <button
-              type="button"
-              class="liq-row-action liq-row-action--primary"
-              [title]="'Abrir liquidaciones de ' + fila.empresaNombre + ' · ' + fila.periodo"
-              [attr.aria-label]="'Abrir liquidaciones de ' + fila.empresaNombre + ' · ' + fila.periodo"
-              (click)="seleccionarNominaDesdeEntrada(fila); $event.stopPropagation()"
-            >
-              <lucide-icon name="arrow-right" aria-hidden="true"></lucide-icon>
-            </button>
+            <div class="liq-row-actions" (click)="$event.stopPropagation()">
+              @if (puedeExportarPreviredNomina(fila)) {
+                <button
+                  type="button"
+                  class="liq-row-action"
+                  data-testid="liquidaciones:exportar-previred-fila"
+                  [title]="'Descargar Previred · ' + fila.empresaNombre + ' · ' + fila.periodo"
+                  [attr.aria-label]="'Descargar Previred · ' + fila.empresaNombre + ' · ' + fila.periodo"
+                  (click)="abrirExportPreviredNomina(fila)"
+                >
+                  <lucide-icon name="upload" aria-hidden="true"></lucide-icon>
+                </button>
+              }
+              <button
+                type="button"
+                class="liq-row-action liq-row-action--primary"
+                [title]="'Abrir liquidaciones de ' + fila.empresaNombre + ' · ' + fila.periodo"
+                [attr.aria-label]="'Abrir liquidaciones de ' + fila.empresaNombre + ' · ' + fila.periodo"
+                (click)="seleccionarNominaDesdeEntrada(fila)"
+              >
+                <lucide-icon name="arrow-right" aria-hidden="true"></lucide-icon>
+              </button>
+            </div>
           </ng-template>
         </app-data-grid>
       </div>
@@ -643,4 +657,11 @@
       ></app-liquidacion-preview-modal>
     }
   }
+
+  <app-previred-exportacion-modal
+    [abierto]="modalExportPreviredAbierto()"
+    [nominaPeriodoId]="nominaExportPreviredId()"
+    [etiquetaNomina]="etiquetaExportPrevired()"
+    (cerrar)="cerrarExportPreviredNomina()"
+  />
 </div>

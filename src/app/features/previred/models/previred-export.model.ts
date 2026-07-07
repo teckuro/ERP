@@ -19,6 +19,20 @@ export interface PreviredAdvertencia {
   mensaje: string;
 }
 
+export type PreviredConceptoObservacionTipo = 'sin_codigo_previred' | 'mapeo_provisional';
+
+/** Concepto de liquidación excluido o con mapeo provisional en export Previred. */
+export interface PreviredConceptoObservacion {
+  nombreTrabajador: string;
+  rut: string;
+  nombreConcepto: string;
+  codigoConcepto: string;
+  codigoLre: string | null;
+  monto: number;
+  tipo: PreviredConceptoObservacionTipo;
+  motivo: string;
+}
+
 export interface PreviredBorradorExport {
   periodo: string;
   empresaNombre: string;
@@ -28,6 +42,7 @@ export interface PreviredBorradorExport {
   totalTrabajadores: number;
   lineas: PreviredLineaExport[];
   advertencias: PreviredAdvertencia[];
+  conceptosObservacion: PreviredConceptoObservacion[];
   lineasOmitidas: number;
   conceptosSinCodigo: number;
   conceptosSinMapeoCatalogo: number;

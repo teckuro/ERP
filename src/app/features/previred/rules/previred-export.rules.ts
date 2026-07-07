@@ -5,6 +5,7 @@ import type {
 import type {
   PreviredAdvertencia,
   PreviredBorradorExport,
+  PreviredConceptoObservacion,
   PreviredLineaExport,
   PreviredTipoMovimiento,
 } from '../models/previred-export.model';
@@ -36,6 +37,7 @@ export interface MapearTrabajadorPreviredResult {
   omitidas: number;
   sinCodigo: number;
   sinMapeoCatalogo: number;
+  conceptosObservacion: PreviredConceptoObservacion[];
 }
 
 export function mapearTrabajadorAPrevired(
@@ -45,8 +47,26 @@ export function mapearTrabajadorAPrevired(
   let omitidas = 0;
   let sinCodigo = 0;
   let sinMapeoCatalogo = 0;
+  const conceptosObservacion: PreviredConceptoObservacion[] = [];
   const rut = input.trabajador.rut?.trim() || '—';
   const indiceCatalogo = indexarCatalogoPrevired(input.catalogoPrevired ?? []);
+
+  const registrarObservacion = (
+    concepto: LiquidacionConcepto,
+    tipo: PreviredConceptoObservacion['tipo'],
+    motivo: string,
+  ): void => {
+    conceptosObservacion.push({
+      nombreTrabajador: input.trabajador.nombreTrabajador,
+      rut,
+      nombreConcepto: concepto.nombre,
+      codigoConcepto: concepto.codigo?.trim() || '—',
+      codigoLre: concepto.codigoLre?.trim() || null,
+      monto: concepto.monto,
+      tipo,
+      motivo,
+    });
+  };
 
   for (const concepto of input.conceptos) {
     if (concepto.monto === 0 || esAporteReferenciaEmpleador(concepto)) {
@@ -57,17 +77,32 @@ export function mapearTrabajadorAPrevired(
     const codigoLre = concepto.codigoLre?.trim();
     if (!codigoLre) {
       sinCodigo++;
+      registrarObservacion(
+        concepto,
+        'sin_codigo_previred',
+        'Sin código LRE en la liquidación.',
+      );
       continue;
     }
 
     const resolucion = resolverCodigoPrevired(codigoLre, indiceCatalogo, concepto.nombre);
     if (!resolucion) {
       sinCodigo++;
+      registrarObservacion(
+        concepto,
+        'sin_codigo_previred',
+        'Sin mapeo a código Previred.',
+      );
       continue;
     }
 
     if (resolucion.origenMapeo === 'fallback_lre') {
       sinMapeoCatalogo++;
+      registrarObservacion(
+        concepto,
+        'mapeo_provisional',
+        'Usa código provisional; confirme mapeo en catálogo Previred.',
+      );
     }
 
     lineas.push({
@@ -81,7 +116,7 @@ export function mapearTrabajadorAPrevired(
     });
   }
 
-  return { lineas, omitidas, sinCodigo, sinMapeoCatalogo };
+  return { lineas, omitidas, sinCodigo, sinMapeoCatalogo, conceptosObservacion };
 }
 
 export interface ConstruirBorradorPreviredInput {
@@ -104,6 +139,7 @@ export function construirBorradorPrevired(
   let lineasOmitidas = 0;
   let conceptosSinCodigo = 0;
   let conceptosSinMapeoCatalogo = 0;
+  const conceptosObservacion: PreviredConceptoObservacion[] = [];
   const advertencias: PreviredAdvertencia[] = [];
 
   for (const fila of input.trabajadores) {
@@ -116,6 +152,7 @@ export function construirBorradorPrevired(
     lineasOmitidas += resultado.omitidas;
     conceptosSinCodigo += resultado.sinCodigo;
     conceptosSinMapeoCatalogo += resultado.sinMapeoCatalogo;
+    conceptosObservacion.push(...resultado.conceptosObservacion);
   }
 
   const tieneBloqueo = lineas.length === 0;
@@ -130,13 +167,19 @@ export function construirBorradorPrevired(
     if (conceptosSinCodigo > 0) {
       advertencias.push({
         nivel: 'revision',
-        mensaje: `${conceptosSinCodigo} concepto(s) con monto no tienen código base y quedarán fuera del archivo.`,
+        mensaje:
+          conceptosSinCodigo === 1
+            ? '1 concepto de liquidación no tiene código Previred y no se incluirá en el archivo.'
+            : `${conceptosSinCodigo} conceptos de liquidación no tienen código Previred y no se incluirán en el archivo.`,
       });
     }
     if (conceptosSinMapeoCatalogo > 0) {
       advertencias.push({
         nivel: 'revision',
-        mensaje: `${conceptosSinMapeoCatalogo} concepto(s) usan código provisional (sin mapeo Previred en catálogo).`,
+        mensaje:
+          conceptosSinMapeoCatalogo === 1
+            ? '1 concepto usa código provisional sin mapeo confirmado en catálogo Previred.'
+            : `${conceptosSinMapeoCatalogo} conceptos usan código provisional sin mapeo confirmado en catálogo Previred.`,
       });
     }
   }
@@ -150,6 +193,7 @@ export function construirBorradorPrevired(
     totalTrabajadores: input.trabajadores.length,
     lineas,
     advertencias,
+    conceptosObservacion,
     lineasOmitidas,
     conceptosSinCodigo,
     conceptosSinMapeoCatalogo,

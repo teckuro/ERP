@@ -82,13 +82,15 @@ export function buildPersonaBorradorAvanzadoInsert(
 export function buildPersonaActivacionUpdate(
   payload: CrearEmpleadoPayload,
   fechaActivacion: string,
+  aptoParaRemuneraciones: boolean,
+  estadoFicha: 'VALIDO' | 'INCOMPLETO',
 ): PersonaUpdate {
   const esHonorarios = payload.relacionLaboral === 'HONORARIOS';
 
   return {
     estado: mapEmpleadoEstadoToPersonaEstado(payload.estado),
-    estado_ficha: mapEmpleadoEstadoToEstadoFicha(payload.estado),
-    apto_para_remuneraciones: payload.origenCreacion === 'avanzado' && !esHonorarios,
+    estado_ficha: aptoParaRemuneraciones ? 'VALIDO' : estadoFicha,
+    apto_para_remuneraciones: aptoParaRemuneraciones && !esHonorarios,
     fecha_activacion: payload.origenCreacion === 'avanzado' ? fechaActivacion : null,
   };
 }
@@ -322,6 +324,7 @@ export function mapCreatedEmpleado(
   personaId: number,
   rut: RutParts,
   departamento: string | null,
+  aptoParaRemuneraciones = false,
 ): EmpleadoListado {
   return {
     id: personaId,
@@ -336,8 +339,8 @@ export function mapCreatedEmpleado(
     sueldoBase: payload.sueldoBase,
     monedaContrato: null,
     estado: payload.estado,
-    estadoFicha: mapEmpleadoEstadoToEstadoFicha(payload.estado),
-    aptoParaRemuneraciones: payload.estado === 'activo' && payload.relacionLaboral !== 'HONORARIOS',
+    estadoFicha: aptoParaRemuneraciones ? 'VALIDO' : 'INCOMPLETO',
+    aptoParaRemuneraciones,
     pasoAltaAvanzada: null,
   };
 }

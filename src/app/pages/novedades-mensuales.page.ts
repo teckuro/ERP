@@ -8,5 +8,20 @@ import { NovedadesMensualesContainer } from '../features/nomina-mensual/novedade
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NovedadesMensualesContainer],
   template: `<app-novedades-mensuales-container />`,
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        width: 100%;
+        min-width: 0;
+        min-height: 0;
+        height: 100%;
+        overflow: hidden;
+        box-sizing: border-box;
+      }
+    `,
+  ],
 })
 export class NovedadesMensualesPage {}

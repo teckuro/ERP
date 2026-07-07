@@ -97,9 +97,13 @@ export class PreviredExportRepository {
   async obtenerTrabajadoresEnriquecidos(
     idsPersona: readonly number[],
     nombresFallback: ReadonlyMap<number, string>,
-  ): Promise<Map<string, PreviredTrabajadorEnriquecido>> {
-    const resultado = new Map<string, PreviredTrabajadorEnriquecido>();
-    if (idsPersona.length === 0) return resultado;
+  ): Promise<{
+    porClave: Map<string, PreviredTrabajadorEnriquecido>;
+    porPersona: Map<number, PreviredTrabajadorEnriquecido>;
+  }> {
+    const porClave = new Map<string, PreviredTrabajadorEnriquecido>();
+    const porPersona = new Map<number, PreviredTrabajadorEnriquecido>();
+    if (idsPersona.length === 0) return { porClave, porPersona };
 
     const { data, error } = await this.supabase
       .from('vw_persona_factores')
@@ -109,7 +113,7 @@ export class PreviredExportRepository {
       .in('id_persona', [...new Set(idsPersona)]);
 
     if (error) {
-      if (esTablaInexistente(error)) return resultado;
+      if (esTablaInexistente(error)) return { porClave, porPersona };
       throw new Error('No se pudo enriquecer datos de trabajadores para Previred.');
     }
 
@@ -121,10 +125,13 @@ export class PreviredExportRepository {
         nombresFallback.get(idPersona) ?? null,
       );
       if (!mapeado) continue;
-      resultado.set(claveTrabajadorPrevired(idPersona, mapeado.idContrato), mapeado);
+      porClave.set(claveTrabajadorPrevired(idPersona, mapeado.idContrato), mapeado);
+      if (!porPersona.has(idPersona)) {
+        porPersona.set(idPersona, mapeado);
+      }
     }
 
-    return resultado;
+    return { porClave, porPersona };
   }
 
   async obtenerParametrosEmpresaPrevired(periodo: string): Promise<PreviredParametrosEmpresa> {

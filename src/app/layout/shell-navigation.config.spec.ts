@@ -11,12 +11,11 @@ describe('shell-navigation.config', () => {
       '/empleados',
       '/remuneraciones/nominas',
       '/remuneraciones/liquidaciones',
-      '/remuneraciones/previred',
       '/remuneraciones/lre',
       '/parametros',
     ]);
     expect(gestion?.items.map((i) => i.path)).toContain('/remuneraciones/novedades-mensuales');
-    expect(gestion?.items.map((i) => i.path)).toContain('/remuneraciones/haberes-descuentos');
+    expect(gestion?.items.map((i) => i.path)).not.toContain('/remuneraciones/haberes-descuentos');
     expect(gestion?.items.map((i) => i.path)).not.toContain('/remuneraciones/plantillas-ciclos');
   });
 

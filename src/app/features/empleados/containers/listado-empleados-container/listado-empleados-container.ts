@@ -91,6 +91,7 @@ export class ListadoEmpleadosContainer {
             ? {
                 ...empleado,
                 estado: estadoSiguiente,
+                aptoParaRemuneraciones: false,
               }
             : empleado,
         ),

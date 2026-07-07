@@ -6,6 +6,7 @@
 |-------|-----------|-----|
 | Reglas globales | `.cursor/rules/*.mdc` (`alwaysApply: true`) | Orquestador, **estándares EST**, contrato codex, archivos protegidos, NOIA |
 | Skill | `.cursor/skills/erp-codex-docs/` | Flujo lectura → implementar → autorevisar |
+| Skill | `.cursor/skills/erp-fullscreen-data-grid/` | Grilla `app-data-grid` a altura completa (patrón administrador-nominas) |
 | Contrato raíz | `AGENTS.md` | Puntero al contrato en `docs/codex` |
 | Workspace VS Code | `.vscode/` | Formato, tareas npm, debug Chrome, MCP Angular CLI |
 | Contexto reducido | `scripts/build-context-pack.ps1` | ZIP mínimo por módulo |

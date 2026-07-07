@@ -21,10 +21,10 @@ import {
 } from './previred-movimiento-personal.rules';
 import {
   claveTrabajadorPrevired,
-  parsearNombreCompletoLiquidacion,
   type PreviredParametrosEmpresa,
   type PreviredTrabajadorEnriquecido,
 } from './previred-trabajador-datos.rules';
+import { evaluarAptitudPreviredTrabajador } from './previred-trabajador-validacion.rules';
 
 export interface PreviredTrabajadorLiquidacionInput {
   trabajador: LiquidacionTrabajador;
@@ -69,7 +69,15 @@ export function construirRegistro105DesdeLiquidacion(input: {
 } {
   const advertencias: PreviredAdvertencia[] = [];
   const enriquecido = input.enriquecido;
-  const parsedNombre = parsearNombreCompletoLiquidacion(input.trabajador.nombreTrabajador);
+
+  const aptitud = evaluarAptitudPreviredTrabajador({
+    trabajador: input.trabajador,
+    enriquecido,
+  });
+  if (!aptitud.apto) {
+    advertencias.push(...aptitud.advertencias);
+    return { registro: null, conceptosSinCampo: 0, advertencias };
+  }
 
   const rutRaw = enriquecido?.rut ?? input.trabajador.rut;
   const rutDescompuesto =
@@ -79,17 +87,17 @@ export function construirRegistro105DesdeLiquidacion(input: {
         ? descomponerRutPrevired(rutRaw.includes('-') ? rutRaw : `${rutRaw}-${enriquecido?.dv ?? ''}`)
         : null;
 
-  if (!rutDescompuesto) {
+  if (!rutDescompuesto || !enriquecido) {
     advertencias.push({
-      nivel: 'revision',
+      nivel: 'bloqueo',
       mensaje: `${input.trabajador.nombreTrabajador}: RUT no válido para archivo Previred.`,
     });
     return { registro: null, conceptosSinCampo: 0, advertencias };
   }
 
-  const saludTipo = enriquecido?.saludTipo ?? null;
-  const regimen = enriquecido?.regimenPrevisional ?? 'AFP';
-  const tipoTrabajador = enriquecido?.tipoTrabajador ?? 0;
+  const saludTipo = enriquecido.saludTipo;
+  const regimen = enriquecido.regimenPrevisional;
+  const tipoTrabajador = enriquecido.tipoTrabajador;
   const baseImponible = Math.max(0, Math.round(input.trabajador.baseImponible));
   const diasTrabajados = Math.min(
     30,
@@ -108,7 +116,7 @@ export function construirRegistro105DesdeLiquidacion(input: {
     baseImponible,
     regimenPrevisional: regimen,
     saludTipo,
-    seguroCesantia: enriquecido?.seguroCesantia ?? false,
+    seguroCesantia: enriquecido.seguroCesantia,
     ccafCodigoPrevired: input.parametrosEmpresa.codigoCcaf,
     mutualCodigoPrevired: input.parametrosEmpresa.codigoMutual,
   });
@@ -129,7 +137,7 @@ export function construirRegistro105DesdeLiquidacion(input: {
   });
   montosPorCampo[94] = expectativaVida;
 
-  if (enriquecido?.codigoSalud && enriquecido.codigoSalud !== '00') {
+  if (enriquecido.codigoSalud !== '00') {
     montosPorCampo[75] = Number(enriquecido.codigoSalud);
   }
 
@@ -146,28 +154,20 @@ export function construirRegistro105DesdeLiquidacion(input: {
     montosPorCampo[22] = agregacion.montosPorCampo[22];
   }
 
-  const sexo = enriquecido?.sexo;
-  if (!sexo) {
-    advertencias.push({
-      nivel: 'revision',
-      mensaje: `${input.trabajador.nombreTrabajador}: falta sexo en ficha para archivo Previred.`,
-    });
-  }
-
   const registro = construirRegistro105Minimo({
     rut: rutDescompuesto.rut,
     dv: rutDescompuesto.dv,
-    apellidoPaterno: enriquecido?.apellidoPaterno ?? parsedNombre.apellidoPaterno,
-    apellidoMaterno: enriquecido?.apellidoMaterno ?? parsedNombre.apellidoMaterno,
-    nombres: enriquecido?.nombres ?? parsedNombre.nombres,
-    sexo: sexo ?? 'M',
-    nacionalidad: enriquecido?.nacionalidad ?? 0,
+    apellidoPaterno: enriquecido.apellidoPaterno,
+    apellidoMaterno: enriquecido.apellidoMaterno,
+    nombres: enriquecido.nombres,
+    sexo: enriquecido.sexo!,
+    nacionalidad: enriquecido.nacionalidad,
     periodo: input.periodo,
     regimenPrevisional: regimen,
     tipoTrabajador,
     diasTrabajados,
-    tipoJornada: enriquecido?.tipoJornada ?? 1,
-    codigoAfp: enriquecido?.codigoAfp ?? '00',
+    tipoJornada: enriquecido.tipoJornada,
+    codigoAfp: enriquecido.codigoAfp,
     rentaImponibleAfp: montosPorCampo[27] ?? 0,
     cotizacionObligatoriaAfp: montosPorCampo[28] ?? 0,
     cotizacionSis: montosPorCampo[29] ?? 0,
@@ -177,12 +177,12 @@ export function construirRegistro105DesdeLiquidacion(input: {
       15: movimiento.codigoMovimientoPersonal,
       16: movimiento.fechaDesde,
       17: movimiento.fechaHasta,
-      18: enriquecido?.tramoAsignacionFamiliar ?? 'D',
-      19: enriquecido?.cargasSimples ?? 0,
-      20: enriquecido?.cargasMaternales ?? 0,
-      21: enriquecido?.cargasInvalidas ?? 0,
+      18: enriquecido.tramoAsignacionFamiliar,
+      19: enriquecido.cargasSimples,
+      20: enriquecido.cargasMaternales,
+      21: enriquecido.cargasInvalidas,
       92: rima,
-      105: input.trabajador.centroCosto ?? enriquecido?.centroCosto ?? '',
+      105: input.trabajador.centroCosto ?? enriquecido.centroCosto ?? '',
     },
   });
 
@@ -237,8 +237,12 @@ export function construirArchivo105Previred(
   });
 
   const tieneBloqueo = advertencias.some((a) => a.nivel === 'bloqueo');
+  const totalLiquidados = input.trabajadores.length;
   const listoParaEnvio105 =
-    !tieneBloqueo && registros.length > 0 && trabajadoresSinDatos === 0;
+    !tieneBloqueo &&
+    registros.length > 0 &&
+    trabajadoresSinDatos === 0 &&
+    registros.length === totalLiquidados;
 
   return {
     formato: archivo.formato,

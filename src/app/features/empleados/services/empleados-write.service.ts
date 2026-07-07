@@ -49,7 +49,18 @@ export class EmpleadosWriteService {
         payload.idCentroCosto,
       );
 
-      return mapCreatedEmpleado(payload, personaId, rut, departamento);
+      const evaluacionPost = evaluarCompletitudYAptitudEmpleado({
+        payload,
+        pasoAltaAvanzada: null,
+      });
+
+      return mapCreatedEmpleado(
+        payload,
+        personaId,
+        rut,
+        departamento,
+        evaluacionPost.aptoParaRemuneraciones,
+      );
     } catch (error) {
       await this.empleadosRepository.rollbackCreacion(contratoId, personaId);
       throw error;
