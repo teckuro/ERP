@@ -352,6 +352,10 @@ Formulario mensual unificado en componente `app-novedades-formulario-movimiento-
 
 Modal mensual con selector **Haber o descuento** | **Ausencia o licencia**. Segundo flujo usa motivo RRHH + días (+ folio LM), sin concepto de catálogo. Ver [`ausencias-licencias-chile.md`](./ausencias-licencias-chile.md).
 
+### Conceptos catálogo (`/remuneraciones/conceptos`) — 2026-07-07 / 2026-07-08
+
+Pantalla maestra de haberes, descuentos y aportes. Franja mínima (solo lead) y banner LRE condicional. Modal **Revisar** con bloques operativos; liquidación humanizada (resumen + chips, sin flags técnicos). Modal alta/edición con grid alineado; impacto en liquidación automático según tipo y naturaleza. Presenter UI: `conceptos-remuneracion-ui.presenter.ts`; reglas flags: `concepto-liquidacion-flags.rules.ts`.
+
 ---
 
 **Context pack operativo (estado UI consolidado):** [`../../orquestador/resumen-trabajo-movimientos-remuneracion.md`](../../orquestador/resumen-trabajo-movimientos-remuneracion.md).

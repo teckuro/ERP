@@ -4,7 +4,9 @@
   flex-direction: column;
   width: 100%;
   min-width: 0;
-  min-height: 100%;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 .mv-page {
@@ -12,14 +14,20 @@
   flex-direction: column;
   gap: 0;
   min-height: 0;
+  flex: 1 1 auto;
   width: 100%;
+  height: 100%;
+  overflow: hidden;
   background: #ffffff;
 }
 
-.mv-head {
+.mv-franja-operativa {
+  flex: 0 0 auto;
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
   border-bottom: 1px solid #d7dde5;
   background: #ffffff;
   padding: 10px 14px;
@@ -27,42 +35,20 @@
 
 .mv-lead {
   margin: 0;
+  flex: 1 1 18rem;
+  min-width: 0;
   font-size: 0.875rem;
   line-height: 1.45;
   color: #475569;
   max-width: 52rem;
 }
 
-.mv-inline-link {
-  color: #2563eb;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.mv-inline-link:hover {
-  color: #1d4ed8;
-}
-
-.mv-head-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.mv-period-wrap {
-  flex: 1 1 12rem;
-  min-width: 0;
-  max-width: 36rem;
-}
-
-.mv-period-global {
+.mv-period-inline {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.35rem 0.75rem;
+  gap: 0.25rem 0.55rem;
+  flex: 0 1 auto;
 }
 
 .mv-period-global-k {
@@ -74,36 +60,64 @@
 }
 
 .mv-period-global-v {
-  font-size: 1.05rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: #0f172a;
-  letter-spacing: -0.01em;
 }
 
 .mv-period-hint {
-  margin: 0.35rem 0 0;
+  margin: 0;
   font-size: 0.72rem;
   line-height: 1.4;
   color: #94a3b8;
 }
 
-.mv-head-buttons {
+.mv-grid-shell {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.mv-grid-wrap {
-  min-height: 0;
   flex: 1 1 auto;
-  min-width: 0;
+  flex-direction: column;
   width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
-:host ::ng-deep .mv-grid-wrap .data-grid-filter-grid {
-  grid-template-columns: minmax(12rem, 2.2fr) !important;
-  gap: 0.65rem 0.85rem;
+:host ::ng-deep .mv-grid-shell > app-data-grid.mv-grid {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+:host ::ng-deep .mv-grid-shell > app-data-grid.mv-grid > app-card.mv-grid-card {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  box-shadow: none;
+}
+
+:host ::ng-deep .mv-grid-shell > app-data-grid.mv-grid .data-grid-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+:host ::ng-deep .mv-grid-shell .data-grid-filter-grid {
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr)) !important;
+  gap: 0.65rem 0.75rem !important;
 }
 
 .mv-chip {

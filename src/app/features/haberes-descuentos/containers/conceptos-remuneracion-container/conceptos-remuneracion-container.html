@@ -1,28 +1,23 @@
 <section class="hd-page" aria-label="Conceptos de remuneración">
-  <header class="hd-head">
-    <p class="hd-lead">
-      Catálogo maestro usado por haberes, descuentos y futuras liquidaciones. No es asignación por trabajador ni
-      resultado de cálculo cerrado.
-    </p>
-  </header>
-
-  <p class="cr-note">
-    Los administradores de remuneraciones pueden crear conceptos nuevos con código LRE asignado. Use «Revisar» para ver
-    reglas, exportación LRE y bloqueos. Los conceptos de sistema siguen protegidos salvo perfil administrador.
-  </p>
-
-  @if (mostrarFranjaLre()) {
-    <section class="cr-lre-banner" role="status" aria-label="Pendientes exportación LRE">
-      <p>
-        <strong>{{ pendientesExportacionLre() }}</strong>
-        concepto(s) requieren código LRE antes de exportar el libro de remuneraciones.
+  <div class="cr-grid-shell">
+    <section class="cr-franja-operativa" aria-label="Contexto del catálogo">
+      <p class="cr-franja-operativa__lead">
+        Catálogo maestro de haberes, descuentos y aportes. Define qué existe antes de asignarlo a trabajadores.
       </p>
-      <a routerLink="/remuneraciones/lre" class="cr-lre-banner__link">Ir a exportación LRE</a>
     </section>
-  }
 
-  <div class="cr-grid-wrap">
+    @if (mostrarFranjaLre()) {
+      <section class="cr-lre-banner" role="status" aria-label="Pendientes exportación LRE">
+        <p>
+          <strong>{{ pendientesExportacionLre() }}</strong>
+          concepto(s) requieren código LRE antes de exportar el libro de remuneraciones.
+        </p>
+        <a routerLink="/remuneraciones/lre" class="cr-lre-banner__link">Ir a exportación LRE</a>
+      </section>
+    }
+
     <app-data-grid
+      className="cr-grid"
       title="Conceptos"
       [primaryActionLabel]="puedeCrearConcepto() ? 'Nuevo concepto' : ''"
       (primaryAction)="abrirNuevoConcepto()"
@@ -35,14 +30,23 @@
       [showExportAction]="false"
       [selectable]="false"
       [trackBy]="trackCatalogo"
-      gridHeight="100%"
-      cardClassName="erp-fullscreen-grid-card"
+      [gridHeight]="'100%'"
+      cardClassName="cr-grid-card erp-fullscreen-grid-card"
       (refresh)="refrescar()"
-      emptyTitle="No hay conceptos de remuneración registrados."
-      emptyDescription="El catálogo maestro se carga desde parámetros del sistema. El alta directa no está habilitada en esta fase."
+      [emptyTitle]="emptyStateCatalogo().emptyTitle"
+      [emptyDescription]="emptyStateCatalogo().emptyDescription"
       emptyTitleWhenFiltered="No hay conceptos que coincidan con los filtros."
       emptyDescriptionWhenFiltered="Ajusta la búsqueda o limpia filtros para ver más resultados."
     >
+      <ng-template appDataGridCell="nombre" let-row>
+        <div class="cr-nombre-celda">
+          <span class="cr-nombre-celda__principal">{{ row.nombre }}</span>
+          <span class="cr-nombre-celda__meta">{{ etiquetaNaturaleza(row.naturaleza) }}</span>
+        </div>
+      </ng-template>
+      <ng-template appDataGridCell="naturaleza" let-row>
+        <span class="cr-naturaleza-val">{{ etiquetaNaturaleza(row.naturaleza) }}</span>
+      </ng-template>
       <ng-template appDataGridCell="tipo" let-row>
         @if (row.tipo === 'HABER') {
           <span class="hd-chip hd-chip--haber">Haber</span>
@@ -58,12 +62,14 @@
         <span class="cr-codigo-motor">{{ row.codigoMotor?.trim() || '—' }}</span>
       </ng-template>
       <ng-template appDataGridCell="lreCelda" let-row>
-        <span [class]="claseChipEstadoLre(row.estadoLre)">
-          {{ etiquetaEstadoLre(row.estadoLre) }}
-        </span>
-        @if (row.codigoLre) {
-          <span class="cr-lre-val">{{ row.codigoLre }} · {{ (row.nombreLre ?? '').trim() || '—' }}</span>
-        }
+        <div class="cr-lre-celda">
+          <span [class]="claseChipEstadoLre(row.estadoLre)">
+            {{ etiquetaEstadoLre(row.estadoLre) }}
+          </span>
+          @if (row.codigoLre) {
+            <span class="cr-lre-val">{{ row.codigoLre }} · {{ (row.nombreLre ?? '').trim() || '—' }}</span>
+          }
+        </div>
       </ng-template>
       <ng-template appDataGridCell="vigenciaPeriodo" let-row>
         @switch (row.filtroVigenciaPeriodo) {
@@ -137,7 +143,10 @@
         aria-labelledby="cr-detalle-title"
       >
         <header class="cr-detalle-head">
-          <h2 id="cr-detalle-title" class="hd-modal-title">Detalle del concepto</h2>
+          <div class="cr-detalle-head-copy">
+            <h2 id="cr-detalle-title" class="hd-modal-title">{{ dRow.nombre }}</h2>
+            <p class="cr-detalle-sub">{{ subtituloDetalle(dRow) }}</p>
+          </div>
           <button
             type="button"
             class="cr-detalle-close"
@@ -148,23 +157,55 @@
           </button>
         </header>
         <div class="hd-modal-body cr-detalle-body">
+          <section class="cr-detalle-resumen" aria-label="Resumen operativo">
+            <p class="cr-detalle-resumen__texto">{{ resumenAsignacionDetalle(dRow) }}</p>
+            <span
+              class="hd-chip"
+              [class.hd-chip--si]="dRow.esAsignableCatalogo"
+              [class.hd-chip--no]="!dRow.esAsignableCatalogo"
+            >
+              {{ dRow.esAsignableCatalogo ? 'Asignable manualmente' : 'No asignable manualmente' }}
+            </span>
+          </section>
+
           <section class="cr-detalle-block" aria-labelledby="cr-det-h-id">
             <h3 id="cr-det-h-id" class="cr-detalle-h">Identificación</h3>
             <dl class="cr-detalle-dl">
               <div><dt>Nombre</dt><dd>{{ dRow.nombre }}</dd></div>
               <div><dt>Código</dt><dd>{{ dRow.codigo }}</dd></div>
-              <div><dt>Código motor</dt><dd>{{ dRow.codigoMotor?.trim() || '—' }}</dd></div>
               <div><dt>Tipo</dt><dd>{{ etiquetaTipo(dRow.tipo) }}</dd></div>
-              <div><dt>Descripción</dt><dd class="cr-detalle-muted">No aplica en catálogo (solo nombre y código).</dd></div>
+              <div><dt>Naturaleza</dt><dd>{{ etiquetaNaturaleza(dRow.naturaleza) }}</dd></div>
+              @if (dRow.codigoMotor?.trim()) {
+                <div><dt>Código motor</dt><dd>{{ dRow.codigoMotor }}</dd></div>
+              }
+            </dl>
+          </section>
+
+          <section class="cr-detalle-block" aria-labelledby="cr-det-h-liq">
+            <h3 id="cr-det-h-liq" class="cr-detalle-h">Liquidación</h3>
+            <p class="cr-detalle-impacto-resumen">
+              {{ resumenImpactoFila(dRow) }}
+            </p>
+            <div class="cr-detalle-impacto-chips" aria-label="Impacto en liquidación">
+              @for (chip of chipsImpactoFila(dRow); track chip) {
+                <span class="hd-chip hd-chip--neutral">{{ chip }}</span>
+              }
+            </div>
+          </section>
+
+          <section class="cr-detalle-block" aria-labelledby="cr-det-h-lre">
+            <h3 id="cr-det-h-lre" class="cr-detalle-h">Exportación LRE</h3>
+            <dl class="cr-detalle-dl">
               <div>
-                <dt>Exportación LRE</dt>
+                <dt>Estado</dt>
                 <dd>
                   <span [class]="claseChipEstadoLre(dRow.estadoLre)">{{ etiquetaEstadoLre(dRow.estadoLre) }}</span>
-                  @if (dRow.codigoLre) {
-                    <span class="cr-lre-val">{{ dRow.codigoLre }} · {{ (dRow.nombreLre ?? '').trim() || '—' }}</span>
-                  }
                 </dd>
               </div>
+              @if (dRow.codigoLre) {
+                <div><dt>Código LRE</dt><dd>{{ dRow.codigoLre }}</dd></div>
+                <div><dt>Nombre LRE</dt><dd>{{ (dRow.nombreLre ?? '').trim() || '—' }}</dd></div>
+              }
               @if (dRow.observacionNormativaLre?.trim()) {
                 <div class="cr-detalle-sublist">
                   <span class="cr-detalle-sublist-k">Nota normativa</span>
@@ -175,7 +216,7 @@
           </section>
 
           <section class="cr-detalle-block" aria-labelledby="cr-det-h-cl">
-            <h3 id="cr-det-h-cl" class="cr-detalle-h">Clasificación operativa</h3>
+            <h3 id="cr-det-h-cl" class="cr-detalle-h">Origen y modo</h3>
             <dl class="cr-detalle-dl">
               <div>
                 <dt>Origen</dt>
@@ -183,24 +224,16 @@
                   @if (dRow.esSistema) {
                     Sistema
                   } @else if (dRow.calculoAutomatico) {
-                    Protegido (usuario, automático en liquidación)
+                    Protegido (generado en liquidación)
                   } @else {
                     Usuario
                   }
                 </dd>
               </div>
-              <div><dt>Modo</dt><dd>{{ dRow.calculoAutomatico ? 'Automático' : 'Manual' }}</dd></div>
-              <div>
-                <dt>Asignable en haberes/descuentos</dt>
-                <dd>{{ dRow.esAsignableCatalogo ? 'Sí' : 'No' }}</dd>
-              </div>
-              <div>
-                <dt>Motivo</dt>
-                <dd class="cr-detalle-motivo">{{ resumenAsignacionDetalle(dRow) }}</dd>
-              </div>
+              <div><dt>Modo de cálculo</dt><dd>{{ dRow.calculoAutomatico ? 'Automático' : 'Manual' }}</dd></div>
               @if (!dRow.esAsignableCatalogo && motivosNoAsignableDetalle(dRow).length) {
                 <div class="cr-detalle-sublist">
-                  <span class="cr-detalle-sublist-k">Detalle</span>
+                  <span class="cr-detalle-sublist-k">Motivos de no asignación</span>
                   <ul>
                     @for (m of motivosNoAsignableDetalle(dRow); track m) {
                       <li>{{ m }}</li>
@@ -214,8 +247,8 @@
           <section class="cr-detalle-block" aria-labelledby="cr-det-h-vig">
             <h3 id="cr-det-h-vig" class="cr-detalle-h">Vigencia</h3>
             <dl class="cr-detalle-dl">
-              <div><dt>Inicio</dt><dd>{{ formatFechaDetalle(dRow.vigenciaInicio) }}</dd></div>
-              <div><dt>Fin</dt><dd>{{ formatFechaDetalle(dRow.vigenciaFin) }}</dd></div>
+              <div><dt>Desde</dt><dd>{{ formatFechaDetalle(dRow.vigenciaInicio) }}</dd></div>
+              <div><dt>Hasta</dt><dd>{{ formatFechaDetalle(dRow.vigenciaFin) }}</dd></div>
               <div><dt>Estado respecto a hoy</dt><dd>{{ etiquetaVigenciaChip(dRow) }}</dd></div>
             </dl>
           </section>
@@ -233,56 +266,23 @@
             } @else {
               <ul class="cr-detalle-reglas">
                 @for (regla of reglasCalculoDetalle(); track regla.idReglaConceptoCalculo) {
-                  <li>
-                    <strong>{{ regla.codigoRegla }}</strong>
-                    · {{ regla.baseCalculo || 'Base no definida' }}
-                    · {{ regla.calculoAutomatico ? 'Automático' : 'Manual' }}
-                    · {{ regla.activo ? 'Activa' : 'Inactiva' }}
-                  </li>
+                  <li>{{ etiquetaReglaCalculo(regla) }}</li>
                 }
               </ul>
             }
           </section>
 
-          <section class="cr-detalle-block cr-detalle-block--last" aria-labelledby="cr-det-h-act">
-            <h3 id="cr-det-h-act" class="cr-detalle-h">Acciones y protección (v1)</h3>
-            <ul class="cr-detalle-acciones">
-              <li>
-                Revisar:
-                <span class="cr-detalle-ok">{{ detalleAcciones()!.puedeRevisar ? 'Permitida' : 'No' }}</span>
-              </li>
-              <li>
-                Editar:
-                <span [class.cr-detalle-ok]="detalleAcciones()!.puedeEditar" [class.cr-detalle-no]="!detalleAcciones()!.puedeEditar">
-                  {{ detalleAcciones()!.puedeEditar ? 'Permitida' : 'Bloqueada' }}
-                </span>
-              </li>
-              <li>
-                Eliminar desde listado:
-                <span [class.cr-detalle-ok]="detalleAcciones()!.puedeEliminar" [class.cr-detalle-no]="!detalleAcciones()!.puedeEliminar">
-                  {{ detalleAcciones()!.puedeEliminar ? 'Permitida' : 'No habilitada en esta fase' }}
-                </span>
-              </li>
-              <li>
-                Asignar manualmente (recurrente):
-                <span [class.cr-detalle-ok]="detalleAcciones()!.puedeAsignar" [class.cr-detalle-no]="!detalleAcciones()!.puedeAsignar">
-                  {{ detalleAcciones()!.puedeAsignar ? 'Permitida por reglas' : 'No aplica' }}
-                </span>
-              </li>
+          <section class="cr-detalle-block cr-detalle-block--last" aria-labelledby="cr-det-h-limit">
+            <h3 id="cr-det-h-limit" class="cr-detalle-h">Limitaciones</h3>
+            <ul class="cr-detalle-limitaciones">
+              @for (item of limitacionesDetalle(); track item) {
+                <li>{{ item }}</li>
+              }
             </ul>
-            @if (detalleAcciones()!.motivosBloqueo.length) {
-              <div class="cr-detalle-bloqueos">
-                <p class="cr-detalle-bloqueos-k">Bloqueos o avisos</p>
-                <ul>
-                  @for (b of detalleAcciones()!.motivosBloqueo; track b) {
-                    <li>{{ b }}</li>
-                  }
-                </ul>
-              </div>
-            }
           </section>
         </div>
-        <div class="hd-modal-actions">
+        <div class="hd-modal-actions cr-detalle-actions">
+          <button type="button" class="hd-btn hd-btn--ghost" (click)="cerrarDetalleConcepto()">Cerrar</button>
           @if (detalleAcciones()!.puedeEditar) {
             <button type="button" class="hd-btn hd-btn--primary" (click)="cerrarDetalleConcepto(); editarConceptoRow(dRow)">
               Editar
@@ -296,241 +296,266 @@
   @if (catalogDialogAbierto()) {
     <div class="hd-modal-root" role="presentation">
       <div class="hd-modal-backdrop" aria-hidden="true"></div>
-      <div class="hd-modal hd-modal--wide" role="dialog" aria-modal="true" aria-labelledby="cr-catalog-modal-title">
-        <h2 id="cr-catalog-modal-title" class="hd-modal-title">
+      <div class="hd-modal cr-cat-modal" role="dialog" aria-modal="true" aria-labelledby="cr-catalog-modal-title">
+        <h2 id="cr-catalog-modal-title" class="hd-modal-title cr-cat-modal-title">
           {{ catalogEditId() == null ? 'Nuevo concepto' : 'Editar concepto' }}
         </h2>
         <div class="hd-modal-body cr-cat-modal-body">
-          <div class="cr-cat-stack">
-            <section class="cr-cat-block" aria-labelledby="cr-cat-h-ident">
-              <h3 id="cr-cat-h-ident" class="cr-cat-block-title">Identificación del concepto</h3>
-              <p class="cr-cat-block-hint">
-                Usa un código interno único para identificar el concepto dentro del ERP.
+          <div class="cr-cat-form-grid">
+            <div class="cr-cat-form-grid__nombre">
+              <label class="hd-field-label" for="cr-cat-nombre">
+                Nombre <span class="cr-cat-req" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="cr-cat-nombre"
+                type="text"
+                class="hd-input"
+                [attr.autofocus]="catalogEditId() == null ? '' : null"
+                [ngModel]="catNombre()"
+                (ngModelChange)="catNombre.set($event)"
+              />
+            </div>
+
+            <div class="cr-cat-form-grid__codigo">
+              <label class="hd-field-label" for="cr-cat-codigo">
+                Código interno <span class="cr-cat-req" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="cr-cat-codigo"
+                type="text"
+                class="hd-input"
+                [class.hd-input--readonly]="catalogEditId() !== null"
+                maxlength="30"
+                [readonly]="catalogEditId() !== null"
+                [title]="catalogEditId() !== null ? 'El código interno no se modifica en edición.' : ''"
+                [ngModel]="catCodigo()"
+                (ngModelChange)="catCodigo.set($event)"
+              />
+              @if (catalogEditId() !== null) {
+                <p class="cr-cat-field-hint">No se modifica en edición.</p>
+              }
+            </div>
+
+            <div class="cr-cat-form-grid__tipo">
+              <label class="hd-field-label" for="cr-cat-tipo">Tipo</label>
+              <select
+                id="cr-cat-tipo"
+                class="hd-input"
+                [ngModel]="catTipo()"
+                (ngModelChange)="onCatTipoChange($event)"
+              >
+                <option value="HABER">Haber</option>
+                <option value="DESCUENTO">Descuento</option>
+                <option value="APORTE_EMPLEADOR">Aporte empleador</option>
+              </select>
+            </div>
+
+            <div class="cr-cat-form-grid__naturaleza">
+              <label class="hd-field-label" for="cr-cat-naturaleza">Naturaleza</label>
+              <select
+                id="cr-cat-naturaleza"
+                class="hd-input"
+                [disabled]="catTipo() === 'APORTE_EMPLEADOR'"
+                [ngModel]="catNaturaleza()"
+                (ngModelChange)="catNaturaleza.set($event)"
+              >
+                <option [ngValue]="'IMPONIBLE'">Imponible</option>
+                <option [ngValue]="'NO_IMPONIBLE'">No imponible</option>
+              </select>
+            </div>
+
+            <div class="cr-cat-form-grid__liquidacion" aria-labelledby="cr-cat-h-liq">
+              <h3 id="cr-cat-h-liq" class="cr-cat-block-title">Comportamiento en liquidación</h3>
+              <p class="cr-cat-subtitle cr-cat-subtitle--section">Impacto en liquidación</p>
+              <p class="cr-cat-field-hint cr-cat-field-hint--liquidacion">
+                El sistema marca estas opciones automáticamente según el tipo y la naturaleza del concepto.
               </p>
-              <div class="cr-cat-grid2">
-                <div>
-                  <label class="hd-field-label" for="cr-cat-codigo">Código interno</label>
-                  <input
-                    id="cr-cat-codigo"
-                    type="text"
-                    class="hd-input"
-                    maxlength="30"
-                    [readonly]="catalogEditId() !== null"
-                    [ngModel]="catCodigo()"
-                    (ngModelChange)="catCodigo.set($event)"
-                  />
-                </div>
-                <div>
-                  <label class="hd-field-label" for="cr-cat-codigo-motor">Código motor</label>
-                  <input
-                    id="cr-cat-codigo-motor"
-                    type="text"
-                    class="hd-input"
-                    [ngModel]="catCodigoMotor()"
-                    (ngModelChange)="catCodigoMotor.set($event)"
-                  />
-                </div>
-              </div>
-              <div class="cr-cat-field-full">
-                <label class="hd-field-label" for="cr-cat-nombre">Nombre</label>
-                <input
-                  id="cr-cat-nombre"
-                  type="text"
-                  class="hd-input"
-                  [ngModel]="catNombre()"
-                  (ngModelChange)="catNombre.set($event)"
-                />
-              </div>
-            </section>
-
-            <section class="cr-cat-block" aria-labelledby="cr-cat-h-class">
-              <h3 id="cr-cat-h-class" class="cr-cat-block-title">Clasificación</h3>
-              <div class="cr-cat-grid2">
-                <div>
-                  <label class="hd-field-label" for="cr-cat-tipo">Tipo</label>
-                  <select
-                    id="cr-cat-tipo"
-                    class="hd-input"
-                    [ngModel]="catTipo()"
-                    (ngModelChange)="onCatTipoChange($event)"
-                  >
-                    <option value="HABER">Haber</option>
-                    <option value="DESCUENTO">Descuento</option>
-                    <option value="APORTE_EMPLEADOR">Aporte empleador</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="hd-field-label" for="cr-cat-naturaleza">Naturaleza</label>
-                  <select
-                    id="cr-cat-naturaleza"
-                    class="hd-input"
-                    [disabled]="catTipo() === 'APORTE_EMPLEADOR'"
-                    [ngModel]="catNaturaleza()"
-                    (ngModelChange)="catNaturaleza.set($event)"
-                  >
-                    <option [ngValue]="'IMPONIBLE'">Imponible</option>
-                    <option [ngValue]="'NO_IMPONIBLE'">No imponible</option>
-                  </select>
-                </div>
-              </div>
-            </section>
-
-            <section class="cr-cat-block cr-cat-block--lre" aria-labelledby="cr-cat-h-lre">
-              <h3 id="cr-cat-h-lre" class="cr-cat-block-title">Libro de Remuneraciones Electrónico</h3>
-              <div class="cr-cat-lre-field">
-                <label class="hd-field-label" for="cr-cat-lre">Catálogo LRE</label>
-                <app-search-select
-                  id="cr-cat-lre"
-                  [options]="catalogoLreSearchOptions()"
-                  [ngModel]="catIdCatalogoLre()"
-                  (ngModelChange)="onCatLreChange($event)"
-                  placeholder="Buscar por código o nombre LRE"
-                  searchPlaceholder="Filtrar catálogo"
-                  [clearable]="true"
-                ></app-search-select>
-              </div>
-              @if (lreCatalogoSeleccionado(); as lre) {
-                <div class="cr-cat-lre-summary" role="status" aria-label="Resumen LRE seleccionado">
-                  <p><span class="cr-cat-lre-k">Código LRE</span> {{ lre.codigoLre }}</p>
-                  <p><span class="cr-cat-lre-k">Nombre LRE</span> {{ lre.nombreLre }}</p>
-                  <p><span class="cr-cat-lre-k">Módulo</span> {{ lre.moduloLre }}</p>
-                  <p><span class="cr-cat-lre-k">Grupo</span> {{ lre.grupoLre?.trim() ? lre.grupoLre : '—' }}</p>
-                  <p>
-                    <span class="cr-cat-lre-k">Clasificación</span>
-                    {{ lre.clasificacionLre?.trim() ? lre.clasificacionLre : '—' }}
-                  </p>
+              @if (flagsLiquidacionCatalogo(); as flags) {
+                <div class="cr-cat-chk-grid cr-cat-chk-grid--impacto" aria-label="Impacto en liquidación (solo lectura)">
+                  <label class="hd-check cr-cat-check cr-cat-check--readonly">
+                    <input type="checkbox" [ngModel]="flags.imponible" disabled />
+                    Imponible
+                  </label>
+                  <label class="hd-check cr-cat-check cr-cat-check--readonly">
+                    <input type="checkbox" [ngModel]="flags.tributable" disabled />
+                    Tributable
+                  </label>
+                  <label class="hd-check cr-cat-check cr-cat-check--readonly">
+                    <input type="checkbox" [ngModel]="flags.afectaAfp" disabled />
+                    Afecta AFP
+                  </label>
+                  <label class="hd-check cr-cat-check cr-cat-check--readonly">
+                    <input type="checkbox" [ngModel]="flags.afectaSalud" disabled />
+                    Afecta salud
+                  </label>
+                  <label class="hd-check cr-cat-check cr-cat-check--readonly">
+                    <input type="checkbox" [ngModel]="flags.afectaAfc" disabled />
+                    Afecta AFC
+                  </label>
+                  <label class="hd-check cr-cat-check cr-cat-check--readonly">
+                    <input type="checkbox" [ngModel]="flags.afectaSis" disabled />
+                    Afecta SIS
+                  </label>
+                  <label class="hd-check cr-cat-check cr-cat-check--readonly">
+                    <input type="checkbox" [ngModel]="flags.afectaLiquido" disabled />
+                    Afecta líquido
+                  </label>
                 </div>
               }
-            </section>
+            </div>
 
-            @if (catalogRowSnapshot(); as snap) {
-              <section class="cr-cat-block cr-cat-block--compact" aria-labelledby="cr-cat-h-sys">
-                <h3 id="cr-cat-h-sys" class="cr-cat-block-title">Origen</h3>
-                <div>
-                  <label class="hd-field-label">Es sistema</label>
-                  <div class="hd-readonly-flag">
-                    @if (snap.esSistema) {
-                      <span class="hd-chip hd-chip--sistema">Sí</span>
-                    } @else {
-                      <span class="hd-muted">No</span>
+            <div class="cr-cat-form-grid__lre">
+              <label class="hd-field-label" for="cr-cat-lre">Catálogo LRE</label>
+              <p class="cr-cat-field-hint cr-cat-field-hint--inline">Requerido si el concepto exporta al LRE.</p>
+              <app-search-select
+                id="cr-cat-lre"
+                [options]="catalogoLreSearchOptions()"
+                [ngModel]="catIdCatalogoLre()"
+                (ngModelChange)="onCatLreChange($event)"
+                placeholder="Buscar por código o nombre LRE"
+                searchPlaceholder="Filtrar catálogo"
+                [clearable]="true"
+              ></app-search-select>
+              @if (lreCatalogoSeleccionado(); as lre) {
+                @if (resumenLreCompacto(lre); as resumenLre) {
+                  <div class="cr-cat-lre-summary cr-cat-lre-summary--compact" role="status" aria-label="Resumen LRE seleccionado">
+                    <p class="cr-cat-lre-summary__principal">{{ resumenLre.principal }}</p>
+                    @if (resumenLre.secundario) {
+                      <p class="cr-cat-lre-summary__secundario">{{ resumenLre.secundario }}</p>
                     }
                   </div>
-                </div>
-              </section>
-            }
+                }
+              }
+            </div>
 
-            <section class="cr-cat-block" aria-labelledby="cr-cat-h-vig">
-              <h3 id="cr-cat-h-vig" class="cr-cat-block-title">Vigencia y estado</h3>
-              <div class="cr-cat-grid2">
-                <div>
-                  <label class="hd-field-label" for="cr-cat-vig-ini">Vigencia inicio</label>
-                  <input
-                    id="cr-cat-vig-ini"
-                    type="date"
-                    class="hd-input"
-                    [ngModel]="catVigenciaInicio()"
-                    (ngModelChange)="catVigenciaInicio.set($event)"
-                  />
-                </div>
-                <div>
-                  <label class="hd-field-label" for="cr-cat-vig-fin">Vigencia fin</label>
-                  <input
-                    id="cr-cat-vig-fin"
-                    type="date"
-                    class="hd-input"
-                    [ngModel]="catVigenciaFin()"
-                    (ngModelChange)="catVigenciaFin.set($event)"
-                  />
-                </div>
-              </div>
-              <div class="cr-cat-grid2 cr-cat-grid2--vig-row">
-                <div>
-                  <label class="hd-field-label" for="cr-cat-orden">Orden impresión</label>
-                  <input
-                    id="cr-cat-orden"
-                    type="number"
-                    class="hd-input"
-                    min="0"
-                    step="1"
-                    [ngModel]="catOrdenImpresion()"
-                    (ngModelChange)="catOrdenImpresion.set($event)"
-                  />
-                </div>
-                <div class="cr-cat-vigente-cell">
-                  <label class="hd-field-label" for="cr-cat-vigente">Vigente</label>
-                  <div class="cr-cat-vigente-check">
-                    <label class="hd-check">
+            <div class="cr-cat-form-grid__vig-ini">
+              <label class="hd-field-label" for="cr-cat-vig-ini">Vigencia inicio</label>
+              <app-calendar-input
+                id="cr-cat-vig-ini"
+                placeholder="dd/mm/aaaa"
+                [ngModel]="catVigenciaInicio()"
+                (ngModelChange)="catVigenciaInicio.set($event ?? '')"
+              ></app-calendar-input>
+            </div>
+
+            <div class="cr-cat-form-grid__vig-fin">
+              <label class="hd-field-label" for="cr-cat-vig-fin">Vigencia fin</label>
+              <app-calendar-input
+                id="cr-cat-vig-fin"
+                placeholder="dd/mm/aaaa"
+                [clearable]="true"
+                [min]="catVigenciaInicio()"
+                [ngModel]="catVigenciaFin()"
+                (ngModelChange)="catVigenciaFin.set($event ?? '')"
+              ></app-calendar-input>
+            </div>
+
+            <div class="cr-cat-form-grid__vigente">
+              <label class="hd-check cr-cat-check">
+                <input
+                  id="cr-cat-vigente"
+                  type="checkbox"
+                  [ngModel]="catVigente()"
+                  (ngModelChange)="catVigente.set($event)"
+                />
+                Concepto vigente
+              </label>
+            </div>
+
+            <div class="cr-cat-form-grid__avanzados">
+              @if (catalogRowSnapshot(); as snap) {
+                <details class="cr-cat-advanced">
+                  <summary class="cr-cat-advanced__summary">Parámetros avanzados</summary>
+                  <div class="cr-cat-advanced__body">
+                    <div>
+                      <label class="hd-field-label" for="cr-cat-codigo-motor">Código motor</label>
                       <input
-                        id="cr-cat-vigente"
-                        type="checkbox"
-                        [ngModel]="catVigente()"
-                        (ngModelChange)="catVigente.set($event)"
+                        id="cr-cat-codigo-motor"
+                        type="text"
+                        class="hd-input"
+                        [ngModel]="catCodigoMotor()"
+                        (ngModelChange)="catCodigoMotor.set($event)"
                       />
-                      Concepto vigente
+                      <p class="cr-cat-field-hint">Solo si el concepto se integra al motor de cálculo.</p>
+                    </div>
+                    <div>
+                      <label class="hd-field-label" for="cr-cat-orden">Orden en liquidación impresa</label>
+                      <input
+                        id="cr-cat-orden"
+                        type="number"
+                        class="hd-input"
+                        min="0"
+                        step="1"
+                        [ngModel]="catOrdenImpresion()"
+                        (ngModelChange)="catOrdenImpresion.set($event)"
+                      />
+                    </div>
+                    @if (snap.esSistema) {
+                      <div class="cr-cat-advanced-readonly">
+                        <span class="hd-field-label">Origen</span>
+                        <span class="hd-chip hd-chip--sistema">Concepto de sistema</span>
+                      </div>
+                    }
+                    <label class="hd-check cr-cat-check">
+                      <input
+                        id="cr-cat-calc-auto"
+                        type="checkbox"
+                        [ngModel]="catCalculoAutomatico()"
+                        (ngModelChange)="catCalculoAutomatico.set($event)"
+                        [disabled]="!!(snap.calculoAutomatico && !puedeEditarConceptoCatalogo)"
+                      />
+                      Generado por liquidación
                     </label>
                   </div>
-                </div>
-              </div>
-            </section>
-
-            <section class="cr-cat-block cr-cat-block--last" aria-labelledby="cr-cat-h-liq">
-              <h3 id="cr-cat-h-liq" class="cr-cat-block-title">Comportamiento en liquidación</h3>
-
-              <p class="cr-cat-subtitle">Base de cálculo</p>
-              <div class="cr-cat-chk-grid">
-                <label class="hd-check cr-cat-check">
-                  <input type="checkbox" [ngModel]="catImponible()" (ngModelChange)="catImponible.set($event)" />
-                  Imponible
-                </label>
-                <label class="hd-check cr-cat-check">
-                  <input type="checkbox" [ngModel]="catTributable()" (ngModelChange)="catTributable.set($event)" />
-                  Tributable
-                </label>
-              </div>
-
-              <p class="cr-cat-subtitle">Cotizaciones afectadas</p>
-              <div class="cr-cat-chk-grid">
-                <label class="hd-check cr-cat-check">
-                  <input type="checkbox" [ngModel]="catAfectaAfp()" (ngModelChange)="catAfectaAfp.set($event)" />
-                  Afecta AFP
-                </label>
-                <label class="hd-check cr-cat-check">
-                  <input type="checkbox" [ngModel]="catAfectaSalud()" (ngModelChange)="catAfectaSalud.set($event)" />
-                  Afecta salud
-                </label>
-                <label class="hd-check cr-cat-check">
-                  <input type="checkbox" [ngModel]="catAfectaAfc()" (ngModelChange)="catAfectaAfc.set($event)" />
-                  Afecta AFC
-                </label>
-                <label class="hd-check cr-cat-check">
-                  <input type="checkbox" [ngModel]="catAfectaSis()" (ngModelChange)="catAfectaSis.set($event)" />
-                  Afecta SIS
-                </label>
-              </div>
-
-              <p class="cr-cat-subtitle">Resultado</p>
-              <div class="cr-cat-chk-grid cr-cat-chk-grid--result">
-                <label class="hd-check cr-cat-check">
-                  <input type="checkbox" [ngModel]="catAfectaLiquido()" (ngModelChange)="catAfectaLiquido.set($event)" />
-                  Afecta líquido
-                </label>
-                <label class="hd-check cr-cat-check">
-                  <input
-                    id="cr-cat-calc-auto"
-                    type="checkbox"
-                    [ngModel]="catCalculoAutomatico()"
-                    (ngModelChange)="catCalculoAutomatico.set($event)"
-                    [disabled]="!!(catalogRowSnapshot()?.calculoAutomatico && !puedeEditarConceptoCatalogo)"
-                  />
-                  Generado por liquidación
-                </label>
-              </div>
-            </section>
+                </details>
+              } @else {
+                <details class="cr-cat-advanced">
+                  <summary class="cr-cat-advanced__summary">Parámetros avanzados</summary>
+                  <div class="cr-cat-advanced__body">
+                    <div>
+                      <label class="hd-field-label" for="cr-cat-codigo-motor-new">Código motor</label>
+                      <input
+                        id="cr-cat-codigo-motor-new"
+                        type="text"
+                        class="hd-input"
+                        [ngModel]="catCodigoMotor()"
+                        (ngModelChange)="catCodigoMotor.set($event)"
+                      />
+                      <p class="cr-cat-field-hint">Solo si el concepto se integra al motor de cálculo.</p>
+                    </div>
+                    <div>
+                      <label class="hd-field-label" for="cr-cat-orden-new">Orden en liquidación impresa</label>
+                      <input
+                        id="cr-cat-orden-new"
+                        type="number"
+                        class="hd-input"
+                        min="0"
+                        step="1"
+                        [ngModel]="catOrdenImpresion()"
+                        (ngModelChange)="catOrdenImpresion.set($event)"
+                      />
+                    </div>
+                    <label class="hd-check cr-cat-check">
+                      <input
+                        id="cr-cat-calc-auto-new"
+                        type="checkbox"
+                        [ngModel]="catCalculoAutomatico()"
+                        (ngModelChange)="catCalculoAutomatico.set($event)"
+                      />
+                      Generado por liquidación
+                    </label>
+                  </div>
+                </details>
+              }
+            </div>
           </div>
         </div>
-        <div class="hd-modal-actions">
-          <button type="button" class="hd-btn hd-btn--ghost" (click)="cerrarCatalogDialog()">Cancelar</button>
-          <button type="button" class="hd-btn hd-btn--primary" (click)="guardarCatalogDialog()">Guardar</button>
+        <div class="hd-modal-actions cr-cat-modal-actions">
+          <p class="cr-cat-footer-resumen" aria-live="polite">{{ resumenPieCatalogo() }}</p>
+          <div class="cr-cat-footer-buttons">
+            <button type="button" class="hd-btn hd-btn--ghost" (click)="cerrarCatalogDialog()">Cancelar</button>
+            <button type="button" class="hd-btn hd-btn--primary" (click)="guardarCatalogDialog()">Guardar</button>
+          </div>
         </div>
       </div>
     </div>

@@ -95,9 +95,7 @@ export class AdministradorPlantillasContainer {
   });
 
   constructor() {
-    bindShellPageContext(this.destroyRef, () => this.computeShellContext(), {
-      onPrimaryAction: () => this.abrirCrear(),
-    });
+    bindShellPageContext(this.destroyRef, () => this.computeShellContext());
     void this.servicio.refrescar();
   }
 
@@ -109,12 +107,6 @@ export class AdministradorPlantillasContainer {
       ],
       pageTitle: 'Plantillas de ciclos',
       pageSubtitle: this.subtitulo(),
-      primaryAction: {
-        label: 'Nueva plantilla',
-        disabled: this.cargandoServicio(),
-        loading: false,
-        actionId: 'admin-plantillas-nueva',
-      },
     };
   }
 

@@ -113,10 +113,16 @@ describe('MovimientosVariablesContainer', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should expose remuneraciones breadcrumb', () => {
-    expect(component.breadcrumbItems[0].label).toBe('Remuneraciones');
-    expect(component.breadcrumbItems[0].link).toBe('/remuneraciones');
-    expect(component.breadcrumbItems[1].label).toBe('Movimientos del mes');
+  it('muestra franja operativa y titulo de grilla (patron conceptos)', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('.mv-franja-operativa .mv-lead')?.textContent).toContain(
+      'montos puntuales',
+    );
+    expect(root.textContent).toContain('Movimientos del mes');
   });
 
   it('usa periodo global y no muestra selector mensual local', async () => {

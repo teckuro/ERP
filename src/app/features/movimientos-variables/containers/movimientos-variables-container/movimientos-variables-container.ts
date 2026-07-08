@@ -10,20 +10,14 @@ import {
   untracked,
 } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
-import { Plus, RefreshCw } from 'lucide-angular/src/icons';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
-import { ButtonComponent } from '../../../../shared/components/ui/primitives/button.component';
 import {
   DataGridCellDirective,
   DataGridComponent,
 } from '../../../../shared/components/ui/data-grid';
 import { MessageBoxComponent, MessageBoxVariant } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
-import {
-  RecordBreadcrumbComponent,
-  RecordBreadcrumbItem,
-} from '../../../../shared/components/ui/layout/record-breadcrumb.component';
 import { SearchSelectOption } from '../../../../shared/components/ui/forms/search-select.component';
 import { EmpleadoListado } from '../../../empleados/models/empleado-listado.model';
 import { EmpleadosService } from '../../../empleados/services/empleados.service';
@@ -51,8 +45,6 @@ import {
   imports: [
     CommonModule,
     LucideAngularModule,
-    RecordBreadcrumbComponent,
-    ButtonComponent,
     DataGridComponent,
     DataGridCellDirective,
     MessageBoxComponent,
@@ -69,14 +61,6 @@ export class MovimientosVariablesContainer implements OnInit {
   private readonly empleadosService = inject(EmpleadosService);
   private readonly haberesDescuentosService = inject(HaberesDescuentosService);
   readonly periodoActivo = inject(PeriodoActivoService);
-
-  readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
-    { label: 'Remuneraciones', link: '/remuneraciones' },
-    { label: 'Movimientos del mes' },
-  ];
-
-  readonly plusIcon = Plus;
-  readonly refreshIcon = RefreshCw;
 
   readonly catalogosLoading = signal(false);
   readonly gridLoading = signal(false);

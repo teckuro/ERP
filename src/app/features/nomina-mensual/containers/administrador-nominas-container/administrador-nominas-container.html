@@ -11,6 +11,10 @@
   <div class="adm-nom__grid-shell" aria-labelledby="adm-nom-grid-title">
     <h2 id="adm-nom-grid-title" class="sr-only">Listado de nóminas</h2>
 
+    <section class="adm-nom__franja-operativa" aria-label="Contexto del listado">
+      <p class="adm-nom__franja-operativa__lead">{{ subtitulo() }}</p>
+    </section>
+
     @if (resumenes().length > 0) {
       <div class="adm-nom__kpis" role="status" aria-label="Resumen operativo de nóminas">
         @for (item of kpis().items; track item.id) {
@@ -23,29 +27,29 @@
     }
 
     <app-data-grid
-        title=""
+        title="Nóminas"
+        [primaryActionLabel]="'Nueva nómina'"
+        [primaryActionDisabled]="cargando() || !puedeCrearNomina()"
+        [primaryActionTooltip]="tooltipCrearNomina()"
+        (primaryAction)="abrirNuevaNomina()"
         [columns]="columnas"
         [rows]="resumenesOrdenados()"
         [filters]="filtros()"
         [filtersEnabled]="true"
-        [filtersCollapsible]="false"
-        filterChipsDisplay="whenFiltersHidden"
-        headerCountDisplay="text"
-        headerCountNoun="nóminas"
-        [headerShowActiveFiltersCount]="true"
+        [filtersCollapsible]="true"
         [selectable]="false"
         [trackBy]="trackResumen"
         [persistenceKey]="persistenceKey"
         [loading]="cargando()"
         loadingLabel="Cargando nóminas…"
-        toolbarLayout="operativa"
         [gridHeight]="'100%'"
+        (refresh)="cargarResumenes()"
         emptyTitle="Aún no hay nóminas"
         emptyDescription="Crea la primera nómina del período desde la acción principal."
-        emptyTitleWhenFiltered="Sin resultados con los filtros actuales"
-        emptyDescriptionWhenFiltered="Cambia o limpia los filtros para ampliar la búsqueda."
+        emptyTitleWhenFiltered="No hay nóminas que coincidan con los filtros."
+        emptyDescriptionWhenFiltered="Ajusta la búsqueda o limpia filtros para ver más resultados."
         className="adm-nom__grid"
-        cardClassName="adm-nom__grid-card"
+        cardClassName="adm-nom__grid-card erp-fullscreen-grid-card"
       >
       <ng-template appDataGridCell="periodo" let-fila>
         <div class="adm-nom__cell-periodo-wrap">

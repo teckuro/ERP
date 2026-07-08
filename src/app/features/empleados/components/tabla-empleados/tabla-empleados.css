@@ -484,15 +484,17 @@
   color: #0f172a;
 }
 
+:host ::ng-deep app-data-grid.empleados-grid-shell > app-card > div.border-b.border-neutral-100.bg-white button.data-grid-primary-action,
 :host ::ng-deep app-data-grid.empleados-grid-shell > app-card > div.border-b.border-neutral-100.bg-white button.bg-blue-600 {
-  border-color: #2563eb;
-  background: #2563eb;
+  border-color: var(--erp-primary, #1e3a8a);
+  background: var(--erp-primary, #1e3a8a);
   color: #ffffff;
 }
 
+:host ::ng-deep app-data-grid.empleados-grid-shell > app-card > div.border-b.border-neutral-100.bg-white button.data-grid-primary-action:hover,
 :host ::ng-deep app-data-grid.empleados-grid-shell > app-card > div.border-b.border-neutral-100.bg-white button.bg-blue-600:hover {
-  border-color: #1d4ed8;
-  background: #1d4ed8;
+  border-color: var(--erp-primary-hover, #1d4ed8);
+  background: var(--erp-primary-hover, #1d4ed8);
   color: #ffffff;
 }
 

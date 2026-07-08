@@ -1026,13 +1026,8 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
           { label: 'Remuneraciones', path: returnPath },
           { label: 'Movimientos' },
         ],
-        primaryAction: {
-          label: 'Registrar movimiento del mes',
-          actionId: 'registrar-movimiento',
-        },
       };
       },
-      { onPrimaryAction: () => this.abrirNuevo() },
     );
 
     effect(() => {

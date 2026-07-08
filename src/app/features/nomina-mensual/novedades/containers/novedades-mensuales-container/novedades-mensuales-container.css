@@ -52,39 +52,30 @@
   background: var(--nm-surface);
 }
 
-.nm-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem 0.85rem;
+.nm-franja-operativa {
   flex: 0 0 auto;
   border-bottom: 1px solid var(--nm-border);
   background: var(--nm-surface);
   padding: 10px 14px;
 }
 
-.nm-head-aside {
+.nm-periodo-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 0.45rem 0.65rem;
-  flex: 0 1 auto;
-}
-
-.nm-head-main {
-  flex: 1 1 16rem;
-  min-width: 0;
+  flex: 0 0 auto;
+  border-bottom: 1px solid var(--nm-border);
+  background: var(--nm-surface-soft);
+  padding: 8px 14px;
 }
 
 .nm-lead {
   margin: 0;
-  flex: 1 1 18rem;
-  min-width: 0;
-  max-width: 44rem;
-  color: var(--nm-muted);
-  font-size: var(--nm-text-sm);
+  max-width: 52rem;
+  color: #475569;
+  font-size: 0.875rem;
   line-height: 1.45;
 }
 
@@ -142,10 +133,6 @@
   overflow: hidden;
 }
 
-:host ::ng-deep .nm-grid-shell app-data-grid button[aria-label='Refrescar grilla'] {
-  display: none;
-}
-
 :host ::ng-deep .nm-grid-shell > app-data-grid.nm-grid {
   display: flex;
   flex: 1 1 auto;
@@ -175,6 +162,11 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
+}
+
+:host ::ng-deep .nm-grid-shell .data-grid-filter-grid {
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr)) !important;
+  gap: 0.65rem 0.75rem !important;
 }
 
 .nm-periodo-metricas {
@@ -453,35 +445,38 @@
   justify-content: center;
   width: 1.65rem;
   height: 1.65rem;
-  border: 1px solid var(--nm-border);
+  border: 1px solid #cbd5e1;
   border-radius: 6px;
-  background: var(--nm-surface);
-  color: var(--nm-muted);
+  background: #fff;
+  color: #334155;
   cursor: pointer;
-  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
+  transition:
+    border-color 120ms ease,
+    color 120ms ease,
+    background-color 120ms ease;
 }
 
 .nm-grid-icon-btn:hover {
-  border-color: var(--nm-primary-border);
-  background: var(--nm-primary-soft);
-  color: var(--nm-primary);
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1e40af;
 }
 
 .nm-grid-icon-btn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--nm-primary-soft);
+  box-shadow: 0 0 0 2px var(--erp-primary-ring, rgba(30, 58, 138, 0.18));
 }
 
 .nm-grid-icon-btn--assign {
-  color: var(--nm-primary);
-  border-color: var(--nm-primary-border);
-  background: var(--nm-primary-soft);
+  color: var(--erp-primary, #1e3a8a);
+  border-color: #bfdbfe;
+  background: #eff6ff;
 }
 
 .nm-grid-icon-btn--assign:hover {
-  border-color: var(--nm-primary);
-  background: #e8f0ea;
-  color: #1f4d2c;
+  border-color: var(--erp-primary-hover, #1d4ed8);
+  background: #dbeafe;
+  color: var(--erp-primary-hover, #1d4ed8);
 }
 
 :host ::ng-deep .nm-grid-icon-btn lucide-icon svg {
@@ -1012,9 +1007,9 @@
 }
 
 .nm-count-info:hover {
-  border-color: var(--nm-primary-border);
-  background: var(--nm-primary-soft);
-  color: var(--nm-primary);
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1e40af;
 }
 
 .nm-count-info:focus-visible {

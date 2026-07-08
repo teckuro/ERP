@@ -9,6 +9,76 @@
 
 ---
 
+## 2026-07-08 — CTA primario en toolbar de grilla (sin shell)
+
+- **Patrón:** acción principal (`data-grid-primary-action`) en toolbar de `app-data-grid`, como «Nuevo concepto»; retirada del header shell.
+- **Pantallas:** administrador nóminas, plantillas, empresas, movimientos (mes y remuneración), recurrentes; empleados y conceptos ya lo tenían.
+- **Data-grid:** soporte `primaryActionDisabled` / `primaryActionTooltip`; CTA también en toolbar operativa.
+- **Archivos:** `data-grid.component.*`, containers de listados anteriores.
+
+---
+
+## 2026-07-08 — Botones grilla: primario ERP y acciones abrir homologadas
+
+- **Crear empleado / acción primaria grilla:** `data-grid-primary-action` con `--erp-primary` (#1e3a8a), igual que Movimientos.
+- **Abrir en grilla (adm nóminas / movimientos):** iconos 1.65rem, borde `#cbd5e1`, hover azul suave; acción principal sólida `--erp-primary`.
+- **Archivos:** `data-grid.component.*`, `tabla-empleados.css`, `administrador-nominas-container.css`, `novedades-mensuales-container.css`.
+
+---
+
+## 2026-07-08 — Conceptos: grilla fullscreen
+
+- **Grilla:** patrón administrador-nominas (`cr-grid-shell`, `className`/`cardClassName` local, scroll interno, sin padding intermedio).
+- **Page:** `:host` flex en `conceptos-remuneracion.page.ts` para propagar altura.
+- **Archivos:** `conceptos-remuneracion-container.*`, `conceptos-remuneracion.page.ts`; CSS local.
+
+---
+
+## 2026-07-08 — Conceptos: impacto liquidación automático y formulario alineado
+
+- **Liquidación:** retirados checkboxes manuales; flags derivados por tipo + naturaleza (`concepto-liquidacion-flags.rules.ts`); checkboxes de impacto visibles en solo lectura; resumen en pie y detalle.
+- **Formulario:** grid `.cr-cat-form-grid` (nombre full; código|tipo|naturaleza; impacto; LRE; vigencia|vigente; avanzados colapsados).
+- **Modal:** 52rem × 96vh; menos padding; sin scroll en body en desktop.
+- **Archivos:** `conceptos-remuneracion-container.*`, `concepto-liquidacion-flags.rules.ts`, `conceptos-remuneracion-ui.presenter.ts`; CSS local; sin globales/BD.
+
+---
+
+## 2026-07-08 — Conceptos: filtros RRHH y modal más ancho
+
+- **Filtros:** retirado Origen (sistema/usuario) y opciones técnicas LRE; labels vigencia simplificados; filtro Tipo corregido (`filtroTipo`); búsqueda sin código motor.
+- **Editar:** código motor, orden impresión y modo liquidación en «Parámetros avanzados»; vigencia sin campos técnicos visibles.
+- **Modal:** ancho 42rem; grilla 2–3 columnas en formulario ancho.
+- **Archivos:** `conceptos-remuneracion-container.*`; CSS local.
+
+---
+
+## 2026-07-08 — Conceptos: modal vertical y campos 21px
+
+- **Modales Nuevo/Editar y Revisar:** formato vertical (~32rem ancho, 92vh alto), scroll interno en cuerpo, pie fijo con resumen.
+- **Controles:** `--erp-control-height: 21px` scoped; layout una columna en formulario; checkboxes liquidación en 2 columnas.
+- **UX:** autofocus en Nombre al crear, Escape cierra modales.
+- **Archivos:** `conceptos-remuneracion-container.*`; CSS local; sin globales.
+
+---
+
+## 2026-07-07 — Conceptos catálogo: franja mínima y formulario usable
+
+- **Franja:** solo línea principal; retirados contadores y hint «Use Revisar…»; banner LRE condicional se mantiene.
+- **Modal alta/edición:** nombre primero, obligatorios marcados, hints código motor y aporte empleador, resumen LRE compacto, pie con resumen operativo dinámico.
+- **Archivos:** `conceptos-remuneracion-container.*`, presenter UI; CSS local; sin globales.
+
+---
+
+## 2026-07-07 — Conceptos catálogo: franja operativa y detalle RRHH
+
+- **Franja superior:** totales (conceptos, asignables manualmente, pendientes LRE) + acción recomendada; banner LRE solo si hay pendientes.
+- **Grilla:** columna naturaleza; LRE en dos líneas; código motor oculto por defecto; empty state según permiso admin.
+- **Modal detalle:** resumen operativo, liquidación (flags), reglas humanizadas, limitaciones RRHH; pie Cerrar + Editar.
+- **Modal alta/edición:** vigencia con `app-calendar-input`; impacto en liquidación agrupado.
+- **Archivos:** `conceptos-remuneracion-container.*`, `conceptos-remuneracion-ui.presenter.ts`; CSS local; sin globales/BD.
+
+---
+
 ## 2026-07-07 — Movimientos: tabbar registro del mes
 
 - **Selector tipo de registro:** control segmentado (paridad filtros Gestionar), pista contextual según modo activo, ARIA tab/tabpanel.
@@ -3698,8 +3768,9 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **Masivo**: reutiliza mismo componente (`detalleAdminCompleto=false`).
 - **Sin tocar**: estilos globales, SQL, motor, servicios.
 
-## 2026-07-07 - Formulario movimiento mensual: aviso al guardar
+## 2026-07-08 - Grillas operativas: patrón estructural Conceptos
 
-- **Pie**: sin chips de pendientes; solo resumen positivo cuando el formulario está listo.
-- **Guardar**: CTA siempre habilitada (salvo loading); pendientes se informan con MessageBox `warning` al intentar guardar.
-- **Sin tocar**: estilos globales, SQL, motor, servicios.
+- **Referencia**: `conceptos-remuneracion-container` (`cr-grid-shell`, franja operativa, `filtersCollapsible`, `erp-fullscreen-grid-card`, CTA en toolbar de grilla).
+- **Pantallas homologadas**: Administrador nóminas, Plantillas, Empresas, Movimientos de remuneración (novedades), Movimientos del mes, Recurrentes (grilla interna), Empleados.
+- **Cambios comunes**: franja lead dentro del shell; título visible en grilla; sin `toolbarLayout="operativa"`; filtros colapsables; refresh en toolbar; card fullscreen sin bordes laterales/inferiores.
+- **Sin tocar**: estilos globales, SQL, motor.

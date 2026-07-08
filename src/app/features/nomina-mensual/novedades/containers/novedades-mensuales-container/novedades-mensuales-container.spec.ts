@@ -285,7 +285,7 @@ describe('NovedadesMensualesContainer', () => {
     fixture.detectChanges();
     await esperarCargaInicial(fixture);
 
-    expect(fixture.nativeElement.textContent).toContain('Trabajadores del periodo');
+    expect(fixture.nativeElement.textContent).toContain('Movimientos de remuneración');
     expect(fixture.nativeElement.textContent).toContain('Ana Perez');
     expect(fixture.nativeElement.textContent).toContain('Sin movimientos');
   });
@@ -298,7 +298,7 @@ describe('NovedadesMensualesContainer', () => {
     const text = root.textContent as string;
     expect(root.querySelector('.nm-lead')?.textContent).toContain('movimientos del mes');
     expect(root.querySelector('.nm-page')?.getAttribute('aria-label')).toBe('Movimientos de remuneración');
-    expect(text).toContain('Trabajadores del periodo');
+    expect(text).toContain('Movimientos de remuneración');
     expect(fixture.nativeElement.querySelector('.nm-view-tabs')).toBeNull();
     expect(text).not.toContain('Este mes');
     expect(text).not.toContain('Todos');

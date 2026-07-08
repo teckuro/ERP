@@ -1,10 +1,13 @@
 <section class="nm-page" aria-label="Movimientos de remuneración">
-  <header class="nm-head">
-    <p class="nm-lead">
-      Registra, revisa y aprueba movimientos del mes y recurrentes que afectan la remuneración de los trabajadores.
-    </p>
-    <div class="nm-head-aside">
-      <div class="nm-periodo-metricas" aria-label="Métricas del período">
+  <div class="nm-grid-shell">
+    <section class="nm-franja-operativa" aria-label="Contexto del listado">
+      <p class="nm-lead">
+        Registra, revisa y aprueba movimientos del mes y recurrentes que afectan la remuneración de los trabajadores.
+      </p>
+    </section>
+
+    <div class="nm-periodo-bar" aria-label="Resumen del período">
+      <div class="nm-periodo-metricas">
         @for (metrica of estadoPeriodoPresentacion().metricas; track metrica.label) {
           <div class="nm-metric-chip" [ngClass]="claseMetricaPeriodo(metrica.tono)">
             <span class="nm-metric-chip-k">{{ metrica.label }}</span>
@@ -18,9 +21,7 @@
         </app-button>
       }
     </div>
-  </header>
 
-  <div class="nm-grid-shell">
       @if (estadoPeriodoPresentacion().bannerFlowNomina; as bannerFlow) {
         <div class="nm-flow-banner" role="status">
           <p>{{ bannerFlow }}</p>
@@ -34,11 +35,14 @@
 
       <app-data-grid
         className="nm-grid"
-        title="Trabajadores del periodo"
+        title="Movimientos de remuneración"
+        primaryActionLabel="Registrar movimiento del mes"
+        (primaryAction)="abrirNuevo()"
         [rows]="trabajadoresMovimientos()"
         [columns]="trabajadorColumns"
         [filters]="trabajadorFilters"
         [filtersEnabled]="true"
+        [filtersCollapsible]="true"
         [loading]="loading()"
         [showExportAction]="false"
         [selectable]="true"
@@ -49,9 +53,12 @@
         (bulkAction)="manejarAsignacionMasiva($event)"
         [trackBy]="trackTrabajador"
         [gridHeight]="'100%'"
-        cardClassName="nm-grid-card"
+        cardClassName="nm-grid-card erp-fullscreen-grid-card"
+        (refresh)="cargarNovedades()"
         emptyTitle="No hay trabajadores para el filtro seleccionado"
         emptyDescription="Ajusta los filtros para ampliar la lista de trabajadores."
+        emptyTitleWhenFiltered="No hay trabajadores que coincidan con los filtros."
+        emptyDescriptionWhenFiltered="Ajusta la búsqueda o limpia filtros para ver más resultados."
       >
     <ng-template appDataGridCell="trabajador" let-row>
       <div class="nm-worker-cell">

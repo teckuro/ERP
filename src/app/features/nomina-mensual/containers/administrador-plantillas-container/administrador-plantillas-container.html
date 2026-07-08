@@ -13,30 +13,34 @@
 
   <div class="adm-plant__grid-shell" aria-labelledby="adm-plant-grid-title">
     <h2 id="adm-plant-grid-title" class="sr-only">Listado de plantillas</h2>
+
+    <section class="adm-plant__franja-operativa" aria-label="Contexto del listado">
+      <p class="adm-plant__franja-operativa__lead">{{ subtitulo() }}</p>
+    </section>
+
     <app-data-grid
-        title=""
+        title="Plantillas"
+        primaryActionLabel="Nueva plantilla"
+        [primaryActionDisabled]="cargandoServicio()"
+        (primaryAction)="abrirCrear()"
         [columns]="columnas"
         [rows]="plantillasOrdenadas()"
         [filters]="filtros()"
         [filtersEnabled]="true"
-        [filtersCollapsible]="false"
-        filterChipsDisplay="whenFiltersHidden"
-        headerCountDisplay="text"
-        headerCountNoun="plantillas"
-        [headerShowActiveFiltersCount]="true"
+        [filtersCollapsible]="true"
         [selectable]="false"
         [trackBy]="trackPlantilla"
         [persistenceKey]="persistenceKey"
         [loading]="cargandoServicio()"
         loadingLabel="Cargando plantillas…"
-        toolbarLayout="operativa"
         [gridHeight]="'100%'"
+        (refresh)="reintentar()"
         emptyTitle="Aún no hay plantillas"
         emptyDescription="Crea la primera plantilla de ciclo desde la acción principal."
-        emptyTitleWhenFiltered="Sin resultados con los filtros actuales"
-        emptyDescriptionWhenFiltered="Cambia o limpia los filtros para ampliar la búsqueda."
+        emptyTitleWhenFiltered="No hay plantillas que coincidan con los filtros."
+        emptyDescriptionWhenFiltered="Ajusta la búsqueda o limpia filtros para ver más resultados."
         className="adm-plant__grid"
-        cardClassName="adm-plant__grid-card"
+        cardClassName="adm-plant__grid-card erp-fullscreen-grid-card"
       >
         <ng-template appDataGridCell="codigo" let-fila>
           <span class="adm-plant__cell-codigo">{{ fila.codigo }}</span>

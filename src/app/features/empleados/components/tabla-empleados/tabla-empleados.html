@@ -1,14 +1,10 @@
 <div class="empleados-grid-wrap">
   <app-data-grid
-    title="Listado de empleados"
+    title="Empleados"
     primaryActionLabel="Crear empleado"
     (primaryAction)="toggleCrearMenu()"
     [primaryActionMenuOpen]="crearMenuAbierto"
-    [filtersCollapsible]="false"
-    filterChipsDisplay="whenFiltersHidden"
-    headerCountDisplay="text"
-    headerCountNoun="resultados"
-    [headerShowActiveFiltersCount]="true"
+    [filtersCollapsible]="true"
     emptyTitleWhenFiltered="No se encontraron empleados con los filtros aplicados."
     emptyDescriptionWhenFiltered="Ajusta la búsqueda o limpia los filtros para ver más resultados."
     [columns]="columns"

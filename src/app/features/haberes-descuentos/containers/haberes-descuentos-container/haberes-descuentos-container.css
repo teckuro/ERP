@@ -16,10 +16,8 @@
   background: #ffffff;
 }
 
-.hd-head {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+.hd-franja-operativa {
+  flex: 0 0 auto;
   border-bottom: 1px solid #d7dde5;
   background: #ffffff;
   padding: 10px 14px;
@@ -655,21 +653,56 @@
 }
 
 .hd-grid-wrap {
-  min-height: 0;
+  position: relative;
+  display: flex;
   flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
   min-width: 0;
   width: 100%;
+  overflow: hidden;
 }
 
-/* Máx. 2 filtros: el DataGrid fija columns por ngStyle; !important solo en este módulo */
+:host ::ng-deep .hd-grid-wrap > app-data-grid.hd-rec-grid {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+:host ::ng-deep .hd-grid-wrap > app-data-grid.hd-rec-grid > app-card.hd-rec-grid-card {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  box-shadow: none;
+}
+
+:host ::ng-deep .hd-grid-wrap > app-data-grid.hd-rec-grid .data-grid-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Filtros compactos (patrón conceptos) */
 :host ::ng-deep .hd-grid-wrap .data-grid-filter-grid {
-  grid-template-columns: minmax(12rem, 2.2fr) minmax(9.5rem, 1fr) !important;
-  gap: 0.65rem 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr)) !important;
+  gap: 0.65rem 0.75rem !important;
 }
 
 @media (max-width: 900px) {
   :host ::ng-deep .hd-grid-wrap .data-grid-filter-grid {
-    grid-template-columns: repeat(auto-fit, minmax(10.75rem, 1fr)) !important;
+    grid-template-columns: repeat(auto-fit, minmax(10.25rem, 1fr)) !important;
   }
 }
 

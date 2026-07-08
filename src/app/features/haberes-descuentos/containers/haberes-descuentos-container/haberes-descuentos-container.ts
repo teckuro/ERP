@@ -260,13 +260,7 @@ export class HaberesDescuentosContainer implements OnInit {
           { label: 'Remuneraciones', path: '/remuneraciones/nominas' },
           { label: 'Recurrentes' },
         ],
-        primaryAction: {
-          label: 'Registrar recurrente',
-          disabled: this.personaIdSeleccionada() == null,
-          actionId: 'registrar-recurrente',
-        },
       }),
-      { onPrimaryAction: () => this.abrirNuevo() },
     );
 
     effect(() => {

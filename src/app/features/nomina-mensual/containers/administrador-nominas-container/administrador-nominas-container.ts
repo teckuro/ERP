@@ -178,6 +178,14 @@ export class AdministradorNominasContainer {
   readonly etiquetaCadenaEnOriginal = etiquetaCadenaEnOriginal;
   readonly kpis = computed(() => calcularKpisAdminNominas(this.resumenes()));
 
+  readonly puedeCrearNomina = computed(() => this.capabilities.puedeEscribirNomina());
+
+  readonly tooltipCrearNomina = computed(() =>
+    this.puedeCrearNomina()
+      ? ''
+      : 'Tu perfil es de solo consulta. No puedes crear nóminas.',
+  );
+
   readonly subtitulo = computed(() => {
     const resumenes = this.resumenes();
     if (resumenes.length === 0) {
@@ -197,9 +205,7 @@ export class AdministradorNominasContainer {
   });
 
   constructor() {
-    bindShellPageContext(this.destroyRef, () => this.computeShellContext(), {
-      onPrimaryAction: () => this.abrirNuevaNomina(),
-    });
+    bindShellPageContext(this.destroyRef, () => this.computeShellContext());
     void this.featureGates.cargar();
     void this.cargarResumenes();
   }
@@ -212,15 +218,6 @@ export class AdministradorNominasContainer {
       ],
       pageTitle: 'Administrador de nóminas',
       pageSubtitle: this.subtitulo(),
-      primaryAction: {
-        label: 'Nueva nómina',
-        disabled: this.cargando() || !this.capabilities.puedeEscribirNomina(),
-        loading: false,
-        actionId: 'admin-nominas-nueva',
-        tooltip: !this.capabilities.puedeEscribirNomina()
-          ? 'Tu perfil es de solo consulta. No puedes crear nóminas.'
-          : null,
-      },
     };
   }
 

@@ -1,10 +1,27 @@
 .adm-plant__page {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0;
   padding: 0;
   height: 100%;
   min-height: 0;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.adm-plant__franja-operativa {
+  flex: 0 0 auto;
+  border-bottom: 1px solid #d7dde5;
+  background: #ffffff;
+  padding: 10px 14px;
+}
+
+.adm-plant__franja-operativa__lead {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: #475569;
+  max-width: 52rem;
 }
 
 .adm-plant__state {
@@ -29,6 +46,43 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+:host ::ng-deep .adm-plant__grid-shell > app-data-grid.adm-plant__grid {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+:host ::ng-deep .adm-plant__grid-shell > app-data-grid.adm-plant__grid > app-card.adm-plant__grid-card {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  box-shadow: none;
+}
+
+:host ::ng-deep .adm-plant__grid-shell > app-data-grid.adm-plant__grid .data-grid-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+:host ::ng-deep .adm-plant__grid-shell .data-grid-filter-grid {
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr)) !important;
+  gap: 0.65rem 0.75rem !important;
 }
 
 .adm-plant__grid-card {

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { Edit, Eye } from 'lucide-angular/src/icons';
@@ -14,6 +14,7 @@ import {
 import { MessageBoxComponent, MessageBoxVariant } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { SearchSelectComponent, SearchSelectOption } from '../../../../shared/components/ui/forms/search-select.component';
+import { CalendarInputComponent } from '../../../../shared/components/ui/forms/calendar-input/calendar-input.component';
 import { ErpPermisosRemuneracionesService } from '../../../../core/auth/erp-permisos-remuneraciones.service';
 import { HaberesDescuentosService } from '../../services/haberes-descuentos.service';
 import {
@@ -43,6 +44,19 @@ import {
   tituloAccionConcepto,
   type ConceptoAccionesPermitidas,
 } from '../../rules/concepto-acciones.rules';
+import { derivarFlagsLiquidacionConcepto, type TipoConceptoLiquidacion } from '../../rules/concepto-liquidacion-flags.rules';
+import {
+  chipsImpactoLiquidacionUi,
+  emptyStateCatalogo,
+  etiquetaNaturalezaConcepto,
+  etiquetaReglaCalculoUi,
+  etiquetaTipoConceptoHd,
+  limitacionesConceptoUi,
+  resumenImpactoLiquidacionUi,
+  resumenPieConcepto,
+  resumenLreCompacto,
+  subtituloDetalleConcepto,
+} from '../../presenters/conceptos-remuneracion-ui.presenter';
 
 type CatalogoGridRow = ConceptoMantenimientoFila & {
   busquedaCatalogo: string;
@@ -54,29 +68,6 @@ type CatalogoGridRow = ConceptoMantenimientoFila & {
   estadoLre: ConceptoLreEstadoUi;
   esAsignableCatalogo: boolean;
 };
-
-function etiquetaTipoConcepto(tipo: string | null): string {
-  if (tipo === 'HABER') {
-    return 'Haber';
-  }
-  if (tipo === 'DESCUENTO') {
-    return 'Descuento';
-  }
-  if (tipo === 'APORTE_EMPLEADOR') {
-    return 'Aporte empleador';
-  }
-  return tipo?.trim() ? tipo : '—';
-}
-
-function etiquetaNaturalezaFn(n: string | null): string {
-  if (n === 'IMPONIBLE') {
-    return 'Imponible';
-  }
-  if (n === 'NO_IMPONIBLE') {
-    return 'No imponible';
-  }
-  return n?.trim() ? n : '—';
-}
 
 @Component({
   selector: 'app-conceptos-remuneracion-container',
@@ -91,6 +82,7 @@ function etiquetaNaturalezaFn(n: string | null): string {
     MessageBoxComponent,
     WorkspaceLoadingComponent,
     SearchSelectComponent,
+    CalendarInputComponent,
   ],
   templateUrl: './conceptos-remuneracion-container.html',
   styleUrl: './conceptos-remuneracion-container.css',
@@ -120,13 +112,6 @@ export class ConceptosRemuneracionContainer implements OnInit {
   readonly catTipo = signal<'HABER' | 'DESCUENTO' | 'APORTE_EMPLEADOR'>('HABER');
   readonly catNaturaleza = signal<string | null>('IMPONIBLE');
   readonly catIdCatalogoLre = signal<number | null>(null);
-  readonly catImponible = signal(true);
-  readonly catTributable = signal(true);
-  readonly catAfectaAfp = signal(true);
-  readonly catAfectaSalud = signal(true);
-  readonly catAfectaAfc = signal(true);
-  readonly catAfectaSis = signal(false);
-  readonly catAfectaLiquido = signal(true);
   readonly catVigente = signal(true);
   readonly catVigenciaInicio = signal<string>('');
   readonly catVigenciaFin = signal<string>('');
@@ -172,6 +157,27 @@ export class ConceptosRemuneracionContainer implements OnInit {
 
   readonly mostrarFranjaLre = computed(() => this.pendientesExportacionLre() > 0);
 
+  readonly emptyStateCatalogo = computed(() => emptyStateCatalogo(this.puedeCrearConcepto()));
+
+  readonly resumenPieCatalogo = computed(() =>
+    resumenPieConcepto({
+      tipo: this.catTipo(),
+      naturaleza: this.catNaturaleza(),
+      lre: this.lreCatalogoSeleccionado(),
+      vigenciaInicio: this.catVigenciaInicio(),
+      vigente: this.catVigente(),
+    }),
+  );
+
+  readonly flagsLiquidacionCatalogo = computed(() =>
+    derivarFlagsLiquidacionConcepto(this.catTipo(), this.catNaturaleza()),
+  );
+
+  readonly limitacionesDetalle = computed(() => {
+    const acciones = this.detalleAcciones();
+    return acciones ? limitacionesConceptoUi(acciones) : [];
+  });
+
   private opcionesAccionesConcepto() {
     return {
       puedeEditarModoAdmin: this.puedeEditarConceptoCatalogo(),
@@ -188,6 +194,7 @@ export class ConceptosRemuneracionContainer implements OnInit {
       sortable: true,
       priorityResponsive: 'primary',
       filterable: false,
+      minWidth: '12rem',
     },
     {
       id: 'codigo',
@@ -197,6 +204,7 @@ export class ConceptosRemuneracionContainer implements OnInit {
       sortable: true,
       priorityResponsive: 'primary',
       filterable: false,
+      minWidth: '7rem',
     },
     {
       id: 'tipo',
@@ -205,6 +213,16 @@ export class ConceptosRemuneracionContainer implements OnInit {
       type: 'text',
       sortable: true,
       filterable: false,
+      minWidth: '7rem',
+    },
+    {
+      id: 'naturaleza',
+      header: 'Naturaleza',
+      field: 'naturaleza',
+      type: 'text',
+      sortable: true,
+      filterable: false,
+      minWidth: '8rem',
     },
     {
       id: 'codigoMotor',
@@ -213,6 +231,7 @@ export class ConceptosRemuneracionContainer implements OnInit {
       type: 'text',
       sortable: true,
       filterable: false,
+      visible: false,
     },
     {
       id: 'lreCelda',
@@ -248,11 +267,12 @@ export class ConceptosRemuneracionContainer implements OnInit {
     },
     {
       id: 'asignable',
-      header: 'Asignable',
+      header: 'Asignable manual',
       field: 'filtroAsignable',
       type: 'text',
       sortable: true,
       filterable: false,
+      minWidth: '8rem',
     },
     {
       id: 'acciones',
@@ -270,10 +290,10 @@ export class ConceptosRemuneracionContainer implements OnInit {
       field: 'busquedaCatalogo',
       type: 'text',
       operator: 'contains',
-      placeholder: 'Nombre, códigos o LRE',
+      placeholder: 'Nombre, código o LRE',
     },
     {
-      id: 'tipo',
+      id: 'filtroTipo',
       label: 'Tipo',
       field: 'tipo',
       type: 'select',
@@ -293,16 +313,16 @@ export class ConceptosRemuneracionContainer implements OnInit {
       operator: 'equals',
       emptyLabel: 'Todos',
       options: [
-        { label: 'Vigente (período)', value: 'VIGENTE_PERIODO' },
+        { label: 'Vigente', value: 'VIGENTE_PERIODO' },
         { label: 'Sin fechas', value: 'SIN_FECHAS' },
         { label: 'Futuro', value: 'FUTURO' },
         { label: 'Vencido', value: 'VENCIDO' },
-        { label: 'No vigente (catálogo)', value: 'NO_OPERATIVO' },
+        { label: 'No vigente', value: 'NO_OPERATIVO' },
       ],
     },
     {
       id: 'filtroAsignable',
-      label: 'Asignable',
+      label: 'Asignable manual',
       field: 'filtroAsignable',
       type: 'select',
       operator: 'equals',
@@ -313,20 +333,8 @@ export class ConceptosRemuneracionContainer implements OnInit {
       ],
     },
     {
-      id: 'filtroOrigen',
-      label: 'Origen',
-      field: 'filtroOrigen',
-      type: 'select',
-      operator: 'equals',
-      emptyLabel: 'Todos',
-      options: [
-        { label: 'Sistema', value: 'SISTEMA' },
-        { label: 'Usuario', value: 'USUARIO' },
-      ],
-    },
-    {
       id: 'filtroLre',
-      label: 'LRE',
+      label: 'Exportación LRE',
       field: 'filtroLre',
       type: 'select',
       operator: 'equals',
@@ -334,8 +342,6 @@ export class ConceptosRemuneracionContainer implements OnInit {
       options: [
         { label: 'Con código LRE', value: 'CON' },
         { label: 'Requiere código LRE', value: 'SIN' },
-        { label: 'Pendiente normativo', value: 'PENDIENTE' },
-        { label: 'Deriva operativa', value: 'DERIVA' },
         { label: 'No exportable', value: 'NO_EXPORTA' },
       ],
     },
@@ -343,9 +349,33 @@ export class ConceptosRemuneracionContainer implements OnInit {
 
   readonly trackCatalogo = (_i: number, row: CatalogoGridRow): number => row.idConcepto;
 
-  etiquetaTipo = etiquetaTipoConcepto;
-  etiquetaNaturaleza = etiquetaNaturalezaFn;
+  etiquetaTipo = etiquetaTipoConceptoHd;
+  etiquetaNaturaleza = etiquetaNaturalezaConcepto;
+  etiquetaReglaCalculo = etiquetaReglaCalculoUi;
   etiquetaEstadoLre = etiquetaEstadoLreConcepto;
+  resumenLreCompacto = resumenLreCompacto;
+  resumenImpactoLiquidacion = resumenImpactoLiquidacionUi;
+  chipsImpactoLiquidacion = chipsImpactoLiquidacionUi;
+
+  resumenImpactoFila(row: CatalogoGridRow): string {
+    return resumenImpactoLiquidacionUi(this.tipoLiquidacionFila(row), row.naturaleza);
+  }
+
+  chipsImpactoFila(row: CatalogoGridRow): string[] {
+    return chipsImpactoLiquidacionUi(this.tipoLiquidacionFila(row), row.naturaleza);
+  }
+
+  private tipoLiquidacionFila(row: CatalogoGridRow): TipoConceptoLiquidacion {
+    const tipo = row.tipo;
+    if (tipo === 'HABER' || tipo === 'DESCUENTO' || tipo === 'APORTE_EMPLEADOR') {
+      return tipo;
+    }
+    return 'HABER';
+  }
+
+  subtituloDetalle(row: CatalogoGridRow): string {
+    return subtituloDetalleConcepto(row, this.etiquetaVigenciaChip(row));
+  }
 
   claseChipEstadoLre(estado: ConceptoLreEstadoUi): string {
     switch (estado) {
@@ -367,6 +397,24 @@ export class ConceptosRemuneracionContainer implements OnInit {
   ngOnInit(): void {
     void this.cargarCatalogoLre();
     void this.cargarCatalogo();
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscapeKey(event: Event): void {
+    if (this.modalMsg()) {
+      event.preventDefault();
+      this.cerrarModalMsg();
+      return;
+    }
+    if (this.catalogDialogAbierto()) {
+      event.preventDefault();
+      this.cerrarCatalogDialog();
+      return;
+    }
+    if (this.detalleConceptoFila()) {
+      event.preventDefault();
+      this.cerrarDetalleConcepto();
+    }
   }
 
   async refrescar(): Promise<void> {
@@ -409,7 +457,7 @@ export class ConceptosRemuneracionContainer implements OnInit {
             filtroLre: filtroLreDesdeEstado(estadoLre),
             estadoLre,
             esAsignableCatalogo: asignable,
-            busquedaCatalogo: [r.nombre, r.codigo, r.codigoMotor ?? '', r.codigoLre ?? '', r.nombreLre ?? '']
+            busquedaCatalogo: [r.nombre, r.codigo, r.codigoLre ?? '', r.nombreLre ?? '']
               .join(' ')
               .toLowerCase(),
           };
@@ -464,12 +512,6 @@ export class ConceptosRemuneracionContainer implements OnInit {
     this.catTipo.set(t);
     if (t === 'APORTE_EMPLEADOR') {
       this.catNaturaleza.set('NO_IMPONIBLE');
-      this.catImponible.set(false);
-      this.catTributable.set(false);
-      this.catAfectaAfp.set(false);
-      this.catAfectaSalud.set(false);
-      this.catAfectaAfc.set(false);
-      this.catAfectaSis.set(false);
     }
   }
 
@@ -490,13 +532,6 @@ export class ConceptosRemuneracionContainer implements OnInit {
     this.catTipo.set('HABER');
     this.catNaturaleza.set('IMPONIBLE');
     this.catIdCatalogoLre.set(null);
-    this.catImponible.set(true);
-    this.catTributable.set(true);
-    this.catAfectaAfp.set(true);
-    this.catAfectaSalud.set(true);
-    this.catAfectaAfc.set(true);
-    this.catAfectaSis.set(false);
-    this.catAfectaLiquido.set(true);
     this.catVigente.set(true);
     this.catVigenciaInicio.set('');
     this.catVigenciaFin.set('');
@@ -523,13 +558,6 @@ export class ConceptosRemuneracionContainer implements OnInit {
     this.catTipo.set((row.tipo as 'HABER' | 'DESCUENTO' | 'APORTE_EMPLEADOR') ?? 'HABER');
     this.catNaturaleza.set(row.naturaleza);
     this.catIdCatalogoLre.set(row.idCatalogoLre);
-    this.catImponible.set(row.imponible);
-    this.catTributable.set(row.tributable);
-    this.catAfectaAfp.set(row.afectaAfp);
-    this.catAfectaSalud.set(row.afectaSalud);
-    this.catAfectaAfc.set(row.afectaAfc);
-    this.catAfectaSis.set(row.afectaSis);
-    this.catAfectaLiquido.set(row.afectaLiquido);
     this.catVigente.set(row.vigente);
     this.catVigenciaInicio.set(row.vigenciaInicio?.slice(0, 10) ?? '');
     this.catVigenciaFin.set(row.vigenciaFin?.slice(0, 10) ?? '');
@@ -558,6 +586,7 @@ export class ConceptosRemuneracionContainer implements OnInit {
       naturaleza = 'NO_IMPONIBLE';
     }
     const calculoAutomatico = this.catCalculoAutomatico();
+    const flags = derivarFlagsLiquidacionConcepto(tipo, naturaleza);
 
     return {
       codigo: this.catCodigo().trim(),
@@ -566,13 +595,13 @@ export class ConceptosRemuneracionContainer implements OnInit {
       tipo,
       naturaleza,
       idCatalogoLre: this.catIdCatalogoLre(),
-      imponible: this.catImponible(),
-      tributable: this.catTributable(),
-      afectaAfp: this.catAfectaAfp(),
-      afectaSalud: this.catAfectaSalud(),
-      afectaAfc: this.catAfectaAfc(),
-      afectaSis: this.catAfectaSis(),
-      afectaLiquido: this.catAfectaLiquido(),
+      imponible: flags.imponible,
+      tributable: flags.tributable,
+      afectaAfp: flags.afectaAfp,
+      afectaSalud: flags.afectaSalud,
+      afectaAfc: flags.afectaAfc,
+      afectaSis: flags.afectaSis,
+      afectaLiquido: flags.afectaLiquido,
       vigente: this.catVigente(),
       vigenciaInicio: this.catVigenciaInicio().trim() || null,
       vigenciaFin: this.catVigenciaFin().trim() || null,

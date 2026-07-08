@@ -193,6 +193,45 @@
         color: #ffffff;
       }
 
+      .data-grid-primary-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.375rem;
+        box-sizing: border-box;
+        height: 2rem;
+        min-height: 2rem;
+        padding: 0 0.75rem;
+        border: 1px solid var(--erp-primary, #1e3a8a);
+        border-radius: 0.375rem;
+        background: var(--erp-primary, #1e3a8a);
+        color: #ffffff;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1;
+        cursor: pointer;
+        transition:
+          border-color 150ms ease,
+          background-color 150ms ease,
+          box-shadow 150ms ease;
+      }
+
+      .data-grid-primary-action:hover {
+        border-color: var(--erp-primary-hover, #1d4ed8);
+        background: var(--erp-primary-hover, #1d4ed8);
+        color: #ffffff;
+      }
+
+      .data-grid-primary-action:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px var(--erp-primary-ring, rgba(30, 58, 138, 0.18));
+      }
+
+      .data-grid-primary-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
       :host ::ng-deep .data-grid-filter-panel app-calendar-input .calendar-field {
         height: var(--data-grid-filter-h, 22px) !important;
         min-height: var(--data-grid-filter-h, 22px) !important;

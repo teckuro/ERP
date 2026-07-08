@@ -10,31 +10,34 @@
 
   <div class="emp-list__grid-shell" aria-labelledby="emp-list-grid-title">
     <h2 id="emp-list-grid-title" class="sr-only">Listado de empresas</h2>
+
+    <section class="emp-list__franja-operativa" aria-label="Contexto del listado">
+      <p class="emp-list__franja-operativa__lead">{{ subtitulo() }}</p>
+    </section>
+
     @if (!cargando() || filas().length > 0) {
       <app-data-grid
-        title=""
+        title="Empresas"
+        primaryActionLabel="Nueva empresa"
+        [primaryActionDisabled]="cargando()"
+        (primaryAction)="irNuevaEmpresa()"
         [rows]="filas()"
         [columns]="columns"
         [filters]="filters"
         [filtersEnabled]="true"
-        [filtersCollapsible]="false"
-        filterChipsDisplay="whenFiltersHidden"
-        headerCountDisplay="text"
-        headerCountNoun="empresas"
-        [headerShowActiveFiltersCount]="true"
+        [filtersCollapsible]="true"
         [loading]="cargando()"
         [showExportAction]="true"
         [selectable]="false"
         [trackBy]="trackEmpresa"
         [persistenceKey]="persistenceKey"
-        toolbarLayout="operativa"
-        gridHeight="100%"
+        [gridHeight]="'100%'"
         emptyTitle="Sin empresas registradas"
         emptyDescription="Crea la primera empresa para configurar contratos y mutual empleador."
-        emptyTitleWhenFiltered="Sin resultados con los filtros actuales"
-        emptyDescriptionWhenFiltered="Cambia o limpia los filtros para ampliar la búsqueda."
+        emptyTitleWhenFiltered="No hay empresas que coincidan con los filtros."
+        emptyDescriptionWhenFiltered="Ajusta la búsqueda o limpia filtros para ver más resultados."
         className="emp-list__grid"
-        cardClassName="emp-list__grid-card"
+        cardClassName="emp-list__grid-card erp-fullscreen-grid-card"
         (refresh)="cargar()"
       >
         <ng-template appDataGridCell="aplicaMutual" let-row>

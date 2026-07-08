@@ -20,6 +20,45 @@
   height: 100%;
   gap: 0;
   overflow: hidden;
+  background: #ffffff;
+}
+
+.listado-franja-operativa {
+  flex: 0 0 auto;
+  border-bottom: 1px solid #d7dde5;
+  background: #ffffff;
+  padding: 10px 14px;
+}
+
+.listado-franja-operativa__lead {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: #475569;
+  max-width: 52rem;
+}
+
+.listado-grid-shell {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  padding: 0;
+}
+
+.listado-grid-shell > app-tabla-empleados {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
 }
 
 .listado-header {
@@ -227,7 +266,7 @@
   min-height: 0;
   height: 100%;
   max-height: 100%;
-  overflow: visible;
+  overflow: hidden;
   padding: 0;
 }
 

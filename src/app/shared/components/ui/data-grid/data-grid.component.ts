@@ -142,6 +142,10 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   @Input() emptyTitleWhenFiltered = 'No se encontraron registros con los filtros aplicados.';
   @Input() emptyDescriptionWhenFiltered = 'Ajusta o limpia los filtros para ampliar los resultados.';
   @Input() primaryActionLabel = '';
+  /** Deshabilita el CTA primario de la toolbar (p. ej. falta contexto previo). */
+  @Input() primaryActionDisabled = false;
+  /** Tooltip del CTA primario cuando está deshabilitado o como ayuda contextual. */
+  @Input() primaryActionTooltip = '';
   /** Para accesibilidad: refleja si el popover del primary action está abierto. */
   @Input() primaryActionMenuOpen = false;
   @Input() showExportAction = false;

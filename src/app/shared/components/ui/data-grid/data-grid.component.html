@@ -142,6 +142,20 @@
           </div>
 
           <div class="data-grid-toolbar--operativa__actions">
+            @if (primaryActionLabel) {
+              <button
+                type="button"
+                class="data-grid-primary-action"
+                [disabled]="primaryActionDisabled || loading"
+                [attr.title]="primaryActionTooltip || null"
+                [attr.aria-label]="primaryActionTooltip || primaryActionLabel"
+                (click)="primaryAction.emit()"
+              >
+                <lucide-icon class="h-3.5 w-3.5" [img]="plusIcon"></lucide-icon>
+                {{ primaryActionLabel }}
+              </button>
+            }
+
             <label class="data-grid-toolbar--operativa__page-size">
               <span class="data-grid-toolbar--operativa__label">Registros por página</span>
               <select
@@ -235,8 +249,11 @@
                 <div class="relative" data-grid-primary-action-root>
                   <button
                     type="button"
-                    class="inline-flex h-8 items-center gap-1.5 rounded-md border border-blue-600 bg-blue-600 px-3 text-xs font-medium text-white transition-colors hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    class="data-grid-primary-action"
                     aria-haspopup="menu"
+                    [disabled]="primaryActionDisabled || loading"
+                    [attr.title]="primaryActionTooltip || null"
+                    [attr.aria-label]="primaryActionTooltip || primaryActionLabel"
                     [attr.aria-expanded]="primaryActionMenuOpen"
                     (click)="primaryAction.emit()"
                   >
@@ -1071,7 +1088,7 @@
                       </button>
                       <button
                         type="button"
-                        class="inline-flex h-8 items-center rounded-md border border-blue-600 bg-blue-600 px-3 text-xs font-medium text-white transition-colors hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        class="data-grid-primary-action"
                         (click)="confirmPagePopover()"
                       >
                         Ir

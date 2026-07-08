@@ -2,9 +2,8 @@
  * Listado de empresas.
  *
  * Pantalla operativa (uso interno: configuración del producto, no de cara al
- * cliente final). Adopta el patrón consolidado del repo: el shell publica
- * título + breadcrumb + CTA principal mediante `bindShellPageContext`, y la
- * grilla se concentra en datos + acciones de fila.
+ * cliente final). El shell publica título + breadcrumb; el CTA principal vive
+ * en la toolbar de la grilla (`primaryActionLabel`).
  *
  * Alineada con `administrador-plantillas-container` (F03) y
  * `administrador-nominas`.
@@ -77,9 +76,7 @@ export class ListadoEmpresasContainer implements OnInit {
   });
 
   constructor() {
-    bindShellPageContext(this.destroyRef, () => this.computeShellContext(), {
-      onPrimaryAction: () => this.irNuevaEmpresa(),
-    });
+    bindShellPageContext(this.destroyRef, () => this.computeShellContext());
   }
 
   ngOnInit(): void {
@@ -91,12 +88,6 @@ export class ListadoEmpresasContainer implements OnInit {
       breadcrumbs: [{ label: 'Empresas' }],
       pageTitle: 'Empresas',
       pageSubtitle: this.subtitulo(),
-      primaryAction: {
-        label: 'Nueva empresa',
-        disabled: this.cargando(),
-        loading: false,
-        actionId: 'empresas-nueva',
-      },
     };
   }
 

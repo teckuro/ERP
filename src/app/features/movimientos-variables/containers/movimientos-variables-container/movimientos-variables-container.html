@@ -1,34 +1,4 @@
 <section class="mv-page" aria-label="Movimientos del mes">
-  <header class="mv-head">
-    <app-record-breadcrumb
-      [items]="breadcrumbItems"
-      title="Movimientos del mes"
-    ></app-record-breadcrumb>
-    <p class="mv-lead">
-      Cargue montos puntuales por trabajador y concepto para el periodo activo. El selector de concepto usa
-      el mismo universo asignable que Asignaciones recurrentes.
-    </p>
-    <div class="mv-head-actions">
-      <div class="mv-period-wrap">
-        <div class="mv-period-global" aria-live="polite">
-          <span class="mv-period-global-k">Periodo activo</span>
-          <span class="mv-period-global-v">{{ periodoActivo.etiqueta() }}</span>
-        </div>
-        <p class="mv-period-hint">Cambia el periodo desde la cabecera global.</p>
-      </div>
-      <div class="mv-head-buttons">
-        <app-button variant="outline" size="md" (click)="refrescar()">
-          <lucide-icon icon class="w-4 h-4" [img]="refreshIcon"></lucide-icon>
-          Actualizar
-        </app-button>
-        <app-button variant="primary" size="md" (click)="abrirNuevo()">
-          <lucide-icon icon class="w-4 h-4" [img]="plusIcon"></lucide-icon>
-          Registrar movimiento
-        </app-button>
-      </div>
-    </div>
-  </header>
-
   @if (catalogosLoading() && filas().length === 0) {
     <app-workspace-loading
       [fill]="false"
@@ -37,22 +7,41 @@
     />
   }
 
-  <div class="mv-grid-wrap">
+  <div class="mv-grid-shell">
+    <section class="mv-franja-operativa" aria-label="Contexto del listado">
+      <p class="mv-lead">
+        Cargue montos puntuales por trabajador y concepto para el periodo activo. El selector de concepto usa
+        el mismo universo asignable que Asignaciones recurrentes.
+      </p>
+      <div class="mv-period-inline" aria-live="polite">
+        <span class="mv-period-global-k">Periodo activo</span>
+        <span class="mv-period-global-v">{{ periodoActivo.etiqueta() }}</span>
+        <span class="mv-period-hint">Cambia el periodo desde la cabecera global.</span>
+      </div>
+    </section>
+
     <app-data-grid
-      title="Movimientos registrados"
+      className="mv-grid"
+      title="Movimientos del mes"
+      primaryActionLabel="Registrar movimiento"
+      (primaryAction)="abrirNuevo()"
+      (refresh)="refrescar()"
       [rows]="filas()"
       [columns]="columns"
       [filters]="filters"
       [filtersEnabled]="true"
+      [filtersCollapsible]="true"
       [loading]="gridLoading() || catalogosLoading()"
       loadingLabel="Cargando movimientos del mes…"
       [showExportAction]="false"
       [selectable]="false"
       [trackBy]="trackMvRow"
-      gridHeight="100%"
-      cardClassName="erp-fullscreen-grid-card"
+      [gridHeight]="'100%'"
+      cardClassName="mv-grid-card erp-fullscreen-grid-card"
       emptyTitle="No hay movimientos del mes registrados"
       emptyDescription="Todavia no hay bonos, descuentos, anticipos, ausencias o ajustes para el periodo activo."
+      emptyTitleWhenFiltered="No hay movimientos que coincidan con los filtros."
+      emptyDescriptionWhenFiltered="Ajusta la búsqueda o limpia filtros para ver más resultados."
     >
       <ng-template appDataGridCell="estado" let-row>
         @switch (row.estado) {
