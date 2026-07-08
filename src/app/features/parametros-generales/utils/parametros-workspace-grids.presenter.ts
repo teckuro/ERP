@@ -14,6 +14,67 @@ import type {
   TramoImpuestoParametro,
 } from '../models/parametro-general.model';
 
+/** Props compartidas de shell grilla (patrón Conceptos / erp-fullscreen-grid-card). */
+export const PARAMETROS_DATA_GRID_SHELL = {
+  className: 'param-grid',
+  cardClassName: 'param-grid-card erp-fullscreen-grid-card',
+  gridHeight: '100%' as const,
+} as const;
+
+export const PARAMETROS_EMPTY_FILTERED = {
+  emptyTitleWhenFiltered: 'No hay registros que coincidan con los filtros aplicados.',
+  emptyDescriptionWhenFiltered: 'Ajuste la búsqueda o restablezca los filtros para ampliar el listado.',
+} as const;
+
+/** Copy operativo RRHH para grillas de catálogo (tono formal, sin jerga técnica visible). */
+export const PARAMETROS_GRID_EMPTY = {
+  afp: {
+    title: 'Administradoras de fondos de pensiones',
+    emptyTitle: 'Sin registros de AFP para el período',
+    emptyDescription: 'Seleccione otro período o sincronice la carga normativa del mes.',
+  },
+  isapre: {
+    title: 'Instituciones ISAPRE',
+    emptyTitle: 'Sin registros de ISAPRE para el período',
+    emptyDescription: 'Seleccione otro período o sincronice la carga normativa del mes.',
+  },
+  saludInstituciones: {
+    title: 'Instituciones de salud',
+    emptyTitle: 'Sin instituciones de salud para el período',
+    emptyDescription: 'Seleccione otro período o sincronice la carga normativa del mes.',
+  },
+  ccaf: {
+    title: 'Cajas de compensación',
+    emptyTitle: 'Sin cajas de compensación en catálogo',
+    emptyDescription: 'Revise la carga de maestros o la normativa base del período.',
+  },
+  mutuales: {
+    title: 'Organismos mutual',
+    emptyTitle: 'Sin organismos mutual en catálogo',
+    emptyDescription: 'Revise la carga de maestros o la normativa Ley 16.744 del período.',
+  },
+  tramosCarga: {
+    title: 'Tramos de asignación familiar',
+    emptyTitle: 'Sin tramos de asignación familiar',
+    emptyDescription: 'La carga oficial del período aún no está disponible.',
+  },
+  tablaImpuesto: {
+    title: 'Tabla impuesto único (SII)',
+    emptyTitle: 'Sin tabla de impuesto único',
+    emptyDescription: 'Ejecute la sincronización mensual con fuente SII para el período.',
+  },
+  reforma: {
+    title: 'Gradualidad previsional',
+    emptyTitle: 'Sin gradualidad vigente al período',
+    emptyDescription: 'Revise las fechas de vigencia de la reforma previsional.',
+  },
+  listado: {
+    title: 'Parámetros por período',
+    emptyTitle: 'Sin parámetros registrados',
+    emptyDescription: 'Registre un período para cargar indicadores previsionales y tributarios.',
+  },
+} as const;
+
 export interface GridsParametrosWorkspace {
   tramosCargaColumns: DataGridColumn<TramoCargaParametro>[];
   tablaImpuestoColumns: DataGridColumn<TablaImpuestoUnicoParametro>[];
@@ -146,7 +207,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       { id: 'tramo', header: 'Tramo', field: 'tramo', sortable: true },
       {
         id: 'desde',
-        header: 'Desde',
+        header: 'Renta desde',
         field: 'desde',
         type: 'number',
         sortable: true,
@@ -155,7 +216,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'hasta',
-        header: 'Hasta',
+        header: 'Renta hasta',
         field: 'hasta',
         type: 'number',
         sortable: true,
@@ -164,7 +225,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'valor',
-        header: 'Valor',
+        header: 'Monto asignación',
         field: 'valor',
         type: 'number',
         sortable: true,
@@ -175,7 +236,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
     tablaImpuestoColumns: [
       {
         id: 'vigenciaInicio',
-        header: 'Vigencia',
+        header: 'Vigencia desde',
         field: 'vigenciaInicio',
         type: 'date',
         sortable: true,
@@ -184,7 +245,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       { id: 'tramo', header: 'Tramo', field: 'tramo', type: 'number', sortable: true, align: 'right' },
       {
         id: 'desde',
-        header: 'Desde ($)',
+        header: 'Renta desde',
         field: 'desde',
         type: 'number',
         sortable: true,
@@ -193,7 +254,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'hasta',
-        header: 'Hasta ($)',
+        header: 'Renta hasta',
         field: 'hasta',
         type: 'number',
         sortable: true,
@@ -202,7 +263,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'factor',
-        header: 'Factor SII',
+        header: 'Factor',
         field: 'factor',
         type: 'number',
         sortable: true,
@@ -211,7 +272,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'rebaja',
-        header: 'Rebaja ($)',
+        header: 'Rebaja',
         field: 'rebaja',
         type: 'number',
         sortable: true,
@@ -223,7 +284,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       { id: 'periodo', header: 'Período', field: 'periodo', sortable: true },
       {
         id: 'desde',
-        header: 'Desde ($)',
+        header: 'Renta desde',
         field: 'desde',
         type: 'number',
         sortable: true,
@@ -232,7 +293,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'hasta',
-        header: 'Hasta ($)',
+        header: 'Renta hasta',
         field: 'hasta',
         type: 'number',
         sortable: true,
@@ -241,7 +302,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'factor',
-        header: 'Factor SII',
+        header: 'Factor',
         field: 'factor',
         type: 'number',
         sortable: true,
@@ -250,7 +311,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'rebaja',
-        header: 'Rebaja ($)',
+        header: 'Rebaja',
         field: 'rebaja',
         type: 'number',
         sortable: true,
@@ -264,7 +325,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       { id: 'tipo', header: 'Tipo', field: 'tipo', sortable: true },
       {
         id: 'porcentajeCotizacion',
-        header: 'Cotización',
+        header: 'Cotización (%)',
         field: 'porcentajeCotizacion',
         type: 'number',
         sortable: true,
@@ -273,7 +334,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'vigenciaInicio',
-        header: 'Inicio',
+        header: 'Vigencia desde',
         field: 'vigenciaInicio',
         type: 'date',
         sortable: true,
@@ -281,7 +342,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'vigenciaFin',
-        header: 'Fin',
+        header: 'Vigencia hasta',
         field: 'vigenciaFin',
         type: 'date',
         sortable: true,
@@ -294,7 +355,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       { id: 'nombre', header: 'Nombre', field: 'nombre', sortable: true },
       {
         id: 'tasaObligatoria',
-        header: 'Obligatoria',
+        header: 'Tasa obligatoria',
         field: 'tasaObligatoria',
         type: 'number',
         sortable: true,
@@ -321,7 +382,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'tasaEmpleador',
-        header: 'Empleador',
+        header: 'Tasa empleador',
         field: 'tasaEmpleador',
         type: 'number',
         sortable: true,
@@ -330,7 +391,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'vigenciaInicio',
-        header: 'Inicio',
+        header: 'Vigencia desde',
         field: 'vigenciaInicio',
         type: 'date',
         sortable: true,
@@ -338,7 +399,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'vigenciaFin',
-        header: 'Fin',
+        header: 'Vigencia hasta',
         field: 'vigenciaFin',
         type: 'date',
         sortable: true,
@@ -386,7 +447,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'vigenciaInicio',
-        header: 'Inicio',
+        header: 'Vigencia desde',
         field: 'vigenciaInicio',
         type: 'date',
         sortable: true,
@@ -394,7 +455,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'vigenciaFin',
-        header: 'Fin',
+        header: 'Vigencia hasta',
         field: 'vigenciaFin',
         type: 'date',
         sortable: true,
@@ -404,7 +465,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
     reformaPrevisionalColumns: [
       {
         id: 'vigenciaInicio',
-        header: 'Inicio',
+        header: 'Vigencia desde',
         field: 'vigenciaInicio',
         type: 'date',
         sortable: true,
@@ -412,12 +473,13 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'vigenciaFin',
-        header: 'Fin',
+        header: 'Vigencia hasta',
         field: 'vigenciaFin',
         type: 'date',
         sortable: true,
         format: formatoFechaGridParametros,
       },
+      { id: 'estadoPeriodo', header: 'Estado al período', sortable: false, format: (_v, row) => estadoPeriodo(row) },
       {
         id: 'cuentaCapitalizacionIndividual',
         header: 'Cuenta individual',
@@ -429,7 +491,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'cotizacionRentabilidadProtegida',
-        header: 'CRP',
+        header: 'Rentabilidad protegida',
         field: 'cotizacionRentabilidadProtegida',
         type: 'number',
         sortable: true,
@@ -438,7 +500,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'seguroSocialSisCev',
-        header: 'Seguro Social / SIS / CEV',
+        header: 'Seguro social',
         field: 'seguroSocialSisCev',
         type: 'number',
         sortable: true,
@@ -447,14 +509,13 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'aporteEmpleadorTotal',
-        header: 'Total empleador',
+        header: 'Aporte empleador',
         field: 'aporteEmpleadorTotal',
         type: 'number',
         sortable: true,
         align: 'right',
         format: formatoPorcentajeGridParametros,
       },
-      { id: 'estadoPeriodo', header: 'Estado', sortable: false, format: (_v, row) => estadoPeriodo(row) },
       { id: 'fuente', header: 'Fuente', field: 'fuente', sortable: true },
     ],
     trabajosPesadosColumns: [
@@ -462,7 +523,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       { id: 'nombre', header: 'Nombre', field: 'nombre', sortable: true },
       {
         id: 'tasaTrabajador',
-        header: 'Trabajador',
+        header: 'Tasa trabajador',
         field: 'tasaTrabajador',
         type: 'number',
         sortable: true,
@@ -471,7 +532,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'tasaEmpleador',
-        header: 'Empleador',
+        header: 'Tasa empleador',
         field: 'tasaEmpleador',
         type: 'number',
         sortable: true,
@@ -480,7 +541,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'tasaTotal',
-        header: 'Total',
+        header: 'Tasa total',
         field: 'tasaTotal',
         type: 'number',
         sortable: true,
@@ -489,7 +550,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'requiereDictamenCen',
-        header: 'Dictamen CEN',
+        header: 'Requiere dictamen CEN',
         field: 'requiereDictamenCen',
         sortable: true,
         format: formatoBooleanoGridParametros,
@@ -498,12 +559,12 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
     ],
     apvInstitucionesColumns: [
       { id: 'codigo', header: 'Código', field: 'codigo', sortable: true },
-      { id: 'nombre', header: 'Institucion', field: 'nombre', sortable: true },
+      { id: 'nombre', header: 'Institución', field: 'nombre', sortable: true },
       { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: formatoVigenteGridParametros },
     ],
     apvFormasPagoColumns: [
       { id: 'codigo', header: 'Código', field: 'codigo', sortable: true },
-      { id: 'nombre', header: 'Forma', field: 'nombre', sortable: true },
+      { id: 'nombre', header: 'Forma de pago', field: 'nombre', sortable: true },
       { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: formatoVigenteGridParametros },
     ],
   };

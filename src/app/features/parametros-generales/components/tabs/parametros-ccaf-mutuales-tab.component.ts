@@ -14,6 +14,11 @@ import {
   ParametrosInnerTabBarComponent,
   ParametrosInnerTabItem,
 } from '../parametros-inner-tab-bar.component';
+import {
+  PARAMETROS_DATA_GRID_SHELL,
+  PARAMETROS_EMPTY_FILTERED,
+  PARAMETROS_GRID_EMPTY,
+} from '../../utils/parametros-workspace-grids.presenter';
 
 export type CcafMutualSubId = 'listaCcaf' | 'mutuales';
 
@@ -40,17 +45,21 @@ export type CcafMutualSubId = 'listaCcaf' | 'mutuales';
           <section class="catalog-section parametros-grid-shell" aria-labelledby="lista-ccaf-title">
             <h2 class="sr-only" id="lista-ccaf-title">Lista CCAF</h2>
             <app-data-grid
-              title="CCAF"
+              [title]="gridCopyCcaf.title"
               [rows]="catalogos.ccafEntidades"
               [columns]="ccafColumns"
               [loading]="loading"
               [filtersEnabled]="false"
               [showExportAction]="true"
               [maxItems]="8"
-              gridHeight="min(520px, 100%)"
+              [className]="gridShell.className"
+              [cardClassName]="gridShell.cardClassName"
+              [gridHeight]="gridShell.gridHeight"
               [persistenceKey]="gridPersistenceKeyCcaf"
-              emptyTitle="Sin cajas de compensacion en catalogo"
-              emptyDescription="No hay CCAF cargadas. Revisa la normativa base o maestros."
+              [emptyTitle]="gridCopyCcaf.emptyTitle"
+              [emptyDescription]="gridCopyCcaf.emptyDescription"
+              [emptyTitleWhenFiltered]="emptyFiltered.emptyTitleWhenFiltered"
+              [emptyDescriptionWhenFiltered]="emptyFiltered.emptyDescriptionWhenFiltered"
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -60,17 +69,21 @@ export type CcafMutualSubId = 'listaCcaf' | 'mutuales';
           <section class="catalog-section parametros-grid-shell" aria-labelledby="lista-mutuales-title">
             <h2 class="sr-only" id="lista-mutuales-title">Mutuales</h2>
             <app-data-grid
-              title="Organismos mutual"
+              [title]="gridCopyMutuales.title"
               [rows]="catalogos.organismosLey16744"
               [columns]="organismosLeyColumns"
               [loading]="loading"
               [filtersEnabled]="false"
               [showExportAction]="true"
               [maxItems]="8"
-              gridHeight="min(520px, 100%)"
+              [className]="gridShell.className"
+              [cardClassName]="gridShell.cardClassName"
+              [gridHeight]="gridShell.gridHeight"
               [persistenceKey]="gridPersistenceKeyMutuales"
-              emptyTitle="Sin organismos mutual en catalogo"
-              emptyDescription="No hay mutualidades u organismos cargados. Revisa la normativa base o maestros."
+              [emptyTitle]="gridCopyMutuales.emptyTitle"
+              [emptyDescription]="gridCopyMutuales.emptyDescription"
+              [emptyTitleWhenFiltered]="emptyFiltered.emptyTitleWhenFiltered"
+              [emptyDescriptionWhenFiltered]="emptyFiltered.emptyDescriptionWhenFiltered"
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -80,6 +93,10 @@ export type CcafMutualSubId = 'listaCcaf' | 'mutuales';
   `,
 })
 export class ParametrosCcafMutualesTabComponent {
+  readonly gridShell = PARAMETROS_DATA_GRID_SHELL;
+  readonly emptyFiltered = PARAMETROS_EMPTY_FILTERED;
+  readonly gridCopyCcaf = PARAMETROS_GRID_EMPTY.ccaf;
+  readonly gridCopyMutuales = PARAMETROS_GRID_EMPTY.mutuales;
   readonly ccafInnerTabs: readonly ParametrosInnerTabItem[] = [
     { id: 'listaCcaf', label: 'Lista CCAF' },
     { id: 'mutuales', label: 'Mutuales' },

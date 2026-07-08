@@ -5,11 +5,12 @@
 .parametros-page {
   --prm-ink: #111827;
   --prm-muted: #6b7280;
-  --prm-line: #e5e7eb;
+  --prm-line: #d7dde5;
+  --prm-separator: var(--prm-line);
   --prm-soft: #f8fafc;
   --prm-panel: #ffffff;
-  --prm-blue: #2563eb;
-  --prm-blue-hover: #1d4ed8;
+  --prm-blue: var(--erp-primary, #1e3a8a);
+  --prm-blue-hover: #1e293b;
   --prm-blue-soft: #eff6ff;
   --prm-chip-muted: #64748b;
   --prm-chip-line: #e5e7eb;
@@ -84,20 +85,31 @@
   text-transform: uppercase;
 }
 
+.param-franja-operativa p,
 .param-record-header p {
   margin: 0;
   display: inline-flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 8px;
-  color: #64748b;
-  font-size: 0.72rem;
-  font-weight: 560;
-  line-height: 1.35;
+  color: #475569;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.45;
+  max-width: 52rem;
 }
 
+.param-franja-operativa .param-eyebrow,
 .param-record-header .param-eyebrow {
+  color: #64748b;
+}
+
+.param-franja-operativa__lead {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
   color: #475569;
+  max-width: 52rem;
 }
 
 .parametros-toolbar {
@@ -440,22 +452,22 @@ select.param-input {
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  gap: 10px;
+  gap: 8px;
   overflow-y: auto;
   overflow-x: hidden;
   background: #ffffff;
-  padding: 10px;
+  padding: 10px 14px;
 }
 
 .parametros-cierre-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  border: 1px solid var(--prm-line, #e5e7eb);
-  border-radius: 8px;
-  background: #f8fafc;
-  padding: 12px;
+  gap: 10px 12px;
+  border-bottom: 1px solid var(--prm-line, #e5e7eb);
+  border-radius: 0;
+  background: #ffffff;
+  padding: 0 0 10px;
 }
 
 .parametros-cierre-copy {
@@ -464,10 +476,10 @@ select.param-input {
 
 .parametros-cierre-copy h3 {
   margin: 2px 0 4px;
-  color: #111827;
-  font-size: 1rem;
-  font-weight: 760;
-  line-height: 1.2;
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 650;
+  line-height: 1.35;
 }
 
 .parametros-cierre-copy p,
@@ -494,9 +506,9 @@ select.param-input {
 }
 
 .parametros-cierre-score strong {
-  color: #111827;
-  font-size: 1.45rem;
-  font-weight: 780;
+  color: #0f172a;
+  font-size: 1.1rem;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -564,8 +576,8 @@ select.param-input {
 }
 
 .parametros-cierre-action {
-  border: 1px solid var(--prm-blue, #2563eb);
-  background: var(--prm-blue, #2563eb);
+  border: 1px solid var(--erp-primary, #1e3a8a);
+  background: var(--erp-primary, #1e3a8a);
   color: #ffffff;
   transition:
     background 140ms ease,
@@ -575,13 +587,13 @@ select.param-input {
 }
 
 .parametros-cierre-action:hover:not(:disabled) {
-  background: var(--prm-blue-hover, #1d4ed8);
-  border-color: var(--prm-blue-hover, #1d4ed8);
+  background: #1e293b;
+  border-color: #1e293b;
 }
 
 .parametros-cierre-action:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.2);
 }
 
 .parametros-cierre-ghost {
@@ -699,13 +711,14 @@ select.param-input {
   }
 }
 
+.parametros-page .param-franja-operativa,
 .parametros-page .param-record-header {
   flex: 0 0 auto;
   display: block;
   min-width: 0;
-  border: 0;
-  background: transparent;
-  padding: 4px 12px 2px;
+  border-bottom: 1px solid var(--prm-separator, #d7dde5);
+  background: #ffffff;
+  padding: 10px 14px;
   overflow: visible;
 }
 
@@ -736,6 +749,11 @@ select.param-input {
   gap: 0;
 }
 
+.parametros-page .tab-panel.parametros-tab-panel:has(.parametros-grid-shell) {
+  padding: 0;
+  overflow: hidden;
+}
+
 .tab-panel--compact {
   gap: 6px;
   padding: 8px;
@@ -756,23 +774,76 @@ select.param-input {
 }
 
 .parametros-page .parametros-grid-shell {
+  position: relative;
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
-.parametros-page .parametros-grid-shell > app-data-grid {
+.parametros-page .parametros-grid-shell > app-data-grid.param-grid {
   display: flex;
   flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
   min-height: 0;
   height: 100%;
+}
+
+.parametros-page .parametros-grid-shell > app-data-grid.param-grid > app-card.param-grid-card {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Sin marco externo: el shell ya delimita la zona; evita doble borde con catalog-section / global .erp-fullscreen-grid-card */
+.parametros-page .catalog-section.parametros-grid-shell {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Título redundante fuera de la grilla (el toolbar del data-grid ya nombra la sección) */
+.parametros-page .parametros-grid-shell > h2:not(.sr-only) {
+  display: none;
+}
+
+.parametros-page .parametros-grid-shell > app-data-grid.param-grid .data-grid-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.parametros-page .parametros-grid-shell .data-grid-filter-grid {
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr)) !important;
+  gap: 0.65rem 0.75rem !important;
+}
+
+.parametros-page .parametros-grid-shell > app-tabla-parametros-generales {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
 }
 
 /* Evita colapso visual en grillas cuando el alto del panel aún no se estabiliza. */
-.parametros-page .parametros-grid-shell > app-data-grid.data-grid-host--sized {
+.parametros-page .parametros-grid-shell > app-data-grid.param-grid.data-grid-host--sized {
   min-height: 320px;
 }
 

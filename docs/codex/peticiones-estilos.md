@@ -9,7 +9,22 @@
 
 ---
 
-## 2026-07-08 — CTA primario en toolbar de grilla (sin shell)
+## 2026-07-08 — Parámetros: orden de columnas y copy formal en grillas
+
+- **Columnas:** jerarquía identidad → montos/tasas → vigencia → estado; headers con tildes y nombres completos (sin abreviaturas tipo «trab. indef.» o «Desc. por día»).
+- **Copy:** `PARAMETROS_GRID_EMPTY` centralizado en presenter; tono RRHH formal en empty states y filtros (usted, sin «Prueba con…» ni referencias técnicas v6.11).
+- **Grillas:** AFP, ISAPRE, salud, CCAF, mutual, tramos carga, impuesto SII, reforma, listado parámetros.
+- **Archivos:** `parametros-workspace-grids.presenter.ts`, tabs `parametros-*-tab`, `tabla-parametros-generales.*`.
+
+---
+
+## 2026-07-08 — Parámetros: “datos oficiales” humanizado estilo Previred
+
+- **Pendientes oficiales (completitud):** se reemplaza el copy técnico `Falta dato oficial: ...` / `Dato oficial en cero: ...` por el formato RRHH humanizado (UF mensual, UTM mensual, etc.).
+- **Título del pendiente:** `Faltan datos oficiales mensuales del periodo.` pasa a `Datos oficiales del período.`.
+- **Archivos:** `parametros-completitud.rules.ts`, `parametros-completitud.rules.spec.ts`.
+
+---
 
 - **Patrón:** acción principal (`data-grid-primary-action`) en toolbar de `app-data-grid`, como «Nuevo concepto»; retirada del header shell.
 - **Pantallas:** administrador nóminas, plantillas, empresas, movimientos (mes y remuneración), recurrentes; empleados y conceptos ya lo tenían.
@@ -3767,6 +3782,20 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **Pie**: chips de pendientes (Concepto, Monto…); CTA deshabilitada hasta formulario listo.
 - **Masivo**: reutiliza mismo componente (`detalleAdminCompleto=false`).
 - **Sin tocar**: estilos globales, SQL, motor, servicios.
+
+## 2026-07-08 - Parámetros: desacople de bordes en grillas
+
+- **Problema**: doble marco entre `.catalog-section`, `.erp-fullscreen-grid-card` global y overrides locales parciales.
+- **Solución local**: `.catalog-section.parametros-grid-shell` sin borde; card grilla `border: 0 !important`; separador único `--prm-separator`; `h2` redundante oculto en shells de grilla.
+- **Sin tocar**: `src/styles.css` ni estilos globales.
+
+## 2026-07-08 - Parámetros generales: pulido grilla operativa
+
+- **Referencia**: patrón Conceptos (`PARAMETROS_DATA_GRID_SHELL`, `param-grid`, `erp-fullscreen-grid-card`).
+- **Workspace**: 9 grillas de catálogo con `gridHeight 100%`, shell `parametros-grid-shell`, franja `param-franja-operativa`, tab Cierre con hero más compacto, CTA `--erp-primary`.
+- **Listado**: shell + franja lead + grilla homologada (ruta no montada; solo UI).
+- **Formularios**: grilla 8 columnas sin cambios (`ui-form-guidelines.md`).
+- **Sin tocar**: estilos globales, orquestador, guardado, SQL, motor.
 
 ## 2026-07-08 - Grillas operativas: patrón estructural Conceptos
 

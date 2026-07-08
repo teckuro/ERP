@@ -5,6 +5,11 @@ import {
   DataGridComponent,
 } from '../../../../shared/components/ui/data-grid';
 import { IsapreParametro } from '../../models/parametro-general.model';
+import {
+  PARAMETROS_DATA_GRID_SHELL,
+  PARAMETROS_EMPTY_FILTERED,
+  PARAMETROS_GRID_EMPTY,
+} from '../../utils/parametros-workspace-grids.presenter';
 import { ParametrosInnerTabBarComponent } from '../parametros-inner-tab-bar.component';
 
 export type SaludSubId = 'isapre' | 'instituciones';
@@ -31,17 +36,21 @@ export type SaludSubId = 'isapre' | 'instituciones';
         @if (activeSub === 'isapre') {
           <section class="catalog-section parametros-grid-shell" aria-label="ISAPRE">
             <app-data-grid
-              title="ISAPRE"
+              [title]="gridCopyIsapre.title"
               [rows]="isapreRows"
               [columns]="columns"
               [loading]="loading"
               [filtersEnabled]="false"
               [showExportAction]="true"
               [maxItems]="10"
-              gridHeight="100%"
+              [className]="gridShell.className"
+              [cardClassName]="gridShell.cardClassName"
+              [gridHeight]="gridShell.gridHeight"
               [persistenceKey]="gridPersistenceKeyIsapre"
-              emptyTitle="No hay ISAPRE vigentes para el período activo"
-              emptyDescription="Prueba con otro período o revisa el catálogo de salud."
+              [emptyTitle]="gridCopyIsapre.emptyTitle"
+              [emptyDescription]="gridCopyIsapre.emptyDescription"
+              [emptyTitleWhenFiltered]="emptyFiltered.emptyTitleWhenFiltered"
+              [emptyDescriptionWhenFiltered]="emptyFiltered.emptyDescriptionWhenFiltered"
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -50,17 +59,21 @@ export type SaludSubId = 'isapre' | 'instituciones';
         @if (activeSub === 'instituciones') {
           <section class="catalog-section parametros-grid-shell" aria-label="Instituciones de salud">
             <app-data-grid
-              title="Instituciones de salud"
+              [title]="gridCopyInstituciones.title"
               [rows]="institucionesRows"
               [columns]="columns"
               [loading]="loading"
               [filtersEnabled]="false"
               [showExportAction]="true"
               [maxItems]="10"
-              gridHeight="100%"
+              [className]="gridShell.className"
+              [cardClassName]="gridShell.cardClassName"
+              [gridHeight]="gridShell.gridHeight"
               [persistenceKey]="gridPersistenceKeyInstituciones"
-              emptyTitle="No hay instituciones de salud vigentes para el período activo"
-              emptyDescription="Prueba con otro período o revisa el catálogo de salud."
+              [emptyTitle]="gridCopyInstituciones.emptyTitle"
+              [emptyDescription]="gridCopyInstituciones.emptyDescription"
+              [emptyTitleWhenFiltered]="emptyFiltered.emptyTitleWhenFiltered"
+              [emptyDescriptionWhenFiltered]="emptyFiltered.emptyDescriptionWhenFiltered"
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -70,6 +83,10 @@ export type SaludSubId = 'isapre' | 'instituciones';
   `,
 })
 export class ParametrosSaludTabComponent {
+  readonly gridShell = PARAMETROS_DATA_GRID_SHELL;
+  readonly emptyFiltered = PARAMETROS_EMPTY_FILTERED;
+  readonly gridCopyIsapre = PARAMETROS_GRID_EMPTY.isapre;
+  readonly gridCopyInstituciones = PARAMETROS_GRID_EMPTY.saludInstituciones;
   readonly saludInnerTabs = [
     { id: 'isapre' as const, label: 'ISAPRE' },
     { id: 'instituciones' as const, label: 'Instituciones' },

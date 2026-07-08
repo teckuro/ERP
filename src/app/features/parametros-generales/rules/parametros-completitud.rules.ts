@@ -7,6 +7,8 @@ import type {
   PeriodoRemuneracionEstadoInfo,
 } from '../models/parametro-general.model';
 
+import { humanizarFaltaDatoOficial } from '../../nomina-mensual/rules/proceso-mensual-copy-limpio.rules';
+
 export type ParametrosCompletitudEstado = PeriodoRemuneracionEstado;
 export type ParametrosEstadoVisual =
   | PeriodoRemuneracionEstado
@@ -245,11 +247,22 @@ export function evaluarCompletitudParametrosMensual(
       gruposAplicables.reduce((acc, [id, g]) => acc + (g.porcentaje * PESOS[id]) / 100, 0) * (100 / pesosAplicables),
     ));
 
+  const pendientesHumanizados = pendientes.map((p) => {
+    const trimmed = p.trim();
+    const endsWithDot = trimmed.endsWith('.');
+    const isOficialMissingOrZero = /^(Falta dato oficial|Dato oficial en cero):/i.test(trimmed);
+    if (!isOficialMissingOrZero) return p;
+
+    const out = humanizarFaltaDatoOficial(trimmed);
+    if (!endsWithDot) return out;
+    return out.trim().endsWith('.') ? out : `${out.trim()}.`;
+  });
+
   return {
     estadoCalculado: resolverEstado(input.periodoRemuneracion?.estado ?? null, grupos, errores, reconciliacionPendiente),
     porcentaje,
     grupos,
-    pendientes,
+    pendientes: pendientesHumanizados,
     advertencias,
     errores,
     diferencias,
@@ -267,7 +280,7 @@ function evaluarOficiales(
   if (input.oficial) {
     completos += 1;
   } else {
-    pendientes.push('Faltan datos oficiales mensuales del periodo.');
+    pendientes.push('Datos oficiales del período.');
   }
 
   completos += contarCampos(input.oficial, CAMPOS_OFICIALES_OBLIGATORIOS, pendientes, 'Falta dato oficial');

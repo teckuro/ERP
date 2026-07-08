@@ -1,11 +1,4 @@
-<section class="parametros-page" aria-label="Parámetros generales">
-  <header class="parametros-header">
-    <app-record-breadcrumb
-      [items]="breadcrumbItems"
-      title="Parámetros generales"
-    ></app-record-breadcrumb>
-  </header>
-
+<section class="parametros-page parametros-page--listado" aria-label="Parámetros generales">
   @if (errorCargaDetalle(); as errDet) {
     <app-message-box
       variant="error"
@@ -18,12 +11,19 @@
     ></app-message-box>
   }
 
-  <div class="parametros-content">
+  <div class="parametros-grid-shell">
+    <section class="param-franja-operativa" aria-label="Contexto del listado">
+      <p class="param-franja-operativa__lead">
+        Indicadores previsionales y tributarios por período. Use el workspace de parámetros para editar el período activo.
+      </p>
+    </section>
+
     <app-tabla-parametros-generales
       class="block w-full min-w-0"
       [rows]="rows()"
       [loading]="isLoading()"
       [mensajeError]="''"
+      (refresh)="loadRows()"
     ></app-tabla-parametros-generales>
   </div>
 </section>

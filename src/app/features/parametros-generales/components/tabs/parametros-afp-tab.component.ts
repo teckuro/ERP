@@ -5,6 +5,11 @@ import {
   DataGridComponent,
 } from '../../../../shared/components/ui/data-grid';
 import { AfpParametro } from '../../models/parametro-general.model';
+import {
+  PARAMETROS_DATA_GRID_SHELL,
+  PARAMETROS_EMPTY_FILTERED,
+  PARAMETROS_GRID_EMPTY,
+} from '../../utils/parametros-workspace-grids.presenter';
 
 @Component({
   selector: 'app-parametros-afp-tab',
@@ -14,17 +19,21 @@ import { AfpParametro } from '../../models/parametro-general.model';
     <section class="tab-panel parametros-tab-panel">
       <section class="catalog-section parametros-grid-shell" aria-label="AFP">
         <app-data-grid
-          title="AFP"
+          [title]="gridCopy.title"
           [rows]="rows"
           [columns]="columns"
           [loading]="loading"
           [filtersEnabled]="false"
           [showExportAction]="true"
           [maxItems]="10"
-          gridHeight="100%"
+          [className]="gridShell.className"
+          [cardClassName]="gridShell.cardClassName"
+          [gridHeight]="gridShell.gridHeight"
           [persistenceKey]="gridPersistenceKey"
-          emptyTitle="No hay AFP vigentes para el período activo"
-          emptyDescription="Prueba con otro período o revisa el catálogo previsional."
+          [emptyTitle]="gridCopy.emptyTitle"
+          [emptyDescription]="gridCopy.emptyDescription"
+          [emptyTitleWhenFiltered]="emptyFiltered.emptyTitleWhenFiltered"
+          [emptyDescriptionWhenFiltered]="emptyFiltered.emptyDescriptionWhenFiltered"
           (refresh)="refresh?.()"
         ></app-data-grid>
       </section>
@@ -32,6 +41,9 @@ import { AfpParametro } from '../../models/parametro-general.model';
   `,
 })
 export class ParametrosAfpTabComponent {
+  readonly gridShell = PARAMETROS_DATA_GRID_SHELL;
+  readonly emptyFiltered = PARAMETROS_EMPTY_FILTERED;
+  readonly gridCopy = PARAMETROS_GRID_EMPTY.afp;
   @Input({ required: true }) rows!: AfpParametro[];
   @Input({ required: true }) columns!: DataGridColumn<AfpParametro>[];
   @Input() loading = false;

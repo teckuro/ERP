@@ -1,11 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 
-import {
-  RecordBreadcrumbComponent,
-  RecordBreadcrumbItem,
-} from '../../../../shared/components/ui/layout/record-breadcrumb.component';
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
+import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import { TablaParametrosGeneralesComponent } from '../../components/tabla-parametros-generales/tabla-parametros-generales';
 import { ParametroGeneral } from '../../models/parametro-general.model';
 import { ParametrosGeneralesService } from '../../services/parametros-generales.service';
@@ -13,17 +10,23 @@ import { ParametrosGeneralesService } from '../../services/parametros-generales.
 @Component({
   selector: 'app-listado-parametros-generales-container',
   standalone: true,
-  imports: [CommonModule, RecordBreadcrumbComponent, TablaParametrosGeneralesComponent, MessageBoxComponent],
+  imports: [CommonModule, TablaParametrosGeneralesComponent, MessageBoxComponent],
   templateUrl: './listado-parametros-generales-container.html',
   styleUrl: './listado-parametros-generales-container.css',
 })
 export class ListadoParametrosGeneralesContainer implements OnInit {
   private readonly service = inject(ParametrosGeneralesService);
 
-  readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [{ label: 'Parametros' }];
   readonly rows = signal<ParametroGeneral[]>([]);
   readonly isLoading = signal(true);
   readonly errorCargaDetalle = signal<string | null>(null);
+
+  constructor() {
+    bindShellPageContext(inject(DestroyRef), () => ({
+      breadcrumbs: [{ label: 'Parámetros' }],
+      pageSubtitle: 'Listado histórico de parámetros por período.',
+    }));
+  }
 
   async ngOnInit(): Promise<void> {
     await this.loadRows();

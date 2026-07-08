@@ -458,7 +458,19 @@
         box-shadow: none;
       }
 
-      .parametros-page .param-subhead + .param-tab-subview > .catalog-section {
+      /* Grillas fullscreen: sin marco catalog-section (evita acoplamiento con card del data-grid) */
+      .parametros-page .catalog-section.parametros-grid-shell {
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .parametros-page .param-subhead + .param-tab-subview > .catalog-section.parametros-grid-shell {
+        margin-top: 0;
+      }
+
+      .parametros-page .param-subhead + .param-tab-subview > .catalog-section:not(.parametros-grid-shell) {
         margin-top: -1px;
         border-top-left-radius: 0;
         border-top-right-radius: 0;
@@ -501,12 +513,12 @@
         height: 100%;
       }
 
-      .parametros-page .catalog-section app-data-grid app-card.erp-card {
-        border: 0;
-        border-radius: 0;
+      .parametros-page .catalog-section app-data-grid.param-grid > app-card.param-grid-card {
+        border: 0 !important;
+        border-radius: 0 !important;
         height: 100% !important;
         min-height: 0;
-        box-shadow: none;
+        box-shadow: none !important;
       }
 
       .parametros-page .catalog-grid app-data-grid app-card.erp-card {

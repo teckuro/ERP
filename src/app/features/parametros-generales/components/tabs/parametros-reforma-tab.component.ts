@@ -7,6 +7,11 @@ import {
 import {
   ReformaPrevisionalParametro,
 } from '../../models/parametro-general.model';
+import {
+  PARAMETROS_DATA_GRID_SHELL,
+  PARAMETROS_EMPTY_FILTERED,
+  PARAMETROS_GRID_EMPTY,
+} from '../../utils/parametros-workspace-grids.presenter';
 
 @Component({
   selector: 'app-parametros-reforma-tab',
@@ -17,17 +22,21 @@ import {
       <div class="param-tab-subview">
         <section class="catalog-section parametros-grid-shell" aria-label="Gradualidad futura">
           <app-data-grid
-            title="Gradualidad futura"
+            [title]="gridCopy.title"
             [rows]="reformaPrevisional"
             [columns]="reformaPrevisionalColumns"
             [loading]="loading"
             [filtersEnabled]="false"
             [showExportAction]="true"
             [maxItems]="8"
-            gridHeight="min(520px, 100%)"
+            [className]="gridShell.className"
+            [cardClassName]="gridShell.cardClassName"
+            [gridHeight]="gridShell.gridHeight"
             [persistenceKey]="gridPersistenceKeyPrevisional"
-            emptyTitle="No hay gradualidad vigente al período activo"
-            emptyDescription="Revisa las vigencias de reforma previsional."
+            [emptyTitle]="gridCopy.emptyTitle"
+            [emptyDescription]="gridCopy.emptyDescription"
+            [emptyTitleWhenFiltered]="emptyFiltered.emptyTitleWhenFiltered"
+            [emptyDescriptionWhenFiltered]="emptyFiltered.emptyDescriptionWhenFiltered"
             (refresh)="refresh?.()"
           ></app-data-grid>
         </section>
@@ -36,6 +45,9 @@ import {
   `,
 })
 export class ParametrosReformaTabComponent {
+  readonly gridShell = PARAMETROS_DATA_GRID_SHELL;
+  readonly emptyFiltered = PARAMETROS_EMPTY_FILTERED;
+  readonly gridCopy = PARAMETROS_GRID_EMPTY.reforma;
   @Input({ required: true }) reformaPrevisional!: ReformaPrevisionalParametro[];
 
   @Input({ required: true }) reformaPrevisionalColumns!: DataGridColumn<ReformaPrevisionalParametro>[];

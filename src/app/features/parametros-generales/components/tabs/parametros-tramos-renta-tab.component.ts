@@ -5,6 +5,11 @@ import {
   DataGridComponent,
 } from '../../../../shared/components/ui/data-grid';
 import { TablaImpuestoUnicoParametro, TramoImpuestoParametro } from '../../models/parametro-general.model';
+import {
+  PARAMETROS_DATA_GRID_SHELL,
+  PARAMETROS_EMPTY_FILTERED,
+  PARAMETROS_GRID_EMPTY,
+} from '../../utils/parametros-workspace-grids.presenter';
 
 /** @deprecated Solo se usa la vista tabla SII; se mantiene el tipo por compatibilidad interna. */
 export type ImpuestoSubId = 'tabla';
@@ -17,17 +22,21 @@ export type ImpuestoSubId = 'tabla';
     <section class="tab-panel parametros-tab-panel">
       <section class="catalog-section parametros-grid-shell" aria-label="Tabla impuesto único SII">
         <app-data-grid
-          title="Tabla impuesto único (SII)"
+          [title]="gridCopy.title"
           [rows]="tablaRows"
           [columns]="tablaColumns"
           [loading]="loading"
           [filtersEnabled]="false"
           [showExportAction]="true"
           [maxItems]="12"
-          gridHeight="min(520px, 100%)"
+          [className]="gridShell.className"
+          [cardClassName]="gridShell.cardClassName"
+          [gridHeight]="gridShell.gridHeight"
           [persistenceKey]="gridPersistenceKeyTabla"
-          [emptyTitle]="'No hay tabla de impuesto único para ' + periodoLabel + '.'"
-          emptyDescription="Ejecute la carga mensual v6.11 (fuente SII) para este período."
+          [emptyTitle]="gridCopy.emptyTitle"
+          [emptyDescription]="gridCopy.emptyDescription"
+          [emptyTitleWhenFiltered]="emptyFiltered.emptyTitleWhenFiltered"
+          [emptyDescriptionWhenFiltered]="emptyFiltered.emptyDescriptionWhenFiltered"
           (refresh)="refresh?.()"
         ></app-data-grid>
       </section>
@@ -35,6 +44,9 @@ export type ImpuestoSubId = 'tabla';
   `,
 })
 export class ParametrosTramosRentaTabComponent {
+  readonly gridShell = PARAMETROS_DATA_GRID_SHELL;
+  readonly emptyFiltered = PARAMETROS_EMPTY_FILTERED;
+  readonly gridCopy = PARAMETROS_GRID_EMPTY.tablaImpuesto;
   @Input({ required: true }) activeSub!: ImpuestoSubId;
   @Output() activeSubChange = new EventEmitter<ImpuestoSubId>();
 

@@ -5,6 +5,11 @@ import {
   DataGridComponent,
 } from '../../../../shared/components/ui/data-grid';
 import { TramoCargaParametro } from '../../models/parametro-general.model';
+import {
+  PARAMETROS_DATA_GRID_SHELL,
+  PARAMETROS_EMPTY_FILTERED,
+  PARAMETROS_GRID_EMPTY,
+} from '../../utils/parametros-workspace-grids.presenter';
 
 @Component({
   selector: 'app-parametros-tramos-carga-tab',
@@ -13,19 +18,23 @@ import { TramoCargaParametro } from '../../models/parametro-general.model';
   template: `
     <section class="tab-panel parametros-tab-panel">
       <section class="catalog-section parametros-grid-shell" aria-labelledby="tramos-carga-title">
-        <h2 id="tramos-carga-title">Tramos cargas familiares</h2>
+        <h2 id="tramos-carga-title" class="sr-only">Tramos cargas familiares</h2>
         <app-data-grid
-          title="Tramos de asignacion familiar"
+          [title]="gridCopy.title"
           [rows]="rows"
           [columns]="columns"
           [loading]="loading"
           [filtersEnabled]="false"
           [showExportAction]="true"
           [maxItems]="10"
-          gridHeight="min(520px, 100%)"
+          [className]="gridShell.className"
+          [cardClassName]="gridShell.cardClassName"
+          [gridHeight]="gridShell.gridHeight"
           [persistenceKey]="gridPersistenceKey"
-          [emptyTitle]="'No hay tramos de asignacion familiar para ' + periodoLabel + '.'"
-          emptyDescription="La carga oficial del periodo esta pendiente."
+          [emptyTitle]="gridCopy.emptyTitle"
+          [emptyDescription]="gridCopy.emptyDescription"
+          [emptyTitleWhenFiltered]="emptyFiltered.emptyTitleWhenFiltered"
+          [emptyDescriptionWhenFiltered]="emptyFiltered.emptyDescriptionWhenFiltered"
           (refresh)="refresh?.()"
         ></app-data-grid>
       </section>
@@ -33,6 +42,9 @@ import { TramoCargaParametro } from '../../models/parametro-general.model';
   `,
 })
 export class ParametrosTramosCargaTabComponent {
+  readonly gridShell = PARAMETROS_DATA_GRID_SHELL;
+  readonly emptyFiltered = PARAMETROS_EMPTY_FILTERED;
+  readonly gridCopy = PARAMETROS_GRID_EMPTY.tramosCarga;
   @Input({ required: true }) rows!: TramoCargaParametro[];
   @Input({ required: true }) columns!: DataGridColumn<TramoCargaParametro>[];
   @Input() loading = false;

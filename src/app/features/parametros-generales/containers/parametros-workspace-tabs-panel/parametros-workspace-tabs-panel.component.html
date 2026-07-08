@@ -30,12 +30,12 @@
 
 <div class="parametros-tab-body" role="region" aria-label="Contenido de la sección">
   @if (ws.activeArea() !== 'cierrePeriodo' && ws.activeRecordDetail()) {
-    <header class="param-record-header" aria-label="Contexto de la sección activa">
+    <section class="param-franja-operativa" aria-label="Contexto de la sección activa">
       <p>
         <span class="param-eyebrow">{{ ws.activeRecordKind() }}</span>
         {{ ws.activeRecordDetail() }}
       </p>
-    </header>
+    </section>
   }
 
   @if (ws.activeArea() === 'cierrePeriodo') {

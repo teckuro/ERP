@@ -1,55 +1,66 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { DataGridColumn, DataGridComponent, DataGridFilter } from '../../../../shared/components/ui/data-grid';
 import { ParametroGeneral } from '../../models/parametro-general.model';
+import {
+  PARAMETROS_DATA_GRID_SHELL,
+  PARAMETROS_EMPTY_FILTERED,
+  PARAMETROS_GRID_EMPTY,
+} from '../../utils/parametros-workspace-grids.presenter';
 
 @Component({
   selector: 'app-tabla-parametros-generales',
   standalone: true,
   imports: [CommonModule, DataGridComponent],
   templateUrl: './tabla-parametros-generales.html',
+  styleUrl: './tabla-parametros-generales.css',
 })
 export class TablaParametrosGeneralesComponent {
+  readonly gridShell = PARAMETROS_DATA_GRID_SHELL;
+  readonly emptyFiltered = PARAMETROS_EMPTY_FILTERED;
+  readonly gridCopy = PARAMETROS_GRID_EMPTY.listado;
+
   @Input() rows: ParametroGeneral[] = [];
   @Input() loading = false;
   @Input() mensajeError = '';
+  @Output() refresh = new EventEmitter<void>();
 
   readonly filters: DataGridFilter<ParametroGeneral>[] = [
     {
       id: 'periodo',
-      label: 'Periodo',
+      label: 'Período',
       field: 'periodo',
       type: 'text',
       operator: 'startsWith',
-      placeholder: 'Ej: 2026-04',
+      placeholder: 'Ej.: 2026-04',
       emptyLabel: 'Todos',
     },
     {
       id: 'gratificacion',
-      label: 'Gratificacion',
+      label: 'Gratificación legal',
       field: 'gratificacion',
       type: 'select',
       emptyLabel: 'Todas',
       options: [
-        { label: 'Si', value: 'true' },
+        { label: 'Sí', value: 'true' },
         { label: 'No', value: 'false' },
       ],
     },
     {
       id: 'descuentosBasePorDia',
-      label: 'Desc. por dia',
+      label: 'Descuentos base por día',
       field: 'descuentosBasePorDia',
       type: 'select',
       emptyLabel: 'Todos',
       options: [
-        { label: 'Si', value: 'true' },
+        { label: 'Sí', value: 'true' },
         { label: 'No', value: 'false' },
       ],
     },
     {
       id: 'fechaActualizacion',
-      label: 'Actualizacion',
+      label: 'Última actualización',
       field: 'fechaActualizacion',
       type: 'date-range',
       emptyLabel: 'Cualquier fecha',
@@ -102,12 +113,12 @@ export class TablaParametrosGeneralesComponent {
   };
 
   readonly columns: DataGridColumn<ParametroGeneral>[] = [
-    { id: 'periodo', header: 'Periodo', field: 'periodo', sortable: true },
+    { id: 'periodo', header: 'Período', field: 'periodo', sortable: true },
     { id: 'uf', header: 'UF', field: 'uf', sortable: true, align: 'right', format: this.formatDecimal },
     { id: 'utm', header: 'UTM', field: 'utm', sortable: true, align: 'right', format: this.formatMoney },
     {
       id: 'sueldoMinimo',
-      header: 'Sueldo minimo',
+      header: 'Sueldo mínimo',
       field: 'sueldoMinimo',
       sortable: true,
       align: 'right',
@@ -115,7 +126,7 @@ export class TablaParametrosGeneralesComponent {
     },
     {
       id: 'sueldoMinimo18a65',
-      header: 'Sueldo min. 18 a 65',
+      header: 'Sueldo mínimo 18 a 65',
       field: 'sueldoMinimo18a65',
       sortable: true,
       align: 'right',
@@ -123,7 +134,7 @@ export class TablaParametrosGeneralesComponent {
     },
     {
       id: 'immGratificacion',
-      header: 'IMM gratificacion',
+      header: 'IMM gratificación',
       field: 'immGratificacion',
       sortable: true,
       align: 'right',
@@ -147,7 +158,7 @@ export class TablaParametrosGeneralesComponent {
     },
     {
       id: 'topeCesantia',
-      header: 'Tope cesantia',
+      header: 'Tope cesantía',
       field: 'topeCesantia',
       sortable: true,
       align: 'right',
@@ -155,7 +166,7 @@ export class TablaParametrosGeneralesComponent {
     },
     {
       id: 'topeAfpVoluntario',
-      header: 'Tope AFP volunt.',
+      header: 'Tope AFP voluntario',
       field: 'topeAfpVoluntario',
       sortable: true,
       align: 'right',
@@ -164,7 +175,7 @@ export class TablaParametrosGeneralesComponent {
     { id: 'sis', header: 'SIS', field: 'sis', sortable: true, align: 'right', format: this.formatPercent },
     {
       id: 'afcTrabajadorIndefinido',
-      header: 'AFC trab. indef.',
+      header: 'AFC trabajador indefinido',
       field: 'afcTrabajadorIndefinido',
       sortable: true,
       align: 'right',
@@ -172,7 +183,7 @@ export class TablaParametrosGeneralesComponent {
     },
     {
       id: 'afcEmpleadorIndefinido',
-      header: 'AFC emp. indef.',
+      header: 'AFC empleador indefinido',
       field: 'afcEmpleadorIndefinido',
       sortable: true,
       align: 'right',
@@ -180,7 +191,7 @@ export class TablaParametrosGeneralesComponent {
     },
     {
       id: 'afcEmpleadorPlazo',
-      header: 'AFC emp. plazo',
+      header: 'AFC empleador plazo fijo',
       field: 'afcEmpleadorPlazo',
       sortable: true,
       align: 'right',
@@ -188,21 +199,21 @@ export class TablaParametrosGeneralesComponent {
     },
     {
       id: 'gratificacion',
-      header: 'Gratificacion',
+      header: 'Gratificación legal',
       field: 'gratificacion',
       sortable: true,
       format: this.formatBoolean,
     },
     {
       id: 'descuentosBasePorDia',
-      header: 'Desc. por dia',
+      header: 'Descuentos base por día',
       field: 'descuentosBasePorDia',
       sortable: true,
       format: this.formatBoolean,
     },
     {
       id: 'fechaActualizacion',
-      header: 'Actualizacion',
+      header: 'Última actualización',
       field: 'fechaActualizacion',
       sortable: true,
       format: this.formatDateTime,

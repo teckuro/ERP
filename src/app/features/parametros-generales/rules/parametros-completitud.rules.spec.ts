@@ -31,7 +31,7 @@ describe('parametros-completitud.rules', () => {
     });
 
     expect(resultado.grupos.oficialesMensuales.completo).toBe(false);
-    expect(resultado.pendientes.some((p) => p.includes('sanna'))).toBe(true);
+    expect(resultado.pendientes.some((p) => p.includes('SANNA'))).toBe(true);
   });
 
   it('marca cerrado solo cuando oficiales, configuracion, vigencias y consistencia estan completos', () => {
@@ -87,7 +87,7 @@ describe('parametros-completitud.rules', () => {
 
     expect(resultado.estadoCalculado).toBe('pendiente');
     expect(resultado.grupos.oficialesMensuales.completo).toBe(false);
-    expect(resultado.pendientes).toContain('Faltan datos oficiales mensuales del periodo.');
+    expect(resultado.pendientes).toContain('Datos oficiales del período.');
   });
 
   it('mes sin datos oficiales no evalua consistencia (no 1/1 artificial)', () => {
@@ -122,7 +122,7 @@ describe('parametros-completitud.rules', () => {
     expect(resultado.estadoCalculado).toBe('pendiente');
     expect(resultado.porcentaje).toBeLessThan(100);
     expect(resultado.grupos.oficialesMensuales.completo).toBe(false);
-    expect(resultado.pendientes).toContain('Faltan datos oficiales mensuales del periodo.');
+    expect(resultado.pendientes).toContain('Datos oficiales del período.');
     expect(resultado.pendientes).toContain('Faltan tramos de carga familiar.');
   });
 
@@ -181,7 +181,7 @@ describe('parametros-completitud.rules', () => {
       catalogos: catalogosCompletos(),
     });
 
-    expect(resultado.pendientes).toContain('Dato oficial en cero: uf.');
+    expect(resultado.pendientes).toContain('El valor UF mensual no puede quedar en cero en datos oficiales del período.');
     expect(resultado.grupos.oficialesMensuales.completo).toBe(false);
   });
 
