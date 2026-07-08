@@ -1,4 +1,4 @@
-:host {
+﻿:host {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -75,8 +75,8 @@
 .paso-cierre__chip[data-estado='validada'],
 .paso-cierre__chip[data-estado='aprobada'],
 .paso-cierre__chip[data-estado='liquidada'] {
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: #f8fafc;
+  color: #2563eb;
 }
 
 .paso-cierre__chip[data-estado='cerrada'] {
@@ -193,9 +193,9 @@
 }
 
 .paso-cierre__alert.is-info {
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  color: #1e3a8a;
+  background: #f8fafc;
+  border: 1px solid #e8edf2;
+  color: #2563eb;
 }
 
 .paso-cierre__alert.is-warning {
@@ -429,7 +429,7 @@
 }
 
 .paso-cierre__block--acta {
-  border-color: #bfdbfe;
+  border-color: #e8edf2;
   background: #f8fafc;
 }
 
@@ -641,7 +641,7 @@
 
 .paso-cierre__btn.is-primary {
   background: #1d4ed8;
-  border-color: #1d4ed8;
+  border-color: #2563eb;
   color: #ffffff;
 }
 

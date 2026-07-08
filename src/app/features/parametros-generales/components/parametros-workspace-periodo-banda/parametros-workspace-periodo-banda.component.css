@@ -208,7 +208,7 @@ app-parametros-workspace-periodo-banda {
 .period-chip--info {
   border-color: var(--prm-line, #e5e7eb);
   background: var(--prm-blue-soft);
-  color: var(--erp-primary, #1e3a8a);
+  color: var(--erp-primary, #2563eb);
 }
 
 .period-chip--muted {

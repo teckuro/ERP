@@ -28,6 +28,18 @@
   height: 100%;
   overflow: hidden;
   box-sizing: border-box;
+  --adm-nom-border: #d7dde5;
+  --adm-nom-border-soft: #e8edf2;
+  --adm-nom-surface: #ffffff;
+  --adm-nom-surface-soft: #f8fafc;
+  --adm-nom-ink: #172033;
+  --adm-nom-muted: #647084;
+  --adm-nom-text-secondary: #475569;
+  --adm-nom-primary: #2563eb;
+  --adm-nom-primary-hover: #1d4ed8;
+  --adm-nom-info: #1e40af;
+  --adm-nom-info-soft: #f8fafc;
+  --adm-nom-info-border: #e8edf2;
 }
 
 .adm-nom__page {
@@ -114,7 +126,7 @@
 }
 
 .adm-nom__kpi--info strong {
-  color: #1d4ed8;
+  color: #2563eb;
 }
 
 .adm-nom__kpi--warning strong {
@@ -245,7 +257,7 @@
   gap: 6px;
   font-size: 12px;
   font-weight: 500;
-  color: #1d4ed8;
+  color: #2563eb;
   line-height: 1.3;
   min-width: 0;
 }
@@ -302,8 +314,8 @@
   justify-content: space-between;
   gap: 12px;
   padding: 10px 16px;
-  background: #eff6ff;
-  border-bottom: 1px solid #bfdbfe;
+  background: #f8fafc;
+  border-bottom: 1px solid #e8edf2;
   color: #1e40af;
   font-size: 12px;
 }
@@ -343,9 +355,9 @@
 }
 
 .adm-nom__chip--info {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border-color: #bfdbfe;
+  background: #f8fafc;
+  color: #2563eb;
+  border-color: #e8edf2;
 }
 
 .adm-nom__chip--success {
@@ -395,8 +407,8 @@
 }
 
 .adm-nom__row-action:hover {
-  border-color: #93c5fd;
-  background: #eff6ff;
+  border-color: #d7dde5;
+  background: #f8fafc;
   color: #1e40af;
 }
 
@@ -425,9 +437,9 @@
 }
 
 .adm-nom__row-action--primary {
-  background: var(--erp-primary, #1e3a8a);
+  background: var(--erp-primary, #2563eb);
   color: #fff;
-  border-color: var(--erp-primary, #1e3a8a);
+  border-color: var(--erp-primary, #2563eb);
 }
 
 .adm-nom__row-action--primary:hover {

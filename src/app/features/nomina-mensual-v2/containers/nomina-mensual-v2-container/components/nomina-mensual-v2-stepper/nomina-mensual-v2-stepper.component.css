@@ -1,4 +1,4 @@
-.nmv2-page .nomina-workflow-header.nmv2-stepper-card {
+﻿.nmv2-page .nomina-workflow-header.nmv2-stepper-card {
   display: grid;
   grid-template-columns: 52px minmax(0, 1fr) 52px;
   gap: 0;
@@ -65,7 +65,7 @@
 }
 
 .nmv2-page .nomina-workflow-header .nmv2-stepper__back:focus-visible {
-  outline: 2px solid #1e3a8a;
+  outline: 2px solid #2563eb;
   outline-offset: 2px;
 }
 
@@ -82,7 +82,7 @@
   width: 30px;
   height: 30px;
   border-radius: 999px;
-  background: #1e3a8a;
+  background: #2563eb;
   color: #ffffff;
   font-size: 11px;
   font-weight: 700;
@@ -103,7 +103,7 @@
 }
 
 .nmv2-page .nomina-workflow-header .nmv2-stepper__user-btn:focus-visible {
-  outline: 2px solid #93c5fd;
+  outline: 2px solid #d7dde5;
   outline-offset: 2px;
 }
 
@@ -184,7 +184,7 @@
 
 .nmv2-page .nomina-workflow-header .step.nomina-step--active,
 .nmv2-page .nomina-workflow-header .step.active {
-  background: #eff6ff;
+  background: #f8fafc;
 }
 
 .nmv2-page .nomina-workflow-header .step.nomina-step--active::after,

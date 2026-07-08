@@ -1,4 +1,4 @@
-/* Layout compartido: salidas desde liquidación oficial (Previred, LRE, exportaciones). */
+﻿/* Layout compartido: salidas desde liquidación oficial (Previred, LRE, exportaciones). */
 
 :host.sal-ext-host {
   display: flex;
@@ -15,7 +15,7 @@
   --sal-ext-border: #e2e8f0;
   --sal-ext-ink: #1e293b;
   --sal-ext-muted: #64748b;
-  --sal-ext-primary: #1e3a8a;
+  --sal-ext-primary: #2563eb;
   --sal-ext-danger: #b91c1c;
   --sal-ext-review: #f59e0b;
   --sal-ext-ok-soft: #f0fdf4;

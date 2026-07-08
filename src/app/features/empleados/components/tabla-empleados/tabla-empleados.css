@@ -78,7 +78,7 @@
 
 .empleados-create-menu__option:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px #bfdbfe;
+  box-shadow: inset 0 0 0 2px #e8edf2;
 }
 
 .empleados-create-menu__option:disabled {
@@ -119,7 +119,7 @@
 
 .empleados-create-menu__option:hover .empleados-create-menu-icon-wrap {
   border-color: #cbd5e1;
-  background: #f8fbff;
+  background: #f8fafc;
 }
 
 .empleados-create-menu-icon-wrap lucide-icon {
@@ -246,7 +246,7 @@
 .row-more-action:focus-visible {
   outline: none;
   border-radius: 4px;
-  box-shadow: 0 0 0 2px #bfdbfe;
+  box-shadow: 0 0 0 2px #e8edf2;
 }
 
 .row-more-action__icon {
@@ -356,7 +356,7 @@
 
 .employee-action-menu__item:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px #bfdbfe;
+  box-shadow: inset 0 0 0 2px #e8edf2;
 }
 
 .employee-action-menu__item--danger {
@@ -486,8 +486,8 @@
 
 :host ::ng-deep app-data-grid.empleados-grid-shell > app-card > div.border-b.border-neutral-100.bg-white button.data-grid-primary-action,
 :host ::ng-deep app-data-grid.empleados-grid-shell > app-card > div.border-b.border-neutral-100.bg-white button.bg-blue-600 {
-  border-color: var(--erp-primary, #1e3a8a);
-  background: var(--erp-primary, #1e3a8a);
+  border-color: var(--erp-primary, #2563eb);
+  background: var(--erp-primary, #2563eb);
   color: #ffffff;
 }
 
@@ -508,7 +508,7 @@
 :host ::ng-deep app-data-grid.empleados-grid-shell > app-card > div.border-b.border-neutral-100.bg-white select {
   min-width: 3.25rem;
   border-radius: 999px;
-  background: #f8fbff;
+  background: #f8fafc;
   padding-left: 0.55rem;
   padding-right: 1.5rem;
 }

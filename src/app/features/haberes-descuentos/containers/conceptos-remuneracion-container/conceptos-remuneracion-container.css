@@ -337,9 +337,9 @@
 }
 
 .hd-chip--usuario {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border-color: #bfdbfe;
+  background: #f8fafc;
+  color: #2563eb;
+  border-color: #e8edf2;
 }
 
 .hd-chip--protegido {
@@ -440,8 +440,8 @@
 }
 
 .hd-action-btn:hover:not(:disabled) {
-  border-color: #93c5fd;
-  background: #eff6ff;
+  border-color: #d7dde5;
+  background: #f8fafc;
   color: #1e40af;
 }
 
@@ -965,7 +965,7 @@
 
 .hd-input:focus-visible {
   outline: none;
-  border-color: #3b82f6;
+  border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
 }
 
@@ -990,7 +990,7 @@
   padding: 1rem 1.5rem 1.25rem;
   margin-top: 0.15rem;
   border-top: 1px solid #f1f5f9;
-  background: linear-gradient(180deg, #fafbfc 0%, #ffffff 35%);
+  background: #ffffff;
 }
 
 .hd-btn {
@@ -1012,24 +1012,24 @@
 
 .hd-btn--ghost {
   border-color: #d6e2ef;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  background: #ffffff;
   color: #334155;
 }
 
 .hd-btn--ghost:hover {
   border-color: #bfd2e6;
-  background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+  background: #f8fafc;
 }
 
 .hd-btn--primary {
   border-color: #2563eb;
-  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+  background: #2563eb;
   color: #ffffff;
 }
 
 .hd-btn--primary:hover {
-  border-color: #1d4ed8;
-  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+  border-color: #2563eb;
+  background: #1d4ed8;
 }
 
 .hd-modal--wide {
@@ -1265,8 +1265,8 @@
 }
 
 .cr-lre-chip--derive {
-  border-color: #bfdbfe;
-  background: #eff6ff;
+  border-color: #e8edf2;
+  background: #f8fafc;
   color: #1e40af;
 }
 

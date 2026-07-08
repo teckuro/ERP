@@ -1,14 +1,14 @@
-
+﻿
 .advanced-draft-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: 34px;
   padding: 0 14px;
-  border: 1px solid #bfdbfe;
+  border: 1px solid #e8edf2;
   border-radius: 8px;
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: #f8fafc;
+  color: #2563eb;
   cursor: pointer;
   font-size: var(--erp-text-sm, 0.875rem);
   font-weight: 650;
@@ -21,13 +21,13 @@
 }
 
 .advanced-draft-button:hover:not(:disabled) {
-  border-color: #93c5fd;
+  border-color: #d7dde5;
   background: #dbeafe;
   color: #1e40af;
 }
 
 .advanced-draft-button:focus-visible {
-  outline: 2px solid #93c5fd;
+  outline: 2px solid #d7dde5;
   outline-offset: 2px;
 }
 
@@ -100,8 +100,8 @@
 }
 
 .advanced-action-modal__section--info {
-  border-color: #bfdbfe;
-  background: #eff6ff;
+  border-color: #e8edf2;
+  background: #f8fafc;
   gap: 6px;
   padding: 8px 10px;
 }
@@ -294,10 +294,10 @@
   flex: 0 0 auto;
   width: fit-content;
   padding: 3px 9px;
-  border: 1px solid #bfdbfe;
+  border: 1px solid #e8edf2;
   border-radius: 999px;
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: #f8fafc;
+  color: #2563eb;
   font-size: var(--erp-text-xs);
   font-weight: 600;
   line-height: 1.35;
@@ -351,9 +351,9 @@
 }
 
 .contract-diagnosis-card.is-derived span {
-  border-color: #bfdbfe;
-  background: #eff6ff;
-  color: #1d4ed8;
+  border-color: #e8edf2;
+  background: #f8fafc;
+  color: #2563eb;
 }
 
 .contract-diagnosis-card.is-na span {

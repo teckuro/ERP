@@ -1,4 +1,4 @@
-@import '../../form-empleado-shared.css';
+﻿@import '../../form-empleado-shared.css';
 
 :host.labor-layout-inline-record .labor-block-head {
   display: none;
@@ -286,8 +286,8 @@
 
 .weekday-chip.is-selected {
   border-color: #2563eb;
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: #f8fafc;
+  color: #2563eb;
 }
 
 .weekday-chip.is-disabled {
@@ -814,9 +814,9 @@
   align-items: center;
   border: 1px solid #dbeafe;
   border-radius: 999px;
-  background: #eff6ff;
+  background: #f8fafc;
   padding: 0 8px;
-  color: #1d4ed8;
+  color: #2563eb;
   font-size: 0.68rem;
   font-weight: 600;
   line-height: 1;

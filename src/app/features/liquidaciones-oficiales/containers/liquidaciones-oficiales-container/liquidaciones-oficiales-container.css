@@ -10,13 +10,13 @@
   --erp-bg: #ffffff;
   --erp-surface: #ffffff;
   --erp-surface-soft: #f8fafc;
-  --erp-border: #e2e8f0;
-  --erp-border-strong: #cbd5e1;
-  --erp-ink: #1e293b;
-  --erp-muted: #64748b;
-  --erp-primary: #1e3a8a;
+  --erp-border: #d7dde5;
+  --erp-border-strong: #c7d0c4;
+  --erp-ink: #172033;
+  --erp-muted: #647084;
+  --erp-primary: #2563eb;
   --erp-primary-hover: #1d4ed8;
-  --erp-primary-ring: rgba(30, 58, 138, 0.14);
+  --erp-primary-ring: rgba(37, 99, 235, 0.14);
   --erp-review-soft: #fffbeb;
   --erp-review-border: #f59e0b;
   --erp-danger-soft: #fef2f2;
@@ -524,7 +524,7 @@
 }
 
 .liq-entrada__chip--info {
-  color: #1d4ed8;
+  color: #2563eb;
 }
 
 .liq-entrada__chip--success {

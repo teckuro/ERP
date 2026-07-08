@@ -1,4 +1,4 @@
-app-seleccion-nomina-exportable-modal app-message-box.message-box-host-modal {
+﻿app-seleccion-nomina-exportable-modal app-message-box.message-box-host-modal {
   padding: 0.75rem 1rem;
   align-items: stretch;
 }
@@ -73,7 +73,7 @@ app-seleccion-nomina-exportable-modal app-message-box.message-box-host-modal {
 
 .sal-ext-seleccion__periodo.is-active {
   font-weight: 700;
-  color: #1e3a8a;
+  color: #2563eb;
 }
 
 .sal-ext-seleccion__empresa {
@@ -132,9 +132,9 @@ app-seleccion-nomina-exportable-modal app-message-box.message-box-host-modal {
 }
 
 .sal-ext-row-action--primary {
-  background: #1e3a8a;
+  background: #2563eb;
   color: #fff;
-  border-color: #1e3a8a;
+  border-color: #2563eb;
 }
 
 .sal-ext-row-action.is-active {

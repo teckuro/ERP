@@ -9,9 +9,9 @@
   --prm-separator: var(--prm-line);
   --prm-soft: #f8fafc;
   --prm-panel: #ffffff;
-  --prm-blue: var(--erp-primary, #1e3a8a);
-  --prm-blue-hover: #1e293b;
-  --prm-blue-soft: #eff6ff;
+  --prm-blue: #2563eb;
+  --prm-blue-hover: #1d4ed8;
+  --prm-blue-soft: #f8fafc;
   --prm-chip-muted: #64748b;
   --prm-chip-line: #e5e7eb;
   --prm-chip-soft: #f1f5f9;
@@ -576,8 +576,8 @@ select.param-input {
 }
 
 .parametros-cierre-action {
-  border: 1px solid var(--erp-primary, #1e3a8a);
-  background: var(--erp-primary, #1e3a8a);
+  border: 1px solid var(--erp-primary, #2563eb);
+  background: var(--erp-primary, #2563eb);
   color: #ffffff;
   transition:
     background 140ms ease,

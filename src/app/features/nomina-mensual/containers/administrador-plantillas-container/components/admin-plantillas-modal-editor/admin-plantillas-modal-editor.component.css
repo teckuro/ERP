@@ -1,4 +1,4 @@
-.adm-plantillas-modal__backdrop {
+﻿.adm-plantillas-modal__backdrop {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.4);
@@ -194,7 +194,7 @@
 
 .adm-plantillas-modal__opcion--activa {
   border-color: var(--erp-primary, #2563eb);
-  background: var(--erp-primary-bg, #eff6ff);
+  background: var(--erp-primary-bg, #f8fafc);
 }
 
 .adm-plantillas-modal__opcion input[type='radio'] {

@@ -287,8 +287,8 @@ button:disabled {
 
 .nmv2-banner-handoff--info {
   color: #1e40af;
-  background: #eff6ff;
-  border-bottom-color: #bfdbfe;
+  background: #f8fafc;
+  border-bottom-color: #e8edf2;
 }
 
 .nmv2-banner-handoff__texto {
@@ -412,7 +412,7 @@ app-nomina-mensual-v2-container > .nmv2-page {
 }
 
 .icon-btn:hover {
-  border-color: #bfdbfe;
+  border-color: #e8edf2;
   color: #2563eb;
 }
 
@@ -556,7 +556,7 @@ body.nmv2-trazabilidad-scroll-lock {
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   background: #fff;
-  color: #1e3a8a;
+  color: #2563eb;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;

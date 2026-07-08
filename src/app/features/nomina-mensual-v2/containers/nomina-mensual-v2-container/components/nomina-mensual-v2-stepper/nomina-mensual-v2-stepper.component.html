@@ -49,7 +49,7 @@
             [class.step-status--locked]="pasoNoAccesible(vista.clave)"
           >
             @if (pasoCongelado(vista.clave)) {
-              <lucide-icon name="lock" aria-label="Próximamente"></lucide-icon>
+              <lucide-icon name="lock" [attr.aria-label]="etiquetaPasoCongelado()"></lucide-icon>
             } @else if (pasoNoAccesible(vista.clave)) {
               <lucide-icon name="lock" aria-label="Completa el paso anterior para desbloquear"></lucide-icon>
             } @else if (vista.estado === 'completo') {

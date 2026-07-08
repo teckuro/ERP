@@ -213,6 +213,10 @@ export class NominaMensualV2StepperComponent {
     return esPasoCongelado(stepId);
   }
 
+  etiquetaPasoCongelado(): string {
+    return tooltipPasoCongelado();
+  }
+
   /**
    * `true` si el paso queda fuera del techo `indiceMaximoAccesible`
    * (combinación de estado + contenido). El stepper lo deshabilita,

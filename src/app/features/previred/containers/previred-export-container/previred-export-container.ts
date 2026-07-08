@@ -219,7 +219,7 @@ export class PreviredExportContainer {
     if (fase) {
       return {
         variant: 'warning',
-        title: 'Servidor sin fase completa',
+        title: 'Exportación en borrador',
         message: fase,
         primaryLabel: 'Ver advertencias',
         actionId: 'advertencias',
@@ -616,7 +616,7 @@ export class PreviredExportContainer {
       this.avisoFaseBd.set(
         resultado.fasePreviredDesplegada
           ? null
-          : 'La fase Previred aún no está desplegada en el servidor (catálogo y auditoría). Ejecute las migraciones Supabase PREVIRED-01b. Mientras tanto, el borrador usa mapeo provisional desde códigos LRE y no registrará exportaciones.',
+          : 'El registro formal de exportaciones aún no está disponible en este entorno. Puede revisar el borrador con mapeo provisional desde liquidación; las exportaciones no quedarán registradas hasta completar la fase.',
       );
       const exportacion = await this.service.obtenerUltimaExportacion(
         resultado.borrador.idLiquidacionPeriodo,

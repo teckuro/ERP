@@ -21,9 +21,9 @@
   --nm-muted: #647084;
   --nm-subtle: #8a94a6;
   --nm-soft: #fafaf7;
-  --nm-primary: var(--erp-primary, #1e3a8a);
-  --nm-primary-soft: #eff6ff;
-  --nm-primary-border: #bfdbfe;
+  --nm-primary: #2563eb;
+  --nm-primary-soft: #f8fafc;
+  --nm-primary-border: #e8edf2;
   --nm-review: #a16207;
   --nm-review-soft: #fffbeb;
   --nm-review-border: #fde68a;
@@ -34,8 +34,8 @@
   --nm-danger-soft: #fef2f2;
   --nm-danger-border: #fecaca;
   --nm-info: #1e40af;
-  --nm-info-soft: #eff6ff;
-  --nm-info-border: #bfdbfe;
+  --nm-info-soft: #f8fafc;
+  --nm-info-border: #e8edf2;
 }
 
 .nm-page {
@@ -457,8 +457,8 @@
 }
 
 .nm-grid-icon-btn:hover {
-  border-color: #93c5fd;
-  background: #eff6ff;
+  border-color: #d7dde5;
+  background: #f8fafc;
   color: #1e40af;
 }
 
@@ -468,9 +468,9 @@
 }
 
 .nm-grid-icon-btn--assign {
-  color: var(--erp-primary, #1e3a8a);
-  border-color: #bfdbfe;
-  background: #eff6ff;
+  color: var(--erp-primary, #2563eb);
+  border-color: #e8edf2;
+  background: #f8fafc;
 }
 
 .nm-grid-icon-btn--assign:hover {
@@ -1007,8 +1007,8 @@
 }
 
 .nm-count-info:hover {
-  border-color: #93c5fd;
-  background: #eff6ff;
+  border-color: #d7dde5;
+  background: #f8fafc;
   color: #1e40af;
 }
 

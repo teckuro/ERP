@@ -1,20 +1,16 @@
-/*
+﻿/*
  * Estilos compartidos del módulo Empresas.
  *
- * Paleta alineada con NOIA: primary `#1e3a8a` (igual que el resto del shell);
- * sin azules sueltos ni colores extravagantes. Reglas de página/header locales
- * fueron retiradas: la cabecera ahora la publica el shell vía
- * `bindShellPageContext`. Aquí solo viven los estilos del formulario y los
- * primitivos visuales reutilizados por la ficha.
+ * Paleta alineada con NOIA: primario `#2563eb`; neutros `#d7dde5` / `#f8fafc`.
  */
 
 .emp-form-shell {
-  --emp-ink: #111827;
-  --emp-muted: #6b7280;
-  --emp-line: #e5e7eb;
+  --emp-ink: #172033;
+  --emp-muted: #647084;
+  --emp-line: #d7dde5;
   --emp-soft: #f8fafc;
-  --emp-primary: #1e3a8a;
-  --emp-primary-soft: #eef2ff;
+  --emp-primary: #2563eb;
+  --emp-primary-soft: #f8fafc;
   --emp-danger: #b91c1c;
 
   border: 1px solid var(--emp-line);

@@ -1,4 +1,4 @@
-@import '../../form-empleado-shared.css';
+﻿@import '../../form-empleado-shared.css';
 
 :host {
   display: block;
@@ -50,10 +50,10 @@
 .perfil-count-chip,
 .perfil-secondary-chip {
   flex: 0 0 auto;
-  border: 1px solid #bfdbfe;
+  border: 1px solid #e8edf2;
   border-radius: 999px;
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: #f8fafc;
+  color: #2563eb;
   font-size: var(--erp-text-xs, 0.665rem);
   font-weight: 600;
   line-height: 1.25;
@@ -90,8 +90,8 @@
 }
 
 .perfil-status.is-review {
-  border-color: #bfdbfe;
-  background: #eff6ff;
+  border-color: #e8edf2;
+  background: #f8fafc;
 }
 
 .perfil-status-label {
@@ -175,8 +175,8 @@
 
 .perfil-condition-card:hover,
 .perfil-condition-card.is-selected {
-  border-color: #93c5fd;
-  background: #eff6ff;
+  border-color: #d7dde5;
+  background: #f8fafc;
 }
 
 .perfil-condition-card input {
@@ -415,14 +415,14 @@
   display: grid;
   gap: 3px;
   margin: 0 14px 14px;
-  border: 1px solid #bfdbfe;
+  border: 1px solid #e8edf2;
   border-radius: 8px;
-  background: #eff6ff;
+  background: #f8fafc;
   padding: 9px 11px;
 }
 
 .perfil-auto-detected strong {
-  color: #1e3a8a;
+  color: #2563eb;
   font-size: var(--erp-text-sm, 0.72rem);
   font-weight: 600;
   line-height: 1.35;
@@ -435,7 +435,7 @@
 }
 
 .perfil-condition-card.is-auto-detected {
-  border-color: #bfdbfe;
+  border-color: #e8edf2;
 }
 
 .perfil-condition-badges {
@@ -447,19 +447,19 @@
 }
 
 .perfil-condition-topline small.perfil-auto-chip {
-  border-color: #bfdbfe;
-  background: #eff6ff;
-  color: #1d4ed8;
+  border-color: #e8edf2;
+  background: #f8fafc;
+  color: #2563eb;
 }
 
 .perfil-condition-reason {
   display: block;
   width: fit-content;
   max-width: 100%;
-  border: 1px solid #bfdbfe;
+  border: 1px solid #e8edf2;
   border-radius: 8px;
-  background: #eff6ff;
-  color: #1e3a8a;
+  background: #f8fafc;
+  color: #2563eb;
   font-size: var(--erp-text-xs, 0.665rem);
   font-weight: 500;
   line-height: 1.35;

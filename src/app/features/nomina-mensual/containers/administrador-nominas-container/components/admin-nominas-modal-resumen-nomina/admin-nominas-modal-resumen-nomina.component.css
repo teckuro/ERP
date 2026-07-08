@@ -1,4 +1,4 @@
-/* Modal resumen de cierre — ancho ampliado sobre lg del MessageBox. */
+﻿/* Modal resumen de cierre — ancho ampliado sobre lg del MessageBox. */
 
 app-admin-nominas-modal-resumen-nomina .noia-msgbox--modal.noia-msgbox--lg {
   width: min(100%, 52rem);
@@ -45,9 +45,9 @@ app-admin-nominas-modal-resumen-nomina .noia-msgbox--modal.noia-msgbox--lg {
 }
 
 .adm-nom-resumen__chip--info {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border-color: #bfdbfe;
+  background: #f8fafc;
+  color: #2563eb;
+  border-color: #e8edf2;
 }
 
 .adm-nom-resumen__chip--success {
@@ -101,8 +101,8 @@ app-admin-nominas-modal-resumen-nomina .noia-msgbox--modal.noia-msgbox--lg {
 }
 
 .adm-nom-resumen__situacion--pendiente {
-  background: #eff6ff;
-  border-color: #bfdbfe;
+  background: #f8fafc;
+  border-color: #e8edf2;
   color: #1e40af;
 }
 
@@ -149,8 +149,8 @@ app-admin-nominas-modal-resumen-nomina .noia-msgbox--modal.noia-msgbox--lg {
 }
 
 .adm-nom-resumen__indicadores li.is-strong {
-  background: #eff6ff;
-  border-color: #bfdbfe;
+  background: #f8fafc;
+  border-color: #e8edf2;
 }
 
 .adm-nom-resumen__indicador-label {
@@ -238,7 +238,7 @@ app-admin-nominas-modal-resumen-nomina .noia-msgbox--modal.noia-msgbox--lg {
 }
 
 .adm-nom-resumen__rect-col.is-strong {
-  background: #eff6ff;
+  background: #f8fafc;
 }
 
 .adm-nom-resumen__rect-label {

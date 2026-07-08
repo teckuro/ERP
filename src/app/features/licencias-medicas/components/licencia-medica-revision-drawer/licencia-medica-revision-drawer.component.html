@@ -1,0 +1,141 @@
+@if (licencia) {
+  <div class="lm-drawer-backdrop" (click)="cerrar.emit()" role="presentation"></div>
+  <aside class="lm-drawer" aria-label="Revisión de licencia médica">
+    <header class="lm-drawer__head">
+      <h2 class="lm-drawer__title">
+        @if (esSoloLectura()) {
+          Licencia médica · {{ etiquetaEstado() }}
+        } @else {
+          Revisar licencia médica
+        }
+      </h2>
+      <button type="button" class="lm-drawer__close" (click)="cerrar.emit()">Cerrar</button>
+    </header>
+
+    @if (esSoloLectura()) {
+      <p class="lm-drawer__aviso" role="status">
+        Esta licencia está cerrada. Solo puede consultar los datos registrados.
+      </p>
+    }
+
+    @if (ingreso) {
+      <section class="lm-drawer__correo" aria-label="Correo de origen">
+        <p class="lm-drawer__meta"><strong>Remitente:</strong> {{ ingreso.remitente }}</p>
+        @if (ingreso.asunto) {
+          <p class="lm-drawer__meta"><strong>Asunto:</strong> {{ ingreso.asunto }}</p>
+        }
+        @if (ingreso.cuerpoTexto) {
+          <p class="lm-drawer__extracto">{{ ingreso.cuerpoTexto }}</p>
+        }
+      </section>
+    }
+
+    <form class="lm-drawer__form" (submit)="$event.preventDefault()">
+      <fieldset class="lm-drawer__fieldset" [disabled]="esSoloLectura() || guardando">
+      <label class="lm-field">
+        <span>Trabajador</span>
+        <app-search-select
+          [options]="empleadoOptions()"
+          [ngModel]="idPersona()"
+          (ngModelChange)="onEmpleadoChange($event)"
+          placeholder="Seleccione trabajador"
+          name="trabajador"
+        />
+      </label>
+
+      <div class="lm-drawer__grid">
+        <label class="lm-field">
+          <span>Folio</span>
+          <input type="text" class="lm-input" [ngModel]="folio()" (ngModelChange)="folio.set($event)" name="folio" />
+        </label>
+        <label class="lm-field">
+          <span>Tipo</span>
+          <select class="lm-input" [ngModel]="tipo()" (ngModelChange)="tipo.set($event)" name="tipo">
+            <option value="comun">Común</option>
+            <option value="accidente">Accidente del trabajo</option>
+            <option value="maternal">Maternal</option>
+            <option value="paternal">Paternal</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="lm-drawer__grid">
+        <label class="lm-field">
+          <span>Vigencia desde</span>
+          <app-calendar-input
+            [ngModel]="fechaInicio()"
+            (ngModelChange)="fechaInicio.set($event ?? ''); onFechasChange()"
+            name="fechaInicio"
+          />
+        </label>
+        <label class="lm-field">
+          <span>Vigencia hasta</span>
+          <app-calendar-input
+            [ngModel]="fechaTermino()"
+            (ngModelChange)="fechaTermino.set($event ?? ''); onFechasChange()"
+            name="fechaTermino"
+          />
+        </label>
+      </div>
+
+      <div class="lm-drawer__grid">
+        <label class="lm-field">
+          <span>Días totales</span>
+          <input
+            type="number"
+            class="lm-input"
+            [ngModel]="dias()"
+            (ngModelChange)="dias.set($event === '' ? null : +$event)"
+            name="dias"
+            min="1"
+          />
+        </label>
+        <label class="lm-field">
+          <span>Monto subsidio</span>
+          <input
+            type="number"
+            class="lm-input"
+            [ngModel]="montoSubsidio()"
+            (ngModelChange)="montoSubsidio.set($event === '' ? null : +$event)"
+            name="montoSubsidio"
+            min="0"
+          />
+        </label>
+      </div>
+
+      <label class="lm-field">
+        <span>Observación</span>
+        <textarea
+          class="lm-input lm-input--area"
+          rows="3"
+          [ngModel]="observacion()"
+          (ngModelChange)="observacion.set($event)"
+          name="observacion"
+        ></textarea>
+      </label>
+      </fieldset>
+    </form>
+
+    <footer class="lm-drawer__foot">
+      <button type="button" class="lm-btn lm-btn--ghost" [disabled]="guardando" (click)="cerrar.emit()">
+        {{ esSoloLectura() ? 'Cerrar' : 'Cancelar' }}
+      </button>
+      @if (!esSoloLectura()) {
+      <button type="button" class="lm-btn lm-btn--ghost" [disabled]="guardando" (click)="rechazar.emit()">
+        Rechazar
+      </button>
+      <button type="button" class="lm-btn lm-btn--ghost" [disabled]="guardando" (click)="guardarBorrador.emit()">
+        Guardar borrador
+      </button>
+      <button
+        type="button"
+        class="lm-btn lm-btn--primary"
+        [disabled]="guardando || !puedeConfirmarVincular()"
+        (click)="confirmarVincular.emit()"
+      >
+        Confirmar y vincular nómina
+      </button>
+      }
+    </footer>
+  </aside>
+}

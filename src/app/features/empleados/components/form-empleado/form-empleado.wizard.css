@@ -1,4 +1,4 @@
-.flow-tab-body {
+﻿.flow-tab-body {
   display: grid;
   gap: 2px;
   min-width: 0;
@@ -119,9 +119,9 @@
 }
 
 .flow-tab.is-active .flow-tab-num {
-  border-color: #bfdbfe;
-  background: #eff6ff;
-  color: #1d4ed8;
+  border-color: #e8edf2;
+  background: #f8fafc;
+  color: #2563eb;
 }
 
 .flow-tab--invalid .flow-tab-state {
@@ -399,8 +399,8 @@
 .resumen-checklist-item.is-optional {
   --check-border: #e2e8f0;
   --check-state-border: #dbeafe;
-  --check-state-bg: #eff6ff;
-  --check-state-color: #1d4ed8;
+  --check-state-bg: #f8fafc;
+  --check-state-color: #2563eb;
 }
 
 .resumen-checklist-item.is-na {
@@ -482,7 +482,7 @@
 }
 
 .resumen-review-button:hover {
-  background: #eff6ff;
+  background: #f8fafc;
 }
 
 @media (max-width: 1180px) {

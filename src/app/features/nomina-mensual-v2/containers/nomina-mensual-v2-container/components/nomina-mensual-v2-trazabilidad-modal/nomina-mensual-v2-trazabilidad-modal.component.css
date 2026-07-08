@@ -1,4 +1,4 @@
-.nmv2-trace-modal {
+﻿.nmv2-trace-modal {
   display: grid;
   gap: 12px;
   min-height: 0;
@@ -106,7 +106,7 @@
   margin: 5px auto 0;
   border-radius: 999px;
   background: #2563eb;
-  box-shadow: 0 0 0 3px #eff6ff;
+  box-shadow: 0 0 0 3px #f8fafc;
 }
 
 .nmv2-trace-modal__timeline-body {
@@ -219,13 +219,13 @@
 }
 
 .nmv2-trace-modal__button--primary {
-  border-color: #1e3a8a;
-  background: #1e3a8a;
+  border-color: #2563eb;
+  background: #2563eb;
   color: #ffffff;
 }
 
 .nmv2-trace-modal__button--primary:hover {
-  border-color: #1d4ed8;
+  border-color: #2563eb;
   background: #1d4ed8;
 }
 

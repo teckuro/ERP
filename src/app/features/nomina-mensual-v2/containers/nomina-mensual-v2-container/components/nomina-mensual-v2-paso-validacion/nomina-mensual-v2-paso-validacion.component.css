@@ -1,4 +1,4 @@
-:host {
+﻿:host {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -195,7 +195,7 @@
 .paso-val__link {
   background: none;
   border: none;
-  color: #1d4ed8;
+  color: #2563eb;
   cursor: pointer;
   font-size: 12px;
   text-decoration: underline;

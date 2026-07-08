@@ -36,7 +36,7 @@
   /* Accion primaria */
   --pf-primary: var(--erp-primary, #2563eb);
   --pf-primary-hover: var(--erp-primary-hover, #1d4ed8);
-  --pf-primary-soft: var(--erp-primary-soft, #eff6ff);
+  --pf-primary-soft: var(--erp-primary-soft, #f8fafc);
   --pf-ring: var(--erp-primary-ring, rgba(37, 99, 235, 0.18));
 
   /* Tipografia de pagina */

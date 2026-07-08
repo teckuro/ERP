@@ -5,6 +5,18 @@
   width: 100%;
   min-width: 0;
   min-height: 100%;
+  --hd-border: #d7dde5;
+  --hd-border-soft: #e8edf2;
+  --hd-surface: #ffffff;
+  --hd-surface-soft: #f8fafc;
+  --hd-ink: #172033;
+  --hd-muted: #647084;
+  --hd-text-secondary: #475569;
+  --hd-primary: #2563eb;
+  --hd-primary-hover: #1d4ed8;
+  --hd-info: #1e40af;
+  --hd-info-soft: #f8fafc;
+  --hd-info-border: #e8edf2;
 }
 
 .hd-page {
@@ -84,8 +96,8 @@
   margin: 0 0 0.75rem;
   padding: 0.5rem 0.65rem;
   border-radius: 8px;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  background: #f8fafc;
+  border: 1px solid #e8edf2;
   font-size: 0.82rem;
   color: #1e3a5f;
 }
@@ -96,7 +108,7 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #3b82f6;
+  color: #2563eb;
   margin-bottom: 0.2rem;
 }
 
@@ -134,7 +146,7 @@
 }
 
 .hd-lead-link:hover {
-  color: #1d4ed8;
+  color: #2563eb;
 }
 
 .hd-view-panel {
@@ -152,9 +164,9 @@
 .hd-context-note {
   border: 1px solid #dbeafe;
   border-radius: 6px;
-  background: #eff6ff;
+  background: #f8fafc;
   padding: 0.55rem 0.7rem;
-  color: #1e3a8a;
+  color: #2563eb;
   font-size: 0.8125rem;
   line-height: 1.4;
 }
@@ -343,7 +355,7 @@
 }
 
 .hd-link-btn:hover {
-  color: #1d4ed8;
+  color: #2563eb;
 }
 
 /* Chips */
@@ -383,9 +395,9 @@
 }
 
 .hd-chip--info {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border-color: #bfdbfe;
+  background: #f8fafc;
+  color: #2563eb;
+  border-color: #e8edf2;
 }
 
 .hd-chip--si {
@@ -413,9 +425,9 @@
 }
 
 .hd-chip--activo {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border-color: #bfdbfe;
+  background: #f8fafc;
+  color: #2563eb;
+  border-color: #e8edf2;
 }
 
 .hd-chip--inactivo {
@@ -732,8 +744,8 @@
 }
 
 .hd-action-btn:hover:not(:disabled) {
-  border-color: #93c5fd;
-  background: #eff6ff;
+  border-color: #d7dde5;
+  background: #f8fafc;
   color: #1e40af;
 }
 

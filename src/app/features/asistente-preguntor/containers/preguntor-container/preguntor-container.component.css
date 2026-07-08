@@ -1,4 +1,4 @@
-.preguntor {
+﻿.preguntor {
   display: grid;
   gap: 0.65rem;
   max-width: 42rem;
@@ -32,9 +32,9 @@
 }
 
 .preguntor__input:focus-visible {
-  outline: 2px solid #bfdbfe;
+  outline: 2px solid #e8edf2;
   outline-offset: 1px;
-  border-color: #93c5fd;
+  border-color: #d7dde5;
 }
 
 .preguntor__input:disabled {

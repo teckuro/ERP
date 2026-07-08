@@ -7,6 +7,18 @@
   min-height: 0;
   height: 100%;
   overflow: hidden;
+  --mv-border: #d7dde5;
+  --mv-border-soft: #e8edf2;
+  --mv-surface: #ffffff;
+  --mv-surface-soft: #f8fafc;
+  --mv-ink: #172033;
+  --mv-muted: #647084;
+  --mv-text-secondary: #475569;
+  --mv-primary: #2563eb;
+  --mv-primary-hover: #1d4ed8;
+  --mv-info: #1e40af;
+  --mv-info-soft: #f8fafc;
+  --mv-info-border: #e8edf2;
 }
 
 .mv-page {
@@ -180,8 +192,8 @@
 }
 
 .mv-action-btn:hover:not(:disabled) {
-  border-color: #93c5fd;
-  background: #eff6ff;
+  border-color: #d7dde5;
+  background: #f8fafc;
   color: #1e40af;
 }
 

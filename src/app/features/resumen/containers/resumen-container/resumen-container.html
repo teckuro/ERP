@@ -1,0 +1,110 @@
+<section class="res-page" aria-label="Resumen operativo">
+  <div class="res-body">
+    @if (loading()) {
+      <app-workspace-loading
+        [fill]="true"
+        title="Cargando resumen"
+        message="Estamos consultando el estado del período y sus pendientes operativos."
+      />
+    } @else {
+      <div class="res-scroll">
+      @if (mensajeErrorCarga(); as errorCarga) {
+        <app-message-box
+          variant="warning"
+          mode="inline"
+          title="Carga parcial del resumen"
+          [message]="errorCarga"
+          primaryLabel="Reintentar"
+          (action)="reintentarCarga()"
+        />
+      }
+      <section class="res-hero" aria-label="Estado del período">
+        <div class="res-hero__copy">
+          <p class="res-hero__saludo">Buenos días, {{ saludo() }}</p>
+          <h1 class="res-hero__titulo">
+            Período {{ periodoActivo.etiqueta() }}
+            @if (snapshot().empresaNombre; as empresa) {
+              <span class="res-hero__empresa">· {{ empresa }}</span>
+            }
+          </h1>
+          <p class="res-hero__estado">
+            Estado de nómina:
+            <strong>{{ snapshot().estadoNominaDominante ?? '—' }}</strong>
+          </p>
+          <p class="res-hero__detalle">{{ snapshot().accionRecomendada.detalle }}</p>
+        </div>
+        <button
+          type="button"
+          class="res-hero__cta"
+          [class.res-hero__cta--warning]="snapshot().accionRecomendada.tone === 'warning'"
+          (click)="ir(snapshot().accionRecomendada.ruta)"
+        >
+          {{ snapshot().accionRecomendada.etiqueta }}
+        </button>
+      </section>
+
+      <section class="res-kpis" aria-label="Indicadores del período">
+        @for (kpi of snapshot().kpis; track kpi.id) {
+          <button type="button" [class]="claseKpi(kpi.tone)" (click)="ir(kpi.ruta)">
+            <span class="res-kpi__icon" aria-hidden="true">
+              <lucide-icon [name]="kpi.icon"></lucide-icon>
+            </span>
+            <span class="res-kpi__value">{{ formatearValorKpi(kpi.value) }}</span>
+            <span class="res-kpi__label">{{ kpi.label }}</span>
+          </button>
+        }
+      </section>
+
+      <section class="res-atencion" aria-label="Requiere su atención">
+        <header class="res-atencion__head">
+          <h2>Requiere su atención</h2>
+        </header>
+        @if (snapshot().atencion.length === 0) {
+          <div class="res-atencion__ok" role="status">
+            <lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon>
+            <span>Todo al día para el período activo.</span>
+          </div>
+        } @else {
+          <ul class="res-atencion__lista">
+            @for (item of snapshot().atencion; track item.id) {
+              <li>
+                <button type="button" [class]="claseAtencion(item.tone)" (click)="ir(item.ruta)">
+                  <span class="res-atencion-item__icon" aria-hidden="true">
+                    <lucide-icon [name]="item.icon"></lucide-icon>
+                  </span>
+                  <span class="res-atencion-item__copy">
+                    <strong>{{ item.titulo }}</strong>
+                    <small>{{ item.detalle }}</small>
+                  </span>
+                  <lucide-icon class="res-atencion-item__arrow" name="arrow-up-right" aria-hidden="true"></lucide-icon>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="res-modulos" aria-label="Accesos del flujo">
+        <header class="res-modulos__head">
+          <h2>Flujo operativo</h2>
+          <p>Accesos directos a las pantallas que sostienen el cierre del período.</p>
+        </header>
+        <div class="res-modulos__grid">
+          @for (modulo of modulos; track modulo.id) {
+            <a [routerLink]="modulo.ruta" class="res-tile">
+              <span class="res-tile-chip" [ngClass]="modulo.chipClass" aria-hidden="true">
+                <lucide-icon [name]="modulo.icon"></lucide-icon>
+              </span>
+              <span class="res-tile__copy">
+                <strong>{{ modulo.titulo }}</strong>
+                <small>{{ modulo.descripcion }}</small>
+              </span>
+              <lucide-icon class="res-tile__arrow" name="arrow-up-right" aria-hidden="true"></lucide-icon>
+            </a>
+          }
+        </div>
+      </section>
+    </div>
+    }
+  </div>
+</section>

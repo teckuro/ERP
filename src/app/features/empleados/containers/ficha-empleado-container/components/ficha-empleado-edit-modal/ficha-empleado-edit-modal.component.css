@@ -1,4 +1,4 @@
-.ficha-edit-modal-host {
+﻿.ficha-edit-modal-host {
   /* Por encima del shell; popovers (search-select ~11060) deben superar el backdrop. */
   --emp-floating-z: 11070;
   --employee-floating-ui-z: 11070;
@@ -104,7 +104,7 @@
 }
 
 .ficha-edit-modal__action--primary:hover:not(:disabled) {
-  border-color: #1d4ed8;
+  border-color: #2563eb;
   background: #1d4ed8;
 }
 

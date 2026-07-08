@@ -1,9 +1,9 @@
-:host {
+﻿:host {
   display: block;
   font-family: var(--erp-font-sans, system-ui, sans-serif);
   color: #111827;
   --form-primary: #2563eb;
-  --form-primary-soft: #eff6ff;
+  --form-primary-soft: #f8fafc;
   --form-surface: #ffffff;
   --form-bg: #f8fafc;
   --form-border: #e5e7eb;

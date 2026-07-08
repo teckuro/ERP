@@ -1,4 +1,4 @@
-:host {
+﻿:host {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -180,7 +180,7 @@
 .paso-mov__btn.is-primary {
   background: #1d4ed8;
   color: #ffffff;
-  border-color: #1d4ed8;
+  border-color: #2563eb;
 }
 
 .paso-mov__btn.is-primary:disabled {
@@ -230,8 +230,8 @@
   width: 14px;
   height: 14px;
   border-radius: 999px;
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: #f8fafc;
+  color: #2563eb;
   font-weight: 700;
   font-size: 12px;
   line-height: 1;
@@ -561,9 +561,9 @@
 }
 
 .paso-mov__chip-origen[data-origen='recurrente'] {
-  background: #eff6ff;
-  color: #1e3a8a;
-  border-color: #bfdbfe;
+  background: #f8fafc;
+  color: #2563eb;
+  border-color: #e8edf2;
 }
 
 .paso-mov__chip-origen[data-origen='manual'] {
@@ -585,9 +585,9 @@
 }
 
 .paso-mov__estado-pill[data-estado='pendiente'] {
-  background: #eff6ff;
-  color: #1e3a8a;
-  border-color: #bfdbfe;
+  background: #f8fafc;
+  color: #2563eb;
+  border-color: #e8edf2;
 }
 
 .paso-mov__estado-pill[data-estado='aplicado'] {
@@ -605,7 +605,7 @@
 .paso-mov__link {
   background: none;
   border: none;
-  color: #1d4ed8;
+  color: #2563eb;
   cursor: pointer;
   font-size: 12px;
   text-decoration: underline;

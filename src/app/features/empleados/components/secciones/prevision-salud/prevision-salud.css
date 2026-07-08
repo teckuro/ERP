@@ -1,4 +1,4 @@
-@import '../../form-empleado-shared.css';
+﻿@import '../../form-empleado-shared.css';
 
 :host.employee-layout-inline-record .prevision-card-header {
   display: none;
@@ -94,9 +94,9 @@
 }
 
 .prevision-status-chip.is-ips {
-  border-color: #bfdbfe;
-  background: #eff6ff;
-  color: #1d4ed8;
+  border-color: #e8edf2;
+  background: #f8fafc;
+  color: #2563eb;
 }
 
 .prevision-status-chip.is-none {
@@ -161,7 +161,7 @@
 
 .prevision-state-note.is-neutral {
   border-color: #dbeafe;
-  background: #f8fbff;
+  background: #f8fafc;
 }
 
 .prevision-impact {
@@ -176,8 +176,8 @@
 }
 
 .prevision-impact.is-optional {
-  border-color: #bfdbfe;
-  background: #f8fbff;
+  border-color: #e8edf2;
+  background: #f8fafc;
 }
 
 .prevision-impact.is-na {
@@ -218,7 +218,7 @@
 }
 
 .prevision-impact.is-optional strong {
-  color: #1d4ed8;
+  color: #2563eb;
 }
 
 .prevision-impact.is-na strong {

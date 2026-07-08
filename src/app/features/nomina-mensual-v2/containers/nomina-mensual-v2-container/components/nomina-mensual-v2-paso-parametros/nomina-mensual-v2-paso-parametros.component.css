@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Paso Parámetros NOIA — layout sobrio alineado al patrón Admin.
  *
  * Decisiones (2026-06-04):
@@ -92,7 +92,7 @@
   font: inherit;
   font-size: 12px;
   font-weight: 600;
-  color: #1d4ed8;
+  color: #2563eb;
   cursor: pointer;
 }
 
@@ -193,7 +193,7 @@
 }
 
 .nmv2-paso-parametros__notice--revision .nmv2-paso-parametros__notice-link {
-  color: #1d4ed8;
+  color: #2563eb;
 }
 
 /* Lista plana de áreas full-bleed: sin border-radius ni bordes laterales,
@@ -239,7 +239,7 @@
 }
 
 .nmv2-paso-parametros__row:focus-visible {
-  box-shadow: inset 0 0 0 2px #bfdbfe;
+  box-shadow: inset 0 0 0 2px #e8edf2;
 }
 
 .nmv2-paso-parametros__row-icon {
@@ -331,7 +331,7 @@
 
 .nmv2-paso-parametros__row:hover .nmv2-paso-parametros__row-action,
 .nmv2-paso-parametros__row:focus-visible .nmv2-paso-parametros__row-action {
-  color: #1d4ed8;
+  color: #2563eb;
 }
 
 /* Loading inline (placeholder filas grises) -------------------------------- */

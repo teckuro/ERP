@@ -225,8 +225,8 @@
 }
 
 .noia-msgbox__action--primary {
-  border-color: var(--erp-primary, #1e3a8a);
-  background: var(--erp-primary, #1e3a8a);
+  border-color: var(--erp-primary, #2563eb);
+  background: var(--erp-primary, #2563eb);
   color: #ffffff;
   font-weight: 600;
 }

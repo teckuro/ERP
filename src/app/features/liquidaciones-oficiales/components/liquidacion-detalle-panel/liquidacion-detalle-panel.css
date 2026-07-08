@@ -135,7 +135,7 @@
   border: 1px solid var(--erp-border, #dadfd7);
   border-radius: 4px;
   background: var(--erp-surface, #ffffff);
-  color: var(--erp-primary, #1e3a8a);
+  color: var(--erp-primary, #2563eb);
   cursor: pointer;
 }
 
@@ -149,7 +149,7 @@
 }
 
 .liq-detail-panel__open-full:focus-visible {
-  outline: 2px solid var(--erp-primary, #1e3a8a);
+  outline: 2px solid var(--erp-primary, #2563eb);
   outline-offset: 1px;
 }
 

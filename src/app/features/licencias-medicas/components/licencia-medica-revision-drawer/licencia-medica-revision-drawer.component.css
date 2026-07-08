@@ -1,0 +1,152 @@
+.lm-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  z-index: 40;
+}
+
+.lm-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  width: min(32rem, 100vw);
+  height: 100vh;
+  background: #fff;
+  border-left: 1px solid #d7dde5;
+  box-shadow: -2px 0 8px rgba(15, 23, 42, 0.06);
+}
+
+.lm-drawer__aviso {
+  margin: 0;
+  padding: 8px 14px;
+  border-bottom: 1px solid #e8edf2;
+  background: #f8fafc;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #475569;
+}
+
+.lm-drawer__fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.lm-drawer__head,
+.lm-drawer__foot {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 10px 14px;
+  border-bottom: 1px solid #d7dde5;
+  background: #fff;
+}
+
+.lm-drawer__foot {
+  margin-top: auto;
+  border-bottom: 0;
+  border-top: 1px solid #d7dde5;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.lm-drawer__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.lm-drawer__close {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  font-size: 0.8125rem;
+}
+
+.lm-drawer__correo {
+  padding: 10px 14px;
+  border-bottom: 1px solid #e8edf2;
+  background: #f8fafc;
+}
+
+.lm-drawer__meta {
+  margin: 0 0 0.35rem;
+  font-size: 0.8125rem;
+  color: #334155;
+}
+
+.lm-drawer__extracto {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #475569;
+  white-space: pre-wrap;
+  max-height: 8rem;
+  overflow: auto;
+}
+
+.lm-drawer__form {
+  display: grid;
+  gap: 0.75rem;
+  padding: 12px 14px;
+  overflow: auto;
+}
+
+.lm-drawer__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.lm-field {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  color: #334155;
+}
+
+.lm-input {
+  width: 100%;
+  min-height: 32px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8125rem;
+  color: #0f172a;
+  background: #fff;
+}
+
+.lm-input--area {
+  min-height: 4.5rem;
+  resize: vertical;
+}
+
+.lm-btn {
+  min-height: 32px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  background: #fff;
+  color: #334155;
+}
+
+.lm-btn--primary {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+
+.lm-btn--ghost:disabled,
+.lm-btn--primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

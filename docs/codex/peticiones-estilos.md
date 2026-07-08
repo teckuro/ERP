@@ -9,6 +9,65 @@
 
 ---
 
+## 2026-07-08 — Sistema operativo: unificación paleta NOIA (pasada transversal)
+
+- **Objetivo:** eliminar colores «de IA» repartidos en módulos operativos del menú; alinear con paleta documentada (`noia-bases-sistema-referencia.md`, `noia-antipatrones-ia.md`).
+- **Reemplazos frecuentes:** navy `#1e3a8a` → primario `#2563eb`; heroes/chips `#eff6ff` / `#bfdbfe` → superficie `#f8fafc` / borde `#e8edf2`; hovers `#f8fbff` → `#f8fafc`; focus `#93c5fd` → `#d7dde5`; texto link `#1d4ed8` → `#2563eb`; gradientes decorativos en botones/menús → fondos sólidos.
+- **Módulos corregidos:** Empleados (listado, tabla, formulario, ficha), Empresas, Haberes/Conceptos, Movimientos variables, Novedades, Nóminas (administrador, plantillas, V2 pasos/stepper/modales), Liquidaciones, Parámetros, Previred/salidas, Licencias (re-verificación), Resumen (re-verificación).
+- **Variables locales añadidas/actualizadas:** `--hd-*` (haberes), `--adm-nom-*` (nóminas), `--mv-*` (movimientos), `--nm-primary` (novedades), `--prm-blue` (parámetros), tokens liquidaciones `--erp-*`.
+- **Shared (solo CSS local del componente):** `data-grid`, `message-box`, `page-frame` — fallbacks de primario y selección alineados a `#2563eb` / `#f8fafc`.
+- **Pendiente fase global:** tokens `--erp-primary` del shell/layout si se define en estilos globales; bitácora empleados (`--bitacora-primary-soft`) mantiene valores canónicos del flujo guiado salvo ajuste documentado.
+- **No tocado:** `src/styles/**`, `angular.json`, SQL, servicios, lógica TS.
+
+---
+
+## 2026-07-08 — Resumen y Licencias: loading centrado fullscreen
+
+- **Loading:** `app-workspace-loading` con `[fill]="true"` y contenedor `position: relative` para centrar el panel en el área útil de la pantalla (patrón Empresas/Liquidaciones).
+- **Archivos:** `resumen-container.*`, `licencias-medicas-container.*`.
+
+---
+
+## 2026-07-08 — Resumen: cockpit operativo con datos reales
+
+- **Pantalla `/`:** reemplazo del dashboard estático por feature `resumen-container` con KPIs, bandeja «Requiere su atención», franja de período y acceso al flujo operativo.
+- **Datos:** nóminas, empleados, licencias pendientes y movimientos del período (carga paralela tolerante a fallos).
+- **Archivos:** `dashboard.page.ts`, `features/resumen/**`.
+
+---
+
+## 2026-07-08 — Licencias médicas: modal de alerta para pendientes
+
+- **Revisar pendientes:** `app-message-box` modal warning al entrar (una vez por visita); acciones «Revisar ahora» / «Más tarde».
+- **Archivos:** `licencias-medicas-container.*`.
+
+---
+
+## 2026-07-08 — Licencias médicas: toolbar grilla alineada al estándar
+
+- **CTA principal:** `Registrar manual` en toolbar de `app-data-grid` (`data-grid-primary-action`); retirado del shell y de botón custom en franja.
+- **Revisar pendientes:** barra contextual (patrón Movimientos) solo si hay pendientes.
+- **Toolbar:** Mostrar, filtros, actualizar y columnas; exportar oculto.
+- **Archivos:** `licencias-medicas-container.*`.
+
+---
+
+## 2026-07-08 — Licencias médicas: ocultar exportar en grilla
+
+- **Toolbar grilla:** se mantiene paginación, filtros, actualizar y columnas; el botón exportar queda oculto hasta definir alcance.
+- **Archivos:** `licencias-medicas-container.html`.
+
+---
+
+## 2026-07-08 — Licencias médicas: bandeja operativa por correo
+
+- **Pantalla:** reemplazo del mock por grilla fullscreen NOIA (`app-data-grid`) + franja operativa + drawer de revisión.
+- **Copy:** lenguaje RRHH formal (pendiente de revisión, vincular nómina, sin estados técnicos).
+- **Patrón:** Conceptos / Movimientos — shell flex 100%, scroll interno en grilla, CTA «Revisar pendientes» en shell y «Registrar manual» en franja.
+- **Archivos:** `licencias-medicas.page.ts`, `licencias-medicas-container.*`, `licencia-medica-revision-drawer.*`.
+
+---
+
 ## 2026-07-08 — Parámetros: orden de columnas y copy formal en grillas
 
 - **Columnas:** jerarquía identidad → montos/tasas → vigencia → estado; headers con tildes y nombres completos (sin abreviaturas tipo «trab. indef.» o «Desc. por día»).

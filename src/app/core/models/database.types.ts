@@ -1725,48 +1725,57 @@ export type Database = {
       licencia_medica: {
         Row: {
           creado_por: string | null
-          dias: number
+          dias: number | null
           estado: string
           fecha_creacion: string
-          fecha_inicio: string
-          fecha_termino: string
-          folio: string
+          fecha_inicio: string | null
+          fecha_termino: string | null
+          folio: string | null
           id_contrato: number | null
+          id_empresa: number | null
+          id_ingreso: number | null
           id_licencia: number
-          id_persona: number
+          id_persona: number | null
           monto_subsidio: number | null
           observacion: string | null
-          tipo: string
+          origen: string
+          tipo: string | null
         }
         Insert: {
           creado_por?: string | null
-          dias: number
+          dias?: number | null
           estado?: string
           fecha_creacion?: string
-          fecha_inicio: string
-          fecha_termino: string
-          folio: string
+          fecha_inicio?: string | null
+          fecha_termino?: string | null
+          folio?: string | null
           id_contrato?: number | null
+          id_empresa?: number | null
+          id_ingreso?: number | null
           id_licencia?: number
-          id_persona: number
+          id_persona?: number | null
           monto_subsidio?: number | null
           observacion?: string | null
-          tipo: string
+          origen?: string
+          tipo?: string | null
         }
         Update: {
           creado_por?: string | null
-          dias?: number
+          dias?: number | null
           estado?: string
           fecha_creacion?: string
-          fecha_inicio?: string
-          fecha_termino?: string
-          folio?: string
+          fecha_inicio?: string | null
+          fecha_termino?: string | null
+          folio?: string | null
           id_contrato?: number | null
+          id_empresa?: number | null
+          id_ingreso?: number | null
           id_licencia?: number
-          id_persona?: number
+          id_persona?: number | null
           monto_subsidio?: number | null
           observacion?: string | null
-          tipo?: string
+          origen?: string
+          tipo?: string | null
         }
         Relationships: [
           {
@@ -1784,6 +1793,20 @@ export type Database = {
             referencedColumns: ["id_contrato"]
           },
           {
+            foreignKeyName: "licencia_medica_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+          {
+            foreignKeyName: "licencia_medica_id_ingreso_fkey"
+            columns: ["id_ingreso"]
+            isOneToOne: false
+            referencedRelation: "licencia_medica_ingreso_correo"
+            referencedColumns: ["id_ingreso"]
+          },
+          {
             foreignKeyName: "licencia_medica_id_persona_fkey"
             columns: ["id_persona"]
             isOneToOne: false
@@ -1796,6 +1819,66 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_persona_factores"
             referencedColumns: ["id_persona"]
+          },
+        ]
+      }
+      licencia_medica_ingreso_correo: {
+        Row: {
+          adjuntos: Json
+          asunto: string | null
+          cuerpo_html: string | null
+          cuerpo_texto: string | null
+          estado: string
+          fecha_creacion: string
+          id_empresa: number
+          id_ingreso: number
+          id_licencia: number | null
+          message_id: string | null
+          recibido_en: string
+          remitente: string
+        }
+        Insert: {
+          adjuntos?: Json
+          asunto?: string | null
+          cuerpo_html?: string | null
+          cuerpo_texto?: string | null
+          estado?: string
+          fecha_creacion?: string
+          id_empresa: number
+          id_ingreso?: number
+          id_licencia?: number | null
+          message_id?: string | null
+          recibido_en?: string
+          remitente: string
+        }
+        Update: {
+          adjuntos?: Json
+          asunto?: string | null
+          cuerpo_html?: string | null
+          cuerpo_texto?: string | null
+          estado?: string
+          fecha_creacion?: string
+          id_empresa?: number
+          id_ingreso?: number
+          id_licencia?: number | null
+          message_id?: string | null
+          recibido_en?: string
+          remitente?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "licencia_medica_ingreso_correo_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+          {
+            foreignKeyName: "licencia_medica_ingreso_correo_id_licencia_fkey"
+            columns: ["id_licencia"]
+            isOneToOne: false
+            referencedRelation: "licencia_medica"
+            referencedColumns: ["id_licencia"]
           },
         ]
       }
@@ -6523,6 +6606,33 @@ export type Database = {
         }
         Returns: Json
       }
+      confirmar_licencia_medica: {
+        Args: { p_id_licencia: number }
+        Returns: {
+          creado_por: string | null
+          dias: number | null
+          estado: string
+          fecha_creacion: string
+          fecha_inicio: string | null
+          fecha_termino: string | null
+          folio: string | null
+          id_contrato: number | null
+          id_empresa: number | null
+          id_ingreso: number | null
+          id_licencia: number
+          id_persona: number | null
+          monto_subsidio: number | null
+          observacion: string | null
+          origen: string
+          tipo: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "licencia_medica"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       confirmar_nomina_preparacion: {
         Args: { p_id_preparacion_nomina: number; p_metadata?: Json }
         Returns: {
@@ -7007,6 +7117,47 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      guardar_licencia_medica: {
+        Args: {
+          p_dias?: number
+          p_estado?: string
+          p_fecha_inicio?: string
+          p_fecha_termino?: string
+          p_folio?: string
+          p_id_contrato?: number
+          p_id_ingreso?: number
+          p_id_licencia?: number
+          p_id_persona?: number
+          p_monto_subsidio?: number
+          p_observacion?: string
+          p_origen?: string
+          p_tipo?: string
+        }
+        Returns: {
+          creado_por: string | null
+          dias: number | null
+          estado: string
+          fecha_creacion: string
+          fecha_inicio: string | null
+          fecha_termino: string | null
+          folio: string | null
+          id_contrato: number | null
+          id_empresa: number | null
+          id_ingreso: number | null
+          id_licencia: number
+          id_persona: number | null
+          monto_subsidio: number | null
+          observacion: string | null
+          origen: string
+          tipo: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "licencia_medica"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       guardar_nomina_calculo_snapshot: {
         Args: {
           p_cabecera: Json
@@ -7154,6 +7305,33 @@ export type Database = {
           trabajador_id: number
         }[]
       }
+      listar_licencias_medicas: {
+        Args: { p_desde?: string; p_estado?: string; p_hasta?: string }
+        Returns: {
+          creado_por: string | null
+          dias: number | null
+          estado: string
+          fecha_creacion: string
+          fecha_inicio: string | null
+          fecha_termino: string | null
+          folio: string | null
+          id_contrato: number | null
+          id_empresa: number | null
+          id_ingreso: number | null
+          id_licencia: number
+          id_persona: number | null
+          monto_subsidio: number | null
+          observacion: string | null
+          origen: string
+          tipo: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "licencia_medica"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       listar_liquidaciones_nomina: {
         Args: { p_id_nomina_periodo: string }
         Returns: {
@@ -7253,6 +7431,33 @@ export type Database = {
           ya_en_nomina: boolean
         }[]
       }
+      marcar_licencia_medica_vinculada_nomina: {
+        Args: { p_id_licencia: number }
+        Returns: {
+          creado_por: string | null
+          dias: number | null
+          estado: string
+          fecha_creacion: string
+          fecha_inicio: string | null
+          fecha_termino: string | null
+          folio: string | null
+          id_contrato: number | null
+          id_empresa: number | null
+          id_ingreso: number | null
+          id_licencia: number
+          id_persona: number | null
+          monto_subsidio: number | null
+          observacion: string | null
+          origen: string
+          tipo: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "licencia_medica"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       nomina_dotacion_ids_origen: {
         Args: { p_nomina_origen_id: string }
         Returns: number[]
@@ -7262,6 +7467,33 @@ export type Database = {
         Returns: string
       }
       obtener_feature_gates_nomina: { Args: never; Returns: Json }
+      obtener_licencia_medica: {
+        Args: { p_id_licencia: number }
+        Returns: {
+          creado_por: string | null
+          dias: number | null
+          estado: string
+          fecha_creacion: string
+          fecha_inicio: string | null
+          fecha_termino: string | null
+          folio: string | null
+          id_contrato: number | null
+          id_empresa: number | null
+          id_ingreso: number | null
+          id_licencia: number
+          id_persona: number | null
+          monto_subsidio: number | null
+          observacion: string | null
+          origen: string
+          tipo: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "licencia_medica"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       obtener_nomina_mensual_consolidadora: {
         Args: { p_id_empresa: number; p_periodo: string }
         Returns: string

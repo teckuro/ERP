@@ -1,4 +1,4 @@
-/* Modal búsqueda nómina — ancho casi viewport, grilla acoplada (patrón historial admin). */
+﻿/* Modal búsqueda nómina — ancho casi viewport, grilla acoplada (patrón historial admin). */
 
 app-liquidaciones-modal-seleccion-nomina app-message-box.message-box-host-modal {
   padding: 0.75rem 1rem;
@@ -75,7 +75,7 @@ app-liquidaciones-modal-seleccion-nomina app-message-box.message-box-host-modal 
 
 .liq-seleccion-nomina__periodo.is-active {
   font-weight: 700;
-  color: #1e3a8a;
+  color: #2563eb;
 }
 
 .liq-seleccion-nomina__empresa {
@@ -116,8 +116,8 @@ app-liquidaciones-modal-seleccion-nomina app-message-box.message-box-host-modal 
 
 .liq-seleccion-nomina__btn {
   min-height: 26px;
-  border: 1px solid #1e3a8a;
-  background: #1e3a8a;
+  border: 1px solid #2563eb;
+  background: #2563eb;
   color: #ffffff;
   padding: 0 10px;
   font-size: 11px;
@@ -145,9 +145,9 @@ app-liquidaciones-modal-seleccion-nomina app-message-box.message-box-host-modal 
 }
 
 .liq-row-action--primary {
-  background: #1e3a8a;
+  background: #2563eb;
   color: #fff;
-  border-color: #1e3a8a;
+  border-color: #2563eb;
 }
 
 .liq-row-action.is-active {

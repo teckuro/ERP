@@ -5,7 +5,7 @@
         --data-grid-border-soft: #eef1ec;
         --data-grid-head-bg: #fafaf7;
         --data-grid-row-hover: #fafaf7;
-        --data-grid-row-selected: #eff6ff;
+        --data-grid-row-selected: #f8fafc;
         --data-grid-scrollbar-track: #eef1ec;
         --data-grid-scrollbar-thumb: #c7d0c4;
         --data-grid-text-xs: 0.64rem;
@@ -135,7 +135,7 @@
       }
 
       .data-grid-filter-control:focus {
-        border-color: var(--erp-primary, #1e3a8a);
+        border-color: var(--erp-primary, #2563eb);
         background: #ffffff;
         box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
       }
@@ -181,8 +181,8 @@
       }
 
       .data-grid-filter-action--primary {
-        border-color: var(--erp-primary, #1e3a8a);
-        background: var(--erp-primary, #1e3a8a);
+        border-color: var(--erp-primary, #2563eb);
+        background: var(--erp-primary, #2563eb);
         color: #ffffff;
         box-shadow: none;
       }
@@ -202,9 +202,9 @@
         height: 2rem;
         min-height: 2rem;
         padding: 0 0.75rem;
-        border: 1px solid var(--erp-primary, #1e3a8a);
+        border: 1px solid var(--erp-primary, #2563eb);
         border-radius: 0.375rem;
-        background: var(--erp-primary, #1e3a8a);
+        background: var(--erp-primary, #2563eb);
         color: #ffffff;
         font-size: 0.75rem;
         font-weight: 600;
@@ -348,7 +348,7 @@
       }
 
       .data-grid-row-selected {
-        box-shadow: inset 0 0 0 1px #bfdbfe;
+        box-shadow: inset 0 0 0 1px #e8edf2;
       }
 
       .data-grid-table-region {
@@ -579,12 +579,12 @@
       }
 
       .data-grid-bulk-bar__action--info {
-        border-color: #bfdbfe;
+        border-color: #e8edf2;
         color: #1d4ed8;
       }
 
       .data-grid-bulk-bar__action--info:hover:not(:disabled) {
-        background: #eff6ff;
+        background: #f8fafc;
       }
 
       .data-grid-bulk-bar__action--blocked,
@@ -739,7 +739,7 @@
         background: #ffffff;
         font-size: 11px;
         font-weight: 600;
-        color: #1e3a8a;
+        color: #2563eb;
         cursor: pointer;
       }
 
@@ -1024,8 +1024,8 @@
       }
 
       .data-grid-state-action--primary {
-        border-color: var(--erp-primary, #1e3a8a);
-        background: var(--erp-primary, #1e3a8a);
+        border-color: var(--erp-primary, #2563eb);
+        background: var(--erp-primary, #2563eb);
         color: #ffffff;
       }
 
@@ -1143,8 +1143,8 @@
         }
 
         .data-grid-mobile-card--selected {
-          border-color: #bfdbfe;
-          background: #eff6ff;
+          border-color: #e8edf2;
+          background: #f8fafc;
         }
 
         .data-grid-mobile-select {

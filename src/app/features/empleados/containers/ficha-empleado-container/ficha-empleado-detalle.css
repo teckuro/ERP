@@ -1,4 +1,4 @@
-.detail-block-list--editorial {
+﻿.detail-block-list--editorial {
   display: grid;
   gap: 0;
   max-width: 100%;
@@ -506,8 +506,8 @@
 }
 
 .file-chip.is-progress {
-  border-color: #bfdbfe;
-  background: #eff6ff;
+  border-color: #e8edf2;
+  background: #f8fafc;
   color: #2c2c2a;
 }
 

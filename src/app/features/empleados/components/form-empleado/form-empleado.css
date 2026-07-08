@@ -326,7 +326,7 @@
   --bitacora-muted: #647084;
   --bitacora-subtle: #8a94a6;
   --bitacora-primary: #2563eb;
-  --bitacora-primary-soft: #eff6ff;
+  --bitacora-primary-soft: #f8fafc;
   --bitacora-ok: #166534;
   --bitacora-ok-soft: #f0fdf4;
   --bitacora-danger: #b91c1c;
@@ -568,7 +568,7 @@
 
 .advanced-wizard-map__item:hover { border-color: #d7e1ef; background: #ffffff; }
 .advanced-wizard-map__item.is-active { border-color: #b8cfe8; background: #ffffff; }
-.advanced-wizard-map__item:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
+.advanced-wizard-map__item:focus-visible { outline: 2px solid #d7dde5; outline-offset: 2px; }
 
 .advanced-wizard-map__marker { display: inline-flex; align-items: center; justify-content: center; }
 

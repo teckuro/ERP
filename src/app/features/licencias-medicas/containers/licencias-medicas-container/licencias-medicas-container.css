@@ -1,0 +1,65 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.lm-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
+  height: 100%;
+  overflow: hidden;
+  background: #fff;
+}
+
+.lm-grid-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.lm-franja-operativa {
+  flex: 0 0 auto;
+  border-bottom: 1px solid #d7dde5;
+  background: #fff;
+  padding: 10px 14px;
+}
+
+.lm-franja-operativa__lead {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: #475569;
+  max-width: 52rem;
+}
+
+.lm-link {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #2563eb;
+  font-size: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.lm-link:hover {
+  text-decoration: underline;
+}
+
+:host ::ng-deep .lm-grid-card.erp-fullscreen-grid-card {
+  border: 0 !important;
+}
