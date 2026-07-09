@@ -36,6 +36,7 @@ Documentación del módulo: [`docs/codex/modulos/administracion/README.md`](../m
 | SEC-02 | Cerrada (aplicada BD 2026-07-08) | `20260708240000_sec02_rls_legacy_endurecimiento.sql` — RLS tenant empleados/parámetros/concepto |
 | SEC-02b | Cerrada (aplicada BD 2026-07-08) | `20260708250000_sec02b_rls_nomina_movvar_anon.sql` — tenant nómina/liquidaciones/Previred/movvar; revoke anon operativo |
 | SEC-02c | Cerrada (aplicada BD 2026-07-08) | `20260708260000_sec02c_revoke_anon_rpc.sql` — revoke EXECUTE anon/public en RPC; excl. extensión unaccent |
+| SEC-02d | Cerrada (aplicada BD 2026-07-09) | `20260708270000_sec02d_rls_movvar_por_rol.sql` — RLS movvar: escritura por rol/perfil (`sec_movvar_escritura_ok`); consulta solo lectura |
 | SEC-03 | Cerrada | `20260708230000_sec03_snapshot_tenant_rls.sql` — validación tenant en RPC + RLS `nomina_calculo_*` + FORCE RLS |
 | SEC-04 | Cerrada | Guards en `app.routes.ts` + `empleados.routes.ts`; menú filtrado por `permisosModulos` en sidebar |
 | SEC-05 | Cerrada (2026-07-09) | Errores humanizados SEC-05b; CORS Edge desplegado; smokes `smoke:sec` + fixture consulta; gates unit empleados/parámetros OK |

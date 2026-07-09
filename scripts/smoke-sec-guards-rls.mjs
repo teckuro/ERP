@@ -75,7 +75,7 @@ async function probarSesionAutenticada(supabaseUrl, supabaseAnonKey, email, pass
 }
 
 async function probarPermisosNominaConsulta(client) {
-  const permisos = ['nomina.crear', 'nomina.editar', 'nomina.eliminar', 'nomina.validar'];
+  const permisos = ['nomina.crear', 'nomina.editar', 'nomina.eliminar', 'nomina.validar', 'movvar.escribir'];
   for (const permiso of permisos) {
     const { data, error } = await client.rpc('erp_nomina_permiso_efectivo', { p_permiso: permiso });
     if (error) fail(`erp_nomina_permiso_efectivo(${permiso}) → ${error.message}`);
@@ -84,12 +84,38 @@ async function probarPermisosNominaConsulta(client) {
   }
 }
 
+async function probarEscrituraMovvarConsulta(client) {
+  const { error: movErr } = await client.from('movimiento_variable_mensual').insert({
+    id_persona: 1,
+    id_concepto: 1,
+    periodo: '2099-01',
+    monto: 100,
+    estado: 'BORRADOR',
+    origen: 'MANUAL',
+  });
+
+  if (!movErr) {
+    fail('INSERT movimiento_variable_mensual debió fallar para perfil consulta (RLS rol)');
+  }
+
+  const msg = (movErr.message ?? '').toLowerCase();
+  if (
+    movErr.code === '42501'
+    || /permission|policy|row-level|not authorized|denied|violates row-level/i.test(msg)
+  ) {
+    ok(`RLS movvar bloqueó escritura consulta (${movErr.code ?? 'sin código'})`);
+  } else {
+    fail(`INSERT movvar consulta: ${movErr.message}`);
+  }
+}
+
 async function probarEscrituraConsulta(client, role) {
   if (!/consulta/i.test(String(role))) {
-    warn(`Rol "${role}" no es consulta; omitiendo smoke de permisos RPC`);
+    warn(`Rol "${role}" no es consulta; omitiendo smoke de permisos RPC/movvar`);
     return;
   }
   await probarPermisosNominaConsulta(client);
+  await probarEscrituraMovvarConsulta(client);
 }
 
 async function main() {
