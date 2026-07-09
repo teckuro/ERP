@@ -38,7 +38,7 @@ Documentación del módulo: [`docs/codex/modulos/administracion/README.md`](../m
 | SEC-02c | Cerrada (aplicada BD 2026-07-08) | `20260708260000_sec02c_revoke_anon_rpc.sql` — revoke EXECUTE anon/public en RPC; excl. extensión unaccent |
 | SEC-03 | Cerrada | `20260708230000_sec03_snapshot_tenant_rls.sql` — validación tenant en RPC + RLS `nomina_calculo_*` + FORCE RLS |
 | SEC-04 | Cerrada | Guards en `app.routes.ts` + `empleados.routes.ts`; menú filtrado por `permisosModulos` en sidebar |
-| SEC-05 | Cerrada (2026-07-08) / **SEC-05b** parcial (2026-07-09) | Errores humanizados (repos piloto + liquidaciones/Previred/parámetros catálogos + contenedores movimientos/novedades/nómina V2); `mensajeErrorParaUsuario`; CORS Edge `ERP_ALLOWED_ORIGIN`; Angular **21.2.18** |
+| SEC-05 | Cerrada (2026-07-08) / **SEC-05b** (2026-07-09) | Errores humanizados extendidos; `mensajeErrorParaUsuario`; CORS Edge desplegado (`sec-deploy-edge-cors.ps1`); smoke `smoke-sec-guards-rls.mjs` |
 
 **Orden sugerido:** SEC-01 → SEC-03 → SEC-02 → SEC-04 → SEC-05.
 

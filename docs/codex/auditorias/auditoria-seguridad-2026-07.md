@@ -330,14 +330,14 @@ SEC-01  →  SEC-03  →  SEC-02  →  SEC-04  →  SEC-05
 
 ## 8. Próximo paso operativo
 
-1. **Commit** de SEC-01…SEC-05 (repo + migraciones + frontend + Edge CORS).
+1. ~~**Commit** de SEC-01…SEC-05b~~ — aplicado en rama `previred-01` (2026-07-09).
 2. **Rotar** credenciales pooler en Supabase Dashboard si el historial git pudo exponerlas.
 3. ~~**SEC-02**~~ — **aplicado** 2026-07-08. Post-deploy: policies `USING(true)` **0**; grants `anon` **0 tablas** (solo vistas residuales revocadas).
 4. ~~**SEC-02b**~~ — **aplicado** 2026-07-08 (`20260708250000_sec02b_rls_nomina_movvar_anon.sql`). Tenant en liquidaciones, preparación, Previred y movimientos variables.
 5. ~~**SEC-03**~~ — **aplicado** 2026-07-08.
-6. **Smoke funcional:** alta empleado, parámetros, conceptos, nómina, movimientos variables.
-7. ~~**SEC-05 restante**~~ — extendido en SEC-05b: liquidaciones/Previred/parámetros catálogos, contenedores movimientos/novedades/nómina V2, helper `mensajeErrorParaUsuario`; pendiente CSP y despliegue `ERP_ALLOWED_ORIGIN` en producción.
-8. **Smoke funcional:** alta empleado, parámetros, conceptos, nómina, movimientos variables (manual).
+6. **Smoke funcional:** alta empleado, parámetros, conceptos, nómina, movimientos variables (manual).
+7. ~~**SEC-05 restante**~~ — extendido en SEC-05b; pendiente CSP y `ERP_ALLOWED_ORIGIN` en producción.
+8. **Smoke automatizado (2026-07-09):** `smoke-previred-exportacion.mjs`, `smoke-liquidaciones-estado-revision.mjs`, `smoke-sec-guards-rls.mjs` (anon bloqueado); Edge redeploy vía `scripts/sec-deploy-edge-cors.ps1`.
 9. **Opcional:** RLS en tablas legacy sin RLS (`liquidacion`, `movimiento` — no usadas desde Angular; acceso vía RPC).
 
 ---
