@@ -22,6 +22,7 @@ import {
   primerDiaSqlDesdeYm,
   ultimoDiaSqlDesdeYm,
 } from '../../../../../core/services/periodo-activo.service';
+import { mensajeErrorParaUsuario } from '../../../../../core/errors/erp-supabase-user-message';
 import { ButtonComponent } from '../../../../../shared/components/ui/primitives/button.component';
 import {
   DataGridCellDirective,
@@ -2844,8 +2845,12 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   }
 
   private extractMensajeError(err: unknown, fallback: string): string {
-    const message = err instanceof Error && err.message.trim() ? err.message : fallback;
-    return this.mensajeOperativo(message) ?? fallback;
+    const contexto = fallback
+      .replace(/^No se (pudo|pudieron)\s+/i, '')
+      .replace(/\.\s*$/, '')
+      .trim() || 'completar la operación';
+    const message = mensajeErrorParaUsuario(err, contexto);
+    return this.mensajeOperativo(message) ?? message;
   }
 
   private mensajeOperativo(message: string | undefined): string | undefined {

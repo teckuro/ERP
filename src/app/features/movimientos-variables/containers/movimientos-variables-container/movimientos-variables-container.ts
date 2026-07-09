@@ -12,6 +12,7 @@ import {
 import { LucideAngularModule } from 'lucide-angular';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
+import { mensajeErrorParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
 import {
   DataGridCellDirective,
   DataGridComponent,
@@ -191,7 +192,7 @@ export class MovimientosVariablesContainer implements OnInit {
         ),
       );
     } catch (err) {
-      this.mostrarError(err, 'No se pudo cargar el listado.');
+      this.mostrarError(err, 'cargar el listado');
       this.filas.set([]);
     } finally {
       this.gridLoading.set(false);
@@ -273,7 +274,7 @@ export class MovimientosVariablesContainer implements OnInit {
       });
       await this.buscar();
     } catch (err) {
-      this.mostrarError(err, 'No se pudo crear el movimiento.');
+      this.mostrarError(err, 'crear el movimiento');
     } finally {
       this.guardarNuevoLoading.set(false);
     }
@@ -309,7 +310,7 @@ export class MovimientosVariablesContainer implements OnInit {
       });
       await this.buscar();
     } catch (err) {
-      this.mostrarError(err, 'No se pudo anular el movimiento.');
+      this.mostrarError(err, 'anular el movimiento');
     }
   }
 
@@ -317,8 +318,8 @@ export class MovimientosVariablesContainer implements OnInit {
     this.modalMsg.set(null);
   }
 
-  private mostrarError(err: unknown, fallback: string): void {
-    const message = err instanceof Error && err.message.trim() ? err.message : fallback;
+  private mostrarError(err: unknown, contexto: string): void {
+    const message = mensajeErrorParaUsuario(err, contexto);
     this.modalMsg.set({
       variant: 'error',
       title: 'Error',

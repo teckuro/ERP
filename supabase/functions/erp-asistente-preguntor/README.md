@@ -5,7 +5,8 @@ Código fuente desplegado en Supabase como **`super-service`**. El ERP llama ví
 ## Dashboard
 
 1. **Secrets:** `NVIDIA_API_KEY`, `NVIDIA_MODEL` (`qwen/qwen3.5-122b-a10b`).
-2. **super-service:** pegar `index.ts` de esta carpeta → **Deploy**.
+2. **`ERP_ALLOWED_ORIGIN`** (opcional, SEC-05): origen del ERP en producción para CORS restringido.
+3. **super-service:** pegar `index.ts` de esta carpeta → **Deploy**.
 3. No usar `jsr:@supabase/server` en el editor (provoca 500).
 
 ## Local

@@ -16,7 +16,7 @@
 
 import { Injectable } from '@angular/core';
 
-import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
+import { lanzarErrorSupabaseRepositorio, mensajeErrorParaUsuario } from '../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import type {
   EstadoNomina,
@@ -413,7 +413,7 @@ export class NominaPeriodoRepository {
       // existentes, preparaciones existentes, sin permisos). No anteponemos el
       // prefijo técnico "eliminarNomina:" para que el modal del administrador
       // muestre el texto directo.
-      throw new Error(error.message);
+      throw new Error(mensajeErrorParaUsuario(error, 'eliminar la nómina'));
     }
   }
 

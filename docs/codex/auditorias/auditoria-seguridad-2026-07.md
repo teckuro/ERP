@@ -2,7 +2,7 @@
 
 > **ID:** `AUDIT-SEC-2026-07`
 >
-> **Fecha:** 2026-07-08 · **Estado:** **Correcciones SEC-01…SEC-04 aplicadas** (SEC-05 parcial) — ver §5 y `estado-fases.md`
+> **Fecha:** 2026-07-08 · **Estado:** **Correcciones SEC-01…SEC-05 aplicadas**; SEC-05b (errores extendidos) en curso — ver §5 y `estado-fases.md`
 >
 > **Alcance:** frontend Angular, Supabase (RLS/RPC/Storage/Edge Functions), secretos en repo, dependencias npm.
 >
@@ -336,8 +336,9 @@ SEC-01  →  SEC-03  →  SEC-02  →  SEC-04  →  SEC-05
 4. ~~**SEC-02b**~~ — **aplicado** 2026-07-08 (`20260708250000_sec02b_rls_nomina_movvar_anon.sql`). Tenant en liquidaciones, preparación, Previred y movimientos variables.
 5. ~~**SEC-03**~~ — **aplicado** 2026-07-08.
 6. **Smoke funcional:** alta empleado, parámetros, conceptos, nómina, movimientos variables.
-7. **SEC-05 restante:** extender errores humanizados a nómina/repos restantes; bump `@angular/*`; `ERP_ALLOWED_ORIGIN` en producción; CSP.
-8. **Opcional:** revoke `anon` en RPC (~72) y RLS en tablas legacy sin policies (`liquidacion`, `movimiento`, etc.).
+7. ~~**SEC-05 restante**~~ — extendido en SEC-05b: liquidaciones/Previred/parámetros catálogos, contenedores movimientos/novedades/nómina V2, helper `mensajeErrorParaUsuario`; pendiente CSP y despliegue `ERP_ALLOWED_ORIGIN` en producción.
+8. **Smoke funcional:** alta empleado, parámetros, conceptos, nómina, movimientos variables (manual).
+9. **Opcional:** RLS en tablas legacy sin RLS (`liquidacion`, `movimiento` — no usadas desde Angular; acceso vía RPC).
 
 ---
 

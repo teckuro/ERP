@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { lanzarErrorSupabaseRepositorio, mensajeErrorSupabaseParaUsuario } from './erp-supabase-user-message';
+import {
+  lanzarErrorSupabaseRepositorio,
+  mensajeErrorParaUsuario,
+  mensajeErrorSupabaseParaUsuario,
+} from './erp-supabase-user-message';
 
 describe('mensajeErrorSupabaseParaUsuario', () => {
   it('traduce error de api key ausente', () => {
@@ -68,6 +72,21 @@ describe('mensajeErrorSupabaseParaUsuario', () => {
       'crear la nómina',
     );
     expect(msg).toContain('desactualizado');
+  });
+});
+
+describe('mensajeErrorParaUsuario', () => {
+  it('conserva mensaje de negocio del RPC', () => {
+    const msg = mensajeErrorParaUsuario(
+      new Error('No se puede eliminar la nómina: existen liquidaciones generadas.'),
+      'eliminar la nómina',
+    );
+    expect(msg).toContain('liquidaciones generadas');
+  });
+
+  it('humaniza mensaje técnico', () => {
+    const msg = mensajeErrorParaUsuario(new Error('JWT expired'), 'validar la nómina');
+    expect(msg).toContain('sesión');
   });
 });
 

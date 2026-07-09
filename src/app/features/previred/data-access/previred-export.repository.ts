@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import type { Database, Json } from '../../../core/models/database.types';
+import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import type {
   PreviredCanalExportacion,
@@ -53,7 +54,7 @@ export class PreviredExportRepository {
       if (esTablaInexistente(error)) {
         return { entradas: [], tablaDesplegada: false };
       }
-      throw new Error('No se pudo consultar el catálogo Previred.');
+      lanzarErrorSupabaseRepositorio(error, 'consultar el catálogo Previred');
     }
 
     return {
@@ -76,7 +77,7 @@ export class PreviredExportRepository {
       if (esTablaInexistente(error) || esColumnaInexistente(error)) {
         return { entradas: [], columnaDesplegada: false };
       }
-      throw new Error('No se pudo consultar el catálogo de campos Previred.');
+      lanzarErrorSupabaseRepositorio(error, 'consultar el catálogo de campos Previred');
     }
 
     const filas = (data ?? []) as unknown as Array<{
@@ -114,7 +115,7 @@ export class PreviredExportRepository {
 
     if (error) {
       if (esTablaInexistente(error)) return { porClave, porPersona };
-      throw new Error('No se pudo enriquecer datos de trabajadores para Previred.');
+      lanzarErrorSupabaseRepositorio(error, 'enriquecer datos de trabajadores para Previred');
     }
 
     for (const row of data ?? []) {
@@ -198,7 +199,7 @@ export class PreviredExportRepository {
       if (esTablaInexistente(error)) {
         return { registro: null, tablaDesplegada: false };
       }
-      throw new Error('No se pudo consultar el historial de exportación Previred.');
+      lanzarErrorSupabaseRepositorio(error, 'consultar el historial de exportación Previred');
     }
 
     return {
@@ -233,7 +234,7 @@ export class PreviredExportRepository {
       throw new Error('La exportación no quedó registrada: servicio no desplegado en el entorno.');
     }
 
-    throw new Error('No se pudo registrar la exportación Previred.');
+    lanzarErrorSupabaseRepositorio(error, 'registrar la exportación Previred');
   }
 }
 

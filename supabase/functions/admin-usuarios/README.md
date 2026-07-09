@@ -20,6 +20,7 @@ Opera solo sobre usuarios de la misma empresa (`app_metadata.id_empresa`).
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY` (valida el JWT del llamador)
 - `SUPABASE_SERVICE_ROLE_KEY` (Admin API)
+- `ERP_ALLOWED_ORIGIN` (opcional, SEC-05): origen del ERP en producción (p. ej. `https://erp.ejemplo.cl`). Si no está definido, CORS responde `*`.
 
 ## Despliegue
 

@@ -71,9 +71,26 @@ export function mensajeErrorSupabaseParaUsuario(error: unknown, contexto = 'la o
   return `No se pudo ${contextoLimpio}. Intente de nuevo o contacte a soporte.`;
 }
 
+/**
+ * Mensaje para UI: conserva textos de negocio (p. ej. RPC con validación) y humaniza el resto.
+ */
+export function mensajeErrorParaUsuario(error: unknown, contexto: string): string {
+  const texto = extraerTextoError(error).trim();
+  if (texto && !esMensajeTecnico(texto)) {
+    return texto;
+  }
+  return mensajeErrorSupabaseParaUsuario(error, contexto);
+}
+
 /** Lanza Error con mensaje RRHH (repositorios piloto SEC-05). */
 export function lanzarErrorSupabaseRepositorio(error: unknown, contexto: string): never {
   throw new Error(mensajeErrorSupabaseParaUsuario(error, contexto));
+}
+
+function esMensajeTecnico(texto: string): boolean {
+  return /PGRST\d+|42P01|42703|could not find|relation |column |violates |duplicate key|syntax error|permission denied|42501|jwt|session|not authenticated|failed to fetch|network|timeout/i.test(
+    texto,
+  );
 }
 
 function extraerTextoError(error: unknown): string {

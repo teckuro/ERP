@@ -779,7 +779,7 @@ export class ParametrosGeneralesRepository {
     ].filter(Boolean) as string[];
 
     if (!anyCatalogData && errors.length > 0) {
-      throw new Error(`No fue posible cargar catalogos desde Supabase: ${errors.join(' | ')}`);
+      lanzarErrorSupabaseRepositorio({ message: errors[0] }, 'cargar los catálogos de parámetros');
     }
 
     return result;

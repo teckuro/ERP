@@ -1,6 +1,7 @@
 import { Injectable, isDevMode } from '@angular/core';
 
 import type { Database, Json } from '../../../core/models/database.types';
+import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import {
   parseEstadoRevisionMetadata,
@@ -21,9 +22,6 @@ type LiquidacionTrabajadorRow = Tables['nomina_liquidacion_trabajador']['Row'];
 type LiquidacionConceptoRow = Tables['nomina_liquidacion_concepto']['Row'];
 type LiquidacionEmisionRow = Tables['nomina_liquidacion_emision']['Row'];
 
-const ERROR_GENERAR =
-  'No se pudieron generar las liquidaciones oficiales. No se realizaron cambios parciales.';
-
 @Injectable({ providedIn: 'root' })
 export class LiquidacionesOficialesRepository {
   private readonly supabase = injectSupabase();
@@ -43,7 +41,7 @@ export class LiquidacionesOficialesRepository {
       query = query.eq('id_calculo_periodo', idCalculoPeriodo);
     }
     const { data, error } = await query.maybeSingle();
-    if (error) throw new Error('No se pudo consultar la liquidacion oficial del periodo.');
+    if (error) lanzarErrorSupabaseRepositorio(error, 'consultar la liquidación oficial del periodo');
     return data ? mapPeriodoRow(data) : null;
   }
 
@@ -53,7 +51,7 @@ export class LiquidacionesOficialesRepository {
       .select('*')
       .eq('id_liquidacion_periodo', idLiquidacionPeriodo)
       .order('nombre_trabajador', { ascending: true });
-    if (error) throw new Error('No se pudo consultar el listado de trabajadores liquidados.');
+    if (error) lanzarErrorSupabaseRepositorio(error, 'consultar el listado de trabajadores liquidados');
     return (data ?? []).map(mapTrabajadorRow);
   }
 
@@ -78,7 +76,7 @@ export class LiquidacionesOficialesRepository {
       || (error?.message ?? '').toLowerCase().includes('could not find the function');
 
     if (!rpcMissing) {
-      throw new Error('No se pudo guardar el estado de revisión del trabajador.');
+      lanzarErrorSupabaseRepositorio(error, 'guardar el estado de revisión del trabajador');
     }
 
     const { data: actual, error: readError } = await this.supabase
@@ -87,7 +85,7 @@ export class LiquidacionesOficialesRepository {
       .eq('id_liquidacion_trabajador', idLiquidacionTrabajador)
       .single();
     if (readError || !actual) {
-      throw new Error('No se pudo consultar la liquidación del trabajador.');
+      lanzarErrorSupabaseRepositorio(readError, 'consultar la liquidación del trabajador');
     }
 
     const metadata = {
@@ -106,7 +104,7 @@ export class LiquidacionesOficialesRepository {
       .single();
 
     if (updateError || !actualizado) {
-      throw new Error('No se pudo guardar el estado de revisión del trabajador.');
+      lanzarErrorSupabaseRepositorio(updateError, 'guardar el estado de revisión del trabajador');
     }
     return mapTrabajadorRow(actualizado);
   }
@@ -122,7 +120,7 @@ export class LiquidacionesOficialesRepository {
       p_metadata: (metadata ?? {}) as Json,
     });
     if (error || !data) {
-      throw new Error('No se pudo registrar la emisión de la liquidación.');
+      lanzarErrorSupabaseRepositorio(error, 'registrar la emisión de la liquidación');
     }
     return mapEmisionRow(data as LiquidacionEmisionRow);
   }
@@ -133,7 +131,7 @@ export class LiquidacionesOficialesRepository {
       .select('*')
       .eq('id_liquidacion_trabajador', idLiquidacionTrabajador)
       .order('orden', { ascending: true });
-    if (error) throw new Error('No se pudo consultar el detalle de conceptos del trabajador.');
+    if (error) lanzarErrorSupabaseRepositorio(error, 'consultar el detalle de conceptos del trabajador');
     return (data ?? []).map(mapConceptoRow);
   }
 
@@ -143,7 +141,7 @@ export class LiquidacionesOficialesRepository {
       .select('*')
       .eq('id_liquidacion_trabajador', idLiquidacionTrabajador)
       .maybeSingle();
-    if (error) throw new Error('No se pudo consultar la liquidación del trabajador.');
+    if (error) lanzarErrorSupabaseRepositorio(error, 'consultar la liquidación del trabajador');
     return data ? mapTrabajadorRow(data) : null;
   }
 
@@ -155,7 +153,7 @@ export class LiquidacionesOficialesRepository {
       .order('emitido_en', { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (error) throw new Error('No se pudo consultar la última emisión de la liquidación.');
+    if (error) lanzarErrorSupabaseRepositorio(error, 'consultar la última emisión de la liquidación');
     return data ? mapEmisionRow(data as LiquidacionEmisionRow) : null;
   }
 
@@ -167,7 +165,7 @@ export class LiquidacionesOficialesRepository {
     });
     if (error || !data) {
       logRpcError(params, error);
-      throw new Error(ERROR_GENERAR);
+      lanzarErrorSupabaseRepositorio(error, 'generar las liquidaciones oficiales');
     }
     return mapPeriodoRow(data as LiquidacionPeriodoRow);
   }

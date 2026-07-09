@@ -18,6 +18,7 @@ import type { ShellPageContext } from '../../../../layout/shell-page-context.ser
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
+import { mensajeErrorParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
 import { NominaPeriodoService } from '../../../nomina-mensual/services/nomina-periodo.service';
 import { NominaMensualCapabilitiesService } from '../../../nomina-mensual/services/nomina-mensual-capabilities.service';
 import type { NominaPeriodo } from '../../../nomina-mensual/models/nomina-periodo.models';
@@ -978,7 +979,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       await this.refrescarNominaCargada(id);
       return { ok: true };
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'No fue posible validar la nómina.';
+      const mensaje = mensajeErrorParaUsuario(error, 'validar la nómina');
       return { ok: false, razon: mensaje };
     }
   }
