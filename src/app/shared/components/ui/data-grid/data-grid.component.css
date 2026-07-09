@@ -1040,8 +1040,365 @@
       }
 
       .data-grid-footer {
-        border-color: var(--data-grid-border);
-        background: #ffffff;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px 12px;
+        padding: 8px 12px;
+        border-top: 1px solid var(--data-grid-border);
+        background: var(--erp-surface, #ffffff);
+      }
+
+      .data-grid-footer__summary {
+        margin: 0;
+        font-size: var(--data-grid-text-sm, 0.72rem);
+        font-weight: 650;
+        line-height: 1.3;
+        color: var(--erp-muted, #647084);
+      }
+
+      .data-grid-footer__actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
+      }
+
+      .data-grid-footer-pagination {
+        display: inline-flex;
+        align-items: stretch;
+        overflow: hidden;
+        border: 1px solid var(--erp-border, var(--data-grid-border));
+        border-radius: 4px;
+        background: var(--erp-surface, #ffffff);
+      }
+
+      .data-grid-footer-pagination__btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 26px;
+        padding: 0 10px;
+        border: 0;
+        border-right: 1px solid var(--erp-border, var(--data-grid-border));
+        background: transparent;
+        color: var(--erp-ink, #243b53);
+        font-size: var(--data-grid-text-sm, 0.72rem);
+        font-weight: 650;
+        line-height: 1;
+        cursor: pointer;
+        transition: background 120ms ease;
+      }
+
+      .data-grid-footer-pagination__btn:last-child {
+        border-right: 0;
+      }
+
+      .data-grid-footer-pagination__btn:hover:not(:disabled) {
+        background: var(--erp-surface-soft, #f8fafc);
+      }
+
+      .data-grid-footer-pagination__btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .data-grid-footer-pagination__btn:focus-visible {
+        outline: none;
+        box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.22);
+      }
+
+      .data-grid-footer-pagination__current {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 4.5rem;
+        min-height: 26px;
+        padding: 0 10px;
+        border-right: 1px solid var(--erp-border, var(--data-grid-border));
+        background: var(--erp-surface-soft, #f8fafc);
+        color: var(--erp-ink, #243b53);
+        font-size: var(--data-grid-text-sm, 0.72rem);
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .data-grid-toolbar-icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        padding: 0;
+        border: 1px solid var(--erp-border, var(--data-grid-border));
+        border-radius: 4px;
+        background: var(--erp-surface, #ffffff);
+        color: var(--erp-muted, #647084);
+        cursor: pointer;
+        transition:
+          background 120ms ease,
+          border-color 120ms ease,
+          color 120ms ease;
+      }
+
+      .data-grid-toolbar-icon-btn:hover:not(:disabled) {
+        border-color: var(--erp-border-strong, #c7d0c4);
+        background: var(--erp-surface-soft, #f8fafc);
+        color: var(--erp-ink, #243b53);
+      }
+
+      .data-grid-toolbar-icon-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .data-grid-toolbar-icon-btn:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+      }
+
+      .data-grid-toolbar-icon-btn.is-active {
+        border-color: #93c5fd;
+        background: #eff6ff;
+        color: #1d4ed8;
+      }
+
+      .data-grid-toolbar-icon-btn lucide-icon {
+        width: 14px;
+        height: 14px;
+      }
+
+      .data-grid-toolbar-icon-wrap {
+        position: relative;
+      }
+
+      .data-grid-overlay-root {
+        position: relative;
+      }
+
+      .data-grid-overlay-panel {
+        position: absolute;
+        right: 0;
+        z-index: 50;
+        width: min(19rem, calc(100vw - 2rem));
+        overflow: hidden;
+        border: 1px solid var(--erp-border, var(--data-grid-border));
+        border-radius: 6px;
+        background: var(--erp-surface, #ffffff);
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.1);
+      }
+
+      .data-grid-overlay-root .data-grid-overlay-panel {
+        top: calc(100% + 6px);
+      }
+
+      .data-grid-overlay-root--up .data-grid-overlay-panel {
+        top: auto;
+        bottom: calc(100% + 6px);
+      }
+
+      .data-grid-overlay-panel__head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--erp-border, var(--data-grid-border));
+        background: var(--erp-surface-soft, #f8fafc);
+      }
+
+      .data-grid-overlay-panel__title {
+        margin: 0;
+        font-size: 0.8125rem;
+        font-weight: 650;
+        line-height: 1.3;
+        color: var(--erp-ink, #243b53);
+      }
+
+      .data-grid-overlay-panel__hint {
+        margin: 3px 0 0;
+        font-size: var(--data-grid-text-sm, 0.72rem);
+        line-height: 1.35;
+        color: var(--erp-muted, #647084);
+      }
+
+      .data-grid-overlay-panel__actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+
+      .data-grid-overlay-chip-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+        padding: 0 8px;
+        border: 1px solid var(--erp-border, var(--data-grid-border));
+        border-radius: 999px;
+        background: var(--erp-surface, #ffffff);
+        color: var(--erp-ink, #243b53);
+        font-size: var(--data-grid-text-xs, 0.64rem);
+        font-weight: 650;
+        line-height: 1;
+        cursor: pointer;
+        transition: background 120ms ease, border-color 120ms ease;
+      }
+
+      .data-grid-overlay-chip-btn:hover {
+        border-color: var(--erp-border-strong, #c7d0c4);
+        background: var(--erp-surface-soft, #f8fafc);
+      }
+
+      .data-grid-overlay-chip-btn:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+      }
+
+      .data-grid-overlay-panel__body {
+        padding: 10px 12px 12px;
+      }
+
+      .data-grid-overlay-field {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        min-height: 30px;
+        padding: 0 10px;
+        border: 1px solid var(--erp-border, var(--data-grid-border));
+        border-radius: 4px;
+        background: var(--erp-surface, #ffffff);
+        color: var(--erp-ink, #243b53);
+        font-size: 0.8125rem;
+        font-weight: 650;
+        font-variant-numeric: tabular-nums;
+        outline: none;
+        transition: border-color 120ms ease, box-shadow 120ms ease;
+      }
+
+      .data-grid-overlay-field:focus {
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
+      }
+
+      .data-grid-overlay-field-error {
+        margin: 6px 0 0;
+        font-size: var(--data-grid-text-sm, 0.72rem);
+        font-weight: 650;
+        line-height: 1.35;
+        color: #b91c1c;
+      }
+
+      .data-grid-overlay-panel__footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .data-grid-overlay-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 0 10px;
+        border: 1px solid var(--erp-border, var(--data-grid-border));
+        border-radius: 4px;
+        background: var(--erp-surface, #ffffff);
+        color: var(--erp-ink, #243b53);
+        font-size: var(--data-grid-text-sm, 0.72rem);
+        font-weight: 650;
+        line-height: 1;
+        cursor: pointer;
+        transition: background 120ms ease, border-color 120ms ease;
+      }
+
+      .data-grid-overlay-action:hover {
+        background: var(--erp-surface-soft, #f8fafc);
+        border-color: var(--erp-border-strong, #c7d0c4);
+      }
+
+      .data-grid-overlay-action:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+      }
+
+      .data-grid-overlay-action--primary {
+        border-color: var(--erp-primary, #2563eb);
+        background: var(--erp-primary, #2563eb);
+        color: #ffffff;
+      }
+
+      .data-grid-overlay-action--primary:hover {
+        border-color: var(--erp-primary-hover, #1d4ed8);
+        background: var(--erp-primary-hover, #1d4ed8);
+      }
+
+      .data-grid-column-panel__list {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        max-height: 16rem;
+        margin: 0;
+        padding: 6px 8px 8px;
+        overflow: auto;
+        list-style: none;
+      }
+
+      .data-grid-column-panel__item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 30px;
+        padding: 4px 6px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 120ms ease;
+      }
+
+      .data-grid-column-panel__item:hover:not(.is-disabled) {
+        background: var(--erp-surface-soft, #f8fafc);
+      }
+
+      .data-grid-column-panel__item.is-disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+
+      .data-grid-column-panel__checkbox {
+        width: 14px;
+        height: 14px;
+        margin: 0;
+        flex-shrink: 0;
+        accent-color: var(--erp-primary, #2563eb);
+      }
+
+      .data-grid-column-panel__label {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        line-height: 1.35;
+        color: var(--erp-ink, #243b53);
+        white-space: normal;
+        word-break: break-word;
+      }
+
+      .data-grid-column-panel__badge {
+        flex-shrink: 0;
+        font-size: var(--data-grid-text-xs, 0.64rem);
+        font-weight: 650;
+        line-height: 1;
+        color: var(--erp-muted, #647084);
+      }
+
+      .data-grid-toolbar--operativa__tools {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
       }
 
       .data-grid-button-spinner {

@@ -23,7 +23,8 @@ import { LiquidacionPreviewModalComponent } from '../features/nomina-mensual-v2/
 import { LiquidacionesOficialesService } from '../features/liquidaciones-oficiales/services/liquidaciones-oficiales.service';
 import { NominaPeriodoService } from '../features/nomina-mensual/services/nomina-periodo.service';
 import type { EstadoNomina } from '../features/nomina-mensual/models/nomina-periodo.models';
-import type { LiquidacionConcepto, LiquidacionEmision, LiquidacionTrabajador } from '../features/liquidaciones-oficiales/models/liquidacion-oficial.model';
+import type { LiquidacionConcepto, LiquidacionEmision, LiquidacionRevisionEvento, LiquidacionTrabajador } from '../features/liquidaciones-oficiales/models/liquidacion-oficial.model';
+import { LiquidacionesModalHistorialTrabajadorComponent } from '../features/liquidaciones-oficiales/components/liquidaciones-modal-historial-trabajador/liquidaciones-modal-historial-trabajador.component';
 import type { LiquidacionCalculada } from '../features/nomina-mensual/models/proceso-mensual.model';
 import {
   buildLiquidacionAccionUiView,
@@ -59,6 +60,7 @@ function etiquetaCanalEmision(canal: LiquidacionEmision['canal']): string {
     MessageBoxComponent,
     LiquidacionDetallePanelComponent,
     LiquidacionPreviewModalComponent,
+    LiquidacionesModalHistorialTrabajadorComponent,
   ],
   template: `
     <section class="liq-det-page" aria-label="Detalle de liquidación">
@@ -113,6 +115,15 @@ function etiquetaCanalEmision(canal: LiquidacionEmision['canal']): string {
           <button
             type="button"
             class="liq-det-page__icon-btn"
+            title="Ver historial de movimientos"
+            aria-label="Ver historial de movimientos"
+            (click)="abrirHistorial()"
+          >
+            <lucide-icon name="history" aria-hidden="true"></lucide-icon>
+          </button>
+          <button
+            type="button"
+            class="liq-det-page__icon-btn"
             title="Ver e imprimir"
             aria-label="Ver e imprimir"
             (click)="abrirPreview()"
@@ -127,6 +138,16 @@ function etiquetaCanalEmision(canal: LiquidacionEmision['canal']): string {
           [estadoTrabajador]="estadoTrabajadorUi()"
         />
       }
+
+      <app-liquidaciones-modal-historial-trabajador
+        [abierto]="!!historialTrabajador()"
+        [trabajador]="historialTrabajador()"
+        [eventos]="historialEventos()"
+        [emisiones]="historialEmisiones()"
+        [cargando]="historialCargando()"
+        [error]="historialError()"
+        (cerrar)="cerrarHistorial()"
+      />
 
       @if (previewLiquidacion(); as liqPdf) {
         <app-liquidacion-preview-modal
@@ -296,6 +317,16 @@ export class DetalleLiquidacionPage {
   } | null>(null);
   readonly empresaDocumento = signal<DocumentoLiquidacionEmpresa | null>(null);
 
+  readonly historialTrabajador = signal<LiquidacionTrabajador | null>(null);
+
+  readonly historialEventos = signal<readonly LiquidacionRevisionEvento[]>([]);
+
+  readonly historialEmisiones = signal<readonly LiquidacionEmision[]>([]);
+
+  readonly historialCargando = signal(false);
+
+  readonly historialError = signal<string | null>(null);
+
   readonly queryParams = toSignal(this.route.queryParams, { initialValue: {} });
   readonly idTrabajador = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
 
@@ -404,6 +435,44 @@ export class DetalleLiquidacionPage {
     } finally {
       this.cargando.set(false);
     }
+  }
+
+  async abrirHistorial(): Promise<void> {
+    const trabajador = this.trabajador();
+    if (!trabajador) return;
+    this.historialTrabajador.set(trabajador);
+    this.historialEventos.set([]);
+    this.historialEmisiones.set([]);
+    this.historialError.set(null);
+    this.historialCargando.set(true);
+
+    try {
+      const { eventos, emisiones } = await this.service.consultarHistorialRevisionTrabajador(
+        trabajador.idLiquidacionTrabajador,
+      );
+      if (this.historialTrabajador()?.idLiquidacionTrabajador === trabajador.idLiquidacionTrabajador) {
+        this.historialEventos.set(eventos);
+        this.historialEmisiones.set(emisiones);
+      }
+    } catch (err) {
+      if (this.historialTrabajador()?.idLiquidacionTrabajador === trabajador.idLiquidacionTrabajador) {
+        this.historialError.set(
+          mensajeErrorSupabaseParaUsuario(err, 'cargar el historial de la liquidación'),
+        );
+      }
+    } finally {
+      if (this.historialTrabajador()?.idLiquidacionTrabajador === trabajador.idLiquidacionTrabajador) {
+        this.historialCargando.set(false);
+      }
+    }
+  }
+
+  cerrarHistorial(): void {
+    this.historialTrabajador.set(null);
+    this.historialEventos.set([]);
+    this.historialEmisiones.set([]);
+    this.historialCargando.set(false);
+    this.historialError.set(null);
   }
 
   ejecutarAccion(action: LiquidacionAccionUiAction): void {

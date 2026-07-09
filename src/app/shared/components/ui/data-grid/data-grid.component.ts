@@ -1534,6 +1534,16 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     this.showColumnPanel = !this.showColumnPanel;
   }
 
+  onColumnVisibilityChange(columnId: string, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    if (checked === this.isColumnVisible(columnId)) return;
+    this.toggleColumn(columnId);
+  }
+
+  get visibleColumnsSummary(): string {
+    return `${this.visibleColumnIds.size} de ${this.columns.length} visibles`;
+  }
+
   isColumnVisible(columnId: string): boolean {
     return this.visibleColumnIds.has(columnId);
   }

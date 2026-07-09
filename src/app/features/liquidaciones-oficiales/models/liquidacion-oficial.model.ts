@@ -24,6 +24,20 @@ export interface LiquidacionEmision {
   metadata: Record<string, unknown>;
 }
 
+/** Evento append-only de revisión RRHH (autorización, pago, entrega, rectificación). */
+export interface LiquidacionRevisionEvento {
+  idLiquidacionRevisionEvento: number;
+  idLiquidacionTrabajador: number;
+  idLiquidacionPeriodo: number;
+  accion: string;
+  estadoPrevio: string | null;
+  estadoNuevo: string;
+  usuarioId: string | null;
+  usuarioLabel: string;
+  registradoEn: string;
+  metadata: Record<string, unknown>;
+}
+
 export interface LiquidacionPeriodo {
   idLiquidacionPeriodo: number;
   idCalculoPeriodo: number;

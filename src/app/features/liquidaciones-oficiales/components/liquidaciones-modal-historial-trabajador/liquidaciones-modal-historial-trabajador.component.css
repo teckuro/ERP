@@ -1,0 +1,252 @@
+/* Historial RRHH — modal ancho, grilla acoplada (patrón admin nóminas). */
+
+app-liquidaciones-modal-historial-trabajador app-message-box.message-box-host-modal,
+app-liquidaciones-modal-historial-nomina app-message-box.message-box-host-modal {
+  padding: 0.75rem 1rem;
+  align-items: stretch;
+}
+
+.liq-historial-trab-msgbox.noia-msgbox--modal {
+  width: min(100%, calc(100vw - 2rem)) !important;
+  max-width: min(100%, calc(100vw - 2rem)) !important;
+  height: min(92vh, 56rem);
+  max-height: min(92vh, 56rem);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.liq-historial-trab-msgbox .noia-msgbox__header {
+  flex: 0 0 auto;
+  padding: 1rem 3rem 0.85rem 1.25rem;
+}
+
+.liq-historial-trab-msgbox .noia-msgbox__title {
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.liq-historial-trab-msgbox .noia-msgbox__message {
+  display: none;
+}
+
+.liq-historial-trab-msgbox .noia-msgbox__slot--modal:not(:empty) {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.liq-historial-trab {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.liq-historial-trab__intro {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0.65rem 1.25rem;
+  border-bottom: 1px solid var(--erp-border);
+  background: var(--erp-surface-soft);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--erp-ink-muted);
+}
+
+.liq-historial-trab__grid-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.liq-historial-trab__grid {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.liq-historial-trab__grid-card {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: var(--erp-surface);
+}
+
+.liq-historial-trab__grid-wrap app-data-grid.data-grid-host--sized {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto !important;
+  max-height: none !important;
+}
+
+.liq-historial-trab__grid-wrap .data-grid-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.liq-historial-trab__grid-wrap .data-grid-table-view--scroll {
+  min-width: 100%;
+  width: max-content;
+  table-layout: auto;
+}
+
+.liq-historial-trab__grid-wrap .data-grid-head-cell,
+.liq-historial-trab__grid-wrap .data-grid-body-cell {
+  vertical-align: top;
+}
+
+.liq-historial-trab__grid-wrap .data-grid-body-cell {
+  padding-block: 0.55rem;
+}
+
+.liq-historial-trab__grid-wrap .border-b.border-neutral-100,
+.liq-historial-trab__grid-wrap .data-grid-footer {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.liq-historial-trab__grid-wrap .border-b.border-neutral-100 .text-sm.font-medium.uppercase {
+  display: none;
+}
+
+.liq-historial-trab__empty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  margin: 0 1.25rem 1rem;
+  padding: 20px 16px;
+  border: 1px solid var(--erp-border);
+  border-radius: 8px;
+  background: var(--erp-surface-soft);
+  text-align: center;
+}
+
+.liq-historial-trab__empty lucide-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--erp-ink-muted);
+}
+
+.liq-historial-trab__empty strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--erp-ink);
+}
+
+.liq-historial-trab__empty span {
+  max-width: 32rem;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--erp-ink-muted);
+}
+
+.liq-historial-trab__empty--attention {
+  background: #fff8ed;
+  border-color: #ece3d4;
+}
+
+.liq-historial-trab__fecha {
+  display: block;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--erp-ink-muted);
+}
+
+.liq-historial-trab__accion {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
+}
+
+.liq-historial-trab__accion-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--erp-ink);
+  line-height: 1.4;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.liq-historial-trab__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border-radius: 5px;
+  border: 1px solid var(--erp-border);
+  background: var(--erp-surface-soft);
+  color: var(--erp-ink-muted);
+  flex-shrink: 0;
+}
+
+.liq-historial-trab__icon lucide-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.liq-historial-trab__icon--ok {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+
+.liq-historial-trab__icon--warning {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+}
+
+.liq-historial-trab__icon--danger {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.liq-historial-trab__usuario,
+.liq-historial-trab__trabajador {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--erp-ink-secondary, #334155);
+  white-space: normal;
+  word-break: break-word;
+}
+
+.liq-historial-trab__trabajador {
+  font-weight: 500;
+  color: var(--erp-ink);
+}
+
+.liq-historial-trab__detalle {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--erp-ink-secondary, #334155);
+  white-space: normal;
+  word-break: break-word;
+}
+
+.liq-historial-trab__muted {
+  color: #94a3b8;
+}

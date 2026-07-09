@@ -1,0 +1,75 @@
+@if (abierto()) {
+  <app-message-box
+    variant="info"
+    mode="modal"
+    width="lg"
+    panelClass="liq-historial-trab-msgbox"
+    eyebrow="Historial de liquidaciones"
+    [title]="tituloModal()"
+    message=""
+    (dismiss)="cerrarModal()"
+  >
+    <div class="liq-historial-trab">
+      <p class="liq-historial-trab__intro">{{ subtituloModal() }}</p>
+
+      @if (error()) {
+        <div class="liq-historial-trab__empty liq-historial-trab__empty--attention">
+          <lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon>
+          <strong>No fue posible cargar el historial</strong>
+          <span>{{ error() }}</span>
+        </div>
+      } @else {
+        <div class="liq-historial-trab__grid-wrap">
+          <app-data-grid
+            title=""
+            [columns]="columnas"
+            [rows]="filas()"
+            [filtersEnabled]="false"
+            [showHeader]="false"
+            [loading]="cargando()"
+            loadingLabel="Cargando historial…"
+            [trackBy]="trackFila"
+            [gridHeight]="'100%'"
+            emptyTitle="Sin movimientos registrados"
+            emptyDescription="Los eventos aparecerán al autorizar, registrar pago, entregar documento o emitir comprobantes."
+            className="liq-historial-trab__grid"
+            cardClassName="liq-historial-trab__grid-card"
+          >
+            <ng-template appDataGridCell="fecha" let-fila="row">
+              <span class="liq-historial-trab__fecha" [title]="fila.fechaLarga">{{ fila.fechaCorta }}</span>
+            </ng-template>
+
+            <ng-template appDataGridCell="trabajador" let-fila="row">
+              <span class="liq-historial-trab__trabajador">{{ fila.trabajador }}</span>
+            </ng-template>
+
+            <ng-template appDataGridCell="accion" let-fila="row">
+              <span class="liq-historial-trab__accion">
+                <span
+                  class="liq-historial-trab__icon"
+                  [class]="'liq-historial-trab__icon--' + fila.tono"
+                  aria-hidden="true"
+                >
+                  <lucide-icon [name]="fila.icono"></lucide-icon>
+                </span>
+                <span class="liq-historial-trab__accion-text">{{ fila.accion }}</span>
+              </span>
+            </ng-template>
+
+            <ng-template appDataGridCell="usuario" let-fila="row">
+              <span class="liq-historial-trab__usuario">{{ fila.usuario }}</span>
+            </ng-template>
+
+            <ng-template appDataGridCell="detalle" let-fila="row">
+              @if (fila.detalle) {
+                <span class="liq-historial-trab__detalle">{{ fila.detalle }}</span>
+              } @else {
+                <span class="liq-historial-trab__muted">—</span>
+              }
+            </ng-template>
+          </app-data-grid>
+        </div>
+      }
+    </div>
+  </app-message-box>
+}

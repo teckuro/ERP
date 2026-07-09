@@ -9,6 +9,44 @@
 
 ---
 
+## 2026-07-09 — app-data-grid: columnas visibles y paginación inferior
+
+- **Tuerca (columnas):** panel compacto con checkboxes, contador visibles, acciones Mostrar todas/Restaurar; también en toolbar operativa.
+- **Ir a página:** popover más compacto, copy con acentos, botones alineados al sistema ERP.
+- **Footer:** paginación con clases locales (`data-grid-footer-*`), densidad operativa.
+
+---
+
+## 2026-07-09 — Modal historial liquidaciones: layout y legibilidad
+
+- **Modal:** altura 92vh, slot flex acoplado, intro compacta fuera del mensaje del MessageBox.
+- **Grilla:** sin toolbar de paginación; scroll interno; columnas con anchos explícitos; textos con wrap y alineación superior.
+- **Aplica** a modal por trabajador y por nómina.
+
+---
+
+## 2026-07-09 — Historial RRHH liquidaciones (icono history completo)
+
+- **Entrada nóminas:** botón historial abre modal consolidado del período (movimientos por trabajador).
+- **Trabajadores:** botón historial por fila + modal individual (ya cableado).
+- **Detalle trabajador:** botón historial en barra de acciones.
+- **Datos:** consultas por período en repository/service; presenter `mapearHistorialRevisionPeriodo`.
+
+---
+
+## 2026-07-09 — Grilla entrada liquidaciones: título columna Acciones
+
+- **Entrada nóminas:** la grilla de selección (`COLUMNAS_SELECCION_NOMINA_LIQUIDACION`) mostraba la última columna sin encabezado; ahora dice **Acciones** con ancho acorde a los botones Previred y abrir.
+
+---
+
+- **Grilla:** última columna renombrada a **Acciones** (ancho ajustado para iconos).
+- **Fila:** botón **Historial** (`history`) abre modal con movimientos de autorización, pago, entrega, rectificación y emisiones del comprobante.
+- **Patrón:** modal + `app-data-grid` como historial administrativo de nóminas; CSS local en `liquidaciones-modal-historial-trabajador`.
+- **Archivos:** `liquidaciones-oficiales-container.*`, `liquidaciones-oficiales.presenter.ts`, `liquidaciones-revision-historial.presenter.ts`, repository/service.
+
+---
+
 ## 2026-07-09 — PDF liquidación: cableado de datos reales + etiquetas RRHH
 
 - **Enriquecimiento:** UF/UTM del período, días base/ausencias, folio `S-####-AA`, emisión, anticipos/préstamos, centro de costo, AFP/tasa/salud/mutual/CCAF/email desde metadata y conceptos.

@@ -227,6 +227,15 @@
               }
               <button
                 type="button"
+                class="liq-row-action"
+                [title]="'Ver historial de ' + fila.empresaNombre + ' · ' + fila.periodo"
+                [attr.aria-label]="'Ver historial de liquidaciones de ' + fila.empresaNombre + ' · ' + fila.periodo"
+                (click)="abrirHistorialNomina(fila)"
+              >
+                <lucide-icon name="history" aria-hidden="true"></lucide-icon>
+              </button>
+              <button
+                type="button"
                 class="liq-row-action liq-row-action--primary"
                 [title]="'Abrir liquidaciones de ' + fila.empresaNombre + ' · ' + fila.periodo"
                 [attr.aria-label]="'Abrir liquidaciones de ' + fila.empresaNombre + ' · ' + fila.periodo"
@@ -397,6 +406,15 @@
                       <button
                         type="button"
                         class="liq-row-action"
+                        title="Ver historial de movimientos"
+                        aria-label="Ver historial de movimientos"
+                        (click)="abrirHistorialTrabajador(fila)"
+                      >
+                        <lucide-icon name="history" aria-hidden="true"></lucide-icon>
+                      </button>
+                      <button
+                        type="button"
+                        class="liq-row-action"
                         [disabled]="accionView.pdfDisabled || previewPdfCargando()"
                         [title]="accionView.pdfLabel"
                         [attr.aria-label]="accionView.pdfLabel"
@@ -520,6 +538,28 @@
     (cerrar)="cerrarModalDetalleTrabajador()"
     (ejecutarAccion)="ejecutarAccionTrabajadorDesdeModal($event)"
     (abrirPreview)="abrirPreviewPdfDesdeModal()"
+  />
+
+  <app-liquidaciones-modal-historial-trabajador
+    [abierto]="!!historialTrabajador()"
+    [trabajador]="historialTrabajador()"
+    [eventos]="historialEventos()"
+    [emisiones]="historialEmisiones()"
+    [cargando]="historialTrabajadorCargando()"
+    [error]="historialTrabajadorError()"
+    (cerrar)="cerrarHistorialTrabajador()"
+  />
+
+  <app-liquidaciones-modal-historial-nomina
+    [abierto]="!!historialNominaEntrada()"
+    [nomina]="historialNominaEntrada()"
+    [versionLiquidacion]="historialNominaVersion()"
+    [eventos]="historialNominaEventos()"
+    [emisiones]="historialNominaEmisiones()"
+    [trabajadores]="historialNominaTrabajadores()"
+    [cargando]="historialNominaCargando()"
+    [error]="historialNominaError()"
+    (cerrar)="cerrarHistorialNomina()"
   />
 
   @if (error(); as mensaje) {

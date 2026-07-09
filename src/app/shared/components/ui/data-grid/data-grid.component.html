@@ -1,4 +1,79 @@
     <app-card [className]="gridCardClass" [ngStyle]="gridCardStyle">
+      <ng-template #dataGridColumnPanel>
+        <div class="data-grid-overlay-panel data-grid-column-panel" role="dialog" aria-label="Columnas visibles">
+          <div class="data-grid-overlay-panel__head">
+            <div>
+              <p class="data-grid-overlay-panel__title">Columnas visibles</p>
+              <p class="data-grid-overlay-panel__hint">{{ visibleColumnsSummary }}</p>
+            </div>
+            <div class="data-grid-overlay-panel__actions">
+              <button type="button" class="data-grid-overlay-chip-btn" (click)="showAllColumns()">
+                Mostrar todas
+              </button>
+              <button type="button" class="data-grid-overlay-chip-btn" (click)="restoreDefaultColumns()">
+                Restaurar
+              </button>
+            </div>
+          </div>
+          <ul class="data-grid-column-panel__list">
+            @for (column of columns; track column.id) {
+              <li>
+                <label
+                  class="data-grid-column-panel__item"
+                  [class.is-disabled]="isColumnFixed(column) || isLastVisibleColumn(column.id)"
+                  [attr.title]="isColumnFixed(column) ? 'Esta columna siempre queda visible' : isLastVisibleColumn(column.id) ? 'Debe quedar al menos una columna visible' : column.header"
+                >
+                  <input
+                    type="checkbox"
+                    class="data-grid-column-panel__checkbox"
+                    [checked]="isColumnVisible(column.id)"
+                    [disabled]="isColumnFixed(column) || isLastVisibleColumn(column.id)"
+                    (change)="onColumnVisibilityChange(column.id, $event)"
+                  />
+                  <span class="data-grid-column-panel__label">{{ column.header }}</span>
+                  @if (isColumnFixed(column)) {
+                    <span class="data-grid-column-panel__badge">Fija</span>
+                  }
+                </label>
+              </li>
+            }
+          </ul>
+        </div>
+      </ng-template>
+
+      <ng-template #dataGridPagePopover>
+        <div class="data-grid-overlay-panel data-grid-page-popover" role="dialog" aria-label="Ir a página">
+          <div class="data-grid-overlay-panel__head">
+            <div>
+              <p class="data-grid-overlay-panel__title">Ir a página</p>
+              <p class="data-grid-overlay-panel__hint">Rango 1-{{ totalPages }}</p>
+            </div>
+          </div>
+          <div class="data-grid-overlay-panel__body">
+            <input
+              class="data-grid-overlay-field"
+              type="number"
+              min="1"
+              [max]="totalPages"
+              [value]="pageInput"
+              aria-label="Número de página"
+              (input)="updatePageInput($event)"
+              (keydown.enter)="confirmPagePopover()"
+            />
+            @if (pageInputError) {
+              <p class="data-grid-overlay-field-error">{{ pageInputError }}</p>
+            }
+            <div class="data-grid-overlay-panel__footer">
+              <button type="button" class="data-grid-overlay-action" (click)="closePagePopover()">
+                Cancelar
+              </button>
+              <button type="button" class="data-grid-overlay-action data-grid-overlay-action--primary" (click)="confirmPagePopover()">
+                Ir
+              </button>
+            </div>
+          </div>
+        </div>
+      </ng-template>
       @if (filtersEnabled && showFilters) {
         <div class="data-grid-filter-panel border-b border-neutral-200 bg-white px-4 py-3">
           <div class="data-grid-filter-shell flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
@@ -209,6 +284,24 @@
                 <lucide-icon class="data-grid-toolbar--operativa__nav-icon" [img]="lastPageIcon"></lucide-icon>
               </button>
             </div>
+
+            <div class="data-grid-toolbar--operativa__tools data-grid-overlay-root" data-grid-overlay-root>
+              <button
+                type="button"
+                class="data-grid-toolbar-icon-btn"
+                [class.is-active]="showColumnPanel"
+                aria-label="Configurar columnas visibles"
+                title="Columnas visibles"
+                [attr.aria-expanded]="showColumnPanel"
+                [disabled]="loading"
+                (click)="toggleColumnPanel()"
+              >
+                <lucide-icon [img]="settingsIcon"></lucide-icon>
+              </button>
+              @if (showColumnPanel) {
+                <ng-container *ngTemplateOutlet="dataGridColumnPanel" />
+              }
+            </div>
           </div>
         </div>
       }
@@ -375,92 +468,30 @@
 
               <button
                 type="button"
-                class="data-grid-toolbar-icon-button inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                class="data-grid-toolbar-icon-btn"
                 aria-label="Refrescar grilla"
                 title="Refrescar grilla"
                 [disabled]="loading"
                 (click)="refresh.emit()"
               >
-                <lucide-icon class="h-3.5 w-3.5" [img]="refreshIcon"></lucide-icon>
+                <lucide-icon [img]="refreshIcon"></lucide-icon>
               </button>
 
-              <div class="relative data-grid-toolbar-icon-wrap" data-grid-overlay-root>
+              <div class="data-grid-toolbar-icon-wrap data-grid-overlay-root" data-grid-overlay-root>
                 <button
                   type="button"
-                  class="data-grid-toolbar-icon-button inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  class="data-grid-toolbar-icon-btn"
+                  [class.is-active]="showColumnPanel"
                   aria-label="Configurar columnas visibles"
                   title="Columnas visibles"
                   [attr.aria-expanded]="showColumnPanel"
                   (click)="toggleColumnPanel()"
                 >
-                  <lucide-icon class="h-3.5 w-3.5" [img]="settingsIcon"></lucide-icon>
+                  <lucide-icon [img]="settingsIcon"></lucide-icon>
                 </button>
 
                 @if (showColumnPanel) {
-                  <div
-                    class="absolute right-0 top-10 z-50 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border border-slate-200 bg-white text-sm shadow-[0_8px_20px_rgba(15,23,42,0.08)] ring-1 ring-slate-950/[0.03]"
-                    role="dialog"
-                    aria-label="Columnas visibles"
-                  >
-                    <div class="border-b border-slate-100 bg-slate-50 px-3.5 py-2.5">
-                      <div class="flex items-start justify-between gap-3">
-                        <div>
-                          <p class="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
-                            Columnas
-                          </p>
-                        </div>
-
-                        <div class="flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            class="inline-flex h-7 items-center rounded-full border border-slate-200 bg-white px-2.5 text-[0.68rem] font-medium text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                            (click)="showAllColumns()"
-                          >
-                            Todo
-                          </button>
-                          <button
-                            type="button"
-                            class="inline-flex h-7 items-center rounded-full border border-slate-200 bg-white px-2.5 text-[0.68rem] font-medium text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                            (click)="restoreDefaultColumns()"
-                          >
-                            Restaurar
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="max-h-64 overflow-auto p-1.5">
-                      @for (column of columns; track column.id) {
-                        <button
-                          type="button"
-                          class="flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-55"
-                          [disabled]="isColumnFixed(column) || isLastVisibleColumn(column.id)"
-                          [attr.title]="isColumnFixed(column) ? 'Esta columna siempre queda visible' : isLastVisibleColumn(column.id) ? 'Debe quedar al menos una columna visible' : column.header"
-                          (click)="toggleColumn(column.id)"
-                        >
-                          <span class="min-w-0">
-                            <span class="block truncate text-sm font-medium text-slate-800">
-                              {{ column.header }}
-                            </span>
-                          </span>
-
-                          <span
-                            class="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors"
-                            [class.border-blue-600]="isColumnVisible(column.id)"
-                            [class.bg-blue-500]="isColumnVisible(column.id)"
-                            [class.border-slate-300]="!isColumnVisible(column.id)"
-                            [class.bg-slate-100]="!isColumnVisible(column.id)"
-                          >
-                            <span
-                              class="h-4 w-4 rounded-full bg-white shadow-sm ring-1 ring-black/5 transition-transform"
-                              [class.translate-x-4]="isColumnVisible(column.id)"
-                              [class.translate-x-0.5]="!isColumnVisible(column.id)"
-                            ></span>
-                          </span>
-                        </button>
-                      }
-                    </div>
-                  </div>
+                  <ng-container *ngTemplateOutlet="dataGridColumnPanel" />
                 }
               </div>
             </div>
@@ -993,41 +1024,32 @@
       </div>
 
       @if (filteredRows.length > 0 && toolbarLayout !== 'operativa') {
-        <div
-          class="data-grid-footer flex flex-col gap-3 border-t border-neutral-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <p class="text-xs font-medium text-neutral-600">
-            Pagina {{ currentPage }} de {{ totalPages }}
+        <div class="data-grid-footer" aria-label="Paginación inferior">
+          <p class="data-grid-footer__summary">
+            Página {{ currentPage }} de {{ totalPages }}
           </p>
 
-          <div class="flex flex-wrap items-center gap-3 sm:justify-end">
-            <div
-              class="inline-flex items-center overflow-hidden rounded-md border border-neutral-200 bg-white"
-              aria-label="Paginacion inferior"
-            >
+          <div class="data-grid-footer__actions">
+            <div class="data-grid-footer-pagination" aria-label="Navegación de páginas">
               <button
                 type="button"
-                class="inline-flex h-8 items-center gap-1.5 border-r border-neutral-200 px-2.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 disabled:opacity-70"
-                aria-label="Pagina anterior"
+                class="data-grid-footer-pagination__btn"
+                aria-label="Página anterior"
                 [disabled]="currentPage <= 1"
                 (click)="previousPage()"
               >
                 <lucide-icon class="h-3.5 w-3.5" [img]="previousIcon"></lucide-icon>
-                Atras
+                Atrás
               </button>
 
-              <span
-                class="inline-flex h-8 min-w-20 items-center justify-center border-r border-neutral-200 bg-neutral-50 px-2.5 text-xs font-medium text-neutral-900"
-                aria-live="polite"
-                aria-label="Pagina actual"
-              >
+              <span class="data-grid-footer-pagination__current" aria-live="polite" aria-label="Página actual">
                 {{ currentPage }} / {{ totalPages }}
               </span>
 
               <button
                 type="button"
-                class="inline-flex h-8 items-center gap-1.5 px-2.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 disabled:opacity-70"
-                aria-label="Pagina siguiente"
+                class="data-grid-footer-pagination__btn"
+                aria-label="Página siguiente"
                 [disabled]="currentPage >= totalPages"
                 (click)="nextPage()"
               >
@@ -1036,66 +1058,19 @@
               </button>
             </div>
 
-            <div class="relative border-l border-neutral-200 pl-2" data-grid-overlay-root>
+            <div class="data-grid-overlay-root data-grid-overlay-root--up" data-grid-overlay-root>
               <button
                 type="button"
-                class="inline-flex h-8 items-center justify-center rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                aria-label="Ir a una pagina especifica"
+                class="data-grid-overlay-action"
+                aria-label="Ir a una página específica"
                 [attr.aria-expanded]="showPagePopover"
                 (click)="togglePagePopover()"
               >
-                Ir a pagina
+                Ir a página
               </button>
 
               @if (showPagePopover) {
-                <div
-                  class="absolute bottom-11 right-0 z-50 w-60 max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border border-neutral-200 bg-white text-sm shadow-[0_8px_20px_rgba(15,23,42,0.08)] ring-1 ring-black/[0.02]"
-                  role="dialog"
-                  aria-label="Ir a pagina"
-                >
-                  <div class="border-b border-neutral-100 bg-neutral-50 px-3 py-2.5">
-                    <p class="text-xs font-medium uppercase text-neutral-500">
-                      Ir a pagina
-                    </p>
-                    <p class="mt-0.5 text-xs font-medium text-neutral-500">
-                      Rango 1-{{ totalPages }}
-                    </p>
-                  </div>
-
-                  <div class="p-3">
-                    <input
-                      class="h-9 w-full rounded-md border border-neutral-200 bg-white px-2.5 text-sm font-medium text-neutral-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                      type="number"
-                      min="1"
-                      [max]="totalPages"
-                      [value]="pageInput"
-                      aria-label="Numero de pagina"
-                      (input)="updatePageInput($event)"
-                      (keydown.enter)="confirmPagePopover()"
-                    />
-
-                    @if (pageInputError) {
-                      <p class="mt-2 text-xs font-medium text-red-600">{{ pageInputError }}</p>
-                    }
-
-                    <div class="mt-3 flex justify-end gap-2">
-                      <button
-                        type="button"
-                        class="inline-flex h-8 items-center rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                        (click)="closePagePopover()"
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        type="button"
-                        class="data-grid-primary-action"
-                        (click)="confirmPagePopover()"
-                      >
-                        Ir
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <ng-container *ngTemplateOutlet="dataGridPagePopover" />
               }
             </div>
           </div>

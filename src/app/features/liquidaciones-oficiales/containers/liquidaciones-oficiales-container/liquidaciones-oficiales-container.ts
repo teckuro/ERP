@@ -52,6 +52,10 @@ import type {
 
   LiquidacionConcepto,
 
+  LiquidacionEmision,
+
+  LiquidacionRevisionEvento,
+
   LiquidacionTrabajador,
 
 } from '../../models/liquidacion-oficial.model';
@@ -137,6 +141,8 @@ import { presentarDiffVersionLiquidacion } from '../../presenters/liquidaciones-
 import { LiquidacionesModalSeleccionNominaComponent } from '../../components/liquidaciones-modal-seleccion-nomina/liquidaciones-modal-seleccion-nomina.component';
 
 import { LiquidacionesModalDetalleTrabajadorComponent } from '../../components/liquidaciones-modal-detalle-trabajador/liquidaciones-modal-detalle-trabajador.component';
+import { LiquidacionesModalHistorialNominaComponent } from '../../components/liquidaciones-modal-historial-nomina/liquidaciones-modal-historial-nomina.component';
+import { LiquidacionesModalHistorialTrabajadorComponent } from '../../components/liquidaciones-modal-historial-trabajador/liquidaciones-modal-historial-trabajador.component';
 
 import {
 
@@ -209,6 +215,10 @@ export type LiquidacionFeedbackAccionUi = {
 
     LiquidacionesModalDetalleTrabajadorComponent,
 
+    LiquidacionesModalHistorialTrabajadorComponent,
+
+    LiquidacionesModalHistorialNominaComponent,
+
     PreviredExportacionModalComponent,
 
   ],
@@ -274,6 +284,30 @@ export class LiquidacionesOficialesContainer {
   readonly modalSeleccionNominaAbierto = signal(false);
 
   readonly modalDetalleTrabajadorAbierto = signal(false);
+
+  readonly historialTrabajador = signal<LiquidacionTrabajador | null>(null);
+
+  readonly historialEventos = signal<readonly LiquidacionRevisionEvento[]>([]);
+
+  readonly historialEmisiones = signal<readonly LiquidacionEmision[]>([]);
+
+  readonly historialTrabajadorCargando = signal(false);
+
+  readonly historialTrabajadorError = signal<string | null>(null);
+
+  readonly historialNominaEntrada = signal<NominaPeriodoResumen | null>(null);
+
+  readonly historialNominaVersion = signal<number | null>(null);
+
+  readonly historialNominaEventos = signal<readonly LiquidacionRevisionEvento[]>([]);
+
+  readonly historialNominaEmisiones = signal<readonly LiquidacionEmision[]>([]);
+
+  readonly historialNominaTrabajadores = signal<readonly LiquidacionTrabajador[]>([]);
+
+  readonly historialNominaCargando = signal(false);
+
+  readonly historialNominaError = signal<string | null>(null);
 
   readonly modalExportPreviredAbierto = signal(false);
 
@@ -1019,6 +1053,93 @@ export class LiquidacionesOficialesContainer {
 
   cerrarModalDetalleTrabajador(): void {
     this.modalDetalleTrabajadorAbierto.set(false);
+  }
+
+  async abrirHistorialTrabajador(trabajador: LiquidacionTrabajador): Promise<void> {
+    this.historialTrabajador.set(trabajador);
+    this.historialEventos.set([]);
+    this.historialEmisiones.set([]);
+    this.historialTrabajadorError.set(null);
+    this.historialTrabajadorCargando.set(true);
+
+    try {
+      const { eventos, emisiones } = await this.service.consultarHistorialRevisionTrabajador(
+        trabajador.idLiquidacionTrabajador,
+      );
+      if (this.historialTrabajador()?.idLiquidacionTrabajador === trabajador.idLiquidacionTrabajador) {
+        this.historialEventos.set(eventos);
+        this.historialEmisiones.set(emisiones);
+      }
+    } catch (err) {
+      if (this.historialTrabajador()?.idLiquidacionTrabajador === trabajador.idLiquidacionTrabajador) {
+        this.historialTrabajadorError.set(
+          mensajeErrorSupabaseParaUsuario(err, 'cargar el historial de la liquidación'),
+        );
+      }
+    } finally {
+      if (this.historialTrabajador()?.idLiquidacionTrabajador === trabajador.idLiquidacionTrabajador) {
+        this.historialTrabajadorCargando.set(false);
+      }
+    }
+  }
+
+  cerrarHistorialTrabajador(): void {
+    this.historialTrabajador.set(null);
+    this.historialEventos.set([]);
+    this.historialEmisiones.set([]);
+    this.historialTrabajadorCargando.set(false);
+    this.historialTrabajadorError.set(null);
+  }
+
+  async abrirHistorialNomina(fila: NominaPeriodoResumen): Promise<void> {
+    this.historialNominaEntrada.set(fila);
+    this.historialNominaVersion.set(null);
+    this.historialNominaEventos.set([]);
+    this.historialNominaEmisiones.set([]);
+    this.historialNominaTrabajadores.set([]);
+    this.historialNominaError.set(null);
+    this.historialNominaCargando.set(true);
+
+    try {
+      const liquidaciones = await this.nominaService.listarLiquidacionesNomina(fila.id);
+      const filas = prepararFilasLiquidacionesInternas(liquidaciones, fila.estado);
+      const referencia = liquidacionVigente(filas) ?? filas[0] ?? null;
+
+      if (this.historialNominaEntrada()?.id !== fila.id) return;
+
+      if (!referencia) return;
+
+      this.historialNominaVersion.set(referencia.version);
+      const { eventos, emisiones, trabajadores } = await this.service.consultarHistorialRevisionPeriodo(
+        referencia.idLiquidacionPeriodo,
+      );
+
+      if (this.historialNominaEntrada()?.id !== fila.id) return;
+
+      this.historialNominaEventos.set(eventos);
+      this.historialNominaEmisiones.set(emisiones);
+      this.historialNominaTrabajadores.set(trabajadores);
+    } catch (err) {
+      if (this.historialNominaEntrada()?.id === fila.id) {
+        this.historialNominaError.set(
+          mensajeErrorSupabaseParaUsuario(err, 'cargar el historial de la liquidación'),
+        );
+      }
+    } finally {
+      if (this.historialNominaEntrada()?.id === fila.id) {
+        this.historialNominaCargando.set(false);
+      }
+    }
+  }
+
+  cerrarHistorialNomina(): void {
+    this.historialNominaEntrada.set(null);
+    this.historialNominaVersion.set(null);
+    this.historialNominaEventos.set([]);
+    this.historialNominaEmisiones.set([]);
+    this.historialNominaTrabajadores.set([]);
+    this.historialNominaCargando.set(false);
+    this.historialNominaError.set(null);
   }
 
   ejecutarAccionTrabajadorDesdeModal(action: LiquidacionAccionUiAction): void {

@@ -12,6 +12,7 @@ import type {
   LiquidacionesEstadoPeriodo,
   LiquidacionEmision,
   LiquidacionEmisionCanal,
+  LiquidacionRevisionEvento,
   LiquidacionTrabajador,
 } from '../models/liquidacion-oficial.model';
 import type { LiquidacionAccionUiEstado, LiquidacionAccionUiTipo } from '../rules/liquidaciones-acciones-ui.rules';
@@ -88,6 +89,39 @@ export class LiquidacionesOficialesService {
 
   obtenerUltimaEmisionTrabajador(idLiquidacionTrabajador: number) {
     return this.liquidaciones.obtenerUltimaEmisionTrabajador(idLiquidacionTrabajador);
+  }
+
+  listarEmisionesTrabajador(idLiquidacionTrabajador: number): Promise<LiquidacionEmision[]> {
+    return this.liquidaciones.listarEmisionesTrabajador(idLiquidacionTrabajador);
+  }
+
+  listarEventosRevisionTrabajador(
+    idLiquidacionTrabajador: number,
+  ): Promise<LiquidacionRevisionEvento[]> {
+    return this.liquidaciones.listarEventosRevisionTrabajador(idLiquidacionTrabajador);
+  }
+
+  consultarHistorialRevisionTrabajador(idLiquidacionTrabajador: number) {
+    return Promise.all([
+      this.listarEventosRevisionTrabajador(idLiquidacionTrabajador),
+      this.listarEmisionesTrabajador(idLiquidacionTrabajador),
+    ]).then(([eventos, emisiones]) => ({ eventos, emisiones }));
+  }
+
+  listarEventosRevisionPeriodo(idLiquidacionPeriodo: number): Promise<LiquidacionRevisionEvento[]> {
+    return this.liquidaciones.listarEventosRevisionPeriodo(idLiquidacionPeriodo);
+  }
+
+  listarEmisionesPeriodo(idLiquidacionPeriodo: number): Promise<LiquidacionEmision[]> {
+    return this.liquidaciones.listarEmisionesPeriodo(idLiquidacionPeriodo);
+  }
+
+  consultarHistorialRevisionPeriodo(idLiquidacionPeriodo: number) {
+    return Promise.all([
+      this.listarEventosRevisionPeriodo(idLiquidacionPeriodo),
+      this.listarEmisionesPeriodo(idLiquidacionPeriodo),
+      this.listarTrabajadoresLiquidacion(idLiquidacionPeriodo),
+    ]).then(([eventos, emisiones, trabajadores]) => ({ eventos, emisiones, trabajadores }));
   }
 
   listarTrabajadoresLiquidacion(idLiquidacionPeriodo: number): Promise<LiquidacionTrabajador[]> {

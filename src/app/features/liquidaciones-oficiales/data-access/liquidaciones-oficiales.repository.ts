@@ -14,6 +14,7 @@ import type {
   LiquidacionEmision,
   LiquidacionEmisionCanal,
   LiquidacionPeriodo,
+  LiquidacionRevisionEvento,
   LiquidacionTrabajador,
 } from '../models/liquidacion-oficial.model';
 
@@ -22,6 +23,7 @@ type LiquidacionPeriodoRow = Tables['nomina_liquidacion_periodo']['Row'];
 type LiquidacionTrabajadorRow = Tables['nomina_liquidacion_trabajador']['Row'];
 type LiquidacionConceptoRow = Tables['nomina_liquidacion_concepto']['Row'];
 type LiquidacionEmisionRow = Tables['nomina_liquidacion_emision']['Row'];
+type LiquidacionRevisionEventoRow = Tables['nomina_liquidacion_revision_evento']['Row'];
 
 @Injectable({ providedIn: 'root' })
 export class LiquidacionesOficialesRepository {
@@ -162,6 +164,56 @@ export class LiquidacionesOficialesRepository {
     return data ? mapEmisionRow(data as LiquidacionEmisionRow) : null;
   }
 
+  async listarEmisionesTrabajador(idLiquidacionTrabajador: number): Promise<LiquidacionEmision[]> {
+    const { data, error } = await this.supabase
+      .from('nomina_liquidacion_emision')
+      .select('*')
+      .eq('id_liquidacion_trabajador', idLiquidacionTrabajador)
+      .order('emitido_en', { ascending: false });
+    if (error) lanzarErrorSupabaseRepositorio(error, 'consultar el historial de emisiones de la liquidación');
+    return (data ?? []).map((row) => mapEmisionRow(row as LiquidacionEmisionRow));
+  }
+
+  async listarEventosRevisionTrabajador(
+    idLiquidacionTrabajador: number,
+  ): Promise<LiquidacionRevisionEvento[]> {
+    const { data, error } = await this.supabase
+      .from('nomina_liquidacion_revision_evento')
+      .select('*')
+      .eq('id_liquidacion_trabajador', idLiquidacionTrabajador)
+      .order('registrado_en', { ascending: false });
+    if (error) {
+      lanzarErrorSupabaseRepositorio(error, 'consultar el historial de revisión de la liquidación');
+    }
+    return (data ?? []).map((row) => mapRevisionEventoRow(row as LiquidacionRevisionEventoRow));
+  }
+
+  async listarEventosRevisionPeriodo(
+    idLiquidacionPeriodo: number,
+  ): Promise<LiquidacionRevisionEvento[]> {
+    const { data, error } = await this.supabase
+      .from('nomina_liquidacion_revision_evento')
+      .select('*')
+      .eq('id_liquidacion_periodo', idLiquidacionPeriodo)
+      .order('registrado_en', { ascending: false });
+    if (error) {
+      lanzarErrorSupabaseRepositorio(error, 'consultar el historial de revisión del período');
+    }
+    return (data ?? []).map((row) => mapRevisionEventoRow(row as LiquidacionRevisionEventoRow));
+  }
+
+  async listarEmisionesPeriodo(idLiquidacionPeriodo: number): Promise<LiquidacionEmision[]> {
+    const { data, error } = await this.supabase
+      .from('nomina_liquidacion_emision')
+      .select('*')
+      .eq('id_liquidacion_periodo', idLiquidacionPeriodo)
+      .order('emitido_en', { ascending: false });
+    if (error) {
+      lanzarErrorSupabaseRepositorio(error, 'consultar el historial de emisiones del período');
+    }
+    return (data ?? []).map((row) => mapEmisionRow(row as LiquidacionEmisionRow));
+  }
+
   async generarLiquidacionesOficiales(params: GenerarLiquidacionesParams): Promise<LiquidacionPeriodo> {
     const { data, error } = await this.supabase.rpc('generar_liquidaciones_oficiales', {
       p_id_calculo_periodo: params.idCalculoPeriodo,
@@ -239,6 +291,21 @@ function mapEmisionRow(row: LiquidacionEmisionRow): LiquidacionEmision {
     usuarioLabel: row.usuario_label,
     canal: row.canal as LiquidacionEmisionCanal,
     emitidoEn: row.emitido_en,
+    metadata: parseRecord(row.metadata),
+  };
+}
+
+function mapRevisionEventoRow(row: LiquidacionRevisionEventoRow): LiquidacionRevisionEvento {
+  return {
+    idLiquidacionRevisionEvento: row.id_liquidacion_revision_evento,
+    idLiquidacionTrabajador: row.id_liquidacion_trabajador,
+    idLiquidacionPeriodo: row.id_liquidacion_periodo,
+    accion: row.accion,
+    estadoPrevio: row.estado_previo ?? null,
+    estadoNuevo: row.estado_nuevo,
+    usuarioId: row.usuario_id ?? null,
+    usuarioLabel: row.usuario_label,
+    registradoEn: row.registrado_en,
     metadata: parseRecord(row.metadata),
   };
 }
