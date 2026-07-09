@@ -361,8 +361,19 @@ Ejecutar con usuario `consulta` (`npm run fixture:sec:consulta` si no existe).
 
 **Operaciones pendientes del operador (no automatizables en repo):**
 
-1. Rotar credenciales pooler en Supabase Dashboard (SEC-01) — repo privado; **sin** `git filter-repo`.
-2. Definir `ERP_ALLOWED_ORIGIN` en Edge Functions productivas y ejecutar `scripts/sec-deploy-edge-cors.ps1`.
+1. Rotar credenciales pooler en Supabase Dashboard (SEC-01) — repo privado; **sin** `git filter-repo`. **No aplica** en Postgres/`supabase start` local.
+2. Definir `ERP_ALLOWED_ORIGIN` en Edge Functions productivas y ejecutar `scripts/sec-deploy-edge-cors.ps1`. En dev local, CORS `*` es aceptable; ver [`SEC-cierre-operaciones-manuales.md`](./SEC-cierre-operaciones-manuales.md).
+
+### Entorno local (Angular en `:4200`, BD aún sin SEC)
+
+Si la app corre en local pero la BD **no** tiene las migraciones SEC:
+
+1. `SUPABASE_DB_URL_LOCAL=postgresql://postgres:postgres@127.0.0.1:54322/postgres` (o tu URL local).
+2. `npm run check:sec-migrations` → debe listar las 7 versiones `202607082*`.
+3. `npm run apply:sec-bd` → aplica ADMIN-01 + SEC-03 + SEC-02…02e.
+4. `npm run fixture:sec:consulta` + `npm run smoke:sec`.
+
+Guía completa: [`SEC-cierre-operaciones-manuales.md`](./SEC-cierre-operaciones-manuales.md).
 
 ---
 

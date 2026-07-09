@@ -170,6 +170,28 @@ async function probarEscrituraSec02eConsulta(client) {
   }
 }
 
+async function probarEscrituraAdmin(client, role) {
+  if (/consulta/i.test(String(role))) {
+    return;
+  }
+  const codigo = `SEC_SMOKE_${Date.now()}`;
+  const { data, error } = await client.from('concepto').insert({
+    codigo,
+    nombre: 'Smoke SEC admin',
+    tipo: 'HABER',
+    vigente: true,
+  }).select('id_concepto');
+  if (error) {
+    fail(`admin INSERT concepto debió permitirse → ${error.message}`);
+  }
+  if (!data?.length) {
+    fail('admin INSERT concepto sin filas devueltas');
+  }
+  ok(`admin INSERT concepto permitido (${codigo})`);
+  const id = data[0].id_concepto;
+  await client.from('concepto').delete().eq('id_concepto', id);
+}
+
 async function probarEscrituraConsulta(client, role) {
   if (!/consulta/i.test(String(role))) {
     warn(`Rol "${role}" no es consulta; omitiendo smoke de permisos RPC/movvar`);
@@ -191,6 +213,7 @@ async function main() {
   await probarAnonSinAcceso(supabaseUrl, supabaseAnonKey);
 
   const { client, role } = await probarSesionAutenticada(supabaseUrl, supabaseAnonKey, email, password);
+  await probarEscrituraAdmin(client, role);
   await probarEscrituraConsulta(client, role);
 
   const consultaEmail = process.env['E2E_SUPABASE_AUTH_EMAIL_CONSULTA'] ?? '';

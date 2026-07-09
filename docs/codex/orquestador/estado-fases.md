@@ -50,4 +50,6 @@ Documentación del módulo: [`docs/codex/modulos/administracion/README.md`](../m
 2. Smoke con `scripts/sec-audit-rls-diagnostics.sql` cuando corresponda.
 3. `supabase migration repair --status applied <version> --db-url "$env:SUPABASE_DB_URL"` si se aplicó con `psql` y falta en `schema_migrations`.
 
+**BD local:** `npm run apply:sec-bd` (prioriza `SUPABASE_DB_URL_LOCAL`). Runbook: [`SEC-cierre-operaciones-manuales.md`](../auditorias/SEC-cierre-operaciones-manuales.md).
+
 **Relación backlog:** complementa BKL-04…06 y SEG-01b de [`auditoria-proyecto-2026-07-backlog.md`](../auditorias/auditoria-proyecto-2026-07-backlog.md).
