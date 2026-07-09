@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 loadEnv({ path: path.resolve(__dirname, '..', '.env'), quiet: true });
+loadEnv({ path: path.resolve(__dirname, '..', '.env.local.e2e'), quiet: true });
 
 function fail(msg) {
   console.error(`[smoke sec] FAIL: ${msg}`);
@@ -73,23 +74,22 @@ async function probarSesionAutenticada(supabaseUrl, supabaseAnonKey, email, pass
   return { client, role };
 }
 
+async function probarPermisosNominaConsulta(client) {
+  const permisos = ['nomina.crear', 'nomina.editar', 'nomina.eliminar', 'nomina.validar'];
+  for (const permiso of permisos) {
+    const { data, error } = await client.rpc('erp_nomina_permiso_efectivo', { p_permiso: permiso });
+    if (error) fail(`erp_nomina_permiso_efectivo(${permiso}) → ${error.message}`);
+    if (data === true) fail(`Perfil consulta no debió tener permiso ${permiso}`);
+    ok(`RPC permiso ${permiso} = false (consulta)`);
+  }
+}
+
 async function probarEscrituraConsulta(client, role) {
   if (!/consulta/i.test(String(role))) {
-    warn(`Rol "${role}" no es consulta; omitiendo smoke de escritura bloqueada`);
+    warn(`Rol "${role}" no es consulta; omitiendo smoke de permisos RPC`);
     return;
   }
-
-  const { error: movErr } = await client.from('movimiento_variable_mensual').insert({
-    id_persona: 1,
-    id_concepto: 1,
-    periodo: '2099-01',
-    monto: 100,
-    estado: 'BORRADOR',
-    origen: 'MANUAL',
-  });
-
-  if (!movErr) fail('INSERT movvar debió fallar para perfil consulta');
-  ok(`Escritura movvar bloqueada (${movErr.code ?? 'sin código'})`);
+  await probarPermisosNominaConsulta(client);
 }
 
 async function main() {

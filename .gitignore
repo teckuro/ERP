@@ -149,6 +149,7 @@ src/app/supabase
 /bd/base/historico/*
 !/bd/base/historico/crear_sql_v6_10_integrada.sql
 /.env
+/.env.local.e2e
 /supabase/.env
 /supabase/.temp/
 /src/app/shared/components/ui/peticion.txt

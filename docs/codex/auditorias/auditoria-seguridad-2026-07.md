@@ -337,7 +337,7 @@ SEC-01  →  SEC-03  →  SEC-02  →  SEC-04  →  SEC-05
 5. ~~**SEC-03**~~ — **aplicado** 2026-07-08.
 6. **Smoke funcional:** alta empleado, parámetros, conceptos, nómina, movimientos variables (manual).
 7. ~~**SEC-05 restante**~~ — extendido en SEC-05b; pendiente CSP y `ERP_ALLOWED_ORIGIN` en producción.
-8. **Smoke automatizado (2026-07-09):** `smoke-previred-exportacion.mjs`, `smoke-liquidaciones-estado-revision.mjs`, `smoke-sec-guards-rls.mjs` (anon bloqueado); Edge redeploy vía `scripts/sec-deploy-edge-cors.ps1`.
+8. **Smoke automatizado (2026-07-09):** `npm run smoke:sec` (anon + consulta vía `erp_nomina_permiso_efectivo`), `smoke-nomina-produccion`, Previred, liquidaciones; Edge redeploy `sec-deploy-edge-cors.ps1`; fixture consulta `npm run fixture:sec:consulta`.
 9. **Opcional:** RLS en tablas legacy sin RLS (`liquidacion`, `movimiento` — no usadas desde Angular; acceso vía RPC).
 
 ---

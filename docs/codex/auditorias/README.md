@@ -4,7 +4,7 @@ Registro de auditorias funcionales y normativas. Cada archivo es autocontenido; 
 
 | ID / archivo | Tema |
 |--------------|------|
-| [`auditoria-seguridad-2026-07.md`](./auditoria-seguridad-2026-07.md) | AUDIT-SEC-2026-07: auditoría de seguridad (secretos git, RLS legacy, IDOR snapshots, guards, errores, npm); fases SEC-01…SEC-05 propuestas sin aplicar |
+| [`auditoria-seguridad-2026-07.md`](./auditoria-seguridad-2026-07.md) | AUDIT-SEC-2026-07: auditoría de seguridad (secretos git, RLS legacy, IDOR snapshots, guards, errores, npm); fases SEC-01…SEC-05 aplicadas; smokes `npm run smoke:sec` |
 | [`auditoria-proyecto-2026-07-backlog.md`](./auditoria-proyecto-2026-07-backlog.md) | AUDIT-PROYECTO-2026-07: backlog priorizado P0/P1/P2 (escala nómina, seguridad SEG-01b/F15b, RLS recurrentes, E2E) tras cierre F06/F07 parcial |
 | [`auditoria-estandares-desviaciones-2026-07.md`](./auditoria-estandares-desviaciones-2026-07.md) | AUDIT-EST-2026-07: desviaciones vs EST-001…008; script `scripts/auditar-estandares-desviaciones.ps1`; deriva **BKL-12** |
 | [`qa-chile-01-remuneraciones.md`](./qa-chile-01-remuneraciones.md) | Remuneraciones Chile: conceptos, recurrentes, variables, parametros, empleados, proceso futuro, liquidacion, Previred/LRE |
