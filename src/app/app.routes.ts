@@ -1,6 +1,10 @@
 import { Routes } from '@angular/router';
 import { adminSistemaGuard } from './core/auth/admin-sistema.guard';
 import { authChildGuard } from './core/auth/auth.guard';
+import {
+  crearModuloPermisoGuard,
+  remuneracionesEscrituraGuard,
+} from './core/auth/remuneraciones-permisos.guard';
 import { LayoutShellComponent } from './layout/layout-shell.component';
 
 export const routes: Routes = [
@@ -20,6 +24,7 @@ export const routes: Routes = [
       },
       {
         path: 'empleados',
+        canActivate: [crearModuloPermisoGuard('empleados')],
         loadChildren: () => import('./features/empleados/empleados.routes').then((m) => m.empleadosRoutes),
       },
       {
@@ -59,11 +64,13 @@ export const routes: Routes = [
           },
           {
             path: 'conceptos',
+            canActivate: [crearModuloPermisoGuard('conceptos', 'editar')],
             loadComponent: () =>
               import('./pages/conceptos-remuneracion.page').then((m) => m.ConceptosRemuneracionPage),
           },
           {
             path: 'haberes-descuentos',
+            canActivate: [crearModuloPermisoGuard('movimientos', 'editar')],
             loadComponent: () =>
               import('./pages/haberes-descuentos.page').then((m) => m.HaberesDescuentosPage),
           },
@@ -79,6 +86,7 @@ export const routes: Routes = [
           },
           {
             path: 'novedades-mensuales',
+            canActivate: [crearModuloPermisoGuard('movimientos', 'editar')],
             loadComponent: () =>
               import('./pages/novedades-mensuales.page').then((m) => m.NovedadesMensualesPage),
           },
@@ -94,6 +102,7 @@ export const routes: Routes = [
           },
           {
             path: 'nominas',
+            canActivate: [crearModuloPermisoGuard('nominas')],
             loadComponent: () =>
               import(
                 './features/nomina-mensual/containers/administrador-nominas-container/administrador-nominas-container'
@@ -101,6 +110,10 @@ export const routes: Routes = [
           },
           {
             path: 'nominas/:nominaPeriodoId/generador',
+            canActivate: [
+              crearModuloPermisoGuard('nominas', 'editar'),
+              remuneracionesEscrituraGuard,
+            ],
             loadComponent: () =>
               import(
                 './features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container'
@@ -113,14 +126,17 @@ export const routes: Routes = [
           },
           {
             path: 'liquidaciones',
+            canActivate: [crearModuloPermisoGuard('liquidaciones')],
             loadComponent: () => import('./pages/liquidaciones.page').then((m) => m.LiquidacionesPage),
           },
           {
             path: 'previred',
+            canActivate: [crearModuloPermisoGuard('liquidaciones')],
             loadComponent: () => import('./pages/previred.page').then((m) => m.PreviredPage),
           },
           {
             path: 'lre',
+            canActivate: [crearModuloPermisoGuard('liquidaciones')],
             loadComponent: () => import('./pages/lre.page').then((m) => m.LrePage),
           },
           {
@@ -130,6 +146,7 @@ export const routes: Routes = [
           },
           {
             path: 'liquidaciones/:id',
+            canActivate: [crearModuloPermisoGuard('liquidaciones')],
             loadComponent: () =>
               import('./pages/detalle-liquidacion.page').then((m) => m.DetalleLiquidacionPage),
           },
@@ -137,10 +154,12 @@ export const routes: Routes = [
       },
       {
         path: 'licencias-medicas',
+        canActivate: [crearModuloPermisoGuard('licencias', 'editar')],
         loadComponent: () => import('./pages/licencias-medicas.page').then((m) => m.LicenciasMedicasPage),
       },
       {
         path: 'reportes',
+        canActivate: [crearModuloPermisoGuard('reportes')],
         loadComponent: () => import('./pages/reportes.page').then((m) => m.ReportesPage),
       },
       {
@@ -149,6 +168,7 @@ export const routes: Routes = [
       },
       {
         path: 'parametros',
+        canActivate: [crearModuloPermisoGuard('parametros', 'editar')],
         loadComponent: () => import('./pages/parametros.page').then((m) => m.ParametrosPage),
       },
       {
@@ -158,6 +178,7 @@ export const routes: Routes = [
       },
       {
         path: 'empresas',
+        canActivate: [crearModuloPermisoGuard('empresas')],
         loadChildren: () => import('./features/empresas/empresas.routes').then((m) => m.empresasRoutes),
       },
     ],

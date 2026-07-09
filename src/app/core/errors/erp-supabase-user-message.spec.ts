@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { mensajeErrorSupabaseParaUsuario } from './erp-supabase-user-message';
+import { lanzarErrorSupabaseRepositorio, mensajeErrorSupabaseParaUsuario } from './erp-supabase-user-message';
 
 describe('mensajeErrorSupabaseParaUsuario', () => {
   it('traduce error de api key ausente', () => {
@@ -68,5 +68,13 @@ describe('mensajeErrorSupabaseParaUsuario', () => {
       'crear la nómina',
     );
     expect(msg).toContain('desactualizado');
+  });
+});
+
+describe('lanzarErrorSupabaseRepositorio', () => {
+  it('lanza Error con mensaje humanizado', () => {
+    expect(() => lanzarErrorSupabaseRepositorio(new Error('JWT expired'), 'guardar el movimiento')).toThrow(
+      'sesión',
+    );
   });
 });

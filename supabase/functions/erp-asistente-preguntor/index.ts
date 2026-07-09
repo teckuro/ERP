@@ -1,10 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const corsHeaders: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { buildCorsHeaders } from "../_shared/cors.ts";
 
 const SYSTEM_PROMPT = `Eres un asistente para usuarios de RRHH de un ERP chileno de remuneraciones.
 Responde solo en español de Chile, de forma breve y clara.
@@ -21,6 +17,13 @@ interface ReqPayload {
 console.info("asistente-preguntor: worker started");
 
 Deno.serve(async (req) => {
+  const corsHeaders = buildCorsHeaders(req);
+  const jsonResponse = (payload: unknown, status: number): Response =>
+    new Response(JSON.stringify(payload), {
+      status,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -158,11 +161,4 @@ async function completarConNimStream(
   }
 
   return respuesta.trim();
-}
-
-function jsonResponse(payload: unknown, status: number): Response {
-  return new Response(JSON.stringify(payload), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
 }

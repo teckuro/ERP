@@ -10,7 +10,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -25,19 +25,23 @@ import { NominaPeriodoService } from '../../../nomina-mensual/services/nomina-pe
 import type { NominaPeriodoResumen } from '../../../nomina-mensual/models/nomina-periodo.models';
 import { NovedadesMensualesService } from '../../../nomina-mensual/novedades/services/novedades-mensuales.service';
 import type { NovedadMensual } from '../../../nomina-mensual/novedades/models/novedad-mensual.model';
+import { ParametrosGeneralesService } from '../../../parametros-generales/services/parametros-generales.service';
+import type { ParametroGeneral } from '../../../parametros-generales/models/parametro-general.model';
 import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import {
-  RESUMEN_MODULOS,
   construirResumenOperativo,
+  formatearValorEconomico,
   formatearValorKpi,
+  type ResumenEconomicoFormato,
   type ResumenKpiTone,
+  type ResumenParametrosEconomicos,
 } from '../../rules/resumen-operativo.rules';
 
 @Component({
   selector: 'app-resumen-container',
   standalone: true,
-  imports: [CommonModule, RouterLink, LucideAngularModule, WorkspaceLoadingComponent, MessageBoxComponent],
+  imports: [CommonModule, LucideAngularModule, WorkspaceLoadingComponent, MessageBoxComponent],
   templateUrl: './resumen-container.html',
   styleUrl: './resumen-container.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -50,6 +54,7 @@ export class ResumenContainer implements OnInit {
   private readonly empleadosService = inject(EmpleadosService);
   private readonly licenciasService = inject(LicenciasMedicasService);
   private readonly novedadesService = inject(NovedadesMensualesService);
+  private readonly parametrosService = inject(ParametrosGeneralesService);
   private readonly destroyRef = inject(DestroyRef);
   private pantallaInicializada = false;
 
@@ -59,9 +64,10 @@ export class ResumenContainer implements OnInit {
   readonly empleados = signal<EmpleadoListado[] | null>(null);
   readonly licenciasPendientes = signal<LicenciaMedica[] | null>(null);
   readonly novedades = signal<NovedadMensual[] | null>(null);
+  readonly parametros = signal<ResumenParametrosEconomicos | null>(null);
 
-  readonly modulos = RESUMEN_MODULOS;
   readonly formatearValorKpi = formatearValorKpi;
+  readonly formatearValorEconomico = formatearValorEconomico;
 
   readonly mensajeErrorCarga = computed(() => {
     const errores = this.erroresCarga();
@@ -95,6 +101,7 @@ export class ResumenContainer implements OnInit {
       empleados: this.empleados(),
       licenciasPendientes: this.licenciasPendientes(),
       novedades: this.novedades(),
+      parametros: this.parametros(),
     }),
   );
 
@@ -126,6 +133,14 @@ export class ResumenContainer implements OnInit {
     return `res-atencion-item res-atencion-item--${tone}`;
   }
 
+  claseEconomico(tone: ResumenKpiTone, disponible: boolean): string {
+    return `res-eco res-eco--${tone}${disponible ? '' : ' is-missing'}`;
+  }
+
+  formatearEconomico(value: number | null, formato: ResumenEconomicoFormato): string {
+    return formatearValorEconomico(value, formato);
+  }
+
   ir(ruta: string): void {
     void this.router.navigateByUrl(ruta);
   }
@@ -143,11 +158,12 @@ export class ResumenContainer implements OnInit {
     this.erroresCarga.set([]);
     const periodo = this.periodoActivo.periodoYm();
 
-    const [nominasR, empleadosR, licenciasR, novedadesR] = await Promise.allSettled([
+    const [nominasR, empleadosR, licenciasR, novedadesR, parametrosR] = await Promise.allSettled([
       this.nominaService.listarResumenes(),
       this.empleadosService.listar(),
       this.licenciasService.listar({ estado: 'pendiente_revision' }),
       this.novedadesService.listarNovedadesPeriodo(periodo),
+      this.parametrosService.obtenerUltimoHastaPeriodo(periodo),
     ]);
 
     const errores: string[] = [];
@@ -163,16 +179,37 @@ export class ResumenContainer implements OnInit {
     if (novedadesR.status === 'rejected') {
       errores.push('novedades del período');
     }
+    if (parametrosR.status === 'rejected') {
+      errores.push('parámetros económicos');
+    }
     this.erroresCarga.set(errores);
 
     this.nominas.set(nominasR.status === 'fulfilled' ? nominasR.value : null);
     this.empleados.set(empleadosR.status === 'fulfilled' ? empleadosR.value : null);
     this.licenciasPendientes.set(licenciasR.status === 'fulfilled' ? licenciasR.value : null);
     this.novedades.set(novedadesR.status === 'fulfilled' ? novedadesR.value : null);
+    this.parametros.set(
+      parametrosR.status === 'fulfilled' ? mapearParametrosEconomicos(parametrosR.value) : null,
+    );
     this.loading.set(false);
   }
 
   reintentarCarga(): void {
     void this.cargar();
   }
+}
+
+function mapearParametrosEconomicos(
+  parametro: ParametroGeneral | null,
+): ResumenParametrosEconomicos | null {
+  if (!parametro) {
+    return null;
+  }
+  return {
+    uf: parametro.uf,
+    utm: parametro.utm,
+    uta: parametro.uta,
+    sueldoMinimo: parametro.sueldoMinimo,
+    dolarObservado: null,
+  };
 }

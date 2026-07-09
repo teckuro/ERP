@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 
+import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import type {
   ConfigDocumentoLiquidacion,
@@ -14,10 +15,6 @@ import {
   type PerfilAccesoRow,
 } from './administracion.mapper';
 
-function errorSupabase(contexto: string, message: string): Error {
-  return new Error(`${contexto}: ${message}`);
-}
-
 @Injectable({ providedIn: 'root' })
 export class AdministracionRepository {
   private readonly supabase = injectSupabase();
@@ -28,7 +25,7 @@ export class AdministracionRepository {
     });
 
     if (error) {
-      throw errorSupabase('No fue posible listar los perfiles', error.message);
+      lanzarErrorSupabaseRepositorio(error, 'listar los perfiles de acceso');
     }
     return ((data ?? []) as PerfilAccesoRow[]).map(mapRowToPerfilAcceso);
   }
@@ -40,7 +37,7 @@ export class AdministracionRepository {
     );
 
     if (error) {
-      throw errorSupabase('No fue posible guardar el perfil', error.message);
+      lanzarErrorSupabaseRepositorio(error, 'guardar el perfil');
     }
     return mapRowToPerfilAcceso(data as PerfilAccesoRow);
   }
@@ -49,7 +46,7 @@ export class AdministracionRepository {
     const { data, error } = await this.supabase.rpc('obtener_config_documento_liquidacion');
 
     if (error) {
-      throw errorSupabase('No fue posible cargar la configuración del documento', error.message);
+      lanzarErrorSupabaseRepositorio(error, 'cargar la configuración del documento');
     }
     const row = ((data ?? []) as ConfigDocumentoRow[])[0];
     return row ? mapRowToConfigDocumento(row) : null;
@@ -66,7 +63,7 @@ export class AdministracionRepository {
     });
 
     if (error) {
-      throw errorSupabase('No fue posible guardar la configuración del documento', error.message);
+      lanzarErrorSupabaseRepositorio(error, 'guardar la configuración del documento');
     }
     return mapRowToConfigDocumento(data as ConfigDocumentoRow);
   }
@@ -81,7 +78,7 @@ export class AdministracionRepository {
       .upload(path, archivo, { upsert: true, contentType: archivo.type || undefined });
 
     if (error) {
-      throw errorSupabase('No fue posible subir el logo', error.message);
+      lanzarErrorSupabaseRepositorio(error, 'subir el logo');
     }
 
     const { data } = this.supabase.storage.from('logos-empresa').getPublicUrl(path);

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 
+import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import type { GuardarLicenciaMedicaInput, LicenciaMedica } from '../models/licencia-medica.model';
 import {
@@ -35,10 +36,6 @@ const SELECT_LICENCIA = `
   )
 `;
 
-function errorSupabase(contexto: string, message: string): Error {
-  return new Error(`${contexto}: ${message}`);
-}
-
 @Injectable({ providedIn: 'root' })
 export class LicenciasMedicasRepository {
   private readonly supabase = injectSupabase();
@@ -55,7 +52,7 @@ export class LicenciasMedicasRepository {
     });
 
     if (error) {
-      throw errorSupabase('No fue posible listar licencias médicas', error.message);
+      lanzarErrorSupabaseRepositorio(error, 'listar licencias médicas');
     }
 
     const ids = (data ?? []).map((row: LicenciaMedicaRow) => row.id_licencia);
@@ -70,7 +67,7 @@ export class LicenciasMedicasRepository {
       .order('fecha_creacion', { ascending: false });
 
     if (enrichError) {
-      throw errorSupabase('No fue posible enriquecer licencias médicas', enrichError.message);
+      lanzarErrorSupabaseRepositorio(enrichError, 'cargar licencias médicas');
     }
 
     return (enriched ?? []).map((row) => mapRowToLicenciaMedica(row as LicenciaMedicaRow));
@@ -84,7 +81,7 @@ export class LicenciasMedicasRepository {
       .maybeSingle();
 
     if (error) {
-      throw errorSupabase('No fue posible obtener la licencia médica', error.message);
+      lanzarErrorSupabaseRepositorio(error, 'consultar la licencia médica');
     }
     return data ? mapRowToLicenciaMedica(data as LicenciaMedicaRow) : null;
   }
@@ -96,7 +93,7 @@ export class LicenciasMedicasRepository {
     );
 
     if (error) {
-      throw errorSupabase('No fue posible guardar la licencia médica', error.message);
+      lanzarErrorSupabaseRepositorio(error, 'guardar la licencia médica');
     }
 
     const guardada = await this.obtener((data as LicenciaMedicaRow).id_licencia);
@@ -112,7 +109,7 @@ export class LicenciasMedicasRepository {
     });
 
     if (error) {
-      throw errorSupabase('No fue posible confirmar la licencia médica', error.message);
+      lanzarErrorSupabaseRepositorio(error, 'confirmar la licencia médica');
     }
 
     const confirmada = await this.obtener((data as LicenciaMedicaRow).id_licencia);
@@ -128,7 +125,7 @@ export class LicenciasMedicasRepository {
     });
 
     if (error) {
-      throw errorSupabase('No fue posible marcar la licencia como vinculada', error.message);
+      lanzarErrorSupabaseRepositorio(error, 'vincular la licencia con la nómina');
     }
 
     const actualizada = await this.obtener((data as LicenciaMedicaRow).id_licencia);
@@ -154,7 +151,7 @@ export class LicenciasMedicasRepository {
       .maybeSingle();
 
     if (error) {
-      throw errorSupabase('No fue posible obtener el ingreso por correo', error.message);
+      lanzarErrorSupabaseRepositorio(error, 'consultar el ingreso por correo');
     }
     return data ? mapRowToLicenciaIngreso(data as LicenciaIngresoRow) : null;
   }
@@ -166,7 +163,7 @@ export class LicenciasMedicasRepository {
       .eq('id_licencia', idLicencia);
 
     if (error) {
-      throw errorSupabase('No fue posible listar movimientos vinculados', error.message);
+      lanzarErrorSupabaseRepositorio(error, 'listar movimientos vinculados');
     }
 
     return (data ?? []).map((row) => ({

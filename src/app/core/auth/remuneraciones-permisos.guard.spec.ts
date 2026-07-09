@@ -4,9 +4,11 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ErpPermisosRemuneracionesService } from './erp-permisos-remuneraciones.service';
 import {
+  crearModuloPermisoGuard,
   remuneracionesAdminNominaGuard,
   remuneracionesEscrituraGuard,
 } from './remuneraciones-permisos.guard';
+import { permisosPorDefectoDesdeRol } from './erp-permisos-modulos.rules';
 
 function ejecutarGuard(
   guard: typeof remuneracionesEscrituraGuard,
@@ -86,6 +88,32 @@ describe('remuneraciones-permisos.guard', () => {
     const router = TestBed.inject(Router);
     expect(router.serializeUrl(denied as ReturnType<Router['createUrlTree']>)).toContain(
       'acceso=denegado',
+    );
+  });
+
+  it('crearModuloPermisoGuard bloquea parametros para consulta', async () => {
+    const guard = crearModuloPermisoGuard('parametros', 'editar');
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        {
+          provide: ErpPermisosRemuneracionesService,
+          useValue: {
+            permisosNomina: () => permisosConsulta,
+            permisosModulos: () => permisosPorDefectoDesdeRol('consulta_remuneraciones'),
+            asegurarPermisosPerfil: vi.fn().mockResolvedValue(undefined),
+          },
+        },
+      ],
+    });
+
+    const denied = await TestBed.runInInjectionContext(() =>
+      guard({} as ActivatedRouteSnapshot, { url: '/parametros' } as RouterStateSnapshot),
+    );
+    const router = TestBed.inject(Router);
+    expect(router.serializeUrl(denied as ReturnType<Router['createUrlTree']>)).toBe(
+      '/?acceso=denegado',
     );
   });
 });

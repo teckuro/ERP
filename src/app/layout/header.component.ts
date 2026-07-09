@@ -20,6 +20,7 @@ import {
 } from 'lucide-angular';
 
 import { AuthService } from '../core/auth/auth.service';
+import { EmpresaActivaService } from '../core/services/empresa-activa.service';
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
 import {
   SHELL_HEADER_HEIGHT_PX,
@@ -90,31 +91,35 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
             </summary>
             <div class="erp-shell-header__period-panel">
               <p class="erp-shell-header__period-hint">
-                Elija mes y año para revisar otro período. Si ya existe nómina guardada, se cargará automáticamente.
+                Período de trabajo del ERP. Las pantallas usarán este mes.
               </p>
               <div class="erp-shell-header__period-controls">
-                <label class="erp-shell-header__period-label" for="header-periodo-anio">Año</label>
-                <select
-                  id="header-periodo-anio"
-                  class="periodo-header-select periodo-header-year"
-                  [ngModel]="anioPeriodo()"
-                  (ngModelChange)="onAnioChange($event)"
-                >
-                  @for (y of yearOptions(); track y) {
-                    <option [value]="stringYear(y)">{{ y }}</option>
-                  }
-                </select>
-                <label class="erp-shell-header__period-label" for="header-periodo-mes">Mes</label>
-                <select
-                  id="header-periodo-mes"
-                  class="periodo-header-select periodo-header-month"
-                  [ngModel]="mesPeriodo()"
-                  (ngModelChange)="onMesChange($event)"
-                >
-                  @for (m of monthOptions; track m.value) {
-                    <option [value]="m.value">{{ m.label }}</option>
-                  }
-                </select>
+                <label class="erp-shell-header__period-field" for="header-periodo-mes">
+                  <span>Mes</span>
+                  <select
+                    id="header-periodo-mes"
+                    class="periodo-header-select"
+                    [ngModel]="mesPeriodo()"
+                    (ngModelChange)="onMesChange($event)"
+                  >
+                    @for (m of monthOptions; track m.value) {
+                      <option [value]="m.value">{{ m.label }}</option>
+                    }
+                  </select>
+                </label>
+                <label class="erp-shell-header__period-field" for="header-periodo-anio">
+                  <span>Año</span>
+                  <select
+                    id="header-periodo-anio"
+                    class="periodo-header-select"
+                    [ngModel]="anioPeriodo()"
+                    (ngModelChange)="onAnioChange($event)"
+                  >
+                    @for (y of yearOptions(); track y) {
+                      <option [value]="stringYear(y)">{{ y }}</option>
+                    }
+                  </select>
+                </label>
               </div>
             </div>
           </details>
@@ -348,37 +353,42 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
         right: 0;
         z-index: 20;
         display: grid;
-        gap: 8px;
-        width: min(18rem, calc(100vw - 24px));
+        gap: 10px;
+        width: min(16.5rem, calc(100vw - 24px));
         border: 1px solid #e2e8f0;
         border-radius: 8px;
         background: #ffffff;
-        padding: 10px;
-        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        padding: 12px;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
       }
 
       .erp-shell-header__period-hint {
         margin: 0;
         color: #64748b;
-        font-size: 0.72rem;
+        font-size: 0.75rem;
         line-height: 1.4;
       }
 
       .erp-shell-header__period-controls {
         display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 6px 8px;
-        align-items: center;
+        grid-template-columns: 1.35fr 0.9fr;
+        gap: 8px;
+        align-items: end;
       }
 
-      .erp-shell-header__period-label {
+      .erp-shell-header__period-field {
+        display: grid;
+        gap: 4px;
+        min-width: 0;
         color: #64748b;
-        font-size: 0.72rem;
-        font-weight: 650;
+        font-size: 0.6875rem;
+        font-weight: 600;
       }
 
       .periodo-header-select {
+        width: 100%;
         height: 32px;
+        box-sizing: border-box;
         border: 1px solid #e2e8f0;
         border-radius: 6px;
         background: #ffffff;
@@ -386,14 +396,6 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
         color: #0f172a;
         font-size: 12px;
         font-weight: 500;
-      }
-
-      .periodo-header-year {
-        width: 5rem;
-      }
-
-      .periodo-header-month {
-        min-width: 7.5rem;
       }
 
       .erp-shell-header__cta {
@@ -528,6 +530,7 @@ export class HeaderComponent {
   readonly periodoActivo = inject(PeriodoActivoService);
   readonly shellContext = inject(ShellPageContextService);
   readonly auth = inject(AuthService);
+  private readonly empresaActiva = inject(EmpresaActivaService);
   readonly router = inject(Router);
   readonly cerrandoSesion = signal(false);
 
@@ -621,6 +624,7 @@ export class HeaderComponent {
     this.cerrandoSesion.set(true);
     try {
       await this.auth.logout();
+      this.empresaActiva.limpiar();
       await this.router.navigateByUrl('/login');
     } finally {
       this.cerrandoSesion.set(false);

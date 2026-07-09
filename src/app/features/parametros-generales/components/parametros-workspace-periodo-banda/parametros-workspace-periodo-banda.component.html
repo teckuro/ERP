@@ -64,14 +64,12 @@
       <div class="parametros-period-right__status">
         <p class="parametros-period-right__detail">{{ ws.periodoEstadoDetalle() }}</p>
 
-        @if (ws.periodoReferenciaAnterior()) {
-          <p class="parametros-period-right__ref">
-            Referencia disponible: {{ ws.periodoReferenciaAnteriorLabel() }} ({{ ws.periodoReferenciaAnterior() }})
-          </p>
+        @if (ws.periodoReferenciaAnteriorLabel(); as refLabel) {
+          <p class="parametros-period-right__ref">Referencia: {{ refLabel }}</p>
         }
 
         @if (ws.periodoBandaPendienteVisible()) {
-          <p class="parametros-period-right__next">Acción recomendada: {{ ws.cierrePendientePrincipal() }}</p>
+          <p class="parametros-period-right__next">Siguiente: {{ ws.cierrePendientePrincipal() }}</p>
         }
       </div>
     </div>

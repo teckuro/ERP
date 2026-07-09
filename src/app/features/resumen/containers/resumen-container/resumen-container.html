@@ -19,93 +19,167 @@
           />
         }
 
-        <section class="res-franja" aria-label="Estado del período">
-          <div class="res-franja__copy">
-            <p class="res-franja__saludo">Buenos días, {{ saludo() }}</p>
-            <p class="res-franja__contexto">
-              <span class="res-franja__periodo">{{ periodoActivo.etiqueta() }}</span>
-              @if (snapshot().empresaNombre; as empresa) {
-                <span class="res-franja__sep" aria-hidden="true">·</span>
-                <span class="res-franja__empresa">{{ empresa }}</span>
-              }
-            </p>
-            <p class="res-franja__estado">
-              Estado de nómina:
-              <strong>{{ snapshot().estadoNominaDominante ?? '—' }}</strong>
-              <span class="res-franja__sep" aria-hidden="true">·</span>
-              <span class="res-franja__detalle">{{ snapshot().accionRecomendada.detalle }}</span>
-            </p>
+        <p class="res-context" aria-label="Contexto del período">
+          <span class="res-context__saludo">Buenos días, {{ saludo() }}</span>
+          <span class="res-context__sep" aria-hidden="true">·</span>
+          <span class="res-context__periodo">{{ periodoActivo.etiqueta() }}</span>
+          @if (snapshot().empresaNombre; as empresa) {
+            <span class="res-context__sep" aria-hidden="true">·</span>
+            <span>{{ empresa }}</span>
+          }
+          <span class="res-context__sep" aria-hidden="true">·</span>
+          <span class="res-context__badge">{{ snapshot().estadoNominaDominante ?? 'Sin estado' }}</span>
+        </p>
+
+        <section
+          class="res-action"
+          [class.res-action--warning]="snapshot().accionRecomendada.tone === 'warning'"
+          aria-label="Acción recomendada"
+        >
+          <div class="res-action__copy">
+            <p class="res-action__eyebrow">Acción recomendada</p>
+            <h1 class="res-action__title">{{ snapshot().accionRecomendada.etiqueta }}</h1>
+            <p class="res-action__detail">{{ snapshot().accionRecomendada.detalle }}</p>
           </div>
           <button
             type="button"
-            class="res-franja__cta"
-            [class.res-franja__cta--warning]="snapshot().accionRecomendada.tone === 'warning'"
+            class="res-action__cta"
+            [class.res-action__cta--warning]="snapshot().accionRecomendada.tone === 'warning'"
             (click)="ir(snapshot().accionRecomendada.ruta)"
           >
-            {{ snapshot().accionRecomendada.etiqueta }}
+            Continuar
+            <lucide-icon name="arrow-right" aria-hidden="true"></lucide-icon>
           </button>
         </section>
 
-        <section class="res-kpis" aria-label="Indicadores del período">
-          @for (kpi of snapshot().kpis; track kpi.id) {
-            <button type="button" [class]="claseKpi(kpi.tone)" (click)="ir(kpi.ruta)">
-              <strong>{{ formatearValorKpi(kpi.value) }}</strong>
-              <small>{{ kpi.label }}</small>
-            </button>
-          }
-        </section>
-
-        <div class="res-main">
-          <section class="res-atencion" aria-label="Requiere su atención">
-            <header class="res-section-head">
-              <h2>Requiere su atención</h2>
-              @if (snapshot().atencion.length > 0) {
-                <span class="res-section-head__count">{{ snapshot().atencion.length }}</span>
-              }
+        <div class="res-split">
+          <section class="res-analytics" aria-label="Análisis del período">
+            <header class="res-analytics__head">
+              <div>
+                <h2>Análisis del período</h2>
+                <p>Costos y composición se mostrarán aquí cuando el período tenga liquidaciones.</p>
+              </div>
             </header>
+
+            <div class="res-analytics__grid">
+              <article class="res-panel res-panel--wide" aria-label="Costo de remuneraciones">
+                <header class="res-panel__head">
+                  <h3>Costo de remuneraciones</h3>
+                  <span class="res-panel__tag">Próximo</span>
+                </header>
+                <div class="res-panel__body res-panel__body--chart">
+                  <div class="res-chart-skeleton" aria-hidden="true">
+                    <span style="--h: 42%"></span>
+                    <span style="--h: 68%"></span>
+                    <span style="--h: 55%"></span>
+                    <span style="--h: 78%"></span>
+                    <span style="--h: 48%"></span>
+                    <span style="--h: 62%"></span>
+                  </div>
+                  <p class="res-panel__hint">
+                    Evolución del costo mensual y comparación con períodos anteriores.
+                  </p>
+                </div>
+              </article>
+
+              <article class="res-panel" aria-label="Composición del gasto">
+                <header class="res-panel__head">
+                  <h3>Composición</h3>
+                  <span class="res-panel__tag">Próximo</span>
+                </header>
+                <div class="res-panel__body">
+                  <ul class="res-compose">
+                    <li>
+                      <span>Haberes imponibles</span>
+                      <span class="res-compose__bar" aria-hidden="true"><i style="--w: 72%"></i></span>
+                    </li>
+                    <li>
+                      <span>Haberes no imponibles</span>
+                      <span class="res-compose__bar" aria-hidden="true"><i style="--w: 28%"></i></span>
+                    </li>
+                    <li>
+                      <span>Descuentos legales</span>
+                      <span class="res-compose__bar" aria-hidden="true"><i style="--w: 45%"></i></span>
+                    </li>
+                  </ul>
+                  <p class="res-panel__hint">Distribución del gasto cuando exista cálculo oficial.</p>
+                </div>
+              </article>
+
+              <article class="res-panel res-panel--economicos" aria-label="Indicadores económicos">
+                <header class="res-panel__head">
+                  <h3>Indicadores económicos</h3>
+                  <button type="button" class="res-panel__link" (click)="ir('/parametros')">
+                    Parámetros
+                  </button>
+                </header>
+                <div class="res-panel__body res-panel__body--eco">
+                  @for (eco of snapshot().economicos; track eco.id) {
+                    <button
+                      type="button"
+                      [class]="claseEconomico(eco.tone, eco.disponible)"
+                      [title]="eco.detalle || eco.label"
+                      (click)="ir(eco.ruta)"
+                    >
+                      <small>{{ eco.label }}</small>
+                      <strong>{{ formatearEconomico(eco.value, eco.formato) }}</strong>
+                      @if (!eco.disponible && eco.detalle) {
+                        <span class="res-eco__note">{{ eco.detalle }}</span>
+                      }
+                    </button>
+                  }
+                </div>
+              </article>
+
+              <article class="res-panel" aria-label="Indicadores operativos">
+                <header class="res-panel__head">
+                  <h3>Indicadores operativos</h3>
+                </header>
+                <div class="res-panel__body res-panel__body--kpis">
+                  @for (kpi of snapshot().kpis; track kpi.id) {
+                    <button type="button" [class]="claseKpi(kpi.tone)" (click)="ir(kpi.ruta)">
+                      <strong>{{ formatearValorKpi(kpi.value) }}</strong>
+                      <small>{{ kpi.label }}</small>
+                    </button>
+                  }
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="res-inbox" aria-label="Bandeja de pendientes">
+            <header class="res-inbox__head">
+              <h2>Bandeja</h2>
+              <span class="res-inbox__count" [class.is-empty]="snapshot().atencion.length === 0">
+                {{ snapshot().atencion.length }}
+              </span>
+            </header>
+
             @if (snapshot().atencion.length === 0) {
-              <div class="res-atencion__ok" role="status">
+              <div class="res-inbox__ok" role="status">
                 <lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon>
-                <span>Todo al día para el período activo.</span>
+                <div>
+                  <strong>Sin pendientes</strong>
+                  <p>El período no tiene ítems esperando revisión.</p>
+                </div>
               </div>
             } @else {
-              <ul class="res-atencion__lista">
+              <ul class="res-inbox__lista">
                 @for (item of snapshot().atencion; track item.id) {
                   <li>
                     <button type="button" [class]="claseAtencion(item.tone)" (click)="ir(item.ruta)">
-                      <span class="res-atencion-item__icon" aria-hidden="true">
+                      <span class="res-inbox-item__icon" aria-hidden="true">
                         <lucide-icon [name]="item.icon"></lucide-icon>
                       </span>
-                      <span class="res-atencion-item__copy">
+                      <span class="res-inbox-item__copy">
                         <strong>{{ item.titulo }}</strong>
                         <small>{{ item.detalle }}</small>
                       </span>
-                      <span class="res-atencion-item__go">Revisar</span>
                     </button>
                   </li>
                 }
               </ul>
             }
-          </section>
-
-          <section class="res-modulos" aria-label="Accesos del flujo">
-            <header class="res-section-head">
-              <h2>Flujo operativo</h2>
-            </header>
-            <p class="res-modulos__lead">Pantallas que sostienen el cierre del período.</p>
-            <div class="res-modulos__grid">
-              @for (modulo of modulos; track modulo.id) {
-                <a [routerLink]="modulo.ruta" class="res-tile">
-                  <span class="res-tile-chip" [ngClass]="modulo.chipClass" aria-hidden="true">
-                    <lucide-icon [name]="modulo.icon"></lucide-icon>
-                  </span>
-                  <span class="res-tile__copy">
-                    <strong>{{ modulo.titulo }}</strong>
-                    <small>{{ modulo.descripcion }}</small>
-                  </span>
-                </a>
-              }
-            </div>
           </section>
         </div>
       </div>

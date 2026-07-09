@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 
 import { Tables, TablesInsert, TablesUpdate } from '../../../core/models/database.types';
+import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import {
   CatalogoLreOpcion,
@@ -116,6 +117,10 @@ function mapAsignacion(row: HdWithConcept): HaberDescuentoAsignacionListado {
   };
 }
 
+function falloHaberesDescuentos(error: unknown): never {
+  lanzarErrorSupabaseRepositorio(error, 'consultar o guardar haberes y descuentos');
+}
+
 @Injectable({ providedIn: 'root' })
 export class HaberesDescuentosRepository {
   private readonly supabase = injectSupabase();
@@ -130,7 +135,7 @@ export class HaberesDescuentosRepository {
       .order('codigo_lre', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
 
     return (data ?? []).map((r) => ({
@@ -151,7 +156,7 @@ export class HaberesDescuentosRepository {
       .order('fecha_inicio', { ascending: false });
 
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
 
     return (data ?? []).map((r) => {
@@ -178,7 +183,7 @@ export class HaberesDescuentosRepository {
       .maybeSingle();
 
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
 
     return data != null;
@@ -205,7 +210,7 @@ export class HaberesDescuentosRepository {
       .maybeSingle();
 
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
 
     if (!data) {
@@ -234,7 +239,7 @@ export class HaberesDescuentosRepository {
       .maybeSingle();
 
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
 
     if (!data) {
@@ -290,7 +295,7 @@ export class HaberesDescuentosRepository {
       .order('nombre', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
 
     return (data ?? []).map((row) => mapConceptoMantenimiento(row as unknown as ConceptoWithLre));
@@ -322,7 +327,7 @@ export class HaberesDescuentosRepository {
     const { data, error } = await this.supabase.from('concepto').insert(insert).select('id_concepto').single();
 
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
 
     return data.id_concepto as number;
@@ -352,7 +357,7 @@ export class HaberesDescuentosRepository {
     const { error } = await this.supabase.from('concepto').update(patch).eq('id_concepto', idConcepto);
 
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
   }
 
@@ -360,7 +365,7 @@ export class HaberesDescuentosRepository {
     const { error } = await this.supabase.from('concepto').delete().eq('id_concepto', idConcepto);
 
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
   }
 
@@ -382,10 +387,10 @@ export class HaberesDescuentosRepository {
     ]);
 
     if (liq.error) {
-      throw new Error(liq.error.message);
+      falloHaberesDescuentos(liq.error);
     }
     if (asig.error) {
-      throw new Error(asig.error.message);
+      falloHaberesDescuentos(asig.error);
     }
 
     return {
@@ -434,7 +439,7 @@ export class HaberesDescuentosRepository {
       .order('id_asignacion');
 
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
 
     return (data ?? []).map((row) => mapAsignacion(row as HdWithConcept));
@@ -479,7 +484,7 @@ export class HaberesDescuentosRepository {
       .order('id_asignacion', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
 
     return (data ?? []).map((row) => mapAsignacion(row as HdWithConcept));
@@ -504,7 +509,7 @@ export class HaberesDescuentosRepository {
     const { data, error } = await query.limit(1);
 
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
 
     return (data?.length ?? 0) > 0;
@@ -522,7 +527,7 @@ export class HaberesDescuentosRepository {
       .order('vigencia_inicio', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
 
     return (data ?? []).map((row) => ({
@@ -545,7 +550,7 @@ export class HaberesDescuentosRepository {
       .maybeSingle();
 
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
 
     if (!data) {
@@ -577,7 +582,7 @@ export class HaberesDescuentosRepository {
       .eq('id_asignacion', idAsignacion);
 
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
   }
 
@@ -602,7 +607,7 @@ export class HaberesDescuentosRepository {
     const { error } = await this.supabase.from('haberdescuento_persona').insert(insert);
 
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
   }
 
@@ -630,7 +635,7 @@ export class HaberesDescuentosRepository {
       .eq('id_asignacion', idAsignacion);
 
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
   }
 
@@ -645,7 +650,7 @@ export class HaberesDescuentosRepository {
       .eq('id_concepto', idConcepto)
       .order('codigo_regla', { ascending: true });
     if (error) {
-      throw new Error(error.message);
+      falloHaberesDescuentos(error);
     }
     return (data ?? []).map((row) => ({
       idReglaConceptoCalculo: Number(row.id_regla_concepto_calculo),

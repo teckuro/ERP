@@ -21,6 +21,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 
 import { ErpPermisosRemuneracionesService } from '../../../core/auth/erp-permisos-remuneraciones.service';
+import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
 import { EmpresaActivaService } from '../../../core/services/empresa-activa.service';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import { NominaPeriodoRepository } from '../data-access/nomina-periodo.repository';
@@ -306,7 +307,7 @@ export class NominaPeriodoService {
       .update(update)
       .eq('id', nominaPeriodoId);
     if (error) {
-      throw new Error(`guardarParametrosNomina: ${error.message}`);
+      lanzarErrorSupabaseRepositorio(error, 'guardar los parámetros de la nómina');
     }
   }
 

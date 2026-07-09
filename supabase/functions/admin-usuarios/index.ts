@@ -16,10 +16,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
 import type { User } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
 
-const corsHeaders: Record<string, string> = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 const ROLES_ADMIN_SISTEMA = new Set(['admin', 'admin_sistema', 'administrador', 'administrator']);
 
@@ -53,6 +50,13 @@ interface UsuarioResumen {
 console.info('admin-usuarios: worker started');
 
 Deno.serve(async (req) => {
+  const corsHeaders = buildCorsHeaders(req);
+  const jsonResponse = (body: unknown, status = 200): Response =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -305,11 +309,4 @@ function parseIdEmpresa(raw: unknown): number | null {
   if (raw == null) return null;
   const parsed = Number(raw);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-}
-
-function jsonResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
 }

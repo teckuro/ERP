@@ -17,6 +17,7 @@ import {
   DataGridFilter,
 } from '../../../../shared/components/ui/data-grid';
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
+import { mensajeErrorSupabaseParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
 import { EmpleadosService } from '../../../empleados/services/empleados.service';
@@ -210,7 +211,7 @@ export class LicenciasMedicasContainer implements OnInit {
       this.filas.set(licencias.map((licencia) => this.toGridRow(licencia)));
       this.evaluarAlertaPendientes(opciones?.silenciarAlertaPendientes === true);
     } catch (err) {
-      this.mensajeError.set(err instanceof Error ? err.message : 'No fue posible cargar licencias médicas.');
+      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'cargar licencias médicas'));
     } finally {
       this.loading.set(false);
     }
@@ -263,7 +264,7 @@ export class LicenciasMedicasContainer implements OnInit {
       await this.cargar();
       await this.abrirRevision(creada);
     } catch (err) {
-      this.mensajeError.set(err instanceof Error ? err.message : 'No fue posible registrar la licencia.');
+      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'registrar la licencia'));
     } finally {
       this.guardando.set(false);
     }
@@ -306,7 +307,7 @@ export class LicenciasMedicasContainer implements OnInit {
       this.cerrarRevision();
       await this.cargar();
     } catch (err) {
-      this.mensajeError.set(err instanceof Error ? err.message : 'No fue posible guardar el borrador.');
+      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'guardar el borrador'));
     } finally {
       this.guardando.set(false);
     }
@@ -332,7 +333,7 @@ export class LicenciasMedicasContainer implements OnInit {
       this.cerrarRevision();
       await this.cargar();
     } catch (err) {
-      this.mensajeError.set(err instanceof Error ? err.message : 'No fue posible confirmar la licencia.');
+      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'confirmar la licencia'));
     } finally {
       this.guardando.set(false);
     }
@@ -356,7 +357,7 @@ export class LicenciasMedicasContainer implements OnInit {
       this.cerrarRevision();
       await this.cargar();
     } catch (err) {
-      this.mensajeError.set(err instanceof Error ? err.message : 'No fue posible rechazar la licencia.');
+      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'rechazar la licencia'));
     } finally {
       this.guardando.set(false);
     }

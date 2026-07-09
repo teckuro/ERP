@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import type { Json } from '../../../core/models/database.types';
+import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import type { ProcesoMensualPrevalidacion } from '../models/proceso-mensual.model';
 
@@ -37,18 +38,14 @@ export class NominaPeriodoDiagnosticoRepository {
       p_fingerprint: fingerprint ?? null,
     });
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'guardar el diagnóstico del periodo');
     }
-  }
-
-  async obtenerActivo(periodo: string): Promise<ProcesoMensualPrevalidacion | null> {
     const { data, error } = await this.supabase.rpc('obtener_nomina_periodo_diagnostico_activo', {
       p_periodo: periodo.trim(),
     });
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'consultar el diagnóstico del periodo');
     }
-    if (!data) {
       return null;
     }
     const row = data as DiagnosticoRow;
@@ -61,11 +58,8 @@ export class NominaPeriodoDiagnosticoRepository {
       p_motivo: motivo,
     });
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'cerrar el diagnóstico del periodo');
     }
-  }
-
-  private mapearPayload(payload: Json): ProcesoMensualPrevalidacion | null {
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
       return null;
     }

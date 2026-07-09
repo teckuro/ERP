@@ -639,7 +639,7 @@ export class ParametrosWorkspaceOrquestador {
       return 'Editando configuración del cliente.';
     }
     if (!this.hasAnySyncedData()) {
-      return 'Sin oficiales aún. El cliente puede capturar valores; NOIA los actualizará a fin de mes.';
+      return 'Aún no hay carga oficial. Puede capturar valores; se actualizarán con la carga de fin de mes.';
     }
     const referencia = this.referenciaVisualPrincipalLabelCapitalizado();
     if (referencia) {
@@ -1822,7 +1822,7 @@ export class ParametrosWorkspaceOrquestador {
       return 'Usa las acciones del resumen de cierre para completar la configuración.';
     }
     if (!this.hasAnySyncedData()) {
-      return 'Captura los valores tentativos del cliente para este período. NOIA actualizará los oficiales a fin de mes y revisaremos diferencias.';
+      return 'Capture valores tentativos del cliente para este período. La carga oficial de fin de mes actualizará los datos y se revisarán diferencias.';
     }
     if (!this.isConfigurableTab()) {
       return 'Modificar aplica a la configuración del cliente. Los datos oficiales se cargan por proceso normativo.';

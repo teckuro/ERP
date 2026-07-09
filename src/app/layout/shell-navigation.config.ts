@@ -1,9 +1,13 @@
+import type { ModuloPermiso } from '../core/auth/erp-permisos-modulos.rules';
+
 export type ShellNavItem = {
   path: string;
   label: string;
   icon: string;
   exact?: boolean;
   badgeKey?: 'periodoMes' | 'movimientosPendientes';
+  /** Si se define, el ítem solo se muestra cuando el perfil permite `ver` (ADMIN-01 / SEC-04). */
+  modulo?: ModuloPermiso;
 };
 
 export type ShellNavSection = {
@@ -25,30 +29,41 @@ export const SHELL_NAV_SECTIONS: ShellNavSection[] = [
     label: 'Principal',
     items: [
       { path: '/', label: 'Resumen', icon: 'layout-dashboard', exact: true },
-      { path: '/empleados', label: 'Empleados', icon: 'users' },
+      { path: '/empleados', label: 'Empleados', icon: 'users', modulo: 'empleados' },
       {
         path: '/remuneraciones/nominas',
         label: 'Administrador de nóminas',
         icon: 'clipboard-list',
+        modulo: 'nominas',
       },
-      { path: '/remuneraciones/liquidaciones', label: 'Liquidaciones', icon: 'file-check-2' },
-      { path: '/remuneraciones/lre', label: 'Libro remuneraciones', icon: 'file-text' },
-      { path: '/parametros', label: 'Parámetros', icon: 'settings' },
+      {
+        path: '/remuneraciones/liquidaciones',
+        label: 'Liquidaciones',
+        icon: 'file-check-2',
+        modulo: 'liquidaciones',
+      },
+      { path: '/remuneraciones/lre', label: 'Libro remuneraciones', icon: 'file-text', modulo: 'liquidaciones' },
+      { path: '/parametros', label: 'Parámetros', icon: 'settings', modulo: 'parametros' },
     ],
   },
   {
     label: 'Gestión',
     items: [
-      { path: '/remuneraciones/novedades-mensuales', label: 'Movimientos', icon: 'calendar-plus' },
-      { path: '/remuneraciones/conceptos', label: 'Conceptos', icon: 'tags', exact: true },
+      {
+        path: '/remuneraciones/novedades-mensuales',
+        label: 'Movimientos',
+        icon: 'calendar-plus',
+        modulo: 'movimientos',
+      },
+      { path: '/remuneraciones/conceptos', label: 'Conceptos', icon: 'tags', exact: true, modulo: 'conceptos' },
     ],
   },
   {
     label: 'Administración',
     items: [
-      { path: '/licencias-medicas', label: 'Licencias médicas', icon: 'heart-pulse' },
-      { path: '/empresas', label: 'Empresas', icon: 'building-2' },
-      { path: '/reportes', label: 'Reportes', icon: 'bar-chart-3' },
+      { path: '/licencias-medicas', label: 'Licencias médicas', icon: 'heart-pulse', modulo: 'licencias' },
+      { path: '/empresas', label: 'Empresas', icon: 'building-2', modulo: 'empresas' },
+      { path: '/reportes', label: 'Reportes', icon: 'bar-chart-3', modulo: 'reportes' },
       { path: '/preguntor', label: 'Preguntor', icon: 'message-circle' },
     ],
   },

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 
+import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import type { MovimientoVariable, MovimientoVariableActualizarPayload, MovimientoVariableAnularPayload, MovimientoVariableCrearPayload, MovimientoVariableEstado } from '../models/movimiento-variable.model';
 import {
@@ -63,7 +64,7 @@ export class MovimientosVariablesRepository {
       .order('id_movimiento_variable', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'listar los movimientos del periodo');
     }
 
     return (data ?? []).map((row) => mapRowToMovimientoVariable(row as MovimientoVariableMensualRow));
@@ -79,7 +80,7 @@ export class MovimientosVariablesRepository {
       .order('id_movimiento_variable', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'listar los movimientos del trabajador');
     }
 
     return (data ?? []).map((row) => mapRowToMovimientoVariable(row as MovimientoVariableMensualRow));
@@ -93,7 +94,7 @@ export class MovimientosVariablesRepository {
       .maybeSingle();
 
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'consultar el movimiento');
     }
 
     if (!data) {
@@ -125,7 +126,7 @@ export class MovimientosVariablesRepository {
     const { data, error } = await query;
 
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'revisar movimientos duplicados');
     }
 
     return (data ?? []).map((row) => mapRowToMovimientoVariable(row as MovimientoVariableMensualRow));
@@ -157,7 +158,7 @@ export class MovimientosVariablesRepository {
       .single();
 
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'registrar el movimiento');
     }
 
     return mapRowToMovimientoVariable(data as MovimientoVariableMensualRow);
@@ -210,7 +211,7 @@ export class MovimientosVariablesRepository {
       .single();
 
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'actualizar el movimiento');
     }
 
     return mapRowToMovimientoVariable(data as MovimientoVariableMensualRow);
@@ -238,7 +239,7 @@ export class MovimientosVariablesRepository {
       .single();
 
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'anular el movimiento');
     }
 
     return mapRowToMovimientoVariable(data as MovimientoVariableMensualRow);

@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 
 import type { Database } from '../../../core/models/database.types';
+import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import {
   mapEmpresaFormToInsert,
@@ -36,7 +37,7 @@ export class EmpresasRepository {
       .order('razon_social', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'cargar el listado de empresas');
     }
 
     return (data ?? []).map((row) => mapEmpresaRowToListadoFila(row as EmpresaRow & { organismo_administrador_ley_16744?: { nombre: string } | { nombre: string }[] | null }));
@@ -50,7 +51,7 @@ export class EmpresasRepository {
       .maybeSingle();
 
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'cargar la ficha de empresa');
     }
 
     return data ? mapEmpresaRowToDetalle(data as EmpresaRow) : null;
@@ -61,7 +62,7 @@ export class EmpresasRepository {
     const { data, error } = await this.supabase.from('empresa').insert(insert).select('*').single();
 
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'crear la empresa');
     }
 
     return mapEmpresaRowToDetalle(data as EmpresaRow);
@@ -77,7 +78,7 @@ export class EmpresasRepository {
       .single();
 
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'guardar la empresa');
     }
 
     return mapEmpresaRowToDetalle(data as EmpresaRow);
@@ -91,7 +92,7 @@ export class EmpresasRepository {
       .order('nombre', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'cargar los organismos mutual');
     }
 
     return ((data ?? []) as OrganismoMutualRow[]).map((row) => mapOrganismoRowToCatalogo(row));

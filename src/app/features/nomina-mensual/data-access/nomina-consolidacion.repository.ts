@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 
+import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import {
   parseResultadoAplicarConsolidaciones,
@@ -13,7 +14,7 @@ import type {
 } from '../models/nomina-consolidacion.models';
 
 function throwIfError(error: { message: string } | null, context: string): void {
-  if (error) throw new Error(`${context}: ${error.message}`);
+  if (error) lanzarErrorSupabaseRepositorio(error, context);
 }
 
 @Injectable({ providedIn: 'root' })

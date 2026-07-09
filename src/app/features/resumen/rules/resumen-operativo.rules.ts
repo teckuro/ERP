@@ -15,6 +15,28 @@ export interface ResumenKpi {
   icon: string;
 }
 
+export type ResumenEconomicoFormato = 'clp' | 'clp-entero';
+
+export interface ResumenEconomicoIndicador {
+  id: string;
+  label: string;
+  value: number | null;
+  formato: ResumenEconomicoFormato;
+  tone: ResumenKpiTone;
+  ruta: string;
+  disponible: boolean;
+  detalle?: string;
+}
+
+export interface ResumenParametrosEconomicos {
+  uf: number | null;
+  utm: number | null;
+  uta: number | null;
+  sueldoMinimo: number | null;
+  /** Reservado: el sistema aún no persiste dólar observado. */
+  dolarObservado?: number | null;
+}
+
 export interface ResumenAtencionItem {
   id: string;
   titulo: string;
@@ -31,17 +53,9 @@ export interface ResumenAccionRecomendada {
   tone: 'primary' | 'warning';
 }
 
-export interface ResumenModuloTile {
-  id: string;
-  titulo: string;
-  descripcion: string;
-  ruta: string;
-  icon: string;
-  chipClass: string;
-}
-
 export interface ResumenOperativoSnapshot {
   kpis: ResumenKpi[];
+  economicos: ResumenEconomicoIndicador[];
   atencion: ResumenAtencionItem[];
   accionRecomendada: ResumenAccionRecomendada;
   estadoNominaDominante: string | null;
@@ -97,12 +111,80 @@ export function empresaDesdeNominas(nominasPeriodo: readonly NominaPeriodoResume
   return nombre || null;
 }
 
+export function construirIndicadoresEconomicos(
+  parametros: ResumenParametrosEconomicos | null,
+): ResumenEconomicoIndicador[] {
+  const ruta = '/parametros';
+  const uf = parametros?.uf ?? null;
+  const utm = parametros?.utm ?? null;
+  const uta = parametros?.uta ?? null;
+  const sueldoMinimo = parametros?.sueldoMinimo ?? null;
+  const dolar = parametros?.dolarObservado ?? null;
+
+  return [
+    {
+      id: 'uf',
+      label: 'UF',
+      value: uf,
+      formato: 'clp',
+      tone: uf == null ? 'warning' : 'info',
+      ruta,
+      disponible: uf != null,
+      detalle: uf == null ? 'Sin valor en parámetros del período' : undefined,
+    },
+    {
+      id: 'utm',
+      label: 'UTM',
+      value: utm,
+      formato: 'clp-entero',
+      tone: utm == null ? 'warning' : 'neutral',
+      ruta,
+      disponible: utm != null,
+      detalle: utm == null ? 'Sin valor en parámetros del período' : undefined,
+    },
+    {
+      id: 'uta',
+      label: 'UTA',
+      value: uta,
+      formato: 'clp-entero',
+      tone: uta == null ? 'warning' : 'neutral',
+      ruta,
+      disponible: uta != null,
+      detalle: uta == null ? 'Sin valor en parámetros del período' : undefined,
+    },
+    {
+      id: 'sueldo-minimo',
+      label: 'Sueldo mínimo',
+      value: sueldoMinimo,
+      formato: 'clp-entero',
+      tone: sueldoMinimo == null ? 'warning' : 'success',
+      ruta,
+      disponible: sueldoMinimo != null,
+      detalle: sueldoMinimo == null ? 'Sin valor en parámetros del período' : undefined,
+    },
+    {
+      id: 'dolar',
+      label: 'Dólar observado',
+      value: dolar,
+      formato: 'clp',
+      tone: 'warning',
+      ruta,
+      disponible: dolar != null,
+      detalle:
+        dolar == null
+          ? 'Aún no está cargado en parámetros del sistema'
+          : undefined,
+    },
+  ];
+}
+
 export function construirResumenOperativo(input: {
   periodoYm: string;
   nominas: NominaPeriodoResumen[] | null;
   empleados: EmpleadoListado[] | null;
   licenciasPendientes: LicenciaMedica[] | null;
   novedades: NovedadMensual[] | null;
+  parametros?: ResumenParametrosEconomicos | null;
 }): ResumenOperativoSnapshot {
   const nominasPeriodo = input.nominas ? filtrarNominasPeriodo(input.nominas, input.periodoYm) : [];
   const empleados = input.empleados ?? [];
@@ -113,6 +195,7 @@ export function construirResumenOperativo(input: {
   const nominasCurso = input.nominas ? contarNominasEnCurso(nominasPeriodo) : null;
   const fichasIncompletas = input.empleados ? contarFichasIncompletas(empleados) : null;
   const criticas = input.nominas ? contarNominasCriticas(nominasPeriodo) : null;
+  const economicos = construirIndicadoresEconomicos(input.parametros ?? null);
 
   const kpis: ResumenKpi[] = [
     {
@@ -199,6 +282,20 @@ export function construirResumenOperativo(input: {
     });
   }
 
+  const faltantesEconomicos = economicos.filter(
+    (item) => item.id !== 'dolar' && !item.disponible,
+  );
+  if (faltantesEconomicos.length > 0) {
+    atencion.push({
+      id: 'parametros-economicos',
+      titulo: 'Indicadores económicos incompletos',
+      detalle: `Faltan ${faltantesEconomicos.map((item) => item.label).join(', ')} en parámetros del período.`,
+      ruta: '/parametros',
+      icon: 'settings-2',
+      tone: 'warning',
+    });
+  }
+
   const accionRecomendada = resolverAccionRecomendada({
     licenciasCount: licenciasCount ?? 0,
     movimientosCount: movimientosCount ?? 0,
@@ -209,6 +306,7 @@ export function construirResumenOperativo(input: {
 
   return {
     kpis,
+    economicos,
     atencion,
     accionRecomendada,
     estadoNominaDominante: input.nominas ? estadoNominaPrincipal(nominasPeriodo) : null,
@@ -271,57 +369,20 @@ function resolverAccionRecomendada(input: {
   };
 }
 
-export const RESUMEN_MODULOS: readonly ResumenModuloTile[] = [
-  {
-    id: 'nominas',
-    titulo: 'Administrador de nóminas',
-    descripcion: 'Verifique trabajadores, parámetros y movimientos antes de confirmar.',
-    ruta: '/remuneraciones/nominas',
-    icon: 'clipboard-list',
-    chipClass: 'res-tile-chip--nomina',
-  },
-  {
-    id: 'movimientos',
-    titulo: 'Movimientos',
-    descripcion: 'Registre bonos, descuentos, anticipos y recurrentes del período.',
-    ruta: '/remuneraciones/novedades-mensuales',
-    icon: 'calendar-plus',
-    chipClass: 'res-tile-chip--movimientos',
-  },
-  {
-    id: 'empleados',
-    titulo: 'Empleados',
-    descripcion: 'Complete fichas y datos necesarios para cerrar el período.',
-    ruta: '/empleados',
-    icon: 'user-round',
-    chipClass: 'res-tile-chip--empleados',
-  },
-  {
-    id: 'liquidaciones',
-    titulo: 'Liquidaciones oficiales',
-    descripcion: 'Revise la salida interna generada desde una nómina cerrada.',
-    ruta: '/remuneraciones/liquidaciones',
-    icon: 'file-check-2',
-    chipClass: 'res-tile-chip--liquidaciones',
-  },
-  {
-    id: 'licencias',
-    titulo: 'Licencias médicas',
-    descripcion: 'Revise licencias recibidas por correo antes de vincular nómina.',
-    ruta: '/licencias-medicas',
-    icon: 'heart-pulse',
-    chipClass: 'res-tile-chip--licencias',
-  },
-  {
-    id: 'parametros',
-    titulo: 'Parámetros',
-    descripcion: 'Revise valores del sistema que habilitan la preparación mensual.',
-    ruta: '/parametros',
-    icon: 'settings-2',
-    chipClass: 'res-tile-chip--parametros',
-  },
-];
-
 export function formatearValorKpi(value: number | null): string {
   return value == null ? '—' : String(value);
+}
+
+export function formatearValorEconomico(
+  value: number | null,
+  formato: ResumenEconomicoFormato,
+): string {
+  if (value == null || Number.isNaN(value)) {
+    return '—';
+  }
+  const opciones: Intl.NumberFormatOptions =
+    formato === 'clp'
+      ? { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+      : { maximumFractionDigits: 0 };
+  return new Intl.NumberFormat('es-CL', opciones).format(value);
 }

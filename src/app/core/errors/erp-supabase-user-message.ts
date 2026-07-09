@@ -71,6 +71,11 @@ export function mensajeErrorSupabaseParaUsuario(error: unknown, contexto = 'la o
   return `No se pudo ${contextoLimpio}. Intente de nuevo o contacte a soporte.`;
 }
 
+/** Lanza Error con mensaje RRHH (repositorios piloto SEC-05). */
+export function lanzarErrorSupabaseRepositorio(error: unknown, contexto: string): never {
+  throw new Error(mensajeErrorSupabaseParaUsuario(error, contexto));
+}
+
 function extraerTextoError(error: unknown): string {
   if (error instanceof Error) return error.message;
   if (typeof error === 'object' && error !== null) {

@@ -21,6 +21,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 
+import { mensajeErrorSupabaseParaUsuario } from '../../../../../../core/errors/erp-supabase-user-message';
 import { NominaPlantillaCicloService } from '../../../../services/nomina-plantilla-ciclo.service';
 import {
   describirPoliticaFinSemana,
@@ -82,7 +83,7 @@ export class AdminPlantillasModalPreviewComponent {
       this.cortes.set(data);
     } catch (err) {
       const mensaje =
-        err instanceof Error ? err.message : 'No fue posible calcular la vista previa.';
+        mensajeErrorSupabaseParaUsuario(err, 'calcular la vista previa de cortes'),
       this.error.set(mensaje);
       this.cortes.set([]);
     } finally {

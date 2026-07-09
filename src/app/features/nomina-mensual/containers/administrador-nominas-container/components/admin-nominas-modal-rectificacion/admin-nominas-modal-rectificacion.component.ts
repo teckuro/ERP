@@ -14,6 +14,7 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
+import { mensajeErrorSupabaseParaUsuario } from '../../../../../../core/errors/erp-supabase-user-message';
 import { NominaPeriodoService } from '../../../../services/nomina-periodo.service';
 import type { NominaPeriodoResumen } from '../../../../models/nomina-periodo.models';
 import type {
@@ -115,7 +116,7 @@ export class AdminNominasModalRectificacionComponent {
         this.seleccionados.set(new Set(preview.trabajadorIdsSeleccionados));
       }
     } catch (err) {
-      this.error.set(err instanceof Error ? err.message : 'No fue posible preparar la rectificación.');
+      this.error.set(mensajeErrorSupabaseParaUsuario(err, 'preparar la rectificación'));
       this.preview.set(null);
     } finally {
       this.cargandoPreview.set(false);
@@ -151,7 +152,7 @@ export class AdminNominasModalRectificacionComponent {
       this.confirmacionAbierta.set(false);
       this.creada.emit({ resumen: cabecera, resultado });
     } catch (err) {
-      this.error.set(err instanceof Error ? err.message : 'No fue posible crear la rectificación.');
+      this.error.set(mensajeErrorSupabaseParaUsuario(err, 'crear la rectificación'));
     } finally {
       this.confirmando.set(false);
     }

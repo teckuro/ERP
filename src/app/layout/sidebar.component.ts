@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Building2Icon, LucideAngularModule, SettingsIcon } from 'lucide-angular';
 
@@ -36,7 +36,7 @@ import {
 
       <nav class="erp-sidebar__nav">
         <ul class="erp-sidebar__sections">
-          @for (section of menuSections; track section.label) {
+          @for (section of menuSections(); track section.label) {
             <li class="erp-sidebar__section">
               <p class="erp-sidebar__section-label">{{ section.label }}</p>
               <ul class="erp-sidebar__items">
@@ -328,16 +328,29 @@ import {
     `,
   ],
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   readonly buildingIcon = Building2Icon;
   readonly settingsIcon = SettingsIcon;
   readonly navWidth = SHELL_NAV_WIDTH_PX;
-  readonly menuSections = SHELL_NAV_SECTIONS;
   readonly footerConfig = SHELL_NAV_FOOTER_CONFIG;
 
   private readonly auth = inject(AuthService);
   private readonly permisosRemuneraciones = inject(ErpPermisosRemuneracionesService);
   private readonly periodoActivo = inject(PeriodoActivoService);
+
+  readonly menuSections = computed(() => {
+    const permisos = this.permisosRemuneraciones.permisosModulos();
+    return SHELL_NAV_SECTIONS.map((section) => ({
+      ...section,
+      items: section.items.filter(
+        (item) => !item.modulo || permisos[item.modulo]?.ver === true,
+      ),
+    })).filter((section) => section.items.length > 0);
+  });
+
+  ngOnInit(): void {
+    void this.permisosRemuneraciones.asegurarPermisosPerfil();
+  }
 
   readonly mesPeriodoBadge = computed(() => mesCortoDesdeYm(this.periodoActivo.periodoYm()));
 

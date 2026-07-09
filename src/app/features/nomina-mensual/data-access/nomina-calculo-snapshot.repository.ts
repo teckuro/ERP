@@ -5,6 +5,7 @@ import {
   usuarioResponsableDisponible,
 } from '../../../core/auth/auth-user-label';
 import type { Database, Json } from '../../../core/models/database.types';
+import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import type {
   AprobacionOperativaPersistida,
@@ -199,7 +200,7 @@ export class NominaCalculoSnapshotRepository {
       .limit(1);
     query = idEmpresa == null ? query.is('id_empresa', null) : query.eq('id_empresa', idEmpresa);
     const { data, error } = await query.maybeSingle();
-    if (error) throw new Error(`No fue posible consultar snapshot activo: ${error.message}`);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'consultar snapshot activo');
     return data ? mapPeriodoRow(data) : null;
   }
 
@@ -219,7 +220,7 @@ export class NominaCalculoSnapshotRepository {
       .limit(1)
       .maybeSingle();
     if (error) {
-      throw new Error(`No fue posible consultar snapshot activo de la nómina: ${error.message}`);
+      lanzarErrorSupabaseRepositorio(error, 'consultar snapshot activo de la nómina');
     }
     return data ? mapPeriodoRow(data) : null;
   }
@@ -230,7 +231,7 @@ export class NominaCalculoSnapshotRepository {
       .select('*')
       .eq('periodo', periodo)
       .order('fecha_generacion', { ascending: false });
-    if (error) throw new Error(`No fue posible listar snapshots del periodo: ${error.message}`);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'listar snapshots del periodo');
     return (data ?? []).map(mapPeriodoRow);
   }
 
@@ -242,7 +243,7 @@ export class NominaCalculoSnapshotRepository {
       .order('grupo', { ascending: true })
       .order('clave', { ascending: true });
     if (error) {
-      throw new Error(`No fue posible consultar parámetros del snapshot: ${error.message}`);
+      lanzarErrorSupabaseRepositorio(error, 'consultar parámetros del snapshot');
     }
     return (data ?? []).map(mapParametroRow);
   }
@@ -277,7 +278,7 @@ export class NominaCalculoSnapshotRepository {
       .eq('id_nomina_periodo', nominaPeriodoId)
       .order('fecha_generacion', { ascending: false });
     if (error) {
-      throw new Error(`No fue posible listar snapshots de la nómina: ${error.message}`);
+      lanzarErrorSupabaseRepositorio(error, 'listar snapshots de la nómina');
     }
     return (data ?? []).map(mapPeriodoRow);
   }
@@ -303,7 +304,7 @@ export class NominaCalculoSnapshotRepository {
       .eq('id_calculo_trabajador', idCalculoTrabajador)
       .maybeSingle();
     if (error) {
-      throw new Error(`No fue posible consultar el trabajador del cálculo: ${error.message}`);
+      lanzarErrorSupabaseRepositorio(error, 'consultar el trabajador del cálculo');
     }
     if (!data) return null;
 
@@ -326,7 +327,7 @@ export class NominaCalculoSnapshotRepository {
       .eq('id_calculo_trabajador', idCalculoTrabajador)
       .order('severidad', { ascending: true });
     if (error) {
-      throw new Error(`No fue posible consultar observaciones del trabajador: ${error.message}`);
+      lanzarErrorSupabaseRepositorio(error, 'consultar observaciones del trabajador');
     }
     return (data ?? []).map(mapIssueCompletoRow);
   }
@@ -420,7 +421,7 @@ export class NominaCalculoSnapshotRepository {
       .select('*')
       .eq('id_calculo_periodo', idCalculoPeriodo)
       .maybeSingle();
-    if (cabeceraError) throw new Error(`No fue posible consultar el resultado guardado: ${cabeceraError.message}`);
+    if (cabeceraError) lanzarErrorSupabaseRepositorio(cabeceraError, 'consultar el resultado guardado');
     if (!cabeceraRow) return null;
 
     const cabecera = mapPeriodoRow(cabeceraRow);
@@ -555,7 +556,7 @@ export class NominaCalculoSnapshotRepository {
       p_hash_entradas: params.hashEntradas ?? undefined,
     });
     if (error) {
-      throw new Error(`No fue posible validar la prenomina: ${error.message}`);
+      lanzarErrorSupabaseRepositorio(error, 'validar la prenomina');
     }
     return parsePrenominaValidacion(data);
   }
@@ -611,7 +612,7 @@ export class NominaCalculoSnapshotRepository {
       })
       .eq('id_calculo_periodo', idCalculoPeriodo);
     if (error) {
-      throw new Error(`No fue posible guardar metadata del borrador: ${error.message}`);
+      lanzarErrorSupabaseRepositorio(error, 'guardar metadata del borrador');
     }
   }
 
@@ -648,7 +649,7 @@ export class NominaCalculoSnapshotRepository {
       })
       .eq('id_calculo_periodo', idCalculoPeriodo);
     if (error) {
-      throw new Error(`No fue posible guardar metadata de base de parámetros: ${error.message}`);
+      lanzarErrorSupabaseRepositorio(error, 'guardar metadata de base de parámetros');
     }
   }
 
@@ -668,7 +669,7 @@ export class NominaCalculoSnapshotRepository {
     if (rows.length === 0) return;
     const { error } = await this.supabase.from('nomina_calculo_parametro').insert(rows);
     if (error) {
-      throw new Error(`No fue posible guardar parámetros congelados: ${error.message}`);
+      lanzarErrorSupabaseRepositorio(error, 'guardar parámetros congelados');
     }
   }
 
@@ -680,7 +681,7 @@ export class NominaCalculoSnapshotRepository {
     if (rows.length === 0) return;
     const { error } = await this.supabase.from('nomina_calculo_trazabilidad').insert(rows);
     if (error) {
-      throw new Error(`No fue posible guardar trazabilidad de base de parámetros: ${error.message}`);
+      lanzarErrorSupabaseRepositorio(error, 'guardar trazabilidad de base de parámetros');
     }
   }
 
@@ -708,7 +709,7 @@ export class NominaCalculoSnapshotRepository {
       })
       .select('*')
       .single();
-    if (error) throw new Error(`No fue posible guardar cabecera de snapshot: ${error.message}`);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'guardar cabecera de snapshot');
     return mapPeriodoRow(data);
   }
 
@@ -744,7 +745,7 @@ export class NominaCalculoSnapshotRepository {
       .from('nomina_calculo_trabajador')
       .insert(rows)
       .select('*');
-    if (error) throw new Error(`No fue posible guardar trabajadores del snapshot: ${error.message}`);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'guardar trabajadores del snapshot');
     return (data ?? []).map((row) => mapTrabajadorRow(row, trabajadoresSnapshot));
   }
 
@@ -771,7 +772,7 @@ export class NominaCalculoSnapshotRepository {
     });
     if (rows.length === 0) return;
     const { error } = await this.supabase.from('nomina_calculo_concepto').insert(rows);
-    if (error) throw new Error(`No fue posible guardar conceptos del snapshot: ${error.message}`);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'guardar conceptos del snapshot');
   }
 
   private async insertarIssues(
@@ -788,7 +789,7 @@ export class NominaCalculoSnapshotRepository {
     ];
     if (rows.length === 0) return;
     const { error } = await this.supabase.from('nomina_calculo_issue').insert(rows);
-    if (error) throw new Error(`No fue posible guardar issues del snapshot: ${error.message}`);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'guardar issues del snapshot');
   }
 
   private async insertarTrazabilidad(
@@ -801,7 +802,7 @@ export class NominaCalculoSnapshotRepository {
     );
     if (rows.length === 0) return;
     const { error } = await this.supabase.from('nomina_calculo_trazabilidad').insert(rows);
-    if (error) throw new Error(`No fue posible guardar trazabilidad del snapshot: ${error.message}`);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'guardar trazabilidad del snapshot');
   }
 
   private async marcarInactivo(idCalculoPeriodo: number, estado: string, motivo?: string): Promise<void> {
@@ -814,7 +815,7 @@ export class NominaCalculoSnapshotRepository {
         observacion_anulacion: motivo ?? null,
       })
       .eq('id_calculo_periodo', idCalculoPeriodo);
-    if (error) throw new Error(`No fue posible anular snapshot previo: ${error.message}`);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'anular snapshot previo');
   }
 
   private async actualizarReemplazo(idAnterior: number, idNuevo: number): Promise<void> {
@@ -822,7 +823,7 @@ export class NominaCalculoSnapshotRepository {
       .from('nomina_calculo_periodo')
       .update({ reemplazado_por: idNuevo, updated_at: new Date().toISOString() })
       .eq('id_calculo_periodo', idAnterior);
-    if (error) throw new Error(`No fue posible vincular snapshot reemplazado: ${error.message}`);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'vincular snapshot reemplazado');
   }
 
   private async obtenerTrabajadoresSnapshot(idCalculoPeriodo: number): Promise<NominaCalculoTrabajadorSnapshot[]> {
@@ -831,7 +832,7 @@ export class NominaCalculoSnapshotRepository {
       .select('*')
       .eq('id_calculo_periodo', idCalculoPeriodo)
       .order('nombre_completo_snapshot', { ascending: true });
-    if (error) throw new Error(`No fue posible consultar trabajadores del resultado guardado: ${error.message}`);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'consultar trabajadores del resultado guardado');
     return (data ?? []).map(mapTrabajadorCompletoRow);
   }
 
@@ -842,7 +843,7 @@ export class NominaCalculoSnapshotRepository {
       .select('*')
       .in('id_calculo_trabajador', idCalculoTrabajadores)
       .order('id_calculo_trabajador', { ascending: true });
-    if (error) throw new Error(`No fue posible consultar conceptos del resultado guardado: ${error.message}`);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'consultar conceptos del resultado guardado');
     return (data ?? []).map(mapConceptoCompletoRow);
   }
 
@@ -852,7 +853,7 @@ export class NominaCalculoSnapshotRepository {
       .select('*')
       .eq('id_calculo_periodo', idCalculoPeriodo)
       .order('severidad', { ascending: true });
-    if (error) throw new Error(`No fue posible consultar observaciones del resultado guardado: ${error.message}`);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'consultar observaciones del resultado guardado');
     return (data ?? []).map(mapIssueCompletoRow);
   }
 
@@ -862,7 +863,7 @@ export class NominaCalculoSnapshotRepository {
       .select('*')
       .eq('id_calculo_periodo', idCalculoPeriodo)
       .order('id_trazabilidad', { ascending: true });
-    if (error) throw new Error(`No fue posible consultar trazabilidad del resultado guardado: ${error.message}`);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'consultar trazabilidad del resultado guardado');
     return (data ?? []).map(mapTrazabilidadCompletaRow);
   }
 }

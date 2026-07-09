@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import type { Json } from '../models/database.types';
+import { lanzarErrorSupabaseRepositorio } from '../errors/erp-supabase-user-message';
 import { injectSupabase } from './supabase.service';
 
 type PreferenciaUiRpcClient = {
@@ -26,7 +27,7 @@ export class UsuarioPreferenciaUiService {
       p_clave: clave.trim(),
     });
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'consultar la preferencia de interfaz');
     }
     if (data == null || typeof data !== 'object' || Array.isArray(data)) {
       return null;
@@ -39,7 +40,7 @@ export class UsuarioPreferenciaUiService {
       p_clave: clave.trim(),
     });
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'consultar la preferencia de interfaz');
     }
     return data === true;
   }
@@ -50,7 +51,7 @@ export class UsuarioPreferenciaUiService {
       p_valor: valor as Json,
     });
     if (error) {
-      throw new Error(error.message);
+      lanzarErrorSupabaseRepositorio(error, 'guardar la preferencia de interfaz');
     }
   }
 }

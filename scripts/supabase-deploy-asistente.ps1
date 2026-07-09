@@ -3,11 +3,21 @@
 
 param(
   [string]$EnvFile = (Join-Path $PSScriptRoot "..\..\Python\.env"),
-  [string]$ProjectRef = "mjrckxodzrfkyqjkyjkn"
+  [string]$ProjectRef = $env:SUPABASE_PROJECT_REF
 )
 
 $ErrorActionPreference = "Stop"
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+
+if (-not $ProjectRef) {
+  $refFile = Join-Path $repoRoot "supabase\.temp\project-ref"
+  if (Test-Path $refFile) {
+    $ProjectRef = (Get-Content $refFile -Raw).Trim()
+  }
+}
+if (-not $ProjectRef) {
+  Write-Error "Define SUPABASE_PROJECT_REF o ejecuta supabase link (genera supabase/.temp/project-ref)."
+}
 $outEnv = Join-Path $repoRoot "supabase\.env"
 $envPath = Resolve-Path $EnvFile -ErrorAction SilentlyContinue
 if (-not $envPath) {

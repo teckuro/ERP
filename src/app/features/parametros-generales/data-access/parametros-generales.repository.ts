@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { Tables, TablesInsert } from '../../../core/models/database.types';
+import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import {
   AfcParametro,
@@ -232,6 +233,10 @@ interface ParametrosGeneralesClienteConfigRow {
   fecha_actualizacion: string | null;
 }
 
+function falloParametros(error: unknown): never {
+  lanzarErrorSupabaseRepositorio(error, 'consultar o guardar los parámetros');
+}
+
 @Injectable({ providedIn: 'root' })
 export class ParametrosGeneralesRepository {
   private readonly supabase = injectSupabase();
@@ -325,7 +330,7 @@ export class ParametrosGeneralesRepository {
       .order('codigo', { ascending: false });
 
     if (periodosError) {
-      throw new Error(periodosError.message);
+      falloParametros(periodosError);
     }
 
     for (const row of (periodosOficiales ?? []) as { codigo?: string }[]) {
@@ -342,7 +347,7 @@ export class ParametrosGeneralesRepository {
       .order('periodo', { ascending: false });
 
     if (legacyError) {
-      throw new Error(legacyError.message);
+      falloParametros(legacyError);
     }
 
     for (const row of (periodosLegacy ?? []) as { periodo?: string }[]) {
@@ -364,7 +369,7 @@ export class ParametrosGeneralesRepository {
       .maybeSingle();
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
     if (!data) {
       return null;
@@ -403,7 +408,7 @@ export class ParametrosGeneralesRepository {
         .order(source.column, { ascending: false });
 
       if (error) {
-        throw new Error(error.message);
+        falloParametros(error);
       }
 
       for (const row of (data ?? []) as Record<string, unknown>[]) {
@@ -482,7 +487,7 @@ export class ParametrosGeneralesRepository {
     const { data, error } = await query;
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     const rows = ((data ?? []) as ParametroGeneralSupabaseRow[]).map((row) => this.toModel(row));
@@ -538,7 +543,7 @@ export class ParametrosGeneralesRepository {
       .limit(1);
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     const row = ((data ?? []) as ParametroGeneralSupabaseRow[])[0] ?? null;
@@ -563,7 +568,7 @@ export class ParametrosGeneralesRepository {
       .single();
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     await this.guardarConfigurables(payload);
@@ -580,7 +585,7 @@ export class ParametrosGeneralesRepository {
       .maybeSingle();
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return data ? this.toClienteConfig(data as ParametrosGeneralesClienteConfigRow) : null;
@@ -595,7 +600,7 @@ export class ParametrosGeneralesRepository {
       .limit(1);
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     const row = ((data ?? []) as ParametrosGeneralesClienteConfigRow[])[0] ?? null;
@@ -663,7 +668,7 @@ export class ParametrosGeneralesRepository {
       .single();
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return this.toClienteConfig(data as ParametrosGeneralesClienteConfigRow);
@@ -689,7 +694,7 @@ export class ParametrosGeneralesRepository {
       .single();
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return this.toClienteConfig(data as ParametrosGeneralesClienteConfigRow);
@@ -890,7 +895,7 @@ export class ParametrosGeneralesRepository {
       .limit(1);
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     const row = ((data ?? []) as ParametroGeneralSupabaseRow[])[0] ?? null;
@@ -926,7 +931,7 @@ export class ParametrosGeneralesRepository {
       .limit(1);
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     const row = ((data ?? []) as Array<{ periodo?: string | null }>)[0] ?? null;
@@ -1060,7 +1065,7 @@ export class ParametrosGeneralesRepository {
       .order('vigencia_inicio', { ascending: false });
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     const vigentesPorNombre = new Map<string, ParametroLegalRow>();
@@ -1083,7 +1088,7 @@ export class ParametrosGeneralesRepository {
       .eq('vigencia_inicio', vigenciaInicio);
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return (data ?? []).map((item) => this.toAfcParametro(item));
@@ -1097,7 +1102,7 @@ export class ParametrosGeneralesRepository {
       .order('vigencia_inicio', { ascending: false });
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return ((data ?? []) as TrabajoPesadoRow[])
@@ -1114,7 +1119,7 @@ export class ParametrosGeneralesRepository {
       .limit(1);
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     const row = ((data ?? []) as ReformaPrevisionalRow[]).find(
@@ -1169,7 +1174,7 @@ export class ParametrosGeneralesRepository {
       .in('nombre', rows.map((row) => row.nombre));
 
     if (deleteError) {
-      throw new Error(deleteError.message);
+      falloParametros(deleteError);
     }
 
     if (rows.length === 0) {
@@ -1180,7 +1185,7 @@ export class ParametrosGeneralesRepository {
       .from('parametros_legales')
       .upsert(rows, { onConflict: 'nombre,vigencia_inicio' });
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
   }
 
@@ -1216,7 +1221,7 @@ export class ParametrosGeneralesRepository {
       .eq('periodo', payload.periodo);
 
     if (deleteError) {
-      throw new Error(deleteError.message);
+      falloParametros(deleteError);
     }
 
     if (rows.length === 0) {
@@ -1227,7 +1232,7 @@ export class ParametrosGeneralesRepository {
       .from('afc_parametro')
       .upsert(rows, { onConflict: 'codigo_tipo_contrato,vigencia_inicio' });
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
   }
 
@@ -1281,7 +1286,7 @@ export class ParametrosGeneralesRepository {
       .from('trabajo_pesado_parametro')
       .upsert(rows, { onConflict: 'codigo,periodo' });
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
   }
 
@@ -1314,7 +1319,7 @@ export class ParametrosGeneralesRepository {
     const { data, error } = await query.order('nombre', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return (data ?? []).map((row) => this.toAfp(row));
@@ -1326,7 +1331,7 @@ export class ParametrosGeneralesRepository {
     const { data, error } = await query.order('nombre', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return (data ?? []).map((row) => this.toIsapre(row));
@@ -1338,7 +1343,7 @@ export class ParametrosGeneralesRepository {
     const { data, error } = await query.order('tipo', { ascending: true }).order('nombre', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return (data ?? [])
@@ -1355,7 +1360,7 @@ export class ParametrosGeneralesRepository {
       .order('desde', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return (data ?? []).map((row) => this.toTramoCarga(row));
@@ -1370,7 +1375,7 @@ export class ParametrosGeneralesRepository {
       .order('desde', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return (data ?? []).map((row) => this.toTramoImpuesto(row));
@@ -1389,7 +1394,7 @@ export class ParametrosGeneralesRepository {
       .order('tramo', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return (data ?? []).map((row) => this.toTablaImpuestoUnico(row));
@@ -1401,7 +1406,7 @@ export class ParametrosGeneralesRepository {
     const { data, error } = await query.order('vigencia_inicio', { ascending: false }).order('nombre', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return (data ?? []).map((row) => this.toParametroLegal(row));
@@ -1413,7 +1418,7 @@ export class ParametrosGeneralesRepository {
     const { data, error } = await query.order('vigencia_inicio', { ascending: false }).order('codigo', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return ((data ?? []) as TrabajoPesadoRow[]).map((row) => this.toTrabajoPesado(row));
@@ -1425,7 +1430,7 @@ export class ParametrosGeneralesRepository {
     const { data, error } = await query.order('vigencia_inicio', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return ((data ?? []) as ReformaPrevisionalRow[]).map((row) => this.toReformaPrevisional(row));
@@ -1439,7 +1444,7 @@ export class ParametrosGeneralesRepository {
       .order('codigo', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return ((data ?? []) as Ley16744ParametroRow[]).map((row) => this.toLey16744Parametro(row));
@@ -1452,7 +1457,7 @@ export class ParametrosGeneralesRepository {
       .order('nombre', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return ((data ?? []) as OrganismoLey16744Row[]).map((row) => this.toOrganismoLey16744(row));
@@ -1465,7 +1470,7 @@ export class ParametrosGeneralesRepository {
       .order('nombre', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return ((data ?? []) as CcafEntidadRow[]).map((row) => this.toCcafEntidad(row));
@@ -1478,7 +1483,7 @@ export class ParametrosGeneralesRepository {
       .order('codigo', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return ((data ?? []) as ApvInstitucionRow[]).map((row) => this.toApvInstitucion(row));
@@ -1491,7 +1496,7 @@ export class ParametrosGeneralesRepository {
       .order('codigo', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return ((data ?? []) as ApvFormaPagoRow[]).map((row) => this.toApvFormaPago(row));
@@ -1505,7 +1510,7 @@ export class ParametrosGeneralesRepository {
       .order('codigo_tipo_contrato', { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      falloParametros(error);
     }
 
     return (data ?? []).map((row) => this.toAfcParametro(row));

@@ -3965,3 +3965,53 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **Solución local**: franja operativa (estado + CTA); KPIs inline tipo administrador de nóminas (sin cards); cuerpo en 2 columnas (atención con tinte semántico + flujo denso); sin púrpura en chip Empleados; sin flechas decorativas.
 - **Archivos**: `resumen-container.html`, `resumen-container.css`.
 - **Sin tocar**: reglas de negocio, servicios, estilos globales.
+
+## 2026-07-08 - Resumen: masthead + pendientes (sin accesos)
+
+- **Pedido**: más llamativo; omitir bloque de accesos/flujo operativo.
+- **Solución local**: masthead con período protagonista + badge de estado + CTA; mosaico KPI con número grande e icono de apoyo; lista de atención a ancho completo con ranking y acción «Revisar»; fondo bitácora `#f6f7f4`; eliminado `RESUMEN_MODULOS` / tiles de módulos.
+- **Archivos**: `resumen-container.html/css/ts`, `resumen-operativo.rules.ts`, `peticiones-estilos.md`.
+- **Sin tocar**: estilos globales, SQL, motor, servicios de carga.
+
+## 2026-07-08 - Resumen: tablero decisión + cola
+
+- **Pedido**: otro diseño (sin accesos/flujo).
+- **Solución local**: panel oscuro de decisión (período, estado, CTA); cola de revisión numerada; cifras del período en columna lateral compacta; sin tiles de módulos.
+- **Archivos**: `resumen-container.html`, `resumen-container.css`.
+- **Sin tocar**: estilos globales, SQL, motor, servicios.
+
+## 2026-07-08 - Resumen: consola empresarial
+
+- **Pedido**: más empresarial; el tablero oscuro + hueco blanco no convencía.
+- **Solución local**: franja de estado clara (período, empresa, badge, CTA); barra KPI tipo consola; pendientes como tabla operativa a ancho completo (sin panel oscuro ni columna lateral vacía).
+- **Archivos**: `resumen-container.html`, `resumen-container.css`, `peticiones-estilos.md`.
+- **Sin tocar**: estilos globales, SQL, motor, servicios.
+
+## 2026-07-08 - Resumen: foco + bandeja
+
+- **Pedido**: seguir buscando otro diseño.
+- **Solución local**: línea de contexto; panel izquierdo «Acción recomendada» (título protagonista + Continuar); bandeja de pendientes a la derecha; KPIs en franja inferior; fondo bitácora `#f6f7f4`.
+- **Archivos**: `resumen-container.html`, `resumen-container.css`.
+- **Sin tocar**: estilos globales, SQL, motor, servicios.
+
+## 2026-07-08 - Resumen: acción + zona de análisis
+
+- **Pedido**: preparar espacio futuro para gráficos de costos y otros análisis.
+- **Solución local**: acción recomendada compacta arriba; zona «Análisis del período» con paneles reservados (Costo, Composición, Indicadores) y skeleton sin datos inventados; bandeja a la derecha; KPIs integrados en el panel Indicadores.
+- **Archivos**: `resumen-container.html`, `resumen-container.css`.
+- **Sin tocar**: estilos globales, SQL, motor, servicios, datos de gráficos (aún no hay fuente).
+
+## 2026-07-08 - Resumen: indicadores económicos (UF/UTM/UTA/sueldo/dólar)
+
+- **Pedido**: agregar UF, dólar y otros indicadores importantes.
+- **Solución**: panel «Indicadores económicos» con UF, UTM, UTA y sueldo mínimo desde `ParametrosGeneralesService.obtenerUltimoHastaPeriodo`; dólar visible como pendiente (sin fuente en BD aún); alerta en bandeja si faltan UF/UTM/UTA/sueldo; KPIs operativos en panel separado.
+- **Archivos**: `resumen-operativo.rules.ts/spec.ts`, `resumen-container.ts/html/css`.
+- **Sin tocar**: estilos globales, SQL, motor; no se inventó valor de dólar.
+
+## 2026-07-08 - Header período + banda Parámetros (copy/layout)
+
+- **Pedido**: mejorar select de período y textos mal posicionados/explicados en Parámetros.
+- **Header**: hint corto sin promesa de «nómina automática»; orden Mes → Año; labels encima de selects alineados; panel más compacto.
+- **Parámetros**: sin código `YYYY-MM` en referencia; sin mención «NOIA» al usuario; «Siguiente:» en lugar de «Acción recomendada:»; banda derecha en flex (menos solape Dat/Refe/Acci).
+- **Archivos**: `header.component.ts`, `parametros-workspace-periodo-banda.*`, `parametros-workspace.orquestador.ts`.
+- **Sin tocar**: estilos globales, SQL, motor.

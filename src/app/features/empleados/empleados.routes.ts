@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 
+import { crearModuloPermisoGuard } from '../../core/auth/remuneraciones-permisos.guard';
+
 export const empleadosRoutes: Routes = [
   {
     path: '',
@@ -10,6 +12,7 @@ export const empleadosRoutes: Routes = [
   },
   {
     path: 'nuevo',
+    canActivate: [crearModuloPermisoGuard('empleados', 'editar')],
     loadComponent: () =>
       import('./containers/crear-empleado-container/crear-empleado-container').then(
         (m) => m.CrearEmpleadoContainer,

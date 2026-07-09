@@ -18,6 +18,7 @@ import {
   type ModuloPermiso,
   type PermisosFinosPerfil,
 } from '../../../../core/auth/erp-permisos-modulos.rules';
+import { mensajeErrorSupabaseParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
 import { EmpresaActivaService } from '../../../../core/services/empresa-activa.service';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
@@ -377,12 +378,12 @@ export class AdministracionContainer implements OnInit {
         this.usuariosNoDisponibles.set(null);
       } catch (err) {
         this.usuariosNoDisponibles.set(
-          err instanceof Error ? err.message : 'La administración de usuarios no está disponible.',
+          mensajeErrorSupabaseParaUsuario(err, 'cargar los usuarios del sistema'),
         );
       }
     } catch (err) {
       this.mensajeError.set(
-        err instanceof Error ? err.message : 'No fue posible cargar la administración.',
+        mensajeErrorSupabaseParaUsuario(err, 'cargar la administración'),
       );
     } finally {
       this.cargando.set(false);
@@ -397,7 +398,7 @@ export class AdministracionContainer implements OnInit {
       this.usuariosNoDisponibles.set(null);
     } catch (err) {
       this.usuariosNoDisponibles.set(
-        err instanceof Error ? err.message : 'La administración de usuarios no está disponible.',
+        mensajeErrorSupabaseParaUsuario(err, 'cargar los usuarios del sistema'),
       );
     }
   }
@@ -476,7 +477,7 @@ export class AdministracionContainer implements OnInit {
       this.mostrarExito('Usuario creado. Entregue la contraseña temporal por un canal seguro.');
       await this.recargarUsuarios();
     } catch (err) {
-      this.mensajeError.set(err instanceof Error ? err.message : 'No fue posible crear el usuario.');
+      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'crear el usuario'));
     } finally {
       this.guardando.set(false);
     }
@@ -491,7 +492,7 @@ export class AdministracionContainer implements OnInit {
       this.mostrarExito('Perfil actualizado. El cambio aplica al próximo inicio de sesión.');
       await this.recargarUsuarios();
     } catch (err) {
-      this.mensajeError.set(err instanceof Error ? err.message : 'No fue posible cambiar el perfil.');
+      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'cambiar el perfil del usuario'));
     } finally {
       this.guardando.set(false);
     }
@@ -518,7 +519,7 @@ export class AdministracionContainer implements OnInit {
       this.mostrarExito('Acceso desactivado.');
       await this.recargarUsuarios();
     } catch (err) {
-      this.mensajeError.set(err instanceof Error ? err.message : 'No fue posible desactivar el acceso.');
+      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'desactivar el acceso'));
     } finally {
       this.guardando.set(false);
     }
@@ -535,7 +536,7 @@ export class AdministracionContainer implements OnInit {
       this.mostrarExito('Acceso restaurado.');
       await this.recargarUsuarios();
     } catch (err) {
-      this.mensajeError.set(err instanceof Error ? err.message : 'No fue posible restaurar el acceso.');
+      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'restaurar el acceso'));
     } finally {
       this.guardando.set(false);
     }
@@ -629,7 +630,7 @@ export class AdministracionContainer implements OnInit {
       this.mostrarExito('Perfil guardado.');
       await this.recargarPerfiles();
     } catch (err) {
-      this.mensajeError.set(err instanceof Error ? err.message : 'No fue posible guardar el perfil.');
+      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'guardar el perfil'));
     } finally {
       this.guardando.set(false);
     }
@@ -674,7 +675,7 @@ export class AdministracionContainer implements OnInit {
       this.actualizarConfig({ logoUrl: url });
       this.mostrarExito('Logo cargado. Guarde la configuración para aplicarlo.');
     } catch (err) {
-      this.mensajeError.set(err instanceof Error ? err.message : 'No fue posible subir el logo.');
+      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'subir el logo'));
     } finally {
       this.subiendoLogo.set(false);
     }
@@ -700,7 +701,7 @@ export class AdministracionContainer implements OnInit {
       this.configDocumentoSnapshot.set({ ...guardada });
       this.mostrarExito('Configuración del documento guardada.');
     } catch (err) {
-      this.mensajeError.set(err instanceof Error ? err.message : 'No fue posible guardar la configuración.');
+      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'guardar la configuración'));
     } finally {
       this.guardando.set(false);
     }

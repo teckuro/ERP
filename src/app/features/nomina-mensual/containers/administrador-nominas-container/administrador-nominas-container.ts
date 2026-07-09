@@ -351,7 +351,7 @@ export class AdministradorNominasContainer {
       this.totalesRectificacionSeleccionada.set(totales);
     } catch (err) {
       if (this.nominaSeleccionada()?.id !== fila.id) return;
-      const mensaje = err instanceof Error ? err.message : 'No fue posible cargar el resumen.';
+      const mensaje = mensajeErrorSupabaseParaUsuario(err, 'cargar el resumen de la nómina');
       this.resumenError.set(mensaje);
     } finally {
       if (this.nominaSeleccionada()?.id === fila.id) {
@@ -415,7 +415,7 @@ export class AdministradorNominasContainer {
       }
     } catch (err) {
       if (this.historialNomina()?.id === fila.id) {
-        const mensaje = err instanceof Error ? err.message : 'No fue posible cargar el historial.';
+        const mensaje = mensajeErrorSupabaseParaUsuario(err, 'cargar el historial de la nómina');
         this.historialError.set(mensaje);
       }
     } finally {

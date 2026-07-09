@@ -24,6 +24,7 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { EmpresaActivaService } from '../../../../../../core/services/empresa-activa.service';
+import { mensajeErrorSupabaseParaUsuario } from '../../../../../../core/errors/erp-supabase-user-message';
 import { NominaPlantillaCicloService } from '../../../../services/nomina-plantilla-ciclo.service';
 import type {
   NaturalezaNomina,
@@ -349,7 +350,7 @@ export class AdminPlantillasModalEditorComponent {
       }
     } catch (err) {
       const mensaje =
-        err instanceof Error ? err.message : 'No fue posible guardar la plantilla.';
+        mensajeErrorSupabaseParaUsuario(err, 'guardar la plantilla'),
       this.error.set(mensaje);
     } finally {
       this.guardando.set(false);

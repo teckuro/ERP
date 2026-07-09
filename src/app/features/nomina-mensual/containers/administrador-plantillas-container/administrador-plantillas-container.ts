@@ -24,6 +24,7 @@ import { DataGridComponent } from '../../../../shared/components/ui/data-grid/da
 import { DataGridCellDirective } from '../../../../shared/components/ui/data-grid/data-grid.directives';
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
+import { mensajeErrorSupabaseParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
 import { NominaPlantillaCicloService } from '../../services/nomina-plantilla-ciclo.service';
 import type { NominaPlantillaCiclo } from '../../models/nomina-plantilla-ciclo.models';
@@ -156,7 +157,7 @@ export class AdministradorPlantillasContainer {
       }
     } catch (err) {
       this.errorAccion.set(
-        err instanceof Error ? err.message : 'No fue posible cambiar el estado de la plantilla.',
+        mensajeErrorSupabaseParaUsuario(err, 'cambiar el estado de la plantilla'),
       );
     } finally {
       this.ejecutandoAccion.set(false);
@@ -186,7 +187,7 @@ export class AdministradorPlantillasContainer {
       this.eliminarPendiente.set(null);
     } catch (err) {
       this.errorAccion.set(
-        err instanceof Error ? err.message : 'No fue posible eliminar la plantilla.',
+        mensajeErrorSupabaseParaUsuario(err, 'eliminar la plantilla'),
       );
     } finally {
       this.ejecutandoAccion.set(false);

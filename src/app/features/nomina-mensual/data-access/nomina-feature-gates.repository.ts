@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 
+import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import type { NominaFeatureGates } from '../models/nomina-feature-gates.models';
 import { NOMINA_FEATURE_GATES_APAGADOS } from '../models/nomina-feature-gates.models';
 
 function throwIfError(error: { message: string } | null, contexto: string): void {
   if (error) {
-    throw new Error(`${contexto}: ${error.message}`);
+    lanzarErrorSupabaseRepositorio(error, contexto);
   }
 }
 

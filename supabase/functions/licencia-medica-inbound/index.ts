@@ -1,10 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
 
-const corsHeaders: Record<string, string> = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers':
-    'authorization, x-client-info, apikey, content-type, x-lm-webhook-secret, svix-id, svix-timestamp, svix-signature',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 const FOLIO_REGEX = /\bLM[-\s]?\d{4}[-\s]?\d{3,}\b/i;
 const ISO_DATE_REGEX = /\b(20\d{2})[-/](\d{2})[-/](\d{2})\b/g;
@@ -45,6 +41,16 @@ interface MailgunPayload {
 console.info('licencia-medica-inbound: worker started');
 
 Deno.serve(async (req) => {
+  const corsHeaders = buildCorsHeaders(
+    req,
+    'x-lm-webhook-secret, svix-id, svix-timestamp, svix-signature',
+  );
+  const jsonResponse = (body: unknown, status = 200): Response =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -286,11 +292,4 @@ function calcularDiasInclusive(inicio: string, fin: string): number {
     return 0;
   }
   return Math.floor((b - a) / 86_400_000) + 1;
-}
-
-function jsonResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
 }
