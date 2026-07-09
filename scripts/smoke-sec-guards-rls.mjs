@@ -84,28 +84,89 @@ async function probarPermisosNominaConsulta(client) {
   }
 }
 
-async function probarEscrituraMovvarConsulta(client) {
-  const { error: movErr } = await client.from('movimiento_variable_mensual').insert({
-    id_persona: 1,
-    id_concepto: 1,
-    periodo: '2099-01',
-    monto: 100,
-    estado: 'BORRADOR',
-    origen: 'MANUAL',
-  });
-
-  if (!movErr) {
-    fail('INSERT movimiento_variable_mensual debió fallar para perfil consulta (RLS rol)');
-  }
-
-  const msg = (movErr.message ?? '').toLowerCase();
-  if (
-    movErr.code === '42501'
+function esErrorRlsEscritura(error) {
+  const msg = (error?.message ?? '').toLowerCase();
+  return (
+    error?.code === '42501'
     || /permission|policy|row-level|not authorized|denied|violates row-level/i.test(msg)
-  ) {
-    ok(`RLS movvar bloqueó escritura consulta (${movErr.code ?? 'sin código'})`);
+  );
+}
+
+async function assertEscrituraBloqueada(client, label, fn) {
+  const { error } = await fn();
+  if (!error) {
+    fail(`${label} debió fallar para perfil consulta (RLS rol)`);
+  }
+  if (esErrorRlsEscritura(error)) {
+    ok(`RLS ${label} bloqueó escritura consulta (${error.code ?? 'sin código'})`);
+    return;
+  }
+  fail(`${label} consulta: ${error.message}`);
+}
+
+async function probarEscrituraMovvarConsulta(client) {
+  await assertEscrituraBloqueada(client, 'movimiento_variable_mensual INSERT', () =>
+    client.from('movimiento_variable_mensual').insert({
+      id_persona: 1,
+      id_concepto: 1,
+      periodo: '2099-01',
+      monto: 100,
+      estado: 'BORRADOR',
+      origen: 'MANUAL',
+    }),
+  );
+}
+
+async function probarEscrituraSec02eConsulta(client) {
+  await assertEscrituraBloqueada(client, 'parametros_generales INSERT', () =>
+    client.from('parametros_generales').insert({
+      periodo: '2099-01',
+      uf: 1,
+      utm: 1,
+    }),
+  );
+
+  await assertEscrituraBloqueada(client, 'concepto INSERT', () =>
+    client.from('concepto').insert({
+      codigo: 'SEC02E_SMOKE',
+      nombre: 'Smoke SEC-02e',
+      tipo: 'HABER',
+      vigente: true,
+    }),
+  );
+
+  await assertEscrituraBloqueada(client, 'persona INSERT', () =>
+    client.from('persona').insert({
+      rut: '99999999',
+      dv: '9',
+      nombres: 'Smoke',
+      apellido_paterno: 'SEC',
+      apellido_materno: '02e',
+      fecha_nacimiento: '2000-01-01',
+    }),
+  );
+
+  const { data: personas } = await client.from('persona').select('id_persona').limit(1);
+  if (personas?.length) {
+    const id = personas[0].id_persona;
+    const { data: updated, error: updErr } = await client
+      .from('persona')
+      .update({ nombres: 'Bloqueado' })
+      .eq('id_persona', id)
+      .select('id_persona');
+    if (updErr) {
+      if (esErrorRlsEscritura(updErr)) {
+        ok(`RLS persona UPDATE bloqueó escritura consulta (${updErr.code ?? 'sin código'})`);
+      } else {
+        fail(`persona UPDATE consulta: ${updErr.message}`);
+      }
+    } else if (!updated?.length) {
+      ok('RLS persona UPDATE sin filas afectadas (consulta)');
+    } else {
+      fail('persona UPDATE debió fallar para perfil consulta (RLS rol)');
+    }
   } else {
-    fail(`INSERT movvar consulta: ${movErr.message}`);
+    warn('persona sin filas legibles; omitiendo smoke UPDATE persona');
   }
 }
 
@@ -116,6 +177,7 @@ async function probarEscrituraConsulta(client, role) {
   }
   await probarPermisosNominaConsulta(client);
   await probarEscrituraMovvarConsulta(client);
+  await probarEscrituraSec02eConsulta(client);
 }
 
 async function main() {

@@ -2,7 +2,7 @@
 
 > **ID:** `AUDIT-SEC-2026-07`
 >
-> **Fecha:** 2026-07-08 · **Estado:** **Correcciones SEC-01…SEC-05 aplicadas**; SEC-05b (errores extendidos) en curso — ver §5 y `estado-fases.md`
+> **Fecha:** 2026-07-08 · **Estado:** **Correcciones SEC-01…SEC-05b aplicadas**; **SEC-02e** piloto RLS rol (parámetros/conceptos/empleados) aplicado 2026-07-09 — ver §5 y `estado-fases.md`
 >
 > **Alcance:** frontend Angular, Supabase (RLS/RPC/Storage/Edge Functions), secretos en repo, dependencias npm.
 >
@@ -340,6 +340,29 @@ SEC-01  →  SEC-03  →  SEC-02  →  SEC-04  →  SEC-05
 8. **Smoke automatizado (2026-07-09):** `npm run smoke:sec` (anon + consulta vía `erp_nomina_permiso_efectivo`), `smoke-nomina-produccion`, Previred, liquidaciones; Edge redeploy `sec-deploy-edge-cors.ps1`; fixture consulta `npm run fixture:sec:consulta`.
 9. **Opcional:** RLS en tablas legacy sin RLS (`liquidacion`, `movimiento` — no usadas desde Angular; acceso vía RPC).
 10. ~~**SEC-02d**~~ — **aplicado** 2026-07-09: movvar con escritura bloqueada para consulta en BD (RLS + `movvar.escribir`).
+11. ~~**SEC-02e**~~ — **aplicado** 2026-07-09 (`20260708280000_sec02e_rls_modulos_por_rol.sql`): escritura en parámetros, concepto y empleados (persona/contrato + hijos) exige `sec_permiso_modulo_escritura_ok`; smoke extendido en `smoke:sec`.
+12. **E2E guards consulta:** `npm run test:e2e:sec:guards` (requiere `fixture:sec:consulta` + app en `:4200`).
+13. **Checklist manual operador (perfil consulta):** ver §9.
+
+---
+
+## 9. Checklist manual — perfil consulta (SEC-04 / SEC-02e)
+
+Ejecutar con usuario `consulta` (`npm run fixture:sec:consulta` si no existe).
+
+| Área | Lectura | Escritura / admin | Criterio |
+| ---- | ------- | ----------------- | -------- |
+| Parámetros | — | Menú oculto; `/parametros` → `?acceso=denegado`; INSERT/UPDATE BD bloqueados (42501) | OK si no puede editar ni entrar |
+| Conceptos | Ver catálogo si ruta permitida | `/remuneraciones/conceptos` → denegado; INSERT concepto bloqueado | OK |
+| Empleados | Listar / ver ficha | `/empleados/crear` → denegado; INSERT/UPDATE persona bloqueados | OK |
+| Movimientos | Ver movimientos | INSERT movvar bloqueado (SEC-02d) | OK |
+| Nómina | Ver períodos / liquidaciones | Generador y acciones admin → denegado; RPC `nomina.*` = false | OK |
+| Administrador | — | Menú oculto; `/administracion` → denegado | OK |
+
+**Operaciones pendientes del operador (no automatizables en repo):**
+
+1. Rotar credenciales pooler en Supabase Dashboard (SEC-01) — repo privado; **sin** `git filter-repo`.
+2. Definir `ERP_ALLOWED_ORIGIN` en Edge Functions productivas y ejecutar `scripts/sec-deploy-edge-cors.ps1`.
 
 ---
 
