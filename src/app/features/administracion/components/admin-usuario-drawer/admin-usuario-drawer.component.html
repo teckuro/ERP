@@ -1,0 +1,195 @@
+<app-message-box
+  variant="info"
+  mode="modal"
+  width="lg"
+  panelClass="adm-usuario-msgbox"
+  eyebrow="Usuarios del sistema"
+  [title]="tituloModal()"
+  [message]="subtituloModal()"
+  [actions]="accionesModal()"
+  [disableClose]="guardando"
+  (dismiss)="cerrar.emit()"
+  (actionSelect)="onAccionModal($event)"
+>
+  <div class="adm-usuario-modal">
+    @if (modo === 'editar' && usuario; as u) {
+      <div class="adm-usuario-modal__estado">
+        <span class="adm-chip" [class.is-off]="u.desactivado">{{ etiquetaEstado(u) }}</span>
+      </div>
+
+      <section class="adm-resumen" aria-label="Resumen del usuario">
+        <h3 class="adm-resumen__title">Información de acceso</h3>
+        <dl class="adm-resumen__grid">
+          <div>
+            <dt>Correo</dt>
+            <dd>{{ u.email || '—' }}</dd>
+          </div>
+          <div>
+            <dt>Nombre</dt>
+            <dd>{{ u.nombre?.trim() || 'Sin nombre registrado' }}</dd>
+          </div>
+          <div>
+            <dt>Perfil asignado</dt>
+            <dd>{{ etiquetaPerfil(u.idPerfil) }}</dd>
+          </div>
+          <div>
+            <dt>Nivel de acceso</dt>
+            <dd>{{ etiquetaRol(perfilActual()?.rolBase ?? u.rol) }}</dd>
+          </div>
+          <div>
+            <dt>Último acceso</dt>
+            <dd>
+              {{ formatearFecha(u.ultimoAcceso) }}
+              <span class="adm-resumen__hint">{{ textoTiempoRelativo(u.ultimoAcceso) }}</span>
+            </dd>
+          </div>
+          <div>
+            <dt>Cuenta creada</dt>
+            <dd>
+              {{ formatearFecha(u.creadoEn) }}
+              <span class="adm-resumen__hint">{{ textoTiempoRelativo(u.creadoEn) }}</span>
+            </dd>
+          </div>
+        </dl>
+        <p class="adm-resumen__nota">{{ resumenAcceso(u) }}</p>
+        @if (perfilActual()?.descripcion; as desc) {
+          <p class="adm-resumen__perfil-desc">
+            <strong>Perfil actual:</strong> {{ desc }}
+          </p>
+        }
+      </section>
+
+      <section class="adm-seccion" aria-label="Cambiar perfil">
+        <h3 class="adm-seccion__title">Cambiar perfil</h3>
+        <label class="adm-field">
+          <span>Nuevo perfil de acceso</span>
+          <select
+            class="adm-input"
+            [ngModel]="idPerfil()"
+            (ngModelChange)="idPerfil.set($event)"
+            name="idPerfil"
+          >
+            @for (perfil of perfilesActivos(); track perfil.idPerfil) {
+              <option [ngValue]="perfil.idPerfil">{{ perfil.nombre }}</option>
+            }
+          </select>
+          <p class="adm-field__ayuda">El cambio aplica al próximo inicio de sesión del usuario.</p>
+        </label>
+
+        @if (perfilSeleccionado(); as perfil) {
+          <div class="adm-perfil-preview" role="status">
+            <p class="adm-perfil-preview__nombre">{{ perfil.nombre }}</p>
+            <p class="adm-perfil-preview__meta">{{ etiquetaRol(perfil.rolBase) }}</p>
+            @if (perfil.descripcion) {
+              <p class="adm-perfil-preview__desc">{{ perfil.descripcion }}</p>
+            }
+            @if (perfilCambiara()) {
+              <p class="adm-perfil-preview__aviso">Se aplicará al guardar el cambio de perfil.</p>
+            }
+          </div>
+        }
+      </section>
+    } @else {
+      <section class="adm-seccion" aria-label="Datos del nuevo usuario">
+        <h3 class="adm-seccion__title">Datos de acceso</h3>
+
+        @if (mostrarError('general'); as errorGeneral) {
+          <p class="adm-field-error adm-field-error--bloque" role="alert">{{ errorGeneral }}</p>
+        }
+
+        @if (perfilesActivos().length === 0) {
+          <p class="adm-field__ayuda adm-field__ayuda--alerta">
+            No hay perfiles activos. Cree un perfil antes de registrar usuarios.
+          </p>
+        }
+
+        <form class="adm-form" (submit)="$event.preventDefault(); emitirCrear()">
+          <label class="adm-field" [class.has-error]="!!mostrarError('email')">
+            <span>Correo</span>
+            <input
+              type="email"
+              class="adm-input"
+              [class.is-invalid]="!!mostrarError('email')"
+              [ngModel]="email()"
+              (ngModelChange)="email.set($event)"
+              (blur)="marcarTocado()"
+              name="email"
+              autocomplete="off"
+              required
+            />
+            @if (mostrarError('email'); as errorEmail) {
+              <p class="adm-field-error" role="alert">{{ errorEmail }}</p>
+            }
+          </label>
+          <label class="adm-field" [class.has-error]="!!mostrarError('nombre')">
+            <span>Nombre completo</span>
+            <input
+              type="text"
+              class="adm-input"
+              [class.is-invalid]="!!mostrarError('nombre')"
+              [ngModel]="nombre()"
+              (ngModelChange)="nombre.set($event)"
+              (blur)="marcarTocado()"
+              name="nombre"
+              autocomplete="off"
+              required
+            />
+            @if (mostrarError('nombre'); as errorNombre) {
+              <p class="adm-field-error" role="alert">{{ errorNombre }}</p>
+            }
+          </label>
+          <label class="adm-field" [class.has-error]="!!mostrarError('password')">
+            <span>Contraseña temporal</span>
+            <div class="adm-field__row">
+              <input
+                type="text"
+                class="adm-input"
+                [class.is-invalid]="!!mostrarError('password')"
+                [ngModel]="password()"
+                (ngModelChange)="password.set($event)"
+                (blur)="marcarTocado()"
+                name="password"
+                autocomplete="off"
+                required
+              />
+              <button type="button" class="adm-btn" (click)="generarPassword()">Generar</button>
+            </div>
+            <p class="adm-field__ayuda">Mínimo 8 caracteres, con letras y números.</p>
+            @if (mostrarError('password'); as errorPassword) {
+              <p class="adm-field-error" role="alert">{{ errorPassword }}</p>
+            }
+          </label>
+          <label class="adm-field" [class.has-error]="!!mostrarError('idPerfil')">
+            <span>Perfil de acceso</span>
+            <select
+              class="adm-input"
+              [class.is-invalid]="!!mostrarError('idPerfil')"
+              [ngModel]="idPerfil()"
+              (ngModelChange)="idPerfil.set($event); marcarTocado()"
+              name="idPerfilCrear"
+              [disabled]="perfilesActivos().length === 0"
+            >
+              @for (perfil of perfilesActivos(); track perfil.idPerfil) {
+                <option [ngValue]="perfil.idPerfil">{{ perfil.nombre }}</option>
+              }
+            </select>
+            @if (mostrarError('idPerfil'); as errorPerfil) {
+              <p class="adm-field-error" role="alert">{{ errorPerfil }}</p>
+            }
+          </label>
+        </form>
+
+        @if (perfilSeleccionado(); as perfil) {
+          <div class="adm-perfil-preview" role="status">
+            <p class="adm-perfil-preview__label">Vista previa del perfil</p>
+            <p class="adm-perfil-preview__nombre">{{ perfil.nombre }}</p>
+            <p class="adm-perfil-preview__meta">{{ etiquetaRol(perfil.rolBase) }}</p>
+            @if (perfil.descripcion) {
+              <p class="adm-perfil-preview__desc">{{ perfil.descripcion }}</p>
+            }
+          </div>
+        }
+      </section>
+    }
+  </div>
+</app-message-box>

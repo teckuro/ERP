@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { NavigationEnd, NavigationStart, Router, RouterOutlet } from '@angular/router';
+import { ErpPermisosRemuneracionesService } from '../core/auth/erp-permisos-remuneraciones.service';
 import { SidebarComponent } from './sidebar.component';
 import { HeaderComponent } from './header.component';
 import { ShellPageContextService } from './shell-page-context.service';
@@ -75,8 +76,12 @@ import { SHELL_HEADER_HEIGHT_PX, SHELL_NAV_WIDTH_PX } from './shell-navigation.c
 export class LayoutShellComponent {
   private readonly router = inject(Router);
   private readonly shellContext = inject(ShellPageContextService);
+  private readonly permisos = inject(ErpPermisosRemuneracionesService);
 
   constructor() {
+    // Ajustes finos del perfil de acceso (ADMIN-01); silencioso si no hay perfil.
+    void this.permisos.asegurarPermisosPerfil();
+
     // Fallback inicial (sin navegación previa, no hay dueño todavía).
     this.shellContext.applyRouteFallback(this.router.url);
 

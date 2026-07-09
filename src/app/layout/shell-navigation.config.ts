@@ -54,7 +54,9 @@ export const SHELL_NAV_SECTIONS: ShellNavSection[] = [
   },
 ];
 
+/** Enlace del pie del sidebar; visible solo para el administrador del sistema. */
 export const SHELL_NAV_FOOTER_CONFIG = {
-  configuracionPath: '/parametros' as string | null,
-  configuracionLabel: 'Configuración',
+  configuracionPath: '/administracion' as string | null,
+  configuracionLabel: 'Administrador',
+  soloAdminSistema: true,
 };

@@ -27,7 +27,6 @@ import {
   DataGridComponent,
 } from '../../../../shared/components/ui/data-grid';
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
-import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import { mensajeErrorSupabaseParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
@@ -48,7 +47,6 @@ import {
     DataGridComponent,
     DataGridCellDirective,
     MessageBoxComponent,
-    WorkspaceLoadingComponent,
   ],
   templateUrl: './listado-empresas-container.html',
   styleUrl: './listado-empresas-container.css',

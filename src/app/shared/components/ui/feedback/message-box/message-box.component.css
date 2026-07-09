@@ -311,6 +311,11 @@
   background: #f8fafc;
 }
 
+.noia-msgbox__action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .noia-msgbox__action--primary {
   border-color: var(--erp-primary, #2563eb);
   background: var(--erp-primary, #2563eb);

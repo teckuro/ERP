@@ -9,6 +9,95 @@
 
 ---
 
+## 2026-07-08 — Grillas fullscreen: patrón Conceptos en listados
+
+- **Loading:** skeleton en `app-data-grid` desde el primer paint; eliminado `workspace-loading` duplicado en Licencias, Empresas y Movimientos variables.
+- **Altura:** `min-height: 0` en páginas con `calc(100dvh - …)` (Licencias, Administrador).
+- **Liquidaciones entrada:** grilla con `[loading]` en lugar de overlay full-page.
+- **Bordes:** `border: 0` en cards `erp-fullscreen-grid-card` donde faltaba (Conceptos, Nóminas, Plantillas, Movimientos, Empresas, Recurrentes).
+
+---
+
+## 2026-07-08 — Movimientos: primera entrada como Conceptos
+
+- **Loading:** grilla con skeleton desde el primer paint (`gridLoading` = soporte + datos del período); sin flash de empty state.
+- **Altura:** `.nm-page` con `min-height: 0` y cadena flex como Conceptos (sin `calc(100dvh - …)`).
+
+---
+
+## 2026-07-08 — Administrador ADMIN-03: pulido operativo
+
+- **Usuarios/Perfiles:** acción primaria solo en `app-data-grid`; shell sin botón duplicado.
+- **Usuarios no disponibles:** solo MessageBox de advertencia; sin empty state engañoso.
+- **Loading:** pantalla completa solo en primera carga; grillas con `[loading]`.
+- **Grilla fullscreen:** borde externo de card eliminado (patrón Licencias).
+- **Documento:** «Descartar cambios» en franja; confirmación al cambiar de tab con dirty.
+
+---
+
+## 2026-07-08 — Administrador: un botón, explicaciones y PDF más formal
+
+- **Guardar:** un solo botón en barra superior del shell; eliminado duplicado en franja del tab Documento.
+- **Formulario:** bloque introductorio, textos de ayuda por campo y checkboxes con descripción de efecto en el comprobante.
+- **Vista previa:** sin placeholders administrativos; solo contenido que iría al PDF real; tipografía y bordes más formales.
+
+---
+
+## 2026-07-08 — Administrador: pulido PDF vista previa documento
+
+- **Hoja de liquidación:** alineada al documento oficial (`liq-preview`): título centrado, haberes/descuentos en dos columnas, subtotales, bases legales, aportes informativos, firmas centradas y pie con separador.
+- **Seriedad visual:** tipografía neutra en secciones, bordes definidos, tablas con líneas punteadas, montos tabulares, hoja centrada tipo A4 con sombra suave sobre fondo gris.
+- **Impresión:** oculta formulario, tabs y chrome; imprime solo la hoja.
+
+---
+
+## 2026-07-08 — Administrador: MessageBox modal y split PDF en vivo
+
+- **Usuario y perfil:** modales caseros reemplazados por `app-message-box` modal (patrón historial nóminas) con acciones en footer y contenido en slot.
+- **MessageBox:** soporte `disabled` en acciones del footer.
+- **Documento:** layout dividido — formulario a la izquierda, vista previa PDF a la derecha actualizada en tiempo real; hoja ampliada (haberes, descuentos, bases, pie/firmas); eliminado modal aparte de preview.
+
+---
+
+## 2026-07-08 — Administrador: validación y vista previa PDF robusta
+
+- **Crear usuario:** validación por campo (correo, nombre, contraseña con letras+números, perfil), errores inline al intentar guardar, botón «Generar» contraseña temporal, bloqueo si no hay perfiles activos.
+- **Crear/editar perfil:** validación de nombre único, longitud, al menos un módulo visible, contador de descripción, errores inline; guardar deshabilitado hasta cumplir reglas.
+- **Documento:** vista previa tipo hoja PDF (`admin-documento-preview-sheet`) con encabezado, cuerpo de ejemplo, pie y firmas; modal «Abrir vista completa» con imprimir; aviso si el logo no carga; estado franja según encabezado/pie configurados.
+- **Archivos:** `administracion.rules.ts`, `admin-usuario-drawer/*`, `admin-perfil-drawer/*`, `admin-documento-preview-sheet/*`, `administracion-container.*`, `administracion.service.ts`, `administracion.repository.ts`.
+
+---
+
+## 2026-07-08 — Administrador: modales centrales en usuario y perfil
+
+- **Usuario:** drawer lateral reemplazado por modal centrado con resumen de acceso (correo, nombre, perfil, nivel, fechas con tiempo relativo, nota de vigencia); sección «Cambiar perfil» con vista previa del perfil seleccionado; botón «Cambiar perfil» solo habilitado si hay cambio pendiente.
+- **Perfil:** modal centrado con resumen (nivel base, módulos visibles/editables, fecha de registro) y contador en tabla de permisos.
+- **Archivos:** `admin-usuario-drawer/*`, `admin-perfil-drawer/*`, `administracion.rules.ts`.
+
+---
+
+## 2026-07-08 — Administrador: rediseño NOIA con grillas y drawers (ADMIN-02)
+
+- **Tab Usuarios:** tabla manual reemplazada por `app-data-grid` fullscreen (patrón Licencias médicas / administrador-nominas); columnas Correo (link al drawer), Nombre, Perfil, Estado (chip), Último acceso; filtros Estado y Búsqueda; acción primaria «Crear usuario» en toolbar del grid; franja solo como lead de contexto.
+- **Drawer usuario:** `admin-usuario-drawer` (crear + gestionar perfil/estado); eliminados modales caseros `adm-modal`.
+- **Tab Perfiles:** grilla fullscreen + `admin-perfil-drawer` con editor de permisos (tabla zebra, encabezado sticky); acción primaria «Nuevo perfil» en toolbar.
+- **Tab Documento:** franja con estado legible, indicador «Cambios sin guardar», guardar deshabilitado sin cambios; layout dos columnas en desktop (identidad visual | pie); mini-vista del encabezado con logo + razón social.
+- **Comportamiento:** éxitos inline autodescartables (~4 s); subtítulo del shell por tab activa; chips Activo/Desactivado unificados (`#ecfdf5` / `#047857` vs gris neutro).
+- **Archivos:** `features/administracion/containers/administracion-container/*`, `features/administracion/components/admin-usuario-drawer/*`, `features/administracion/components/admin-perfil-drawer/*`.
+- **No tocado:** BD, RPCs, Edge Function, services, estilos globales.
+
+---
+
+## 2026-07-08 — Administrador: módulo nuevo con tabs (ADMIN-01)
+
+- **Pantalla `/administracion`** (solo admin del sistema): tabs compactos «Usuarios», «Perfiles de acceso», «Documento de liquidación»; franja operativa por tab con una acción primaria; tabla sobria de usuarios con estado Activo/Desactivado; panel dividido lista+editor para perfiles; formulario en fieldsets para el documento (logo, datos visibles, pie).
+- **Sidebar:** el enlace del pie «Configuración» (→ `/parametros`) se reemplaza por «Administrador» (→ `/administracion`), visible solo para admin del sistema; Parámetros conserva su ítem en Principal.
+- **Documento de liquidación:** `liquidacion-preview-modal` ahora renderiza logo en cabecera, nombre bajo la firma del empleador, representante legal y glosa de pie configurables (CSS local, estilos de impresión intactos).
+- **Confirmaciones:** desactivar usuario vía `app-message-box` modal warning; errores/éxitos inline.
+- **Archivos:** `features/administracion/**`, `pages/administracion.page.ts`, `layout/sidebar.component.ts`, `layout/shell-navigation.config.ts`, `layout/shell-route-context.config.ts`, `liquidacion-preview-modal.component.{html,css,ts}`.
+
+---
+
 ## 2026-07-08 — Sistema operativo: unificación paleta NOIA (pasada transversal)
 
 - **Objetivo:** eliminar colores «de IA» repartidos en módulos operativos del menú; alinear con paleta documentada (`noia-bases-sistema-referencia.md`, `noia-antipatrones-ia.md`).
@@ -3862,3 +3951,17 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **Pantallas homologadas**: Administrador nóminas, Plantillas, Empresas, Movimientos de remuneración (novedades), Movimientos del mes, Recurrentes (grilla interna), Empleados.
 - **Cambios comunes**: franja lead dentro del shell; título visible en grilla; sin `toolbarLayout="operativa"`; filtros colapsables; refresh en toolbar; card fullscreen sin bordes laterales/inferiores.
 - **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-08 - Impresión PDF liquidación: solo hoja del documento
+
+- **Problema**: al imprimir o guardar como PDF desde el navegador se incluía el shell ERP, tabs, formularios y chrome del modal.
+- **Solución local**: `@media print` con clase en `body` (`liq-preview-printing` / `adm-doc-printing`), truco `visibility` para aislar `.liq-preview__sheet` o `.adm-doc-sheet`; `ViewEncapsulation.None` solo en esos componentes; `beforeprint`/`afterprint` + limpieza en `ngOnDestroy`.
+- **Alcance**: `liquidacion-preview-modal` (liquidaciones oficiales, detalle, nómina V2) y preview Documento en Administrador.
+- **Sin tocar**: estilos globales, SQL, motor, `window.print()` en contenedores padre.
+
+## 2026-07-08 - Resumen: orden y densidad operativa
+
+- **Problema**: hero + 5 cards KPI + atención + grilla de tiles se leía como dashboard SaaS aireado; atención y accesos competían con el mismo peso.
+- **Solución local**: franja operativa (estado + CTA); KPIs inline tipo administrador de nóminas (sin cards); cuerpo en 2 columnas (atención con tinte semántico + flujo denso); sin púrpura en chip Empleados; sin flechas decorativas.
+- **Archivos**: `resumen-container.html`, `resumen-container.css`.
+- **Sin tocar**: reglas de negocio, servicios, estilos globales.

@@ -1173,6 +1173,47 @@ export type Database = {
           },
         ]
       }
+      empresa_config_documento: {
+        Row: {
+          id_empresa: number
+          logo_url: string | null
+          mostrar_direccion: boolean
+          mostrar_representante: boolean
+          mostrar_rut: boolean
+          nombre_firma_empleador: string | null
+          texto_pie: string | null
+          updated_at: string
+        }
+        Insert: {
+          id_empresa: number
+          logo_url?: string | null
+          mostrar_direccion?: boolean
+          mostrar_representante?: boolean
+          mostrar_rut?: boolean
+          nombre_firma_empleador?: string | null
+          texto_pie?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id_empresa?: number
+          logo_url?: string | null
+          mostrar_direccion?: boolean
+          mostrar_representante?: boolean
+          mostrar_rut?: boolean
+          nombre_firma_empleador?: string | null
+          texto_pie?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empresa_config_documento_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: true
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+        ]
+      }
       entidad_previsional_ips: {
         Row: {
           id_entidad_previsional_ips: number
@@ -4566,6 +4607,50 @@ export type Database = {
         }
         Relationships: []
       }
+      perfil_acceso: {
+        Row: {
+          activo: boolean
+          descripcion: string | null
+          fecha_creacion: string
+          id_empresa: number
+          id_perfil: number
+          nombre: string
+          permisos: Json
+          rol_base: string
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          descripcion?: string | null
+          fecha_creacion?: string
+          id_empresa: number
+          id_perfil?: number
+          nombre: string
+          permisos?: Json
+          rol_base: string
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          descripcion?: string | null
+          fecha_creacion?: string
+          id_empresa?: number
+          id_perfil?: number
+          nombre?: string
+          permisos?: Json
+          rol_base?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "perfil_acceso_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+        ]
+      }
       persona: {
         Row: {
           apellido_materno: string | null
@@ -6839,6 +6924,7 @@ export type Database = {
         Args: { p_tabla: string }
         Returns: string
       }
+      erp_es_admin_sistema: { Args: never; Returns: boolean }
       erp_etiqueta_usuario: { Args: { p_id: string }; Returns: string }
       erp_nomina_feature_habilitado: {
         Args: { p_gate: string }
@@ -7117,6 +7203,32 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      guardar_config_documento_liquidacion: {
+        Args: {
+          p_logo_url?: string
+          p_mostrar_direccion?: boolean
+          p_mostrar_representante?: boolean
+          p_mostrar_rut?: boolean
+          p_nombre_firma_empleador?: string
+          p_texto_pie?: string
+        }
+        Returns: {
+          id_empresa: number
+          logo_url: string | null
+          mostrar_direccion: boolean
+          mostrar_representante: boolean
+          mostrar_rut: boolean
+          nombre_firma_empleador: string | null
+          texto_pie: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "empresa_config_documento"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       guardar_licencia_medica: {
         Args: {
           p_dias?: number
@@ -7192,6 +7304,33 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "nomina_periodo_diagnostico"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      guardar_perfil_acceso: {
+        Args: {
+          p_activo?: boolean
+          p_descripcion?: string
+          p_id_perfil?: number
+          p_nombre?: string
+          p_permisos?: Json
+          p_rol_base?: string
+        }
+        Returns: {
+          activo: boolean
+          descripcion: string | null
+          fecha_creacion: string
+          id_empresa: number
+          id_perfil: number
+          nombre: string
+          permisos: Json
+          rol_base: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "perfil_acceso"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -7392,6 +7531,26 @@ export type Database = {
           trabajador_id: number
         }[]
       }
+      listar_perfiles_acceso: {
+        Args: { p_incluir_inactivos?: boolean }
+        Returns: {
+          activo: boolean
+          descripcion: string | null
+          fecha_creacion: string
+          id_empresa: number
+          id_perfil: number
+          nombre: string
+          permisos: Json
+          rol_base: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "perfil_acceso"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       listar_preview_creacion_trabajadores: {
         Args: {
           p_busqueda?: string
@@ -7466,6 +7625,25 @@ export type Database = {
         Args: { p_nomina_id: string }
         Returns: string
       }
+      obtener_config_documento_liquidacion: {
+        Args: never
+        Returns: {
+          id_empresa: number
+          logo_url: string | null
+          mostrar_direccion: boolean
+          mostrar_representante: boolean
+          mostrar_rut: boolean
+          nombre_firma_empleador: string | null
+          texto_pie: string | null
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "empresa_config_documento"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       obtener_feature_gates_nomina: { Args: never; Returns: Json }
       obtener_licencia_medica: {
         Args: { p_id_licencia: number }
@@ -7519,6 +7697,26 @@ export type Database = {
           to: "nomina_periodo_diagnostico"
           isOneToOne: true
           isSetofReturn: false
+        }
+      }
+      obtener_perfil_acceso_actual: {
+        Args: never
+        Returns: {
+          activo: boolean
+          descripcion: string | null
+          fecha_creacion: string
+          id_empresa: number
+          id_perfil: number
+          nombre: string
+          permisos: Json
+          rol_base: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "perfil_acceso"
+          isOneToOne: false
+          isSetofReturn: true
         }
       }
       obtener_preferencia_ui: { Args: { p_clave: string }; Returns: Json }

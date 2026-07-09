@@ -455,11 +455,13 @@
     @if (liquidacionPreview(); as liq) {
       <app-liquidacion-preview-modal
         [liquidacion]="liq"
-        [empresa]="{
-          razonSocial: nomina()?.empresaNombre || 'Empleador',
-          rut: null,
-          direccion: null,
-        }"
+        [empresa]="
+          empresaDocumento() ?? {
+            razonSocial: nomina()?.empresaNombre || 'Empleador',
+            rut: null,
+            direccion: null,
+          }
+        "
         [nomina]="{
           periodo: nomina()?.periodo || liq.periodo,
           fechaPago: nomina()?.fechaPago || null,

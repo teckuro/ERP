@@ -1,9 +1,15 @@
 @import '../../styles/empresas.shared.css';
 
 :host {
-  display: block;
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
   min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .emp-list__page {
@@ -73,6 +79,10 @@
 :host ::ng-deep .emp-list__grid-shell .data-grid-filter-grid {
   grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr)) !important;
   gap: 0.65rem 0.75rem !important;
+}
+
+:host ::ng-deep .emp-list__grid-card.erp-fullscreen-grid-card {
+  border: 0 !important;
 }
 
 .emp-list__grid-card {

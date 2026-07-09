@@ -67,7 +67,7 @@ import {
       </nav>
 
       <footer class="erp-sidebar__footer">
-        @if (footerConfig.configuracionPath) {
+        @if (footerConfig.configuracionPath && mostrarFooterLink()) {
           <a [routerLink]="footerConfig.configuracionPath" class="erp-sidebar__footer-link">
             <lucide-icon [img]="settingsIcon"></lucide-icon>
             <span>{{ footerConfig.configuracionLabel }}</span>
@@ -367,6 +367,12 @@ export class SidebarComponent {
 
   readonly rolUsuario = computed(() =>
     etiquetaRolRemuneraciones(this.permisosRemuneraciones.rol()),
+  );
+
+  readonly mostrarFooterLink = computed(() =>
+    this.footerConfig.soloAdminSistema
+      ? this.permisosRemuneraciones.rol() === 'admin_sistema'
+      : true,
   );
 
   badgeFor(item: ShellNavItem): string | null {

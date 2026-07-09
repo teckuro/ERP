@@ -12,6 +12,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { mensajeErrorSupabaseParaUsuario } from '../core/errors/erp-supabase-user-message';
+import {
+  DocumentoLiquidacionService,
+  type DocumentoLiquidacionEmpresa,
+} from '../core/services/documento-liquidacion.service';
 import { WorkspaceLoadingComponent } from '../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { MessageBoxComponent } from '../shared/components/ui/feedback/message-box/message-box.component';
 import { LiquidacionDetallePanelComponent } from '../features/liquidaciones-oficiales/components/liquidacion-detalle-panel/liquidacion-detalle-panel';
@@ -121,11 +125,13 @@ function etiquetaCanalEmision(canal: LiquidacionEmision['canal']): string {
         <app-liquidacion-preview-modal
           modoEmision="oficial"
           [liquidacion]="liqPdf"
-          [empresa]="{
-            razonSocial: empresaNombre() || 'Empleador',
-            rut: null,
-            direccion: null,
-          }"
+          [empresa]="
+            empresaDocumento() ?? {
+              razonSocial: empresaNombre() || 'Empleador',
+              rut: null,
+              direccion: null,
+            }
+          "
           [nomina]="{
             periodo: periodoLabel() || liqPdf.periodo,
             fechaPago: null,
@@ -257,6 +263,7 @@ export class DetalleLiquidacionPage {
   private readonly router = inject(Router);
   private readonly service = inject(LiquidacionesOficialesService);
   private readonly nominaService = inject(NominaPeriodoService);
+  private readonly documentoLiquidacion = inject(DocumentoLiquidacionService);
 
   readonly etiquetaCanalEmision = etiquetaCanalEmision;
 
@@ -269,6 +276,7 @@ export class DetalleLiquidacionPage {
   readonly empresaNombre = signal<string | null>(null);
   readonly periodoNomina = signal<string | null>(null);
   readonly previewLiquidacion = signal<LiquidacionCalculada | null>(null);
+  readonly empresaDocumento = signal<DocumentoLiquidacionEmpresa | null>(null);
 
   readonly queryParams = toSignal(this.route.queryParams, { initialValue: {} });
   readonly idTrabajador = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
@@ -404,6 +412,7 @@ export class DetalleLiquidacionPage {
       return;
     }
     const periodo = this.periodoNomina() ?? '—';
+    void this.cargarEmpresaDocumento();
     this.previewLiquidacion.set(mapLiquidacionOficialAPreview({ trabajador, conceptos, periodo }));
     void this.service.registrarEmisionLiquidacionTrabajador(trabajador.idLiquidacionTrabajador, 'vista_oficial')
       .then((emision) => this.ultimaEmision.set(emision))
@@ -412,6 +421,12 @@ export class DetalleLiquidacionPage {
 
   cerrarPreview(): void {
     this.previewLiquidacion.set(null);
+  }
+
+  private async cargarEmpresaDocumento(): Promise<void> {
+    if (this.empresaDocumento()) return;
+    const empresa = await this.documentoLiquidacion.obtenerEmpresaDocumento(this.empresaNombre());
+    this.empresaDocumento.set(empresa);
   }
 
   imprimirPreview(): void {

@@ -1,12 +1,4 @@
 <section class="mv-page" aria-label="Movimientos del mes">
-  @if (catalogosLoading() && filas().length === 0) {
-    <app-workspace-loading
-      [fill]="false"
-      title="Cargando catálogos"
-      message="Estamos preparando empleados y conceptos asignables del período."
-    />
-  }
-
   <div class="mv-grid-shell">
     <section class="mv-franja-operativa" aria-label="Contexto del listado">
       <p class="mv-lead">
@@ -31,7 +23,7 @@
       [filters]="filters"
       [filtersEnabled]="true"
       [filtersCollapsible]="true"
-      [loading]="gridLoading() || catalogosLoading()"
+      [loading]="listadoGridLoading()"
       loadingLabel="Cargando movimientos del mes…"
       [showExportAction]="false"
       [selectable]="false"

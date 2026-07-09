@@ -34,6 +34,10 @@ import {
   PREFERENCIA_UI_VALOR_CERRADO,
   USUARIO_PREFERENCIA_UI_CLAVES,
 } from '../../../../../../core/constants/usuario-preferencia-ui.claves';
+import {
+  DocumentoLiquidacionService,
+  type DocumentoLiquidacionEmpresa,
+} from '../../../../../../core/services/documento-liquidacion.service';
 import { UsuarioPreferenciaUiService } from '../../../../../../core/services/usuario-preferencia-ui.service';
 import {
   DataGridCellDirective,
@@ -97,6 +101,7 @@ const RESUMEN_CALCULO_VACIO: ResumenCalculoNomina = {
 })
 export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   private readonly calculoAdapter = inject(NominaPeriodoCalculoAdapterService);
+  private readonly documentoLiquidacion = inject(DocumentoLiquidacionService);
   private readonly servicio = inject(NominaPeriodoService);
   private readonly preferenciaUi = inject(UsuarioPreferenciaUiService);
   private readonly orquestador = inject(NominaMensualV2OrquestadorPort);
@@ -125,6 +130,7 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   readonly filaPreviewAbierta = signal<string | null>(null);
   readonly liquidacionPreviewCargada = signal<LiquidacionCalculada | null>(null);
   readonly previewCargando = signal(false);
+  readonly empresaDocumento = signal<DocumentoLiquidacionEmpresa | null>(null);
 
   readonly hintExpandVisible = signal(false);
   readonly detalleCargando = signal<Set<string>>(new Set());
@@ -470,6 +476,7 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   async abrirPreview(fila: FilaCalculoTrabajador): Promise<void> {
     this.filaPreviewAbierta.set(fila.trabajadorId);
     this.liquidacionPreviewCargada.set(fila.origen ?? null);
+    void this.cargarEmpresaDocumento();
     if (fila.origen) return;
 
     const periodo = this.nomina()?.periodo;
@@ -507,6 +514,14 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   cerrarPreview(): void {
     this.filaPreviewAbierta.set(null);
     this.liquidacionPreviewCargada.set(null);
+  }
+
+  private async cargarEmpresaDocumento(): Promise<void> {
+    if (this.empresaDocumento()) return;
+    const empresa = await this.documentoLiquidacion.obtenerEmpresaDocumento(
+      this.nomina()?.empresaNombre,
+    );
+    this.empresaDocumento.set(empresa);
   }
 
   imprimirPreview(): void {

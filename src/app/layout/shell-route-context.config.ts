@@ -71,6 +71,7 @@ export const SHELL_ROUTE_CONTEXT_ENTRIES: readonly ShellRouteContextEntry[] = [
   { match: '/empresas/nueva', breadcrumbs: [{ label: 'Empresas', path: '/empresas' }, { label: 'Nueva empresa' }] },
   { match: '/empresas', breadcrumbs: [{ label: 'Empresas' }] },
   { match: '/licencias-medicas', breadcrumbs: [{ label: 'Licencias médicas' }] },
+  { match: '/administracion', breadcrumbs: [{ label: 'Administrador' }] },
   { match: '/reportes', breadcrumbs: [{ label: 'Reportes' }] },
   { match: '/preguntor', breadcrumbs: [{ label: 'Preguntor' }] },
 ];

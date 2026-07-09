@@ -42,8 +42,7 @@
       </p>
     </section>
 
-    @if (!loading() || filas().length > 0) {
-      <app-data-grid
+    <app-data-grid
         className="lm-grid"
         title="Licencias médicas"
         primaryActionLabel="Registrar manual"
@@ -73,14 +72,6 @@
           </button>
         </ng-template>
       </app-data-grid>
-    }
-    @if (loading() && filas().length === 0) {
-      <app-workspace-loading
-        [fill]="true"
-        title="Cargando licencias médicas"
-        message="Estamos consultando las licencias registradas en el sistema."
-      />
-    }
   </div>
 
   @if (licenciaSeleccionada(); as licencia) {

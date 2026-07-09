@@ -1,0 +1,165 @@
+<app-message-box
+  variant="info"
+  mode="modal"
+  width="lg"
+  panelClass="adm-perfil-msgbox"
+  eyebrow="Perfiles de acceso"
+  [title]="tituloModal()"
+  [message]="subtituloModal()"
+  [actions]="accionesModal()"
+  [disableClose]="guardando"
+  (dismiss)="cerrar.emit()"
+  (actionSelect)="onAccionModal($event)"
+>
+  <div class="adm-perfil-modal">
+    <div class="adm-perfil-modal__estado">
+      <span class="adm-chip" [class.is-off]="!editor.activo">
+        {{ editor.activo ? 'Activo' : 'Inactivo' }}
+      </span>
+    </div>
+
+    @if (editor.idPerfil) {
+      <section class="adm-resumen" aria-label="Resumen del perfil">
+        <h3 class="adm-resumen__title">Resumen actual</h3>
+        <dl class="adm-resumen__grid">
+          <div>
+            <dt>Nivel de acceso base</dt>
+            <dd>{{ etiquetaRol(editor.rolBase) }}</dd>
+          </div>
+          <div>
+            <dt>Módulos visibles</dt>
+            <dd>{{ resumenPermisos().ver }} de {{ resumenPermisos().total }}</dd>
+          </div>
+          <div>
+            <dt>Módulos con edición</dt>
+            <dd>{{ resumenPermisos().editar }} de {{ resumenPermisos().total }}</dd>
+          </div>
+          <div>
+            <dt>Registrado</dt>
+            <dd>{{ formatearFecha(editor.fechaCreacion) }}</dd>
+          </div>
+        </dl>
+      </section>
+    }
+
+    <form class="adm-form" (submit)="$event.preventDefault(); emitirGuardar()">
+      <section class="adm-seccion" aria-label="Identidad del perfil">
+        <h3 class="adm-seccion__title">Identidad del perfil</h3>
+        <div class="adm-form__grid">
+          <label class="adm-field" [class.has-error]="!!mostrarError('nombre')">
+            <span>Nombre del perfil</span>
+            <input
+              type="text"
+              class="adm-input"
+              [class.is-invalid]="!!mostrarError('nombre')"
+              maxlength="80"
+              [ngModel]="editor.nombre"
+              (ngModelChange)="emitirCambio({ nombre: $event })"
+              (blur)="marcarTocado()"
+              name="nombre"
+              required
+            />
+            @if (mostrarError('nombre'); as errorNombre) {
+              <p class="adm-field-error" role="alert">{{ errorNombre }}</p>
+            }
+          </label>
+          <label class="adm-field">
+            <span>Nivel de acceso base</span>
+            <select
+              class="adm-input"
+              [ngModel]="editor.rolBase"
+              (ngModelChange)="emitirCambio({ rolBase: $event })"
+              name="rolBase"
+            >
+              @for (rol of rolesBase; track rol) {
+                <option [ngValue]="rol">{{ etiquetaRol(rol) }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <label class="adm-field" [class.has-error]="!!mostrarError('descripcion')">
+          <span>Descripción</span>
+          <input
+            type="text"
+            class="adm-input"
+            [class.is-invalid]="!!mostrarError('descripcion')"
+            maxlength="200"
+            [ngModel]="editor.descripcion"
+            (ngModelChange)="emitirCambio({ descripcion: $event })"
+            (blur)="marcarTocado()"
+            name="descripcion"
+            placeholder="Ej.: Operación diaria de nómina sin acceso a parámetros"
+          />
+          <p class="adm-field__ayuda">
+            {{ editor.descripcion.length }}/200 · Los ajustes por módulo se aplican sobre el nivel base.
+          </p>
+          @if (mostrarError('descripcion'); as errorDescripcion) {
+            <p class="adm-field-error" role="alert">{{ errorDescripcion }}</p>
+          }
+        </label>
+
+        <label class="adm-check">
+          <input
+            type="checkbox"
+            [ngModel]="editor.activo"
+            (ngModelChange)="emitirCambio({ activo: $event })"
+            name="activo"
+          />
+          Perfil disponible para asignar
+        </label>
+      </section>
+
+      <section class="adm-permisos" aria-label="Permisos por módulo">
+        <div class="adm-permisos__head">
+          <h3 class="adm-seccion__title">Permisos por módulo</h3>
+          <p class="adm-permisos__resumen">
+            {{ resumenPermisos().ver }} visibles · {{ resumenPermisos().editar }} con edición
+          </p>
+        </div>
+        <div class="adm-permisos__scroll">
+          <table class="adm-permisos__tabla">
+            <thead>
+              <tr>
+                <th scope="col">Módulo</th>
+                <th scope="col">Ver</th>
+                <th scope="col">Editar</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (modulo of modulosPermiso; track modulo) {
+                <tr>
+                  <th scope="row">{{ etiquetasModulo[modulo] }}</th>
+                  <td>
+                    <input
+                      type="checkbox"
+                      [checked]="permisoEfectivoFn(modulo, 'ver')"
+                      [disabled]="modulo === 'administracion'"
+                      (change)="alternarPermiso.emit({ modulo, tipo: 'ver' }); marcarTocado()"
+                      [attr.aria-label]="'Ver ' + etiquetasModulo[modulo]"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      [checked]="permisoEfectivoFn(modulo, 'editar')"
+                      [disabled]="modulo === 'administracion'"
+                      (change)="alternarPermiso.emit({ modulo, tipo: 'editar' }); marcarTocado()"
+                      [attr.aria-label]="'Editar ' + etiquetasModulo[modulo]"
+                    />
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="adm-field__ayuda">
+          La administración del sistema solo está disponible para el nivel «Administración del sistema».
+        </p>
+        @if (mostrarError('permisos'); as errorPermisos) {
+          <p class="adm-field-error" role="alert">{{ errorPermisos }}</p>
+        }
+      </section>
+    </form>
+  </div>
+</app-message-box>

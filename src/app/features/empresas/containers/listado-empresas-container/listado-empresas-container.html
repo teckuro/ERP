@@ -15,7 +15,6 @@
       <p class="emp-list__franja-operativa__lead">{{ subtitulo() }}</p>
     </section>
 
-    @if (!cargando() || filas().length > 0) {
       <app-data-grid
         title="Empresas"
         primaryActionLabel="Nueva empresa"
@@ -27,6 +26,7 @@
         [filtersEnabled]="true"
         [filtersCollapsible]="true"
         [loading]="cargando()"
+        loadingLabel="Cargando empresas…"
         [showExportAction]="true"
         [selectable]="false"
         [trackBy]="trackEmpresa"
@@ -64,13 +64,5 @@
           </div>
         </ng-template>
       </app-data-grid>
-    }
-    @if (cargando() && filas().length === 0) {
-      <app-workspace-loading
-        [fill]="true"
-        title="Cargando empresas"
-        message="Estamos consultando las empresas registradas."
-      />
-    }
   </div>
 </section>

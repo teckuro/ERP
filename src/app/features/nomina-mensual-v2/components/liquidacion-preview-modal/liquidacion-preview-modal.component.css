@@ -160,6 +160,13 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
+.liq-preview__doc-logo {
+  max-height: 48px;
+  max-width: 160px;
+  object-fit: contain;
+  align-self: flex-start;
+}
+
 .liq-preview__doc-empresa-label,
 .liq-preview__doc-periodo-label {
   margin: 0;
@@ -427,29 +434,77 @@
   letter-spacing: 0.04em;
 }
 
+.liq-preview__doc-firma-nombre {
+  font-size: 11px;
+  color: #334155;
+}
+
+.liq-preview__doc-pie {
+  flex: 1 1 100%;
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Impresión                                                                   */
 /* -------------------------------------------------------------------------- */
 
 @media print {
-  .liq-preview__backdrop {
-    position: static;
-    background: transparent;
-    padding: 0;
+  @page {
+    margin: 12mm;
   }
-  .liq-preview__modal {
-    box-shadow: none;
-    border: none;
-    background: #ffffff;
+
+  html,
+  body.liq-preview-printing {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  body.liq-preview-printing * {
+    visibility: hidden;
+  }
+
+  body.liq-preview-printing .liq-preview__sheet,
+  body.liq-preview-printing .liq-preview__sheet * {
+    visibility: visible;
+  }
+
+  body.liq-preview-printing .liq-preview__backdrop,
+  body.liq-preview-printing .liq-preview__modal {
+    position: static !important;
+    display: block !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    visibility: visible;
+  }
+
+  body.liq-preview-printing .liq-preview__chrome {
+    display: none !important;
+  }
+
+  body.liq-preview-printing .liq-preview__sheet {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
     max-width: none;
-  }
-  .liq-preview__chrome {
-    display: none;
-  }
-  .liq-preview__sheet {
-    margin: 0;
-    border: none;
-    box-shadow: none;
-    padding: 24px;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
   }
 }

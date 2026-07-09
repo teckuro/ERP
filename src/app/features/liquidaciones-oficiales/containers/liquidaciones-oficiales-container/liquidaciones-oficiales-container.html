@@ -136,15 +136,7 @@
         </dl>
       }
     </section>
-    } @else if (cargaNominasInicial()) {
-    <section class="liq-entrada liq-entrada--loading" aria-label="Cargando nóminas">
-      <app-workspace-loading
-        [fill]="true"
-        title="Cargando liquidaciones"
-        message="Estamos consultando las nóminas con comprobantes materializados."
-      />
-    </section>
-  } @else if (nominasConLiquidaciones().length > 0) {
+    } @else if (cargaNominasInicial() || nominasConLiquidaciones().length > 0) {
     <section class="liq-entrada" aria-label="Selección de nómina origen">
       <div class="liq-entrada__grid-wrap">
         <app-data-grid
@@ -158,7 +150,8 @@
           headerCountDisplay="text"
           headerCountNoun="nóminas"
           [headerShowActiveFiltersCount]="true"
-          [loading]="false"
+          [loading]="cargaNominasInicial()"
+          loadingLabel="Cargando nóminas con liquidaciones…"
           [trackBy]="trackNominaOption"
           [persistenceKey]="persistenciaSeleccionNomina"
           toolbarLayout="operativa"
@@ -639,11 +632,13 @@
       <app-liquidacion-preview-modal
         modoEmision="oficial"
         [liquidacion]="liqPdf"
-        [empresa]="{
-          razonSocial: nominaInterna()?.empresaNombre || 'Empleador',
-          rut: null,
-          direccion: null,
-        }"
+        [empresa]="
+          empresaDocumento() ?? {
+            razonSocial: nominaInterna()?.empresaNombre || 'Empleador',
+            rut: null,
+            direccion: null,
+          }
+        "
         [nomina]="{
           periodo: nominaInterna()?.periodo || liqPdf.periodo,
           fechaPago: nominaInterna()?.fechaPago || null,

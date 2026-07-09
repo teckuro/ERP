@@ -1,0 +1,188 @@
+<article
+  class="adm-doc-sheet"
+  role="document"
+  aria-label="Vista previa del documento de liquidación"
+>
+  <header class="adm-doc-sheet__head">
+    <div class="adm-doc-sheet__head-brand">
+      @if (vista.logoUrl && !logoRoto) {
+        <img
+          class="adm-doc-sheet__logo"
+          [src]="vista.logoUrl"
+          alt=""
+          (error)="logoError.emit()"
+        />
+      }
+      <div class="adm-doc-sheet__empresa">
+        <p class="adm-doc-sheet__label">Empleador</p>
+        <p class="adm-doc-sheet__razon">{{ vista.razonSocial }}</p>
+        @if (vista.rut) {
+          <p class="adm-doc-sheet__meta">RUT {{ vista.rut }}</p>
+        }
+        @if (vista.direccion) {
+          <p class="adm-doc-sheet__meta">{{ vista.direccion }}</p>
+        }
+      </div>
+    </div>
+    <div class="adm-doc-sheet__periodo">
+      <p class="adm-doc-sheet__label">Período</p>
+      <p class="adm-doc-sheet__periodo-valor">Julio 2026</p>
+      <p class="adm-doc-sheet__meta">Pago: 31/07/2026</p>
+    </div>
+  </header>
+
+  <h2 class="adm-doc-sheet__titulo">Liquidación de remuneraciones</h2>
+
+  <section class="adm-doc-sheet__trabajador" aria-label="Datos de ejemplo del trabajador">
+    <dl class="adm-doc-sheet__dl">
+      <div>
+        <dt>Trabajador</dt>
+        <dd>María González Pérez</dd>
+      </div>
+      <div>
+        <dt>RUT</dt>
+        <dd>12.345.678-9</dd>
+      </div>
+      <div>
+        <dt>Cargo</dt>
+        <dd>Analista de remuneraciones</dd>
+      </div>
+      <div>
+        <dt>Días trabajados</dt>
+        <dd>30</dd>
+      </div>
+    </dl>
+  </section>
+
+  <div class="adm-doc-sheet__cuerpo">
+    <section class="adm-doc-sheet__bloque" aria-label="Haberes de ejemplo">
+      <h3 class="adm-doc-sheet__bloque-title">Haberes</h3>
+      <table class="adm-doc-sheet__tabla">
+        <caption>Imponibles</caption>
+        <tbody>
+          <tr>
+            <th scope="row">Sueldo base</th>
+            <td>$1.200.000</td>
+          </tr>
+          <tr>
+            <th scope="row">Gratificación legal</th>
+            <td>$125.000</td>
+          </tr>
+          <tr class="adm-doc-sheet__tabla-subtotal">
+            <th scope="row">Subtotal imponibles</th>
+            <td>$1.325.000</td>
+          </tr>
+        </tbody>
+      </table>
+      <table class="adm-doc-sheet__tabla">
+        <caption>No imponibles</caption>
+        <tbody>
+          <tr>
+            <th scope="row">Colación</th>
+            <td>$45.000</td>
+          </tr>
+          <tr class="adm-doc-sheet__tabla-subtotal">
+            <th scope="row">Subtotal no imponibles</th>
+            <td>$45.000</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="adm-doc-sheet__total-bloque">
+        <span>Total haberes</span>
+        <strong>$1.370.000</strong>
+      </p>
+    </section>
+
+    <section class="adm-doc-sheet__bloque" aria-label="Descuentos de ejemplo">
+      <h3 class="adm-doc-sheet__bloque-title">Descuentos</h3>
+      <table class="adm-doc-sheet__tabla">
+        <caption>Legales</caption>
+        <tbody>
+          <tr>
+            <th scope="row">Cotización previsional</th>
+            <td>$136.800</td>
+          </tr>
+          <tr>
+            <th scope="row">Salud</th>
+            <td>$84.000</td>
+          </tr>
+          <tr>
+            <th scope="row">Impuesto único</th>
+            <td>$45.000</td>
+          </tr>
+          <tr class="adm-doc-sheet__tabla-subtotal">
+            <th scope="row">Subtotal legales</th>
+            <td>$265.800</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="adm-doc-sheet__total-bloque">
+        <span>Total descuentos</span>
+        <strong>$265.800</strong>
+      </p>
+    </section>
+  </div>
+
+  <section class="adm-doc-sheet__bloque adm-doc-sheet__bloque--secundario" aria-label="Bases de ejemplo">
+    <h3 class="adm-doc-sheet__bloque-title">Bases legales</h3>
+    <dl class="adm-doc-sheet__bases">
+      <div>
+        <dt>Imponible previsional</dt>
+        <dd>$1.325.000</dd>
+      </div>
+      <div>
+        <dt>Tributable</dt>
+        <dd>$1.104.200</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section
+    class="adm-doc-sheet__bloque adm-doc-sheet__bloque--secundario"
+    aria-label="Aportes del empleador de ejemplo"
+  >
+    <h3 class="adm-doc-sheet__bloque-title">Aportes del empleador</h3>
+    <p class="adm-doc-sheet__bloque-nota">Informativo. No afecta al líquido del trabajador.</p>
+    <dl class="adm-doc-sheet__bases">
+      <div>
+        <dt>SIS</dt>
+        <dd>$18.550</dd>
+      </div>
+      <div>
+        <dt>SANNA</dt>
+        <dd>$1.325</dd>
+      </div>
+      <div>
+        <dt>Mutual (Ley 16.744)</dt>
+        <dd>$9.275</dd>
+      </div>
+    </dl>
+  </section>
+
+  <footer class="adm-doc-sheet__foot">
+    <div class="adm-doc-sheet__liquido">
+      <p class="adm-doc-sheet__label">Líquido a pagar</p>
+      <p class="adm-doc-sheet__liquido-monto">$1.104.200</p>
+      <p class="adm-doc-sheet__liquido-palabras">Un millón ciento cuatro mil doscientos pesos</p>
+    </div>
+    <div class="adm-doc-sheet__firmas">
+      <div class="adm-doc-sheet__firma">
+        <span class="adm-doc-sheet__firma-linea" aria-hidden="true"></span>
+        <span class="adm-doc-sheet__firma-label">Firma del trabajador</span>
+      </div>
+      <div class="adm-doc-sheet__firma">
+        <span class="adm-doc-sheet__firma-linea" aria-hidden="true"></span>
+        <span class="adm-doc-sheet__firma-label">Firma empleador</span>
+        @if (vista.nombreFirmaEmpleador) {
+          <span class="adm-doc-sheet__firma-nombre">{{ vista.nombreFirmaEmpleador }}</span>
+        }
+        @if (vista.representanteLegal) {
+          <span class="adm-doc-sheet__firma-nombre">{{ vista.representanteLegal }}</span>
+        }
+      </div>
+    </div>
+    @if (vista.textoPie) {
+      <p class="adm-doc-sheet__pie">{{ vista.textoPie }}</p>
+    }
+  </footer>
+</article>

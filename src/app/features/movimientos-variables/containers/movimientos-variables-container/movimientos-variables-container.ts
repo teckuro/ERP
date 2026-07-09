@@ -17,7 +17,6 @@ import {
   DataGridComponent,
 } from '../../../../shared/components/ui/data-grid';
 import { MessageBoxComponent, MessageBoxVariant } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
-import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { SearchSelectOption } from '../../../../shared/components/ui/forms/search-select.component';
 import { EmpleadoListado } from '../../../empleados/models/empleado-listado.model';
 import { EmpleadosService } from '../../../empleados/services/empleados.service';
@@ -48,7 +47,6 @@ import {
     DataGridComponent,
     DataGridCellDirective,
     MessageBoxComponent,
-    WorkspaceLoadingComponent,
     MovimientoVariableAltaDialogComponent,
     MovimientoVariableAnularDialogComponent,
   ],
@@ -64,6 +62,7 @@ export class MovimientosVariablesContainer implements OnInit {
 
   readonly catalogosLoading = signal(false);
   readonly gridLoading = signal(false);
+  readonly listadoGridLoading = computed(() => this.gridLoading() || this.catalogosLoading());
   readonly guardarNuevoLoading = signal(false);
 
   readonly empleadosListado = signal<EmpleadoListado[]>([]);
@@ -136,9 +135,14 @@ export class MovimientosVariablesContainer implements OnInit {
   puedeAnular = (estado: MovimientoVariableEstado): boolean => puedeAnularMovimientoVariable(estado).valido;
 
   async inicializar(): Promise<void> {
-    await this.cargarCatalogos();
-    await this.buscar();
-    this.pantallaInicializada = true;
+    this.gridLoading.set(true);
+    try {
+      await this.cargarCatalogos();
+      await this.buscar();
+      this.pantallaInicializada = true;
+    } finally {
+      this.gridLoading.set(false);
+    }
   }
 
   async refrescar(): Promise<void> {

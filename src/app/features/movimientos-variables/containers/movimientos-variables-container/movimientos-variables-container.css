@@ -132,6 +132,10 @@
   gap: 0.65rem 0.75rem !important;
 }
 
+:host ::ng-deep .mv-grid-card.erp-fullscreen-grid-card {
+  border: 0 !important;
+}
+
 .mv-chip {
   display: inline-flex;
   align-items: center;

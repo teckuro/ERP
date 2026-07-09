@@ -35,6 +35,14 @@
 
     <article class="liq-preview__sheet" role="document" aria-label="Liquidación de remuneraciones">
       <header class="liq-preview__doc-head">
+        @if (empresa().logoUrl) {
+          <img
+            class="liq-preview__doc-logo"
+            [src]="empresa().logoUrl"
+            alt=""
+            aria-hidden="true"
+          />
+        }
         <div class="liq-preview__doc-empresa">
           <p class="liq-preview__doc-empresa-label">Empleador</p>
           <p class="liq-preview__doc-empresa-nombre">{{ empresa().razonSocial }}</p>
@@ -234,8 +242,17 @@
           <div class="liq-preview__doc-firma">
             <span class="liq-preview__doc-firma-linea" aria-hidden="true"></span>
             <span class="liq-preview__doc-firma-label">Firma empleador</span>
+            @if (empresa().nombreFirmaEmpleador) {
+              <span class="liq-preview__doc-firma-nombre">{{ empresa().nombreFirmaEmpleador }}</span>
+            }
+            @if (empresa().representanteLegal) {
+              <span class="liq-preview__doc-firma-nombre">{{ empresa().representanteLegal }}</span>
+            }
           </div>
         </div>
+        @if (empresa().textoPie) {
+          <p class="liq-preview__doc-pie">{{ empresa().textoPie }}</p>
+        }
       </footer>
     </article>
   </div>

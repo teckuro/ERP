@@ -1,0 +1,428 @@
+/* Hoja de liquidación — documento formal, sin textos de administración */
+
+.adm-doc-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  max-width: 52rem;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #94a3b8;
+  border-radius: 2px;
+  padding: 32px 40px;
+  font-size: 12.5px;
+  color: #111827;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
+.adm-doc-sheet.is-compact {
+  padding: 24px 28px;
+  gap: 16px;
+  font-size: 12px;
+}
+
+/* Encabezado */
+
+.adm-doc-sheet__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 2px solid #0f172a;
+}
+
+.adm-doc-sheet__head-brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.adm-doc-sheet__logo {
+  flex: 0 0 auto;
+  max-height: 52px;
+  max-width: 168px;
+  object-fit: contain;
+}
+
+.adm-doc-sheet__empresa {
+  min-width: 0;
+}
+
+.adm-doc-sheet__label {
+  margin: 0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.adm-doc-sheet__razon {
+  margin: 3px 0 5px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.adm-doc-sheet__meta {
+  margin: 0;
+  font-size: 11.5px;
+  color: #374151;
+  line-height: 1.45;
+}
+
+.adm-doc-sheet__periodo {
+  flex: 0 0 auto;
+  text-align: right;
+}
+
+.adm-doc-sheet__periodo-valor {
+  margin: 3px 0 5px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Título del documento */
+
+.adm-doc-sheet__titulo {
+  margin: 0;
+  padding: 10px 0 12px;
+  border-bottom: 1px solid #cbd5e1;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0f172a;
+  text-align: center;
+}
+
+/* Trabajador */
+
+.adm-doc-sheet__trabajador {
+  padding: 2px 0 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.adm-doc-sheet__dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 28px;
+}
+
+.adm-doc-sheet__dl > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.adm-doc-sheet__dl dt {
+  margin: 0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.adm-doc-sheet__dl dd {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #111827;
+}
+
+/* Cuerpo: haberes y descuentos */
+
+.adm-doc-sheet__cuerpo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+  align-items: start;
+  padding-top: 2px;
+}
+
+.adm-doc-sheet__bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.adm-doc-sheet__bloque-title {
+  margin: 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #cbd5e1;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1e293b;
+}
+
+.adm-doc-sheet__bloque-nota {
+  margin: 0;
+  font-size: 10.5px;
+  color: #64748b;
+}
+
+.adm-doc-sheet__bloque--secundario {
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Tablas */
+
+.adm-doc-sheet__tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.adm-doc-sheet__tabla caption {
+  text-align: left;
+  caption-side: top;
+  font-size: 9px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 6px 0 4px;
+}
+
+.adm-doc-sheet__tabla tr {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.adm-doc-sheet__tabla tr:last-child {
+  border-bottom: none;
+}
+
+.adm-doc-sheet__tabla th[scope='row'] {
+  text-align: left;
+  font-weight: 500;
+  color: #111827;
+  padding: 4px 0;
+}
+
+.adm-doc-sheet__tabla td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  padding: 4px 0;
+  color: #111827;
+  white-space: nowrap;
+}
+
+.adm-doc-sheet__tabla-subtotal th[scope='row'] {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.adm-doc-sheet__tabla-subtotal td {
+  font-weight: 600;
+}
+
+.adm-doc-sheet__total-bloque {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 6px 0 0;
+  padding-top: 8px;
+  border-top: 2px solid #0f172a;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.adm-doc-sheet__total-bloque strong {
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+
+/* Bases y aportes */
+
+.adm-doc-sheet__bases {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px 24px;
+}
+
+.adm-doc-sheet__bases > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.adm-doc-sheet__bases dt {
+  margin: 0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.adm-doc-sheet__bases dd {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #111827;
+}
+
+/* Pie del documento */
+
+.adm-doc-sheet__foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding-top: 14px;
+  border-top: 2px solid #0f172a;
+}
+
+.adm-doc-sheet__liquido {
+  flex: 1 1 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.adm-doc-sheet__liquido-monto {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.adm-doc-sheet__liquido-palabras {
+  margin: 0;
+  font-size: 11px;
+  color: #475569;
+  text-transform: capitalize;
+}
+
+.adm-doc-sheet__firmas {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.adm-doc-sheet__firma {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 148px;
+}
+
+.adm-doc-sheet__firma-linea {
+  display: block;
+  width: 148px;
+  height: 1px;
+  background: #64748b;
+}
+
+.adm-doc-sheet__firma-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.adm-doc-sheet__firma-nombre {
+  font-size: 10.5px;
+  color: #334155;
+  text-align: center;
+}
+
+.adm-doc-sheet__pie {
+  flex: 1 1 100%;
+  margin: 6px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 10.5px;
+  color: #475569;
+  line-height: 1.55;
+}
+
+@media (max-width: 720px) {
+  .adm-doc-sheet {
+    padding: 22px 18px;
+  }
+
+  .adm-doc-sheet__cuerpo {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+
+  .adm-doc-sheet__dl {
+    grid-template-columns: 1fr;
+  }
+
+  .adm-doc-sheet__periodo {
+    text-align: left;
+    width: 100%;
+  }
+
+  .adm-doc-sheet__foot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .adm-doc-sheet__firmas {
+    justify-content: space-between;
+  }
+}
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  html,
+  body.adm-doc-printing {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  body.adm-doc-printing * {
+    visibility: hidden;
+  }
+
+  body.adm-doc-printing .adm-doc-sheet,
+  body.adm-doc-printing .adm-doc-sheet * {
+    visibility: visible;
+  }
+
+  body.adm-doc-printing .adm-doc-sheet {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: none;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+}

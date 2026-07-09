@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { adminSistemaGuard } from './core/auth/admin-sistema.guard';
 import { authChildGuard } from './core/auth/auth.guard';
 import { LayoutShellComponent } from './layout/layout-shell.component';
 
@@ -149,6 +150,11 @@ export const routes: Routes = [
       {
         path: 'parametros',
         loadComponent: () => import('./pages/parametros.page').then((m) => m.ParametrosPage),
+      },
+      {
+        path: 'administracion',
+        canActivate: [adminSistemaGuard],
+        loadComponent: () => import('./pages/administracion.page').then((m) => m.AdministracionPage),
       },
       {
         path: 'empresas',

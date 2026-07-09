@@ -1,0 +1,253 @@
+app-admin-usuario-drawer app-message-box.message-box-host-modal {
+  padding: 0.75rem 1rem;
+  align-items: stretch;
+}
+
+.adm-usuario-msgbox.noia-msgbox--modal {
+  width: min(44rem, calc(100vw - 2rem)) !important;
+  max-width: min(44rem, calc(100vw - 2rem)) !important;
+  max-height: min(92vh, 48rem);
+  margin-inline: auto;
+}
+
+.adm-usuario-msgbox .noia-msgbox__slot--modal:not(:empty) {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0 1.25rem 0.5rem;
+  overflow: auto;
+}
+
+.adm-usuario-modal {
+  display: grid;
+  gap: 14px;
+  padding-bottom: 0.5rem;
+}
+
+.adm-usuario-modal__estado {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.adm-resumen {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #f8fafc;
+  padding: 12px 14px;
+}
+
+.adm-resumen__title,
+.adm-seccion__title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.adm-resumen__grid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+}
+
+.adm-resumen__grid > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.adm-resumen__grid dt {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.adm-resumen__grid dd {
+  margin: 0;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.adm-resumen__hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.adm-resumen__nota {
+  margin: 0;
+  font-size: 12px;
+  color: #475569;
+}
+
+.adm-resumen__perfil-desc {
+  margin: 0;
+  font-size: 12px;
+  color: #334155;
+}
+
+.adm-seccion {
+  display: grid;
+  gap: 10px;
+}
+
+.adm-form {
+  display: grid;
+  gap: 10px;
+}
+
+.adm-field {
+  display: grid;
+  gap: 4px;
+}
+
+.adm-field > span {
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.adm-input {
+  min-height: 38px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fff;
+  padding: 6px 10px;
+  color: #111827;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.adm-input:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+.adm-field__ayuda {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.adm-field__ayuda--alerta {
+  color: #b45309;
+}
+
+.adm-field__row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.adm-field__row .adm-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.adm-field.has-error .adm-input,
+.adm-input.is-invalid {
+  border-color: #dc2626;
+}
+
+.adm-field-error {
+  margin: 0;
+  font-size: 12px;
+  color: #b91c1c;
+}
+
+.adm-field-error--bloque {
+  padding: 8px 10px;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  background: #fef2f2;
+}
+
+.adm-perfil-preview {
+  display: grid;
+  gap: 4px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  padding: 10px 12px;
+}
+
+.adm-perfil-preview__label {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.adm-perfil-preview__nombre {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.adm-perfil-preview__meta {
+  margin: 0;
+  font-size: 12px;
+  color: #475569;
+}
+
+.adm-perfil-preview__desc {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.adm-perfil-preview__aviso {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #b45309;
+}
+
+.adm-chip {
+  display: inline-block;
+  border-radius: 999px;
+  background: #ecfdf5;
+  padding: 2px 8px;
+  color: #047857;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.adm-chip.is-off {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.adm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  border: 1px solid #e5e7eb;
+  border-radius: 5px;
+  background: #fff;
+  padding: 0 12px;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .adm-resumen__grid {
+    grid-template-columns: 1fr;
+  }
+}

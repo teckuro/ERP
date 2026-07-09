@@ -355,6 +355,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   );
   readonly loading = signal(false);
   readonly soporteLoading = signal(false);
+  readonly gridLoading = computed(() => this.loading() || this.soporteLoading());
   readonly contratosLoading = signal(false);
   readonly guardando = signal(false);
   readonly empleadosListado = signal<EmpleadoListado[]>([]);
@@ -2485,15 +2486,20 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   }
 
   private async inicializarPantalla(): Promise<void> {
-    await this.cargarDatosSoporte();
-    await this.cargarNovedades();
-    this.pantallaInicializada = true;
-    const idPersona = idPersonaDesdeFlowQuery(
-      this.flowQueryParams() as Record<string, string | undefined>,
-    );
-    if (idPersona != null && !this.flowPersonaAplicada) {
-      this.flowPersonaAplicada = true;
-      await this.aplicarTrabajadorDesdeFlujoNomina(idPersona);
+    this.loading.set(true);
+    try {
+      await this.cargarDatosSoporte();
+      await this.cargarNovedades();
+      this.pantallaInicializada = true;
+      const idPersona = idPersonaDesdeFlowQuery(
+        this.flowQueryParams() as Record<string, string | undefined>,
+      );
+      if (idPersona != null && !this.flowPersonaAplicada) {
+        this.flowPersonaAplicada = true;
+        await this.aplicarTrabajadorDesdeFlujoNomina(idPersona);
+      }
+    } finally {
+      this.loading.set(false);
     }
   }
 

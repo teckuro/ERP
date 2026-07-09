@@ -21,6 +21,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   HostListener,
+  OnDestroy,
+  ViewEncapsulation,
   computed,
   input,
   output,
@@ -35,6 +37,11 @@ export interface LiquidacionPreviewEmpresa {
   razonSocial: string;
   rut?: string | null;
   direccion?: string | null;
+  /** ADMIN-01: configuración del documento (logo, representante y pie). */
+  logoUrl?: string | null;
+  representanteLegal?: string | null;
+  textoPie?: string | null;
+  nombreFirmaEmpleador?: string | null;
 }
 
 export interface LiquidacionPreviewNomina {
@@ -51,6 +58,8 @@ export interface LiquidacionPreviewTrabajadorMeta {
   diasTrabajados?: number | null;
 }
 
+const BODY_CLASS_IMPRESION_LIQUIDACION = 'liq-preview-printing';
+
 @Component({
   selector: 'app-liquidacion-preview-modal',
   standalone: true,
@@ -58,8 +67,9 @@ export interface LiquidacionPreviewTrabajadorMeta {
   templateUrl: './liquidacion-preview-modal.component.html',
   styleUrl: './liquidacion-preview-modal.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
 })
-export class LiquidacionPreviewModalComponent {
+export class LiquidacionPreviewModalComponent implements OnDestroy {
   readonly closeIcon = XIcon;
 
   readonly liquidacion = input.required<LiquidacionCalculada>();
@@ -104,12 +114,26 @@ export class LiquidacionPreviewModalComponent {
     this.cerrar.emit();
   }
 
+  @HostListener('window:beforeprint')
+  onBeforePrint(): void {
+    document.body.classList.add(BODY_CLASS_IMPRESION_LIQUIDACION);
+  }
+
+  @HostListener('window:afterprint')
+  onAfterPrint(): void {
+    document.body.classList.remove(BODY_CLASS_IMPRESION_LIQUIDACION);
+  }
+
   emitirCerrar(): void {
     this.cerrar.emit();
   }
 
   emitirImprimir(): void {
     this.imprimirSolicitado.emit();
+  }
+
+  ngOnDestroy(): void {
+    document.body.classList.remove(BODY_CLASS_IMPRESION_LIQUIDACION);
   }
 }
 

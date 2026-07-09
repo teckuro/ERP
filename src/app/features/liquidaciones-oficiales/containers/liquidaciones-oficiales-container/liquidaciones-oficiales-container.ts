@@ -30,6 +30,11 @@ import { LucideAngularModule } from 'lucide-angular';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 
+import {
+  DocumentoLiquidacionService,
+  type DocumentoLiquidacionEmpresa,
+} from '../../../../core/services/documento-liquidacion.service';
+
 import { mensajeErrorSupabaseParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
 
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
@@ -212,6 +217,8 @@ export class LiquidacionesOficialesContainer {
   readonly periodoActivo = inject(PeriodoActivoService);
 
   private readonly service = inject(LiquidacionesOficialesService);
+
+  private readonly documentoLiquidacion = inject(DocumentoLiquidacionService);
 
   private readonly nominaService = inject(NominaPeriodoService);
 
@@ -490,6 +497,8 @@ export class LiquidacionesOficialesContainer {
   readonly previewPdfTrabajador = signal<LiquidacionTrabajador | null>(null);
 
   readonly previewPdfLiquidacion = signal<LiquidacionCalculada | null>(null);
+
+  readonly empresaDocumento = signal<DocumentoLiquidacionEmpresa | null>(null);
 
   readonly previewPdfCargando = signal(false);
 
@@ -1332,6 +1341,7 @@ export class LiquidacionesOficialesContainer {
     this.previewPdfLiquidacion.set(null);
     this.previewPdfCargando.set(true);
     this.error.set(null);
+    void this.cargarEmpresaDocumento();
 
     try {
       let conceptos = this.conceptosDetalle();
@@ -1361,6 +1371,14 @@ export class LiquidacionesOficialesContainer {
   cerrarPreviewPdf(): void {
     this.previewPdfTrabajador.set(null);
     this.previewPdfLiquidacion.set(null);
+  }
+
+  private async cargarEmpresaDocumento(): Promise<void> {
+    if (this.empresaDocumento()) return;
+    const empresa = await this.documentoLiquidacion.obtenerEmpresaDocumento(
+      this.nominaInterna()?.empresaNombre,
+    );
+    this.empresaDocumento.set(empresa);
   }
 
   imprimirPreviewPdf(): void {

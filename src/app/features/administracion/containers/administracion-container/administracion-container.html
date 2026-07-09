@@ -1,0 +1,318 @@
+<section class="adm-page" aria-label="Administrador del sistema">
+  @if (mensajeError()) {
+    <app-message-box
+      variant="error"
+      mode="inline"
+      title="No fue posible completar la operación"
+      [message]="mensajeError()!"
+      primaryLabel="Cerrar"
+      (action)="mensajeError.set(null)"
+    />
+  }
+
+  @if (mensajeExito()) {
+    <app-message-box
+      variant="success"
+      mode="inline"
+      title="Operación completada"
+      [message]="mensajeExito()!"
+      primaryLabel="Aceptar"
+      (action)="limpiarExito()"
+    />
+  }
+
+  <nav class="adm-tabs" aria-label="Secciones de administración">
+    <button
+      type="button"
+      class="adm-tabs__tab"
+      [class.is-active]="tabActiva() === 'usuarios'"
+      (click)="cambiarTab('usuarios')"
+    >Usuarios</button>
+    <button
+      type="button"
+      class="adm-tabs__tab"
+      [class.is-active]="tabActiva() === 'perfiles'"
+      (click)="cambiarTab('perfiles')"
+    >Perfiles de acceso</button>
+    <button
+      type="button"
+      class="adm-tabs__tab"
+      [class.is-active]="tabActiva() === 'documento'"
+      (click)="cambiarTab('documento')"
+    >Documento de liquidación</button>
+  </nav>
+
+  @if (cargaInicial() && cargando()) {
+    <app-workspace-loading
+      [fill]="true"
+      title="Cargando administración"
+      message="Estamos consultando usuarios, perfiles y configuración."
+    />
+  } @else if (tabActiva() === 'usuarios') {
+    <div class="adm-grid-shell">
+      <section class="adm-franja-operativa" aria-label="Contexto de usuarios">
+        <p class="adm-franja-operativa__lead">
+          Personas con acceso al sistema. Cada usuario tiene un perfil que define qué puede ver y editar.
+        </p>
+      </section>
+
+      @if (usuariosNoDisponibles()) {
+        <app-message-box
+          variant="warning"
+          mode="inline"
+          title="Usuarios no disponibles"
+          [message]="usuariosNoDisponibles()!"
+        />
+      }
+
+      @if (!usuariosNoDisponibles()) {
+        <app-data-grid
+          className="adm-grid"
+          title="Usuarios del sistema"
+          primaryActionLabel="Crear usuario"
+          [primaryActionDisabled]="guardando()"
+          (primaryAction)="abrirDrawerCrearUsuario()"
+          [rows]="filasUsuarios()"
+          [columns]="columnsUsuarios"
+          [filters]="filtersUsuarios"
+          [filtersEnabled]="true"
+          [filtersCollapsible]="true"
+          [loading]="cargando()"
+          loadingLabel="Cargando usuarios..."
+          [showExportAction]="false"
+          [selectable]="false"
+          [trackBy]="trackUsuario"
+          [gridHeight]="'100%'"
+          cardClassName="adm-grid-card erp-fullscreen-grid-card"
+          (refresh)="recargarUsuarios()"
+          emptyTitle="Aún no hay usuarios registrados desde el sistema"
+          emptyDescription="Cree el primer usuario con la acción del listado."
+          emptyTitleWhenFiltered="No hay usuarios que coincidan con los filtros aplicados."
+          emptyDescriptionWhenFiltered="Ajuste la búsqueda o restablezca los filtros para ampliar el listado."
+        >
+          <ng-template appDataGridCell="email" let-row>
+            <button type="button" class="adm-link" (click)="abrirDrawerUsuario(row)">
+              {{ row.email || '—' }}
+            </button>
+          </ng-template>
+          <ng-template appDataGridCell="estado" let-row>
+            <span class="adm-chip" [class.is-off]="row.filtroEstado !== 'activo'">
+              {{ etiquetaEstadoChip(row.filtroEstado) }}
+            </span>
+          </ng-template>
+        </app-data-grid>
+      }
+    </div>
+  } @else if (tabActiva() === 'perfiles') {
+    <div class="adm-grid-shell">
+      <section class="adm-franja-operativa" aria-label="Contexto de perfiles">
+        <p class="adm-franja-operativa__lead">
+          Los perfiles definen el nivel de acceso base y ajustes por módulo.
+        </p>
+      </section>
+
+      <app-data-grid
+          className="adm-grid"
+          title="Perfiles de acceso"
+          primaryActionLabel="Nuevo perfil"
+          [primaryActionDisabled]="guardando()"
+          (primaryAction)="nuevoPerfil()"
+          [rows]="filasPerfiles()"
+          [columns]="columnsPerfiles"
+          [filters]="filtersPerfiles"
+          [filtersEnabled]="true"
+          [filtersCollapsible]="true"
+          [loading]="cargando()"
+          loadingLabel="Cargando perfiles..."
+          [showExportAction]="false"
+          [selectable]="false"
+          [trackBy]="trackPerfil"
+          [gridHeight]="'100%'"
+          cardClassName="adm-grid-card erp-fullscreen-grid-card"
+          (refresh)="recargarPerfiles()"
+          emptyTitle="Sin perfiles de acceso"
+          emptyDescription="Cree un perfil para definir permisos por módulo."
+          emptyTitleWhenFiltered="No hay perfiles que coincidan con los filtros aplicados."
+          emptyDescriptionWhenFiltered="Ajuste la búsqueda o restablezca los filtros para ampliar el listado."
+        >
+          <ng-template appDataGridCell="nombre" let-row>
+            <button type="button" class="adm-link" (click)="abrirPerfil(row)">
+              {{ row.nombre }}
+            </button>
+          </ng-template>
+          <ng-template appDataGridCell="estado" let-row>
+            <span class="adm-chip" [class.is-off]="row.filtroEstado !== 'activo'">
+              {{ etiquetaEstadoPerfilChip(row.filtroEstado) }}
+            </span>
+          </ng-template>
+        </app-data-grid>
+    </div>
+  } @else {
+    <section class="adm-doc-panel" aria-label="Documento de liquidación">
+      <div class="adm-franja-operativa adm-franja-operativa--doc">
+        <div class="adm-franja-operativa__copy">
+          <p class="adm-franja-operativa__estado">{{ configDocumentoEstado() }}</p>
+          @if (documentoModificado()) {
+            <p class="adm-franja-operativa__dirty" role="status">Cambios sin guardar</p>
+          }
+        </div>
+        @if (documentoModificado()) {
+          <button type="button" class="adm-btn" (click)="descartarConfigDocumento()">
+            Descartar cambios
+          </button>
+        }
+      </div>
+
+      <div class="adm-doc-split">
+        <div class="adm-doc-split__form">
+          <fieldset class="adm-doc-grupo">
+            <legend>Identidad visual</legend>
+            @if (configDocumento().logoUrl; as logoUrl) {
+              <div class="adm-doc-logo">
+                <img [src]="logoUrl" alt="Logo actual del documento" />
+                <button type="button" class="adm-btn is-ghost is-danger" (click)="quitarLogo()">
+                  Quitar logo
+                </button>
+              </div>
+            }
+            <label class="adm-btn adm-doc-upload" [class.is-disabled]="subiendoLogo()">
+              {{ subiendoLogo() ? 'Subiendo…' : 'Subir logo (PNG o JPG, máx. 1 MB)' }}
+              <input
+                type="file"
+                accept="image/png,image/jpeg"
+                [disabled]="subiendoLogo()"
+                (change)="onLogoSeleccionado($event)"
+              />
+            </label>
+
+            <p class="adm-doc-subtitle">Datos de la empresa visibles</p>
+            <label class="adm-check">
+              <input
+                type="checkbox"
+                [ngModel]="configDocumento().mostrarRut"
+                (ngModelChange)="actualizarConfig({ mostrarRut: $event })"
+              />
+              Mostrar RUT de la empresa
+            </label>
+            <label class="adm-check">
+              <input
+                type="checkbox"
+                [ngModel]="configDocumento().mostrarDireccion"
+                (ngModelChange)="actualizarConfig({ mostrarDireccion: $event })"
+              />
+              Mostrar dirección de la empresa
+            </label>
+            <label class="adm-check">
+              <input
+                type="checkbox"
+                [ngModel]="configDocumento().mostrarRepresentante"
+                (ngModelChange)="actualizarConfig({ mostrarRepresentante: $event })"
+              />
+              Mostrar representante legal en el pie
+            </label>
+          </fieldset>
+
+          <fieldset class="adm-doc-grupo">
+            <legend>Pie del documento</legend>
+            <label class="adm-field">
+              <span>Texto del pie (opcional)</span>
+              <textarea
+                class="adm-input adm-input--area"
+                rows="3"
+                maxlength="400"
+                [ngModel]="configDocumento().textoPie ?? ''"
+                (ngModelChange)="actualizarConfig({ textoPie: $event })"
+              ></textarea>
+            </label>
+            <label class="adm-field">
+              <span>Nombre bajo la firma del empleador (opcional)</span>
+              <input
+                type="text"
+                class="adm-input"
+                maxlength="120"
+                [ngModel]="configDocumento().nombreFirmaEmpleador ?? ''"
+                (ngModelChange)="actualizarConfig({ nombreFirmaEmpleador: $event })"
+              />
+            </label>
+          </fieldset>
+        </div>
+
+        <aside class="adm-doc-split__preview" aria-label="Vista previa del PDF en tiempo real">
+          <div class="adm-doc-split__preview-head">
+            <p class="adm-doc-split__preview-label">Vista previa</p>
+            <button type="button" class="adm-btn" (click)="imprimirPreviewDocumento()">Imprimir</button>
+          </div>
+
+          @if (logoPreviewRoto()) {
+            <p class="adm-doc-split__aviso" role="status">
+              No fue posible cargar el logo. Revise el archivo o vuelva a subirlo.
+            </p>
+          }
+
+          <div class="adm-doc-split__preview-scroll">
+            <app-admin-documento-preview-sheet
+              [vista]="vistaPreviaDocumento()"
+              [logoRoto]="logoPreviewRoto()"
+              (logoError)="onLogoPreviewError()"
+            />
+          </div>
+        </aside>
+      </div>
+    </section>
+  }
+
+  @if (usuarioDrawerModo(); as modo) {
+    <app-admin-usuario-drawer
+      [modo]="modo"
+      [usuario]="usuarioSeleccionado()"
+      [perfiles]="perfiles()"
+      [guardando]="guardando()"
+      (cerrar)="cerrarDrawerUsuario()"
+      (crear)="confirmarCrearUsuario($event)"
+      (cambiarPerfil)="confirmarCambioPerfil($event)"
+      (desactivar)="solicitarDesactivarDesdeDrawer()"
+      (reactivar)="reactivarDesdeDrawer()"
+    />
+  }
+
+  @if (perfilEditor(); as editor) {
+    <app-admin-perfil-drawer
+      [editor]="editor"
+      [permisoEfectivoFn]="permisoEfectivo"
+      [perfilesExistentes]="perfiles()"
+      [guardando]="guardando()"
+      (cerrar)="cerrarEditorPerfil()"
+      (guardar)="guardarPerfil()"
+      (editorChange)="actualizarEditor($event)"
+      (alternarPermiso)="alternarPermisoDesdeDrawer($event)"
+    />
+  }
+
+  @if (usuarioParaDesactivar(); as usuario) {
+    <app-message-box
+      variant="warning"
+      mode="modal"
+      title="Desactivar acceso"
+      [message]="'El usuario ' + (usuario.email || 'seleccionado') + ' no podrá iniciar sesión hasta que se reactive su acceso.'"
+      primaryLabel="Desactivar"
+      secondaryLabel="Cancelar"
+      (action)="confirmarDesactivar()"
+      (secondary)="cancelarDesactivar()"
+      (dismiss)="cancelarDesactivar()"
+    />
+  }
+
+  @if (tabDocumentoSalidaPendiente()) {
+    <app-message-box
+      variant="warning"
+      mode="modal"
+      title="Cambios sin guardar"
+      message="Si sale ahora, perderá los cambios del documento de liquidación."
+      primaryLabel="Descartar y salir"
+      secondaryLabel="Seguir editando"
+      (action)="confirmarSalidaDocumentoDescartar()"
+      (secondary)="cancelarSalidaDocumento()"
+      (dismiss)="cancelarSalidaDocumento()"
+    />
+  }
+</section>

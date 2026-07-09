@@ -39,6 +39,7 @@ export interface MessageBoxAction {
   role?: MessageBoxActionRole;
   align?: 'left' | 'right';
   value?: string;
+  disabled?: boolean;
 }
 
 export interface MessageBoxConfig {

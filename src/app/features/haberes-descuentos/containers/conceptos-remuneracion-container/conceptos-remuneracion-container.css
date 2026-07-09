@@ -288,6 +288,10 @@
   overflow: auto;
 }
 
+:host ::ng-deep .cr-grid-card.erp-fullscreen-grid-card {
+  border: 0 !important;
+}
+
 /* Filtros compactos */
 :host ::ng-deep .cr-grid-shell .data-grid-filter-grid {
   grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr)) !important;
