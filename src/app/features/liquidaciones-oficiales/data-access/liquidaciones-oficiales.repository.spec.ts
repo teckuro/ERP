@@ -58,7 +58,7 @@ describe('LiquidacionesOficialesRepository', () => {
     await expect(repository.generarLiquidacionesOficiales({
       idCalculoPeriodo: 15,
       periodo: '2026-04',
-    })).rejects.toThrow('No se pudieron generar las liquidaciones oficiales. No se realizaron cambios parciales.');
+    })).rejects.toThrow('No se pudo generar las liquidaciones oficiales');
   });
 
   it('persiste estado revisión vía RPC cuando está disponible', async () => {
@@ -89,14 +89,57 @@ describe('LiquidacionesOficialesRepository', () => {
     });
 
     const repository = TestBed.inject(LiquidacionesOficialesRepository);
-    const result = await repository.actualizarEstadoRevisionTrabajador(12, 'autorizada');
+    const result = await repository.actualizarEstadoRevisionTrabajador(12, 'autorizada', 'autorizar');
 
     expect(rpc).toHaveBeenCalledWith('actualizar_estado_revision_liquidacion_trabajador', {
       p_id_liquidacion_trabajador: 12,
       p_estado_revision: 'autorizada',
+      p_accion: 'autorizar',
     });
     expect(result.estadoRevision).toBe('autorizada');
     expect(result.idLiquidacionTrabajador).toBe(12);
+  });
+
+  it('retorna metadata de auditoría desde RPC sin segundo update', async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: {
+        id_liquidacion_trabajador: 12,
+        id_liquidacion_periodo: 1,
+        id_calculo_periodo: 15,
+        nombre_trabajador: 'Ana Pérez',
+        estado_revision: 'autorizada',
+        metadata: {
+          estadoRevision: 'autorizada',
+          autorizadoPor: 'María González Rojas',
+          autorizacion: {
+            usuarioNombre: 'María González Rojas',
+            registradoEn: '2026-07-09T12:00:00.000Z',
+          },
+        },
+        base_imponible: 0,
+        base_tributable: 0,
+        total_haberes: 0,
+        total_descuentos: 0,
+        total_aportes_empleador_referencia: 0,
+        liquido_pagar: 0,
+        observaciones: [],
+      },
+      error: null,
+    });
+    const from = vi.fn();
+
+    TestBed.configureTestingModule({
+      providers: [
+        LiquidacionesOficialesRepository,
+        { provide: SUPABASE_CLIENT, useValue: { rpc, from } },
+      ],
+    });
+
+    const repository = TestBed.inject(LiquidacionesOficialesRepository);
+    const result = await repository.actualizarEstadoRevisionTrabajador(12, 'autorizada', 'autorizar');
+
+    expect(from).not.toHaveBeenCalled();
+    expect(result.metadata['autorizadoPor']).toBe('María González Rojas');
   });
 
   it('hace fallback a UPDATE directo si la RPC no está desplegada', async () => {

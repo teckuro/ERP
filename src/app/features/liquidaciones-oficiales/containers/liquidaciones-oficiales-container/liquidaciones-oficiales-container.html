@@ -643,10 +643,11 @@
           periodo: nominaInterna()?.periodo || liqPdf.periodo,
           fechaPago: nominaInterna()?.fechaPago || null,
         }"
-        [trabajadorMeta]="{
-          cargo: trabajadorPdf.cargo,
-          diasTrabajados: trabajadorPdf.diasTrabajados,
-        }"
+        [trabajadorMeta]="previewPdfExtras()?.trabajadorMeta ?? null"
+        [detalle]="previewPdfExtras()?.detalle ?? null"
+        [cierre]="previewPdfExtras()?.cierre ?? null"
+        [numeroDocumento]="previewPdfExtras()?.numeroDocumento ?? null"
+        [fechaEmision]="previewPdfExtras()?.fechaEmision ?? null"
         (cerrar)="cerrarPreviewPdf()"
         (imprimirSolicitado)="imprimirPreviewPdf()"
       ></app-liquidacion-preview-modal>

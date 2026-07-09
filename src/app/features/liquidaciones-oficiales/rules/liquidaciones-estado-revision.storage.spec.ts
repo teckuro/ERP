@@ -25,7 +25,7 @@ describe('liquidaciones-estado-revision.storage', () => {
     expect(leerEstadosRevisionLiquidacion(99)).toEqual({});
   });
 
-  it('fusiona estados locales solo si el inicial sigue pendiente', () => {
+  it('prioriza estados del servidor al fusionar', () => {
     guardarEstadoRevisionLiquidacion(1, 1, 'documento_enviado');
 
     const fusionados = fusionarEstadosRevisionLiquidacion(1, {
@@ -34,7 +34,7 @@ describe('liquidaciones-estado-revision.storage', () => {
     });
 
     expect(fusionados).toEqual({
-      1: 'documento_enviado',
+      1: 'pendiente_autorizar',
       2: 'autorizada',
     });
   });

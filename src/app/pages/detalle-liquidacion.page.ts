@@ -32,7 +32,14 @@ import {
   type LiquidacionAccionUiAction,
   type LiquidacionAccionUiEstado,
 } from '../features/liquidaciones-oficiales/rules/liquidaciones-acciones-ui.rules';
-import { mapLiquidacionOficialAPreview } from '../features/liquidaciones-oficiales/rules/liquidaciones-preview.mapper';
+import { mapLiquidacionOficialAPreview, mapDocumentoExtrasDesdeLiquidacionOficial } from '../features/liquidaciones-oficiales/rules/liquidaciones-preview.mapper';
+import { ParametrosGeneralesService } from '../features/parametros-generales/services/parametros-generales.service';
+import { EmpleadosService } from '../features/empleados/services/empleados.service';
+import type {
+  LiquidacionDocumentoCierreInput,
+  LiquidacionDocumentoDetalleInput,
+  LiquidacionDocumentoTrabajadorMetaInput,
+} from '../shared/components/documento-liquidacion-sheet';
 import { esLiquidacionesSoloLectura } from '../features/nomina-mensual/rules/nomina-liquidaciones-internas-ui.rules';
 import { bindShellPageContext } from '../layout/shell-page-context.binding';
 
@@ -133,13 +140,14 @@ function etiquetaCanalEmision(canal: LiquidacionEmision['canal']): string {
             }
           "
           [nomina]="{
-            periodo: periodoLabel() || liqPdf.periodo,
-            fechaPago: null,
+            periodo: periodoNomina() || liqPdf.periodo,
+            fechaPago: fechaPagoNomina(),
           }"
-          [trabajadorMeta]="{
-            cargo: trabajador()?.cargo,
-            diasTrabajados: trabajador()?.diasTrabajados,
-          }"
+          [trabajadorMeta]="previewExtras()?.trabajadorMeta ?? null"
+          [detalle]="previewExtras()?.detalle ?? null"
+          [cierre]="previewExtras()?.cierre ?? null"
+          [numeroDocumento]="previewExtras()?.numeroDocumento ?? null"
+          [fechaEmision]="previewExtras()?.fechaEmision ?? null"
           (cerrar)="cerrarPreview()"
           (imprimirSolicitado)="imprimirPreview()"
         ></app-liquidacion-preview-modal>
@@ -264,6 +272,8 @@ export class DetalleLiquidacionPage {
   private readonly service = inject(LiquidacionesOficialesService);
   private readonly nominaService = inject(NominaPeriodoService);
   private readonly documentoLiquidacion = inject(DocumentoLiquidacionService);
+  private readonly parametrosGenerales = inject(ParametrosGeneralesService);
+  private readonly empleadosService = inject(EmpleadosService);
 
   readonly etiquetaCanalEmision = etiquetaCanalEmision;
 
@@ -275,7 +285,15 @@ export class DetalleLiquidacionPage {
   readonly estadoRevision = signal<LiquidacionAccionUiEstado>('pendiente_autorizar');
   readonly empresaNombre = signal<string | null>(null);
   readonly periodoNomina = signal<string | null>(null);
+  readonly fechaPagoNomina = signal<string | null>(null);
   readonly previewLiquidacion = signal<LiquidacionCalculada | null>(null);
+  readonly previewExtras = signal<{
+    trabajadorMeta: LiquidacionDocumentoTrabajadorMetaInput;
+    detalle: LiquidacionDocumentoDetalleInput;
+    cierre: LiquidacionDocumentoCierreInput;
+    numeroDocumento: string;
+    fechaEmision: string | null;
+  } | null>(null);
   readonly empresaDocumento = signal<DocumentoLiquidacionEmpresa | null>(null);
 
   readonly queryParams = toSignal(this.route.queryParams, { initialValue: {} });
@@ -378,6 +396,7 @@ export class DetalleLiquidacionPage {
         const nomina = await this.nominaService.obtenerNomina(nominaId);
         this.empresaNombre.set(nomina?.empresaNombre ?? null);
         this.periodoNomina.set(nomina?.periodo ?? null);
+        this.fechaPagoNomina.set(nomina?.fechaPago ?? null);
         this.nominaEstado.set(nomina?.estado ?? null);
       }
     } catch (err) {
@@ -394,9 +413,15 @@ export class DetalleLiquidacionPage {
     const siguiente = siguienteEstadoLiquidacionUi(this.estadoRevision(), action.tipo);
     if (siguiente === this.estadoRevision()) return;
     this.estadoRevision.set(siguiente);
-    void this.service.guardarEstadoRevisionTrabajador(trabajador.idLiquidacionTrabajador, siguiente).catch(() => {
-      this.error.set('No se pudo guardar el estado. Intente nuevamente.');
-    });
+    void this.service
+      .guardarEstadoRevisionTrabajador(trabajador.idLiquidacionTrabajador, siguiente, action.tipo)
+      .then((actualizado) => {
+        this.trabajador.set(actualizado);
+        this.estadoRevision.set(actualizado.estadoRevision ?? siguiente);
+      })
+      .catch(() => {
+        this.error.set('No se pudo guardar el estado. Intente nuevamente.');
+      });
   }
 
   async abrirPreview(): Promise<void> {
@@ -412,8 +437,35 @@ export class DetalleLiquidacionPage {
       return;
     }
     const periodo = this.periodoNomina() ?? '—';
-    void this.cargarEmpresaDocumento();
+    await this.cargarEmpresaDocumento();
+    const [parametros, ficha, configCliente, catalogos] = await Promise.all([
+      periodo !== '—'
+        ? this.parametrosGenerales.obtenerUltimoHastaPeriodo(periodo).catch(() => null)
+        : Promise.resolve(null),
+      trabajador.idPersona
+        ? this.empleadosService.obtenerPorId(trabajador.idPersona).catch(() => null)
+        : Promise.resolve(null),
+      periodo !== '—'
+        ? this.parametrosGenerales.obtenerUltimaClienteConfigHastaPeriodo(periodo).catch(() => null)
+        : Promise.resolve(null),
+      periodo !== '—'
+        ? this.parametrosGenerales.listarCatalogos(periodo).catch(() => null)
+        : Promise.resolve(null),
+    ]);
     this.previewLiquidacion.set(mapLiquidacionOficialAPreview({ trabajador, conceptos, periodo }));
+    this.previewExtras.set(
+      mapDocumentoExtrasDesdeLiquidacionOficial({
+        trabajador,
+        conceptos,
+        periodo,
+        empresa: this.empresaDocumento(),
+        parametros: parametros ? { uf: parametros.uf, utm: parametros.utm } : null,
+        emision: this.ultimaEmision(),
+        ficha,
+        configCliente,
+        catalogos,
+      }),
+    );
     void this.service.registrarEmisionLiquidacionTrabajador(trabajador.idLiquidacionTrabajador, 'vista_oficial')
       .then((emision) => this.ultimaEmision.set(emision))
       .catch(() => undefined);
@@ -421,6 +473,7 @@ export class DetalleLiquidacionPage {
 
   cerrarPreview(): void {
     this.previewLiquidacion.set(null);
+    this.previewExtras.set(null);
   }
 
   private async cargarEmpresaDocumento(): Promise<void> {

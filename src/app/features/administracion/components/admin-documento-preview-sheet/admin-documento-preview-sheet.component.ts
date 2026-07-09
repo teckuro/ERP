@@ -2,44 +2,54 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
+  computed,
   HostListener,
-  Input,
+  input,
   OnDestroy,
-  Output,
+  output,
   ViewEncapsulation,
 } from '@angular/core';
 
 import type { VistaPreviaDocumentoLiquidacion } from '../../rules/administracion.rules';
-
-const BODY_CLASS_IMPRESION_DOCUMENTO = 'adm-doc-printing';
+import {
+  buildLiquidacionDocumentoSheetEjemplo,
+  ERP_DOC_SHEET_PRINTING_CLASS,
+  LiquidacionDocumentoSheetComponent,
+} from '../../../../shared/components/documento-liquidacion-sheet';
 
 @Component({
   selector: 'app-admin-documento-preview-sheet',
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './admin-documento-preview-sheet.component.html',
-  styleUrl: './admin-documento-preview-sheet.component.css',
+  imports: [CommonModule, LiquidacionDocumentoSheetComponent],
+  template: `
+    <app-liquidacion-documento-sheet
+      [vista]="vistaSheet()"
+      [logoRoto]="logoRoto()"
+      (logoError)="logoError.emit()"
+    />
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })
 export class AdminDocumentoPreviewSheetComponent implements OnDestroy {
-  @Input({ required: true }) vista!: VistaPreviaDocumentoLiquidacion;
-  @Input() logoRoto = false;
+  readonly vista = input.required<VistaPreviaDocumentoLiquidacion>();
+  readonly logoRoto = input(false);
 
-  @Output() logoError = new EventEmitter<void>();
+  readonly logoError = output<void>();
+
+  readonly vistaSheet = computed(() => buildLiquidacionDocumentoSheetEjemplo(this.vista()));
 
   @HostListener('window:beforeprint')
   onBeforePrint(): void {
-    document.body.classList.add(BODY_CLASS_IMPRESION_DOCUMENTO);
+    document.body.classList.add(ERP_DOC_SHEET_PRINTING_CLASS);
   }
 
   @HostListener('window:afterprint')
   onAfterPrint(): void {
-    document.body.classList.remove(BODY_CLASS_IMPRESION_DOCUMENTO);
+    document.body.classList.remove(ERP_DOC_SHEET_PRINTING_CLASS);
   }
 
   ngOnDestroy(): void {
-    document.body.classList.remove(BODY_CLASS_IMPRESION_DOCUMENTO);
+    document.body.classList.remove(ERP_DOC_SHEET_PRINTING_CLASS);
   }
 }

@@ -51,13 +51,7 @@ export function fusionarEstadosRevisionLiquidacion(
   idLiquidacionPeriodo: number,
   estadosIniciales: Record<number, LiquidacionAccionUiEstado>,
 ): Record<number, LiquidacionAccionUiEstado> {
-  const persistidos = leerEstadosRevisionLiquidacion(idLiquidacionPeriodo);
-  const merged = { ...estadosIniciales };
-  for (const [id, estadoLocal] of Object.entries(persistidos)) {
-    const numId = Number(id);
-    if (merged[numId] === 'pendiente_autorizar' && estadoLocal !== 'pendiente_autorizar') {
-      merged[numId] = estadoLocal;
-    }
-  }
-  return merged;
+  void idLiquidacionPeriodo;
+  // LIQ-AUDIT-01: la BD es fuente de verdad; localStorage queda solo como respaldo de escritura offline.
+  return { ...estadosIniciales };
 }

@@ -259,7 +259,7 @@
   background: #eef2f6;
 }
 
-.adm-doc-split__preview-scroll .adm-doc-sheet {
+.adm-doc-split__preview-scroll .erp-doc-sheet {
   flex: 0 1 auto;
   min-height: 0;
   box-shadow:
@@ -393,11 +393,11 @@
 }
 
 @media print {
-  body.adm-doc-printing .adm-tabs,
-  body.adm-doc-printing .adm-franja-operativa,
-  body.adm-doc-printing .adm-doc-split__form,
-  body.adm-doc-printing .adm-doc-split__preview-head,
-  body.adm-doc-printing .adm-doc-split__aviso {
+  body.erp-doc-sheet-printing .adm-tabs,
+  body.erp-doc-sheet-printing .adm-franja-operativa,
+  body.erp-doc-sheet-printing .adm-doc-split__form,
+  body.erp-doc-sheet-printing .adm-doc-split__preview-head,
+  body.erp-doc-sheet-printing .adm-doc-split__aviso {
     display: none !important;
   }
 }

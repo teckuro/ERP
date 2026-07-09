@@ -1,69 +1,46 @@
 /**
  * Modal de previsualización tipo liquidación de sueldo.
  *
- * Toma una `LiquidacionCalculada` del motor V1 y la presenta con la
- * maqueta visual de un documento imprimible (cabecera empresa,
- * identificación trabajador, tabla de haberes, descuentos, bases legales,
- * cargos informativos del empleador y líquido a pago en pesos y palabras).
- *
- * No genera PDF real (eso se hará en el paso 9 Liquidaciones). Aquí es solo
- * un preview operativo para que RRHH valide visualmente el desglose antes
- * de aprobar la nómina.
- *
- * Reglas NOIA:
- * - Sin gradientes, sin sombras fuertes, sin paletas nuevas.
- * - Density compacta; tipografía existente.
- * - Lenguaje RRHH (sin códigos del motor visibles).
+ * Usa la hoja compartida del editor de Administración para que el PDF
+ * se vea igual en nómina, liquidaciones oficiales y configuración.
  */
 
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  HostListener,
-  OnDestroy,
-  ViewEncapsulation,
   computed,
+  HostListener,
   input,
+  OnDestroy,
   output,
+  ViewEncapsulation,
 } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { X as XIcon } from 'lucide-angular/src/icons';
 
 import type { LiquidacionCalculada } from '../../../nomina-mensual/models/proceso-mensual.model';
-import { liquidoEnPalabras } from './liquidacion-en-palabras';
+import {
+  buildLiquidacionDocumentoSheetFromCalculada,
+  ERP_DOC_SHEET_PRINTING_CLASS,
+  LiquidacionDocumentoSheetComponent,
+  type LiquidacionDocumentoCierreInput,
+  type LiquidacionDocumentoDetalleInput,
+  type LiquidacionDocumentoEmpresaVm,
+  type LiquidacionDocumentoNominaInput,
+  type LiquidacionDocumentoTrabajadorMetaInput,
+} from '../../../../shared/components/documento-liquidacion-sheet';
 
-export interface LiquidacionPreviewEmpresa {
-  razonSocial: string;
-  rut?: string | null;
-  direccion?: string | null;
-  /** ADMIN-01: configuración del documento (logo, representante y pie). */
-  logoUrl?: string | null;
-  representanteLegal?: string | null;
-  textoPie?: string | null;
-  nombreFirmaEmpleador?: string | null;
-}
-
-export interface LiquidacionPreviewNomina {
-  periodo: string;
-  fechaPago?: string | null;
-}
-
-export interface LiquidacionPreviewTrabajadorMeta {
-  afp?: string | null;
-  salud?: string | null;
-  tipoContrato?: string | null;
-  cargo?: string | null;
-  sueldoBase?: number | null;
-  diasTrabajados?: number | null;
-}
-
-const BODY_CLASS_IMPRESION_LIQUIDACION = 'liq-preview-printing';
+export type LiquidacionPreviewEmpresa = LiquidacionDocumentoEmpresaVm;
+export type LiquidacionPreviewNomina = LiquidacionDocumentoNominaInput;
+export type LiquidacionPreviewTrabajadorMeta = LiquidacionDocumentoTrabajadorMetaInput;
+export type LiquidacionPreviewDetalle = LiquidacionDocumentoDetalleInput;
+export type LiquidacionPreviewCierre = LiquidacionDocumentoCierreInput;
 
 @Component({
   selector: 'app-liquidacion-preview-modal',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule, LiquidacionDocumentoSheetComponent],
   templateUrl: './liquidacion-preview-modal.component.html',
   styleUrl: './liquidacion-preview-modal.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -76,6 +53,10 @@ export class LiquidacionPreviewModalComponent implements OnDestroy {
   readonly empresa = input.required<LiquidacionPreviewEmpresa>();
   readonly nomina = input.required<LiquidacionPreviewNomina>();
   readonly trabajadorMeta = input<LiquidacionPreviewTrabajadorMeta | null>(null);
+  readonly detalle = input<LiquidacionPreviewDetalle | null>(null);
+  readonly cierre = input<LiquidacionPreviewCierre | null>(null);
+  readonly numeroDocumento = input<string | null>(null);
+  readonly fechaEmision = input<string | null>(null);
   /** `oficial` = liquidación materializada; `preliminar` = preview del generador. */
   readonly modoEmision = input<'preliminar' | 'oficial'>('preliminar');
 
@@ -91,22 +72,18 @@ export class LiquidacionPreviewModalComponent implements OnDestroy {
       : 'Vista previa del documento que se entregará al trabajador. Aún no es oficial; el PDF final se genera al cerrar la nómina.',
   );
 
-  readonly subtotalHaberesImponibles = computed(() =>
-    sumar(this.liquidacion().haberesImponibles.map((h) => h.monto)),
+  readonly vistaSheet = computed(() =>
+    buildLiquidacionDocumentoSheetFromCalculada({
+      liquidacion: this.liquidacion(),
+      empresa: this.empresa(),
+      nomina: this.nomina(),
+      trabajadorMeta: this.trabajadorMeta(),
+      detalle: this.detalle(),
+      cierre: this.cierre(),
+      numeroDocumento: this.numeroDocumento(),
+      fechaEmision: this.fechaEmision(),
+    }),
   );
-  readonly subtotalHaberesNoImponibles = computed(() =>
-    sumar(this.liquidacion().haberesNoImponibles.map((h) => h.monto)),
-  );
-  readonly subtotalDescuentosLegales = computed(() =>
-    sumar(this.liquidacion().descuentosLegales.map((d) => d.monto)),
-  );
-  readonly subtotalDescuentosVoluntarios = computed(() =>
-    sumar(this.liquidacion().descuentosVoluntarios.map((d) => d.monto)),
-  );
-
-  readonly liquidoEnPalabras = computed(() => liquidoEnPalabras(this.liquidacion().liquidoAPago));
-
-  readonly periodoHumano = computed(() => periodoHumano(this.nomina().periodo));
 
   @HostListener('document:keydown.escape', ['$event'])
   onEscape(event: Event): void {
@@ -116,12 +93,12 @@ export class LiquidacionPreviewModalComponent implements OnDestroy {
 
   @HostListener('window:beforeprint')
   onBeforePrint(): void {
-    document.body.classList.add(BODY_CLASS_IMPRESION_LIQUIDACION);
+    document.body.classList.add(ERP_DOC_SHEET_PRINTING_CLASS);
   }
 
   @HostListener('window:afterprint')
   onAfterPrint(): void {
-    document.body.classList.remove(BODY_CLASS_IMPRESION_LIQUIDACION);
+    document.body.classList.remove(ERP_DOC_SHEET_PRINTING_CLASS);
   }
 
   emitirCerrar(): void {
@@ -133,33 +110,6 @@ export class LiquidacionPreviewModalComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    document.body.classList.remove(BODY_CLASS_IMPRESION_LIQUIDACION);
+    document.body.classList.remove(ERP_DOC_SHEET_PRINTING_CLASS);
   }
-}
-
-function sumar(values: readonly number[]): number {
-  let total = 0;
-  for (const v of values) total += v ?? 0;
-  return total;
-}
-
-function periodoHumano(periodo: string): string {
-  const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(periodo);
-  if (!match) return periodo;
-  const [, anio, mes] = match;
-  const meses = [
-    'enero',
-    'febrero',
-    'marzo',
-    'abril',
-    'mayo',
-    'junio',
-    'julio',
-    'agosto',
-    'septiembre',
-    'octubre',
-    'noviembre',
-    'diciembre',
-  ];
-  return `${meses[Number(mes) - 1]} ${anio}`;
 }

@@ -6,6 +6,7 @@ import { injectSupabase } from '../../../core/services/supabase.service';
 import {
   parseEstadoRevisionMetadata,
   type LiquidacionAccionUiEstado,
+  type LiquidacionAccionUiTipo,
 } from '../rules/liquidaciones-acciones-ui.rules';
 import type {
   GenerarLiquidacionesParams,
@@ -58,12 +59,15 @@ export class LiquidacionesOficialesRepository {
   async actualizarEstadoRevisionTrabajador(
     idLiquidacionTrabajador: number,
     estadoRevision: string,
+    accion?: LiquidacionAccionUiTipo | null,
+    metadataFallback?: Record<string, unknown>,
   ): Promise<LiquidacionTrabajador> {
     const { data, error } = await this.supabase.rpc(
       'actualizar_estado_revision_liquidacion_trabajador',
       {
         p_id_liquidacion_trabajador: idLiquidacionTrabajador,
         p_estado_revision: estadoRevision,
+        p_accion: accion ?? undefined,
       },
     );
 
@@ -91,12 +95,13 @@ export class LiquidacionesOficialesRepository {
     const metadata = {
       ...parseRecord(actual.metadata),
       estadoRevision: estadoRevision,
+      ...(metadataFallback ?? {}),
     };
 
     const { data: actualizado, error: updateError } = await this.supabase
       .from('nomina_liquidacion_trabajador')
       .update({
-        metadata,
+        metadata: metadata as Json,
         estado_revision: estadoRevision,
       })
       .eq('id_liquidacion_trabajador', idLiquidacionTrabajador)

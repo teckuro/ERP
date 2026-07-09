@@ -14,7 +14,8 @@ import type {
   LiquidacionEmisionCanal,
   LiquidacionTrabajador,
 } from '../models/liquidacion-oficial.model';
-import type { LiquidacionAccionUiEstado } from '../rules/liquidaciones-acciones-ui.rules';
+import type { LiquidacionAccionUiEstado, LiquidacionAccionUiTipo } from '../rules/liquidaciones-acciones-ui.rules';
+import { buildMetadataRevisionDesdeAccion } from '../rules/liquidaciones-revision-auditoria.rules';
 import {
   clasificarAdvertenciasLiquidacion,
   determinarEstadoLiquidaciones,
@@ -96,8 +97,36 @@ export class LiquidacionesOficialesService {
   guardarEstadoRevisionTrabajador(
     idLiquidacionTrabajador: number,
     estadoRevision: LiquidacionAccionUiEstado,
+    accion: LiquidacionAccionUiTipo,
   ): Promise<LiquidacionTrabajador> {
-    return this.liquidaciones.actualizarEstadoRevisionTrabajador(idLiquidacionTrabajador, estadoRevision);
+    return this.guardarEstadoRevisionTrabajadorConAuditoria(
+      idLiquidacionTrabajador,
+      estadoRevision,
+      accion,
+    );
+  }
+
+  private async guardarEstadoRevisionTrabajadorConAuditoria(
+    idLiquidacionTrabajador: number,
+    estadoRevision: LiquidacionAccionUiEstado,
+    accion: LiquidacionAccionUiTipo,
+  ): Promise<LiquidacionTrabajador> {
+    const metadataFallback = await this.metadataRevisionFallback(accion);
+    return this.liquidaciones.actualizarEstadoRevisionTrabajador(
+      idLiquidacionTrabajador,
+      estadoRevision,
+      accion,
+      metadataFallback,
+    );
+  }
+
+  private async metadataRevisionFallback(
+    accion: LiquidacionAccionUiTipo,
+  ): Promise<Record<string, unknown> | undefined> {
+    const user = this.auth.currentUser() ?? (await this.auth.getSession())?.user ?? null;
+    const usuario = resolverUsuarioResponsableActual(user);
+    if (!usuarioResponsableDisponible(usuario) || !usuario.nombre.trim()) return undefined;
+    return buildMetadataRevisionDesdeAccion(accion, usuario);
   }
 
   async registrarEmisionLiquidacionTrabajador(

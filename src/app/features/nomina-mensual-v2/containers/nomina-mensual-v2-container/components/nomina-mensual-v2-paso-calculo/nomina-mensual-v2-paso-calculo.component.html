@@ -466,12 +466,16 @@
           periodo: nomina()?.periodo || liq.periodo,
           fechaPago: nomina()?.fechaPago || null,
         }"
-        [trabajadorMeta]="{
+        [trabajadorMeta]="previewExtras()?.trabajadorMeta ?? {
           afp: fila.afp,
           salud: fila.salud,
           tipoContrato: fila.tipoContrato,
           sueldoBase: fila.sueldoBase,
         }"
+        [detalle]="previewExtras()?.detalle ?? null"
+        [cierre]="previewExtras()?.cierre ?? null"
+        [numeroDocumento]="previewExtras()?.numeroDocumento ?? null"
+        [fechaEmision]="previewExtras()?.fechaEmision ?? null"
         (cerrar)="cerrarPreview()"
         (imprimirSolicitado)="imprimirPreview()"
       ></app-liquidacion-preview-modal>

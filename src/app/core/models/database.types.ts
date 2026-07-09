@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       afc_parametro: {
@@ -3428,6 +3453,60 @@ export type Database = {
           },
         ]
       }
+      nomina_liquidacion_revision_evento: {
+        Row: {
+          accion: string
+          estado_nuevo: string
+          estado_previo: string | null
+          id_liquidacion_periodo: number
+          id_liquidacion_revision_evento: number
+          id_liquidacion_trabajador: number
+          metadata: Json
+          registrado_en: string
+          usuario_id: string | null
+          usuario_label: string
+        }
+        Insert: {
+          accion: string
+          estado_nuevo: string
+          estado_previo?: string | null
+          id_liquidacion_periodo: number
+          id_liquidacion_revision_evento?: number
+          id_liquidacion_trabajador: number
+          metadata?: Json
+          registrado_en?: string
+          usuario_id?: string | null
+          usuario_label: string
+        }
+        Update: {
+          accion?: string
+          estado_nuevo?: string
+          estado_previo?: string | null
+          id_liquidacion_periodo?: number
+          id_liquidacion_revision_evento?: number
+          id_liquidacion_trabajador?: number
+          metadata?: Json
+          registrado_en?: string
+          usuario_id?: string | null
+          usuario_label?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_liquidacion_revision_even_id_liquidacion_trabajador_fkey"
+            columns: ["id_liquidacion_trabajador"]
+            isOneToOne: false
+            referencedRelation: "nomina_liquidacion_trabajador"
+            referencedColumns: ["id_liquidacion_trabajador"]
+          },
+          {
+            foreignKeyName: "nomina_liquidacion_revision_evento_id_liquidacion_periodo_fkey"
+            columns: ["id_liquidacion_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_liquidacion_periodo"
+            referencedColumns: ["id_liquidacion_periodo"]
+          },
+        ]
+      }
       nomina_liquidacion_trabajador: {
         Row: {
           base_imponible: number
@@ -4574,39 +4653,6 @@ export type Database = {
         }
         Relationships: []
       }
-      periodo_remuneracion: {
-        Row: {
-          anio: number
-          codigo: string
-          estado: string
-          fecha_creacion: string
-          fecha_fin: string
-          fecha_inicio: string
-          id_periodo: number
-          mes: number
-        }
-        Insert: {
-          anio: number
-          codigo: string
-          estado?: string
-          fecha_creacion?: string
-          fecha_fin: string
-          fecha_inicio: string
-          id_periodo?: number
-          mes: number
-        }
-        Update: {
-          anio?: number
-          codigo?: string
-          estado?: string
-          fecha_creacion?: string
-          fecha_fin?: string
-          fecha_inicio?: string
-          id_periodo?: number
-          mes?: number
-        }
-        Relationships: []
-      }
       perfil_acceso: {
         Row: {
           activo: boolean
@@ -4650,6 +4696,39 @@ export type Database = {
             referencedColumns: ["id_empresa"]
           },
         ]
+      }
+      periodo_remuneracion: {
+        Row: {
+          anio: number
+          codigo: string
+          estado: string
+          fecha_creacion: string
+          fecha_fin: string
+          fecha_inicio: string
+          id_periodo: number
+          mes: number
+        }
+        Insert: {
+          anio: number
+          codigo: string
+          estado?: string
+          fecha_creacion?: string
+          fecha_fin: string
+          fecha_inicio: string
+          id_periodo?: number
+          mes: number
+        }
+        Update: {
+          anio?: number
+          codigo?: string
+          estado?: string
+          fecha_creacion?: string
+          fecha_fin?: string
+          fecha_inicio?: string
+          id_periodo?: number
+          mes?: number
+        }
+        Relationships: []
       }
       persona: {
         Row: {
@@ -6341,7 +6420,11 @@ export type Database = {
         Returns: string
       }
       actualizar_estado_revision_liquidacion_trabajador: {
-        Args: { p_estado_revision: string; p_id_liquidacion_trabajador: number }
+        Args: {
+          p_accion?: string
+          p_estado_revision: string
+          p_id_liquidacion_trabajador: number
+        }
         Returns: {
           base_imponible: number
           base_tributable: number
@@ -6934,6 +7017,7 @@ export type Database = {
         Args: { p_permiso: string }
         Returns: boolean
       }
+      erp_usuario_sesion_label: { Args: never; Returns: string }
       fn_aplicar_politica_fds: {
         Args: { p_fecha: string; p_politica: string }
         Returns: string
@@ -7285,6 +7369,21 @@ export type Database = {
         }
         Returns: number
       }
+      guardar_nomina_calculo_snapshot_impl: {
+        Args: {
+          p_cabecera: Json
+          p_conceptos?: Json
+          p_id_empresa: number
+          p_id_nomina_periodo?: string
+          p_id_preparacion_nomina?: number
+          p_observaciones?: Json
+          p_parametros?: Json
+          p_periodo: string
+          p_trabajadores: Json
+          p_trazabilidad?: Json
+        }
+        Returns: number
+      }
       guardar_nomina_periodo_diagnostico: {
         Args: { p_fingerprint?: string; p_payload: Json; p_periodo: string }
         Returns: {
@@ -7617,6 +7716,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      nomina_calculo_periodo_tenant_ok: {
+        Args: { p_id_calculo_periodo: number }
+        Returns: boolean
+      }
+      nomina_calculo_trabajador_tenant_ok: {
+        Args: { p_id_calculo_trabajador: number }
+        Returns: boolean
+      }
       nomina_dotacion_ids_origen: {
         Args: { p_nomina_origen_id: string }
         Returns: number[]
@@ -7945,6 +8052,55 @@ export type Database = {
           ya_en_nomina: number
         }[]
       }
+      sec_apply_auth_only_policies: {
+        Args: { p_legacy_prefix: string; p_ops?: string[]; p_table: unknown }
+        Returns: undefined
+      }
+      sec_apply_contrato_tenant_policies: {
+        Args: { p_table: unknown }
+        Returns: undefined
+      }
+      sec_apply_id_empresa_tenant_policies: {
+        Args: { p_table: unknown }
+        Returns: undefined
+      }
+      sec_apply_persona_tenant_policies: {
+        Args: { p_table: unknown }
+        Returns: undefined
+      }
+      sec_assert_snapshot_empresa: {
+        Args: { p_id_empresa: number; p_id_nomina_periodo: string }
+        Returns: undefined
+      }
+      sec_contrato_tenant_ok: {
+        Args: { p_id_contrato: number }
+        Returns: boolean
+      }
+      sec_haberdescuento_persona_tenant_ok: {
+        Args: { p_id_contrato: number; p_id_persona: number }
+        Returns: boolean
+      }
+      sec_liquidacion_periodo_tenant_ok: {
+        Args: { p_id_liquidacion_periodo: number }
+        Returns: boolean
+      }
+      sec_movvar_escritura_ok: { Args: never; Returns: boolean }
+      sec_nomina_periodo_uuid_tenant_ok: {
+        Args: { p_id: string }
+        Returns: boolean
+      }
+      sec_permiso_modulo_escritura_ok: {
+        Args: { p_modulo: string }
+        Returns: boolean
+      }
+      sec_persona_tenant_ok: {
+        Args: { p_id_persona: number }
+        Returns: boolean
+      }
+      sec_preparacion_nomina_tenant_ok: {
+        Args: { p_id_preparacion_nomina: number }
+        Returns: boolean
+      }
       sincronizar_incidencias_nomina: {
         Args: { p_nomina_id: string }
         Returns: Json
@@ -8245,6 +8401,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       tipo_concepto_enum: ["HABER", "DESCUENTO", "APORTE_EMPLEADOR"],

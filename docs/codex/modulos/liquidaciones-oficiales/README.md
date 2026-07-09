@@ -89,6 +89,14 @@ reliquidacion
 - Franja `liq-version-diff` al cambiar versión (totales vs versión anterior)
 - Reglas y presenter reutilizando patrón F09 diff recálculo
 
+## LIQ-AUDIT-01 (2026-07-09)
+
+- Tabla append-only `nomina_liquidacion_revision_evento` con actor resuelto en servidor
+- RPC `actualizar_estado_revision_liquidacion_trabajador(id, estado, accion)` registra evento y metadata denormalizada (`autorizacion`, `pago`, `documentoEntrega`, `rectificacionSolicitada`, `autorizadoPor`)
+- Helper `erp_usuario_sesion_label()` para nombre completo en auditoría y emisión PDF
+- Frontend pasa `p_accion` desde liquidaciones oficiales y detalle; BD es fuente de verdad (localStorage solo respaldo offline)
+- Migración: `supabase/migrations/20260709120000_liq_revision_auditoria.sql`
+
 ## Estado vacío (2026-07-06)
 
 Pantalla sin comprobantes materializados usa acta contextual (`liquidaciones-vacio.rules.ts`):
@@ -168,7 +176,7 @@ La confirmacion fue reemplazada por modal/MsgBox estandar durante UX-COMERCIAL-0
 - Filtros DG: búsqueda por nombre/RUT/cargo y select por **Estado**.
 - Panel lateral: chip de estado, cuadratura de totales y placeholder accionable.
 - Generar/Regenerar: confirmación MessageBox con secciones de acta; evidencia de versión creada tras la acción.
-- Acciones por trabajador (autorizar → pago → documento → rectificación): transiciones operativas con persistencia en servidor (`actualizar_estado_revision_liquidacion_trabajador`) y respaldo local por sesión.
+- Acciones por trabajador (autorizar → pago → documento → rectificación): transiciones operativas con persistencia en servidor (`actualizar_estado_revision_liquidacion_trabajador` + `nomina_liquidacion_revision_evento`). localStorage queda como respaldo offline, no como fuente de verdad.
 
 ### Icon-first RRHH (2026-07-06)
 

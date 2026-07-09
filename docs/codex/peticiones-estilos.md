@@ -9,6 +9,69 @@
 
 ---
 
+## 2026-07-09 — PDF liquidación: cableado de datos reales + etiquetas RRHH
+
+- **Enriquecimiento:** UF/UTM del período, días base/ausencias, folio `S-####-AA`, emisión, anticipos/préstamos, centro de costo, AFP/tasa/salud/mutual/CCAF/email desde metadata y conceptos.
+- **Entry points:** liquidaciones oficiales, detalle liquidación y nómina V2 pasan `detalle`, `cierre`, `numeroDocumento` y `fechaEmision` al modal.
+- **Etiquetas:** Previsión (AFP), Salud, Seguro de cesantía, Gratificación legal; UTM/UF del período; Caja de compensación; Unidad de negocio.
+- **Archivos:** `liquidacion-documento-sheet-enriquecimiento.rules.ts`, mappers, modal, contenedores.
+
+---
+
+## 2026-07-09 — PDF liquidación: pulido empresarial (sin cambiar estructura Gael)
+
+- **Solo CSS local:** bordes slate (`#cbd5e1` / `#94a3b8`), cabeceras `#475569`, tipografía más legible, tabular nums en montos, separadores suaves, caja líquido y firmas refinadas.
+- **Sin cambios** de zonas, HTML base ni datos.
+
+---
+
+## 2026-07-09 — PDF liquidación: paridad layout Gael (100%)
+
+- **Estructura única Detalle:** filas administrativas (días, UTM, UF, cargas) + instituciones (AFP, salud, APV, mutual, CCAF) y grilla Haberes | Descuentos dentro del mismo panel.
+- **Inferior:** Bonificaciones/Descuentos + Pagos a la izquierda; caja Total remuneración / Anticipos / Préstamos / Otros / Líquido a pago a la derecha.
+- **Pie:** emisión, firmas 3 columnas (empleador, trabajador “Recibí conforme”, legal/clasificación), copyright.
+- **Título:** Remuneración / Liquidación de sueldo; período `PERIODO: MMM-AA`.
+- **Archivos:** `documento-liquidacion-sheet.*`, mapper y reglas de presentación.
+
+---
+
+## 2026-07-09 — PDF liquidación: layout comprobante Gael (referencia mercado CL)
+
+- **Estructura:** encabezado empleador + folio/período, título centrado, ficha trabajador con borde, panel **Detalle** (días, UTM/UF/cargas, AFP, salud, mutual), columnas **Haberes | Descuentos** con cabeceras grises, caja **Líquido a pago** y firmas con “Recibí conforme”.
+- **Datos opcionales:** folio, UTM/UF, cargas, tasa AFP, mutual, email; % en descuentos desde conceptos oficiales con `tasa`.
+- **Archivos:** `documento-liquidacion-sheet.*`, `liquidaciones-preview.mapper.ts`.
+
+---
+
+## 2026-07-09 — PDF liquidación: layout comprobante 5 zonas (Fase A)
+
+- **Encabezado dual:** empleador + título/período/fecha pago en una sola franja (`erp-doc-sheet__masthead`).
+- **Ficha trabajador:** grid 4 columnas compacto (nombre, RUT, cargo, ingreso, AFP, salud, contrato, días).
+- **Resumen:** franja horizontal con bases y totales; aportes empleador en una línea informativa.
+- **Modal:** hoja en modo `compact`; liquidaciones oficiales pasan metadata completa del trabajador.
+- **Archivos:** `documento-liquidacion-sheet.*`, `liquidaciones-preview.mapper.ts`, `liquidaciones-oficiales-container.*`, `detalle-liquidacion.page.ts`.
+
+---
+
+## 2026-07-09 — PDF liquidación: ocultar ceros y compactar espacio
+
+- **Reglas de presentación:** `liquidacion-documento-sheet.presentacion.rules.ts` filtra líneas en $0, oculta subtotales redundantes y secciones vacías (aportes, bases).
+- **Hoja compartida:** franja secundaria unificada (bases + aportes en una fila), padding/gap reducidos, cuerpo a una columna si falta haberes o descuentos.
+- **Liquidaciones oficiales:** mapper recupera SIS/SANNA/Mutual desde conceptos `aporte_referencia` materializados.
+- **Archivos:** `shared/components/documento-liquidacion-sheet/**`, `liquidaciones-preview.mapper.ts`, `liquidacion-preview-modal.component.spec.ts`.
+
+---
+
+## 2026-07-09 — PDF liquidación unificado (editor Administración)
+
+- **Hoja compartida:** `app-liquidacion-documento-sheet` en `shared/components/documento-liquidacion-sheet/` con la maqueta formal del editor (`erp-doc-sheet`: dos columnas haberes/descuentos, bordes neutros, sin títulos azules).
+- **Conexión:** `liquidacion-preview-modal` (nómina V2, liquidaciones oficiales, detalle) y `admin-documento-preview-sheet` usan la misma hoja; el editor sigue mostrando datos de ejemplo con encabezado/pie reales.
+- **Modal:** área de scroll tipo papel (`#eef2f6` + sombra suave) alineada al split del tab Documento.
+- **Impresión:** clase única `erp-doc-sheet-printing` para todo el proyecto.
+- **Archivos:** `shared/components/documento-liquidacion-sheet/**`, `liquidacion-preview-modal.*`, `admin-documento-preview-sheet.component.ts`, `administracion-container.css`.
+
+---
+
 ## 2026-07-08 — Grillas fullscreen: patrón Conceptos en listados
 
 - **Loading:** skeleton en `app-data-grid` desde el primer paint; eliminado `workspace-loading` duplicado en Licencias, Empresas y Movimientos variables.
@@ -4015,3 +4078,25 @@ Cambios aplicados tras la auditoría `docs/codex/modulos/parametros/auditoria-ta
 - **Parámetros**: sin código `YYYY-MM` en referencia; sin mención «NOIA» al usuario; «Siguiente:» en lugar de «Acción recomendada:»; banda derecha en flex (menos solape Dat/Refe/Acci).
 - **Archivos**: `header.component.ts`, `parametros-workspace-periodo-banda.*`, `parametros-workspace.orquestador.ts`.
 - **Sin tocar**: estilos globales, SQL, motor.
+
+## 2026-07-09 - Comprobante liquidación oficial: enriquecimiento de campos faltantes
+
+- **Pedido**: completar campos del PDF/comprobante en liquidaciones oficiales que quedaban en `—` pese al layout Gael cableado.
+- **Causa**: el RPC `generar_liquidaciones_oficiales` solo materializa montos y metadata mínima; cargo, AFP, salud, cargas, mutual/CCAF y días no vienen en `nomina_liquidacion_trabajador`.
+- **Solución local**: al abrir preview en liquidaciones oficiales y detalle liquidación, cargar en paralelo ficha empleado (`EmpleadosService.obtenerPorId`), config cliente y catálogos del período; fusionar en `liquidacion-documento-sheet-enriquecimiento.rules.ts` (`mergeTrabajadorMeta`, `mapTrabajadorMetaDesdeFichaEmpleado`, `mapInstitucionesEmpresaDesdeParametros`, `mapDiasTrabajadosDesdeFicha`, `inferirInstitucionesDesdeConceptos`).
+- **Archivos**: `liquidacion-documento-sheet-enriquecimiento.rules.ts/spec.ts`, `liquidaciones-preview.mapper.ts/spec.ts`, `liquidaciones-oficiales-container.ts`, `detalle-liquidacion.page.ts`.
+- **Sin tocar**: RPC/SQL, motor, estilos globales, nómina V2.
+
+## 2026-07-09 - Comprobante liquidación: campo Autorizado con nombre de quien autorizó
+
+- **Pedido**: en «Autorizado» del comprobante debe ir el nombre completo de la persona que autorizó la liquidación.
+- **Solución local**: al acción «Autorizar» en liquidaciones oficiales, persistir `autorizadoPor` y bloque `autorizacion` en metadata del trabajador (nombre desde sesión/`resolverUsuarioResponsableActual`); el comprobante lee ese dato y ya no usa la firma del empleador como fallback. La firma del empleador queda en `valorFirmaEmpleador` (parámetros empresa).
+- **Archivos**: `liquidacion-documento-sheet-enriquecimiento.rules.ts/spec.ts`, `liquidacion-documento-sheet.presentacion.rules.ts/spec.ts`, `liquidacion-documento-sheet.component.html`, `liquidacion-documento-sheet.model.ts`, `liquidaciones-oficiales.repository.ts/spec.ts`, `liquidaciones-oficiales.service.ts`, `liquidaciones-oficiales-container.ts`.
+- **Sin tocar**: RPC/SQL, motor, estilos globales.
+
+## 2026-07-09 - LIQ-AUDIT-01: auditoría RRHH liquidaciones en BD
+
+- **Pedido**: persistir en BD quién autorizó, registró pago, marcó entrega y solicitó rectificación por trabajador.
+- **Solución**: migración `20260709120000_liq_revision_auditoria.sql` (tabla eventos + RPC con `p_accion` + `erp_usuario_sesion_label`); service/repository/containers pasan tipo de acción; metadata denormalizada para comprobante.
+- **Archivos**: migración SQL, `liquidaciones-oficiales.repository.ts`, `liquidaciones-oficiales.service.ts`, `liquidaciones-revision-auditoria.rules.ts`, containers, `detalle-liquidacion.page.ts`, `liquidacion-documento-sheet-enriquecimiento.rules.ts`, `database.types.ts`, docs módulo/orquestador.
+- **Sin tocar**: motor, estilos globales, generación de liquidaciones del período.

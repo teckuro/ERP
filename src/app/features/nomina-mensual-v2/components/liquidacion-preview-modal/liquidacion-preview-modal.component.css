@@ -127,324 +127,26 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Hoja (documento)                                                            */
+/* Área de hoja (mismo patrón que el editor de Administración)                */
 /* -------------------------------------------------------------------------- */
 
-.liq-preview__sheet {
-  background: #ffffff;
-  margin: 0 16px 16px;
-  padding: 28px 36px;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  font-size: 13px;
-  color: #0f172a;
-  line-height: 1.45;
+.liq-preview__scroll {
   flex: 1 1 auto;
   min-height: 0;
-  overflow-x: hidden;
   overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-}
-
-.liq-preview__doc-head {
+  padding: 20px 16px 24px;
   display: flex;
+  justify-content: center;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 32px;
-  flex-wrap: wrap;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e2e8f0;
+  background: #eef2f6;
 }
 
-.liq-preview__doc-logo {
-  max-height: 48px;
-  max-width: 160px;
-  object-fit: contain;
-  align-self: flex-start;
-}
-
-.liq-preview__doc-empresa-label,
-.liq-preview__doc-periodo-label {
-  margin: 0;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #64748b;
-  font-weight: 700;
-}
-
-.liq-preview__doc-empresa-nombre {
-  margin: 2px 0 4px;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.liq-preview__doc-empresa-meta {
-  margin: 0;
-  font-size: 12px;
-  color: #475569;
-}
-
-.liq-preview__doc-periodo {
-  text-align: right;
-}
-
-.liq-preview__doc-periodo-valor {
-  margin: 2px 0 4px;
-  font-size: 15px;
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-/* Identificación trabajador en dos columnas (responsive) */
-.liq-preview__doc-trabajador {
-  padding: 12px 0 16px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.liq-preview__doc-trabajador-dl {
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 10px 24px;
-}
-
-.liq-preview__doc-trabajador-dl > div {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.liq-preview__doc-trabajador-dl dt {
-  margin: 0;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #64748b;
-  font-weight: 700;
-}
-
-.liq-preview__doc-trabajador-dl dd {
-  margin: 0;
-  font-size: 13px;
-  color: #0f172a;
-}
-
-/* Bloques (haberes, descuentos, bases, aportes) */
-.liq-preview__doc-bloque {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 8px 0;
-}
-
-.liq-preview__doc-bloque-title {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #2563eb;
-}
-
-.liq-preview__doc-bloque-nota {
-  margin: -4px 0 0;
-  font-size: 11px;
-  color: #64748b;
-  font-style: italic;
-}
-
-.liq-preview__doc-tabla {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12.5px;
-}
-
-.liq-preview__doc-tabla caption {
-  text-align: left;
-  caption-side: top;
-  font-size: 11px;
-  font-weight: 700;
-  color: #475569;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  padding: 4px 0 6px;
-}
-
-.liq-preview__doc-tabla tr {
-  border-bottom: 1px dashed #e2e8f0;
-}
-
-.liq-preview__doc-tabla tr:last-child {
-  border-bottom: none;
-}
-
-.liq-preview__doc-tabla th[scope='row'] {
-  text-align: left;
-  font-weight: 500;
-  color: #0f172a;
-  padding: 5px 0;
-}
-
-.liq-preview__doc-tabla td {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  padding: 5px 0;
-  color: #0f172a;
-}
-
-.liq-preview__doc-tabla-subtotal th[scope='row'] {
-  font-weight: 600;
-  color: #334155;
-}
-
-.liq-preview__doc-tabla-subtotal td {
-  font-weight: 600;
-}
-
-.liq-preview__doc-total-bloque {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin: 4px 0 0;
-  padding-top: 8px;
-  border-top: 1px solid #cbd5e1;
-  font-size: 13px;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.liq-preview__doc-total-bloque strong {
-  font-variant-numeric: tabular-nums;
-  font-size: 14px;
-}
-
-/* Bases y aportes en grid 3 columnas */
-.liq-preview__doc-bases {
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 8px 20px;
-}
-
-.liq-preview__doc-bases > div {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.liq-preview__doc-bases dt {
-  margin: 0;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: #64748b;
-  font-weight: 600;
-}
-
-.liq-preview__doc-bases dd {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: #0f172a;
-}
-
-.liq-preview__doc-bloque--bases,
-.liq-preview__doc-bloque--informativo {
-  background: #f8fafc;
-  padding: 14px;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-}
-
-/* Footer del documento: líquido + firmas */
-.liq-preview__doc-footer {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 32px;
-  flex-wrap: wrap;
-  padding-top: 16px;
-  border-top: 1px solid #cbd5e1;
-}
-
-.liq-preview__doc-liquido {
-  flex: 1 1 280px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.liq-preview__doc-liquido-label {
-  margin: 0;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #64748b;
-  font-weight: 700;
-}
-
-.liq-preview__doc-liquido-monto {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 700;
-  color: #0f172a;
-  font-variant-numeric: tabular-nums;
-}
-
-.liq-preview__doc-liquido-palabras {
-  margin: 0;
-  font-size: 12px;
-  color: #475569;
-  text-transform: capitalize;
-  font-style: italic;
-}
-
-.liq-preview__doc-firmas {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.liq-preview__doc-firma {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  min-width: 160px;
-}
-
-.liq-preview__doc-firma-linea {
-  display: block;
-  width: 160px;
-  height: 1px;
-  background: #94a3b8;
-}
-
-.liq-preview__doc-firma-label {
-  font-size: 11px;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.liq-preview__doc-firma-nombre {
-  font-size: 11px;
-  color: #334155;
-}
-
-.liq-preview__doc-pie {
-  flex: 1 1 100%;
-  margin: 8px 0 0;
-  font-size: 11px;
-  color: #64748b;
-  line-height: 1.5;
+.liq-preview__scroll .erp-doc-sheet {
+  flex: 0 1 auto;
+  min-height: 0;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 4px 16px rgba(15, 23, 42, 0.08);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -452,30 +154,8 @@
 /* -------------------------------------------------------------------------- */
 
 @media print {
-  @page {
-    margin: 12mm;
-  }
-
-  html,
-  body.liq-preview-printing {
-    margin: 0 !important;
-    padding: 0 !important;
-    height: auto !important;
-    overflow: visible !important;
-    background: #ffffff !important;
-  }
-
-  body.liq-preview-printing * {
-    visibility: hidden;
-  }
-
-  body.liq-preview-printing .liq-preview__sheet,
-  body.liq-preview-printing .liq-preview__sheet * {
-    visibility: visible;
-  }
-
-  body.liq-preview-printing .liq-preview__backdrop,
-  body.liq-preview-printing .liq-preview__modal {
+  body.erp-doc-sheet-printing .liq-preview__backdrop,
+  body.erp-doc-sheet-printing .liq-preview__modal {
     position: static !important;
     display: block !important;
     background: transparent !important;
@@ -489,22 +169,16 @@
     visibility: visible;
   }
 
-  body.liq-preview-printing .liq-preview__chrome {
-    display: none !important;
+  body.erp-doc-sheet-printing .liq-preview__chrome,
+  body.erp-doc-sheet-printing .liq-preview__scroll {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
   }
 
-  body.liq-preview-printing .liq-preview__sheet {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    max-width: none;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    overflow: visible !important;
-    background: #ffffff !important;
+  body.erp-doc-sheet-printing .liq-preview__chrome {
+    display: none !important;
   }
 }

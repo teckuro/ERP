@@ -1,8 +1,29 @@
+import type { EmpleadoFichaDetalle } from '../../empleados/models/empleado-listado.model';
+import type {
+  ParametrosGeneralesCatalogos,
+  ParametrosGeneralesClienteConfig,
+} from '../../parametros-generales/models/parametro-general.model';
 import type {
   LiquidacionCalculada,
   LineaLiquidacionCalculada,
 } from '../../nomina-mensual/models/proceso-mensual.model';
-import type { LiquidacionConcepto, LiquidacionTrabajador } from '../models/liquidacion-oficial.model';
+import type {
+  LiquidacionConcepto,
+  LiquidacionEmision,
+  LiquidacionTrabajador,
+} from '../models/liquidacion-oficial.model';
+import type {
+  LiquidacionDocumentoCierreInput,
+  LiquidacionDocumentoDetalleInput,
+  LiquidacionDocumentoTrabajadorMetaInput,
+} from '../../../shared/components/documento-liquidacion-sheet/liquidacion-documento-sheet.mapper';
+import type { LiquidacionDocumentoEmpresaVm } from '../../../shared/components/documento-liquidacion-sheet/liquidacion-documento-sheet.model';
+import {
+  enriquecerDocumentoDesdeLiquidacionOficial,
+  mapTrabajadorMetaEnriquecida,
+  normalizarEtiquetaConceptoDocumento,
+  type ParametrosPeriodoDocumentoInput,
+} from '../../../shared/components/documento-liquidacion-sheet/liquidacion-documento-sheet-enriquecimiento.rules';
 
 export interface MapLiquidacionPreviewOficialInput {
   trabajador: LiquidacionTrabajador;
@@ -11,9 +32,13 @@ export interface MapLiquidacionPreviewOficialInput {
 }
 
 function lineaDesdeConcepto(concepto: LiquidacionConcepto): LineaLiquidacionCalculada {
+  let descripcion = normalizarEtiquetaConceptoDocumento(concepto.nombre);
+  if (concepto.tasa != null && concepto.tasa > 0) {
+    descripcion += ` (${concepto.tasa.toLocaleString('es-CL', { maximumFractionDigits: 2 })}%)`;
+  }
   return {
     codigo: concepto.codigo ?? concepto.codigoLre ?? 'CONCEPTO',
-    descripcion: concepto.nombre,
+    descripcion,
     monto: concepto.monto,
     origen: 'liquidacion_oficial',
     imponible: concepto.clasificacion?.includes('imponible') ?? undefined,
@@ -28,12 +53,72 @@ function esAporteReferenciaEmpleador(concepto: LiquidacionConcepto): boolean {
 function esDescuentoLegal(concepto: LiquidacionConcepto): boolean {
   if (concepto.tipo === 'impuesto') return true;
   const texto = `${concepto.codigo ?? ''} ${concepto.codigoLre ?? ''} ${concepto.nombre}`.toLowerCase();
-  return /afp|salud|fonasa|isapre|afc|cesant|impuesto|sanna|ley\s*16|sis\b/.test(texto);
+  return /afp|salud|fonasa|isapre|afc|cesant|impuesto|sanna|ley\s*16|sis\b|previsi/.test(texto);
 }
 
 function numeroMetadata(metadata: Record<string, unknown>, clave: string): number {
   const raw = metadata[clave];
   return typeof raw === 'number' && Number.isFinite(raw) ? raw : 0;
+}
+
+function textoConcepto(concepto: LiquidacionConcepto): string {
+  return `${concepto.codigo ?? ''} ${concepto.codigoLre ?? ''} ${concepto.nombre}`.toLowerCase();
+}
+
+function clasificarAporteEmpleador(concepto: LiquidacionConcepto): 'sis' | 'sanna' | 'mutual' | null {
+  const texto = textoConcepto(concepto);
+  if (/\bsis\b/.test(texto)) return 'sis';
+  if (/sanna/.test(texto)) return 'sanna';
+  if (/ley\s*16|mutual/.test(texto)) return 'mutual';
+  return null;
+}
+
+function acumularAportesEmpleador(conceptos: readonly LiquidacionConcepto[]): {
+  cotizacionSis: number;
+  cotizacionSanna: number;
+  cotizacionLey16744: number;
+} {
+  let cotizacionSis = 0;
+  let cotizacionSanna = 0;
+  let cotizacionLey16744 = 0;
+
+  for (const concepto of conceptos) {
+    if (!esAporteReferenciaEmpleador(concepto) || concepto.monto === 0) continue;
+    const tipo = clasificarAporteEmpleador(concepto);
+    if (tipo === 'sis') cotizacionSis += concepto.monto;
+    else if (tipo === 'sanna') cotizacionSanna += concepto.monto;
+    else if (tipo === 'mutual') cotizacionLey16744 += concepto.monto;
+  }
+
+  return { cotizacionSis, cotizacionSanna, cotizacionLey16744 };
+}
+
+/** Metadatos del trabajador para la hoja compartida (liquidaciones oficiales). */
+export function mapTrabajadorMetaDesdeLiquidacionOficial(
+  trabajador: LiquidacionTrabajador,
+  conceptos: readonly LiquidacionConcepto[] = [],
+): LiquidacionDocumentoTrabajadorMetaInput {
+  return mapTrabajadorMetaEnriquecida(trabajador, conceptos);
+}
+
+export function mapDocumentoExtrasDesdeLiquidacionOficial(input: {
+  trabajador: LiquidacionTrabajador;
+  conceptos: readonly LiquidacionConcepto[];
+  periodo: string;
+  empresa?: LiquidacionDocumentoEmpresaVm | null;
+  parametros?: ParametrosPeriodoDocumentoInput | null;
+  emision?: LiquidacionEmision | null;
+  ficha?: EmpleadoFichaDetalle | null;
+  configCliente?: ParametrosGeneralesClienteConfig | null;
+  catalogos?: ParametrosGeneralesCatalogos | null;
+}): {
+  trabajadorMeta: LiquidacionDocumentoTrabajadorMetaInput;
+  detalle: LiquidacionDocumentoDetalleInput;
+  cierre: LiquidacionDocumentoCierreInput;
+  numeroDocumento: string;
+  fechaEmision: string | null;
+} {
+  return enriquecerDocumentoDesdeLiquidacionOficial(input);
 }
 
 export function mapLiquidacionOficialAPreview(
@@ -64,6 +149,7 @@ export function mapLiquidacionOficialAPreview(
   }
 
   const meta = trabajador.metadata ?? {};
+  const aportes = acumularAportesEmpleador(conceptos);
 
   return {
     periodo,
@@ -81,9 +167,9 @@ export function mapLiquidacionOficialAPreview(
     cotizacionAfp: numeroMetadata(meta, 'cotizacionAfp'),
     cotizacionSalud: numeroMetadata(meta, 'cotizacionSalud'),
     cotizacionAfc: numeroMetadata(meta, 'cotizacionAfc'),
-    cotizacionSis: 0,
-    cotizacionSanna: 0,
-    cotizacionLey16744: 0,
+    cotizacionSis: aportes.cotizacionSis,
+    cotizacionSanna: aportes.cotizacionSanna,
+    cotizacionLey16744: aportes.cotizacionLey16744,
     impuestoUnico: descuentosLegales
       .filter((d) => /impuesto/i.test(d.descripcion))
       .reduce((sum, d) => sum + d.monto, 0),

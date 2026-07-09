@@ -1,3 +1,11 @@
+# Estado de fases — registro LIQ (liquidaciones oficiales)
+
+| Fase | Estado | Entregable |
+|------|--------|------------|
+| LIQ-AUDIT-01 | Cerrada | `supabase/migrations/20260709120000_liq_revision_auditoria.sql` + cableado frontend auditoría RRHH por trabajador (aplicada BD 2026-07-09) |
+
+Documentación del módulo: [`docs/codex/modulos/liquidaciones-oficiales/README.md`](../modulos/liquidaciones-oficiales/README.md).
+
 # Estado de fases — registro LM (licencias médicas)
 
 > Stub local del orquestador para la integración Licencias médicas por correo (2026-07-08).

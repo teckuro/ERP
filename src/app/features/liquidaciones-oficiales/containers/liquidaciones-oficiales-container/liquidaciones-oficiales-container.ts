@@ -121,7 +121,14 @@ import { LiquidacionPreviewModalComponent } from '../../../nomina-mensual-v2/com
 
 import type { LiquidacionCalculada } from '../../../nomina-mensual/models/proceso-mensual.model';
 
-import { mapLiquidacionOficialAPreview } from '../../rules/liquidaciones-preview.mapper';
+import { mapLiquidacionOficialAPreview, mapDocumentoExtrasDesdeLiquidacionOficial } from '../../rules/liquidaciones-preview.mapper';
+import type {
+  LiquidacionDocumentoCierreInput,
+  LiquidacionDocumentoDetalleInput,
+  LiquidacionDocumentoTrabajadorMetaInput,
+} from '../../../../shared/components/documento-liquidacion-sheet';
+import { ParametrosGeneralesService } from '../../../parametros-generales/services/parametros-generales.service';
+import { EmpleadosService } from '../../../empleados/services/empleados.service';
 
 import { diffVersionLiquidacionConAnterior } from '../../rules/liquidaciones-version-diff.rules';
 
@@ -219,6 +226,10 @@ export class LiquidacionesOficialesContainer {
   private readonly service = inject(LiquidacionesOficialesService);
 
   private readonly documentoLiquidacion = inject(DocumentoLiquidacionService);
+
+  private readonly parametrosGenerales = inject(ParametrosGeneralesService);
+
+  private readonly empleadosService = inject(EmpleadosService);
 
   private readonly nominaService = inject(NominaPeriodoService);
 
@@ -501,6 +512,14 @@ export class LiquidacionesOficialesContainer {
   readonly empresaDocumento = signal<DocumentoLiquidacionEmpresa | null>(null);
 
   readonly previewPdfCargando = signal(false);
+
+  readonly previewPdfExtras = signal<{
+    trabajadorMeta: LiquidacionDocumentoTrabajadorMetaInput;
+    detalle: LiquidacionDocumentoDetalleInput;
+    cierre: LiquidacionDocumentoCierreInput;
+    numeroDocumento: string;
+    fechaEmision: string | null;
+  } | null>(null);
 
   readonly evidenciaRegeneracion = signal<string | null>(null);
 
@@ -1211,7 +1230,12 @@ export class LiquidacionesOficialesContainer {
       tono: this.tonoFeedbackAccionTrabajador(estadoSiguiente),
     });
 
-    void this.service.guardarEstadoRevisionTrabajador(event.idLiquidacionTrabajador, estadoSiguiente)
+    void this.service.guardarEstadoRevisionTrabajador(
+      event.idLiquidacionTrabajador,
+      estadoSiguiente,
+      event.tipo,
+    )
+      .then((actualizado) => this.actualizarTrabajadorEnMemoria(actualizado))
       .catch(() => {
         this.feedbackAccionTrabajador.set({
           mensaje: 'Estado guardado en esta sesión. No se pudo sincronizar con el servidor.',
@@ -1221,6 +1245,24 @@ export class LiquidacionesOficialesContainer {
   }
 
 
+
+  private actualizarTrabajadorEnMemoria(actualizado: LiquidacionTrabajador): void {
+    this.trabajadoresLiquidacion.update((lista) =>
+      lista.map((item) =>
+        item.idLiquidacionTrabajador === actualizado.idLiquidacionTrabajador ? actualizado : item,
+      ),
+    );
+
+    const preview = this.previewPdfTrabajador();
+    if (preview?.idLiquidacionTrabajador === actualizado.idLiquidacionTrabajador) {
+      this.previewPdfTrabajador.set(actualizado);
+    }
+
+    const seleccionado = this.trabajadorSeleccionado();
+    if (seleccionado?.idLiquidacionTrabajador === actualizado.idLiquidacionTrabajador) {
+      this.trabajadorSeleccionado.set(actualizado);
+    }
+  }
 
   private mensajeAccionTrabajador(estado: LiquidacionAccionUiEstado): string {
 
@@ -1339,6 +1381,7 @@ export class LiquidacionesOficialesContainer {
 
     this.previewPdfTrabajador.set(trabajador);
     this.previewPdfLiquidacion.set(null);
+    this.previewPdfExtras.set(null);
     this.previewPdfCargando.set(true);
     this.error.set(null);
     void this.cargarEmpresaDocumento();
@@ -1356,13 +1399,39 @@ export class LiquidacionesOficialesContainer {
         this.previewPdfTrabajador.set(null);
         return;
       }
+
+      const [parametros, emision, ficha, configCliente, catalogos] = await Promise.all([
+        this.parametrosGenerales.obtenerUltimoHastaPeriodo(periodo).catch(() => null),
+        this.service.obtenerUltimaEmisionTrabajador(trabajador.idLiquidacionTrabajador).catch(() => null),
+        trabajador.idPersona
+          ? this.empleadosService.obtenerPorId(trabajador.idPersona).catch(() => null)
+          : Promise.resolve(null),
+        this.parametrosGenerales.obtenerUltimaClienteConfigHastaPeriodo(periodo).catch(() => null),
+        this.parametrosGenerales.listarCatalogos(periodo).catch(() => null),
+      ]);
+      await this.cargarEmpresaDocumento();
+
       this.previewPdfLiquidacion.set(
         mapLiquidacionOficialAPreview({ trabajador, conceptos, periodo }),
+      );
+      this.previewPdfExtras.set(
+        mapDocumentoExtrasDesdeLiquidacionOficial({
+          trabajador,
+          conceptos,
+          periodo,
+          empresa: this.empresaDocumento(),
+          parametros: parametros ? { uf: parametros.uf, utm: parametros.utm } : null,
+          emision,
+          ficha,
+          configCliente,
+          catalogos,
+        }),
       );
       void this.registrarEmisionSegura(trabajador.idLiquidacionTrabajador, 'vista_oficial');
     } catch {
       this.error.set('No se pudo preparar la liquidación para imprimir.');
       this.previewPdfTrabajador.set(null);
+      this.previewPdfExtras.set(null);
     } finally {
       this.previewPdfCargando.set(false);
     }
@@ -1371,6 +1440,7 @@ export class LiquidacionesOficialesContainer {
   cerrarPreviewPdf(): void {
     this.previewPdfTrabajador.set(null);
     this.previewPdfLiquidacion.set(null);
+    this.previewPdfExtras.set(null);
   }
 
   private async cargarEmpresaDocumento(): Promise<void> {

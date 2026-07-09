@@ -38,6 +38,13 @@ import {
   DocumentoLiquidacionService,
   type DocumentoLiquidacionEmpresa,
 } from '../../../../../../core/services/documento-liquidacion.service';
+import { ParametrosGeneralesService } from '../../../../../parametros-generales/services/parametros-generales.service';
+import {
+  enriquecerDocumentoDesdeCalculo,
+  type LiquidacionDocumentoCierreInput,
+  type LiquidacionDocumentoDetalleInput,
+  type LiquidacionDocumentoTrabajadorMetaInput,
+} from '../../../../../../shared/components/documento-liquidacion-sheet';
 import { UsuarioPreferenciaUiService } from '../../../../../../core/services/usuario-preferencia-ui.service';
 import {
   DataGridCellDirective,
@@ -102,6 +109,7 @@ const RESUMEN_CALCULO_VACIO: ResumenCalculoNomina = {
 export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   private readonly calculoAdapter = inject(NominaPeriodoCalculoAdapterService);
   private readonly documentoLiquidacion = inject(DocumentoLiquidacionService);
+  private readonly parametrosGenerales = inject(ParametrosGeneralesService);
   private readonly servicio = inject(NominaPeriodoService);
   private readonly preferenciaUi = inject(UsuarioPreferenciaUiService);
   private readonly orquestador = inject(NominaMensualV2OrquestadorPort);
@@ -131,6 +139,13 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   readonly liquidacionPreviewCargada = signal<LiquidacionCalculada | null>(null);
   readonly previewCargando = signal(false);
   readonly empresaDocumento = signal<DocumentoLiquidacionEmpresa | null>(null);
+  readonly previewExtras = signal<{
+    trabajadorMeta: LiquidacionDocumentoTrabajadorMetaInput;
+    detalle: LiquidacionDocumentoDetalleInput;
+    cierre: LiquidacionDocumentoCierreInput;
+    numeroDocumento: string;
+    fechaEmision: string | null;
+  } | null>(null);
 
   readonly hintExpandVisible = signal(false);
   readonly detalleCargando = signal<Set<string>>(new Set());
@@ -476,8 +491,12 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   async abrirPreview(fila: FilaCalculoTrabajador): Promise<void> {
     this.filaPreviewAbierta.set(fila.trabajadorId);
     this.liquidacionPreviewCargada.set(fila.origen ?? null);
+    this.previewExtras.set(null);
     void this.cargarEmpresaDocumento();
-    if (fila.origen) return;
+    if (fila.origen) {
+      await this.armarPreviewExtras(fila, fila.origen);
+      return;
+    }
 
     const periodo = this.nomina()?.periodo;
     if (!fila.idCalculoTrabajador || !periodo) return;
@@ -505,6 +524,15 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
             };
           }),
         );
+        await this.armarPreviewExtras(
+          {
+            ...fila,
+            afp: inferirAfp(detalle.liquidacion) ?? fila.afp,
+            salud: inferirSalud(detalle.liquidacion) ?? fila.salud,
+            sueldoBase: detalle.trabajador.sueldoBase ?? fila.sueldoBase,
+          },
+          detalle.liquidacion,
+        );
       }
     } finally {
       this.previewCargando.set(false);
@@ -514,6 +542,33 @@ export class NominaMensualV2PasoCalculoComponent implements PasoNominaPort {
   cerrarPreview(): void {
     this.filaPreviewAbierta.set(null);
     this.liquidacionPreviewCargada.set(null);
+    this.previewExtras.set(null);
+  }
+
+  private async armarPreviewExtras(
+    fila: FilaCalculoTrabajador,
+    liquidacion: LiquidacionCalculada,
+  ): Promise<void> {
+    const periodo = this.nomina()?.periodo || liquidacion.periodo;
+    await this.cargarEmpresaDocumento();
+    const parametros = await this.parametrosGenerales
+      .obtenerUltimoHastaPeriodo(periodo)
+      .catch(() => null);
+    this.previewExtras.set(
+      enriquecerDocumentoDesdeCalculo({
+        liquidacion,
+        periodo,
+        empresa: this.empresaDocumento(),
+        parametros: parametros ? { uf: parametros.uf, utm: parametros.utm } : null,
+        idReferencia: fila.idPersona,
+        trabajadorMeta: {
+          afp: fila.afp,
+          salud: fila.salud,
+          tipoContrato: fila.tipoContrato,
+          sueldoBase: fila.sueldoBase,
+        },
+      }),
+    );
   }
 
   private async cargarEmpresaDocumento(): Promise<void> {

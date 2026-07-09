@@ -1,0 +1,269 @@
+<article
+  class="erp-doc-sheet"
+  [class.is-compact]="compact()"
+  role="document"
+  aria-label="Liquidación de sueldo"
+>
+  <header class="erp-doc-sheet__top">
+    <div class="erp-doc-sheet__top-brand">
+      @if (vista().empresa.logoUrl && !logoRoto()) {
+        <img
+          class="erp-doc-sheet__logo"
+          [src]="vista().empresa.logoUrl"
+          alt=""
+          aria-hidden="true"
+          (error)="logoError.emit()"
+        />
+      }
+      <div class="erp-doc-sheet__empresa">
+        <p class="erp-doc-sheet__razon">{{ vista().empresa.razonSocial }}</p>
+        @if (vista().empresa.rut) {
+          <p class="erp-doc-sheet__meta">{{ vista().empresa.rut }}</p>
+        }
+        @if (vista().empresa.direccion) {
+          <p class="erp-doc-sheet__meta">{{ vista().empresa.direccion }}</p>
+        }
+        @if (vista().empresa.sitioWeb) {
+          <p class="erp-doc-sheet__meta">{{ vista().empresa.sitioWeb }}</p>
+        }
+      </div>
+    </div>
+    <div class="erp-doc-sheet__top-doc">
+      @if (vista().mostrarNumeroDocumento) {
+        <p class="erp-doc-sheet__folio">N° {{ vista().numeroDocumento }}</p>
+      }
+      <p class="erp-doc-sheet__periodo-corto">
+        PERIODO: {{ vista().periodoCorto || vista().periodoLabel }}
+      </p>
+    </div>
+  </header>
+
+  <div class="erp-doc-sheet__titulo-principal" aria-hidden="true">
+    <p>Remuneración</p>
+    <p>Liquidación de sueldo</p>
+  </div>
+
+  <section class="erp-doc-sheet__panel" aria-label="Información del trabajador">
+    <h2 class="erp-doc-sheet__panel-head">Información del trabajador</h2>
+    <div class="erp-doc-sheet__info-grid">
+      <dl class="erp-doc-sheet__info-col">
+        <div>
+          <dt>Nombre</dt>
+          <dd class="erp-doc-sheet__info-nombre">{{ vista().trabajador.nombre }}</dd>
+        </div>
+        <div>
+          <dt>Cargo</dt>
+          <dd>{{ vista().trabajador.cargo || '—' }}</dd>
+        </div>
+        <div>
+          <dt>RUT</dt>
+          <dd>{{ vista().trabajador.rut }}</dd>
+        </div>
+      </dl>
+      <dl class="erp-doc-sheet__info-col">
+        <div>
+          <dt>Trabaja desde</dt>
+          <dd>{{ vista().trabajador.fechaIngreso || '—' }}</dd>
+        </div>
+        <div>
+          <dt>Contrato</dt>
+          <dd>{{ vista().trabajador.tipoContrato || '—' }}</dd>
+        </div>
+        <div>
+          <dt>Correo</dt>
+          <dd>{{ vista().trabajador.email || '—' }}</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="erp-doc-sheet__panel" aria-label="Detalle">
+    <h2 class="erp-doc-sheet__panel-head">Detalle</h2>
+
+    <div class="erp-doc-sheet__admin-row">
+      <div><span>Días base</span><strong>{{ vista().valorDiasBase }}</strong></div>
+      <div><span>Ausencias</span><strong>{{ vista().valorAusencias }}</strong></div>
+      <div><span>Días trabajados</span><strong>{{ vista().valorDiasTrabajados }}</strong></div>
+      <div><span>UTM del período</span><strong>{{ vista().valorUtm }}</strong></div>
+      <div><span>UF del período</span><strong>{{ vista().valorUf }}</strong></div>
+      <div><span>Cargas familiares</span><strong>{{ vista().valorCargas }}</strong></div>
+    </div>
+
+    <div class="erp-doc-sheet__inst-row">
+      <div><span>AFP</span><strong>{{ vista().textoAfpDetalle }}</strong></div>
+      <div><span>Salud</span><strong>{{ vista().valorSalud }}</strong></div>
+      <div><span>APV</span><strong>{{ vista().textoApvDetalle }}</strong></div>
+      <div><span>Mutual</span><strong>{{ vista().valorMutual }}</strong></div>
+      <div><span>Caja de compensación</span><strong>{{ vista().valorCcaf }}</strong></div>
+    </div>
+
+    <div class="erp-doc-sheet__fin-grid">
+      <div class="erp-doc-sheet__fin-col" aria-label="Haberes">
+        <table class="erp-doc-sheet__tabla">
+          <tbody>
+            @for (h of vista().haberesImponibles; track h.descripcion) {
+              <tr>
+                <th scope="row">{{ h.descripcion }}</th>
+                <td>${{ h.monto | number:'1.0-0' }}</td>
+              </tr>
+            }
+            <tr class="erp-doc-sheet__tabla-total">
+              <th scope="row">Total bonificaciones</th>
+              <td>${{ vista().montoTotalBonificaciones | number:'1.0-0' }}</td>
+            </tr>
+            <tr class="erp-doc-sheet__tabla-sep"><td colspan="2"></td></tr>
+            <tr class="erp-doc-sheet__tabla-total">
+              <th scope="row">Sueldo imponible</th>
+              <td>${{ vista().subtotalHaberesImponibles | number:'1.0-0' }}</td>
+            </tr>
+            @for (h of vista().haberesNoImponibles; track h.descripcion) {
+              <tr>
+                <th scope="row">{{ h.descripcion }}</th>
+                <td>${{ h.monto | number:'1.0-0' }}</td>
+              </tr>
+            }
+            <tr class="erp-doc-sheet__tabla-sep"><td colspan="2"></td></tr>
+            <tr class="erp-doc-sheet__tabla-total">
+              <th scope="row">Total no imponible</th>
+              <td>${{ vista().subtotalHaberesNoImponibles | number:'1.0-0' }}</td>
+            </tr>
+            <tr class="erp-doc-sheet__tabla-sep erp-doc-sheet__tabla-sep--doble"><td colspan="2"></td></tr>
+            <tr class="erp-doc-sheet__tabla-total">
+              <th scope="row">Total haberes</th>
+              <td>${{ vista().totalHaberes | number:'1.0-0' }}</td>
+            </tr>
+            <tr class="erp-doc-sheet__tabla-total">
+              <th scope="row">Sueldo tributable</th>
+              <td>${{ vista().baseTributable | number:'1.0-0' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="erp-doc-sheet__fin-col" aria-label="Descuentos">
+        <table class="erp-doc-sheet__tabla">
+          <tbody>
+            @for (d of vista().descuentosLegales; track d.descripcion) {
+              <tr>
+                <th scope="row">{{ d.descripcion }}</th>
+                <td>${{ d.monto | number:'1.0-0' }}</td>
+              </tr>
+            }
+            @if (vista().descuentosVoluntarios.length > 0) {
+              <tr class="erp-doc-sheet__tabla-sep"><td colspan="2"></td></tr>
+              @for (d of vista().descuentosVoluntarios; track d.descripcion) {
+                <tr>
+                  <th scope="row">{{ d.descripcion }}</th>
+                  <td>${{ d.monto | number:'1.0-0' }}</td>
+                </tr>
+              }
+            }
+            <tr class="erp-doc-sheet__tabla-sep"><td colspan="2"></td></tr>
+            <tr class="erp-doc-sheet__tabla-total">
+              <th scope="row">Total descuentos previsionales</th>
+              <td>${{ vista().subtotalDescuentosLegales | number:'1.0-0' }}</td>
+            </tr>
+            <tr class="erp-doc-sheet__tabla-sep erp-doc-sheet__tabla-sep--doble"><td colspan="2"></td></tr>
+            <tr class="erp-doc-sheet__tabla-total erp-doc-sheet__tabla-total--liquido">
+              <th scope="row">Sueldo líquido</th>
+              <td>${{ vista().liquidoAPago | number:'1.0-0' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div class="erp-doc-sheet__inferior">
+    <div class="erp-doc-sheet__inferior-izq">
+      <section class="erp-doc-sheet__panel" aria-label="Bonificaciones y descuentos">
+        <h2 class="erp-doc-sheet__panel-head">Bonificaciones / Descuentos</h2>
+        <div class="erp-doc-sheet__panel-body erp-doc-sheet__panel-body--centro">
+          @if (vista().mostrarBonificacionesVacias) {
+            <p>No Hay Bonificaciones / Descuentos</p>
+          } @else {
+            <table class="erp-doc-sheet__tabla">
+              <tbody>
+                @for (linea of vista().bonificacionesDescuentos; track linea.descripcion) {
+                  <tr>
+                    <th scope="row">{{ linea.descripcion }}</th>
+                    <td>${{ linea.monto | number:'1.0-0' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      </section>
+
+      <section class="erp-doc-sheet__panel" aria-label="Pagos">
+        <h2 class="erp-doc-sheet__panel-head">Pagos</h2>
+        <div class="erp-doc-sheet__pagos-row">
+          <span>Autorizado</span>
+          <strong>{{ vista().valorAutorizadoPor }}</strong>
+        </div>
+      </section>
+    </div>
+
+    <aside class="erp-doc-sheet__caja-liquido" aria-label="Resumen de pago">
+      <p class="erp-doc-sheet__caja-linea">
+        <span>Total remuneración</span>
+        <strong>${{ vista().totalHaberes | number:'1.0-0' }}</strong>
+      </p>
+      <p class="erp-doc-sheet__caja-linea">
+        <span>Anticipos</span>
+        <strong>${{ vista().montoAnticipos | number:'1.0-0' }}</strong>
+      </p>
+      <p class="erp-doc-sheet__caja-linea">
+        <span>Préstamos</span>
+        <strong>${{ vista().montoPrestamos | number:'1.0-0' }}</strong>
+      </p>
+      <p class="erp-doc-sheet__caja-linea">
+        <span>Otros descuentos</span>
+        <strong>${{ vista().montoOtrosDescuentos | number:'1.0-0' }}</strong>
+      </p>
+      <p class="erp-doc-sheet__caja-linea">
+        <span>Total descuentos</span>
+        <strong>${{ vista().totalDescuentos | number:'1.0-0' }}</strong>
+      </p>
+      <p class="erp-doc-sheet__caja-linea erp-doc-sheet__caja-linea--destacada">
+        <span>Líquido a pago</span>
+        <strong>${{ vista().liquidoAPago | number:'1.0-0' }}</strong>
+      </p>
+    </aside>
+  </div>
+
+  @if (vista().fechaEmision || vista().valorEmitidoPor !== '—') {
+    <p class="erp-doc-sheet__emision">
+      @if (vista().fechaEmision) {
+        <span>Emitida: {{ vista().fechaEmision }}</span>
+      }
+      @if (vista().valorEmitidoPor !== '—') {
+        <span>Por: {{ vista().valorEmitidoPor }}</span>
+      }
+    </p>
+  }
+
+  <footer class="erp-doc-sheet__foot">
+    <div class="erp-doc-sheet__firmas">
+      <div class="erp-doc-sheet__firma erp-doc-sheet__firma--empleador">
+        <span class="erp-doc-sheet__firma-espacio" aria-hidden="true"></span>
+        <span class="erp-doc-sheet__firma-label">{{ vista().valorFirmaEmpleador }}</span>
+      </div>
+      <div class="erp-doc-sheet__firma erp-doc-sheet__firma--trabajador">
+        <span class="erp-doc-sheet__firma-espacio" aria-hidden="true"></span>
+        <span class="erp-doc-sheet__firma-label">{{ vista().trabajador.nombre }}</span>
+        <span class="erp-doc-sheet__firma-recibi">Recibí conforme</span>
+      </div>
+      <div class="erp-doc-sheet__firma erp-doc-sheet__firma--legal">
+        <dl class="erp-doc-sheet__clasif">
+          <div><dt>Unidad de negocio</dt><dd>{{ vista().valorUnidadNegocio }}</dd></div>
+          <div><dt>Categoría</dt><dd>{{ vista().valorCategoria }}</dd></div>
+          <div><dt>Proyecto</dt><dd>{{ vista().valorProyecto }}</dd></div>
+        </dl>
+        <p class="erp-doc-sheet__legal">{{ vista().valorTextoLegal }}</p>
+      </div>
+    </div>
+    <p class="erp-doc-sheet__copyright">{{ vista().valorTextoCopyright }}</p>
+  </footer>
+</article>

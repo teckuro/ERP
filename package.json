@@ -45,6 +45,7 @@
     "apply:previred-105-bd": "node scripts/apply-previred-105-bd.mjs",
     "apply:sec-bd": "node scripts/apply-sec-bd.mjs",
     "apply:sec02e-bd": "node scripts/apply-sec02e-bd.mjs",
+    "apply:liq-audit-bd": "node scripts/apply-liq-audit-bd.mjs",
     "check:sec-migrations": "node scripts/check-sec-migrations-applied.mjs",
     "test:e2e:sec:guards": "playwright test tests/sec-guards-consulta.e2e.spec.ts --workers=1",
     "seed:lre:chain": "node scripts/seed-lre-export-chain.mjs verify",

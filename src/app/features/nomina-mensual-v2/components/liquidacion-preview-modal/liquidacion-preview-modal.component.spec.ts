@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, beforeEach } from 'vitest';
 
 import type { LiquidacionCalculada } from '../../../nomina-mensual/models/proceso-mensual.model';
+import { buildLiquidacionDocumentoSheetFromCalculada } from '../../../../shared/components/documento-liquidacion-sheet';
 import { LiquidacionPreviewModalComponent } from './liquidacion-preview-modal.component';
 import { liquidoEnPalabras } from './liquidacion-en-palabras';
 
@@ -71,27 +72,29 @@ describe('LiquidacionPreviewModalComponent', () => {
     const html = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(html).toContain('Empresa de Prueba S.A.');
     expect(html).toContain('76.111.222-3');
-    expect(html).toContain('mayo 2026');
-    expect(html).toContain('2026-05-29');
+    expect(html).toContain('MAY-26');
+    expect(html).toContain('PERIODO:');
+    expect(html).toContain('Liquidación de sueldo');
+    expect(html).toContain('Información del trabajador');
+    expect(html).toContain('Detalle');
     expect(html).toContain('Dependiente Activo Auditoria');
     expect(html).toContain('25050001');
     expect(html).toContain('Cuprum');
     expect(html).toContain('Fonasa');
     expect(html).toContain('Indefinido');
+    expect(fixture.nativeElement.querySelector('.erp-doc-sheet')).not.toBeNull();
   });
 
   it('calcula los subtotales de haberes y descuentos', () => {
-    const fixture = TestBed.createComponent(LiquidacionPreviewModalComponent);
-    fixture.componentRef.setInput('liquidacion', liquidacionMock());
-    fixture.componentRef.setInput('empresa', { razonSocial: 'Empresa de Prueba S.A.' });
-    fixture.componentRef.setInput('nomina', { periodo: '2026-05' });
-    fixture.detectChanges();
-
-    const cmp = fixture.componentInstance;
-    expect(cmp.subtotalHaberesImponibles()).toBe(900000 + 189157);
-    expect(cmp.subtotalHaberesNoImponibles()).toBe(20000);
-    expect(cmp.subtotalDescuentosLegales()).toBe(124600 + 76241 + 6535);
-    expect(cmp.subtotalDescuentosVoluntarios()).toBe(0);
+    const sheet = buildLiquidacionDocumentoSheetFromCalculada({
+      liquidacion: liquidacionMock(),
+      empresa: { razonSocial: 'Empresa de Prueba S.A.' },
+      nomina: { periodo: '2026-05' },
+    });
+    expect(sheet.subtotalHaberesImponibles).toBe(900000 + 189157);
+    expect(sheet.subtotalHaberesNoImponibles).toBe(20000);
+    expect(sheet.subtotalDescuentosLegales).toBe(124600 + 76241 + 6535);
+    expect(sheet.subtotalDescuentosVoluntarios).toBe(0);
   });
 
   it('expone el líquido en palabras', () => {
@@ -101,8 +104,7 @@ describe('LiquidacionPreviewModalComponent', () => {
     fixture.componentRef.setInput('nomina', { periodo: '2026-05' });
     fixture.detectChanges();
 
-    const cmp = fixture.componentInstance;
-    expect(cmp.liquidoEnPalabras()).toMatch(/pesos$/);
+    expect(fixture.componentInstance.vistaSheet().liquidoEnPalabras).toMatch(/pesos$/);
   });
 
   it('emite cerrar al recibir Escape', () => {
@@ -134,7 +136,22 @@ describe('LiquidacionPreviewModalComponent', () => {
     expect(cerrado).toBe(0);
   });
 
-  it('expone el subtotal y el chip de aportes empleador (informativo)', () => {
+  it('oculta aportes del empleador cuando todos son 0', () => {
+    const fixture = TestBed.createComponent(LiquidacionPreviewModalComponent);
+    fixture.componentRef.setInput(
+      'liquidacion',
+      liquidacionMock({ cotizacionSis: 0, cotizacionSanna: 0, cotizacionLey16744: 0 }),
+    );
+    fixture.componentRef.setInput('empresa', { razonSocial: 'X' });
+    fixture.componentRef.setInput('nomina', { periodo: '2026-05' });
+    fixture.detectChanges();
+
+    const html = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(html).not.toContain('Aportes del empleador');
+    expect(fixture.componentInstance.vistaSheet().mostrarAportesEmpleador).toBe(false);
+  });
+
+  it('renderiza estructura Gael con totales y caja de líquido', () => {
     const fixture = TestBed.createComponent(LiquidacionPreviewModalComponent);
     fixture.componentRef.setInput('liquidacion', liquidacionMock());
     fixture.componentRef.setInput('empresa', { razonSocial: 'X' });
@@ -142,11 +159,12 @@ describe('LiquidacionPreviewModalComponent', () => {
     fixture.detectChanges();
 
     const html = (fixture.nativeElement as HTMLElement).textContent ?? '';
-    expect(html).toContain('Aportes del empleador');
-    expect(html).toContain('No afecta al líquido del trabajador');
-    expect(html).toContain('SIS');
-    expect(html).toContain('SANNA');
-    expect(html).toContain('Mutual (Ley 16.744)');
+    expect(html).not.toContain('Aportes del empleador');
+    expect(html).toContain('Total descuentos previsionales');
+    expect(html).toContain('Sueldo líquido');
+    expect(html).toContain('Líquido a pago');
+    expect(html).toContain('Recibí conforme');
+    expect(html).toContain('Bonificaciones / Descuentos');
   });
 });
 
