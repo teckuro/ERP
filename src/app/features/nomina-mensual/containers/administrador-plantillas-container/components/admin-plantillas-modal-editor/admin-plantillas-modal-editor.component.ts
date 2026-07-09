@@ -349,8 +349,7 @@ export class AdminPlantillasModalEditorComponent {
         if (refrescada) this.guardada.emit(refrescada);
       }
     } catch (err) {
-      const mensaje =
-        mensajeErrorSupabaseParaUsuario(err, 'guardar la plantilla'),
+      const mensaje = mensajeErrorSupabaseParaUsuario(err, 'guardar la plantilla');
       this.error.set(mensaje);
     } finally {
       this.guardando.set(false);

@@ -82,8 +82,7 @@ export class AdminPlantillasModalPreviewComponent {
       const data = await this.servicio.previsualizarCortes(this.plantilla().id, this.anio());
       this.cortes.set(data);
     } catch (err) {
-      const mensaje =
-        mensajeErrorSupabaseParaUsuario(err, 'calcular la vista previa de cortes'),
+      const mensaje = mensajeErrorSupabaseParaUsuario(err, 'calcular la vista previa de cortes');
       this.error.set(mensaje);
       this.cortes.set([]);
     } finally {
