@@ -60,6 +60,7 @@ function configurar(opts: {
   confirmar?: ReturnType<typeof vi.fn>;
   listar?: ReturnType<typeof vi.fn>;
   preview?: ReturnType<typeof vi.fn>;
+  listarTrabajadores?: ReturnType<typeof vi.fn>;
   empresaSnap?: { idEmpresa: number; nombre: string; razonSocial: string; rut: string; dv: string } | null;
 } = {}) {
   const empresaSnap = opts.empresaSnap === undefined
@@ -83,6 +84,10 @@ function configurar(opts: {
       reutilizada: false,
     }),
     previsualizarCreacion: opts.preview ?? vi.fn().mockResolvedValue(previewMock()),
+    listarPreviewCreacionTrabajadores: opts.listarTrabajadores ?? vi.fn().mockResolvedValue({
+      filas: [{ idPersona: 1, rut: '11.111.111-1', nombre: 'Ana Pérez', cargo: 'Analista' }],
+      total: 1,
+    }),
     obtenerCabeceraNomina: vi.fn().mockResolvedValue(resumenMock()),
     listarResumenes: opts.listar ?? vi.fn().mockResolvedValue([resumenMock()]),
   };
@@ -110,22 +115,24 @@ describe('AdminNominasModalNuevaNominaComponent (F04 — creación directa)', ()
     const cmp = crearComponente();
     expect(cmp.periodo()).toMatch(/^\d{4}-(0[1-9]|1[0-2])$/);
     expect(cmp.empresaId()).toBe('7');
-    expect(cmp.puedeCrear()).toBe(true);
+    expect(cmp.puedePrevisualizar()).toBe(true);
+    expect(cmp.puedeConfirmar()).toBe(false);
   });
 
-  it('Test 24 — período inválido bloquea crear', () => {
+  it('Test 24 — período inválido bloquea previsualizar', () => {
     const cmp = crearComponente();
     cmp.setPeriodo('2026/06');
     expect(cmp.periodoEsValido()).toBe(false);
-    expect(cmp.puedeCrear()).toBe(false);
+    expect(cmp.puedePrevisualizar()).toBe(false);
     cmp.setPeriodo('2026-06');
-    expect(cmp.puedeCrear()).toBe(true);
+    expect(cmp.puedePrevisualizar()).toBe(true);
   });
 
-  it('Test 25 — crearNomina invoca preview + confirmación F05 y emite (creada)', async () => {
+  it('Test 25 — crearNomina invoca confirmación F05 tras preview y emite (creada)', async () => {
     const { servicio } = configurar();
     const cmp = crearComponente();
     cmp.setPeriodo('2026-07');
+    await cmp.previsualizarDotacion();
 
     let emitido: NominaCreadaEvento | null = null;
     cmp.creada.subscribe((r) => { emitido = r; });
@@ -158,12 +165,11 @@ describe('AdminNominasModalNuevaNominaComponent (F04 — creación directa)', ()
     expect(cerrado).toBe(true);
   });
 
-  it('Test 27 — crearNomina con período inválido NO llama al servicio', async () => {
+  it('Test 27 — crearNomina sin preview previo NO llama al servicio', async () => {
     const { servicio } = configurar();
     const cmp = crearComponente();
-    cmp.setPeriodo('invalido');
+    cmp.setPeriodo('2026-07');
     await cmp.crearNomina();
-    expect(servicio.previsualizarCreacion).not.toHaveBeenCalled();
     expect(servicio.confirmarCreacion).not.toHaveBeenCalled();
   });
 
@@ -172,8 +178,8 @@ describe('AdminNominasModalNuevaNominaComponent (F04 — creación directa)', ()
     configurar({ preview });
     const cmp = crearComponente();
     cmp.setPeriodo('2026-07');
-    await cmp.crearNomina();
-    expect(cmp.error()).toContain('crear la nómina');
+    await cmp.previsualizarDotacion();
+    expect(cmp.error()).toContain('previsualizar la dotación');
     expect(cmp.guardando()).toBe(false);
   });
 
@@ -182,6 +188,7 @@ describe('AdminNominasModalNuevaNominaComponent (F04 — creación directa)', ()
     configurar({ confirmar });
     const cmp = crearComponente();
     cmp.setPeriodo('2026-07');
+    await cmp.previsualizarDotacion();
 
     let cerradoCount = 0;
     cmp.cerrar.subscribe(() => { cerradoCount += 1; });
@@ -203,9 +210,26 @@ describe('AdminNominasModalNuevaNominaComponent (F04 — creación directa)', ()
     configurar({ preview, confirmar });
     const cmp = crearComponente();
     cmp.setPeriodo('2026-07');
-    await cmp.crearNomina();
+    await cmp.previsualizarDotacion();
     expect(cmp.error()).toContain('Ya existe');
+    expect(cmp.puedeConfirmar()).toBe(false);
+    await cmp.crearNomina();
     expect(confirmar).not.toHaveBeenCalled();
+  });
+
+  it('previsualizar carga trabajadores paginados cuando detallePaginado=true', async () => {
+    const listarTrabajadores = vi.fn().mockResolvedValue({
+      filas: [{ idPersona: 2, rut: '22.222.222-2', nombre: 'Luis Gómez', cargo: null }],
+      total: 1,
+    });
+    const { servicio } = configurar({ listarTrabajadores });
+    const cmp = crearComponente();
+    cmp.setPeriodo('2026-07');
+    await cmp.previsualizarDotacion();
+
+    expect(servicio.listarPreviewCreacionTrabajadores).toHaveBeenCalled();
+    expect(cmp.filasPreview()).toHaveLength(1);
+    expect(cmp.previewListo()).toBe(true);
   });
 
   it('detecta nómina existente en bandeja para el mismo período', () => {

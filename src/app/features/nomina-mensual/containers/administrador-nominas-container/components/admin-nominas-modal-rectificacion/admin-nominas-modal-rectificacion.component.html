@@ -58,12 +58,7 @@
 
       <div class="adm-nom-modal__lista">
         @if (cargandoPreview()) {
-          <app-message-box
-            variant="loading"
-            mode="inline"
-            title="Cargando dotación"
-            message="Estamos consultando los trabajadores disponibles para rectificar."
-          />
+          <p class="adm-nom-modal__lista-cargando" role="status">Cargando dotación disponible…</p>
         } @else if (preview(); as p) {
           @if (p.conflictos.length) {
             <ul class="adm-nom-modal__lista-items adm-nom-modal__lista-items--compact">
@@ -95,10 +90,6 @@
           </ul>
         }
       </div>
-
-      @if (error(); as err) {
-        <div class="adm-nom-modal__error" role="alert">{{ err }}</div>
-      }
     </section>
 
     <footer class="adm-nom-modal__foot">
@@ -131,5 +122,18 @@
     [disableClose]="confirmando()"
     (action)="confirmar()"
     (secondary)="cancelarConfirmacion()"
+  />
+}
+
+@if (error(); as err) {
+  <app-message-box
+    mode="modal"
+    variant="danger"
+    eyebrow="Rectificación"
+    title="No se pudo continuar"
+    [message]="err"
+    primaryLabel="Entendido"
+    (action)="cerrarError()"
+    (dismiss)="cerrarError()"
   />
 }

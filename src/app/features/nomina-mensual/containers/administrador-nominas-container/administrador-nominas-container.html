@@ -1,10 +1,14 @@
 <section class="adm-nom__page" aria-label="Administrador de nóminas">
   @if (errorCarga(); as error) {
     <app-message-box
+      mode="modal"
       variant="danger"
-      [sections]="[{ title: 'No se pudo cargar', text: error }]"
+      eyebrow="Error de carga"
+      title="No se pudo cargar"
+      [message]="error"
       primaryLabel="Reintentar"
       (action)="cargarResumenes()"
+      (dismiss)="errorCarga.set(null)"
     />
   }
 
@@ -46,8 +50,8 @@
         (refresh)="cargarResumenes()"
         emptyTitle="Aún no hay nóminas"
         emptyDescription="Crea la primera nómina del período desde la acción principal."
-        emptyTitleWhenFiltered="No hay nóminas que coincidan con los filtros."
-        emptyDescriptionWhenFiltered="Ajusta la búsqueda o limpia filtros para ver más resultados."
+        [emptyTitleWhenFiltered]="emptyTitleFiltrado()"
+        [emptyDescriptionWhenFiltered]="emptyDescriptionFiltrado()"
         className="adm-nom__grid"
         cardClassName="adm-nom__grid-card erp-fullscreen-grid-card"
       >
@@ -193,13 +197,16 @@
               <lucide-icon name="lock" aria-hidden="true"></lucide-icon>
             </button>
           }
-          @if (tieneLiquidaciones(fila.estado) && fila.evidenciaCalculo?.idCalculoPeriodo) {
+          @if (filaTieneAccion(fila, 'ver-liquidaciones')) {
             <button
               type="button"
               class="adm-nom__row-action"
-              title="Ver liquidaciones"
+              [class.adm-nom__row-action--disabled]="liquidacionesDeshabilitadas(fila)"
               [attr.aria-label]="'Ver liquidaciones de ' + fila.empresaNombre + ' ' + fila.periodo"
-              (click)="verLiquidaciones(fila)"
+              [disabled]="liquidacionesDeshabilitadas(fila)"
+              [attr.aria-disabled]="liquidacionesDeshabilitadas(fila) ? true : null"
+              [title]="liquidacionesDeshabilitadas(fila) ? 'Sin evidencia de cálculo disponible' : 'Ver liquidaciones'"
+              (click)="!liquidacionesDeshabilitadas(fila) && verLiquidaciones(fila)"
             >
               <lucide-icon name="receipt" aria-hidden="true"></lucide-icon>
             </button>
@@ -273,10 +280,20 @@
         ></textarea>
       </label>
     }
-    @if (errorAccion(); as error) {
-      <p class="adm-nom__motivo-error" role="alert">{{ error }}</p>
-    }
   </app-message-box>
+}
+
+@if (errorAccion(); as error) {
+  <app-message-box
+    mode="modal"
+    variant="danger"
+    eyebrow="Acción administrativa"
+    title="No se pudo completar la acción"
+    [message]="error"
+    primaryLabel="Entendido"
+    (action)="cerrarErrorAccion()"
+    (dismiss)="cerrarErrorAccion()"
+  />
 }
 
 @if (nominaSeleccionada(); as nomina) {

@@ -9,6 +9,16 @@
 
 ---
 
+## 2026-07-09 — Administrador de nóminas: UX bandeja, historial y preview BKL-10
+
+- **Bandeja:** empty state contextual cuando la vista «Requieren acción» oculta nóminas cerradas; botón Ver liquidaciones visible deshabilitado sin evidencia de cálculo; acciones por fila unificadas con `accionesDisponibles()`.
+- **Historial:** resolución de nombres de usuario desde eventos cargados + usuario actual.
+- **Modal Nueva nómina:** sin paso fantasma «Vista previa»; flujo previsualizar dotación + grilla paginada de trabajadores incluidos (BKL-10) antes de confirmar.
+- **Auditoría:** emisión de `movimientos_actualizados` tras operaciones de movimientos manuales/masivos.
+- **Limpieza:** removidos wrappers deprecated (`crearNominaPeriodo`, `eliminarBorrador`, `filtrarDotacionLegacy`, `etiquetaPasoVisitado`, `crear`/`actualizarEstado` directos en repo).
+
+---
+
 ## 2026-07-09 — app-data-grid: columnas visibles y paginación inferior
 
 - **Tuerca (columnas):** panel compacto con checkboxes, contador visibles, acciones Mostrar todas/Restaurar; también en toolbar operativa.

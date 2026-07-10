@@ -401,6 +401,26 @@ export function filtrarResumenes(
  * pueden venir del `localStorage` persistido en versiones anteriores. En esos
  * casos degrada a "todas" para no romper la sesion del usuario.
  */
+/**
+ * Mensaje contextual cuando la vista «Requieren acción» oculta todas las filas
+ * pero existen nóminas en la bandeja.
+ */
+export function mensajeEmptyFiltradoAdminNominas(
+  resumenes: readonly NominaPeriodoResumen[],
+): { title: string; description: string } | null {
+  if (resumenes.length === 0) return null;
+  const visiblesRequiereAccion = resumenes.filter((fila) =>
+    coincideVistaOperativa(fila, 'requiere-accion'),
+  ).length;
+  if (visiblesRequiereAccion > 0) return null;
+  const ocultas = resumenes.length;
+  const plural = ocultas === 1;
+  return {
+    title: 'Sin nóminas que requieran acción',
+    description: `${ocultas} nómina${plural ? '' : 's'} queda${plural ? '' : 'n'} fuera de la vista «Requieren acción». Cambia la vista a «Todas» para verlas.`,
+  };
+}
+
 export function coincideVistaOperativa(
   fila: NominaPeriodoResumen,
   vista: VistaOperativaAdminNominas | '',

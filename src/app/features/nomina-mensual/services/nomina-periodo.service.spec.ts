@@ -335,67 +335,6 @@ describe('NominaPeriodoService', () => {
     expect(repo.listarResumenes).not.toHaveBeenCalled();
   });
 
-  it('crearNominaPeriodo delega en preview + confirm RPCs (F05) y devuelve la cabecera', async () => {
-    const cabecera = crearNominaResumen({
-      id: 'nom-1',
-      periodo: '2026-06',
-      empresaId: '7',
-      empresaNombre: 'Demo',
-      tipo: 'mensual',
-      estado: 'dotacion_generada',
-      totalTrabajadores: 0,
-      totalSegmentos: 0,
-      totalHaberes: 0,
-      totalDescuentos: 0,
-      totalLiquido: 0,
-      totalIncidenciasCriticas: 0,
-      totalAdvertencias: 0,
-      createdAt: '2026-06-04T00:00:00Z',
-      updatedAt: '2026-06-04T00:00:00Z',
-    });
-    repo.obtenerCabecera.mockResolvedValue(cabecera);
-    const service = configurar({ repo });
-    const resultado = await service.crearNominaPeriodo({ periodo: '2026-06', tipo: 'mensual' });
-
-    expect(repo.previsualizarCreacion).toHaveBeenCalledWith({
-      periodo: '2026-06',
-      tipo: 'mensual',
-      codigoCiclo: null,
-    });
-    expect(repo.confirmarCreacion).toHaveBeenCalledWith({
-      periodo: '2026-06',
-      tipo: 'mensual',
-      fingerprint: 'fp-1',
-      codigoCiclo: '2026-06-MES',
-    });
-    expect(resultado).toEqual(cabecera);
-    expect(repo.crear).not.toHaveBeenCalled();
-  });
-
-  it('crearNominaPeriodo rechaza tipos no habilitados por feature gate', async () => {
-    const service = configurar({ repo, featureGates: featureGatesMock() });
-
-    await expect(
-      service.crearNominaPeriodo({ periodo: '2026-06', tipo: 'quincenal', codigoCiclo: '2026-06-Q1' }),
-    ).rejects.toThrow(/no está habilitado/i);
-    expect(repo.previsualizarCreacion).not.toHaveBeenCalled();
-  });
-
-  it('crearNominaPeriodo exige corte para anticipos quincenales', async () => {
-    const service = configurar({ repo, featureGates: featureGatesMock({ anticipos: true }) });
-
-    await expect(
-      service.crearNominaPeriodo({ periodo: '2026-06', tipo: 'quincenal' }),
-    ).rejects.toThrow(/corte/i);
-  });
-
-  it('crearNominaPeriodo lanza error si no hay empresa activa', async () => {
-    const service = configurar({ repo, empresaId: null });
-    await expect(
-      service.crearNominaPeriodo({ periodo: '2026-06', tipo: 'mensual' }),
-    ).rejects.toThrow(/empresa activa/i);
-  });
-
   it('previsualizarCreacion delega en el repositorio', async () => {
     const service = configurar({ repo });
     const preview = await service.previsualizarCreacion({ periodo: '2026-06', tipo: 'mensual' });
@@ -436,11 +375,10 @@ describe('NominaPeriodoService', () => {
     expect(repo.cerrarNominaRpc).toHaveBeenCalledWith('nom-1', 'cierre regular');
   });
 
-  it('eliminarNomina delega en repo.eliminarNomina sin filtro de estado', async () => {
+  it('eliminarNomina delega en repo.eliminarNomina', async () => {
     const service = configurar({ repo });
     await service.eliminarNomina('nom-1');
     expect(repo.eliminarNomina).toHaveBeenCalledWith('nom-1');
-    expect(repo.eliminarBorrador).not.toHaveBeenCalled();
   });
 
   it('reabrirNomina siempre registra evento (motivo obligatorio)', async () => {
@@ -478,15 +416,6 @@ describe('NominaPeriodoService', () => {
     const service = configurar({ repo, permisos });
     await expect(service.cerrarNomina('nom-1')).rejects.toThrow('sin permiso admin');
     expect(repo.transicionarEstado).not.toHaveBeenCalled();
-  });
-
-  it('crearNominaPeriodo rechaza perfil solo lectura', async () => {
-    const permisos = permisosMock({ escribir: false });
-    const service = configurar({ repo, permisos });
-    await expect(
-      service.crearNominaPeriodo({ periodo: '2026-06', tipo: 'mensual' }),
-    ).rejects.toThrow('solo lectura');
-    expect(repo.previsualizarCreacion).not.toHaveBeenCalled();
   });
 
   it('registrarCalculo permite recalcular sobre estado "calculada" (re-bajando a "en_revision" primero)', async () => {
@@ -564,6 +493,13 @@ describe('NominaPeriodoService', () => {
     const service = configurar({ repo });
     await service.omitirMovimiento('mov-1');
     expect(repo.actualizarEstadoMovimiento).toHaveBeenCalledWith('mov-1', 'omitido');
+    expect(repo.registrarEventoAuditoria).toHaveBeenCalledWith(
+      expect.objectContaining({
+        nominaPeriodoId: 'nom-1',
+        accion: 'movimientos_actualizados',
+        motivo: 'Movimiento omitido.',
+      }),
+    );
   });
 
   it('aplicarRecurrentesANomina respeta idempotencia (no duplica)', async () => {

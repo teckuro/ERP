@@ -114,37 +114,6 @@ describe('NominaPeriodoRepository', () => {
     expect(resumenes[0]).toMatchObject({ id: 'nom-uuid-1', empresaId: '7' });
   });
 
-  it('crear inserta la cabecera y retorna el resumen mapeado', async () => {
-    const builder = makeBuilder({ data: FILA_NOMINA, error: null });
-    setSupabase(() => builder);
-
-    const creado = await repo.crear({
-      empresaId: '7',
-      empresaNombre: 'Demo',
-      periodo: '2026-06',
-      tipo: 'mensual',
-      fechaInicio: '2026-06-01',
-      fechaFin: '2026-06-30',
-      naturaleza: 'liquidacion_legal',
-      codigoCiclo: '2026-06-MES',
-    });
-
-    expect(builder.insert).toHaveBeenCalledWith({
-      id_empresa: 7,
-      empresa_nombre: 'Demo',
-      periodo: '2026-06',
-      tipo: 'mensual',
-      fecha_inicio: '2026-06-01',
-      fecha_fin: '2026-06-30',
-      naturaleza: 'liquidacion_legal',
-      codigo_ciclo: '2026-06-MES',
-      plantilla_ciclo_id: null,
-      nomina_origen_id: null,
-      estado: 'borrador',
-    });
-    expect(creado.id).toBe('nom-uuid-1');
-  });
-
   it('transicionarEstado envia la version esperada a la RPC', async () => {
     setSupabase(
       () => makeBuilder({ data: null, error: null }),
@@ -161,18 +130,6 @@ describe('NominaPeriodoRepository', () => {
       'transicionar_nomina_periodo',
       expect.objectContaining({ p_version_estado_esperada: 4 }),
     );
-  });
-
-  it('actualizarEstado escribe closed_at cuando cierra', async () => {
-    const builder = makeBuilder({ data: null, error: null });
-    setSupabase(() => builder);
-
-    await repo.actualizarEstado('nom-uuid-1', 'cerrada');
-
-    expect(builder.update).toHaveBeenCalled();
-    const argUpdate = builder.update.mock.calls[0][0] as Record<string, unknown>;
-    expect(argUpdate['estado']).toBe('cerrada');
-    expect(typeof argUpdate['closed_at']).toBe('string');
   });
 
   it('actualizarTotales no envia update vacio cuando no hay totales', async () => {

@@ -186,15 +186,6 @@ export function etiquetaMaximoPasoCompletado(paso: PayrollStepId | null | undefi
 }
 
 /**
- * @deprecated Compatibilidad con consumidores previos al modelo "secuencial
- * puro". Equivalente a `etiquetaMaximoPasoCompletado`. Será removido cuando
- * todos los call-sites migren.
- */
-export function etiquetaPasoVisitado(paso: PayrollStepId | null | undefined): string {
-  return etiquetaMaximoPasoCompletado(paso);
-}
-
-/**
  * Define si la fila debe mostrar el sub-renglón "Avance: X" en la celda
  * "Siguiente acción". Sólo se muestra cuando:
  *

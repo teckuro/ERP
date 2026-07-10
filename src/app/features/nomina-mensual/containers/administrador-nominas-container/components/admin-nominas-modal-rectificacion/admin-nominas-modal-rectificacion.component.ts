@@ -87,6 +87,10 @@ export class AdminNominasModalRectificacionComponent {
     this.cerrar.emit();
   }
 
+  cerrarError(): void {
+    this.error.set(null);
+  }
+
   toggleTrabajador(idPersona: number, checked: boolean): void {
     this.seleccionados.update((set) => {
       const next = new Set(set);

@@ -4,7 +4,7 @@
  * Creado en `NOM-REBUILD-NOMINA-MENSUAL-01` (F3b, 2026-06-04).
  *
  * Operaciones por tabla:
- *   - nomina_periodo: listar / obtener / crear / actualizar estado.
+ *   - nomina_periodo: listar / obtener / transicionar estado (RPC).
  *   - segmento_nomina: listar por nómina / upsert / eliminar.
  *   - movimiento_recurrente: listar activos de la empresa.
  *   - movimiento_nomina: listar por nómina / insertar / actualizar estado (omitir).
@@ -74,8 +74,6 @@ import {
   incidenciaNominaToInsert,
   movimientoNominaToInsert,
   type MovimientoNominaInsert,
-  nominaPeriodoEstadoToUpdate,
-  nominaPeriodoToInsert,
   type NominaPeriodoUpdate,
   rowToEventoAuditoria,
   rowRpcToEventoAuditoria,
@@ -87,19 +85,6 @@ import {
   segmentoNominaToInsert,
 } from '../mappers/nomina-periodo.mapper';
 import type { NominaPeriodoResumen } from '../models/nomina-periodo.models';
-
-interface CrearNominaPayload {
-  empresaId: string;
-  empresaNombre: string;
-  periodo: string;
-  tipo: NominaPeriodo['tipo'];
-  fechaInicio: string;
-  fechaFin: string;
-  naturaleza: NominaPeriodo['naturaleza'];
-  codigoCiclo: string;
-  plantillaCicloId?: string;
-  nominaOrigenId?: string;
-}
 
 interface GuardarTotalesPayload {
   totalHaberes?: number;
@@ -196,21 +181,6 @@ export class NominaPeriodoRepository {
     });
   }
 
-  async crear(payload: CrearNominaPayload): Promise<NominaPeriodoResumen> {
-    const insert = nominaPeriodoToInsert(payload);
-    const { data, error } = await this.supabase
-      .from('nomina_periodo')
-      .insert(insert)
-      .select('*')
-      .single();
-
-    throwIfError(error, 'crearNominaPeriodo');
-    if (!data) {
-      throw new Error('crearNominaPeriodo: BD no retornó la fila creada');
-    }
-    return rowToNominaPeriodoResumen(data);
-  }
-
   /**
    * Llama a la RPC F04 `previsualizar_creacion_nomina`. Solo lectura; no escribe.
    * La empresa se resuelve en BD desde el JWT (`current_user_empresa_id()`).
@@ -270,14 +240,6 @@ export class NominaPeriodoRepository {
     });
     throwIfError(error, 'confirmarRectificacion');
     return mapConfirmarRectificacionResultado(data);
-  }
-
-  async actualizarEstado(id: string, estado: NominaPeriodo['estado']): Promise<void> {
-    const { error } = await this.supabase
-      .from('nomina_periodo')
-      .update(nominaPeriodoEstadoToUpdate(estado))
-      .eq('id', id);
-    throwIfError(error, 'actualizarEstado');
   }
 
   async transicionarEstado(
@@ -358,20 +320,6 @@ export class NominaPeriodoRepository {
 
     const { error } = await this.supabase.from('nomina_periodo').update(update).eq('id', id);
     throwIfError(error, 'actualizarTotales');
-  }
-
-  /**
-   * @deprecated Mantenido por compatibilidad histórica. Usar `eliminarNomina`
-   * (sin restricción de estado) que cubre el caso de borrador como subconjunto.
-   * La guarda por estado vive ahora en `puedeEliminar()` (capa de reglas).
-   */
-  async eliminarBorrador(id: string): Promise<void> {
-    const { error } = await this.supabase
-      .from('nomina_periodo')
-      .delete()
-      .eq('id', id)
-      .eq('estado', 'borrador');
-    throwIfError(error, 'eliminarBorrador');
   }
 
   /**

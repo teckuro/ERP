@@ -11,7 +11,7 @@
  *
  * Diferencias con el mock:
  *   - Todos los métodos son async.
- *   - `crearNominaPeriodo` persiste y dispara el evento de auditoría vía trigger.
+ *   - `confirmarCreacion` persiste y dispara el evento de auditoría vía trigger.
  *   - `cerrarNomina` / `reabrirNomina` cambian estado en BD y dispara auditoría.
  *   - Dotación se construye uniendo `segmento_nomina.trabajador_ids` + `persona`.
  *
@@ -249,49 +249,6 @@ export class NominaPeriodoService {
     return this.repo.confirmarRectificacion(request);
   }
 
-  /**
-   * Crea una nómina mensual desde la UI clásica del modal (compatibilidad).
-   * Tras F05, este método delega en `confirmar_creacion_nomina` mediante un
-   * preview implícito: previsualiza, valida que no haya conflictos y
-   * confirma con el `fingerprint` vigente. Toda la dotación y la auditoría
-   * se persisten server-side en una sola transacción.
-   */
-  async crearNominaPeriodo(payload: CrearNominaPayload): Promise<NominaPeriodoResumen> {
-    this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
-    this.featureGates.exigirTipoPermitido(payload.tipo);
-    if (tipoNominaRequiereCorte(payload.tipo) && !payload.codigoCiclo?.trim()) {
-      throw new Error('Selecciona el corte del anticipo antes de continuar.');
-    }
-
-    const idEmpresa = await this.resolverEmpresaActiva();
-    if (idEmpresa == null) {
-      throw new Error('No hay empresa activa para crear la nómina.');
-    }
-
-    try {
-      const preview = await this.repo.previsualizarCreacion({
-        periodo: payload.periodo,
-        tipo: payload.tipo,
-        codigoCiclo: payload.codigoCiclo ?? null,
-      });
-      const resultado = await this.repo.confirmarCreacion({
-        periodo: payload.periodo,
-        tipo: payload.tipo,
-        fingerprint: preview.fingerprint,
-        codigoCiclo: payload.codigoCiclo ?? preview.codigoCiclo ?? null,
-      });
-      const cabecera = await this.repo.obtenerCabecera(resultado.idNominaPeriodo);
-      if (cabecera) return cabecera;
-      throw new Error('crearNominaPeriodo: BD no retornó la cabecera creada.');
-    } catch (error) {
-      const mensaje = error instanceof Error ? error.message : String(error);
-      if (/duplicate|unique|duplic/i.test(mensaje)) {
-        throw new Error('Ya existe una nómina para esa empresa y ciclo.');
-      }
-      throw error;
-    }
-  }
-
   async guardarParametrosNomina(
     nominaPeriodoId: string,
     cambios: { fechaPago?: string | null; estado?: EstadoNomina },
@@ -408,15 +365,6 @@ export class NominaPeriodoService {
   async invalidarCalculoPorActualizacionParametros(nominaPeriodoId: string): Promise<void> {
     this.permisosRemuneraciones.exigirPermisoRecargaParametrosBase();
     await this.invalidarCalculoPorCambio(nominaPeriodoId, 'Parámetros de la nómina actualizados.');
-  }
-
-  /**
-   * @deprecated Usar `eliminarNomina`. Conserva la guarda histórica de
-   * `estado='borrador'` solo a nivel del repositorio. Se mantiene para no
-   * romper consumidores externos hasta migración total.
-   */
-  async eliminarBorrador(nominaPeriodoId: string): Promise<void> {
-    await this.repo.eliminarBorrador(nominaPeriodoId);
   }
 
   /**
@@ -648,6 +596,7 @@ export class NominaPeriodoService {
     await this.exigirNominaEditable(movimiento.nominaPeriodoId);
     await this.repo.actualizarEstadoMovimiento(movimientoId, 'omitido');
     await this.invalidarCalculoPorCambio(movimiento.nominaPeriodoId, 'Movimiento omitido.');
+    await this.auditarMovimientosActualizados(movimiento.nominaPeriodoId, 'Movimiento omitido.');
   }
 
   async aplicarMovimiento(movimientoId: string): Promise<void> {
@@ -655,6 +604,7 @@ export class NominaPeriodoService {
     await this.exigirNominaEditable(movimiento.nominaPeriodoId);
     await this.repo.actualizarEstadoMovimiento(movimientoId, 'aplicado');
     await this.invalidarCalculoPorCambio(movimiento.nominaPeriodoId, 'Movimiento reaplicado.');
+    await this.auditarMovimientosActualizados(movimiento.nominaPeriodoId, 'Movimiento reaplicado.');
   }
 
   async agregarMovimientoManual(
@@ -671,6 +621,7 @@ export class NominaPeriodoService {
       idEmpresa,
     );
     await this.invalidarCalculoPorCambio(mov.nominaPeriodoId, 'Movimiento manual agregado.');
+    await this.auditarMovimientosActualizados(mov.nominaPeriodoId, 'Movimiento manual agregado.');
     return insertados;
   }
 
@@ -729,6 +680,10 @@ export class NominaPeriodoService {
     await this.exigirNominaEditable(movimiento.nominaPeriodoId);
     await this.repo.eliminarMovimiento(movimientoId);
     await this.invalidarCalculoPorCambio(
+      movimiento.nominaPeriodoId,
+      'Movimiento manual eliminado.',
+    );
+    await this.auditarMovimientosActualizados(
       movimiento.nominaPeriodoId,
       'Movimiento manual eliminado.',
     );
@@ -1361,68 +1316,6 @@ export class NominaPeriodoService {
     return this.repo.obtenerResumenTrabajadoresElegibles(nominaPeriodoId);
   }
 
-  private async filtrarDotacionLegacy(
-    nominaPeriodoId: string,
-    filtro: FiltroRapidoDotacion,
-    paginacion: PaginacionGrilla,
-  ): Promise<{ filas: FilaTrabajadorNominaResumen[]; total: number }> {
-    const [segmentos, movimientos, incidencias] = await Promise.all([
-      this.repo.listarSegmentos(nominaPeriodoId),
-      this.repo.listarMovimientos(nominaPeriodoId),
-      this.repo.listarIncidencias(nominaPeriodoId),
-    ]);
-
-    const idsUnicos = Array.from(new Set(segmentos.flatMap((s) => s.trabajadorIds)));
-    if (idsUnicos.length === 0) {
-      return { filas: [], total: 0 };
-    }
-
-    const personas = await this.cargarPersonasResumidas(idsUnicos);
-
-    const filas: FilaTrabajadorNominaResumen[] = idsUnicos.map((trabajadorId) => {
-      const persona = personas.get(trabajadorId);
-      const segmentoDelTrabajador = segmentos.find((s) => s.trabajadorIds.includes(trabajadorId));
-      const incsCriticas = incidencias.filter(
-        (i) => i.trabajadorId === trabajadorId && i.severidad === 'critica',
-      ).length;
-      const incsAdv = incidencias.filter(
-        (i) => i.trabajadorId === trabajadorId && i.severidad === 'advertencia',
-      ).length;
-      const totalMovs = movimientos.filter((m) => m.trabajadorId === trabajadorId).length;
-
-      const tieneBloqueante = incidencias.some(
-        (i) => i.trabajadorId === trabajadorId && i.bloqueante,
-      );
-
-      const estado: FilaTrabajadorNominaResumen['estado'] = tieneBloqueante
-        ? 'bloqueado'
-        : incsCriticas > 0
-          ? 'critico'
-          : incsAdv > 0
-            ? 'advertencia'
-            : 'listo';
-
-      return {
-        trabajadorId,
-        nombre: persona ? this.armarNombreCompleto(persona) : `Trabajador ${trabajadorId}`,
-        rut: persona ? `${persona.rut}-${persona.dv}` : '',
-        segmentoId: segmentoDelTrabajador?.id,
-        estado,
-        totalIncidenciasCriticas: incsCriticas,
-        totalAdvertencias: incsAdv,
-        totalMovimientos: totalMovs,
-        tieneDatosBancarios: true,
-        tieneDatosPrevisionales: true,
-      };
-    });
-
-    const filtradas = filas.filter((fila) => this.coincideFiltro(fila, filtro));
-    const total = filtradas.length;
-    const inicio = Math.max(0, (paginacion.page - 1) * paginacion.pageSize);
-    const fin = inicio + paginacion.pageSize;
-    return { filas: filtradas.slice(inicio, fin), total };
-  }
-
   async obtenerDetalleTrabajador(
     nominaPeriodoId: string,
     trabajadorId: string,
@@ -1549,6 +1442,12 @@ export class NominaPeriodoService {
       nominaPeriodoId,
       `Acción masiva ${accion.tipo} sobre ${trabajadorIds.length} trabajadores.`,
     );
+    if (accion.tipo === 'agregar-movimiento') {
+      await this.auditarMovimientosActualizados(
+        nominaPeriodoId,
+        `Movimiento masivo sobre ${trabajadorIds.length} trabajadores.`,
+      );
+    }
     return preview;
   }
 
@@ -1807,6 +1706,17 @@ export class NominaPeriodoService {
     await this.repo.registrarEventoAuditoria({
       nominaPeriodoId,
       accion: 'calculo_invalidado',
+      motivo,
+    });
+  }
+
+  private async auditarMovimientosActualizados(
+    nominaPeriodoId: string,
+    motivo: string,
+  ): Promise<void> {
+    await this.repo.registrarEventoAuditoria({
+      nominaPeriodoId,
+      accion: 'movimientos_actualizados',
       motivo,
     });
   }

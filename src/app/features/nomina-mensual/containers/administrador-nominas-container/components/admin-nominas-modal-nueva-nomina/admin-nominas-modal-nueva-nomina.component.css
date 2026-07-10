@@ -23,6 +23,10 @@
   transition: width 160ms ease;
 }
 
+.adm-nom-modal:has(.adm-nom-modal__grid-wrap) {
+  width: min(100%, 720px);
+}
+
 .adm-nom-modal__head {
   display: flex;
   align-items: flex-start;
@@ -42,30 +46,7 @@
 }
 
 .adm-nom-modal__steps {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 8px;
-}
-
-.adm-nom-modal__step {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--erp-text-muted, #6b7280);
-}
-
-.adm-nom-modal__step--active {
-  font-weight: 600;
-  color: var(--erp-text-strong, #0f172a);
-}
-
-.adm-nom-modal__step--pending {
-  color: var(--erp-text-muted, #94a3b8);
-}
-
-.adm-nom-modal__step-sep {
-  font-size: 11px;
-  color: var(--erp-text-muted, #94a3b8);
+  display: none;
 }
 
 .adm-nom-modal__contexto {
@@ -109,6 +90,51 @@
   font-size: 12px;
   line-height: 1.45;
   color: #2563eb;
+}
+
+.adm-nom-modal__totales {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.adm-nom-modal__total {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--erp-border, #e5e7eb);
+  border-radius: 6px;
+  background: #fff;
+  font-size: 12px;
+}
+
+.adm-nom-modal__total strong {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--erp-text-strong, #0f172a);
+}
+
+.adm-nom-modal__total small {
+  color: var(--erp-text-muted, #6b7280);
+}
+
+.adm-nom-modal__total.is-soft {
+  background: var(--erp-bg-subtle, #f8fafc);
+}
+
+.adm-nom-modal__grid-wrap {
+  min-height: 220px;
+}
+
+.adm-nom-modal__grid-card {
+  border: 1px solid var(--erp-border, #e5e7eb);
+  border-radius: 6px;
+}
+
+.adm-nom-modal__cell-muted {
+  color: var(--erp-text-muted, #6b7280);
+  font-size: 12px;
 }
 
 .adm-nom-modal__resumen strong {

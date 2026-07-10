@@ -129,3 +129,21 @@ export function accionesDisponibles(
 
   return acciones;
 }
+
+/** Deriva si una fila expone una acción según estado y permisos admin. */
+export function filaTieneAccion(
+  fila: Pick<NominaPeriodoResumen, 'estado' | 'proximoPaso'>,
+  accion: AccionAdminNomina,
+  opts?: { esAdmin?: boolean },
+): boolean {
+  if (!accionesDisponibles(fila.estado, fila.proximoPaso).includes(accion)) {
+    return false;
+  }
+  if (accion === 'eliminar') {
+    return puedeEliminarConPermiso(fila.estado, opts?.esAdmin ?? false);
+  }
+  if (accion === 'reabrir') {
+    return puedeReabrirConPermiso(fila.estado, opts?.esAdmin ?? false);
+  }
+  return true;
+}

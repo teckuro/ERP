@@ -41,6 +41,7 @@ import {
   COLUMNAS_ADMIN_NOMINAS,
   PERSISTENCIA_GRILLA_ADMIN,
   crearFiltrosAdminNominas,
+  mensajeEmptyFiltradoAdminNominas,
   ordenarResumenesOperativos,
 } from '../../presenters/admin-nominas.presenter';
 import { nominaRequiereAccion } from '../../rules/nomina-periodo-state.rules';
@@ -70,12 +71,8 @@ import { AdminNominasModalResumenNominaComponent } from './components/admin-nomi
 import { AdminNominasModalHistorialNominaComponent } from './components/admin-nominas-modal-historial-nomina/admin-nominas-modal-historial-nomina.component';
 import { AdminNominasModalCadenaRectificacionComponent } from './components/admin-nominas-modal-cadena-rectificacion/admin-nominas-modal-cadena-rectificacion.component';
 import {
-  puedeEliminar,
-  puedeEliminarConPermiso,
-  puedeReabrir,
-  puedeReabrirConPermiso,
+  filaTieneAccion as evaluarAccionFila,
   puedeCrearRectificacion,
-  puedeVerResumenNomina,
   tieneLiquidaciones,
 } from '../../rules/admin-nominas.rules';
 import type { TotalesRectificacionVista } from '../../rules/proceso-mensual-motor-rectificacion.rules';
@@ -148,18 +145,28 @@ export class AdministradorNominasContainer {
   readonly historialError = signal<string | null>(null);
 
   /**
-   * Resolver de etiquetas de usuario para el historial. Hoy resolvemos sólo
-   * al usuario actual (auth metadata); para otros usuarios se mostrará
-   * "Usuario no informado". Esto evita expandir el `select` del repository en
-   * el piloto F17 y mantiene el comportamiento sobrio del manual NOIA.
+   * Mapa usuarioId → nombre construido desde los eventos cargados y el usuario
+   * actual, para enriquecer etiquetas del historial sin ampliar el select del repo.
    */
+  readonly mapaUsuariosHistorial = computed(() => {
+    const mapa = new Map<string, string>();
+    for (const evento of this.historialEventos()) {
+      const id = evento.usuarioId?.trim();
+      const nombre = evento.usuarioNombre?.trim();
+      if (id && nombre) {
+        mapa.set(id, nombre);
+      }
+    }
+    const responsable = resolverUsuarioResponsableActual(this.authService.currentUser());
+    if (responsable.id && responsable.nombre) {
+      mapa.set(responsable.id, responsable.nombre);
+    }
+    return mapa;
+  });
+
   readonly resolverUsuarioHistorial = (usuarioId: string | undefined): string | null => {
     if (!usuarioId) return null;
-    const responsable = resolverUsuarioResponsableActual(this.authService.currentUser());
-    if (responsable.id && responsable.id === usuarioId) {
-      return responsable.nombre;
-    }
-    return null;
+    return this.mapaUsuariosHistorial().get(usuarioId) ?? null;
   };
 
   readonly columnas = COLUMNAS_ADMIN_NOMINAS;
@@ -184,6 +191,19 @@ export class AdministradorNominasContainer {
     this.puedeCrearNomina()
       ? ''
       : 'Tu perfil es de solo consulta. No puedes crear nóminas.',
+  );
+
+  readonly emptyFiltrado = computed(() =>
+    mensajeEmptyFiltradoAdminNominas(this.resumenes()),
+  );
+
+  readonly emptyTitleFiltrado = computed(() =>
+    this.emptyFiltrado()?.title ?? 'No hay nóminas que coincidan con los filtros.',
+  );
+
+  readonly emptyDescriptionFiltrado = computed(() =>
+    this.emptyFiltrado()?.description
+      ?? 'Ajusta la búsqueda o limpia filtros para ver más resultados.',
   );
 
   readonly subtitulo = computed(() => {
@@ -234,20 +254,27 @@ export class AdministradorNominasContainer {
   etiquetaMaximoPasoCompletado = etiquetaMaximoPasoCompletado;
   etiquetaMetaNomina = etiquetaMetaNomina;
   formatearRangoLegal = formatearRangoLegal;
-  puedeEliminar = puedeEliminar;
-  puedeReabrir = puedeReabrir;
   tieneLiquidaciones = tieneLiquidaciones;
 
+  filaTieneAccion(fila: NominaPeriodoResumen, accion: Parameters<typeof evaluarAccionFila>[1]): boolean {
+    return evaluarAccionFila(fila, accion, { esAdmin: this.capabilities.esAdmin() });
+  }
+
+  liquidacionesDeshabilitadas(fila: NominaPeriodoResumen): boolean {
+    return this.filaTieneAccion(fila, 'ver-liquidaciones')
+      && !fila.evidenciaCalculo?.idCalculoPeriodo;
+  }
+
   puedeVerResumenFila(fila: NominaPeriodoResumen): boolean {
-    return puedeVerResumenNomina(fila);
+    return this.filaTieneAccion(fila, 'ver-resumen');
   }
 
   puedeEliminarFila(fila: NominaPeriodoResumen): boolean {
-    return puedeEliminarConPermiso(fila.estado, this.capabilities.esAdmin());
+    return this.filaTieneAccion(fila, 'eliminar');
   }
 
   puedeReabrirFila(fila: NominaPeriodoResumen): boolean {
-    return puedeReabrirConPermiso(fila.estado, this.capabilities.esAdmin());
+    return this.filaTieneAccion(fila, 'reabrir');
   }
 
   /**
@@ -333,7 +360,7 @@ export class AdministradorNominasContainer {
   }
 
   async abrirResumen(fila: NominaPeriodoResumen): Promise<void> {
-    if (!puedeVerResumenNomina(fila)) return;
+    if (!this.filaTieneAccion(fila, 'ver-resumen')) return;
     this.nominaSeleccionada.set(fila);
     this.resumenSeleccionado.set(null);
     this.resumenError.set(null);
@@ -465,6 +492,10 @@ export class AdministradorNominasContainer {
     if (this.ejecutandoAccion()) return;
     this.accionPendiente.set(null);
     this.motivoAccion.set('');
+    this.errorAccion.set(null);
+  }
+
+  cerrarErrorAccion(): void {
     this.errorAccion.set(null);
   }
 

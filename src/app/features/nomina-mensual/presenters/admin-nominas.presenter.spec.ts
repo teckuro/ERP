@@ -6,6 +6,7 @@ import {
   COLUMNAS_ADMIN_NOMINAS,
   crearFiltrosAdminNominas,
   filtrarResumenes,
+  mensajeEmptyFiltradoAdminNominas,
   PERSISTENCIA_GRILLA_ADMIN,
 } from './admin-nominas.presenter';
 
@@ -169,5 +170,16 @@ describe('admin-nominas.presenter — filtrarResumenes', () => {
     ];
     const filtradas = filtrarResumenes(resumenes, { busqueda: 'rectificacion' });
     expect(filtradas).toHaveLength(1);
+  });
+
+  it('mensajeEmptyFiltradoAdminNominas avisa cuando todas quedan fuera de requiere-accion', () => {
+    const resumenes = [
+      crearNominaResumen({ id: 'cerrada-1', estado: 'cerrada', requiereAccion: false }),
+      crearNominaResumen({ id: 'cerrada-2', estado: 'liquidada', requiereAccion: false }),
+    ];
+    const mensaje = mensajeEmptyFiltradoAdminNominas(resumenes);
+    expect(mensaje?.title).toContain('requieran acción');
+    expect(mensaje?.description).toContain('2 nóminas');
+    expect(mensaje?.description).toContain('Todas');
   });
 });

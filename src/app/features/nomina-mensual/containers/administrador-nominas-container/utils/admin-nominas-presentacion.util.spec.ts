@@ -8,7 +8,6 @@ import {
   estadoNominaToBadge,
   etiquetaMaximoPasoCompletado,
   etiquetaMetaNomina,
-  etiquetaPasoVisitado,
   formatearActualizada,
   formatearActualizadaCompleta,
   formatearRangoLegal,
@@ -191,11 +190,6 @@ describe('admin-nominas-presentacion.util — sub-renglón "Avance"', () => {
   it('Test 32 — etiquetaMaximoPasoCompletado devuelve cadena vacía para nulos/undefined', () => {
     expect(etiquetaMaximoPasoCompletado(null)).toBe('');
     expect(etiquetaMaximoPasoCompletado(undefined)).toBe('');
-  });
-
-  it('Test 32b — etiquetaPasoVisitado (deprecated alias) sigue funcionando', () => {
-    expect(etiquetaPasoVisitado('calculation')).toBe('Cálculo');
-    expect(etiquetaPasoVisitado(null)).toBe('');
   });
 
   it('Test 33 — mostrarEnCurso es false cuando no hay maximoPasoCompletado', () => {

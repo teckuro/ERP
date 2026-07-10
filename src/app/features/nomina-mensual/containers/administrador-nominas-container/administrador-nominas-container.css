@@ -452,6 +452,13 @@
   color: #fff;
 }
 
+.adm-nom__row-action--disabled,
+.adm-nom__row-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* Accesibilidad ------------------------------------------------------------ */
 
 .sr-only {

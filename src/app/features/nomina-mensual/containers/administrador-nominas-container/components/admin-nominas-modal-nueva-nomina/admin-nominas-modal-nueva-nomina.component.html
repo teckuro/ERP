@@ -13,18 +13,6 @@
     <header class="adm-nom-modal__head">
       <div>
         <p class="adm-nom-modal__eyebrow">Creación de nómina</p>
-        <nav class="adm-nom-modal__steps" aria-label="Pasos del asistente">
-          <span
-            class="adm-nom-modal__step adm-nom-modal__step--active"
-            aria-current="step"
-          >
-            1 Configuración
-          </span>
-          <span class="adm-nom-modal__step-sep" aria-hidden="true">·</span>
-          <span class="adm-nom-modal__step adm-nom-modal__step--pending">
-            2 Vista previa
-          </span>
-        </nav>
         <h2 id="adm-nom-modal-nueva-title" class="adm-nom-modal__title">Nueva nómina</h2>
         <p class="adm-nom-modal__subtitle">{{ subtituloConfiguracion() }}</p>
       </div>
@@ -91,22 +79,51 @@
         <span class="adm-nom-modal__contexto-hint">Liquidación legal del mes calendario.</span>
       </p>
 
-      @if (avisoNominaExistente(); as aviso) {
-        <app-message-box
-          variant="info"
-          mode="inline"
-          [title]="aviso.title"
-          [message]="aviso.message"
-          [detail]="aviso.detail"
-        />
-      }
+      @if (!previewListo()) {
+        <p class="adm-nom-modal__resumen">
+          Previsualiza la dotación para revisar quiénes entrarán al período antes de confirmar.
+        </p>
+      } @else if (resumenPreview(); as totales) {
+        <div class="adm-nom-modal__totales" role="status" aria-label="Resumen de previsualización">
+          <span class="adm-nom-modal__total">
+            <strong>{{ totales.incluidos }}</strong>
+            <small>incluidos</small>
+          </span>
+          @if (totales.excluidos > 0) {
+            <span class="adm-nom-modal__total is-soft">
+              <strong>{{ totales.excluidos }}</strong>
+              <small>excluidos</small>
+            </span>
+          }
+        </div>
 
-      <p class="adm-nom-modal__resumen">
-        Al confirmar se creará la dotación inicial y abrirá el generador en el paso recomendado.
-      </p>
-
-      @if (error()) {
-        <div class="adm-nom-modal__error" role="alert">{{ error() }}</div>
+        <div class="adm-nom-modal__grid-wrap">
+          <app-data-grid
+            title="Trabajadores incluidos"
+            [columns]="columnasPreview"
+            [rows]="filasPreview()"
+            [filtersEnabled]="false"
+            [loading]="previsualizando()"
+            loadingLabel="Cargando trabajadores…"
+            [trackBy]="trackFilaPreview"
+            [persistenceKey]="persistenceKeyPreview"
+            headerCountDisplay="text"
+            headerCountNoun="trabajadores"
+            [gridHeight]="'220px'"
+            [serverSide]="previewUsaServidor()"
+            [totalRowCount]="totalPreview()"
+            [maxItems]="pageSizePreview()"
+            emptyTitle="Sin trabajadores incluidos"
+            emptyDescription="No hay trabajadores elegibles para este período."
+            className="adm-nom-modal__grid"
+            cardClassName="adm-nom-modal__grid-card"
+            (serverQueryChange)="manejarConsultaPreview($event)"
+          >
+            <ng-template appDataGridCell="cargo" let-fila>
+              <span class="adm-nom-modal__cell-muted">{{ fila.cargo || '—' }}</span>
+            </ng-template>
+          </app-data-grid>
+        </div>
       }
 
       <footer class="adm-nom-modal__foot">
@@ -118,14 +135,61 @@
         >
           Cancelar
         </button>
-        <button
-          type="submit"
-          class="adm-nom-modal__btn adm-nom-modal__btn--primary"
-          [disabled]="!puedeCrear()"
-        >
-          {{ guardando() ? 'Creando…' : 'Confirmar y abrir generador' }}
-        </button>
+        @if (!previewListo()) {
+          <button
+            type="button"
+            class="adm-nom-modal__btn adm-nom-modal__btn--primary"
+            [disabled]="!puedePrevisualizar()"
+            (click)="previsualizarDotacion()"
+          >
+            {{ previsualizando() ? 'Previsualizando…' : 'Previsualizar dotación' }}
+          </button>
+        } @else {
+          <button
+            type="button"
+            class="adm-nom-modal__btn"
+            [disabled]="guardando() || previsualizando()"
+            (click)="previsualizarDotacion()"
+          >
+            Actualizar vista
+          </button>
+          <button
+            type="submit"
+            class="adm-nom-modal__btn adm-nom-modal__btn--primary"
+            [disabled]="!puedeConfirmar()"
+          >
+            {{ guardando() ? 'Creando…' : 'Confirmar y abrir generador' }}
+          </button>
+        }
       </footer>
     </form>
   </div>
 </div>
+
+@if (avisoNominaExistente(); as aviso) {
+  @if (!avisoDescartado()) {
+    <app-message-box
+      mode="modal"
+      variant="info"
+      [title]="aviso.title"
+      [message]="aviso.message"
+      [detail]="aviso.detail"
+      primaryLabel="Entendido"
+      (action)="descartarAvisoExistente()"
+      (dismiss)="descartarAvisoExistente()"
+    />
+  }
+}
+
+@if (error(); as err) {
+  <app-message-box
+    mode="modal"
+    variant="danger"
+    eyebrow="Creación de nómina"
+    title="No se pudo continuar"
+    [message]="err"
+    primaryLabel="Entendido"
+    (action)="cerrarError()"
+    (dismiss)="cerrarError()"
+  />
+}

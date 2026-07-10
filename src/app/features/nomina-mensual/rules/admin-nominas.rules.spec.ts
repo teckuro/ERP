@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { EstadoNomina } from '../models/nomina-periodo.models';
 import {
   accionesDisponibles,
+  filaTieneAccion,
   puedeEliminar,
   puedeReabrir,
   puedeVerResumenNomina,
@@ -134,5 +135,25 @@ describe('admin-nominas.rules — accionesDisponibles', () => {
       expect(acciones).not.toContain('anular' as never);
       expect(acciones).not.toContain('eliminar-borrador' as never);
     }
+  });
+});
+
+describe('admin-nominas.rules — filaTieneAccion', () => {
+  it('eliminar exige permiso admin además del estado', () => {
+    expect(
+      filaTieneAccion({ estado: 'borrador', proximoPaso: 'dotacion' }, 'eliminar', { esAdmin: false }),
+    ).toBe(false);
+    expect(
+      filaTieneAccion({ estado: 'borrador', proximoPaso: 'dotacion' }, 'eliminar', { esAdmin: true }),
+    ).toBe(true);
+  });
+
+  it('reabrir exige permiso admin en cerrada', () => {
+    expect(
+      filaTieneAccion({ estado: 'cerrada', proximoPaso: 'liquidaciones' }, 'reabrir', { esAdmin: false }),
+    ).toBe(false);
+    expect(
+      filaTieneAccion({ estado: 'cerrada', proximoPaso: 'liquidaciones' }, 'reabrir', { esAdmin: true }),
+    ).toBe(true);
   });
 });
