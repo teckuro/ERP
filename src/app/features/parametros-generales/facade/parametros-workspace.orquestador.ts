@@ -331,7 +331,7 @@ export class ParametrosWorkspaceOrquestador {
       case 'editando':
         return 'Configuración guardada con pendientes. Pueden completarse valores de fin de mes.';
       case 'cargado':
-        return 'Período listo para revisar.';
+        return this.completitudDetalle('Período listo para revisar.');
       case 'pendiente_reconciliacion':
         return 'Diferencias pendientes de revisar.';
       case 'oficial_sin_config':
@@ -631,7 +631,8 @@ export class ParametrosWorkspaceOrquestador {
 
   readonly periodoReferenciaAnteriorLabel = computed(() => {
     const periodo = this.periodoReferenciaAnterior();
-    return periodo ? formatearPeriodoMesAnio(periodo, this.monthOptions) : null;
+    const label = periodo ? formatearPeriodoMesAnio(periodo, this.monthOptions) : null;
+    return this.capitalizarPeriodoLabel(label);
   });
 
   readonly periodoContextoHint = computed(() => {

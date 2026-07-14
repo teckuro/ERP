@@ -9,6 +9,30 @@
 
 ---
 
+## 2026-07-14 — Ficha empleado: tabbar expediente responsive
+
+- **Pedido:** corregir tabbar del expediente que se ve mal al reducir el ancho de pantalla.
+- **Solución local:** scroll horizontal con barra fina y `scroll-padding`; ocultar contador de bloques en anchos medios; bajo 900px tabs en chips envueltos (patrón Parámetros) sin scroll oculto ni bordes tipo pestaña de navegador.
+- **Archivos:** `ficha-empleado-expediente.css`, `ficha-empleado-responsive.css`.
+- **Sin tocar:** estilos globales, SQL, motor, servicios, lógica de tabs.
+
+---
+
+## 2026-07-14 — Parámetros: banda de período en línea y más detallada
+
+- **Banda superior:** título, chip, detalle, referencia y acciones en una sola franja horizontal con separadores `·`.
+- **Detalle:** período cargado muestra completitud; referencia con capitalización legible (`Abril 2026`).
+- **Archivos:** `parametros-workspace-periodo-banda` (HTML/CSS), `parametros-workspace.orquestador.ts`.
+
+---
+
+## 2026-07-14 — Navegación: ocultar Empresas, Preguntor y creación básica de empleados
+
+- **Sidebar:** retirados ítems Empresas y Preguntor de `shell-navigation.config.ts` (rutas siguen activas por URL directa).
+- **Empleados:** retirada opción «Creación básica» del menú Crear empleado; queda solo Creación avanzada.
+
+---
+
 ## 2026-07-09 — Administrador de nóminas: UX bandeja, historial y preview BKL-10
 
 - **Bandeja:** empty state contextual cuando la vista «Requieren acción» oculta nóminas cerradas; botón Ver liquidaciones visible deshabilitado sin evidencia de cálculo; acciones por fila unificadas con `accionesDisponibles()`.

@@ -48,28 +48,6 @@
             class="empleados-create-menu__option"
             role="menuitem"
             [disabled]="destinoNavegacionCreacion !== null"
-            (click)="onCrearBasico()"
-          >
-            <span class="empleados-create-menu__option-copy">
-              <strong>Creación básica</strong>
-              <small>Alta rápida con datos esenciales</small>
-            </span>
-            @if (destinoNavegacionCreacion === 'basico') {
-              <span class="empleados-create-menu-icon-wrap" aria-hidden="true">
-                <lucide-icon class="empleados-create-menu-icon empleados-create-menu-icon--spin" [img]="loaderIcon"></lucide-icon>
-              </span>
-            } @else {
-              <span class="empleados-create-menu-icon-wrap" aria-hidden="true">
-                <lucide-icon class="empleados-create-menu-icon" [img]="plusIcon"></lucide-icon>
-              </span>
-            }
-          </button>
-
-          <button
-            type="button"
-            class="empleados-create-menu__option"
-            role="menuitem"
-            [disabled]="destinoNavegacionCreacion !== null"
             (click)="onCrearAvanzado()"
           >
             <span class="empleados-create-menu__option-copy">

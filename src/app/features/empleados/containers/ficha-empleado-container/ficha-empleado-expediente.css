@@ -127,6 +127,7 @@
   flex-direction: column;
   flex: 0 0 auto;
   gap: 0;
+  min-width: 0;
   border-bottom: 1px solid var(--employee-exp-border);
   background: #f8fafc;
   padding: 8px 12px 0;
@@ -163,10 +164,22 @@
   gap: 0;
   margin: 0;
   padding: 0;
+  min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
   list-style: none;
   scrollbar-width: thin;
+  scroll-padding-inline: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.employee-record-tabbar__list::-webkit-scrollbar {
+  height: 4px;
+}
+
+.employee-record-tabbar__list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #cbd5e1;
 }
 
 .employee-record-tabbar__list > li {

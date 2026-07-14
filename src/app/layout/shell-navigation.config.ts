@@ -62,9 +62,7 @@ export const SHELL_NAV_SECTIONS: ShellNavSection[] = [
     label: 'Administración',
     items: [
       { path: '/licencias-medicas', label: 'Licencias médicas', icon: 'heart-pulse', modulo: 'licencias' },
-      { path: '/empresas', label: 'Empresas', icon: 'building-2', modulo: 'empresas' },
       { path: '/reportes', label: 'Reportes', icon: 'bar-chart-3', modulo: 'reportes' },
-      { path: '/preguntor', label: 'Preguntor', icon: 'message-circle' },
     ],
   },
 ];
