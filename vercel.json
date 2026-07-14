@@ -1,5 +1,5 @@
 {
-  "buildCommand": "node scripts/generate-app-config.mjs && npm run build",
+  "buildCommand": "node scripts/generate-app-config.mjs && npx ng build --configuration development",
   "outputDirectory": "dist/angular-erp/browser",
   "rewrites": [
     {
