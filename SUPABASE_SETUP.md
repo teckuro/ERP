@@ -5,13 +5,14 @@
 1. Copia `public/app-config.example.json` a `public/app-config.json`.
 2. Completa:
    - `supabaseUrl`
-   - `supabaseAnonKey` (publishable key / anon key)
+   - `supabaseAnonKey` (publishable key `sb_publishable_...` o legacy anon key)
 3. `public/app-config.json` esta en `.gitignore`, asi que no se sube al repositorio.
 
 ## 2. Regla critica
 
-- La `anon/publishable key` puede estar en frontend.
+- La `publishable key` o legacy `anon public key` puede estar en frontend.
 - La `service_role key` nunca debe entrar en Angular, ni en `public/`, ni en `src/`.
+- La `secret key` (`sb_secret_...`) tampoco debe entrar en Angular, ni en `public/`, ni en `src/`.
 - Si necesitas privilegios elevados, hazlo desde backend o Edge Functions con secretos del servidor.
 
 ## 3. Seguridad minima en Supabase Dashboard
@@ -38,6 +39,11 @@
 ## 5. Despliegue
 
 - En cada ambiente genera su propio `app-config.json`.
+- En Vercel, define estas variables en `Settings > Environment Variables` para Production, Preview y Development si corresponde:
+  - `SUPABASE_URL`: URL del proyecto, formato `https://xxxx.supabase.co`.
+  - `SUPABASE_ANON_KEY`: publishable key `sb_publishable_...` o legacy `anon public` completa del mismo proyecto.
+- No pegues el contenido de `public/app-config.example.json` como una sola variable: Vercel debe recibir las dos variables separadas.
+- El build de Vercel ejecuta `node scripts/generate-app-config.mjs && npm run build`, por lo que `public/app-config.json` se genera durante el build.
 - No reutilices proyecto Supabase de desarrollo en produccion.
 - Rota llaves si alguna `service_role` fue expuesta.
 

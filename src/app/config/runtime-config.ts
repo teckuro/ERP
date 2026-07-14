@@ -8,6 +8,8 @@ type AppConfig = {
 const DEFAULT_ASISTENTE_FUNCTION = 'super-service';
 const PLACEHOLDER_KEY = /YOUR_|REPLACE_ME|CHANGEME/i;
 const PLACEHOLDER_URL = /YOUR_PROJECT|example\.com/i;
+const PUBLISHABLE_KEY = /^sb_publishable_[A-Za-z0-9_-]+$/;
+const SECRET_KEY = /^sb_secret_/;
 
 let runtimeConfig: AppConfig | null = null;
 let configLoadError: string | null = null;
@@ -37,11 +39,15 @@ export function validarAppConfig(config: AppConfig): string | null {
     return 'supabaseUrl en app-config.json no tiene un formato válido (https://xxxx.supabase.co).';
   }
 
-  // JWT anon típico ~200+ caracteres; claves cortas provocan "No API key found".
-  if (config.supabaseAnonKey.length < 80) {
+  if (SECRET_KEY.test(config.supabaseAnonKey)) {
+    return 'La clave de Supabase no puede ser sb_secret_ en frontend. Use una publishable key o anon public key.';
+  }
+
+  // JWT anon legacy típico ~200+ caracteres; las publishable keys nuevas usan sb_publishable_.
+  if (!PUBLISHABLE_KEY.test(config.supabaseAnonKey) && config.supabaseAnonKey.length < 80) {
     return (
-      'La clave anon en app-config.json parece incompleta. Copie la clave «anon public» ' +
-      'completa desde Supabase → Settings → API.'
+      'La clave anon en app-config.json parece incompleta. Use una publishable key ' +
+      'sb_publishable_... o la clave «anon public» completa desde Supabase → Settings → API.'
     );
   }
 

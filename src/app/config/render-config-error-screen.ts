@@ -11,7 +11,7 @@ export function renderConfigErrorScreen(message: string): void {
         <h2>Qué hacer</h2>
         <ol>
           <li>Abra <strong>Supabase Dashboard</strong> → su proyecto → <strong>Settings → API</strong>.</li>
-          <li>Copie la clave <strong>anon public</strong> completa (suele empezar por <code>eyJ</code> y tener más de 200 caracteres).</li>
+          <li>Copie la <strong>publishable key</strong> (<code>sb_publishable_...</code>) o la clave legacy <strong>anon public</strong> completa.</li>
           <li>Edite <code>public/app-config.json</code> y pegue la clave en <code>supabaseAnonKey</code>.</li>
           <li>Verifique que <code>supabaseUrl</code> sea <code>https://xxxx.supabase.co</code> del mismo proyecto.</li>
           <li>Reinicie <code>npm start</code>.</li>
