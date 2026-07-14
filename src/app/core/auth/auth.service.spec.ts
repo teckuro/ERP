@@ -9,6 +9,8 @@ function createSupabaseMock() {
     auth: {
       getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
       signInWithPassword: vi.fn(),
+      resetPasswordForEmail: vi.fn(),
+      updateUser: vi.fn(),
       signOut: vi.fn().mockResolvedValue({ error: null }),
       onAuthStateChange: vi.fn().mockReturnValue({
         data: { subscription: { unsubscribe: vi.fn() } },
@@ -90,6 +92,39 @@ describe('AuthService', () => {
 
     const service = TestBed.inject(AuthService);
     await expect(service.getSession()).resolves.toEqual(session);
+    expect(service.currentEmail()).toBe('rrhh@empresa.cl');
+  });
+
+  it('solicita recuperacion de contrasena con redirect publico', async () => {
+    const supabase = createSupabaseMock();
+    supabase.auth.resetPasswordForEmail.mockResolvedValue({ data: {}, error: null });
+
+    TestBed.configureTestingModule({
+      providers: [AuthService, { provide: SUPABASE_CLIENT, useValue: supabase }],
+    });
+
+    const service = TestBed.inject(AuthService);
+    await service.solicitarRecuperacionContrasena(' rrhh@empresa.cl ');
+
+    expect(supabase.auth.resetPasswordForEmail).toHaveBeenCalledWith('rrhh@empresa.cl', {
+      redirectTo: `${globalThis.location.origin}/actualizar-contrasena`,
+    });
+  });
+
+  it('actualiza contrasena con sesion de recuperacion', async () => {
+    const supabase = createSupabaseMock();
+    const session = { user: { id: 'u1', email: 'rrhh@empresa.cl' } };
+    supabase.auth.updateUser.mockResolvedValue({ data: { user: session.user }, error: null });
+    supabase.auth.getSession.mockResolvedValue({ data: { session }, error: null });
+
+    TestBed.configureTestingModule({
+      providers: [AuthService, { provide: SUPABASE_CLIENT, useValue: supabase }],
+    });
+
+    const service = TestBed.inject(AuthService);
+    await service.actualizarContrasena('nueva-clave');
+
+    expect(supabase.auth.updateUser).toHaveBeenCalledWith({ password: 'nueva-clave' });
     expect(service.currentEmail()).toBe('rrhh@empresa.cl');
   });
 });

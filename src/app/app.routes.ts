@@ -13,6 +13,16 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/login.page').then((m) => m.LoginPage),
   },
   {
+    path: 'recuperar-contrasena',
+    loadComponent: () =>
+      import('./pages/recuperar-contrasena.page').then((m) => m.RecuperarContrasenaPage),
+  },
+  {
+    path: 'actualizar-contrasena',
+    loadComponent: () =>
+      import('./pages/actualizar-contrasena.page').then((m) => m.ActualizarContrasenaPage),
+  },
+  {
     path: '',
     component: LayoutShellComponent,
     canActivateChild: [authChildGuard],

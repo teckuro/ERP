@@ -49,6 +49,14 @@ describe('LoginPage', () => {
     expect(fixture.nativeElement.querySelector('#login-password')).not.toBeNull();
   });
 
+  it('expone enlace publico para recuperar contrasena', async () => {
+    const { fixture } = await setup();
+    const link = fixture.nativeElement.querySelector('a[aria-label="Recuperar contrasena"]') as HTMLAnchorElement;
+
+    expect(link).not.toBeNull();
+    expect(link.getAttribute('href')).toBe('/recuperar-contrasena');
+  });
+
   it('valida campos requeridos sin llamar login', async () => {
     const { fixture, auth } = await setup();
 

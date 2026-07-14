@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { AuthService } from '../core/auth/auth.service';
@@ -9,7 +9,7 @@ import { AuthService } from '../core/auth/auth.service';
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="login-page">
@@ -134,7 +134,7 @@ import { AuthService } from '../core/auth/auth.service';
                   </span>
                   Mantener sesion iniciada
                 </label>
-                <a href="#" aria-label="Recuperar contrasena">Olvidaste tu contrasena?</a>
+                <a routerLink="/recuperar-contrasena" aria-label="Recuperar contrasena">Olvidaste tu contrasena?</a>
               </div>
 
               <button class="login-submit" type="submit" [disabled]="isSubmitting()">

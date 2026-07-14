@@ -9,6 +9,15 @@
 
 ---
 
+## 2026-07-14 — Crear empleado: tabbar del alta avanzada responsive
+
+- **Pedido:** corregir el error visual del tabbar al compactar la pantalla en `Crear empleado`.
+- **Solución local:** el stepper superior que reemplaza la bitácora lateral bajo `1024px` pasa a grilla compacta de chips, sin scroll horizontal permanente ni anchos mínimos que rompan el layout.
+- **Archivos:** `form-empleado.wizard.css`.
+- **Sin tocar:** estilos globales, rutas, servicios, SQL, motor, guardado ni lógica de pasos.
+
+---
+
 ## 2026-07-14 — Ficha empleado: tabbar expediente responsive
 
 - **Pedido:** corregir tabbar del expediente que se ve mal al reducir el ancho de pantalla.

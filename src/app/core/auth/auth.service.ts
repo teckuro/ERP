@@ -44,6 +44,40 @@ export class AuthService implements OnDestroy {
     this.readyState.set(true);
   }
 
+  async solicitarRecuperacionContrasena(email: string): Promise<void> {
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail) {
+      throw new Error('Ingresa el correo registrado para recuperar la contrasena.');
+    }
+
+    const { error } = await this.supabase.auth.resetPasswordForEmail(normalizedEmail, {
+      redirectTo: this.passwordRecoveryRedirectUrl(),
+    });
+
+    if (error) {
+      throw new Error('No fue posible enviar el correo de recuperacion. Intenta nuevamente.');
+    }
+  }
+
+  async actualizarContrasena(password: string): Promise<void> {
+    const normalizedPassword = password.trim();
+    if (normalizedPassword.length < 8) {
+      throw new Error('La nueva contrasena debe tener al menos 8 caracteres.');
+    }
+
+    const { data, error } = await this.supabase.auth.updateUser({
+      password: normalizedPassword,
+    });
+
+    if (error || !data.user) {
+      throw new Error('No fue posible actualizar la contrasena. Solicita un nuevo enlace.');
+    }
+
+    const session = await this.getSession();
+    this.sessionState.set(session);
+    this.readyState.set(true);
+  }
+
   async logout(): Promise<void> {
     const { error } = await this.supabase.auth.signOut();
     this.sessionState.set(null);
@@ -68,5 +102,9 @@ export class AuthService implements OnDestroy {
 
   private async refreshSession(): Promise<void> {
     await this.getSession();
+  }
+
+  private passwordRecoveryRedirectUrl(): string {
+    return `${globalThis.location.origin}/actualizar-contrasena`;
   }
 }
