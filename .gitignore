@@ -107,6 +107,10 @@ yarn-error.log
 /docs/codex/modulos/lre/*
 !/docs/codex/modulos/lre/README.md
 !/docs/codex/modulos/lre/LRE-01-contrato-fase.md
+!/docs/codex/modulos/reportes/
+/docs/codex/modulos/reportes/*
+!/docs/codex/modulos/reportes/README.md
+!/docs/codex/modulos/reportes/REPORTES-01-contrato-fase.md
 !/docs/codex/modulos/remuneraciones/
 /docs/codex/modulos/remuneraciones/*
 !/docs/codex/modulos/remuneraciones/movimientos-remuneracion-simple.md

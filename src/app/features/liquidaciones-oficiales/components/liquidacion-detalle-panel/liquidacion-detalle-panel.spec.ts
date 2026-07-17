@@ -2,7 +2,7 @@ import { importProvidersFrom } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LucideAngularModule } from 'lucide-angular';
-import { PanelRightOpen, TrendingDown, TrendingUp } from 'lucide-angular/src/icons';
+import { PanelRightOpen, TrendingDown, TrendingUp, X } from 'lucide-angular/src/icons';
 
 import type { LiquidacionTrabajador } from '../../models/liquidacion-oficial.model';
 import { LiquidacionDetallePanelComponent } from './liquidacion-detalle-panel';
@@ -43,6 +43,7 @@ describe('LiquidacionDetallePanelComponent', () => {
             PanelRightOpen,
             TrendingDown,
             TrendingUp,
+            X,
           }),
         ),
       ],
@@ -58,8 +59,20 @@ describe('LiquidacionDetallePanelComponent', () => {
 
     const text = fixture.nativeElement.textContent;
     expect(text).toContain('Pendiente de autorizar');
-    expect(text).toContain('Haberes − Descuentos = Líquido');
+    expect(text).toContain('Haberes − Descuentos =');
+    expect(text).toContain('Líquido a pagar');
     expect(fixture.componentInstance.cuadraturaOk()).toBe(true);
+  });
+
+  it('emite cerrarDetalle al pulsar X', () => {
+    fixture.componentInstance.trabajador = crearTrabajador();
+    fixture.detectChanges();
+
+    const emitSpy = vi.spyOn(fixture.componentInstance.cerrarDetalle, 'emit');
+    const boton = fixture.nativeElement.querySelector('[aria-label="Cerrar detalle"]');
+    expect(boton).toBeTruthy();
+    boton.click();
+    expect(emitSpy).toHaveBeenCalled();
   });
 
   it('marca desajuste de cuadratura con nota de revisión', () => {
@@ -96,5 +109,13 @@ describe('LiquidacionDetallePanelComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('[aria-label="Ver detalle ampliado"]')).toBeNull();
+  });
+
+  it('oculta botón cerrar cuando permitirCerrar es false', () => {
+    fixture.componentInstance.trabajador = crearTrabajador();
+    fixture.componentInstance.permitirCerrar = false;
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[aria-label="Cerrar detalle"]')).toBeNull();
   });
 });

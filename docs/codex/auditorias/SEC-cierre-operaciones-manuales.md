@@ -102,4 +102,22 @@ npm run test:e2e:sec:guards   # requiere ng serve en :4200
 
 ---
 
+## D. Tablero operador — pendientes manuales (actualizado 2026-07-17)
+
+Estas acciones **no se automatizan en el repo**. El código SEC-01…SEC-05 está cerrado; falta ejecución humana en Dashboard / producción.
+
+| # | Ítem | Prioridad | Estado | Acción del operador |
+|---|------|-----------|--------|---------------------|
+| 1 | Rotación credenciales pooler (SEC-01) | P0 antes de ampliar usuarios | **Pendiente operador** | Dashboard → Database → reset/rotate password; actualizar `.env`/CI; `psql` smoke; bitácora fecha/responsable/ref |
+| 2 | CORS Edge producción (`ERP_ALLOWED_ORIGIN`) | P1 | **Pendiente operador** | Definir dominio ERP; ejecutar `scripts/sec-deploy-edge-cors.ps1`; verificar preflight ≠ `*` |
+| 3 | CSP producción | P2 | **Pendiente operador** | Junto a CORS; documentar header acordado |
+| 4 | Smoke manual RRHH Ola 7 (pasos 2–3, 5–8, 10) | P0 certificación | **Pendiente firma piloto** | Checklist en `modulos/nomina-mensual/smoke-certificacion-ola7.md` |
+| 5 | Checklist perfil `consulta` (§9 auditoría) | Validación | **Pendiente operador** | Usuario consulta: sin escritura; `npm run test:e2e:sec:guards` con app en `:4200` |
+
+**No aplica en este ciclo de código:** rotar pooler desde el agente, desplegar CORS prod sin dominio real, ni firmar smoke RRHH.
+
+Registro en orquestador: fila SEC-01 en [`../orquestador/estado-fases.md`](../orquestador/estado-fases.md) — «rotación manual pendiente».
+
+---
+
 *Contrastado con EST-008, `estado-fases.md` y plan cierre AUDIT-SEC-2026-07.*

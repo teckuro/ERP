@@ -12,6 +12,7 @@ import {
   DollarSign,
   FileCheck2,
   FileText,
+  History,
   LayoutDashboard,
   RefreshCw,
   PanelRightOpen,
@@ -21,16 +22,21 @@ import {
   Upload,
   Users,
   X,
+  TrendingUp,
+  TrendingDown,
 } from 'lucide-angular/src/icons';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { of } from 'rxjs';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
+import { DocumentoLiquidacionService } from '../../../../core/services/documento-liquidacion.service';
 import { LiquidacionesOficialesService } from '../../services/liquidaciones-oficiales.service';
 import { NominaPeriodoService } from '../../../nomina-mensual/services/nomina-periodo.service';
 import { crearNomina, crearNominaResumen } from '../../../nomina-mensual/models/nomina-periodo.models';
 import { LiquidacionesOficialesContainer } from './liquidaciones-oficiales-container';
 import { PreviredExportService } from '../../../previred/services/previred-export.service';
+import { ParametrosGeneralesService } from '../../../parametros-generales/services/parametros-generales.service';
+import { EmpleadosService } from '../../../empleados/services/empleados.service';
 
 describe('LiquidacionesOficialesContainer', () => {
   let fixture: ComponentFixture<LiquidacionesOficialesContainer>;
@@ -87,6 +93,7 @@ describe('LiquidacionesOficialesContainer', () => {
             DollarSign,
             FileCheck2,
             FileText,
+            History,
             LayoutDashboard,
             RefreshCw,
             Repeat,
@@ -96,11 +103,32 @@ describe('LiquidacionesOficialesContainer', () => {
             Users,
             PanelRightOpen,
             X,
+            TrendingUp,
+            TrendingDown,
           }),
         ),
         PeriodoActivoService,
         { provide: LiquidacionesOficialesService, useValue: service },
         { provide: NominaPeriodoService, useValue: nominaService },
+        {
+          provide: DocumentoLiquidacionService,
+          useValue: {
+            obtenerEmpresaDocumento: vi.fn().mockResolvedValue(null),
+          },
+        },
+        {
+          provide: ParametrosGeneralesService,
+          useValue: {
+            getSnapshot: vi.fn().mockReturnValue(null),
+            cargarPeriodo: vi.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: EmpleadosService,
+          useValue: {
+            obtenerEmpleadoBasico: vi.fn().mockResolvedValue(null),
+          },
+        },
         {
           provide: PreviredExportService,
           useValue: {
@@ -144,12 +172,11 @@ describe('LiquidacionesOficialesContainer', () => {
     expect(nominaService.listarResumenes).toHaveBeenCalled();
     expect(service.consultarEstadoPeriodo).not.toHaveBeenCalled();
     expect(fixture.componentInstance.nominasConLiquidaciones().length).toBe(1);
-    expect(fixture.componentInstance.modalSeleccionNominaAbierto()).toBe(false);
     expect(fixture.nativeElement.querySelector('[aria-label^="Abrir liquidaciones"]')).toBeTruthy();
     expect(fixture.nativeElement.textContent).toContain('Empresa de prueba');
   });
 
-  it('cerrar modal y abrir desde disparador', async () => {
+  it('seleccionar nómina desde entrada navega al detalle', async () => {
     const resumen = crearNominaResumen({
       id: 'nom-1',
       estado: 'liquidada',
@@ -160,28 +187,8 @@ describe('LiquidacionesOficialesContainer', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    fixture.componentInstance.cerrarModalSeleccionNomina();
-    fixture.detectChanges();
-    expect(fixture.componentInstance.modalSeleccionNominaAbierto()).toBe(false);
-
-    fixture.componentInstance.abrirModalSeleccionNomina();
-    fixture.detectChanges();
-    expect(fixture.componentInstance.modalSeleccionNominaAbierto()).toBe(true);
-  });
-
-  it('seleccionar nómina en modal cierra el modal', async () => {
-    const resumen = crearNominaResumen({
-      id: 'nom-1',
-      estado: 'liquidada',
-      periodo: '2026-04',
-      evidenciaCalculo: { idCalculoPeriodo: 10, versionCalculo: 1, calculoVigente: true },
-    });
-    await configurar({}, { resumenes: [resumen] });
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    fixture.componentInstance.onNominaSeleccionadaEnModal(resumen);
-    expect(fixture.componentInstance.modalSeleccionNominaAbierto()).toBe(false);
+    fixture.componentInstance.seleccionarNominaDesdeEntrada(resumen);
+    expect(fixture.componentInstance.nominasConLiquidaciones().length).toBe(1);
   });
 
   it('sin nóminas elegibles muestra acta vacía sin_nominas', async () => {
@@ -262,14 +269,15 @@ describe('LiquidacionesOficialesContainer', () => {
     expect(service.listarTrabajadoresLiquidacion).toHaveBeenCalledWith(1);
     expect(fixture.componentInstance.modoNominaInterna()).toBe(true);
     expect(fixture.nativeElement.textContent).toContain('Historial de versiones');
-    expect(fixture.nativeElement.textContent).toContain('Trabajadores');
     expect(fixture.nativeElement.textContent).toContain('Ana Pérez');
     expect(fixture.nativeElement.querySelector('[title="Administrador de nóminas"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.liq-origen')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.liq-grid-block__title')).toBeNull();
     expect(fixture.nativeElement.querySelector('[aria-label="Ver detalle"]')).toBeNull();
     expect(service.consultarEstadoPeriodo).not.toHaveBeenCalled();
   });
 
-  it('toolbar icon-first expone export Previred con title accesible', async () => {
+  it('franja origen expone export Previred con title accesible', async () => {
     await configurar(
       { nominaPeriodoId: 'nom-99', periodo: '2026-04' },
       {

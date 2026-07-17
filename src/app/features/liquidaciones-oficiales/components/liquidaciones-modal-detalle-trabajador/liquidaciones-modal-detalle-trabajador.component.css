@@ -15,9 +15,9 @@
   width: min(100%, 42rem);
   max-height: min(92vh, 40rem);
   border: 1px solid var(--erp-border, #e2e8f0);
-  border-radius: 8px;
+  border-radius: 6px;
   background: var(--erp-surface, #ffffff);
-  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
   overflow: hidden;
 }
 

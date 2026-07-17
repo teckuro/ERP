@@ -78,7 +78,7 @@ app-liquidaciones-modal-historial-nomina app-message-box.message-box-host-modal 
   flex: 1 1 auto;
   min-height: 0;
   height: 100%;
-  border: none !important;
+  border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
   background: var(--erp-surface);
@@ -128,8 +128,8 @@ app-liquidaciones-modal-historial-nomina app-message-box.message-box-host-modal 
   gap: 6px;
   margin: 0 1.25rem 1rem;
   padding: 20px 16px;
-  border: 1px solid var(--erp-border);
-  border-radius: 8px;
+  border: 0;
+  border-radius: 0;
   background: var(--erp-surface-soft);
   text-align: center;
 }
@@ -155,7 +155,6 @@ app-liquidaciones-modal-historial-nomina app-message-box.message-box-host-modal 
 
 .liq-historial-trab__empty--attention {
   background: #fff8ed;
-  border-color: #ece3d4;
 }
 
 .liq-historial-trab__fecha {
@@ -194,7 +193,7 @@ app-liquidaciones-modal-historial-nomina app-message-box.message-box-host-modal 
   height: 22px;
   margin-top: 1px;
   border-radius: 5px;
-  border: 1px solid var(--erp-border);
+  border: 0;
   background: var(--erp-surface-soft);
   color: var(--erp-ink-muted);
   flex-shrink: 0;
@@ -207,19 +206,16 @@ app-liquidaciones-modal-historial-nomina app-message-box.message-box-host-modal 
 
 .liq-historial-trab__icon--ok {
   background: #ecfdf5;
-  border-color: #a7f3d0;
   color: #047857;
 }
 
 .liq-historial-trab__icon--warning {
   background: #fffbeb;
-  border-color: #fde68a;
   color: #b45309;
 }
 
 .liq-historial-trab__icon--danger {
   background: #fef2f2;
-  border-color: #fecaca;
   color: #b91c1c;
 }
 

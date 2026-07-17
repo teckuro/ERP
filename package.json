@@ -32,6 +32,7 @@
     "smoke:liquidaciones:emision": "node scripts/smoke-liquidaciones-emision.mjs",
     "smoke:previred:exportacion": "node scripts/smoke-previred-exportacion.mjs",
     "smoke:lre:exportacion": "node scripts/smoke-lre-exportacion.mjs",
+    "smoke:lre:exportacion:persist": "node scripts/smoke-lre-exportacion-persist.mjs",
     "smoke:sec": "node scripts/smoke-sec-guards-rls.mjs",
     "smoke:sec:gate": "node scripts/smoke-sec-guards-rls.mjs && node scripts/smoke-nomina-produccion.mjs && node scripts/smoke-previred-exportacion.mjs",
     "fixture:sec:consulta": "node scripts/sec-provision-consulta-e2e.mjs",

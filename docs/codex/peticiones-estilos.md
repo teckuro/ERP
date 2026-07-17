@@ -9,6 +9,50 @@
 
 ---
 
+## 2026-07-17 — Liquidaciones: panel detalle lateral con cierre e integración
+
+- **Pedido:** mejorar el detalle al costado al seleccionar un trabajador; icono X para cerrar e integración con el diseño.
+- **Solución local:** panel solo visible con selección; cabecera con acciones icono (ampliar + cerrar); líquido destacado sin card; métricas/conceptos densos; workspace a 1 columna sin detalle y a 2 con detalle; `cerrarDetalleTrabajador` limpia selección.
+- **Archivos:** `liquidacion-detalle-panel.html/.css/.ts/.spec.ts`, `liquidaciones-oficiales-container.html/.ts/.css` (`X` ya vía `ADMIN_NOMINAS_LUCIDE_ICONS` en `app.config`).
+- **Sin tocar:** estilos globales, SQL, motor, servicios de negocio.
+
+## 2026-07-17 — Liquidaciones: acciones en franja origen sin cambiar nómina
+
+- **Pedido:** quitar selector de otra nómina en detalle; botones en la línea Empresa · período · estado; eliminar título «Trabajadores · v…».
+- **Solución local:** toolbar/modal de cambio de nómina retirados del detalle; Previred / Admin / Regenerar (y select de versión si aplica) en `liq-origen`; grilla sin encabezado duplicado.
+- **Archivos:** `liquidaciones-oficiales-container.html/.ts/.css/.spec.ts`.
+- **Sin tocar:** estilos globales, SQL, motor, entrada de listado para abrir una nómina.
+
+## 2026-07-17 — Liquidaciones: bordes mínimos en todo el flujo
+
+- **Pedido:** mismo diseño sin marco en todos los flujos de liquidaciones; bordes solo en casos específicos.
+- **Solución local:** franjas con separador inferior; paneles/chips/métricas sin caja; estados con fondo suave (sin barra lateral); grillas fullscreen; modal detalle conserva borde exterior + divisores head/foot; controles (select, trigger, botones icono) mantienen borde funcional.
+- **Archivos:** `liquidaciones-oficiales-container.css`, `liquidacion-detalle-panel.css`, `liquidaciones-modal-detalle-trabajador.component.css`, `liquidaciones-modal-historial-trabajador.component.css`, `liquidaciones-modal-seleccion-nomina.component.css`, HTMLs historial.
+- **Sin tocar:** estilos globales, SQL, motor, servicios.
+
+## 2026-07-17 — Liquidaciones: grillas sin marco (homólogo nóminas/empleados)
+
+- **Pedido:** quitar formato de tabla con bordes tipo card; integrar homologado al resto del sistema.
+- **Solución local:** cards de `app-data-grid` (entrada nóminas, trabajadores, versiones) sin bordes laterales/inferiores ni radius; clase `erp-fullscreen-grid-card` + override local `border: 0` (patrón administrador de nóminas).
+- **Archivos:** `liquidaciones-oficiales-container.css`, `liquidaciones-oficiales-container.html`.
+- **Sin tocar:** estilos globales, SQL, motor, servicios, lógica de liquidación.
+
+## 2026-07-17 — Reportes: placeholder NOIA «Próximamente» (REPORTES-01a)
+
+- **Pedido:** sustituir stub experimental (tipografía 150px) por pantalla compacta alineada a REPORTES-01.
+- **Solución local:** franja operativa con título, copy RRHH y enlaces a liquidaciones / Previred / LRE / nóminas; shell chip «Próximamente».
+- **Archivos:** `reportes.page.ts`.
+- **Sin tocar:** estilos globales, SQL, motor, servicios de reportes (aún no existen).
+
+## 2026-07-17 — LRE: descarga Formato DT + última exportación
+
+- **Pedido:** LRE-01b — persistencia y canal formato DT en `/remuneraciones/lre`.
+- **Solución local:** botones CSV borrador / Formato DT; resumen «Última exportación»; feedback si falla el registro RPC.
+- **Archivos:** `lre-export-container.html`, `lre-export-container.ts`.
+- **Sin tocar:** estilos globales, motor, liquidaciones productivas.
+
+---
+
 ## 2026-07-14 — Crear empleado: tabbar del alta avanzada responsive
 
 - **Pedido:** corregir el error visual del tabbar al compactar la pantalla en `Crear empleado`.

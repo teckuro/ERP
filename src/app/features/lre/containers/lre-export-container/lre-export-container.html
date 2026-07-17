@@ -4,7 +4,7 @@
     <div class="sal-ext-toolbar__fields">
       <div class="sal-ext-toolbar__lead">
         <strong>Libro de remuneraciones</strong>
-        <span>Borrador CSV desde liquidaciones oficiales materializadas. Sin recálculo.</span>
+        <span>Exportación desde liquidaciones oficiales. CSV borrador o formato DT v1 con registro de auditoría.</span>
       </div>
 
       <div class="sal-ext-toolbar__field">
@@ -46,10 +46,21 @@
           type="button"
           class="sal-ext-secondary-btn"
           data-testid="lre:descargar-csv"
-          [disabled]="cargandoBorrador()"
-          (click)="descargar()"
+          [disabled]="cargandoBorrador() || registrandoDescarga()"
+          (click)="descargarCsv()"
         >
           CSV borrador
+        </button>
+      }
+      @if (puedeDescargarDt()) {
+        <button
+          type="button"
+          class="sal-ext-secondary-btn"
+          data-testid="lre:descargar-dt"
+          [disabled]="cargandoBorrador() || registrandoDescarga()"
+          (click)="descargarFormatoDt()"
+        >
+          Formato DT
         </button>
       }
       <button
@@ -57,7 +68,7 @@
         class="sal-ext-icon-btn"
         title="Actualizar borrador"
         aria-label="Actualizar borrador"
-        [disabled]="!nominaId() || cargandoBorrador()"
+        [disabled]="!nominaId() || cargandoBorrador() || registrandoDescarga()"
         (click)="recargarBorrador()"
       >
         <lucide-icon name="refresh-cw" aria-hidden="true"></lucide-icon>
@@ -99,6 +110,15 @@
         </div>
       </section>
     } @else if (borrador(); as datos) {
+      @if (feedbackDescarga()) {
+        <div class="sal-ext-feedback">
+          <app-message-box
+            variant="warning"
+            [sections]="[{ title: 'Exportación parcial', text: feedbackDescarga()! }]"
+          />
+        </div>
+      }
+
       @if (datos.conceptosSinCodigoLre > 0) {
         <div class="sal-ext-feedback">
           <app-message-box
@@ -162,6 +182,12 @@
           <div class="sal-ext-resumen__ok">
             <dt>Estado</dt>
             <dd>Listo para envío</dd>
+          </div>
+        }
+        @if (etiquetaUltimaExportacion(); as ultima) {
+          <div>
+            <dt>Última exportación</dt>
+            <dd>{{ ultima }}</dd>
           </div>
         }
       </dl>

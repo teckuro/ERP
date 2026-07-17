@@ -1,98 +1,4 @@
 <div class="liq-page">
-  @if (mostrarToolbar()) {
-  <header class="liq-toolbar" aria-label="Nómina seleccionada">
-    <div class="liq-toolbar__fields">
-      @if (etiquetaNominaActiva(); as etiqueta) {
-        <div class="liq-toolbar__field">
-          <span class="liq-sr-only">Nómina seleccionada</span>
-          <div class="liq-nomina-trigger">
-            <button
-              type="button"
-              class="liq-nomina-trigger__value"
-              [disabled]="cargandoNominasLista()"
-              (click)="abrirModalSeleccionNomina()"
-            >
-              {{ etiqueta }}
-            </button>
-            <button
-              type="button"
-              class="liq-nomina-trigger__icon"
-              title="Cambiar nómina seleccionada"
-              aria-label="Cambiar nómina seleccionada"
-              [disabled]="cargandoNominasLista()"
-              (click)="abrirModalSeleccionNomina()"
-            >
-              <lucide-icon name="search" aria-hidden="true"></lucide-icon>
-            </button>
-          </div>
-        </div>
-      } @else {
-        <div class="liq-toolbar__lead">
-          <strong>Liquidaciones por nómina</strong>
-          <span>Comprobantes internos materializados desde nóminas confirmadas.</span>
-        </div>
-      }
-
-      @if (nominaInterna() && filasLiquidacionesInternas().length > 1) {
-        <label class="liq-toolbar__field liq-toolbar__field--compact">
-          <span class="liq-sr-only">Versión de liquidación</span>
-          <select
-            class="liq-toolbar__select"
-            [value]="versionLiquidacionActivaId()"
-            [disabled]="cargandoNominaInterna()"
-            (change)="cambiarVersionSeleccionada($event)"
-          >
-            @for (fila of filasLiquidacionesInternas(); track fila.idLiquidacionPeriodo) {
-              <option [value]="fila.idLiquidacionPeriodo">
-                {{ etiquetaOpcionVersionLiquidacion(fila) }}
-              </option>
-            }
-          </select>
-        </label>
-      }
-    </div>
-
-    <div class="liq-toolbar__actions">
-      @if (puedeExportarPrevired()) {
-        <button
-          type="button"
-          class="liq-icon-btn"
-          data-testid="liquidaciones:exportar-previred"
-          title="Descargar archivo Previred"
-          aria-label="Descargar archivo Previred"
-          (click)="abrirExportPreviredNominaActual()"
-        >
-          <lucide-icon name="upload" aria-hidden="true"></lucide-icon>
-        </button>
-      }
-      <a
-        class="liq-icon-btn"
-        title="Administrador de nóminas"
-        aria-label="Administrador de nóminas"
-        [routerLink]="rutaAdministradorNominas"
-        [queryParams]="volverNominaQuery()"
-      >
-        <lucide-icon name="layout-dashboard" aria-hidden="true"></lucide-icon>
-      </a>
-      @if (nominaInterna() && puedeRegenerarInterna()) {
-        <button
-          type="button"
-          class="liq-icon-btn"
-          [disabled]="regenerandoInterna() || cargandoNominaInterna()"
-          [title]="liquidacionesInternas().length > 0 ? 'Regenerar liquidaciones' : 'Generar liquidaciones'"
-          [attr.aria-label]="liquidacionesInternas().length > 0 ? 'Regenerar liquidaciones' : 'Generar liquidaciones'"
-          (click)="solicitarRegeneracionInterna()"
-        >
-          <lucide-icon
-            [name]="liquidacionesInternas().length > 0 ? 'refresh-cw' : 'file-check-2'"
-            aria-hidden="true"
-          ></lucide-icon>
-        </button>
-      }
-    </div>
-  </header>
-  }
-
   <div class="liq-body">
     @if (contextoOrigen(); as origen) {
       <section
@@ -108,33 +14,90 @@
           @if (origen.versionLabel) {
             <span class="liq-origen__chip">{{ origen.versionLabel }}</span>
           }
+          @if (nominaInterna() && filasLiquidacionesInternas().length > 1) {
+            <label class="liq-origen__version">
+              <span class="liq-sr-only">Versión de liquidación</span>
+              <select
+                class="liq-toolbar__select"
+                [value]="versionLiquidacionActivaId()"
+                [disabled]="cargandoNominaInterna()"
+                (change)="cambiarVersionSeleccionada($event)"
+              >
+                @for (fila of filasLiquidacionesInternas(); track fila.idLiquidacionPeriodo) {
+                  <option [value]="fila.idLiquidacionPeriodo">
+                    {{ etiquetaOpcionVersionLiquidacion(fila) }}
+                  </option>
+                }
+              </select>
+            </label>
+          }
         </div>
       </div>
-      @if (filaVersionActiva(); as version) {
-        <dl class="liq-origen__metrics">
-          <div>
-            <dt title="Trabajadores liquidados">
-              <lucide-icon name="users" aria-hidden="true"></lucide-icon>
-              <span class="liq-sr-only">Trabajadores</span>
-            </dt>
-            <dd>{{ version.totalTrabajadores }}</dd>
-          </div>
-          <div>
-            <dt title="Líquido total del lote">
-              <lucide-icon name="banknote" aria-hidden="true"></lucide-icon>
-              <span class="liq-sr-only">Líquido total</span>
-            </dt>
-            <dd>{{ money(version.totalLiquido) }}</dd>
-          </div>
-          <div>
-            <dt title="Fecha de generación">
-              <lucide-icon name="calendar-clock" aria-hidden="true"></lucide-icon>
-              <span class="liq-sr-only">Generación</span>
-            </dt>
-            <dd>{{ formatearFechaLiquidacion(version.fechaGeneracion) }}</dd>
-          </div>
-        </dl>
-      }
+      <div class="liq-origen__aside">
+        @if (filaVersionActiva(); as version) {
+          <dl class="liq-origen__metrics">
+            <div>
+              <dt title="Trabajadores liquidados">
+                <lucide-icon name="users" aria-hidden="true"></lucide-icon>
+                <span class="liq-sr-only">Trabajadores</span>
+              </dt>
+              <dd>{{ version.totalTrabajadores }}</dd>
+            </div>
+            <div>
+              <dt title="Líquido total del lote">
+                <lucide-icon name="banknote" aria-hidden="true"></lucide-icon>
+                <span class="liq-sr-only">Líquido total</span>
+              </dt>
+              <dd>{{ money(version.totalLiquido) }}</dd>
+            </div>
+            <div>
+              <dt title="Fecha de generación">
+                <lucide-icon name="calendar-clock" aria-hidden="true"></lucide-icon>
+                <span class="liq-sr-only">Generación</span>
+              </dt>
+              <dd>{{ formatearFechaLiquidacion(version.fechaGeneracion) }}</dd>
+            </div>
+          </dl>
+        }
+        <div class="liq-origen__actions">
+          @if (puedeExportarPrevired()) {
+            <button
+              type="button"
+              class="liq-icon-btn"
+              data-testid="liquidaciones:exportar-previred"
+              title="Descargar archivo Previred"
+              aria-label="Descargar archivo Previred"
+              (click)="abrirExportPreviredNominaActual()"
+            >
+              <lucide-icon name="upload" aria-hidden="true"></lucide-icon>
+            </button>
+          }
+          <a
+            class="liq-icon-btn"
+            title="Administrador de nóminas"
+            aria-label="Administrador de nóminas"
+            [routerLink]="rutaAdministradorNominas"
+            [queryParams]="volverNominaQuery()"
+          >
+            <lucide-icon name="layout-dashboard" aria-hidden="true"></lucide-icon>
+          </a>
+          @if (nominaInterna() && puedeRegenerarInterna()) {
+            <button
+              type="button"
+              class="liq-icon-btn"
+              [disabled]="regenerandoInterna() || cargandoNominaInterna()"
+              [title]="liquidacionesInternas().length > 0 ? 'Regenerar liquidaciones' : 'Generar liquidaciones'"
+              [attr.aria-label]="liquidacionesInternas().length > 0 ? 'Regenerar liquidaciones' : 'Generar liquidaciones'"
+              (click)="solicitarRegeneracionInterna()"
+            >
+              <lucide-icon
+                [name]="liquidacionesInternas().length > 0 ? 'refresh-cw' : 'file-check-2'"
+                aria-hidden="true"
+              ></lucide-icon>
+            </button>
+          }
+        </div>
+      </div>
     </section>
     } @else if (cargaNominasInicial() || nominasConLiquidaciones().length > 0) {
     <section class="liq-entrada" aria-label="Selección de nómina origen">
@@ -161,7 +124,7 @@
           emptyTitleWhenFiltered="Sin resultados"
           emptyDescriptionWhenFiltered="Ajuste o limpie los filtros de búsqueda."
           className="liq-entrada__grid"
-          cardClassName="liq-entrada__grid-card"
+          cardClassName="liq-entrada__grid-card erp-fullscreen-grid-card"
         >
           <ng-template appDataGridCell="periodo" let-fila="row">
             <button
@@ -305,14 +268,11 @@
             </details>
           }
 
-          <div class="liq-workspace">
+          <div
+            class="liq-workspace"
+            [class.liq-workspace--con-detalle]="!!trabajadorSeleccionado()"
+          >
             <div class="liq-grid-block liq-grid-block--grow">
-              <div class="liq-grid-block__head">
-                <h2 class="liq-grid-block__title">
-                  Trabajadores
-                  <span class="liq-grid-block__meta">· v{{ version.version }} · {{ version.etiquetaClasificacion }}</span>
-                </h2>
-              </div>
               <div class="liq-grid-block__wrap liq-grid-block__wrap--tall">
                 <app-data-grid
                   title=""
@@ -331,7 +291,7 @@
                   emptyTitle="Sin trabajadores liquidados"
                   emptyDescription="Cuando exista una versión materializada, aquí aparecerá el listado por trabajador."
                   className="liq-trabajadores-grid"
-                  cardClassName="liq-trabajadores-grid__card"
+                  cardClassName="liq-trabajadores-grid__card erp-fullscreen-grid-card"
                 >
                   <ng-template appDataGridCell="trabajador" let-fila="row">
                     <button
@@ -428,22 +388,25 @@
               </div>
             </div>
 
-            <aside class="liq-section liq-section--detail">
-              @if (cargandoDetalle()) {
-                <app-workspace-loading
-                  [fill]="true"
-                  title="Cargando detalle"
-                  message="Estamos consultando los conceptos del trabajador seleccionado."
-                />
-              } @else {
-                <app-liquidacion-detalle-panel
-                  [trabajador]="trabajadorSeleccionado()"
-                  [conceptos]="conceptosDetalle()"
-                  [estadoTrabajador]="estadoTrabajadorSeleccionado()"
-                  (expandirDetalle)="abrirModalDetalleTrabajador()"
-                />
-              }
-            </aside>
+            @if (trabajadorSeleccionado() || cargandoDetalle()) {
+              <aside class="liq-section liq-section--detail" aria-label="Detalle del trabajador">
+                @if (cargandoDetalle()) {
+                  <app-workspace-loading
+                    [fill]="true"
+                    title="Cargando detalle"
+                    message="Estamos consultando los conceptos del trabajador seleccionado."
+                  />
+                } @else {
+                  <app-liquidacion-detalle-panel
+                    [trabajador]="trabajadorSeleccionado()"
+                    [conceptos]="conceptosDetalle()"
+                    [estadoTrabajador]="estadoTrabajadorSeleccionado()"
+                    (expandirDetalle)="abrirModalDetalleTrabajador()"
+                    (cerrarDetalle)="cerrarDetalleTrabajador()"
+                  />
+                }
+              </aside>
+            }
           </div>
         </section>
       }
@@ -466,7 +429,7 @@
             emptyTitle="Sin versiones"
             emptyDescription="Aún no hay liquidaciones generadas para esta nómina."
             className="liq-versiones-grid"
-            cardClassName="liq-versiones-grid__card"
+            cardClassName="liq-versiones-grid__card erp-fullscreen-grid-card"
           >
             <ng-template appDataGridCell="version" let-fila="row">
               <button
@@ -517,16 +480,6 @@
     </div>
     }
   </div>
-
-  <app-liquidaciones-modal-seleccion-nomina
-    [abierto]="modalSeleccionNominaAbierto()"
-    [nominas]="nominasParaModal()"
-    [cargando]="cargandoNominasLista()"
-    [error]="error()"
-    [nominaSeleccionadaId]="nominaPeriodoId()"
-    (cerrar)="cerrarModalSeleccionNomina()"
-    (seleccionar)="onNominaSeleccionadaEnModal($event)"
-  />
 
   <app-liquidaciones-modal-detalle-trabajador
     [abierto]="modalDetalleTrabajadorAbierto()"

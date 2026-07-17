@@ -4146,6 +4146,69 @@ export type Database = {
           },
         ]
       }
+      nomina_lre_exportacion: {
+        Row: {
+          canal: string
+          conceptos_sin_codigo: number
+          exportado_en: string
+          id_liquidacion_periodo: number
+          id_lre_exportacion: number
+          id_nomina_periodo: string | null
+          metadata: Json
+          periodo: string
+          total_lineas: number
+          total_trabajadores: number
+          usuario_id: string | null
+          usuario_label: string
+          version_liquidacion: number
+        }
+        Insert: {
+          canal?: string
+          conceptos_sin_codigo?: number
+          exportado_en?: string
+          id_liquidacion_periodo: number
+          id_lre_exportacion?: number
+          id_nomina_periodo?: string | null
+          metadata?: Json
+          periodo: string
+          total_lineas?: number
+          total_trabajadores?: number
+          usuario_id?: string | null
+          usuario_label: string
+          version_liquidacion?: number
+        }
+        Update: {
+          canal?: string
+          conceptos_sin_codigo?: number
+          exportado_en?: string
+          id_liquidacion_periodo?: number
+          id_lre_exportacion?: number
+          id_nomina_periodo?: string | null
+          metadata?: Json
+          periodo?: string
+          total_lineas?: number
+          total_trabajadores?: number
+          usuario_id?: string | null
+          usuario_label?: string
+          version_liquidacion?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_lre_exportacion_id_liquidacion_periodo_fkey"
+            columns: ["id_liquidacion_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_liquidacion_periodo"
+            referencedColumns: ["id_liquidacion_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_lre_exportacion_id_nomina_periodo_fkey"
+            columns: ["id_nomina_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_periodo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       novedad_remuneracion_periodo: {
         Row: {
           aprobado_por: string | null
@@ -8007,6 +8070,38 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "nomina_previred_exportacion"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      registrar_exportacion_lre: {
+        Args: {
+          p_canal?: string
+          p_conceptos_sin_codigo?: number
+          p_id_liquidacion_periodo: number
+          p_id_nomina_periodo?: string
+          p_metadata?: Json
+          p_total_lineas?: number
+          p_total_trabajadores?: number
+        }
+        Returns: {
+          canal: string
+          conceptos_sin_codigo: number
+          exportado_en: string
+          id_liquidacion_periodo: number
+          id_lre_exportacion: number
+          id_nomina_periodo: string | null
+          metadata: Json
+          periodo: string
+          total_lineas: number
+          total_trabajadores: number
+          usuario_id: string | null
+          usuario_label: string
+          version_liquidacion: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_lre_exportacion"
           isOneToOne: true
           isSetofReturn: false
         }

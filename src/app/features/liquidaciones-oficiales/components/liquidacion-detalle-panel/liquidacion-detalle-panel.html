@@ -1,7 +1,11 @@
-<section class="liq-detail-panel">
+<section
+  class="liq-detail-panel"
+  [class.liq-detail-panel--empty]="!trabajador"
+  [attr.aria-label]="trabajador ? 'Detalle del trabajador' : 'Detalle pendiente de selección'"
+>
   @if (trabajador) {
     <header class="liq-detail-panel__header">
-      <div>
+      <div class="liq-detail-panel__identity">
         <div class="liq-detail-panel__title-row">
           <h3>{{ trabajador.nombreTrabajador }}</h3>
           @if (estadoTrabajador; as estado) {
@@ -15,13 +19,13 @@
             </span>
           }
         </div>
-        <p>{{ trabajador.rut || 'RUT no disponible' }}</p>
+        <p class="liq-detail-panel__meta">{{ trabajador.rut || 'RUT no disponible' }}</p>
       </div>
       <div class="liq-detail-panel__header-actions">
-        @if (permitirExpandir && trabajador) {
+        @if (permitirExpandir) {
           <button
             type="button"
-            class="liq-detail-panel__open-full"
+            class="liq-detail-panel__icon-btn"
             title="Ver detalle ampliado"
             aria-label="Ver detalle ampliado"
             (click)="expandirDetalle.emit()"
@@ -29,13 +33,28 @@
             <lucide-icon name="panel-right-open" aria-hidden="true"></lucide-icon>
           </button>
         }
-        <strong>{{ money(trabajador.liquidoPagar) }}</strong>
+        @if (permitirCerrar) {
+          <button
+            type="button"
+            class="liq-detail-panel__icon-btn liq-detail-panel__icon-btn--close"
+            title="Cerrar detalle"
+            aria-label="Cerrar detalle"
+            (click)="cerrarDetalle.emit()"
+          >
+            <lucide-icon name="x" aria-hidden="true"></lucide-icon>
+          </button>
+        }
       </div>
     </header>
 
+    <div class="liq-detail-panel__liquido" aria-label="Líquido a pagar">
+      <span class="liq-detail-panel__liquido-label">Líquido a pagar</span>
+      <strong class="liq-detail-panel__liquido-valor">{{ money(trabajador.liquidoPagar) }}</strong>
+    </div>
+
     <p class="liq-detail-panel__cuadratura">
-      Haberes − Descuentos = Líquido:
-      <strong>{{ money(trabajador.totalHaberes) }} − {{ money(trabajador.totalDescuentos) }} = {{ money(trabajador.liquidoPagar) }}</strong>
+      Haberes − Descuentos =
+      <strong>{{ money(trabajador.totalHaberes) }} − {{ money(trabajador.totalDescuentos) }}</strong>
     </p>
     @if (!cuadraturaOk()) {
       <p class="liq-detail-panel__alert liq-detail-panel__alert--review">
@@ -87,12 +106,12 @@
     </div>
 
     <p class="liq-detail-panel__note">
-      Origen: nómina mensual aprobada. No hay recálculo ni edición manual de montos.
+      Origen: nómina mensual aprobada. Sin recálculo ni edición de montos.
     </p>
   } @else {
-    <div class="liq-detail-panel__placeholder" aria-label="Detalle pendiente de selección">
+    <div class="liq-detail-panel__placeholder">
       <strong>Seleccione un trabajador</strong>
-      <span class="liq-sr-only">El detalle de haberes, descuentos y totales se carga al elegir una fila.</span>
+      <span>El detalle de haberes, descuentos y líquido se muestra al elegir una fila.</span>
     </div>
   }
 </section>

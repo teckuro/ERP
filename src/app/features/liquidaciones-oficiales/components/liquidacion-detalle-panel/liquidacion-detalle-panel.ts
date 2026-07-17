@@ -24,8 +24,10 @@ export class LiquidacionDetallePanelComponent {
   @Input() conceptos: LiquidacionConcepto[] = [];
   @Input() estadoTrabajador: EstadoTrabajadorDetalleUi | null = null;
   @Input() permitirExpandir = true;
+  @Input() permitirCerrar = true;
 
   @Output() expandirDetalle = new EventEmitter<void>();
+  @Output() cerrarDetalle = new EventEmitter<void>();
 
   haberes(): LiquidacionConcepto[] {
     return this.conceptos.filter((c) => c.tipo === 'haber');

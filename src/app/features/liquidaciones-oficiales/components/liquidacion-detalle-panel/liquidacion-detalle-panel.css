@@ -1,6 +1,7 @@
 :host {
   display: block;
   min-width: 0;
+  height: 100%;
 }
 
 .liq-sr-only {
@@ -16,10 +17,13 @@
 }
 
 .liq-detail-panel {
-  display: grid;
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   min-width: 0;
-  color: var(--erp-ink, #243b53);
+  min-height: 0;
+  height: 100%;
+  color: var(--erp-ink, #172033);
 }
 
 .liq-detail-panel__header {
@@ -27,16 +31,23 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
-  border: 1px solid var(--erp-border, #dadfd7);
-  background: var(--erp-bg, #f6f7f4);
-  padding: 8px;
+  flex: 0 0 auto;
+  border: 0;
+  border-bottom: 1px solid var(--erp-border, #d7dde5);
+  background: transparent;
+  padding: 0 0 8px;
+}
+
+.liq-detail-panel__identity {
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .liq-detail-panel__header h3 {
   margin: 0;
-  color: var(--erp-ink, #243b53);
+  color: var(--erp-ink, #172033);
   font-size: 0.875rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.25;
 }
 
@@ -47,159 +58,193 @@
   gap: 6px;
 }
 
+.liq-detail-panel__meta {
+  margin: 2px 0 0;
+  color: var(--erp-muted, #647084);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
 .liq-detail-panel__chip {
   display: inline-flex;
   align-items: center;
-  min-height: 20px;
-  padding: 0 7px;
-  border: 1px solid var(--erp-border, #dadfd7);
+  min-height: 18px;
+  padding: 0 6px;
+  border: 0;
   border-radius: 4px;
-  background: var(--erp-surface, #ffffff);
-  color: var(--erp-ink, #243b53);
+  background: var(--erp-surface-soft, #f8fafc);
+  color: var(--erp-ink, #172033);
   font-size: 10px;
   font-weight: 650;
 }
 
 .liq-detail-panel__chip--review {
-  border-color: var(--erp-review-border, #d4a72c);
-  background: var(--erp-review-soft, #fff8e6);
+  background: #fffbeb;
+  color: #b45309;
 }
 
 .liq-detail-panel__chip--ok {
-  border-color: var(--erp-ok-border, #2f855a);
-  background: var(--erp-ok-soft, #edf7f1);
+  background: #f0fdf4;
+  color: #047857;
 }
 
 .liq-detail-panel__chip--danger {
-  border-color: var(--erp-danger-border, #c53030);
-  background: var(--erp-danger-soft, #fff5f5);
-}
-
-.liq-detail-panel__cuadratura {
-  margin: 0;
-  border: 1px solid var(--erp-border, #dadfd7);
-  background: var(--erp-surface-soft, #fafaf7);
-  padding: 8px 10px;
-  color: var(--erp-muted, #647084);
-  font-size: 0.75rem;
-  line-height: 1.4;
-}
-
-.liq-detail-panel__cuadratura strong {
-  display: block;
-  margin-top: 2px;
-  color: var(--erp-ink, #243b53);
-  font-size: 0.8125rem;
-}
-
-.liq-detail-panel__alert {
-  margin: 0;
-  border: 1px solid var(--erp-border, #dadfd7);
-  padding: 8px 10px;
-  font-size: 0.75rem;
-  line-height: 1.4;
-}
-
-.liq-detail-panel__alert--review {
-  border-color: var(--erp-review-border, #d4a72c);
-  background: var(--erp-review-soft, #fff8e6);
-  color: var(--erp-ink, #243b53);
-}
-
-.liq-detail-panel__header p {
-  margin: 2px 0 0;
-  color: var(--erp-muted, #647084);
-  font-size: 0.75rem;
-}
-
-.liq-detail-panel__header strong {
-  color: var(--erp-ink, #243b53);
-  font-size: 0.875rem;
-  white-space: nowrap;
+  background: #fef2f2;
+  color: #b91c1c;
 }
 
 .liq-detail-panel__header-actions {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-shrink: 0;
 }
 
-.liq-detail-panel__open-full {
+.liq-detail-panel__icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 28px;
   height: 28px;
   padding: 0;
-  border: 1px solid var(--erp-border, #dadfd7);
+  border: 1px solid var(--erp-border, #d7dde5);
   border-radius: 4px;
-  background: var(--erp-surface, #ffffff);
-  color: var(--erp-primary, #2563eb);
+  background: #ffffff;
+  color: var(--erp-muted, #647084);
   cursor: pointer;
 }
 
-.liq-detail-panel__open-full lucide-icon {
+.liq-detail-panel__icon-btn lucide-icon {
   width: 14px;
   height: 14px;
 }
 
-.liq-detail-panel__open-full:hover {
-  background: var(--erp-surface-soft, #fafaf7);
+.liq-detail-panel__icon-btn:hover {
+  background: var(--erp-surface-soft, #f8fafc);
+  color: var(--erp-ink, #172033);
 }
 
-.liq-detail-panel__open-full:focus-visible {
-  outline: 2px solid var(--erp-primary, #2563eb);
+.liq-detail-panel__icon-btn--close:hover {
+  color: #b91c1c;
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.liq-detail-panel__icon-btn:focus-visible {
+  outline: 2px solid #2563eb;
   outline-offset: 1px;
+}
+
+.liq-detail-panel__liquido {
+  display: grid;
+  gap: 2px;
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  background: var(--erp-surface-soft, #f8fafc);
+}
+
+.liq-detail-panel__liquido-label {
+  color: var(--erp-muted, #647084);
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.liq-detail-panel__liquido-valor {
+  color: var(--erp-ink, #172033);
+  font-size: 1.05rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.liq-detail-panel__cuadratura {
+  margin: 0;
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--erp-muted, #647084);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.liq-detail-panel__cuadratura strong {
+  display: inline;
+  margin: 0;
+  color: var(--erp-ink, #172033);
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+.liq-detail-panel__alert {
+  margin: 0;
+  flex: 0 0 auto;
+  border: 0;
+  padding: 7px 8px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.liq-detail-panel__alert--review {
+  background: #fffbeb;
+  color: #92400e;
 }
 
 .liq-detail-panel__metrics {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 6px;
   margin: 0;
+  flex: 0 0 auto;
 }
 
 .liq-detail-panel__metrics div {
-  border: 1px solid var(--erp-border, #dadfd7);
-  background: var(--erp-surface-soft, #fafaf7);
-  padding: 8px;
+  border: 0;
+  background: var(--erp-surface-soft, #f8fafc);
+  padding: 7px 8px;
 }
 
 .liq-detail-panel__metrics dt {
   margin: 0;
   color: var(--erp-muted, #647084);
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-size: 0.65rem;
+  font-weight: 650;
 }
 
 .liq-detail-panel__metrics dd {
-  margin: 3px 0 0;
-  color: var(--erp-ink, #243b53);
+  margin: 2px 0 0;
+  color: var(--erp-ink, #172033);
   font-size: 0.8125rem;
-  font-weight: 800;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .liq-detail-panel__concepts {
   display: grid;
-  gap: 10px;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 2px;
 }
 
 .liq-detail-panel__concepts h4 {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   color: var(--erp-muted, #647084);
-  font-size: 0.7rem;
-  font-weight: 800;
+  font-size: 0.68rem;
+  font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .liq-detail-panel__concepts h4 lucide-icon {
-  width: 13px;
-  height: 13px;
+  width: 12px;
+  height: 12px;
   flex-shrink: 0;
 }
 
@@ -208,7 +253,7 @@
   gap: 0;
   margin: 0;
   padding: 0;
-  border: 1px solid var(--erp-border, #dadfd7);
+  border: 0;
   list-style: none;
 }
 
@@ -217,8 +262,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 7px 8px;
-  border-bottom: 1px solid var(--erp-border, #dadfd7);
+  padding: 6px 0;
+  border-bottom: 1px solid #eef2f7;
   color: var(--erp-muted, #647084);
   font-size: 0.75rem;
 }
@@ -228,44 +273,52 @@
 }
 
 .liq-detail-panel__concepts li strong {
-  color: var(--erp-ink, #243b53);
+  color: var(--erp-ink, #172033);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .liq-detail-panel__empty {
   justify-content: flex-start !important;
+  color: var(--erp-muted, #647084);
 }
 
-.liq-detail-panel__note,
-.liq-detail-panel__placeholder {
+.liq-detail-panel__note {
   margin: 0;
-  border: 1px solid var(--erp-border, #dadfd7);
-  background: var(--erp-bg, #f6f7f4);
-  padding: 9px 10px;
+  flex: 0 0 auto;
+  border: 0;
+  border-top: 1px solid var(--erp-border, #d7dde5);
+  background: transparent;
+  padding: 8px 0 0;
   color: var(--erp-muted, #647084);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   line-height: 1.4;
 }
 
 .liq-detail-panel__placeholder {
   display: grid;
-  gap: 0;
-  min-height: 5rem;
+  gap: 4px;
+  min-height: 8rem;
   align-content: center;
   justify-items: center;
   text-align: center;
-  border: 1px dashed var(--erp-border-strong, #c5cbc2);
-  background: var(--erp-bg, #f6f7f4);
-  padding: 8px;
+  margin: 0;
+  border: 0;
+  background: var(--erp-surface-soft, #f8fafc);
+  padding: 12px;
+  color: var(--erp-muted, #647084);
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
 
 .liq-detail-panel__placeholder strong {
-  color: var(--erp-ink, #243b53);
+  color: var(--erp-ink, #172033);
   font-size: 0.8125rem;
 }
 
 .liq-detail-panel__placeholder span {
-  font-size: 0.6875rem;
+  max-width: 14rem;
+  font-size: 0.7rem;
 }
 
 @media (max-width: 480px) {

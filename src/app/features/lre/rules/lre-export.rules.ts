@@ -38,6 +38,7 @@ export function mapearTrabajadorALre(input: {
 export function construirBorradorLre(input: {
   periodo: string;
   empresaNombre: string;
+  idNominaPeriodo?: string | null;
   idLiquidacionPeriodo: number;
   versionLiquidacion: number;
   trabajadores: readonly {
@@ -55,6 +56,7 @@ export function construirBorradorLre(input: {
   return {
     periodo: input.periodo,
     empresaNombre: input.empresaNombre,
+    idNominaPeriodo: input.idNominaPeriodo ?? null,
     idLiquidacionPeriodo: input.idLiquidacionPeriodo,
     versionLiquidacion: input.versionLiquidacion,
     totalTrabajadores: input.trabajadores.length,

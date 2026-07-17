@@ -58,6 +58,18 @@ Documentación del módulo: [`docs/codex/modulos/administracion/README.md`](../m
 2. Smoke con `scripts/sec-audit-rls-diagnostics.sql` cuando corresponda.
 3. `supabase migration repair --status applied <version> --db-url "$env:SUPABASE_DB_URL"` si se aplicó con `psql` y falta en `schema_migrations`.
 
-**BD local:** `npm run apply:sec-bd` (prioriza `SUPABASE_DB_URL_LOCAL`). Runbook: [`SEC-cierre-operaciones-manuales.md`](../auditorias/SEC-cierre-operaciones-manuales.md).
+**BD local:** `npm run apply:sec-bd` (prioriza `SUPABASE_DB_URL_LOCAL`). Runbook: [`SEC-cierre-operaciones-manuales.md`](../auditorias/SEC-cierre-operaciones-manuales.md) — **§D tablero operador** (rotación pooler, CORS/CSP prod, smoke RRHH): pendiente humano.
 
 **Relación backlog:** complementa BKL-04…06 y SEG-01b de [`auditoria-proyecto-2026-07-backlog.md`](../auditorias/auditoria-proyecto-2026-07-backlog.md).
+
+# Estado de fases — registro LRE / Previred / Reportes
+
+| Fase | Estado | Entregable |
+|------|--------|------------|
+| PREVIRED-01/02 | Cerrada | Exportación Previred + archivo 105 posiciones |
+| LRE-01a | Cerrada | Borrador CSV `/remuneraciones/lre` |
+| LRE-01b | Cerrada (2026-07-17) | `nomina_lre_exportacion` + `registrar_exportacion_lre` + formato DT v1; migraciones `20260717180000` / `20260717181000` aplicadas BD |
+| LRE-CONCEPT-RULES-01 | Cerrada (repo + BD) | Estrategia LRE en `concepto` vía migración `20260717181000` |
+| REPORTES-01 | Contrato listo / UI placeholder | [`modulos/reportes/REPORTES-01-contrato-fase.md`](../modulos/reportes/REPORTES-01-contrato-fase.md) |
+
+Detalle LRE/Previred: [`estado-fases/lre-previred.md`](./estado-fases/lre-previred.md) (local). Nómina «Siguiente»: [`estado-fases/nomina-mensual.md`](./estado-fases/nomina-mensual.md).

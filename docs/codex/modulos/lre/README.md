@@ -39,6 +39,7 @@ Sin código directo por diseño: INASISTENCIA, ZONA_EXTREMA, AFP_EMPLEADOR, coti
 | Unit LRE | `ng test --watch=false --include=**/lre/**/*.spec.ts` |
 | Cadena | `lre-export-chain.rules.spec.ts` |
 | Smoke BD | `npm run smoke:lre:exportacion` |
+| Smoke persistencia LRE-01b | `npm run smoke:lre:exportacion:persist` |
 | Fixture | `npm run seed:lre:chain` |
 | Aplicar catálogo BD | `npm run apply:lre:catalogo-bd` |
 | Aplicar RPC liquidaciones (conceptos) | `npm run apply:nomina:liquidacion-conceptos-bd` |

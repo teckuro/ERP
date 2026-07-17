@@ -62,7 +62,7 @@ app-liquidaciones-modal-seleccion-nomina app-message-box.message-box-host-modal 
 }
 
 .liq-seleccion-nomina__empty--attention {
-  border: 1px solid #e2b8b3;
+  border: 0;
   background: #fff1ee;
   color: #9f2f2f;
 }
@@ -87,24 +87,21 @@ app-liquidaciones-modal-seleccion-nomina app-message-box.message-box-host-modal 
   align-items: center;
   min-height: 20px;
   padding: 0 7px;
-  border: 1px solid #dadfd7;
+  border: 0;
   border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
 }
 
 .liq-seleccion-nomina__chip--success {
-  border-color: #b9d2b2;
   background: #f1f7ed;
 }
 
 .liq-seleccion-nomina__chip--warning {
-  border-color: #dfc383;
   background: #fff8e7;
 }
 
 .liq-seleccion-nomina__chip--danger {
-  border-color: #e2b8b3;
   background: #fff1ee;
 }
 

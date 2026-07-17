@@ -138,8 +138,6 @@ import { diffVersionLiquidacionConAnterior } from '../../rules/liquidaciones-ver
 
 import { presentarDiffVersionLiquidacion } from '../../presenters/liquidaciones-version-diff.presenter';
 
-import { LiquidacionesModalSeleccionNominaComponent } from '../../components/liquidaciones-modal-seleccion-nomina/liquidaciones-modal-seleccion-nomina.component';
-
 import { LiquidacionesModalDetalleTrabajadorComponent } from '../../components/liquidaciones-modal-detalle-trabajador/liquidaciones-modal-detalle-trabajador.component';
 import { LiquidacionesModalHistorialNominaComponent } from '../../components/liquidaciones-modal-historial-nomina/liquidaciones-modal-historial-nomina.component';
 import { LiquidacionesModalHistorialTrabajadorComponent } from '../../components/liquidaciones-modal-historial-trabajador/liquidaciones-modal-historial-trabajador.component';
@@ -211,8 +209,6 @@ export type LiquidacionFeedbackAccionUi = {
 
     LiquidacionPreviewModalComponent,
 
-    LiquidacionesModalSeleccionNominaComponent,
-
     LiquidacionesModalDetalleTrabajadorComponent,
 
     LiquidacionesModalHistorialTrabajadorComponent,
@@ -280,8 +276,6 @@ export class LiquidacionesOficialesContainer {
   readonly nominasParaModal = computed(() => [...this.nominasConLiquidaciones()]);
 
   readonly cargandoNominasLista = signal(false);
-
-  readonly modalSeleccionNominaAbierto = signal(false);
 
   readonly modalDetalleTrabajadorAbierto = signal(false);
 
@@ -514,8 +508,6 @@ export class LiquidacionesOficialesContainer {
   readonly cargaNominaInternaOverlay = computed(
     () => this.cargandoNominaInterna() && this.filasLiquidacionesInternas().length > 0,
   );
-
-  readonly mostrarToolbar = computed(() => !!this.nominaInterna());
 
   readonly actaVacia = computed(() =>
     construirActaVaciaLiquidaciones(this.resumenesNomina(), this.nominasConLiquidaciones()),
@@ -1158,24 +1150,6 @@ export class LiquidacionesOficialesContainer {
     this.seleccionarVersionLiquidacion(idLiquidacionPeriodo);
   }
 
-
-
-  abrirModalSeleccionNomina(): void {
-
-    if (this.cargandoNominasLista()) return;
-
-    this.modalSeleccionNominaAbierto.set(true);
-
-  }
-
-
-
-  cerrarModalSeleccionNomina(): void {
-
-    this.modalSeleccionNominaAbierto.set(false);
-
-  }
-
   abrirExportPreviredNomina(fila: NominaPeriodoResumen): void {
     if (!puedeExportarPreviredNomina(fila)) return;
     this.nominaExportPreviredId.set(fila.id);
@@ -1196,16 +1170,6 @@ export class LiquidacionesOficialesContainer {
     this.modalExportPreviredAbierto.set(false);
     this.nominaExportPreviredId.set(null);
     this.etiquetaExportPrevired.set('');
-  }
-
-
-
-  onNominaSeleccionadaEnModal(fila: NominaPeriodoResumen): void {
-
-    this.modalSeleccionNominaAbierto.set(false);
-
-    this.abrirLiquidacionesNomina(fila);
-
   }
 
 
@@ -1433,25 +1397,23 @@ export class LiquidacionesOficialesContainer {
 
 
   verDetalleTrabajador(trabajador: LiquidacionTrabajador): Promise<void> {
-
     this.trabajadorSeleccionado.set(trabajador);
-
     this.cargandoDetalle.set(true);
-
     this.conceptosDetalle.set([]);
-
     return this.service.obtenerDetalleTrabajador(trabajador.idLiquidacionTrabajador)
-
       .then((conceptos) => this.conceptosDetalle.set(conceptos))
-
       .catch((err) =>
         this.error.set(
           mensajeErrorSupabaseParaUsuario(err, 'consultar el detalle del trabajador'),
         ),
       )
-
       .finally(() => this.cargandoDetalle.set(false));
+  }
 
+  cerrarDetalleTrabajador(): void {
+    this.trabajadorSeleccionado.set(null);
+    this.conceptosDetalle.set([]);
+    this.cargandoDetalle.set(false);
   }
 
 

@@ -17,12 +17,13 @@ import { bindShellPageContext } from '../../../../layout/shell-page-context.bind
 import { etiquetaPeriodoDesdeYm } from '../../../../core/services/periodo-activo.service';
 import { mensajeErrorSupabaseParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
 import type { NominaPeriodoResumen } from '../../../nomina-mensual/models/nomina-periodo.models';
-import type { LreBorradorExport } from '../../models/lre-export.model';
+import type { LreBorradorExport, LreExportacionRegistro } from '../../models/lre-export.model';
 import {
   COLUMNAS_LRE_EXPORT,
   PERSISTENCIA_GRILLA_LRE_EXPORT,
 } from '../../presenters/lre-export.presenter';
 import { descargarCsvLre, puedeDescargarLre } from '../../rules/lre-export.rules';
+import { descargarFormatoDtLre } from '../../rules/lre-formato-dt.rules';
 import { LreExportService } from '../../services/lre-export.service';
 import { SeleccionNominaExportableModalComponent } from '../../../remuneraciones-salidas/components/seleccion-nomina-exportable-modal/seleccion-nomina-exportable-modal.component';
 import {
@@ -59,8 +60,11 @@ export class LreExportContainer {
   readonly nominas = signal<readonly NominaPeriodoResumen[]>([]);
   readonly nominaId = signal<string | null>(null);
   readonly borrador = signal<LreBorradorExport | null>(null);
+  readonly ultimaExportacion = signal<LreExportacionRegistro | null>(null);
   readonly cargandoNominas = signal(false);
   readonly cargandoBorrador = signal(false);
+  readonly registrandoDescarga = signal(false);
+  readonly feedbackDescarga = signal<string | null>(null);
   readonly error = signal<string | null>(null);
   readonly modalNominaAbierto = signal(false);
 
@@ -100,6 +104,19 @@ export class LreExportContainer {
 
   readonly puedeDescargar = computed(() => puedeDescargarLre(this.borrador()));
 
+  readonly puedeDescargarDt = computed(() => {
+    const b = this.borrador();
+    return !!b && b.listoParaEnvio && puedeDescargarLre(b);
+  });
+
+  readonly etiquetaUltimaExportacion = computed(() => {
+    const reg = this.ultimaExportacion();
+    if (!reg) return null;
+    const canal =
+      reg.canal === 'formato_dt_v1' ? 'Formato DT' : 'CSV borrador';
+    return `${canal} · ${reg.usuarioLabel} · ${reg.totalLineas} línea(s)`;
+  });
+
   readonly cargaInicial = computed(
     () => this.cargandoNominas() || (this.cargandoBorrador() && !this.borrador()),
   );
@@ -137,16 +154,30 @@ export class LreExportContainer {
               : this.nominas().length === 0
                 ? { label: this.emptyVm().chipLabel, tone: 'neutral' }
                 : { label: 'Sin nómina', tone: 'neutral' },
-          primaryAction: this.puedeDescargar()
+          primaryAction: this.puedeDescargarDt()
             ? {
-                label: 'Descargar CSV LRE',
-                actionId: 'lre:descargar-csv',
-                disabled: this.cargandoBorrador(),
+                label: 'Descargar formato DT',
+                actionId: 'lre:descargar-dt',
+                disabled: this.cargandoBorrador() || this.registrandoDescarga(),
               }
-            : undefined,
+            : this.puedeDescargar()
+              ? {
+                  label: 'Descargar CSV LRE',
+                  actionId: 'lre:descargar-csv',
+                  disabled: this.cargandoBorrador() || this.registrandoDescarga(),
+                }
+              : undefined,
         };
       },
-      { onPrimaryAction: () => this.descargar() },
+      {
+        onPrimaryAction: () => {
+          if (this.puedeDescargarDt()) {
+            void this.descargarFormatoDt();
+            return;
+          }
+          void this.descargarCsv();
+        },
+      },
     );
 
     void this.cargarNominas();
@@ -206,10 +237,38 @@ export class LreExportContainer {
     await this.cargarBorrador(id, { preserveBorrador: true });
   }
 
-  descargar(): void {
+  async descargarCsv(): Promise<void> {
     const borrador = this.borrador();
-    if (borrador && this.puedeDescargar()) {
-      descargarCsvLre(borrador);
+    if (!borrador || !this.puedeDescargar()) return;
+    await this.ejecutarDescarga(borrador, 'csv_borrador', () => descargarCsvLre(borrador));
+  }
+
+  async descargarFormatoDt(): Promise<void> {
+    const borrador = this.borrador();
+    if (!borrador || !this.puedeDescargarDt()) return;
+    await this.ejecutarDescarga(borrador, 'formato_dt_v1', () =>
+      descargarFormatoDtLre(borrador),
+    );
+  }
+
+  private async ejecutarDescarga(
+    borrador: LreBorradorExport,
+    canal: 'csv_borrador' | 'formato_dt_v1',
+    descargar: () => void,
+  ): Promise<void> {
+    this.registrandoDescarga.set(true);
+    this.feedbackDescarga.set(null);
+    try {
+      const registro = await this.service.registrarDescarga(borrador, canal);
+      this.ultimaExportacion.set(registro);
+      descargar();
+    } catch {
+      this.feedbackDescarga.set(
+        'El archivo se descargó, pero no se pudo registrar la exportación en el servidor. Revise la conexión o despliegue de la fase.',
+      );
+      descargar();
+    } finally {
+      this.registrandoDescarga.set(false);
     }
   }
 
@@ -219,8 +278,10 @@ export class LreExportContainer {
   ): Promise<void> {
     this.cargandoBorrador.set(true);
     this.error.set(null);
+    this.feedbackDescarga.set(null);
     if (!opts?.preserveBorrador) {
       this.borrador.set(null);
+      this.ultimaExportacion.set(null);
     }
     try {
       const borrador = await this.service.construirBorradorDesdeNomina(id);
@@ -231,6 +292,10 @@ export class LreExportContainer {
         return;
       }
       this.borrador.set(borrador);
+      const exportacion = await this.service.obtenerUltimaExportacion(
+        borrador.idLiquidacionPeriodo,
+      );
+      this.ultimaExportacion.set(exportacion.registro);
     } catch (err) {
       this.error.set(
         mensajeErrorSupabaseParaUsuario(err, 'preparar el borrador del libro de remuneraciones'),
