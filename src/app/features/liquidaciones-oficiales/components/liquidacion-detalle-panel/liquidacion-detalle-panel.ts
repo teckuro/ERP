@@ -3,6 +3,13 @@ import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 
 import type { LiquidacionConcepto, LiquidacionTrabajador } from '../../models/liquidacion-oficial.model';
+import {
+  esAporteReferenciaEmpleador,
+  etiquetaConceptoDetalle,
+  resumirAportesEmpleador,
+} from '../../rules/liquidacion-detalle-panel.rules';
+
+export type LiquidacionDetallePanelModo = 'resumen' | 'detallado';
 
 export interface EstadoTrabajadorDetalleUi {
   label: string;
@@ -23,18 +30,37 @@ export class LiquidacionDetallePanelComponent {
   @Input() trabajador: LiquidacionTrabajador | null = null;
   @Input() conceptos: LiquidacionConcepto[] = [];
   @Input() estadoTrabajador: EstadoTrabajadorDetalleUi | null = null;
+  @Input() modo: LiquidacionDetallePanelModo = 'resumen';
   @Input() permitirExpandir = true;
   @Input() permitirCerrar = true;
 
   @Output() expandirDetalle = new EventEmitter<void>();
   @Output() cerrarDetalle = new EventEmitter<void>();
 
+  esDetallado(): boolean {
+    return this.modo === 'detallado';
+  }
+
   haberes(): LiquidacionConcepto[] {
     return this.conceptos.filter((c) => c.tipo === 'haber');
   }
 
   descuentos(): LiquidacionConcepto[] {
-    return this.conceptos.filter((c) => c.tipo !== 'haber');
+    return this.conceptos.filter(
+      (c) => c.tipo !== 'haber' && !esAporteReferenciaEmpleador(c),
+    );
+  }
+
+  aportesResumen() {
+    return resumirAportesEmpleador(this.conceptos);
+  }
+
+  tieneAportes(): boolean {
+    return this.aportesResumen().total > 0;
+  }
+
+  detalleConcepto(concepto: LiquidacionConcepto): string | null {
+    return etiquetaConceptoDetalle(concepto);
   }
 
   cuadraturaOk(): boolean {
@@ -49,5 +75,12 @@ export class LiquidacionDetallePanelComponent {
       currency: 'CLP',
       maximumFractionDigits: 0,
     }).format(value);
+  }
+
+  fechaCorta(value: string | null): string {
+    if (!value) return 'No informado';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return value;
+    return d.toLocaleDateString('es-CL');
   }
 }

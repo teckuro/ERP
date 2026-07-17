@@ -1,6 +1,7 @@
 <section
   class="liq-detail-panel"
   [class.liq-detail-panel--empty]="!trabajador"
+  [class.liq-detail-panel--detallado]="esDetallado()"
   [attr.aria-label]="trabajador ? 'Detalle del trabajador' : 'Detalle pendiente de selección'"
 >
   @if (trabajador) {
@@ -26,8 +27,8 @@
           <button
             type="button"
             class="liq-detail-panel__icon-btn"
-            title="Ver detalle ampliado"
-            aria-label="Ver detalle ampliado"
+            title="Ver ficha detallada"
+            aria-label="Ver ficha detallada"
             (click)="expandirDetalle.emit()"
           >
             <lucide-icon name="panel-right-open" aria-hidden="true"></lucide-icon>
@@ -46,6 +47,27 @@
         }
       </div>
     </header>
+
+    @if (esDetallado()) {
+      <dl class="liq-detail-panel__ficha" aria-label="Datos laborales">
+        <div>
+          <dt>Cargo</dt>
+          <dd>{{ trabajador.cargo || 'No informado' }}</dd>
+        </div>
+        <div>
+          <dt>Centro de costo</dt>
+          <dd>{{ trabajador.centroCosto || 'No informado' }}</dd>
+        </div>
+        <div>
+          <dt>Ingreso</dt>
+          <dd>{{ fechaCorta(trabajador.fechaIngreso) }}</dd>
+        </div>
+        <div>
+          <dt>Días trabajados</dt>
+          <dd>{{ trabajador.diasTrabajados ?? '—' }}</dd>
+        </div>
+      </dl>
+    }
 
     <div class="liq-detail-panel__liquido" aria-label="Líquido a pagar">
       <span class="liq-detail-panel__liquido-label">Líquido a pagar</span>
@@ -78,7 +100,12 @@
         <ul>
           @for (concepto of haberes(); track concepto.idLiquidacionConcepto) {
             <li>
-              <span>{{ concepto.nombre }}</span>
+              <div class="liq-detail-panel__concepto-texto">
+                <span>{{ concepto.nombre }}</span>
+                @if (esDetallado() && detalleConcepto(concepto); as detalle) {
+                  <small>{{ detalle }}</small>
+                }
+              </div>
               <strong>{{ money(concepto.monto) }}</strong>
             </li>
           } @empty {
@@ -95,7 +122,12 @@
         <ul>
           @for (concepto of descuentos(); track concepto.idLiquidacionConcepto) {
             <li>
-              <span>{{ concepto.nombre }}</span>
+              <div class="liq-detail-panel__concepto-texto">
+                <span>{{ concepto.nombre }}</span>
+                @if (esDetallado() && detalleConcepto(concepto); as detalle) {
+                  <small>{{ detalle }}</small>
+                }
+              </div>
               <strong>{{ money(concepto.monto) }}</strong>
             </li>
           } @empty {
@@ -103,10 +135,47 @@
           }
         </ul>
       </section>
+
+      @if (esDetallado() && tieneAportes()) {
+        <section aria-label="Aportes del empleador">
+          <h4>Aportes del empleador</h4>
+          <ul>
+            @if (aportesResumen().sis > 0) {
+              <li>
+                <span>SIS</span>
+                <strong>{{ money(aportesResumen().sis) }}</strong>
+              </li>
+            }
+            @if (aportesResumen().sanna > 0) {
+              <li>
+                <span>SANNA</span>
+                <strong>{{ money(aportesResumen().sanna) }}</strong>
+              </li>
+            }
+            @if (aportesResumen().mutual > 0) {
+              <li>
+                <span>Mutual / Ley 16.744</span>
+                <strong>{{ money(aportesResumen().mutual) }}</strong>
+              </li>
+            }
+            <li>
+              <span>Total referencia</span>
+              <strong>{{ money(aportesResumen().total) }}</strong>
+            </li>
+          </ul>
+          <p class="liq-detail-panel__aporte-note">
+            Referencia del empleador: no descuenta el líquido del trabajador.
+          </p>
+        </section>
+      }
     </div>
 
     <p class="liq-detail-panel__note">
-      Origen: nómina mensual aprobada. Sin recálculo ni edición de montos.
+      @if (esDetallado()) {
+        Ficha materializada desde nómina mensual aprobada. Sin recálculo ni edición de montos.
+      } @else {
+        Resumen operativo. Amplíe para ver datos laborales, base/tasa y aportes del empleador.
+      }
     </p>
   } @else {
     <div class="liq-detail-panel__placeholder">

@@ -9,6 +9,13 @@
 
 ---
 
+## 2026-07-17 — Liquidaciones: panel resumen vs ficha detallada
+
+- **Pedido:** que el detalle ampliado aporte más que el panel lateral al seleccionar un trabajador.
+- **Solución local:** `modo="resumen"` en panel lateral (líquido, totales, conceptos); `modo="detallado"` en modal (ficha laboral, base/tasa/cantidad por concepto, aportes del empleador). Rules puras en `liquidacion-detalle-panel.rules.ts`.
+- **Archivos:** `liquidacion-detalle-panel.*`, `liquidaciones-modal-detalle-trabajador.component.html`, `liquidaciones-oficiales-container.html`, `liquidacion-detalle-panel.rules.ts`.
+- **Sin tocar:** estilos globales, SQL, motor, servicios.
+
 ## 2026-07-17 — Liquidaciones: panel detalle lateral con cierre e integración
 
 - **Pedido:** mejorar el detalle al costado al seleccionar un trabajador; icono X para cerrar e integración con el diseño.
