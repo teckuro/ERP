@@ -20,6 +20,15 @@
 - `Authentication`:
   - Desactiva proveedores que no uses.
   - Configura `Site URL` y `Redirect URLs` exactas por ambiente.
+  - Para recuperacion de contrasena, allowlist por ambiente:
+    - `http://localhost:4200/actualizar-contrasena` (dev)
+    - `{URL_preview}/actualizar-contrasena`
+    - `{URL_produccion}/actualizar-contrasena`
+  - El frontend envia `redirectTo` a `{origin}/actualizar-contrasena` desde `AuthService.solicitarRecuperacionContrasena`.
+  - Revisa la plantilla **Reset password** y SMTP; sin correo no hay flujo usable.
+  - Plantilla del proyecto (asunto + HTML): `supabase/templates/recovery.html` y guía
+    `docs/codex/modulos/auth/plantilla-correo-recuperacion.md`. En hosted hay que pegarla
+    en Dashboard → Authentication → Email Templates (el archivo del repo no se despliega solo).
   - Activa confirmacion de correo si usas password login.
 - `Database`:
   - Activa RLS en toda tabla expuesta al cliente.

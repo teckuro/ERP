@@ -14,6 +14,7 @@ import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CardComponent, CardContentComponent } from '../../../../shared/components/ui/primitives/card.component';
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
+import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { ParametrosWorkspacePeriodoBandaComponent } from '../../components/parametros-workspace-periodo-banda/parametros-workspace-periodo-banda.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import { ParametrosWorkspaceTabsPanelComponent } from '../parametros-workspace-tabs-panel/parametros-workspace-tabs-panel.component';
@@ -30,6 +31,7 @@ import { ParametrosWorkspaceOrquestador } from '../../facade/parametros-workspac
     FormsModule,
     ReactiveFormsModule,
     MessageBoxComponent,
+    WorkspaceLoadingComponent,
     CardComponent,
     CardContentComponent,
     ParametrosWorkspacePeriodoBandaComponent,

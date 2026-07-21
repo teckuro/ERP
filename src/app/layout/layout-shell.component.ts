@@ -24,6 +24,8 @@ import { SHELL_HEADER_HEIGHT_PX, SHELL_NAV_WIDTH_PX } from './shell-navigation.c
   styles: [
     `
       .erp-shell-layout {
+        --erp-shell-nav-width: ${SHELL_NAV_WIDTH_PX}px;
+        --erp-shell-header-height: ${SHELL_HEADER_HEIGHT_PX}px;
         min-height: 100vh;
         height: 100vh;
         overflow: hidden;

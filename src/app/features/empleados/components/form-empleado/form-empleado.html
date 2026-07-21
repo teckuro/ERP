@@ -23,16 +23,15 @@
         </div>
 
         @if (guardando()) {
-        <app-message-box
-          mode="modal"
-          variant="loading"
+        <app-workspace-loading
+          scope="shell"
           title="Guardando ficha"
           [message]="
               esModoBasico()
                 ? 'Estamos guardando la ficha básica del empleado.'
                 : 'Estamos guardando la ficha completa del empleado.'
             "
-        ></app-message-box>
+        />
         } @else {
         <ng-container *ngIf="modalAccionAvanzada() as modal; else otrosModalesAvanzados">
         <app-message-box

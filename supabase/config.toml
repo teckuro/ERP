@@ -2,3 +2,11 @@
 
 [functions.erp-asistente-preguntor]
 verify_jwt = true
+
+# Plantilla de recuperación (solo aplica en `supabase start` local).
+# En proyecto hosted: Dashboard → Authentication → Email Templates → Reset password
+# o Management API (`mailer_subjects_recovery` / `mailer_templates_recovery_content`).
+# Fuente: docs/codex/modulos/auth/plantilla-correo-recuperacion.md
+[auth.email.template.recovery]
+subject = "Restablecer contraseña — ERP Remuneraciones"
+content_path = "./supabase/templates/recovery.html"

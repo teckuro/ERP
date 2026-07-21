@@ -1083,9 +1083,11 @@
 }
 
 .cr-detalle-block {
+  position: relative;
   margin: 0 0 1rem;
   padding: 0 0 1rem;
   border-bottom: 1px solid #f1f5f9;
+  min-height: 6rem;
 }
 
 .cr-detalle-block--last {

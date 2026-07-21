@@ -59,7 +59,11 @@
 
   <div class="sel-conc__list-wrap">
     @if (cargando()) {
-      <p class="sel-conc__empty">Cargando conceptos del período…</p>
+      <app-workspace-loading
+        [fill]="true"
+        title="Cargando conceptos"
+        message="Consultando el catálogo asignable del período."
+      />
     } @else if (itemsVisibles().length === 0) {
       <p class="sel-conc__empty">
         No hay conceptos que coincidan. Revise el catálogo o la vigencia del período.

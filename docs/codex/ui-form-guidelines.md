@@ -155,10 +155,19 @@ Estilo:
 
 ## Loading
 
-- Si carga una tabla o listado, el loading vive dentro del cuerpo de la grilla.
-- Si carga una pantalla completa, usar `app-message-box variant="loading" mode="modal"` para centrar y bloquear la vista.
-- No bloquear toda la pantalla cuando solo cambia una parte.
+Contrato canónico con `app-workspace-loading` (panel centrado + spinner). Tipología por tipo de espera:
+
+- **Nivel A — Shell** (`scope="shell"`): carga inicial o bloqueo de pantalla **dentro del ERP**. Overlay fijo solo sobre el área de contenido (deja menú y header visibles). **Por defecto para cargas de página.**
+- **Nivel A′ — Viewport** (`scope="viewport"`): bloqueo total de ventana. Solo modales fullscreen o flujos fuera del shell.
+- **Nivel B — Panel** (`[fill]="true"`): recarga de workspace, paso o zona con UI visible. Overlay absoluto sobre el padre `position: relative`, centrado en el panel.
+- **Nivel C — Contextual**: listado → loading dentro del cuerpo de `app-data-grid`; submit de botón → spinner del botón (`app-page-actions` o auth). Sin overlay de pantalla.
+
+No usar `app-message-box variant="loading"` para cargas (reservar MessageBox para error, éxito, warning y decisiones).
+
+- No tapar el menú lateral ni el header con loadings de página (usar nivel A `shell`, no `viewport`).
+- No bloquear toda la pantalla cuando solo cambia una parte (usar nivel B o C).
 - Usar texto contextual: `Cargando listado de empleados...`, `Cargando ficha...`, `Guardando ficha...`.
+- Auth público (login / recuperar / actualizar) mantiene spinner del botón.
 
 ## Botones e iconos
 

@@ -22,6 +22,7 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { mensajeErrorSupabaseParaUsuario } from '../../../../../../core/errors/erp-supabase-user-message';
+import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { NominaPlantillaCicloService } from '../../../../services/nomina-plantilla-ciclo.service';
 import {
   describirPoliticaFinSemana,
@@ -34,7 +35,7 @@ import {
 @Component({
   selector: 'app-admin-plantillas-modal-preview',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, WorkspaceLoadingComponent],
   templateUrl: './admin-plantillas-modal-preview.component.html',
   styleUrl: './admin-plantillas-modal-preview.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

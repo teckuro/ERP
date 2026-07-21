@@ -2,16 +2,6 @@
   display: contents;
 }
 
-.prev-exp-modal__loading {
-  position: fixed;
-  inset: 0;
-  z-index: 1200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(15, 23, 42, 0.35);
-}
-
 :host ::ng-deep .prev-exp-modal--detalle.message-box-host-modal {
   z-index: 1300;
 }

@@ -14,4 +14,4 @@ Plan padre: [`../../orquestador/plan-salidas-externas-liq-previred-lre.md`](../.
 
 ## Ruta actual
 
-`/reportes` — placeholder operativo «Próximamente» hasta cerrar alcance de REPORTES-01a.
+`/reportes` — placeholder mínimo: icono + «En construcción».

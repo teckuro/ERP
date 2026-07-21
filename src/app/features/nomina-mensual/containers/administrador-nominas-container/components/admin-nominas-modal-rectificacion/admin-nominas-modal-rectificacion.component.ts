@@ -14,6 +14,7 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
+import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { mensajeErrorSupabaseParaUsuario } from '../../../../../../core/errors/erp-supabase-user-message';
 import { NominaPeriodoService } from '../../../../services/nomina-periodo.service';
 import type { NominaPeriodoResumen } from '../../../../models/nomina-periodo.models';
@@ -31,7 +32,7 @@ export interface RectificacionCreadaEvento {
 @Component({
   selector: 'app-admin-nominas-modal-rectificacion',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, MessageBoxComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule, MessageBoxComponent, WorkspaceLoadingComponent],
   templateUrl: './admin-nominas-modal-rectificacion.component.html',
   styleUrl: './admin-nominas-modal-rectificacion.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

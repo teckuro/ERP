@@ -13,6 +13,7 @@ import { X as XIcon } from 'lucide-angular/src/icons';
 
 import type { ConceptoListado } from '../../../../../haberes-descuentos/models/haber-descuento-asignacion.model';
 import type { MovimientoCategoria } from '../../../../../nomina-mensual/models/movimiento-nomina.models';
+import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import {
   FILTROS_CATEGORIA_CONCEPTO_MANUAL,
   construirItemsPickerConceptoManual,
@@ -38,7 +39,7 @@ export type SeleccionConceptoManualEvento =
 @Component({
   selector: 'app-nomina-mensual-v2-modal-seleccion-concepto',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, WorkspaceLoadingComponent],
   templateUrl: './nomina-mensual-v2-modal-seleccion-concepto.component.html',
   styleUrl: './nomina-mensual-v2-modal-seleccion-concepto.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

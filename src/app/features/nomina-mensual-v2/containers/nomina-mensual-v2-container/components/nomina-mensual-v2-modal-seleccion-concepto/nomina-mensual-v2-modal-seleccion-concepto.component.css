@@ -140,8 +140,9 @@
 }
 
 .sel-conc__list-wrap {
+  position: relative;
   flex: 1 1 auto;
-  min-height: 0;
+  min-height: 12rem;
   overflow: auto;
   border: 1px solid #e2e8f0;
   border-radius: 6px;

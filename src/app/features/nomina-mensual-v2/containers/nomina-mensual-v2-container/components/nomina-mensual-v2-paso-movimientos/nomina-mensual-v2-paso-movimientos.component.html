@@ -238,7 +238,7 @@
           </header>
           @if (estaCargandoItemsDeFila(fila.trabajadorId) || (fila.itemsCargados === false && fila.cuentaItems)) {
             <app-workspace-loading
-              [fill]="false"
+              [fill]="true"
               title="Cargando movimientos"
               message="Estamos consultando los movimientos del trabajador seleccionado."
             />

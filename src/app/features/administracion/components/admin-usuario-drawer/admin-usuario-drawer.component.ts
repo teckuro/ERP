@@ -45,6 +45,8 @@ export class AdminUsuarioDrawerComponent implements OnChanges {
   @Input() usuario: UsuarioErp | null = null;
   @Input() perfiles: readonly PerfilAcceso[] = [];
   @Input() guardando = false;
+  /** Bloquea cerrar el drawer mientras hay un MessageBox de error encima. */
+  @Input() bloquearCierre = false;
 
   @Output() cerrar = new EventEmitter<void>();
   @Output() crear = new EventEmitter<{

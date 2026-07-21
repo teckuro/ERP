@@ -14,12 +14,13 @@ import {
 } from '../../../../core/services/asistente-preguntor.service';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import { ButtonComponent } from '../../../../shared/components/ui/primitives/button.component';
+import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 
 @Component({
   selector: 'app-preguntor-container',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, ButtonComponent],
+  imports: [CommonModule, FormsModule, ButtonComponent, WorkspaceLoadingComponent],
   templateUrl: './preguntor-container.component.html',
   styleUrl: './preguntor-container.component.css',
 })

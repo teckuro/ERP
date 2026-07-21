@@ -137,6 +137,13 @@ app-admin-perfil-drawer app-message-box.message-box-host-modal {
   color: #b91c1c;
 }
 
+.adm-field-error--bloque {
+  padding: 8px 10px;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  background: #fef2f2;
+}
+
 .adm-check {
   display: flex;
   align-items: center;

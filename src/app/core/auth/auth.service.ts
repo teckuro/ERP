@@ -5,22 +5,33 @@ import { injectSupabase } from '../services/supabase.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService implements OnDestroy {
+  private static readonly RECOVERY_FLAG_KEY = 'angular-erp-password-recovery';
+
   private readonly supabase = injectSupabase();
   private readonly sessionState = signal<Session | null>(null);
   private readonly readyState = signal(false);
+  private readonly passwordRecoveryState = signal(this.readRecoveryFlag());
   private readonly subscription: Subscription | null;
 
   readonly currentUser = computed<User | null>(() => this.sessionState()?.user ?? null);
   readonly currentEmail = computed(() => this.currentUser()?.email ?? null);
   readonly isAuthenticated = computed(() => this.currentUser() != null);
   readonly isReady = computed(() => this.readyState());
+  readonly isPasswordRecovery = computed(() => this.passwordRecoveryState());
 
   constructor() {
     void this.refreshSession();
 
-    const { data } = this.supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
+    const { data } = this.supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
       this.sessionState.set(session);
       this.readyState.set(true);
+
+      // Flujo oficial Supabase: el enlace de correo emite PASSWORD_RECOVERY.
+      if (event === 'PASSWORD_RECOVERY') {
+        this.markPasswordRecovery(true);
+      } else if (event === 'SIGNED_OUT') {
+        this.markPasswordRecovery(false);
+      }
     });
     this.subscription = data.subscription;
   }
@@ -40,6 +51,7 @@ export class AuthService implements OnDestroy {
       throw new Error('No se pudo iniciar sesion. Revisa el correo y la contrasena.');
     }
 
+    this.markPasswordRecovery(false);
     this.sessionState.set(data.session);
     this.readyState.set(true);
   }
@@ -65,6 +77,10 @@ export class AuthService implements OnDestroy {
       throw new Error('La nueva contrasena debe tener al menos 8 caracteres.');
     }
 
+    if (!this.tieneSesionRecuperacion()) {
+      throw new Error('El enlace de recuperacion no esta activo o ya expiro. Solicita uno nuevo.');
+    }
+
     const { data, error } = await this.supabase.auth.updateUser({
       password: normalizedPassword,
     });
@@ -80,6 +96,7 @@ export class AuthService implements OnDestroy {
 
   async logout(): Promise<void> {
     const { error } = await this.supabase.auth.signOut();
+    this.markPasswordRecovery(false);
     this.sessionState.set(null);
     this.readyState.set(true);
 
@@ -96,6 +113,43 @@ export class AuthService implements OnDestroy {
     return data.session ?? null;
   }
 
+  /**
+   * Espera a que el cliente Auth termine de hidratar la sesion
+   * (incluido detectSessionInUrl del enlace de recuperacion).
+   */
+  async esperarSesionRecuperacion(timeoutMs = 8000): Promise<boolean> {
+    const deadline = Date.now() + timeoutMs;
+
+    while (Date.now() < deadline) {
+      if (this.tieneSesionRecuperacion()) {
+        return true;
+      }
+
+      if (!this.readyState()) {
+        await this.delay(50);
+        continue;
+      }
+
+      // Auth listo pero el evento PASSWORD_RECOVERY puede llegar justo despues
+      // de getSession inicial (tokens en URL / PKCE).
+      if (this.sessionState()?.user && this.passwordRecoveryState()) {
+        return true;
+      }
+
+      await this.delay(50);
+    }
+
+    if (!this.readyState()) {
+      await this.getSession();
+    }
+
+    return this.tieneSesionRecuperacion();
+  }
+
+  tieneSesionRecuperacion(): boolean {
+    return this.passwordRecoveryState() && this.sessionState()?.user != null;
+  }
+
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
   }
@@ -106,5 +160,30 @@ export class AuthService implements OnDestroy {
 
   private passwordRecoveryRedirectUrl(): string {
     return `${globalThis.location.origin}/actualizar-contrasena`;
+  }
+
+  private markPasswordRecovery(active: boolean): void {
+    this.passwordRecoveryState.set(active);
+    try {
+      if (active) {
+        sessionStorage.setItem(AuthService.RECOVERY_FLAG_KEY, '1');
+      } else {
+        sessionStorage.removeItem(AuthService.RECOVERY_FLAG_KEY);
+      }
+    } catch {
+      // sessionStorage puede fallar en modo privado; el signal en memoria sigue activo.
+    }
+  }
+
+  private readRecoveryFlag(): boolean {
+    try {
+      return sessionStorage.getItem(AuthService.RECOVERY_FLAG_KEY) === '1';
+    } catch {
+      return false;
+    }
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

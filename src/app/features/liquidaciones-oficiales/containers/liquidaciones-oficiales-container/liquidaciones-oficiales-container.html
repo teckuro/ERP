@@ -236,7 +236,7 @@
     <div class="liq-operativa">
     @if (cargaNominaInternaInicial()) {
       <app-workspace-loading
-        [fill]="true"
+        scope="shell"
         title="Cargando liquidaciones de la nómina"
         message="Estamos materializando los comprobantes de la nómina seleccionada."
       />

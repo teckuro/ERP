@@ -9,6 +9,9 @@ AUTH-BASE-01 desbloquea pruebas E2E y uso operativo de RLS/RPC sin introducir ro
 ## Alcance implementado
 
 - Pantalla publica `/login` con email, contrasena, validaciones basicas, estado cargando y error operativo.
+- Recuperacion de contrasena (self-service) con Supabase Auth:
+  - `/recuperar-contrasena` → `resetPasswordForEmail` + `redirectTo` a `/actualizar-contrasena`;
+  - `/actualizar-contrasena` espera el evento `PASSWORD_RECOVERY`, exige sesion de recuperacion, llama `updateUser({ password })` y cierra sesion.
 - `AuthService` en `src/app/core/auth/auth.service.ts`.
 - Guards `authGuard` y `authChildGuard` en `src/app/core/auth/auth.guard.ts`.
 - Rutas internas bajo `LayoutShellComponent` protegidas por `canActivateChild`.
@@ -30,9 +33,11 @@ No se crea un cliente frontend con `service_role`.
 
 ## Rutas
 
-Ruta publica:
+Rutas publicas:
 
 - `/login`
+- `/recuperar-contrasena`
+- `/actualizar-contrasena` (solo habilita guardado si hay sesion de recuperacion `PASSWORD_RECOVERY`)
 
 Rutas internas protegidas:
 
@@ -127,6 +132,26 @@ Estado de preparacion:
 - para repetir en otro ambiente, pendiente crear/confirmar usuario Supabase Auth de desarrollo y definir periodo E2E;
 - el hito E2E real de nomina queda cerrado por NOM-E2E-CLOSE-01 en el ambiente controlado usado para `2026-04`.
 
+## Recuperacion de contrasena (Supabase)
+
+Flujo alineado a la guia oficial [Passwords](https://supabase.com/docs/guides/auth/passwords) y `resetPasswordForEmail`:
+
+1. Usuario pide enlace en `/recuperar-contrasena`.
+2. Frontend llama `supabase.auth.resetPasswordForEmail(email, { redirectTo: origin + '/actualizar-contrasena' })`.
+3. El correo debe estar allowlisted en Dashboard → Authentication → URL Configuration (`Redirect URLs`).
+4. Al abrir el enlace, supabase-js hidrata la sesion (`detectSessionInUrl`) y emite `PASSWORD_RECOVERY`.
+5. `/actualizar-contrasena` espera ese evento (no un timeout fijo), exige flag de recuperacion + usuario, actualiza con `updateUser({ password })` y hace `signOut`.
+6. El mensaje de exito en paso 1 no revela si el correo existe (anti-enumeracion).
+
+Operacion Dashboard (obligatorio por ambiente):
+
+- `Site URL` del frontend.
+- `Redirect URLs` con `{origin}/actualizar-contrasena` (local, preview y produccion).
+- Plantilla de correo **Reset password** activa (SMTP configurado).
+- Contenido canónico en repo: `supabase/templates/recovery.html` +
+  [`plantilla-correo-recuperacion.md`](./plantilla-correo-recuperacion.md)
+  (pegar en Dashboard del ambiente hosted).
+
 ## Seguridad
 
 Reglas activas:
@@ -135,7 +160,8 @@ Reglas activas:
 - no imprimir tokens ni passwords;
 - no abrir RLS para compensar errores de login;
 - mantener `authenticated` como rol operativo base;
-- no implementar roles inventados en esta fase.
+- no implementar roles inventados en esta fase;
+- `/actualizar-contrasena` no permite cambiar clave solo por sesion de login normal: requiere `PASSWORD_RECOVERY` (flag en memoria + `sessionStorage`).
 
 ## Fuera de alcance
 
@@ -145,9 +171,9 @@ No implementa:
 - roles avanzados;
 - permisos finos por modulo;
 - invitaciones;
-- reset password;
 - registro publico;
 - SSO/MFA;
+- cambio de contrasena desde perfil logueado (flujo distinto al de recuperacion);
 - auditoria avanzada de sesiones;
 - cierre operativo o legal;
 - liquidaciones oficiales;

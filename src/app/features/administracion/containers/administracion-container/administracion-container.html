@@ -44,7 +44,7 @@
 
   @if (cargaInicial() && cargando()) {
     <app-workspace-loading
-      [fill]="true"
+      scope="shell"
       title="Cargando administración"
       message="Estamos consultando usuarios, perfiles y configuración."
     />
@@ -267,6 +267,7 @@
       [usuario]="usuarioSeleccionado()"
       [perfiles]="perfiles()"
       [guardando]="guardando()"
+      [bloquearCierre]="errorUsuarioDrawer() != null"
       (cerrar)="cerrarDrawerUsuario()"
       (crear)="confirmarCrearUsuario($event)"
       (cambiarPerfil)="confirmarCambioPerfil($event)"
@@ -281,10 +282,39 @@
       [permisoEfectivoFn]="permisoEfectivo"
       [perfilesExistentes]="perfiles()"
       [guardando]="guardando()"
+      [bloquearCierre]="errorPerfilDrawer() != null"
       (cerrar)="cerrarEditorPerfil()"
       (guardar)="guardarPerfil()"
       (editorChange)="actualizarEditor($event)"
       (alternarPermiso)="alternarPermisoDesdeDrawer($event)"
+    />
+  }
+
+  @if (errorUsuarioDrawer(); as errorUsuario) {
+    <app-message-box
+      variant="danger"
+      mode="modal"
+      width="sm"
+      eyebrow="Usuarios del sistema"
+      title="No fue posible completar la operación"
+      [message]="errorUsuario"
+      primaryLabel="Entendido"
+      (action)="limpiarErrorUsuarioDrawer()"
+      (dismiss)="limpiarErrorUsuarioDrawer()"
+    />
+  }
+
+  @if (errorPerfilDrawer(); as errorPerfil) {
+    <app-message-box
+      variant="danger"
+      mode="modal"
+      width="sm"
+      eyebrow="Perfiles de acceso"
+      title="No fue posible completar la operación"
+      [message]="errorPerfil"
+      primaryLabel="Entendido"
+      (action)="limpiarErrorPerfilDrawer()"
+      (dismiss)="limpiarErrorPerfilDrawer()"
     />
   }
 

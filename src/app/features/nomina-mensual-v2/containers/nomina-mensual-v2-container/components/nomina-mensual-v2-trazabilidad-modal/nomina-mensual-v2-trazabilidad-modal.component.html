@@ -87,9 +87,8 @@
           <div class="nmv2-trace-modal">
             @if (muestraDatosParametrosGuardados(detalle)) {
               @if (valoresParametrosBaseLoading()) {
-                <app-message-box
-                  variant="loading"
-                  mode="inline"
+                <app-workspace-loading
+                  [fill]="true"
                   title="Cargando datos guardados"
                   message="Consultando los valores guardados para este período."
                 />

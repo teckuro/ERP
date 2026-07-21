@@ -1,5 +1,10 @@
 @import '../admin-nominas-modal-nueva-nomina/admin-nominas-modal-nueva-nomina.component.css';
 
+.adm-nom-modal__lista {
+  position: relative;
+  min-height: 12rem;
+}
+
 .adm-nom-modal__check-row {
   display: flex;
   align-items: flex-start;

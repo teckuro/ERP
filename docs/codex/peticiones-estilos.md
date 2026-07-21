@@ -9,6 +9,100 @@
 
 ---
 
+## 2026-07-20 — Auth: estado «correo enviado» más limpio
+
+- **Pedido:** mejorar la pantalla post-envío (cajas, bordes de color, textos duplicados).
+- **Solución:** sin lista en caja ni franja azul de ayuda; correo en línea propia; CTA primaria a login y secundaria «Usar otro correo»; copy alineado al botón del correo («Elegir nueva contraseña»); `showSupport` en shell.
+- **Archivos:** `recuperar-contrasena.page.ts/.spec.ts`, `auth-access-shell.component.ts`, `auth-access.shared.css`.
+- **Sin tocar:** estilos globales, AuthService, SQL, motor.
+
+## 2026-07-20 — Auth: correo recovery sin bordes de color
+
+
+- **Pedido:** cuidado con bordes de color; mejorar textos y disposición.
+- **Solución:** se quita franja azul superior y caja con borde; layout centrado; copy más directo; un solo acento (botón primario); borde exterior neutro.
+- **Archivos:** `supabase/templates/recovery.html`.
+- **Nota:** volver a pegar en Dashboard Email Templates / script apply.
+
+## 2026-07-20 — Auth: pantalla recuperar contraseña (estado enviado)
+
+
+- **Pedido:** mejorar la pantalla tras «Correo enviado» (screenshot).
+- **Solución local:** estado con pasos claros, correo indicado, CTA «Usar otro correo» / ir a login; copy con tildes; panel izquierdo cambia al éxito; se evita solo el banner verde genérico.
+- **Archivos:** `recuperar-contrasena.page.ts/.spec.ts`, `actualizar-contrasena.page.ts` (tildes), `auth-access.shared.css`, `peticiones-estilos.md`.
+- **Sin tocar:** estilos globales, AuthService, SQL, motor.
+
+## 2026-07-20 — Auth: plantilla correo recovery (sin URL larga)
+
+
+- **Pedido:** se veía el correo con el enlace crudo de Supabase ocupando media pantalla.
+- **Solución:** plantilla más compacta: franja azul superior, CTA «Continuar», enlace corto «Abrir enlace seguro» (sin pegar `{{ .ConfirmationURL }}` como texto), aviso en caja sobria.
+- **Archivos:** `supabase/templates/recovery.html`, docs auth.
+- **Nota:** hay que volver a pegar/aplicar en Dashboard (o `node scripts/apply-recovery-email-template.mjs`) para el proyecto hosted.
+
+## 2026-07-20 — Reportes: solo icono «En construcción»
+
+
+- **Pedido:** mal; solo deja un icono que diga en construcción.
+- **Solución local:** pantalla mínima centrada con icono Lucide `construction` + texto «En construcción»; se quita mapa, franja y enlaces.
+- **Archivos:** `reportes.page.ts`.
+- **Sin tocar:** estilos globales, SQL, motor.
+
+## 2026-07-20 — Reportes: mapa operativo (sin empty-state IA)
+
+
+- **Pedido:** mejorar el placeholder; menos ejemplo básico de IA.
+- **Solución local:** se retira card centrada / badge pill / icono hero; franja operativa + lista de informes con estado Disponible/Pendiente e icono `construction` solo en la línea de estado (REPORTES-01a).
+- **Archivos:** `reportes.page.ts`, `peticiones-estilos.md`.
+- **Sin tocar:** estilos globales, SQL, motor.
+
+## 2026-07-20 — Reportes: saturación warning del placeholder
+
+
+- **Pedido:** mejorar la saturación de colores del estado «En construcción».
+- **Solución local:** fondo `#fef3c7`, borde/icono `#f59e0b`, badge sólido warning, tipografía ámbar oscura (`#78350f` / `#92400e`); se mantiene la familia warning del manual.
+- **Archivos:** `reportes.page.ts`.
+- **Sin tocar:** estilos globales, SQL, motor.
+
+## 2026-07-20 — Reportes: placeholder en construcción más visible
+
+
+- **Pedido:** mejorar el diseño de que Reportes se hace posterior; icono de construcción y más llamativo.
+- **Solución local:** estado centrado con icono Lucide `construction`, badge «En construcción», fondo warning soft (`#fffbeb`), chip de shell `warning`, CTA primaria a Liquidaciones y enlaces a Previred / LRE / Nóminas.
+- **Archivos:** `reportes.page.ts`, `app.config.ts` (icono `Construction`), `peticiones-estilos.md`.
+- **Sin tocar:** estilos globales, SQL, motor, REPORTES-01b/c.
+
+## 2026-07-20 — Loadings: scope shell centralizado (sin tapar menú)
+
+
+- **Pedido:** mejorar todos los loadings; el loading debe ser centralizado.
+- **Solución:** nuevo `scope="shell"` en `app-workspace-loading` (overlay fijo centrado solo en el área de contenido ERP; menú y header quedan visibles). Cargas de página migradas a `shell`; `viewport` queda para modales bloqueantes; paneles/pasos siguen con `[fill]="true"`. Variables `--erp-shell-nav-width` / `--erp-shell-header-height` en `layout-shell`.
+- **Archivos:** `workspace-loading.component.ts/.spec.ts`, `layout-shell.component.ts`, parámetros, administración, resumen, ficha empleado/empresa, form empleado (guardar), nómina v2, liquidaciones/Previred/LRE (carga inicial), `detalle-liquidacion.page.ts`, `ui-form-guidelines.md`.
+- **Sin tocar:** estilos globales protegidos, skeletons DataGrid, MessageBox error/éxito, spinners auth.
+
+## 2026-07-20 — Loadings: overlay completo centrado (niveles A/B/C)
+
+
+- **Pedido:** homologar todos los loadings; overlay completo y centrado según tipo de espera.
+- **Solución:** contrato en `app-workspace-loading` con `scope="viewport"` (A), `[fill]="true"` (B) y contextual grilla/botón (C); se deja de usar MessageBox `variant="loading"` para cargas; migraciones en parámetros, form empleado, Previred modal, ficha empresa, modales/pasos con texto suelto.
+- **Archivos:** `workspace-loading.component.ts/.spec.ts`, `ui-form-guidelines.md`, contenedores/modales listados en la fase.
+- **Sin tocar:** estilos globales protegidos, skeletons de DataGrid, MessageBox de error/éxito/confirmación, spinners auth.
+
+## 2026-07-20 — Administración: errores de crear usuario en el modal
+
+- **Pedido:** al crear usuario la API fallaba y el error salía en MessageBox lineal detrás del modal; revisar errores parecidos. Luego: el aviso no debe ser banner lineal dentro del form, sino MessageBox sobre el modal de creación.
+- **Causa API:** `jsonResponse` en `admin-usuarios` estaba fuera de alcance en crear/asignar/bloquear → 500.
+- **Solución:** `jsonResponse` a nivel módulo con `corsHeaders`; errores de API de usuario/perfil con `app-message-box mode="modal" variant="danger"` apilado sobre el drawer (mismo patrón que desactivar); se conserva el modal de creación debajo.
+- **Archivos:** `supabase/functions/admin-usuarios/index.ts`, `administracion-container.*`, `admin-usuario-drawer.*`, `admin-perfil-drawer.*`.
+- **Sin tocar:** estilos globales, motor, Auth login.
+
+## 2026-07-20 — Auth: recuperacion de contrasena al formato del login
+
+- **Pedido:** mejorar el diseño de restablecer contraseña según el formato del login.
+- **Solución local:** shell compartido `auth-access-shell` + CSS `auth-access.shared.css` (panel marca, card, campos, CTA, soporte, versión); pantallas `/recuperar-contrasena` y `/actualizar-contrasena` alineadas al split layout del login; toggle de visibilidad en nueva contraseña.
+- **Archivos:** `auth-access-shell.component.ts`, `auth-access.shared.css`, `recuperar-contrasena.page.ts`, `actualizar-contrasena.page.ts`, specs de esas páginas; `Eye`/`Lock` vía `ADMIN_NOMINAS_LUCIDE_ICONS` (sin duplicar en `app.config`).
+- **Sin tocar:** estilos globales, lógica de AuthService, SQL, motor.
+
 ## 2026-07-17 — Liquidaciones: panel resumen vs ficha detallada
 
 - **Pedido:** que el detalle ampliado aporte más que el panel lateral al seleccionar un trabajador.

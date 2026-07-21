@@ -20,7 +20,6 @@ import {
 } from '../../../../../../shared/components/ui/data-grid';
 import {
   MessageBoxComponent,
-  type MessageBoxVariantInput,
 } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
 import type {
   EventoAuditoriaNomina,
@@ -61,16 +60,7 @@ export class AdminNominasModalHistorialNominaComponent {
     return `${n.empresaNombre} · ${n.periodo}`;
   });
 
-  readonly variantModal = computed((): MessageBoxVariantInput => {
-    if (this.cargando()) return 'loading';
-    if (this.error()) return 'danger';
-    return 'info';
-  });
-
   readonly subtituloModal = computed(() => {
-    if (this.cargando()) {
-      return 'Cargando historial administrativo…';
-    }
     if (this.error()) {
       return this.error()!;
     }

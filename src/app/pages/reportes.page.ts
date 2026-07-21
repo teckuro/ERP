@@ -1,108 +1,58 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { bindShellPageContext } from '../layout/shell-page-context.binding';
 
 /**
- * Placeholder REPORTES-01a: mapa de informes pendiente de implementación.
+ * Placeholder REPORTES-01a hasta habilitar la bandeja de informes.
  * Contrato: docs/codex/modulos/reportes/REPORTES-01-contrato-fase.md
  */
 @Component({
   selector: 'app-reportes-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink, LucideAngularModule],
+  imports: [LucideAngularModule],
   template: `
     <section class="erp-fullscreen-page report-page" aria-label="Reportes">
-      <div class="erp-fullscreen-frame report-frame">
-        <header class="report-proximamente">
-          <p class="report-proximamente__kicker">Reportes</p>
-          <h1 class="report-proximamente__title">Próximamente</h1>
-          <p class="report-proximamente__text">
-            La bandeja de reportes operativos se implementará en REPORTES-01.
-            Mientras tanto puede consultar liquidaciones, Previred y el libro de remuneraciones.
-          </p>
-          <nav class="report-proximamente__links" aria-label="Salidas ya disponibles">
-            <a routerLink="/remuneraciones/liquidaciones">Liquidaciones</a>
-            <a routerLink="/remuneraciones/previred">Previred</a>
-            <a routerLink="/remuneraciones/lre">Libro de remuneraciones</a>
-            <a routerLink="/remuneraciones/nominas">Nóminas</a>
-          </nav>
-        </header>
+      <div class="report-build" role="status">
+        <lucide-icon name="construction" [size]="28" aria-hidden="true"></lucide-icon>
+        <p class="report-build__label">En construcción</p>
       </div>
     </section>
   `,
   styles: [
     `
-      .report-page {
-        color: #374151;
-      }
-
-      .report-frame {
+      :host {
         display: flex;
-        align-items: flex-start;
-        justify-content: center;
-        padding: 24px 16px;
-      }
-
-      .report-proximamente {
-        max-width: 36rem;
+        flex-direction: column;
+        flex: 1 1 auto;
         width: 100%;
-        border: 1px solid #e5e7eb;
-        border-radius: 6px;
-        background: #fff;
-        padding: 16px;
+        min-width: 0;
+        min-height: 0;
+        height: 100%;
       }
 
-      .report-proximamente__kicker {
-        margin: 0 0 4px;
-        color: #6b7280;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.02em;
-      }
-
-      .report-proximamente__title {
-        margin: 0 0 8px;
-        color: #111827;
-        font-size: 1.125rem;
-        font-weight: 700;
-        line-height: 1.3;
-      }
-
-      .report-proximamente__text {
-        margin: 0 0 16px;
-        color: #4b5563;
-        font-size: 0.875rem;
-        line-height: 1.45;
-      }
-
-      .report-proximamente__links {
+      .report-page {
         display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
+        flex: 1 1 auto;
+        align-items: center;
+        justify-content: center;
+        min-height: 0;
+        background: #fff;
       }
 
-      .report-proximamente__links a {
+      .report-build {
         display: inline-flex;
         align-items: center;
-        min-height: 2rem;
-        border: 1px solid #e5e7eb;
-        border-radius: 6px;
-        background: #fff;
-        padding: 0 12px;
-        color: #1f2937;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        text-decoration: none;
+        gap: 10px;
+        color: #92400e;
       }
 
-      .report-proximamente__links a:hover {
-        border-color: #93c5fd;
-        background: #eff6ff;
+      .report-build__label {
+        margin: 0;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        line-height: 1.3;
       }
     `,
   ],
@@ -112,7 +62,7 @@ export class ReportesPage {
     const destroyRef = inject(DestroyRef);
     bindShellPageContext(destroyRef, () => ({
       breadcrumbs: [{ label: 'Reportes' }],
-      statusChip: { label: 'Próximamente', tone: 'neutral' },
+      statusChip: { label: 'En construcción', tone: 'warning' },
     }));
   }
 }

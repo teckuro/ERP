@@ -1,8 +1,16 @@
 import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular/core';
 
+export type WorkspaceLoadingScope = 'parent' | 'shell' | 'viewport';
+
 /**
  * Overlay de carga tipo bitácora / workspace (panel centrado + spinner).
- * Usar con `fill` para ocupar el 100% del contenedor padre.
+ *
+ * - `fill`: overlay absoluto sobre el padre (`position: relative`) — nivel B.
+ * - `scope="shell"`: overlay fijo solo sobre el área de contenido del ERP (sin menú/header) — nivel A.
+ * - `scope="viewport"`: overlay fijo a pantalla completa — nivel A′ (modales bloqueantes / fuera del shell).
+ *
+ * Los offsets de `shell` usan `--erp-shell-header-height` / `--erp-shell-nav-width`
+ * (definidos en `layout-shell`) con fallback alineado a `shell-navigation.config`.
  */
 @Component({
   selector: 'app-workspace-loading',
@@ -36,6 +44,27 @@ import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular
         min-height: 0;
       }
 
+      :host(.erp-workspace-loading--shell) {
+        position: fixed;
+        top: var(--erp-shell-header-height, 52px);
+        left: var(--erp-shell-nav-width, 220px);
+        right: 0;
+        bottom: 0;
+        z-index: 11000;
+        width: auto;
+        min-width: 0;
+        min-height: 0;
+      }
+
+      :host(.erp-workspace-loading--viewport) {
+        position: fixed;
+        inset: 0;
+        z-index: 12000;
+        width: auto;
+        min-width: 0;
+        min-height: 0;
+      }
+
       .erp-workspace-loading__backdrop {
         display: grid;
         width: 100%;
@@ -49,6 +78,12 @@ import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular
         background: rgb(255 255 255 / 0.86);
         backdrop-filter: blur(2px);
         box-sizing: border-box;
+      }
+
+      :host(.erp-workspace-loading--shell) .erp-workspace-loading__backdrop,
+      :host(.erp-workspace-loading--viewport) .erp-workspace-loading__backdrop {
+        min-height: 100%;
+        background: rgb(255 255 255 / 0.9);
       }
 
       .erp-workspace-loading__panel {
@@ -103,6 +138,12 @@ import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular
           transform: rotate(1turn);
         }
       }
+
+      @media (max-width: 1024px) {
+        :host(.erp-workspace-loading--shell) {
+          left: 0;
+        }
+      }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -112,9 +153,30 @@ export class WorkspaceLoadingComponent {
   @Input() title: string | null = null;
   @Input({ required: true }) message!: string;
 
+  /** Overlay absoluto sobre el contenedor padre (nivel B). Ignorado si scope ≠ parent. */
+  @Input() fill = false;
+
+  /**
+   * `parent`: respeta fill sobre el padre.
+   * `shell`: overlay fijo solo sobre el contenido ERP (recomendado para cargas de pantalla).
+   * `viewport`: overlay fijo a toda la ventana.
+   */
+  @Input() scope: WorkspaceLoadingScope = 'parent';
+
   @HostBinding('class.erp-workspace-loading--fill')
-  @Input()
-  fill = false;
+  get isFillOverlay(): boolean {
+    return this.fill && this.scope === 'parent';
+  }
+
+  @HostBinding('class.erp-workspace-loading--shell')
+  get isShellScope(): boolean {
+    return this.scope === 'shell';
+  }
+
+  @HostBinding('class.erp-workspace-loading--viewport')
+  get isViewportScope(): boolean {
+    return this.scope === 'viewport';
+  }
 
   @HostBinding('attr.role')
   readonly role = 'status';

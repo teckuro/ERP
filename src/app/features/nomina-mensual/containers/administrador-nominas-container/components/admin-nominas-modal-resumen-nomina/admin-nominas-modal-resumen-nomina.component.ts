@@ -21,6 +21,7 @@ import {
   type MessageBoxAction,
   type MessageBoxVariantInput,
 } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
+import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import type {
   NominaPeriodoResumen,
   ResumenValidacionNomina,
@@ -57,7 +58,7 @@ interface IndicadorResumenView {
 @Component({
   selector: 'app-admin-nominas-modal-resumen-nomina',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, MessageBoxComponent],
+  imports: [CommonModule, LucideAngularModule, MessageBoxComponent, WorkspaceLoadingComponent],
   templateUrl: './admin-nominas-modal-resumen-nomina.component.html',
   styleUrl: './admin-nominas-modal-resumen-nomina.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -79,15 +80,11 @@ export class AdminNominasModalResumenNominaComponent {
   });
 
   readonly variantModal = computed((): MessageBoxVariantInput => {
-    if (this.cargando()) return 'loading';
     if (this.error()) return 'danger';
     return 'info';
   });
 
   readonly mensajeModal = computed(() => {
-    if (this.cargando()) {
-      return 'Consultando totales y observaciones del cierre.';
-    }
     if (this.error()) {
       return this.error()!;
     }

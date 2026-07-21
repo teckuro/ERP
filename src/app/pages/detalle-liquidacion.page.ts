@@ -80,7 +80,7 @@ function etiquetaCanalEmision(canal: LiquidacionEmision['canal']): string {
 
       @if (cargando()) {
         <app-workspace-loading
-          [fill]="true"
+          scope="shell"
           title="Cargando liquidación"
           message="Estamos consultando el comprobante del trabajador."
         />

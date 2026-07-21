@@ -1,5 +1,8 @@
+import { importProvidersFrom } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
+import { ArrowLeft, Building2, Check, Eye, Lock, Mail, Unlock } from 'lucide-angular/src/icons';
 import { describe, expect, it, vi } from 'vitest';
 
 import { AuthService } from '../core/auth/auth.service';
@@ -7,7 +10,7 @@ import { ActualizarContrasenaPage } from './actualizar-contrasena.page';
 
 function createAuthMock() {
   return {
-    getSession: vi.fn().mockResolvedValue({ user: { id: 'u1', email: 'rrhh@empresa.cl' } }),
+    esperarSesionRecuperacion: vi.fn().mockResolvedValue(true),
     actualizarContrasena: vi.fn().mockResolvedValue(undefined),
     logout: vi.fn().mockResolvedValue(undefined),
   };
@@ -19,7 +22,21 @@ async function setup(auth = createAuthMock()): Promise<{
 }> {
   await TestBed.configureTestingModule({
     imports: [ActualizarContrasenaPage],
-    providers: [{ provide: AuthService, useValue: auth }, provideRouter([])],
+    providers: [
+      { provide: AuthService, useValue: auth },
+      provideRouter([]),
+      importProvidersFrom(
+        LucideAngularModule.pick({
+          ArrowLeft,
+          Building2,
+          Check,
+          Eye,
+          Lock,
+          Mail,
+          Unlock,
+        }),
+      ),
+    ],
   }).compileComponents();
 
   const fixture = TestBed.createComponent(ActualizarContrasenaPage);
@@ -33,7 +50,7 @@ async function setup(auth = createAuthMock()): Promise<{
 describe('ActualizarContrasenaPage', () => {
   it('bloquea guardado si no hay sesion de recuperacion', async () => {
     const auth = createAuthMock();
-    auth.getSession.mockResolvedValue(null);
+    auth.esperarSesionRecuperacion.mockResolvedValue(false);
     const { fixture } = await setup(auth);
 
     fixture.componentInstance.form.setValue({

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { SUPABASE_CLIENT } from '../services/supabase.service';
 import { AuthService } from './auth.service';
@@ -20,6 +20,15 @@ function createSupabaseMock() {
 }
 
 describe('AuthService', () => {
+  afterEach(() => {
+    try {
+      sessionStorage.removeItem('angular-erp-password-recovery');
+    } catch {
+      // Sin DOM (p. ej. runner sin jsdom) no hay sessionStorage.
+    }
+    TestBed.resetTestingModule();
+  });
+
   it('login exitoso llama Supabase Auth y expone usuario actual', async () => {
     const supabase = createSupabaseMock();
     supabase.auth.signInWithPassword.mockResolvedValue({
@@ -111,20 +120,58 @@ describe('AuthService', () => {
     });
   });
 
-  it('actualiza contrasena con sesion de recuperacion', async () => {
+  it('actualiza contrasena solo con sesion PASSWORD_RECOVERY', async () => {
     const supabase = createSupabaseMock();
     const session = { user: { id: 'u1', email: 'rrhh@empresa.cl' } };
     supabase.auth.updateUser.mockResolvedValue({ data: { user: session.user }, error: null });
     supabase.auth.getSession.mockResolvedValue({ data: { session }, error: null });
+
+    const authListeners: Array<(event: string, session: unknown) => void> = [];
+    supabase.auth.onAuthStateChange.mockImplementation((cb: (event: string, session: unknown) => void) => {
+      authListeners.push(cb);
+      return { data: { subscription: { unsubscribe: vi.fn() } } };
+    });
 
     TestBed.configureTestingModule({
       providers: [AuthService, { provide: SUPABASE_CLIENT, useValue: supabase }],
     });
 
     const service = TestBed.inject(AuthService);
+    await expect(service.actualizarContrasena('nueva-clave')).rejects.toThrow(
+      'El enlace de recuperacion no esta activo o ya expiro',
+    );
+
+    for (const listener of authListeners) {
+      listener('PASSWORD_RECOVERY', session);
+    }
     await service.actualizarContrasena('nueva-clave');
 
     expect(supabase.auth.updateUser).toHaveBeenCalledWith({ password: 'nueva-clave' });
     expect(service.currentEmail()).toBe('rrhh@empresa.cl');
+    expect(service.isPasswordRecovery()).toBe(true);
+  });
+
+  it('esperarSesionRecuperacion reconoce PASSWORD_RECOVERY', async () => {
+    const supabase = createSupabaseMock();
+    const session = { user: { id: 'u1', email: 'rrhh@empresa.cl' } };
+    supabase.auth.getSession.mockResolvedValue({ data: { session }, error: null });
+
+    const authListeners: Array<(event: string, session: unknown) => void> = [];
+    supabase.auth.onAuthStateChange.mockImplementation((cb: (event: string, session: unknown) => void) => {
+      authListeners.push(cb);
+      return { data: { subscription: { unsubscribe: vi.fn() } } };
+    });
+
+    TestBed.configureTestingModule({
+      providers: [AuthService, { provide: SUPABASE_CLIENT, useValue: supabase }],
+    });
+
+    const service = TestBed.inject(AuthService);
+    const pending = service.esperarSesionRecuperacion(500);
+    for (const listener of authListeners) {
+      listener('PASSWORD_RECOVERY', session);
+    }
+    await expect(pending).resolves.toBe(true);
+    expect(service.tieneSesionRecuperacion()).toBe(true);
   });
 });

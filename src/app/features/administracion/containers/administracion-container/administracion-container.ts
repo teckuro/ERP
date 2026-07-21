@@ -18,7 +18,7 @@ import {
   type ModuloPermiso,
   type PermisosFinosPerfil,
 } from '../../../../core/auth/erp-permisos-modulos.rules';
-import { mensajeErrorSupabaseParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
+import { mensajeErrorParaUsuario, mensajeErrorSupabaseParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
 import { EmpresaActivaService } from '../../../../core/services/empresa-activa.service';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
@@ -101,6 +101,10 @@ export class AdministracionContainer implements OnInit {
   readonly guardando = signal(false);
   readonly mensajeError = signal<string | null>(null);
   readonly mensajeExito = signal<string | null>(null);
+  /** Errores de API mientras el modal de usuario está abierto. */
+  readonly errorUsuarioDrawer = signal<string | null>(null);
+  /** Errores de API mientras el modal de perfil está abierto. */
+  readonly errorPerfilDrawer = signal<string | null>(null);
 
   readonly usuarios = signal<UsuarioErp[]>([]);
   readonly usuariosNoDisponibles = signal<string | null>(null);
@@ -450,17 +454,28 @@ export class AdministracionContainer implements OnInit {
 
   abrirDrawerCrearUsuario(): void {
     this.usuarioSeleccionado.set(null);
+    this.errorUsuarioDrawer.set(null);
     this.usuarioDrawerModo.set('crear');
   }
 
   abrirDrawerUsuario(usuario: UsuarioGridRow): void {
     this.usuarioSeleccionado.set(usuario);
+    this.errorUsuarioDrawer.set(null);
     this.usuarioDrawerModo.set('editar');
   }
 
   cerrarDrawerUsuario(): void {
     this.usuarioDrawerModo.set(null);
     this.usuarioSeleccionado.set(null);
+    this.errorUsuarioDrawer.set(null);
+  }
+
+  limpiarErrorUsuarioDrawer(): void {
+    this.errorUsuarioDrawer.set(null);
+  }
+
+  limpiarErrorPerfilDrawer(): void {
+    this.errorPerfilDrawer.set(null);
   }
 
   async confirmarCrearUsuario(payload: {
@@ -470,14 +485,14 @@ export class AdministracionContainer implements OnInit {
     idPerfil: number;
   }): Promise<void> {
     this.guardando.set(true);
-    this.mensajeError.set(null);
+    this.errorUsuarioDrawer.set(null);
     try {
       await this.service.crearUsuario(payload);
       this.cerrarDrawerUsuario();
       this.mostrarExito('Usuario creado. Entregue la contraseña temporal por un canal seguro.');
       await this.recargarUsuarios();
     } catch (err) {
-      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'crear el usuario'));
+      this.errorUsuarioDrawer.set(mensajeErrorParaUsuario(err, 'crear el usuario'));
     } finally {
       this.guardando.set(false);
     }
@@ -485,14 +500,14 @@ export class AdministracionContainer implements OnInit {
 
   async confirmarCambioPerfil(payload: { userId: string; idPerfil: number }): Promise<void> {
     this.guardando.set(true);
-    this.mensajeError.set(null);
+    this.errorUsuarioDrawer.set(null);
     try {
       await this.service.asignarPerfil(payload.userId, payload.idPerfil);
       this.cerrarDrawerUsuario();
       this.mostrarExito('Perfil actualizado. El cambio aplica al próximo inicio de sesión.');
       await this.recargarUsuarios();
     } catch (err) {
-      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'cambiar el perfil del usuario'));
+      this.errorUsuarioDrawer.set(mensajeErrorParaUsuario(err, 'cambiar el perfil del usuario'));
     } finally {
       this.guardando.set(false);
     }
@@ -511,7 +526,7 @@ export class AdministracionContainer implements OnInit {
     const usuario = this.usuarioParaDesactivar();
     if (!usuario) return;
     this.guardando.set(true);
-    this.mensajeError.set(null);
+    this.errorUsuarioDrawer.set(null);
     try {
       await this.service.desactivarUsuario(usuario.id);
       this.usuarioParaDesactivar.set(null);
@@ -519,7 +534,8 @@ export class AdministracionContainer implements OnInit {
       this.mostrarExito('Acceso desactivado.');
       await this.recargarUsuarios();
     } catch (err) {
-      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'desactivar el acceso'));
+      this.usuarioParaDesactivar.set(null);
+      this.errorUsuarioDrawer.set(mensajeErrorParaUsuario(err, 'desactivar el acceso'));
     } finally {
       this.guardando.set(false);
     }
@@ -529,14 +545,14 @@ export class AdministracionContainer implements OnInit {
     const usuario = this.usuarioSeleccionado();
     if (!usuario) return;
     this.guardando.set(true);
-    this.mensajeError.set(null);
+    this.errorUsuarioDrawer.set(null);
     try {
       await this.service.reactivarUsuario(usuario.id);
       this.cerrarDrawerUsuario();
       this.mostrarExito('Acceso restaurado.');
       await this.recargarUsuarios();
     } catch (err) {
-      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'restaurar el acceso'));
+      this.errorUsuarioDrawer.set(mensajeErrorParaUsuario(err, 'restaurar el acceso'));
     } finally {
       this.guardando.set(false);
     }
@@ -552,6 +568,7 @@ export class AdministracionContainer implements OnInit {
 
   nuevoPerfil(): void {
     this.tabActiva.set('perfiles');
+    this.errorPerfilDrawer.set(null);
     this.perfilEditor.set({
       idPerfil: null,
       nombre: '',
@@ -567,6 +584,7 @@ export class AdministracionContainer implements OnInit {
   }
 
   editarPerfil(perfil: PerfilAcceso): void {
+    this.errorPerfilDrawer.set(null);
     this.perfilEditor.set({
       idPerfil: perfil.idPerfil,
       nombre: perfil.nombre,
@@ -580,6 +598,7 @@ export class AdministracionContainer implements OnInit {
 
   cerrarEditorPerfil(): void {
     this.perfilEditor.set(null);
+    this.errorPerfilDrawer.set(null);
   }
 
   actualizarEditor(cambio: Partial<PerfilEditorState>): void {
@@ -616,7 +635,7 @@ export class AdministracionContainer implements OnInit {
     const editor = this.perfilEditor();
     if (!editor || !this.puedeGuardarPerfil()) return;
     this.guardando.set(true);
-    this.mensajeError.set(null);
+    this.errorPerfilDrawer.set(null);
     try {
       await this.service.guardarPerfil({
         idPerfil: editor.idPerfil,
@@ -627,10 +646,11 @@ export class AdministracionContainer implements OnInit {
         activo: editor.activo,
       });
       this.perfilEditor.set(null);
+      this.errorPerfilDrawer.set(null);
       this.mostrarExito('Perfil guardado.');
       await this.recargarPerfiles();
     } catch (err) {
-      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'guardar el perfil'));
+      this.errorPerfilDrawer.set(mensajeErrorParaUsuario(err, 'guardar el perfil'));
     } finally {
       this.guardando.set(false);
     }

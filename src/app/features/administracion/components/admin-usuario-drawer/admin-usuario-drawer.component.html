@@ -7,7 +7,7 @@
   [title]="tituloModal()"
   [message]="subtituloModal()"
   [actions]="accionesModal()"
-  [disableClose]="guardando"
+  [disableClose]="guardando || bloquearCierre"
   (dismiss)="cerrar.emit()"
   (actionSelect)="onAccionModal($event)"
 >

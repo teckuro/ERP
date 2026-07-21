@@ -58,7 +58,11 @@
 
       <div class="adm-nom-modal__lista">
         @if (cargandoPreview()) {
-          <p class="adm-nom-modal__lista-cargando" role="status">Cargando dotación disponible…</p>
+          <app-workspace-loading
+            [fill]="true"
+            title="Cargando dotación"
+            message="Consultando trabajadores disponibles para rectificar."
+          />
         } @else if (preview(); as p) {
           @if (p.conflictos.length) {
             <ul class="adm-nom-modal__lista-items adm-nom-modal__lista-items--compact">

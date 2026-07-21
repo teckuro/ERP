@@ -5,19 +5,17 @@
 
       <div class="parametros-content">
         @if (orq.isLoading()) {
-          <app-message-box
-            variant="loading"
-            mode="modal"
+          <app-workspace-loading
+            scope="shell"
             title="Cargando parámetros"
             message="Obteniendo parámetros mensuales y cargas externas."
-          ></app-message-box>
+          />
         } @else if (orq.isLoadingPlantilla()) {
-          <app-message-box
-            variant="loading"
-            mode="modal"
+          <app-workspace-loading
+            scope="shell"
             title="Obteniendo plantilla"
             message="Consultando el último período registrado para usarlo solo como base en el formulario. No se guarda nada automáticamente."
-          ></app-message-box>
+          />
         }
 
         @if (orq.dialogState(); as dlg) {

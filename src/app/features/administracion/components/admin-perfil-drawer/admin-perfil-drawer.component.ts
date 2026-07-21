@@ -47,6 +47,8 @@ export class AdminPerfilDrawerComponent {
   @Input() permisoEfectivoFn!: (modulo: ModuloPermiso, tipo: 'ver' | 'editar') => boolean;
   @Input() perfilesExistentes: readonly PerfilAcceso[] = [];
   @Input() guardando = false;
+  /** Bloquea cerrar el drawer mientras hay un MessageBox de error encima. */
+  @Input() bloquearCierre = false;
 
   @Output() cerrar = new EventEmitter<void>();
   @Output() guardar = new EventEmitter<void>();

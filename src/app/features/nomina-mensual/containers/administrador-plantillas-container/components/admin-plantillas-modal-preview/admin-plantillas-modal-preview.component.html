@@ -61,7 +61,11 @@
       @if (error()) {
         <div class="adm-plantillas-preview__error" role="alert">{{ error() }}</div>
       } @else if (cargando()) {
-        <div class="adm-plantillas-preview__loading">Calculando cortes…</div>
+        <app-workspace-loading
+          [fill]="true"
+          title="Calculando cortes"
+          message="Proyectando los cortes de la plantilla para el año seleccionado."
+        />
       } @else if (!hayCortes()) {
         <div class="adm-plantillas-preview__empty">
           Esta plantilla no proyecta cortes para el año seleccionado.

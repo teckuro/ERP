@@ -275,7 +275,7 @@
           <div class="paso-calc__detalle">
             @if (estaCargandoDetalleFila(fila.trabajadorId)) {
               <app-workspace-loading
-                [fill]="false"
+                [fill]="true"
                 title="Cargando desglose"
                 message="Estamos consultando el detalle de cálculo del trabajador."
               />

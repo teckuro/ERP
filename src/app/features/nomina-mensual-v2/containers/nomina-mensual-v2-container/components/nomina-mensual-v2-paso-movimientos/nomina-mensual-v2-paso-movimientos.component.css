@@ -392,9 +392,11 @@
 /* -------------------------------------------------------------------------- */
 
 .paso-mov__detalle {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-height: 10rem;
   padding: 12px 14px;
   background: #f8fafc;
   border-top: 1px solid #e2e8f0;

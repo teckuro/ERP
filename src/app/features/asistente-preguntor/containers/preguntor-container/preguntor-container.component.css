@@ -54,6 +54,11 @@
   font-size: 0.8125rem;
 }
 
+.preguntor__loading {
+  position: relative;
+  min-height: 10rem;
+}
+
 .preguntor__bloque {
   border: 1px solid #e5e7eb;
   border-radius: 6px;

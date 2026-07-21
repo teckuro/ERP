@@ -56,7 +56,7 @@ Dar a RRHH una **bandeja de reportes operativos** del período/nómina, sin inve
 
 ## UI actual (arranque)
 
-[`src/app/pages/reportes.page.ts`](../../../src/app/pages/reportes.page.ts) muestra placeholder «Próximamente» alineado a REPORTES-01a hasta implementar el mapa.
+[`src/app/pages/reportes.page.ts`](../../../src/app/pages/reportes.page.ts) muestra solo icono + «En construcción» hasta implementar REPORTES-01a completo.
 
 ## Documentos relacionados
 

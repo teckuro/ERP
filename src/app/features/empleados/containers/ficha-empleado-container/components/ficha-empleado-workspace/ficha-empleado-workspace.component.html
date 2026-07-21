@@ -9,7 +9,11 @@
     [class.file-content-card--loaded]="f.empleado() && !f.isLoading() && !f.mensajeError()"
   >
     @if (f.isLoading()) {
-      <app-workspace-loading message="Cargando ficha..." [fill]="true" />
+      <app-workspace-loading
+        scope="shell"
+        title="Cargando ficha"
+        message="Estamos consultando los datos del trabajador."
+      />
     } @else if (f.mensajeError(); as mensaje) {
       <section class="file-state file-state--error">
         <lucide-icon class="file-state-card-icon" [img]="f.alertIcon"></lucide-icon>

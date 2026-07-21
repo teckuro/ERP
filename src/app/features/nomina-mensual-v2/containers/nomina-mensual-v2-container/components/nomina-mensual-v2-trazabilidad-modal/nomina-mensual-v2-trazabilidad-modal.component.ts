@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, 
 import { LucideAngularModule } from 'lucide-angular';
 
 import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
+import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import type { PayrollStepId } from '../../../../models/nomina-mensual-v2.models';
 import type {
   DetalleTrazabilidadPasoNomina,
@@ -30,7 +31,7 @@ interface FilaDetalleModal {
 @Component({
   selector: 'app-nomina-mensual-v2-trazabilidad-modal',
   standalone: true,
-  imports: [MessageBoxComponent, LucideAngularModule],
+  imports: [MessageBoxComponent, LucideAngularModule, WorkspaceLoadingComponent],
   templateUrl: './nomina-mensual-v2-trazabilidad-modal.component.html',
   styleUrl: './nomina-mensual-v2-trazabilidad-modal.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

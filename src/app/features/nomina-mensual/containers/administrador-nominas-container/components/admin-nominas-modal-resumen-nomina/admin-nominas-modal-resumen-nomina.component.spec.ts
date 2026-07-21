@@ -108,14 +108,17 @@ describe('AdminNominasModalResumenNominaComponent', () => {
     expect(situacion.texto.toLowerCase()).toContain('liquidaciones');
   });
 
-  it('Test 31 — variantModal usa loading mientras carga y danger ante error', () => {
+  it('Test 31 — mientras carga usa overlay viewport; danger ante error', () => {
     const fixture = TestBed.createComponent(AdminNominasModalResumenNominaComponent);
     fixture.componentRef.setInput('nomina', nominaMock());
     fixture.componentRef.setInput('cargando', true);
-    expect(fixture.componentInstance.variantModal()).toBe('loading');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-workspace-loading')).toBeTruthy();
+    expect(fixture.componentInstance.variantModal()).toBe('info');
 
     fixture.componentRef.setInput('cargando', false);
     fixture.componentRef.setInput('error', 'Fallo de red');
+    fixture.detectChanges();
     expect(fixture.componentInstance.variantModal()).toBe('danger');
   });
 

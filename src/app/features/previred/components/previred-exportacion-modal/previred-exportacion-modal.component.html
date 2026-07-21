@@ -1,7 +1,7 @@
 @if (abierto()) {
   @if (cargando()) {
     <app-workspace-loading
-      class="prev-exp-modal__loading"
+      scope="viewport"
       title="Preparando archivo Previred"
       [message]="'Consultando liquidación de ' + (etiquetaNomina() || 'la nómina seleccionada') + '…'"
     />

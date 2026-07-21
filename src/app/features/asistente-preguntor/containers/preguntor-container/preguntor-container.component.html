@@ -28,7 +28,13 @@
   </div>
 
   @if (cargando()) {
-    <p class="preguntor__estado" role="status">Obteniendo respuesta…</p>
+    <div class="preguntor__loading">
+      <app-workspace-loading
+        [fill]="true"
+        title="Obteniendo respuesta"
+        message="Consultando al asistente operativo."
+      />
+    </div>
   }
 
   @if (error(); as mensaje) {

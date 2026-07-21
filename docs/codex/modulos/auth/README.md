@@ -8,7 +8,8 @@
 
 Incluye:
 
-- ruta publica `/login`;
+- rutas publicas `/login`, `/recuperar-contrasena` y `/actualizar-contrasena`;
+- recuperacion self-service con `resetPasswordForEmail` + evento `PASSWORD_RECOVERY` + `updateUser`;
 - `AuthService` sobre el cliente Supabase existente;
 - `authGuard`/`authChildGuard` para rutas internas;
 - usuario conectado y accion `Cerrar sesion` en el header;
@@ -49,6 +50,7 @@ Estado:
 | Archivo | Rol |
 |---|---|
 | [`contrato-general.md`](./contrato-general.md) | Alcance, seguridad, rutas protegidas, E2E y fuera de alcance de AUTH-BASE-01 |
+| [`plantilla-correo-recuperacion.md`](./plantilla-correo-recuperacion.md) | Asunto + HTML de Reset password (Dashboard / local) |
 
 ## Relacion con Nomina
 

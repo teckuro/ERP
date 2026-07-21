@@ -27,7 +27,7 @@ const ROLES_BASE_VALIDOS = new Set([
   'consulta_remuneraciones',
 ]);
 
-interface ReqPayload {
+interface AccionPayload {
   accion?: string;
   email?: string;
   password?: string;
@@ -47,33 +47,37 @@ interface UsuarioResumen {
   creadoEn: string | null;
 }
 
+type CorsHeaders = Record<string, string>;
+
+function jsonResponse(corsHeaders: CorsHeaders, body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
 console.info('admin-usuarios: worker started');
 
 Deno.serve(async (req) => {
   const corsHeaders = buildCorsHeaders(req);
-  const jsonResponse = (body: unknown, status = 200): Response =>
-    new Response(JSON.stringify(body), {
-      status,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
   if (req.method !== 'POST') {
-    return jsonResponse({ error: 'Método no permitido' }, 405);
+    return jsonResponse(corsHeaders, { error: 'Método no permitido' }, 405);
   }
 
   const authHeader = req.headers.get('Authorization');
   if (!authHeader?.startsWith('Bearer ')) {
-    return jsonResponse({ error: 'No autorizado' }, 401);
+    return jsonResponse(corsHeaders, { error: 'No autorizado' }, 401);
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
   const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
   if (!supabaseUrl || !anonKey || !serviceRoleKey) {
-    return jsonResponse({ error: 'Función no configurada en el servidor' }, 503);
+    return jsonResponse(corsHeaders, { error: 'Función no configurada en el servidor' }, 503);
   }
 
   const supabaseCaller = createClient(supabaseUrl, anonKey, {
@@ -85,25 +89,25 @@ Deno.serve(async (req) => {
     error: authError,
   } = await supabaseCaller.auth.getUser();
   if (authError || !caller) {
-    return jsonResponse({ error: 'Sesión inválida' }, 401);
+    return jsonResponse(corsHeaders, { error: 'Sesión inválida' }, 401);
   }
 
   const callerMeta = (caller.app_metadata ?? {}) as Record<string, unknown>;
   const callerRol = normalizarRol(callerMeta['role'] ?? callerMeta['rol']);
   if (!ROLES_ADMIN_SISTEMA.has(callerRol)) {
-    return jsonResponse({ error: 'Requiere permisos de administrador del sistema' }, 403);
+    return jsonResponse(corsHeaders, { error: 'Requiere permisos de administrador del sistema' }, 403);
   }
 
   const idEmpresa = parseIdEmpresa(callerMeta['id_empresa'] ?? callerMeta['idEmpresa']);
   if (idEmpresa == null) {
-    return jsonResponse({ error: 'Tu sesión no tiene empresa asignada' }, 403);
+    return jsonResponse(corsHeaders, { error: 'Tu sesión no tiene empresa asignada' }, 403);
   }
 
-  let body: ReqPayload;
+  let body: AccionPayload;
   try {
-    body = (await req.json()) as ReqPayload;
+    body = (await req.json()) as AccionPayload;
   } catch {
-    return jsonResponse({ error: 'Cuerpo JSON inválido' }, 400);
+    return jsonResponse(corsHeaders, { error: 'Cuerpo JSON inválido' }, 400);
   }
 
   const admin = createClient(supabaseUrl, serviceRoleKey);
@@ -111,21 +115,21 @@ Deno.serve(async (req) => {
   try {
     switch (body.accion) {
       case 'listar':
-        return jsonResponse({ usuarios: await listarUsuarios(admin, idEmpresa) });
+        return jsonResponse(corsHeaders, { usuarios: await listarUsuarios(admin, idEmpresa) });
       case 'crear':
-        return await crearUsuario(admin, idEmpresa, body);
+        return await crearUsuario(admin, idEmpresa, body, corsHeaders);
       case 'asignar_perfil':
-        return await asignarPerfil(admin, idEmpresa, body);
+        return await asignarPerfil(admin, idEmpresa, body, corsHeaders);
       case 'desactivar':
-        return await cambiarBloqueo(admin, idEmpresa, body.userId, caller.id, true);
+        return await cambiarBloqueo(admin, idEmpresa, body.userId, caller.id, true, corsHeaders);
       case 'reactivar':
-        return await cambiarBloqueo(admin, idEmpresa, body.userId, caller.id, false);
+        return await cambiarBloqueo(admin, idEmpresa, body.userId, caller.id, false, corsHeaders);
       default:
-        return jsonResponse({ error: 'Acción no reconocida' }, 400);
+        return jsonResponse(corsHeaders, { error: 'Acción no reconocida' }, 400);
     }
   } catch (err) {
     console.error('admin-usuarios', body.accion, err);
-    return jsonResponse({ error: 'No fue posible completar la operación' }, 500);
+    return jsonResponse(corsHeaders, { error: 'No fue posible completar la operación' }, 500);
   }
 });
 
@@ -155,21 +159,24 @@ async function listarUsuarios(admin: AdminClient, idEmpresa: number): Promise<Us
 async function crearUsuario(
   admin: AdminClient,
   idEmpresa: number,
-  body: ReqPayload,
+  body: AccionPayload,
+  corsHeaders: CorsHeaders,
 ): Promise<Response> {
   const email = body.email?.trim().toLowerCase() ?? '';
   const password = body.password ?? '';
   const nombre = body.nombre?.trim() ?? '';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return jsonResponse({ error: 'Correo no válido' }, 400);
+    return jsonResponse(corsHeaders, { error: 'Correo no válido' }, 400);
   }
   if (password.length < 8) {
-    return jsonResponse({ error: 'La contraseña temporal debe tener al menos 8 caracteres' }, 400);
+    return jsonResponse(corsHeaders, {
+      error: 'La contraseña temporal debe tener al menos 8 caracteres',
+    }, 400);
   }
 
   const perfil = await obtenerPerfil(admin, idEmpresa, body.idPerfil);
   if (!perfil) {
-    return jsonResponse({ error: 'Debe indicar un perfil válido' }, 400);
+    return jsonResponse(corsHeaders, { error: 'Debe indicar un perfil válido' }, 400);
   }
 
   const { data, error } = await admin.auth.admin.createUser({
@@ -186,27 +193,28 @@ async function crearUsuario(
   if (error) {
     const msg = String(error.message ?? '');
     if (/already.*registered|exists/i.test(msg)) {
-      return jsonResponse({ error: 'Ya existe un usuario con ese correo' }, 409);
+      return jsonResponse(corsHeaders, { error: 'Ya existe un usuario con ese correo' }, 409);
     }
     throw error;
   }
 
-  return jsonResponse({ ok: true, usuario: mapUsuario(data.user as User) });
+  return jsonResponse(corsHeaders, { ok: true, usuario: mapUsuario(data.user as User) });
 }
 
 async function asignarPerfil(
   admin: AdminClient,
   idEmpresa: number,
-  body: ReqPayload,
+  body: AccionPayload,
+  corsHeaders: CorsHeaders,
 ): Promise<Response> {
   const objetivo = await obtenerUsuarioEmpresa(admin, idEmpresa, body.userId);
   if (!objetivo) {
-    return jsonResponse({ error: 'Usuario no encontrado' }, 404);
+    return jsonResponse(corsHeaders, { error: 'Usuario no encontrado' }, 404);
   }
 
   const perfil = await obtenerPerfil(admin, idEmpresa, body.idPerfil);
   if (!perfil) {
-    return jsonResponse({ error: 'Debe indicar un perfil válido' }, 400);
+    return jsonResponse(corsHeaders, { error: 'Debe indicar un perfil válido' }, 400);
   }
 
   const { data, error } = await admin.auth.admin.updateUserById(objetivo.id, {
@@ -218,7 +226,7 @@ async function asignarPerfil(
   });
   if (error) throw error;
 
-  return jsonResponse({ ok: true, usuario: mapUsuario(data.user as User) });
+  return jsonResponse(corsHeaders, { ok: true, usuario: mapUsuario(data.user as User) });
 }
 
 async function cambiarBloqueo(
@@ -227,13 +235,14 @@ async function cambiarBloqueo(
   userId: string | undefined,
   callerId: string,
   bloquear: boolean,
+  corsHeaders: CorsHeaders,
 ): Promise<Response> {
   const objetivo = await obtenerUsuarioEmpresa(admin, idEmpresa, userId);
   if (!objetivo) {
-    return jsonResponse({ error: 'Usuario no encontrado' }, 404);
+    return jsonResponse(corsHeaders, { error: 'Usuario no encontrado' }, 404);
   }
   if (bloquear && objetivo.id === callerId) {
-    return jsonResponse({ error: 'No puedes desactivar tu propia cuenta' }, 400);
+    return jsonResponse(corsHeaders, { error: 'No puedes desactivar tu propia cuenta' }, 400);
   }
 
   const { data, error } = await admin.auth.admin.updateUserById(objetivo.id, {
@@ -241,7 +250,7 @@ async function cambiarBloqueo(
   });
   if (error) throw error;
 
-  return jsonResponse({ ok: true, usuario: mapUsuario(data.user as User) });
+  return jsonResponse(corsHeaders, { ok: true, usuario: mapUsuario(data.user as User) });
 }
 
 async function obtenerUsuarioEmpresa(
