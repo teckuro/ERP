@@ -25,4 +25,9 @@ describe('app.routes legacy redirects', () => {
     const redirect = findRedirect('nomina-mensual-v2');
     expect(redirect?.redirectTo).toBe('nominas');
   });
+
+  it('redirige la ruta legacy del generador a /nominas/:id', () => {
+    const redirect = findRedirect('nominas/:nominaPeriodoId/generador');
+    expect(redirect?.redirectTo).toBe('/remuneraciones/nominas/:nominaPeriodoId');
+  });
 });

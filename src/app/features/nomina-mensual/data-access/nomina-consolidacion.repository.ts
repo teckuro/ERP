@@ -72,6 +72,18 @@ export class NominaConsolidacionRepository {
     return (data ?? []).map(rowToNominaLiquidacionResumen);
   }
 
+  async invalidarLiquidacionesPorReapertura(
+    nominaPeriodoId: string,
+    motivo: string,
+  ): Promise<number> {
+    const { data, error } = await this.supabase.rpc('invalidar_liquidaciones_por_reapertura', {
+      p_id_nomina_periodo: nominaPeriodoId,
+      p_motivo: motivo,
+    });
+    throwIfError(error, 'invalidarLiquidacionesPorReapertura');
+    return Number(data ?? 0);
+  }
+
   async generarLiquidaciones(nominaPeriodoId: string): Promise<NominaLiquidacionResumen> {
     const { data, error } = await this.supabase.rpc('generar_liquidaciones_nomina', {
       p_id_nomina_periodo: nominaPeriodoId,

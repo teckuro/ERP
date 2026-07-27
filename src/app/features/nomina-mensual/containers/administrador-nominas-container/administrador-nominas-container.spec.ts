@@ -206,7 +206,7 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     expect(servicio.obtenerResumenValidacionNomina).not.toHaveBeenCalled();
   });
 
-  it('Test 37 — abrirGenerador navega a la ruta del generador sin query params cuando no hay contexto', async () => {
+  it('Test 37 — abrirGenerador navega a la ruta canónica sin preservar query params', async () => {
     const { navigate } = configurar({ servicio });
     const fixture = TestBed.createComponent(AdministradorNominasContainer);
     const cmp = fixture.componentInstance;
@@ -216,8 +216,8 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     cmp.abrirGenerador(fila);
 
     expect(navigate).toHaveBeenCalledWith(
-      ['/remuneraciones/nominas', fila.id, 'generador'],
-      expect.objectContaining({ queryParamsHandling: 'preserve' }),
+      ['/remuneraciones/nominas', fila.id],
+      expect.objectContaining({ queryParams: {} }),
     );
   });
 
@@ -240,7 +240,7 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     expect(cmp.resumenes()[0]?.id).toBe('nom-nuevo');
     expect(cmp.modalNuevaAbierto()).toBe(false);
     expect(navigate).toHaveBeenCalledWith(
-      ['/remuneraciones/nominas', 'nom-nuevo', 'generador'],
+      ['/remuneraciones/nominas', 'nom-nuevo'],
       expect.objectContaining({
         queryParams: expect.objectContaining({
           from: 'create',
@@ -257,7 +257,9 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     const fixture = TestBed.createComponent(AdministradorNominasContainer);
     const cmp = fixture.componentInstance;
     await cmp.cargarResumenes();
-    expect(cmp.errorCarga()).toBe('boom');
+    expect(cmp.errorCarga()).toBe(
+      'No se pudo cargar las nóminas. Intente de nuevo o contacte a soporte.',
+    );
     expect(cmp.resumenes()).toHaveLength(0);
   });
 

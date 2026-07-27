@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EmpresaActivaService } from '../../../core/services/empresa-activa.service';
 import { SUPABASE_CLIENT } from '../../../core/services/supabase.service';
 import { NominaPeriodoRepository } from '../data-access/nomina-periodo.repository';
+import { NominaConsolidacionRepository } from '../data-access/nomina-consolidacion.repository';
 import type {
   IncidenciaNomina,
   NominaPeriodo,
@@ -290,6 +291,16 @@ function configurar(opts: {
       {
         provide: NominaFeatureGatesService,
         useValue: opts.featureGates ?? featureGatesMock(),
+      },
+      {
+        provide: NominaConsolidacionRepository,
+        useValue: {
+          listarLiquidaciones: vi.fn().mockResolvedValue([]),
+          generarLiquidaciones: vi.fn().mockResolvedValue({}),
+          listarPendientes: vi.fn().mockResolvedValue([]),
+          aplicar: vi.fn().mockResolvedValue({ aplicadas: 0, totalAnticipos: 0, totalExtraordinarias: 0 }),
+          invalidarLiquidacionesPorReapertura: vi.fn().mockResolvedValue(0),
+        },
       },
     ],
   });

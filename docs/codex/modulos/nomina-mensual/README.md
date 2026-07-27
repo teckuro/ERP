@@ -41,7 +41,9 @@
   del menú y redirigida al Administrador. Sus documentos se conservan como
   historia y como referencia del motor compartido que aún debe desacoplarse.
 - **Flujo canónico** = `/remuneraciones/nominas` y
-  `/remuneraciones/nominas/:nominaPeriodoId/generador`, con seis pasos. El
+  `/remuneraciones/nominas/:nominaPeriodoId`, con **cinco pasos**
+  (Parámetros → Dotación → Movimientos → Cálculo → Cierre; la validación vive
+  dentro de Cierre). El
   roadmap operativo vigente es
   [`roadmap-admin-generador-operativo-100.md`](./roadmap-admin-generador-operativo-100.md).
 

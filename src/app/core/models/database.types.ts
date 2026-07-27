@@ -7666,6 +7666,10 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      invalidar_liquidaciones_por_reapertura: {
+        Args: { p_id_nomina_periodo: string; p_motivo?: string | null }
+        Returns: number
+      }
       listar_movimientos_trabajadores_nomina: {
         Args: {
           p_busqueda?: string

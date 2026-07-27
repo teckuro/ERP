@@ -18,6 +18,7 @@ export function resolverAccionPrincipalShellParametros(input: {
   hayBaseGuardada: boolean;
   validando: boolean;
   loading: boolean;
+  hayDiferencias?: boolean;
 }): AccionPrincipalShellParametros {
   if (input.validando) {
     return { label: 'Preparando...', disabled: true };
@@ -26,7 +27,10 @@ export function resolverAccionPrincipalShellParametros(input: {
     return { label: 'Cargando parámetros...', disabled: true };
   }
   if (input.hayBaseGuardada) {
-    return { label: 'Continuar a alcance', disabled: false };
+    if (input.hayDiferencias) {
+      return { label: 'Revisar y continuar', disabled: false };
+    }
+    return { label: 'Continuar a dotación', disabled: false };
   }
   return { label: 'Preparar nómina', disabled: false };
 }
@@ -71,5 +75,5 @@ export function ayudaAvanceParametrosConBase(input: {
       ? 'Hay diferencias con la configuración guardada. Puedes mantenerla o actualizarla con los valores actuales.'
       : 'Hay diferencias con la configuración guardada. Puedes mantenerla para continuar. Actualizarla requiere administración.';
   }
-  return 'La configuración del período está preparada. Usa «Continuar a alcance» para seguir.';
+  return 'La configuración del período está preparada. Usa «Continuar a dotación» para seguir.';
 }

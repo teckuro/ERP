@@ -18,7 +18,7 @@ const ETIQUETA_PROXIMO_PASO: Record<string, string> = {
   dotacion: 'Revisar dotación',
   movimientos: 'Revisar movimientos',
   calculo: 'Calcular nómina',
-  validacion: 'Validar resultado',
+  validacion: 'Resolver incidencias en cierre',
   cierre: 'Cerrar nómina',
   liquidaciones: 'Generar liquidaciones',
   sin_accion: 'Sin acción',

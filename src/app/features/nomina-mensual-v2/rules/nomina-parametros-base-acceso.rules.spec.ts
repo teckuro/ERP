@@ -13,7 +13,7 @@ describe('nomina-parametros-base-acceso.rules', () => {
     expect(resolverPermisosRecargaBase(false).puedeActualizarBaseEnDiferencias).toBe(false);
   });
 
-  it('usa Preparar nómina sin base y Continuar a alcance con base', () => {
+  it('usa Preparar nómina sin base y Continuar a dotación con base', () => {
     expect(
       resolverAccionPrincipalShellParametros({
         hayBaseGuardada: false,
@@ -27,7 +27,15 @@ describe('nomina-parametros-base-acceso.rules', () => {
         validando: false,
         loading: false,
       }).label,
-    ).toBe('Continuar a alcance');
+    ).toBe('Continuar a dotación');
+    expect(
+      resolverAccionPrincipalShellParametros({
+        hayBaseGuardada: true,
+        validando: false,
+        loading: false,
+        hayDiferencias: true,
+      }).label,
+    ).toBe('Revisar y continuar');
   });
 
   it('evalúa bloqueo de recarga para no admin con base', () => {
@@ -63,7 +71,7 @@ describe('nomina-parametros-base-acceso.rules', () => {
 
   it('ayuda con base preparada orienta a continuar', () => {
     expect(ayudaAvanceParametrosConBase({ esAdmin: false, hayDiferencias: false })).toContain(
-      'Continuar a alcance',
+      'Continuar a dotación',
     );
   });
 });

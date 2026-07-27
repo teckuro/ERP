@@ -126,11 +126,11 @@
 }
 
 .adm-nom__kpi--info strong {
-  color: #2563eb;
+  color: #1e40af;
 }
 
 .adm-nom__kpi--warning strong {
-  color: #b45309;
+  color: #92400e;
 }
 
 .adm-nom__kpi--danger strong {
@@ -261,7 +261,7 @@
   gap: 6px;
   font-size: 12px;
   font-weight: 500;
-  color: #2563eb;
+  color: #1e40af;
   line-height: 1.3;
   min-width: 0;
 }
@@ -280,11 +280,11 @@
 }
 
 .adm-nom__next-step.is-priority {
-  color: #b45309;
+  color: #92400e;
 }
 
 .adm-nom__next-step.is-priority .adm-nom__next-step-icon {
-  color: #b45309;
+  color: #92400e;
 }
 
 .adm-nom__next-step-wrapper {
@@ -359,21 +359,21 @@
 }
 
 .adm-nom__chip--info {
-  background: #f8fafc;
-  color: #2563eb;
-  border-color: #e8edf2;
+  background: #f3f7fc;
+  color: #1e40af;
+  border-color: #dde7f3;
 }
 
 .adm-nom__chip--success {
-  background: #ecfdf5;
-  color: #047857;
-  border-color: #a7f3d0;
+  background: #f3faf5;
+  color: #166534;
+  border-color: #dcefe3;
 }
 
 .adm-nom__chip--warning {
-  background: #fffbeb;
-  color: #b45309;
-  border-color: #fde68a;
+  background: #fff8ed;
+  color: #92400e;
+  border-color: #ece3d4;
 }
 
 .adm-nom__chip--danger {

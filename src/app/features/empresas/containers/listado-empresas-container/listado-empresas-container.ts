@@ -5,8 +5,7 @@
  * cliente final). El shell publica título + breadcrumb; el CTA principal vive
  * en la toolbar de la grilla (`primaryActionLabel`).
  *
- * Alineada con `administrador-plantillas-container` (F03) y
- * `administrador-nominas`.
+ * Alineada con `administrador-nominas`.
  */
 
 import { CommonModule } from '@angular/common';

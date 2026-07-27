@@ -1,4 +1,4 @@
-ï»¿@import './nomina-mensual-v2-visual-system.css';
+@import './nomina-mensual-v2-visual-system.css';
 
 /* L2/L3/L4 movidos a CSS local del componente (L5 desacople 2026-06). Ver:
    components/nomina-mensual-v2-paso-parametros/nomina-mensual-v2-paso-parametros.component.css */
@@ -73,7 +73,7 @@ button:disabled {
   opacity: 0.55;
 }
 
-/* L1 â€” Marco del shell V2 (ViewEncapsulation.None). */
+/* L1 — Marco del shell V2 (ViewEncapsulation.None). */
 .nmv2-page {
   display: flex;
   flex: 1 1 auto;
@@ -119,7 +119,7 @@ button:disabled {
   background: #ffffff;
 }
 
-/* Franja de contexto fijo (F18b â€” AG-CTX-04) -------------------------------- */
+/* Franja de contexto fijo (F18b — AG-CTX-04) -------------------------------- */
 
 .nmv2-context-franja {
   display: flex;
@@ -214,7 +214,6 @@ button:disabled {
 .nmv2-step-frame > app-nomina-mensual-v2-paso-dotacion,
 .nmv2-step-frame > app-nomina-mensual-v2-paso-movimientos,
 .nmv2-step-frame > app-nomina-mensual-v2-paso-calculo,
-.nmv2-step-frame > app-nomina-mensual-v2-paso-validacion,
 .nmv2-step-frame > app-nomina-mensual-v2-paso-cierre {
   display: flex;
   flex: 1 1 auto;

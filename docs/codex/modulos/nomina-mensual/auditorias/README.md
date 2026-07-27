@@ -1,6 +1,6 @@
 # Auditorías — Nómina mensual
 
-Índice de auditorías de `/remuneraciones/proceso-mensual` (V1), `/remuneraciones/nomina-mensual-v2` (V2) y el rediseño **Administrador + Generador** (rutas `/remuneraciones/nominas` y `/remuneraciones/nominas/:nominaPeriodoId/generador`).
+Índice de auditorías de `/remuneraciones/proceso-mensual` (V1), `/remuneraciones/nomina-mensual-v2` (V2) y el rediseño **Administrador + Generador** (rutas `/remuneraciones/nominas` y `/remuneraciones/nominas/:nominaPeriodoId`; legacy `.../generador` redirige).
 
 Documento rector del módulo: [`../arquitectura-administrador-generador.md`](../arquitectura-administrador-generador.md).
 
@@ -8,7 +8,7 @@ Documento rector del módulo: [`../arquitectura-administrador-generador.md`](../
 
 | Documento | Fecha | Alcance | Estado |
 |-----------|------:|---------|--------|
-| [`auditoria-admin-generador-nomina-2026-06.md`](./auditoria-admin-generador-nomina-2026-06.md) | 2026-06-05 | Administrador (`/remuneraciones/nominas`) + Generador (6 pasos: Parámetros, Dotación, Movimientos, Cálculo, Validación, Cierre) | **Vigente.** Roadmap P0–P3 propuesto, no ejecutado |
+| [`auditoria-admin-generador-nomina-2026-06.md`](./auditoria-admin-generador-nomina-2026-06.md) | 2026-07-27 | Administrador (`/remuneraciones/nominas`) + Generador (**5 pasos**: Parámetros, Dotación, Movimientos, Cálculo, Cierre con validación) | **Vigente.** P0 en ejecución (NOM-ADMIN-REVIEW); UI plantillas F03 retirada |
 | [`auditoria-nomina-v2-2026-06.md`](./auditoria-nomina-v2-2026-06.md) | 2026-06-02 | V2 shell + pasos 1–3 productivos + overlays + copy RRHH | **Cerrada.** L0–L7 completados (2026-06-03). L5.3 declarada como deuda opcional |
 | [`cierre-mensual-audit-post-reset-01.md`](./cierre-mensual-audit-post-reset-01.md) | 2026-05-18 | V1 `/remuneraciones/proceso-mensual` (post-reset visual) | **Superada (parcial).** La fase propuesta `NOM-CIERRE-MENSUAL-OPERATIVE-LAYOUT-01` no se ejecutó; el foco operativo se trasladó a Administrador + Generador |
 | [`nom-mensual-cleanup-audit-01.md`](./nom-mensual-cleanup-audit-01.md) | 2026-05-19 | Limpieza de código y CSS huérfanos en `features/nomina-mensual/` | **Implementada.** Documento histórico |

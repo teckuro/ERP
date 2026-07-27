@@ -112,6 +112,7 @@ export const routes: Routes = [
           },
           {
             path: 'nominas',
+            pathMatch: 'full',
             canActivate: [crearModuloPermisoGuard('nominas')],
             loadComponent: () =>
               import(
@@ -120,6 +121,11 @@ export const routes: Routes = [
           },
           {
             path: 'nominas/:nominaPeriodoId/generador',
+            pathMatch: 'full',
+            redirectTo: '/remuneraciones/nominas/:nominaPeriodoId',
+          },
+          {
+            path: 'nominas/:nominaPeriodoId',
             canActivate: [
               crearModuloPermisoGuard('nominas', 'editar'),
               remuneracionesEscrituraGuard,

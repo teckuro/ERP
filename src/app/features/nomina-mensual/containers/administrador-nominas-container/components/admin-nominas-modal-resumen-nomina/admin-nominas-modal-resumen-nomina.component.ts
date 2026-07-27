@@ -208,18 +208,32 @@ export class AdminNominasModalResumenNominaComponent {
     if (n.estado === 'cerrada') {
       return {
         tono: 'ok',
-        texto: 'Nómina cerrada. Los montos quedaron registrados para consulta y liquidaciones.',
+        texto: this.puedeVerLiquidaciones()
+          ? 'Nómina cerrada. Siguiente: consultar liquidaciones del período.'
+          : 'Nómina cerrada. Los montos quedaron registrados para consulta.',
       };
     }
     if (n.estado === 'liquidada') {
       return {
         tono: 'pendiente',
-        texto: 'Liquidaciones generadas. Completa el cierre del período cuando corresponda.',
+        texto: 'Liquidaciones generadas. Siguiente: completar el cierre administrativo del período.',
+      };
+    }
+    if (n.estado === 'aprobada') {
+      return {
+        tono: 'pendiente',
+        texto: 'Aprobada. Siguiente: generar liquidaciones en el generador.',
+      };
+    }
+    if (n.naturaleza === 'rectificacion') {
+      return {
+        tono: 'info',
+        texto: 'Rectificación. Siguiente: continuar en el generador o consultar el cierre original.',
       };
     }
     return {
       tono: 'info',
-      texto: 'Resumen disponible para revisión del cierre y liquidaciones.',
+      texto: 'Resumen disponible. Siguiente: abrir el generador si falta completar el ciclo.',
     };
   });
 

@@ -105,7 +105,117 @@
           <strong>{{ m.sinLiquidacion }}</strong>
         </span>
       }
+      @if (m.criticasPendientes > 0 || m.advertenciasPendientes > 0) {
+        <span
+          class="paso-cierre__stat is-warning"
+          [attr.title]="m.criticasPendientes + ' críticas, ' + m.advertenciasPendientes + ' advertencias pendientes'"
+        >
+          <lucide-icon name="shield-alert" aria-hidden="true"></lucide-icon>
+          <strong>{{ m.criticasPendientes + m.advertenciasPendientes }}</strong>
+        </span>
+      }
     </div>
+  }
+
+  @if (hayIncidenciasPanel()) {
+    <section
+      class="paso-cierre__incidencias"
+      aria-labelledby="paso-cierre-inc-title"
+    >
+      <div class="paso-cierre__col-head">
+        <h3 id="paso-cierre-inc-title" class="paso-cierre__col-title">
+          <lucide-icon name="shield-check" aria-hidden="true"></lucide-icon>
+          Incidencias
+        </h3>
+      </div>
+
+      <div class="paso-cierre__inc-filters">
+        <label class="paso-cierre__field">
+          Severidad
+          <select
+            [value]="filtroSeveridad()"
+            (change)="cambiarFiltroSeveridad($any($event.target).value)"
+          >
+            <option value="todas">Todas</option>
+            <option value="critica">Solo críticas</option>
+            <option value="advertencia">Solo advertencias</option>
+          </select>
+        </label>
+        <label class="paso-cierre__field paso-cierre__field--wide">
+          Buscar mensaje
+          <input
+            type="search"
+            [value]="busquedaIncidencia()"
+            (input)="busquedaIncidencia.set($any($event.target).value)"
+            placeholder="palabra clave"
+          />
+        </label>
+      </div>
+
+      @if (incidenciasFiltradas().length === 0) {
+        <p class="paso-cierre__empty">
+          No hay incidencias para los criterios seleccionados.
+        </p>
+      } @else {
+        <ul class="paso-cierre__inc-list">
+          @for (inc of incidenciasFiltradas(); track inc.id) {
+            <li class="paso-cierre__inc-item" [attr.data-severidad]="inc.severidad">
+              <div class="paso-cierre__inc-main">
+                <strong>{{ inc.mensaje }}</strong>
+                <small class="paso-cierre__inc-meta">
+                  {{ etiquetaTipoIncidencia(inc.tipo) }}
+                  · {{ etiquetaEstadoDecision(inc.estadoDecision ?? 'pendiente') }}
+                  @if (inc.bloqueante && incidenciaCriticaPendiente(inc)) {
+                    · Bloqueante
+                  }
+                </small>
+                @if (inc.justificacion) {
+                  <small class="paso-cierre__inc-justificacion-prev">Justificación: {{ inc.justificacion }}</small>
+                }
+              </div>
+              <div class="paso-cierre__inc-actions">
+                @if (inc.trabajadorId) {
+                  <button
+                    type="button"
+                    class="paso-cierre__link"
+                    (click)="emitirVerEnDotacion(inc.trabajadorId)"
+                  >Ver en dotación</button>
+                }
+                @if (incidenciaCriticaPendiente(inc)) {
+                  <button
+                    type="button"
+                    class="paso-cierre__btn is-secondary"
+                    [disabled]="procesandoDecision() === inc.id"
+                    (click)="marcarResuelta(inc)"
+                  >
+                    Marcar resuelta
+                  </button>
+                }
+                @if (advertenciaPendiente(inc)) {
+                  <label class="paso-cierre__justificacion">
+                    <span class="paso-cierre__justificacion-label">Justificación</span>
+                    <textarea
+                      rows="2"
+                      [value]="justificaciones()[inc.id]"
+                      (input)="setJustificacion(inc.id, $any($event.target).value)"
+                      placeholder="Motivo operativo para continuar"
+                    ></textarea>
+                  </label>
+                  <button
+                    type="button"
+                    class="paso-cierre__btn is-secondary"
+                    [disabled]="procesandoDecision() === inc.id"
+                    (click)="aceptarAdvertencia(inc)"
+                  >
+                    Aceptar advertencia
+                  </button>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
   }
 
   <div
@@ -338,8 +448,8 @@
     variant="confirm"
     eyebrow="Aprobación"
     title="Aprobar nómina"
-    message="Registra la aprobación operativa del cálculo validado. Después podrás generar liquidaciones."
-    detail="La acción queda en auditoría. Si recalculas, deberás validar de nuevo."
+    message="Confirma la aprobación operativa del cálculo validado. Después podrás generar liquidaciones."
+    [sections]="resumenAprobacionSections()"
     primaryLabel="Aprobar nómina"
     secondaryLabel="Cancelar"
     [dismissible]="true"
@@ -372,7 +482,8 @@
     variant="danger"
     eyebrow="Reapertura"
     title="Reabrir nómina"
-    message="El cálculo cerrado quedará invalidado. Si ya generaste liquidaciones para este período, deberás revisarlas y regenerarlas."
+    message="Confirma la reapertura. El cálculo y las liquidaciones activas perderán vigencia."
+    [sections]="resumenReaperturaSections()"
     [primaryLabel]="ejecutando() ? 'Reabriendo…' : 'Reabrir nómina'"
     secondaryLabel="Cancelar"
     [dismissible]="!ejecutando()"

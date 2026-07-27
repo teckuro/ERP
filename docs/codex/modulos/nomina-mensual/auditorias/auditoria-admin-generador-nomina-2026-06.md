@@ -1029,29 +1029,25 @@ La auditoría recomienda envolver Admin y Generador en `app-page-frame` y consum
 
 #### P0 críticos (6 hallazgos restantes)
 
-> Los ítems ADM-MOD-05, CIE-ENUM-01, DOT-DET-04, MOV-ID-03, CAL-INV-05 y QA-FOC-01 pasaron a la Tabla A el 2026-06-05 (sub-lote P0 ejecutado). AG-CTA-01, AG-NAV-02 y AG-NAV-03 pasaron a la Tabla A el 2026-06-05 (lote estructural ejecutado, ver entrada en bitácora). De CIE-REO-04 se cubrió incidentalmente la advertencia visual; queda pendiente la persistencia explícita (invalidación de liquidaciones).
+> Actualizado 2026-07-27 (NOM-ADMIN-GENERADOR-REVIEW-01): los 6 ítems de Tabla B pasaron a cerrados en runtime/docs.
 
-| ID | Descripción corta | Origen |
-|----|-------------------|--------|
-| PAR-CTA-03 | CTA del shell puede no representar la operación real del paso Parámetros. Resolver desde estado operativo completo. | §6.3 |
-| DOT-SEL-02 | "Seleccionar todos" actúa sobre la página visible. Distinguir página vs. universo filtrado. | §6.4 |
-| MOV-CON-01 | Tipo de movimiento como input libre. Búsqueda de concepto desde catálogo autorizado. | §6.5 |
-| VAL-STA-02 | Sin estado de resolución (resuelta/justificada/aceptada) por incidencia. Workflow mínimo. | §6.7 |
-| VAL-APP-03 | Aprobar sin resumen final del firmante. `app-message-box` con versión, totales, advertencias y responsable. | §6.7 |
-| CIE-REO-04 | Reapertura: queda persistir el alcance explícito (impacto sobre liquidaciones generadas). La advertencia visible se entregó como colateral de QA-FOC-01 / Fase 5 del sub-lote 2026-06-05. | §6.8 |
+| ID | Estado 2026-07-27 | Evidencia |
+|----|-------------------|-----------|
+| PAR-CTA-03 | Cerrado | CTA shell desde `resolverAccionPrincipalShellParametros` + `hayDiferencias`. Retiro copy «alcance». |
+| DOT-SEL-02 | Cerrado | `data-grid` distingue página vs filtro + confirmación de alcance. |
+| MOV-CON-01 | Cerrado (verificado) | Concepto vía catálogo/`modal-seleccion-concepto` (F08). |
+| VAL-STA-02 | Cerrado | Incidencias remount en Cierre + `registrarDecisionIncidencia`. |
+| VAL-APP-03 | Cerrado | MessageBox aprobación con versión, dotación, incidencias y responsable. |
+| CIE-REO-04 | Cerrado | MessageBox + RPC `invalidar_liquidaciones_por_reapertura` en `reabrirNomina`. |
+
+Siguiente foco (no P0 de esta review): REPORTES-01 / F09 motor-by-nómina / F15b permisos finos.
 
 #### Bloques siguientes (no detallados aquí)
 
 - **P1** (escalabilidad y operación por excepción): `app-data-grid` en Dotación, segmentos, acciones masivas con preview, `app-search-select` remoto en Movimientos, comparación de cálculos, validación agrupada, deep links Validación → Dotación. Ver §6.4–§6.8 y §7.3–§7.5.
 - **P2** (consolidación visual NOIA): ARC-CSS-01 + ARC-TOK-02 (consolidación de tokens y CSS por paso), normalización de tabs/alerts/drawers, unificación de trazabilidad. Reabrir ARC-FRM-03 solo si se decide volver al frame común.
-- **P3** (retiro V1/V2 antiguo): mover `payrollSteps` fuera de `*.mock.ts`, retirar Alcance/Empleados/overlays del contenedor activo, hacer `nominaPeriodoId` la única fuente de rehidratación, preparar redirect controlado de `/proceso-mensual`.
+- **P3** (retiro V1/V2 antiguo): retirar Alcance/Empleados/overlays del contenedor activo, hacer `nominaPeriodoId` la única fuente de rehidratación, preparar redirect controlado de `/proceso-mensual`. (`payrollSteps` ya salió de `*.mock.ts` en 2026-07-27.)
 
 ### Próximo paso recomendado
 
-Cerrado el lote estructural (AG-NAV-03 + AG-CTA-01 + AG-NAV-02, 2026-06-05), el contrato shell ↔ paso está reorganizado. Los próximos P0 son **acotados, sin interdependencia entre sí** y se pueden ejecutar en cualquier orden:
-
-1. **PAR-CTA-03** — alinear el CTA del shell en el paso Parámetros con el estado operativo completo (incluir variantes Guardar/Validar/Continuar según `EstadoBaseParametrosPeriodoView` + diferencias detectadas). Por su impacto en el primer paso del flujo y por compartir naturaleza con el contrato AG-NAV-03 recién aplicado, es el candidato natural a iniciar.
-2. **DOT-SEL-02** — distinguir "selección de la página" vs. "selección del universo filtrado" en Dotación. Toca presenter + componente; requiere un selector tipo `app-message-box` con confirmación de alcance.
-3. **VAL-APP-03** — abrir un `app-message-box` con versión del cálculo, totales, advertencias y responsable antes de aprobar la validación. Hereda directamente la infraestructura del lote estructural recién cerrado.
-
-Otros candidatos restantes (`MOV-CON-01`, `VAL-STA-02`, `CIE-REO-04` persistencia) implican dominio o catálogos y conviene tratarlos como fases dedicadas con SQL/RPC propios.
+P0 de Tabla B cerrados (2026-07-27, NOM-ADMIN-GENERADOR-REVIEW-01). Continuar con REPORTES-01 o F09 según orquestador; no reabrir PAR/DOT/VAL/CIE de esta lista salvo regresión.

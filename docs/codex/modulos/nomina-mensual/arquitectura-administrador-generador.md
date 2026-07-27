@@ -211,7 +211,7 @@ Las nuevas RPC que se construyan en F05 en adelante deben:
 | Container | `src/app/features/nomina-mensual/containers/administrador-plantillas-container/` |
 | Modal editor | `…/components/admin-plantillas-modal-editor/` |
 | Modal preview | `…/components/admin-plantillas-modal-preview/` |
-| Ruta | `/remuneraciones/plantillas-ciclos` → redirige a `nominas` (UI F03 diferida) |
+| Ruta | `/remuneraciones/plantillas-ciclos` → redirige a `nominas` (UI F03 retirada 2026-07-27; dominio/service conservado) |
 | Menú lateral | ~~Sección **Gestión** → "Plantillas de ciclos"~~ retirado del menú hasta nueva fase |
 
 ### Restricciones honradas
@@ -397,7 +397,7 @@ Reconstruir Nómina mensual como módulo definitivo bajo dos roles separados:
 | Módulo de hoy | Rol futuro | Propósito |
 |---------------|------------|-----------|
 | `Nómina mensual` (`proceso-mensual`) | **Administrador de Nóminas** | Bandeja de todas las nóminas del año. Lista resúmenes, crea/abre nóminas, navega al Generador. |
-| `Nómina mensual V2` (`nomina-mensual-v2`) | **Generador de Nómina** | Trabaja **una** nómina por `:nominaPeriodoId`. Stepper de 6 pasos. |
+| `Nómina mensual V2` (`nomina-mensual-v2`) | **Generador de Nómina** | Trabaja **una** nómina por `:nominaPeriodoId`. Stepper de **5 pasos** (validación en Cierre). |
 | `Recurrentes` (módulo nuevo) | Reglas permanentes | Catálogo de `MovimientoRecurrente` aplicables a nóminas. |
 | `Movimientos` | Vista transversal | `MovimientoNomina` globales y por nómina. |
 | `Conceptos` | Catálogo base | Tipos de movimiento (haber, descuento, ausencia, informativo). |
@@ -444,7 +444,8 @@ Reemplaza los 8 pasos actuales (`parameters / scope / employees / movements / ca
 
 ```txt
 /remuneraciones/nominas                                  → Administrador (lista)
-/remuneraciones/nominas/:nominaPeriodoId/generador       → Generador (1 nómina)
+/remuneraciones/nominas/:nominaPeriodoId                 → Generador (1 nómina)
+/remuneraciones/nominas/:nominaPeriodoId/generador       → redirect legacy → /nominas/:id
 ```
 
 Reemplaza progresivamente `/remuneraciones/nomina-mensual-v2`. El cambio se aplica en **F3**, no en F1.

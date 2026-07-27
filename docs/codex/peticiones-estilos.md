@@ -9,6 +9,27 @@
 
 ---
 
+## 2026-07-27 — Admin nómina: URL canónica `/nominas/{uuid}` + pasos
+
+- **Pedido:** URL al abrir sin `/generador`; pulido visual de pasos.
+- **Solución:** ruta canónica `/remuneraciones/nominas/:id` + redirect legacy `.../generador`; abrir sin `preserve` de query; copy «Abrir nómina»; avatar stepper sobrio.
+- **Archivos:** `app.routes.ts`, Admin/V2/liquidaciones navigate, `shell-route-context.config.ts`, stepper CSS, `nomina-rectificacion-ui.rules.ts`, E2E/helpers, docs módulo, `peticiones-estilos.md`.
+- **Sin tocar:** SQL, motor, estilos globales, deep-link por paso.
+
+## 2026-07-27 — Admin nómina: colores sobrios + modales centrados
+
+- **Pedido:** revisar colores neón y MessageBox/modales desalineados en Administrador de nóminas.
+- **Solución:** chips/KPI/historial/resumen/cadena alineados a tonos MessageBox/Bitácora (`#f3faf5`/`#dcefe3`/`#166534`, `#fff8ed`/`#ece3d4`); modal Nueva/Rectificación centrado vertical (`align-items: center`, `z-index` 13000); historial MessageBox centrado (sin `stretch`).
+- **Archivos:** `administrador-nominas-container.css`, `admin-nominas-modal-nueva-nomina.component.css`, `admin-nominas-modal-resumen-nomina.component.css`, `admin-nominas-modal-historial-nomina.component.css`, `admin-nominas-modal-cadena-rectificacion.component.css`, `peticiones-estilos.md`.
+- **Sin tocar:** estilos globales, SQL, motor.
+
+## 2026-07-27 — Admin nómina: revisión por fases (orphans + P0 + cierre)
+
+- **Pedido:** revisión completa Admin/Generador por fases (plantillas UI retirada, validación en Cierre, P0 auditoría, CIE-REO-04).
+- **Solución:** UI plantillas eliminada (dominio conservado); incidencias remount en Cierre; CTA parámetros sin “alcance”; selección dotación aclara página vs filtro; aprobación/reapertura con resumen; RPC `invalidar_liquidaciones_por_reapertura`; `payrollSteps` fuera de mock; docs a 5 pasos.
+- **Archivos:** `nomina-mensual/**`, `nomina-mensual-v2/**`, `data-grid`, `tests/nominas-admin-generador*`, migración `20260727190000_*`, docs módulo, `peticiones-estilos.md`.
+- **Sin tocar:** motor de cálculo, estilos globales (salvo data-grid copy local).
+
 ## 2026-07-27 — Alta avanzada: bitácora y avisos accionables
 
 - **Pedido:** revisar flujos muertos en bitácora y avisos engañosos.

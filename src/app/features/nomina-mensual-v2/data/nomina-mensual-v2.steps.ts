@@ -1,4 +1,4 @@
-/** Metadatos del stepper del Generador V2 (labels de pasos). No es fallback de datos de negocio. */
+/** Metadatos del stepper del Generador (labels de pasos). No es fallback de datos de negocio. */
 
 import type { PayrollStep } from '../models/nomina-mensual-v2.models';
 

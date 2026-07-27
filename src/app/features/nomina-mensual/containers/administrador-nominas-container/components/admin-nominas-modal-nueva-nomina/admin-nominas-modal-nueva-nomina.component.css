@@ -1,25 +1,25 @@
 ﻿.adm-nom-modal__backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(23, 32, 51, 0.4);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding: 80px 16px 16px;
-  z-index: 50;
+  padding: 1rem;
+  z-index: 13000;
   outline: none;
 }
 
 .adm-nom-modal {
   background: #fff;
-  border: 1px solid var(--erp-border, #e5e7eb);
-  border-radius: 10px;
+  border: 1px solid #d5dce8;
+  border-radius: 16px;
   width: min(100%, 480px);
-  max-height: calc(100vh - 96px);
+  max-height: min(86vh, 46rem);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 14px 32px -16px rgba(15, 23, 42, 0.28);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
   transition: width 160ms ease;
 }
 
@@ -84,12 +84,12 @@
 .adm-nom-modal__resumen {
   margin: 0;
   padding: 10px 12px;
-  border: 1px solid #dbeafe;
+  border: 1px solid #dde7f3;
   border-radius: 6px;
-  background: #f8fafc;
+  background: #f3f7fc;
   font-size: 12px;
   line-height: 1.45;
-  color: #2563eb;
+  color: #1e40af;
 }
 
 .adm-nom-modal__totales {

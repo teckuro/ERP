@@ -159,7 +159,7 @@ Parametros funciona como cierre normativo del periodo: muestra estado operativo,
 
 - **Administrador + Generador operativo (2026-06-11 — `NOM-ADMIN-GENERADOR-OPERATIVO-100`)**:
   el flujo visible canónico vive en `/remuneraciones/nominas` y
-  `/remuneraciones/nominas/:nominaPeriodoId/generador`. La UI histórica de
+  `/remuneraciones/nominas/:nominaPeriodoId`. La UI histórica de
   `/remuneraciones/proceso-mensual` fue retirada y redirige al Administrador.
   Persisten dependencias técnicas por `periodo` en cálculo y liquidaciones, que
   deben migrarse a identidad por nómina. El roadmap vigente divide el trabajo

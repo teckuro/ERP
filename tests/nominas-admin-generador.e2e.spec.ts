@@ -18,7 +18,7 @@ import {
   filasPorEstado,
   irPasoDotacion,
   irPasoGenerador,
-  irPasoValidacion,
+  irPasoCierre,
   leerPasoActual,
   leerTotalDotacion,
   listarFilasBandeja,
@@ -52,15 +52,16 @@ test.describe('Administrador y generador de nóminas', () => {
     await expect(page.getByLabel('Vista operativa')).toBeVisible();
     await esperarBandejaLista(page);
 
-    const abrir = page.getByRole('button', { name: /^Abrir generador de / });
+    const abrir = page.getByRole('button', { name: /^Abrir nómina de / });
     if ((await abrir.count()) === 0) {
       test.skip(true, 'Bandeja sin nóminas abiertas al generador (¿id_empresa en JWT?).');
       return;
     }
 
-    await expect(abrir.first()).toHaveAttribute('title', 'Abrir generador');
+    await expect(abrir.first()).toHaveAttribute('title', 'Abrir nómina');
     await abrir.first().click();
-    await page.waitForURL(/\/remuneraciones\/nominas\/[^/]+\/generador/, { timeout: 30_000 });
+    await page.waitForURL(/\/remuneraciones\/nominas\/[^/?#]+(?:\/generador)?(?:[?#]|$)/, { timeout: 30_000 });
+    await expect(page).not.toHaveURL(/\/remuneraciones\/nominas\/?$/);
     await expect(page.getByLabel('Generador de nómina')).toBeVisible();
   });
 
@@ -79,7 +80,7 @@ test.describe('Administrador y generador de nóminas', () => {
 
     const [periodo, grupo] = parMismoPeriodo!;
     const idA = await abrirGeneradorDesdeFila(page, grupo[0]!);
-    await expect(locatorGeneradorShell(page)).toHaveAttribute('data-step', /parameters|dotacion|movements|calculation|validation|closure/);
+    await expect(locatorGeneradorShell(page)).toHaveAttribute('data-step', /parameters|dotacion|movements|calculation|closure/);
 
     await volverAdministradorNominas(page);
     await mostrarTodasLasNominas(page);
@@ -153,7 +154,7 @@ test.describe('F20 — Certificación operativa (matriz E2E)', () => {
     await abrirGeneradorDesdeFila(page, candidata!);
     await expect(locatorGeneradorShell(page)).toHaveAttribute(
       'data-step',
-      /parameters|dotacion|movements|calculation|validation|closure/,
+      /parameters|dotacion|movements|calculation|closure/,
     );
     await expect(page.getByLabel('Generador de nómina')).toBeVisible();
   });
@@ -241,25 +242,28 @@ test.describe('F20 — Certificación operativa (matriz E2E)', () => {
     expect(idAnticipo).not.toBe(idExtra);
   });
 
-  test('F20-06: advertencia pendiente expone justificación en validación', async ({ page }) => {
+  test('F20-06: advertencia pendiente expone justificación en cierre', async ({ page }) => {
     const filas = await listarFilasBandeja(page);
     const conAvisos = filas.find((f) => /aviso/i.test(f.proximoPaso));
     test.skip(!conAvisos, 'Requiere nómina con advertencias pendientes en bandeja.');
 
     await abrirGeneradorDesdeFila(page, conAvisos);
-    await irPasoValidacion(page);
-    await expect(page.getByText('Justificación').first()).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Aceptar advertencia' }).first()).toBeVisible();
+    await irPasoCierre(page);
+    const cierre = page.locator('section.paso-cierre');
+    await expect(cierre.getByText('Justificación').first()).toBeVisible();
+    await expect(cierre.getByRole('button', { name: 'Aceptar advertencia' }).first()).toBeVisible();
   });
 
-  test('F20-07: incidencia crítica expone acción de resolución en validación', async ({ page }) => {
+  test('F20-07: incidencia crítica expone acción de resolución en cierre', async ({ page }) => {
     const filas = await listarFilasBandeja(page);
     const conCriticas = filas.find((f) => /cr[ií]tica/i.test(f.proximoPaso));
     test.skip(!conCriticas, 'Requiere nómina con incidencias críticas pendientes en bandeja.');
 
     await abrirGeneradorDesdeFila(page, conCriticas);
-    await irPasoValidacion(page);
-    await expect(page.getByRole('button', { name: 'Marcar resuelta' }).first()).toBeVisible();
+    await irPasoCierre(page);
+    await expect(
+      page.locator('section.paso-cierre').getByRole('button', { name: 'Marcar resuelta' }).first(),
+    ).toBeVisible();
   });
 
   test('F20-08: usuario con permisos parciales no puede crear nómina', async ({ page }) => {

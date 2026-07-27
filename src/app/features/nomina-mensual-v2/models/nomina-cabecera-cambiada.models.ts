@@ -7,5 +7,6 @@ export type NominaCabeceraCambiadaEvent = {
     | { tipo: 'cierre'; motivo: string }
     | { tipo: 'reapertura'; motivo: string }
     | { tipo: 'aprobacion'; motivo: string }
+    | { tipo: 'validacion'; motivo: string }
     | { tipo: 'liquidaciones'; motivo: string };
 };

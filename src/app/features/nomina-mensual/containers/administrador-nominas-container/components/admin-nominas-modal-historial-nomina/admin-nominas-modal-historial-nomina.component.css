@@ -1,15 +1,16 @@
 /* Historial administrativo — modal ancho casi viewport, grilla acoplada. */
 
 app-admin-nominas-modal-historial-nomina app-message-box.message-box-host-modal {
-  padding: 0.75rem 1rem;
-  align-items: stretch;
+  padding: 1rem;
+  align-items: center;
+  justify-content: center;
 }
 
 .adm-nom-historial-msgbox.noia-msgbox--modal {
   width: min(100%, calc(100vw - 2rem)) !important;
   max-width: min(100%, calc(100vw - 2rem)) !important;
-  height: min(92vh, 56rem);
-  max-height: min(92vh, 56rem);
+  height: min(88vh, 52rem);
+  max-height: min(88vh, 52rem);
   margin-inline: auto;
 }
 
@@ -152,15 +153,15 @@ app-admin-nominas-modal-historial-nomina app-message-box.message-box-host-modal 
 }
 
 .adm-nom-historial__icon--ok {
-  background: #ecfdf5;
-  border-color: #a7f3d0;
-  color: #047857;
+  background: #f3faf5;
+  border-color: #dcefe3;
+  color: #166534;
 }
 
 .adm-nom-historial__icon--warning {
-  background: #fffbeb;
-  border-color: #fde68a;
-  color: #b45309;
+  background: #fff8ed;
+  border-color: #ece3d4;
+  color: #92400e;
 }
 
 .adm-nom-historial__icon--danger {

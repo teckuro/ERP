@@ -17,4 +17,15 @@ describe('shell-route-context.config', () => {
     expect(crumbs[0].path).toBe('/empleados');
     expect(crumbs[1].label).toBe('Ficha empleado');
   });
+
+  it('resuelve nómina abierta por id canónico', () => {
+    const crumbs = resolveShellRouteBreadcrumbs(
+      '/remuneraciones/nominas/00000000-0000-0000-0000-000000000001',
+    );
+    expect(crumbs.map((b) => b.label)).toEqual([
+      'Remuneraciones',
+      'Administrador de nóminas',
+      'Nómina',
+    ]);
+  });
 });

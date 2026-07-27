@@ -3,7 +3,10 @@ import { expect, type Locator, type Page } from '@playwright/test';
 export const NOMINAS_E2E_TIMEOUT_MS = 120_000;
 
 const UUID_RE =
-  /\/remuneraciones\/nominas\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/generador/i;
+  /\/remuneraciones\/nominas\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\/generador)?/i;
+
+const URL_NOMINA_ABIERTA_RE =
+  /\/remuneraciones\/nominas\/[^/?#]+(?:\/generador)?(?:[?#]|$)/;
 
 export type PasoGenerador =
   | 'parameters'
@@ -86,7 +89,7 @@ export async function mostrarTodasLasNominas(page: Page): Promise<void> {
 }
 
 function botonGeneradorFila(row: Locator): Locator {
-  return row.getByRole('button', { name: /^(Abrir generador|Continuar rectificación) de / });
+  return row.getByRole('button', { name: /^(Abrir nómina|Continuar rectificación) de / });
 }
 
 export async function listarFilasBandeja(page: Page): Promise<FilaBandejaNomina[]> {
@@ -212,11 +215,11 @@ export async function esperarGeneradorListo(page: Page): Promise<void> {
 export async function abrirGeneradorDesdeFila(page: Page, fila: FilaBandejaNomina): Promise<string> {
   await expect(fila.abrirGenerador).toBeVisible();
   await fila.abrirGenerador.click();
-  await page.waitForURL(/\/remuneraciones\/nominas\/[^/]+\/generador/, { timeout: 60_000 });
+  await page.waitForURL(URL_NOMINA_ABIERTA_RE, { timeout: 60_000 });
   await expect(page.getByLabel('Generador de nómina')).toBeVisible();
   await esperarGeneradorListo(page);
   const id = extraerNominaPeriodoId(page.url());
-  expect(id, 'La URL del generador debe incluir nominaPeriodoId.').toBeTruthy();
+  expect(id, 'La URL de la nómina debe incluir nominaPeriodoId.').toBeTruthy();
   return id!;
 }
 

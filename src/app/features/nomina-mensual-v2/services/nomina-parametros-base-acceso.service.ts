@@ -30,6 +30,7 @@ export class NominaParametrosBaseAccesoService {
     hayBaseGuardada: boolean;
     validando: boolean;
     loading: boolean;
+    hayDiferencias?: boolean;
   }): AccionPrincipalShellParametros {
     return resolverAccionPrincipalShellParametros(input);
   }

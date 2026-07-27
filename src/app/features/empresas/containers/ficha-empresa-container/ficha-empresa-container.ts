@@ -6,7 +6,7 @@
  * subtítulo con RUT y CTA "Guardar" vía `bindShellPageContext`. No hay
  * header local: la página se concentra en el formulario.
  *
- * Alineada con `administrador-plantillas-container` (F03).
+ * Alineada con `administrador-nominas`.
  */
 
 import { CommonModule } from '@angular/common';

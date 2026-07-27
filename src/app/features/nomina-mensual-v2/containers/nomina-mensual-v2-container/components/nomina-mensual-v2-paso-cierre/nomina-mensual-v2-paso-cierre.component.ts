@@ -23,6 +23,7 @@ import { MessageBoxComponent } from '../../../../../../shared/components/ui/mess
 import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 
 import type {
+  IncidenciaNomina,
   NominaPeriodo,
   ResumenValidacionNomina,
 } from '../../../../../nomina-mensual/models/nomina-periodo.models';
@@ -33,6 +34,11 @@ import type {
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
 import { NominaMensualCapabilitiesService } from '../../../../../nomina-mensual/services/nomina-mensual-capabilities.service';
 import { estadoNominaToLabel } from '../../../../../nomina-mensual/presenters/admin-nominas.presenter';
+import {
+  advertenciaPendiente,
+  etiquetaEstadoDecisionIncidencia,
+  incidenciaCriticaPendiente,
+} from '../../../../../nomina-mensual/rules/nomina-validacion-incidencias.rules';
 import type {
   PasoNominaPort,
   ResultadoAvancePaso,
@@ -71,8 +77,11 @@ type TipoAccionRecomendadaCierre =
   | 'cierre_shell'
   | 'reabrir'
   | 'recalcular'
+  | 'resolver_incidencias'
   | 'espera'
   | 'ninguna';
+
+type FiltroSeveridadIncidencia = 'todas' | 'critica' | 'advertencia';
 
 interface VistaAccionRecomendadaCierre {
   kicker: string;
@@ -81,6 +90,21 @@ interface VistaAccionRecomendadaCierre {
   tono: TonoFranjaCierre;
   tipo: TipoAccionRecomendadaCierre;
   ejecutable: boolean;
+}
+
+const ETIQUETAS_TIPO_INCIDENCIA: Record<string, string> = {
+  datos_incompletos: 'Datos incompletos',
+  prevision: 'Previsión',
+  bancario: 'Datos bancarios',
+  movimiento: 'Movimiento',
+  calculo: 'Cálculo',
+  dotacion: 'Dotación',
+  'dotacion-vacia': 'Dotación',
+  'trabajador-duplicado-en-segmentos': 'Dotación',
+};
+
+function etiquetaTipoIncidencia(tipo: string): string {
+  return ETIQUETAS_TIPO_INCIDENCIA[tipo] ?? 'Revisión requerida';
 }
 
 @Component({
@@ -102,6 +126,7 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   readonly nominaPeriodoId = input<string | null>(null);
   readonly preparacionExterna = input(false);
   readonly nominaCabeceraCambiada = output<NominaCabeceraCambiadaEvent>();
+  readonly verEnDotacionSolicitado = output<string>();
 
   readonly nomina = signal<NominaPeriodo | null>(null);
   readonly resumen = signal<ResumenValidacionNomina | null>(null);
@@ -117,6 +142,12 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   readonly confirmarCierreVisible = signal(false);
   readonly confirmarAprobacionVisible = signal(false);
   readonly confirmarGeneracionLiquidacionesVisible = signal(false);
+  readonly filtroSeveridad = signal<FiltroSeveridadIncidencia>('todas');
+  readonly busquedaIncidencia = signal('');
+  readonly procesandoDecision = signal<string | null>(null);
+  readonly justificaciones = signal<Record<string, string>>({});
+  readonly etiquetaTipoIncidencia = etiquetaTipoIncidencia;
+  readonly etiquetaEstadoDecision = etiquetaEstadoDecisionIncidencia;
 
   readonly esMensualConsolidadora = computed(() => {
     const n = this.nomina();
@@ -154,13 +185,27 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
         detalle: 'El cálculo del período está guardado y vigente.',
       },
       {
+        id: 'validacion',
+        label: 'Incidencias resueltas',
+        cumplido:
+          ['validada', 'aprobada', 'liquidada', 'cerrada'].includes(n.estado)
+          || (r.puedeValidar === true && (r.conIncidenciasCriticas ?? 0) === 0
+            && (r.advertenciasPendientes ?? r.conAdvertencias ?? 0) === 0),
+        detalle:
+          (r.conIncidenciasCriticas ?? 0) > 0 || (r.advertenciasPendientes ?? 0) > 0
+            ? 'Resuelve críticas y acepta advertencias pendientes.'
+            : n.estado === 'calculada'
+              ? 'Sin bloqueos; la validación se confirma al avanzar desde Cálculo.'
+              : 'Decisiones de validación registradas.',
+      },
+      {
         id: 'aprobacion',
         label: 'Aprobación registrada',
         cumplido: ['aprobada', 'liquidada', 'cerrada'].includes(n.estado),
         detalle: n.estado === 'validada'
           ? 'Pendiente de aprobación para continuar con liquidaciones.'
           : n.estado === 'calculada'
-            ? 'Continúa desde Cálculo para validar y cerrar.'
+            ? 'Resuelve incidencias y valida antes de aprobar.'
             : 'Aprobación operativa registrada.',
       },
     ];
@@ -242,6 +287,7 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   readonly metricasCierre = computed(() => {
     const items = this.checklist();
     const cumplidos = items.filter((i) => i.cumplido).length;
+    const r = this.resumen();
     return {
       cumplidos,
       total: items.length,
@@ -249,7 +295,36 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
       liquidaciones: this.filasLiquidaciones().length,
       sinLiquidacion: this.trabajadoresSinLiquidacion(),
       trabajadores: this.nomina()?.trabajadorIds.length ?? this.resumen()?.totalTrabajadores ?? 0,
+      criticasPendientes: r?.conIncidenciasCriticas ?? 0,
+      advertenciasPendientes: r?.advertenciasPendientes ?? r?.conAdvertencias ?? 0,
     };
+  });
+
+  readonly incidenciasFiltradas = computed<IncidenciaNomina[]>(() => {
+    const resumen = this.resumen();
+    if (!resumen) return [];
+    const filtro = this.filtroSeveridad();
+    const busqueda = this.busquedaIncidencia().trim().toLowerCase();
+    const todas = [...resumen.incidenciasCriticas, ...resumen.advertencias];
+
+    return todas.filter((inc) => {
+      if (filtro !== 'todas' && inc.severidad !== filtro) return false;
+      if (busqueda && !inc.mensaje.toLowerCase().includes(busqueda)) return false;
+      return true;
+    });
+  });
+
+  readonly hayIncidenciasPanel = computed(() => {
+    const r = this.resumen();
+    if (!r) return false;
+    return r.incidenciasCriticas.length + r.advertencias.length > 0
+      || this.nomina()?.estado === 'calculada';
+  });
+
+  readonly hayIncidenciasPendientesDecision = computed(() => {
+    const r = this.resumen();
+    if (!r) return false;
+    return (r.conIncidenciasCriticas ?? 0) > 0 || (r.advertenciasPendientes ?? 0) > 0;
   });
 
   readonly checklistPendientes = computed(() => this.checklist().filter((item) => !item.cumplido));
@@ -284,6 +359,17 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
         detalle: this.mensajeCalculoNoVigente,
         tono: 'warning',
         tipo: 'recalcular',
+        ejecutable: false,
+      };
+    }
+
+    if (this.hayIncidenciasPendientesDecision()) {
+      return {
+        kicker: '',
+        titulo: 'Resolver incidencias',
+        detalle: 'Cierra críticas y acepta advertencias antes de aprobar.',
+        tono: 'bloqueo',
+        tipo: 'resolver_incidencias',
         ejecutable: false,
       };
     }
@@ -370,6 +456,68 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
     return pendientes;
   });
 
+  readonly resumenAprobacionSections = computed(() => {
+    const n = this.nomina();
+    const r = this.resumen();
+    const version = this.versionCalculo();
+    const trabajadores = n?.trabajadorIds.length ?? r?.totalTrabajadores ?? 0;
+    const criticas = r?.conIncidenciasCriticas ?? 0;
+    const avisos = r?.advertenciasPendientes ?? r?.conAdvertencias ?? 0;
+    const validadoAt = n?.evidenciaCalculo?.validadoAt;
+    return [
+      {
+        title: 'Cálculo a aprobar',
+        text: `Versión ${version || '—'}. ${trabajadores} trabajadores en dotación.`,
+        tone: 'info' as const,
+      },
+      {
+        title: 'Revisión',
+        text:
+          (criticas + avisos) === 0
+            ? 'Sin incidencias críticas ni advertencias pendientes.'
+            : `${criticas} críticas y ${avisos} advertencias pendientes de decisión.`,
+        tone: criticas > 0 ? ('attention' as const) : ('neutral' as const),
+      },
+      {
+        title: 'Responsable',
+        text: validadoAt
+          ? `Validación registrada: ${formatearFechaLiquidacion(validadoAt)}. La aprobación queda a tu nombre en auditoría.`
+          : 'La aprobación queda a tu nombre en auditoría del período.',
+        tone: 'neutral' as const,
+      },
+    ];
+  });
+
+  readonly resumenReaperturaSections = computed(() => {
+    const liquidos = this.liquidaciones().filter((l) => l.activo);
+    const version = this.versionCalculo();
+    const items = liquidos.slice(0, 5).map(
+      (l) =>
+        `v${l.version} · ${l.totalTrabajadores} trabajadores · $${l.totalLiquido.toLocaleString('es-CL')}`,
+    );
+    return [
+      {
+        title: 'Qué pierde vigencia',
+        text: `El cálculo (versión ${version || '—'}) quedará no vigente y deberás recalcular.`,
+        tone: 'attention' as const,
+      },
+      {
+        title: 'Liquidaciones afectadas',
+        text:
+          liquidos.length === 0
+            ? 'No hay liquidaciones internas activas en esta nómina.'
+            : `${liquidos.length} lote(s) activo(s) se marcarán como no vigentes.`,
+        items: items.length > 0 ? items : undefined,
+        tone: liquidos.length > 0 ? ('attention' as const) : ('neutral' as const),
+      },
+      {
+        title: 'Consecuencia',
+        text: 'Tras reabrir, revisa dotación/movimientos, recalcula y regenera liquidaciones si corresponde.',
+        tone: 'info' as const,
+      },
+    ];
+  });
+
   iconoAccionRecomendada(tipo: TipoAccionRecomendadaCierre): string {
     switch (tipo) {
       case 'aprobar':
@@ -384,6 +532,8 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
         return 'lock-open';
       case 'recalcular':
         return 'calculator';
+      case 'resolver_incidencias':
+        return 'triangle-alert';
       case 'espera':
         return 'circle-dashed';
       default:
@@ -401,6 +551,8 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
         return 'list-plus';
       case 'calculo':
         return 'calculator';
+      case 'validacion':
+        return 'shield-check';
       case 'aprobacion':
         return 'badge-check';
       case 'conciliacion':
@@ -488,6 +640,81 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
   recargar(): void {
     const id = this.nominaPeriodoId();
     if (id && !this.cargando()) void this.cargar(id);
+  }
+
+  cambiarFiltroSeveridad(value: FiltroSeveridadIncidencia): void {
+    this.filtroSeveridad.set(value);
+  }
+
+  setJustificacion(incidenciaId: string, value: string): void {
+    this.justificaciones.update((actual) => ({ ...actual, [incidenciaId]: value }));
+  }
+
+  incidenciaCriticaPendiente(inc: IncidenciaNomina): boolean {
+    return incidenciaCriticaPendiente(inc);
+  }
+
+  advertenciaPendiente(inc: IncidenciaNomina): boolean {
+    return advertenciaPendiente(inc);
+  }
+
+  emitirVerEnDotacion(trabajadorId: string | undefined): void {
+    if (trabajadorId) this.verEnDotacionSolicitado.emit(trabajadorId);
+  }
+
+  async marcarResuelta(inc: IncidenciaNomina): Promise<void> {
+    this.procesandoDecision.set(inc.id);
+    this.error.set(null);
+    try {
+      await this.servicio.registrarDecisionIncidencia(inc.id, 'resolver');
+      this.recargar();
+      const id = this.nominaPeriodoId();
+      if (id && this.nomina()?.estado === 'calculada') {
+        const resumen = await this.servicio.obtenerResumenValidacionNomina(id);
+        if (resumen.puedeValidar) {
+          await this.servicio.validarNomina(id);
+          await this.cargar(id);
+          this.nominaCabeceraCambiada.emit({
+            trazabilidad: { tipo: 'validacion', motivo: 'Incidencias resueltas; nómina validada.' },
+          });
+        }
+      }
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Error desconocido';
+      this.error.set(`No fue posible registrar la resolución: ${msg}`);
+    } finally {
+      this.procesandoDecision.set(null);
+    }
+  }
+
+  async aceptarAdvertencia(inc: IncidenciaNomina): Promise<void> {
+    const justificacion = this.justificaciones()[inc.id]?.trim() ?? '';
+    if (!justificacion) {
+      this.error.set('Indica una justificación antes de aceptar la advertencia.');
+      return;
+    }
+    this.procesandoDecision.set(inc.id);
+    this.error.set(null);
+    try {
+      await this.servicio.registrarDecisionIncidencia(inc.id, 'aceptar', justificacion);
+      this.recargar();
+      const id = this.nominaPeriodoId();
+      if (id && this.nomina()?.estado === 'calculada') {
+        const resumen = await this.servicio.obtenerResumenValidacionNomina(id);
+        if (resumen.puedeValidar) {
+          await this.servicio.validarNomina(id);
+          await this.cargar(id);
+          this.nominaCabeceraCambiada.emit({
+            trazabilidad: { tipo: 'validacion', motivo: 'Advertencias aceptadas; nómina validada.' },
+          });
+        }
+      }
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Error desconocido';
+      this.error.set(`No fue posible aceptar la advertencia: ${msg}`);
+    } finally {
+      this.procesandoDecision.set(null);
+    }
   }
 
   async aprobarNomina(): Promise<void> {

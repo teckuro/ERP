@@ -359,6 +359,10 @@ export class NominaPeriodoService {
     const nomina = await this.exigirNomina(nominaPeriodoId);
     await this.transicionar(nomina, 'reabierta', payload.motivo);
     await this.repo.invalidarCalculo(nominaPeriodoId);
+    await this.consolidacionRepo.invalidarLiquidacionesPorReapertura(
+      nominaPeriodoId,
+      payload.motivo,
+    );
   }
 
   /** F06: recalcular parámetros invalida cálculo posterior de la nómina. */

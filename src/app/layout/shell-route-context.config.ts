@@ -88,11 +88,11 @@ export function resolveShellRouteBreadcrumbs(url: string): ShellBreadcrumbItem[]
     return [{ label: 'Empresas', path: '/empresas' }, { label: 'Ficha empresa' }];
   }
 
-  if (/^\/remuneraciones\/nominas\/[^/]+\/generador$/.test(normalized)) {
+  if (/^\/remuneraciones\/nominas\/[^/]+$/.test(normalized)) {
     return [
       { label: 'Remuneraciones', path: '/remuneraciones/nominas' },
       { label: 'Administrador de nóminas', path: '/remuneraciones/nominas' },
-      { label: 'Generador' },
+      { label: 'Nómina' },
     ];
   }
 

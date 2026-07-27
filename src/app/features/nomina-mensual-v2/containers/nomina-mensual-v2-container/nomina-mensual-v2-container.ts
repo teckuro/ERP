@@ -22,7 +22,7 @@ import { mensajeErrorParaUsuario } from '../../../../core/errors/erp-supabase-us
 import { NominaPeriodoService } from '../../../nomina-mensual/services/nomina-periodo.service';
 import { NominaMensualCapabilitiesService } from '../../../nomina-mensual/services/nomina-mensual-capabilities.service';
 import type { NominaPeriodo } from '../../../nomina-mensual/models/nomina-periodo.models';
-import { payrollSteps } from '../../data/nomina-mensual-v2.mock';
+import { payrollSteps } from '../../data/nomina-mensual-v2.steps';
 import type { PayrollStepId } from '../../models/nomina-mensual-v2.models';
 
 import { NominaMensualV2OverlaysComponent } from './components/nomina-mensual-v2-overlays/nomina-mensual-v2-overlays.component';
@@ -493,7 +493,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       const resumenes = await this.nominaPeriodoService.listarResumenes();
       const equivalente = resumenes.find((r) => r.periodo === periodo);
       if (equivalente) {
-        await this.router.navigate(['/remuneraciones/nominas', equivalente.id, 'generador']);
+        await this.router.navigate(['/remuneraciones/nominas', equivalente.id]);
         return;
       }
     } catch (error) {
@@ -772,11 +772,15 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     const parametrosValidando = paso === 'parameters' && (this.pasoParametros()?.parametrosValidando() ?? false);
     const parametrosLoading = paso === 'parameters' && (this.pasoParametros()?.parametrosLoading() ?? false);
     const hayBaseGuardada = !!this.orquestador.estadoParametrosBase()?.idCalculoPeriodoBase;
+    const hayDiferencias =
+      this.orquestador.estadoParametrosBase()?.comparacion?.hayDiferencias === true
+      || this.orquestador.estadoParametrosBase()?.estado === 'conDiferencias';
     const accionParametros = paso === 'parameters'
       ? this.accesoBaseService.resolverAccionShellParametros({
           hayBaseGuardada,
           validando: parametrosValidando,
           loading: parametrosLoading,
+          hayDiferencias,
         })
       : null;
     const currentIndex = ORDEN_PASOS_NOMINA.indexOf(paso);
@@ -948,8 +952,8 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   }
 
   /**
-   * Transición silenciosa calculada → validada al pasar de Cálculo a Cierre.
-   * La dotación solo admite personal apto; el paso Validación ya no existe en UI.
+   * Transición calculada → validada al pasar de Cálculo a Cierre.
+   * Si hay incidencias pendientes, igual permite entrar a Cierre para resolverlas.
    */
   private async autoValidarAntesDeCierre(): Promise<ResultadoAvancePaso> {
     const id = this.nominaPeriodoId();
@@ -967,6 +971,11 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       return { ok: false, razon: 'La nómina no está lista para cerrar.' };
     }
     try {
+      const resumen = await this.nominaPeriodoService.obtenerResumenValidacionNomina(id);
+      if (!resumen.puedeValidar) {
+        // RRHH resuelve en el panel de incidencias del paso Cierre.
+        return { ok: true };
+      }
       await this.nominaPeriodoService.validarNomina(id);
       this.orquestador.registrarEventoTrazabilidad(
         this.trazabilidadService.crearEventoLocal({
@@ -980,7 +989,9 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       return { ok: true };
     } catch (error) {
       const mensaje = mensajeErrorParaUsuario(error, 'validar la nómina');
-      return { ok: false, razon: mensaje };
+      // Aun con error de validación, permitir Cierre para ver/resolver incidencias.
+      this.orquestador.establecerAyudaAvance(mensaje, 'bloqueo');
+      return { ok: true };
     }
   }
 
@@ -1051,6 +1062,17 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
           paso: 'closure',
           tipoEvento: 'PRENOMINA_APROBADA',
           descripcion: evento.motivo.trim() || 'Nómina cerrada operativamente.',
+          integridad: { estadoIntegridad: 'registrado' },
+        }),
+      );
+      return;
+    }
+    if (evento.tipo === 'aprobacion' || evento.tipo === 'validacion' || evento.tipo === 'liquidaciones') {
+      this.orquestador.registrarEventoTrazabilidad(
+        this.trazabilidadService.crearEventoLocal({
+          paso: 'closure',
+          tipoEvento: evento.tipo === 'validacion' ? 'PRENOMINA_VALIDADA' : 'PRENOMINA_APROBADA',
+          descripcion: evento.motivo.trim() || 'Cabecera de nómina actualizada.',
           integridad: { estadoIntegridad: 'registrado' },
         }),
       );

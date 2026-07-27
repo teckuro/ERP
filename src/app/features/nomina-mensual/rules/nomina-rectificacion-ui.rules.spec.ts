@@ -61,7 +61,7 @@ describe('nomina-rectificacion-ui.rules', () => {
     const rect = resumen({ id: 'r1', naturaleza: 'rectificacion', nominaOrigenId: 'o1' });
     const normal = resumen({ id: 'o1', naturaleza: 'liquidacion_legal' });
     expect(etiquetaAccionPrimariaFila(rect)).toBe('Continuar rectificación');
-    expect(etiquetaAccionPrimariaFila(normal)).toBe('Abrir generador');
+    expect(etiquetaAccionPrimariaFila(normal)).toBe('Abrir nómina');
     expect(puedeConsultarOriginal(rect)).toBe(true);
     expect(puedeConsultarOriginal(normal)).toBe(false);
   });

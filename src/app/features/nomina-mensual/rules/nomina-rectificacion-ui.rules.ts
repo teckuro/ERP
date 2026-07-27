@@ -50,13 +50,13 @@ export function puedeConsultarOriginal(
 export function etiquetaAccionPrimariaFila(
   fila: Pick<NominaPeriodoResumen, 'naturaleza'>,
 ): string {
-  return esNominaRectificacion(fila) ? 'Continuar rectificación' : 'Abrir generador';
+  return esNominaRectificacion(fila) ? 'Continuar rectificación' : 'Abrir nómina';
 }
 
 export function etiquetaAccionResumen(
   fila: Pick<NominaPeriodoResumen, 'naturaleza'>,
 ): string {
-  return esNominaRectificacion(fila) ? 'Continuar rectificación' : 'Continuar en el generador';
+  return esNominaRectificacion(fila) ? 'Continuar rectificación' : 'Continuar en la nómina';
 }
 
 export function formatearMonedaClp(valor: number): string {

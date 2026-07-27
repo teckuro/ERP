@@ -36,17 +36,17 @@ test.describe('SEC-04 — guards perfil consulta', () => {
   test('bloquea generador de nómina', async ({ page }) => {
     await page.goto('/remuneraciones/nominas');
     await page.waitForLoadState('networkidle');
-    const linkGenerador = page.locator('a[href*="/generador"]').first();
-    if (await linkGenerador.isVisible({ timeout: 5_000 }).catch(() => false)) {
-      const href = await linkGenerador.getAttribute('href');
-      if (href) {
+    const linkNomina = page.locator('a[href*="/remuneraciones/nominas/"]').first();
+    if (await linkNomina.isVisible({ timeout: 5_000 }).catch(() => false)) {
+      const href = await linkNomina.getAttribute('href');
+      if (href && /\/nominas\/[^/]+/.test(href) && !href.endsWith('/nominas')) {
         await expectAccesoDenegado(page, href);
         return;
       }
     }
     await expectAccesoDenegado(
       page,
-      '/remuneraciones/nominas/00000000-0000-0000-0000-000000000001/generador',
+      '/remuneraciones/nominas/00000000-0000-0000-0000-000000000001',
     );
   });
 

@@ -1013,7 +1013,7 @@ export class LiquidacionesOficialesContainer {
       });
       return;
     }
-    void this.router.navigate(['/remuneraciones/nominas', id, 'generador'], {
+    void this.router.navigate(['/remuneraciones/nominas', id], {
       queryParams: { paso: 'cierre' },
     });
   }

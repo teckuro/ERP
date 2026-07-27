@@ -761,14 +761,14 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
       if (count === 1) {
         return `${singularLabel} del filtro actual seleccionado`;
       }
-      return `${label} del filtro actual seleccionados`;
+      return `${count} ${label} del filtro actual seleccionados`;
     }
 
     if (count === 1) {
-      return `${singularLabel} seleccionado`;
+      return `${singularLabel} seleccionado en esta página`;
     }
 
-    return `${label} seleccionados`;
+    return `${count} ${label} seleccionados en esta página`;
   }
 
   private singularSelectionLabel(label: string): string {
@@ -979,7 +979,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
         title: 'Principal',
         text: this.bulkScopeAllFiltered
           ? `Se procesarán ${label}: todos los resultados del filtro actual, no solo la página visible.`
-          : `Se procesarán ${label} seleccionados.`,
+          : `Se procesarán ${label} seleccionados en esta página (no todo el filtro).`,
         tone: this.pendingBulkAction.tone === 'danger' || this.pendingBulkAction.tone === 'blocked' ? 'attention' : 'neutral',
       },
       {

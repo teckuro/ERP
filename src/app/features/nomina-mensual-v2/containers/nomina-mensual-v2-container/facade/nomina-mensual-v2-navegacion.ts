@@ -1,4 +1,4 @@
-import { payrollSteps } from '../../../data/nomina-mensual-v2.mock';
+import { payrollSteps } from '../../../data/nomina-mensual-v2.steps';
 import type { PayrollStepId, PayrollStepStatus } from '../../../models/nomina-mensual-v2.models';
 import { ORDEN_PASOS_NOMINA } from '../../../models/nomina-mensual-v2.models';
 import type {
@@ -403,7 +403,7 @@ export function obtenerSubtituloPaso(paso: PayrollStepId): string {
 export function obtenerEtiquetaAccionPrincipal(paso: PayrollStepId): string {
   switch (paso) {
     case 'parameters':
-      return 'Guardar parámetros';
+      return 'Preparar nómina';
     case 'dotacion':
       return 'Confirmar dotación';
     case 'movements':

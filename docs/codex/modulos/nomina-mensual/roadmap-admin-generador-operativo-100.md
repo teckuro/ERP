@@ -55,9 +55,10 @@ anterior.
 - Ruta canónica del Administrador:
   `/remuneraciones/nominas`.
 - Ruta canónica del Generador:
-  `/remuneraciones/nominas/:nominaPeriodoId/generador`.
-- El Generador mantiene seis pasos:
-  `Parámetros / Dotación / Movimientos / Cálculo / Validación / Cierre`.
+  `/remuneraciones/nominas/:nominaPeriodoId`.
+- El Generador mantiene **cinco pasos**:
+  `Parámetros / Dotación / Movimientos / Cálculo / Cierre`
+  (validación automática, aprobación e incidencias viven en Cierre).
 - La UI histórica de Nómina mensual fue retirada. La ruta antigua redirige al
   Administrador.
 - El chip de mes del menú del Administrador fue retirado.

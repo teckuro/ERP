@@ -17,15 +17,26 @@ describe('NominaParametrosBaseAccesoService', () => {
     });
   });
 
-  it('expone Continuar a alcance en shell cuando hay base', () => {
+  it('expone Continuar a dotación en shell cuando hay base sin diferencias', () => {
     const service = TestBed.inject(NominaParametrosBaseAccesoService);
     const accion = service.resolverAccionShellParametros({
       hayBaseGuardada: true,
       validando: false,
       loading: false,
     });
-    expect(accion.label).toBe('Continuar a alcance');
+    expect(accion.label).toBe('Continuar a dotación');
     expect(accion.disabled).toBe(false);
+  });
+
+  it('expone Revisar y continuar cuando hay diferencias con la base', () => {
+    const service = TestBed.inject(NominaParametrosBaseAccesoService);
+    const accion = service.resolverAccionShellParametros({
+      hayBaseGuardada: true,
+      validando: false,
+      loading: false,
+      hayDiferencias: true,
+    });
+    expect(accion.label).toBe('Revisar y continuar');
   });
 
   it('bloquea recarga para no admin con base', () => {

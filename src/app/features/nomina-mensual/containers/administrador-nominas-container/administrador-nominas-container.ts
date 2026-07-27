@@ -476,9 +476,8 @@ export class AdministradorNominasContainer {
           reutilizada: contexto.reutilizada ? '1' : null,
         }
       : undefined;
-    void this.router.navigate(['/remuneraciones/nominas', fila.id, 'generador'], {
-      queryParams,
-      queryParamsHandling: queryParams ? '' : 'preserve',
+    void this.router.navigate(['/remuneraciones/nominas', fila.id], {
+      queryParams: queryParams ?? {},
     });
   }
 
