@@ -10,6 +10,9 @@ import type {
   EmpleadoFichaDiagnostico,
   EmpleadoFichaValidacionItem,
 } from './empleado-ficha-validacion.rules';
+import type { RevisionNormativaBitacoraAlta } from '../models/empleado-alta-avanzada.vm';
+
+export type { RevisionNormativaBitacoraAlta } from '../models/empleado-alta-avanzada.vm';
 
 export function mapDiagnosticoItemToPendienteInput(
   item: EmpleadoFichaValidacionItem,
@@ -39,18 +42,6 @@ export function buildAltaValidacionInput(args: {
     elementosAplicabilidad: args.aplicabilidadItems,
     inconsistenciasCoherencia: args.inconsistenciasCoherencia,
   };
-}
-
-export interface RevisionNormativaBitacoraAlta {
-  id: string;
-  origen: 'coherencia' | 'aplicabilidad';
-  stepIndex: number;
-  titulo: string;
-  detalle: string;
-  accionRecomendada?: string;
-  puedeAplicarCorreccion: boolean;
-  bajoRevision: boolean;
-  coherenciaIssueId?: string;
 }
 
 export function buildRevisionesNormativasConsola(
@@ -85,11 +76,13 @@ export function buildRevisionesNormativasConsola(
         puedeAplicarCorreccion: Boolean(issue.action && !reconocidas.has(issueId)),
         bajoRevision: reconocidas.has(issueId),
         coherenciaIssueId: issueId,
+        controlPath: item.controlPath,
       });
       continue;
     }
 
     if (item.id.startsWith('aplicabilidad.')) {
+      const controlPath = item.controlPath?.trim() || undefined;
       out.push({
         id: item.id,
         origen: 'aplicabilidad',
@@ -97,8 +90,10 @@ export function buildRevisionesNormativasConsola(
         titulo: item.titulo,
         detalle: item.detalle,
         accionRecomendada: item.accionRecomendada,
-        puedeAplicarCorreccion: Boolean(item.puedeCorregir),
+        // Solo si hay campo concreto: "Aplicar" enfoca el dato (antes era botón muerto).
+        puedeAplicarCorreccion: Boolean(item.puedeCorregir && controlPath),
         bajoRevision: false,
+        controlPath,
       });
     }
   }

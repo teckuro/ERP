@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { TablaEmpleadosComponent } from '../../components/tabla-empleados/tabla-empleados';
 import { EmpleadoListado } from '../../models/empleado-listado.model';
@@ -10,24 +10,28 @@ import {
   DataGridBulkActionResult,
 } from '../../../../shared/components/ui/data-grid';
 import { mensajeErrorSupabaseParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
+
 @Component({
   selector: 'app-listado-empleados',
   imports: [CommonModule, TablaEmpleadosComponent],
   templateUrl: './listado-empleados-container.html',
   styleUrl: './listado-empleados-container.css',
 })
-export class ListadoEmpleadosContainer {
+export class ListadoEmpleadosContainer implements OnInit {
   private readonly empleadosService = inject(EmpleadosService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly empleados = signal<EmpleadoListado[]>([]);
   readonly cargando = signal(true);
   readonly mensajeError = signal<string | null>(null);
   readonly cargandoAccionMasiva = signal(false);
   readonly resultadoAccionMasiva = signal<DataGridBulkActionResult<EmpleadoListado> | null>(null);
-  readonly destinoNavegacionCreacion = signal<'basico' | 'avanzado' | null>(null);
+  readonly navegandoCreacion = signal(false);
+  readonly filtroSituacionFicha = signal<'incompletas' | 'aptas' | null>(null);
 
   async ngOnInit(): Promise<void> {
+    this.filtroSituacionFicha.set(this.leerFiltroSituacion());
     await this.cargarEmpleados();
   }
 
@@ -46,29 +50,16 @@ export class ListadoEmpleadosContainer {
     }
   }
 
-  async crearBasico(): Promise<void> {
-    if (this.destinoNavegacionCreacion()) {
+  async crearEmpleado(): Promise<void> {
+    if (this.navegandoCreacion()) {
       return;
     }
-    this.destinoNavegacionCreacion.set('basico');
-
-    try {
-      await this.router.navigate(['/empleados/nuevo'], { queryParams: { modo: 'basico' } });
-    } finally {
-      this.destinoNavegacionCreacion.set(null);
-    }
-  }
-
-  async crearAvanzado(): Promise<void> {
-    if (this.destinoNavegacionCreacion()) {
-      return;
-    }
-    this.destinoNavegacionCreacion.set('avanzado');
+    this.navegandoCreacion.set(true);
 
     try {
       await this.router.navigate(['/empleados/nuevo'], { queryParams: { modo: 'avanzado' } });
     } finally {
-      this.destinoNavegacionCreacion.set(null);
+      this.navegandoCreacion.set(false);
     }
   }
 
@@ -121,6 +112,11 @@ export class ListadoEmpleadosContainer {
     } finally {
       this.cargandoAccionMasiva.set(false);
     }
+  }
+
+  private leerFiltroSituacion(): 'incompletas' | 'aptas' | null {
+    const valor = this.route.snapshot.queryParamMap.get('filtro');
+    return valor === 'incompletas' || valor === 'aptas' ? valor : null;
   }
 
   private normalizarEstadoMasivo(value: string | undefined): EmpleadoListado['estado'] {

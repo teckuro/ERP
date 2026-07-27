@@ -3,23 +3,33 @@ type AppConfig = {
   supabaseAnonKey: string;
   /** Edge Function slug en Supabase (dashboard: super-service) */
   asistentePreguntorFunction?: string;
+  /**
+   * Correo del administrador / soporte (login y pantallas auth).
+   * Abre el cliente de correo vía mailto.
+   */
+  supportEmail?: string;
 };
 
 const DEFAULT_ASISTENTE_FUNCTION = 'super-service';
+/** Fallback si app-config no define supportEmail (debe personalizarse por ambiente). */
+const DEFAULT_SUPPORT_EMAIL = 'admin@erp.cl';
 const PLACEHOLDER_KEY = /YOUR_|REPLACE_ME|CHANGEME/i;
 const PLACEHOLDER_URL = /YOUR_PROJECT|example\.com/i;
 const PUBLISHABLE_KEY = /^sb_publishable_[A-Za-z0-9_-]+$/;
 const SECRET_KEY = /^sb_secret_/;
+const EMAIL_OK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 let runtimeConfig: AppConfig | null = null;
 let configLoadError: string | null = null;
 
 function normalizeConfig(input: Partial<AppConfig> | null | undefined): AppConfig {
   const fn = input?.asistentePreguntorFunction?.trim();
+  const support = input?.supportEmail?.trim().toLowerCase() ?? '';
   return {
     supabaseUrl: input?.supabaseUrl?.trim().replace(/\/$/, '') ?? '',
     supabaseAnonKey: input?.supabaseAnonKey?.trim() ?? '',
     asistentePreguntorFunction: fn || DEFAULT_ASISTENTE_FUNCTION,
+    supportEmail: EMAIL_OK.test(support) ? support : DEFAULT_SUPPORT_EMAIL,
   };
 }
 
@@ -94,4 +104,19 @@ export function getAppConfig(): AppConfig {
   }
 
   return config;
+}
+
+/** Correo de soporte para mailto en pantallas públicas de auth. */
+export function getSupportEmail(): string {
+  try {
+    return getAppConfig().supportEmail || DEFAULT_SUPPORT_EMAIL;
+  } catch {
+    return DEFAULT_SUPPORT_EMAIL;
+  }
+}
+
+/** Href mailto con asunto prellenado (acceso / problemas de sesión). */
+export function getSupportMailtoHref(subject = 'Acceso ERP Remuneraciones'): string {
+  const email = getSupportEmail();
+  return `mailto:${email}?subject=${encodeURIComponent(subject)}`;
 }

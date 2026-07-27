@@ -5,6 +5,7 @@ import {
   HostListener,
   Input,
   OnDestroy,
+  OnInit,
   Output,
   ViewChild,
   inject,
@@ -27,7 +28,6 @@ import {
   DataGridBulkActionResult,
   DataGridComponent,
   DataGridExportEvent,
-  DataGridPrimaryActionMenuDirective,
 } from '../../../../shared/components/ui/data-grid';
 import {
   capitalizarTextoEmpleado,
@@ -46,13 +46,12 @@ import {
     RouterLink,
     LucideAngularModule,
     DataGridCellDirective,
-    DataGridPrimaryActionMenuDirective,
     DataGridComponent,
   ],
   templateUrl: './tabla-empleados.html',
   styleUrl: './tabla-empleados.css',
 })
-export class TablaEmpleadosComponent implements OnDestroy {
+export class TablaEmpleadosComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
 
   @Input() empleados: EmpleadoListado[] = [];
@@ -61,11 +60,12 @@ export class TablaEmpleadosComponent implements OnDestroy {
   @Input() mensajeError = '';
   @Input() bulkActionLoading = false;
   @Input() bulkActionResult: DataGridBulkActionResult<EmpleadoListado> | null = null;
-  @Input() destinoNavegacionCreacion: 'basico' | 'avanzado' | null = null;
+  @Input() navegandoCreacion = false;
+  /** Precarga filtro de situación (puente Resumen `?filtro=`). */
+  @Input() filtroSituacionFicha: 'incompletas' | 'aptas' | null = null;
   @Output() readonly refresh = new EventEmitter<void>();
   @Output() readonly bulkAction = new EventEmitter<DataGridBulkActionEvent<EmpleadoListado>>();
-  @Output() readonly createBasico = new EventEmitter<void>();
-  @Output() readonly createAvanzado = new EventEmitter<void>();
+  @Output() readonly createEmpleado = new EventEmitter<void>();
 
   readonly eyeIcon = Eye;
   readonly loaderIcon = LoaderCircle;
@@ -75,7 +75,6 @@ export class TablaEmpleadosComponent implements OnDestroy {
   readonly rowActionIcon = ArrowRight;
   openActionMenuId: number | null = null;
   actionMenuPosition: { top: number; left: number } | null = null;
-  crearMenuAbierto = false;
 
   private gridScrollListenerTarget: HTMLElement | null = null;
   private readonly onGridScrollClose = (): void => this.closeActionMenu();
@@ -87,7 +86,13 @@ export class TablaEmpleadosComponent implements OnDestroy {
 
   readonly bulkStateActions = crearAccionesMasivasEstadoEmpleado();
   readonly columns = crearColumnasGridTablaEmpleados();
-  readonly filters = crearFiltrosGridTablaEmpleados();
+  filters: ReturnType<typeof crearFiltrosGridTablaEmpleados> = crearFiltrosGridTablaEmpleados();
+
+  ngOnInit(): void {
+    this.filters = crearFiltrosGridTablaEmpleados({
+      filtroInicial: this.filtroSituacionFicha,
+    });
+  }
 
   @HostListener('document:click', ['$event'])
   closeActionMenuOnOutsideClick(event: MouseEvent): void {
@@ -100,20 +105,8 @@ export class TablaEmpleadosComponent implements OnDestroy {
     this.closeActionMenu();
   }
 
-  @HostListener('document:click', ['$event'])
-  closeCrearMenuOnOutsideClick(event: MouseEvent): void {
-    const target = event.target;
-
-    if (target instanceof Element && target.closest('[data-empleados-create-menu], [data-grid-primary-action-root]')) {
-      return;
-    }
-
-    this.crearMenuAbierto = false;
-  }
-
   @HostListener('document:keydown.escape')
   closeMenusOnEscape(): void {
-    this.crearMenuAbierto = false;
     this.closeActionMenu();
   }
 
@@ -127,7 +120,6 @@ export class TablaEmpleadosComponent implements OnDestroy {
   constructor() {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationStart) {
-        this.crearMenuAbierto = false;
         this.closeActionMenu();
       }
     });
@@ -141,27 +133,11 @@ export class TablaEmpleadosComponent implements OnDestroy {
     return empleado.id;
   }
 
-  toggleCrearMenu(): void {
-    if (this.destinoNavegacionCreacion) {
+  onCrearEmpleado(): void {
+    if (this.navegandoCreacion) {
       return;
     }
-    this.crearMenuAbierto = !this.crearMenuAbierto;
-  }
-
-  onCrearBasico(): void {
-    if (this.destinoNavegacionCreacion) {
-      return;
-    }
-    this.crearMenuAbierto = false;
-    this.createBasico.emit();
-  }
-
-  onCrearAvanzado(): void {
-    if (this.destinoNavegacionCreacion) {
-      return;
-    }
-    this.crearMenuAbierto = false;
-    this.createAvanzado.emit();
+    this.createEmpleado.emit();
   }
 
   toggleFiltros(): void {

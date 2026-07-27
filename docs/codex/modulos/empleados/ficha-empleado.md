@@ -2,6 +2,8 @@
 
 Documento único del **flujo de pantalla** (tabs, bloques, guardado) y del **comportamiento técnico / pruebas visuales**. Contrato de estados y helper: [`contrato-general.md`](./contrato-general.md). Índice de rutas empleados: [`../../temas/flujos/empleados.md`](../../temas/flujos/empleados.md).
 
+**2026-07-27:** tab **Documentos** = empty honesto (no disponible en esta fase). **Historial** = grilla `empleado_historial`. Escritura (Editar / validar / CTA diagnóstico) solo si `permisosModulos.empleados.editar`.
+
 ---
 
 # Parte A — Flujo UX y pestañas

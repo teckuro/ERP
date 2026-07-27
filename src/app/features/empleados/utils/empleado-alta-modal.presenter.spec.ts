@@ -8,6 +8,7 @@ import {
   buildPendientePrincipalDesdeFieldItems,
   groupFieldItemsByStep,
   mensajesNegocioDesdeReglas,
+  pendientesCierreDesdeReglas,
   sortFieldGroupsByStep,
 } from './empleado-alta-modal.presenter';
 import { collectBorradorAvanzadoIssues } from './empleado-borrador-form.validation';
@@ -67,6 +68,24 @@ describe('empleado-alta-modal.presenter', () => {
       regla({ id: 'personal.identity', complete: false, blocking: true, severity: 'error' }),
     ]);
     expect(msgs[0]).toContain('RUT válido');
+  });
+
+  it('pendientesCierreDesdeReglas incluye paso y controlPath accionables', () => {
+    const items = pendientesCierreDesdeReglas([
+      regla({
+        id: 'personal.identity',
+        complete: false,
+        blocking: true,
+        severity: 'error',
+        wizardStep: 0,
+        sourcePath: 'datosPersonales.rut',
+        label: 'RUT',
+      }),
+    ]);
+    expect(items[0]?.id).toBe('personal.identity');
+    expect(items[0]?.wizardStep).toBe(0);
+    expect(items[0]?.controlPath).toBe('datosPersonales.rut');
+    expect(items[0]?.mensaje).toContain('RUT válido');
   });
 
   it('buildPendientePrincipalDesdeFieldItems pluraliza', () => {

@@ -169,6 +169,35 @@ describe('AltaBitacoraConsoleComponent', () => {
     expect(aplicarSpy).toHaveBeenCalledWith(rev);
   });
 
+  it('emite irAPendienteCierre al pulsar un pendiente de cierre', () => {
+    const cierre = {
+      id: 'contract.salary',
+      mensaje: 'Ingresa un sueldo base válido para remuneraciones.',
+      wizardStep: 3,
+      controlPath: 'contrato.sueldoBase',
+      fieldLabel: 'Sueldo base',
+    };
+    fixture.componentRef.setInput(
+      'vm',
+      vmBase({
+        expandedByDefault: true,
+        pendientesCierre: [cierre],
+        totalVisible: 3,
+      }),
+    );
+    fixture.detectChanges();
+
+    const spy = vi.fn();
+    fixture.componentInstance.irAPendienteCierre.subscribe(spy);
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll('.alta-bitacora-console__issue'),
+    ) as HTMLButtonElement[];
+    const cierreBtn = buttons.find((btn) => btn.textContent?.includes('sueldo base'));
+    expect(cierreBtn).toBeTruthy();
+    cierreBtn!.click();
+    expect(spy).toHaveBeenCalledWith(cierre);
+  });
+
   it('emite revisarPaso al pulsar Revisar en bitácora', () => {
     fixture.componentRef.setInput('vm', vmBase({ expandedByDefault: true }));
     fixture.detectChanges();

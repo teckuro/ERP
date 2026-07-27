@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 
+import { getSupportMailtoHref } from '../config/runtime-config';
+
 @Component({
   selector: 'app-auth-access-shell',
   standalone: true,
@@ -31,7 +33,7 @@ import { LucideAngularModule } from 'lucide-angular';
             <span>{{ brandLead() }}</span>
           </div>
 
-          <div class="login-brand__features" aria-label="Caracteristicas de seguridad">
+          <div class="login-brand__features" aria-label="Características de seguridad">
             <div class="login-feature">
               <span class="login-feature__icon" aria-hidden="true">
                 <lucide-icon [name]="featurePrimaryIcon()"></lucide-icon>
@@ -70,7 +72,10 @@ import { LucideAngularModule } from 'lucide-angular';
               <lucide-icon name="mail" aria-hidden="true"></lucide-icon>
               <p>
                 <strong>{{ supportTitle() }}</strong>
-                <span>{{ supportLead() }}</span>
+                <span>
+                  Contacta al
+                  <a [href]="mailtoHref">administrador del sistema</a>
+                </span>
               </p>
             </div>
           }
@@ -96,8 +101,12 @@ export class AuthAccessShellComponent {
   readonly featureSecondaryTitle = input('Proteccion de Datos');
   readonly featureSecondaryLead = input('Cumplimiento con estandares de seguridad');
 
-  readonly supportTitle = input('Necesitas acceso o tienes problemas?');
-  readonly supportLead = input('Contacta al administrador del sistema');
+  readonly supportTitle = input('¿Necesitas ayuda?');
+  /** Asunto del mailto (el correo sale de app-config.supportEmail). */
+  readonly supportMailSubject = input('Acceso ERP Remuneraciones');
   /** Oculta la franja de ayuda inferior (p. ej. estado «correo enviado»). */
   readonly showSupport = input(true);
+
+  /** Resuelto una sola vez: evita recalcular mailto en cada CD. */
+  readonly mailtoHref = getSupportMailtoHref();
 }

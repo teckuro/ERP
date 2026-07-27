@@ -29,6 +29,7 @@
   - Plantilla del proyecto (asunto + HTML): `supabase/templates/recovery.html` y guía
     `docs/codex/modulos/auth/plantilla-correo-recuperacion.md`. En hosted hay que pegarla
     en Dashboard → Authentication → Email Templates (el archivo del repo no se despliega solo).
+  - `supportEmail` en `public/app-config.json` (ver example): correo del enlace «administrador del sistema» (`mailto:`).
   - Activa confirmacion de correo si usas password login.
 - `Database`:
   - Activa RLS en toda tabla expuesta al cliente.
@@ -51,6 +52,7 @@
 - En Vercel, define estas variables en `Settings > Environment Variables` para Production, Preview y Development si corresponde:
   - `SUPABASE_URL`: URL del proyecto, formato `https://xxxx.supabase.co`.
   - `SUPABASE_ANON_KEY`: publishable key `sb_publishable_...` o legacy `anon public` completa del mismo proyecto.
+  - `SUPPORT_EMAIL` (opcional): correo del administrador en login (`mailto:`); default `admin@erp.cl`.
 - No pegues el contenido de `public/app-config.example.json` como una sola variable: Vercel debe recibir las dos variables separadas.
 - El build de Vercel ejecuta `node scripts/generate-app-config.mjs && npm run build`, por lo que `public/app-config.json` se genera durante el build.
 - No reutilices proyecto Supabase de desarrollo en produccion.

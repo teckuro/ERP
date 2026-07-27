@@ -31,7 +31,6 @@ import { AuthAccessShellComponent } from './auth-access-shell.component';
       featureSecondaryTitle="Acceso controlado"
       featureSecondaryLead="Solo el enlace vigente permite el cambio"
       supportTitle="¿El enlace no funciona?"
-      supportLead="Solicita uno nuevo desde recuperar contraseña"
     >
       <div class="login-card">
         <a class="login-card__back" routerLink="/login">
@@ -106,11 +105,12 @@ import { AuthAccessShellComponent } from './auth-access-shell.component';
               class="login-submit"
               type="submit"
               [disabled]="isSubmitting() || !recoverySessionReady()"
+              [attr.aria-busy]="isSubmitting()"
             >
               @if (isSubmitting()) {
                 <span class="login-submit__spinner" aria-hidden="true"></span>
               }
-              {{ isSubmitting() ? 'Guardando contraseña…' : 'Guardar nueva contraseña' }}
+              Guardar nueva contraseña
             </button>
           </form>
         }

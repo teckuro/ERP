@@ -34,6 +34,7 @@ import {
 import {
   buildFieldItemsFromRules,
   mensajesNegocioDesdeReglas,
+  pendientesCierreDesdeReglas,
   pesoOrdenValidacion,
   sortReglasValidacion,
 } from "../../utils/empleado-alta-modal.presenter";
@@ -76,6 +77,7 @@ import type {
   IdPasoValidacion,
   VmConsolaBitacoraAlta,
   RevisionNormativaBitacoraAlta,
+  PendienteCierreBitacoraAlta,
   GrupoMapaAsistente,
   TipoUiPasoAsistente,
 } from "../../models/empleado-alta-avanzada.vm";
@@ -309,16 +311,16 @@ export class FormEmpleadoComponent implements OnInit, DelegadoModalAltaEmpleado 
   }
 
   async ngOnInit(): Promise<void> {
-    const modo = this.resolverModo();
-    this.modo.set(modo);
-    if (modo === "avanzado") {
-      this.form.controls.contacto.controls.idComuna.addValidators(
-        Validators.required,
-      );
-      this.form.controls.contacto.controls.idComuna.updateValueAndValidity({
-        emitEvent: false,
-      });
-    }
+    const redirigirDesdeBasico =
+      this.route.snapshot.queryParamMap.get("modo") === "basico";
+    // Producto vigente: solo avanzada. Fijar modo sync antes de awaits (tests/shell CTA).
+    this.modo.set("avanzado");
+    this.form.controls.contacto.controls.idComuna.addValidators(
+      Validators.required,
+    );
+    this.form.controls.contacto.controls.idComuna.updateValueAndValidity({
+      emitEvent: false,
+    });
     this.empleadosFormService.configureFormBehavior(
       this.form,
       this.destroyRef,
@@ -327,6 +329,14 @@ export class FormEmpleadoComponent implements OnInit, DelegadoModalAltaEmpleado 
     this.configurarUxRelacionLaboral();
     this.configurarFlujoTipoTrabajador();
     this.configurarAutodeteccionPerfilLaboral();
+    if (redirigirDesdeBasico) {
+      await this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { modo: "avanzado" },
+        queryParamsHandling: "merge",
+        replaceUrl: true,
+      });
+    }
     await this.loadCatalogos();
     if (this.modo() === "avanzado") {
       const rawId = this.route.snapshot.queryParamMap.get("idPersona");
@@ -1042,7 +1052,7 @@ export class FormEmpleadoComponent implements OnInit, DelegadoModalAltaEmpleado 
         kind: row.kind,
         stateLabel: this.etiquetaUiPasoAsistente(row.kind),
       }));
-    const pendientesCierre = this.resumenPendientesNegocio();
+    const pendientesCierre = this.resumenPendientesCierre();
     const totalVisible =
       faltantes.length +
       revisionesNormativas.length +
@@ -1065,7 +1075,17 @@ export class FormEmpleadoComponent implements OnInit, DelegadoModalAltaEmpleado 
   }
 
   abrirGuiaNormativa(): void {
+    const paso = this.pasoWizardActivo();
+    const revisiones = buildRevisionesNormativasConsola(
+      this.altaValidacionesVisiblesMotor(),
+      this.inconsistenciasCoherencia(),
+      this.idsInconsistenciasCoherenciaReconocidas(),
+    ).filter((r) => r.stepIndex === paso && !r.bajoRevision);
     this.consolaExpandRequest.update((n) => n + 1);
+    if (revisiones[0]) {
+      // Prioriza la revisión del paso activo para que el aviso no sea solo informativo.
+      this.seleccionarPasoAsistente(revisiones[0].stepIndex);
+    }
   }
 
   franjaGuiaNormativaPasoActivo(): { mensaje: string } | null {
@@ -1095,6 +1115,27 @@ export class FormEmpleadoComponent implements OnInit, DelegadoModalAltaEmpleado 
   }
 
   onAplicarRevisionNormativa(rev: RevisionNormativaBitacoraAlta): void {
+    if (rev.origen === 'aplicabilidad') {
+      if (rev.controlPath) {
+        this.enfocarPrimerItemModalAvanzada(
+          {
+            id: rev.id,
+            sectionTitle: rev.titulo,
+            fieldLabel: rev.titulo,
+            detail: rev.detalle,
+            actionLabel: 'Ir al campo',
+            wizardStep: rev.stepIndex,
+            controlPath: rev.controlPath,
+            severity: 'warning',
+          },
+          () => this.mostrarPasoAsistenteInvalido(rev.stepIndex),
+        );
+        return;
+      }
+      this.seleccionarPasoAsistente(rev.stepIndex);
+      return;
+    }
+
     if (rev.origen !== 'coherencia' || !rev.coherenciaIssueId) {
       this.seleccionarPasoAsistente(rev.stepIndex);
       return;
@@ -1125,6 +1166,26 @@ export class FormEmpleadoComponent implements OnInit, DelegadoModalAltaEmpleado 
     }
   }
 
+  irAlPendienteCierreBitacora(item: PendienteCierreBitacoraAlta): void {
+    if (item.controlPath) {
+      this.enfocarPrimerItemModalAvanzada(
+        {
+          id: item.id,
+          sectionTitle: item.fieldLabel || 'Dato pendiente',
+          fieldLabel: item.fieldLabel || item.mensaje,
+          detail: item.mensaje,
+          actionLabel: 'Ir al campo',
+          wizardStep: item.wizardStep,
+          controlPath: item.controlPath,
+          severity: 'error',
+        },
+        () => this.mostrarPasoAsistenteInvalido(item.wizardStep),
+      );
+      return;
+    }
+    this.mostrarPasoAsistenteInvalido(item.wizardStep);
+  }
+
   private altaValidacionesVisiblesMotor(): readonly AltaValidacionVisible[] {
     const snapshot = this.buildFichaValidacionSnapshot();
     const diagnostico = evaluarDiagnosticoFichaEmpleado(snapshot);
@@ -1138,42 +1199,6 @@ export class FormEmpleadoComponent implements OnInit, DelegadoModalAltaEmpleado 
 
   perfilLaboralWizardStepIndex(): number {
     return this.totalPasos - 2;
-  }
-
-  cantidadPasosCompletados(): number {
-    let n = 0;
-    for (let i = 0; i < cantidadPasosAsistenteAvanzadoEmpleado; i++) {
-      if (this.obtenerResumenValidacionPasoAsistente(i).status === "complete") {
-        n++;
-      }
-    }
-    return n;
-  }
-
-  cantidadValidacionesPendientes(): number {
-    return this.itemsValidacionPendientesPanel().length;
-  }
-
-  itemsPanelValidacion(): ReglaValidacionEvaluada[] {
-    return this.evaluateValidationRules().filter(
-      (item) => item.visible && item.wizardStep === this.pasoWizardActivo(),
-    );
-  }
-
-  itemsValidacionPendientesPanel(): ReglaValidacionEvaluada[] {
-    return this.itemsPanelValidacion().filter((item) => !item.complete);
-  }
-
-  itemsValidacionBloqueantesPanel(): ReglaValidacionEvaluada[] {
-    return this.itemsValidacionPendientesPanel().filter(
-      (item) => item.severity === "error",
-    );
-  }
-
-  itemsAdvertenciaValidacionPanel(): ReglaValidacionEvaluada[] {
-    return this.itemsValidacionPendientesPanel().filter(
-      (item) => item.severity === "warning",
-    );
   }
 
   obtenerResumenValidacionPaso(stepId: IdPasoValidacion): ResumenValidacionPaso {
@@ -1418,9 +1443,9 @@ export class FormEmpleadoComponent implements OnInit, DelegadoModalAltaEmpleado 
   }
 
   /**
-   * Paso 9: pendientes en lenguaje de negocio tras intentar finalizar (reglas bloqueantes).
+   * Paso 9: pendientes accionables tras intentar finalizar (reglas bloqueantes).
    */
-  resumenPendientesNegocio(): string[] {
+  resumenPendientesCierre(): PendienteCierreBitacoraAlta[] {
     if (
       !this.esModoAvanzado() ||
       this.pasoWizardActivo() !== this.indicePasoResumenAsistente() ||
@@ -1434,7 +1459,12 @@ export class FormEmpleadoComponent implements OnInit, DelegadoModalAltaEmpleado 
         item.visible &&
         this.reglaValidacionCuentaEnFlujoAltaAvanzada(item),
     );
-    return [...mensajesNegocioDesdeReglas(rules)];
+    return [...pendientesCierreDesdeReglas(rules)];
+  }
+
+  /** @deprecated Preferir resumenPendientesCierre (accionable). */
+  resumenPendientesNegocio(): string[] {
+    return this.resumenPendientesCierre().map((item) => item.mensaje);
   }
 
   descripcionFilaRevision(row: {
@@ -1769,10 +1799,12 @@ export class FormEmpleadoComponent implements OnInit, DelegadoModalAltaEmpleado 
     }
   }
 
+  /**
+   * Producto vigente: solo creación avanzada.
+   * `origenCreacion: 'basico'` sigue existiendo en dominio para fichas históricas.
+   */
   private resolverModo(): FormEmpleadoModo {
-    return this.route.snapshot.queryParamMap.get("modo") === "basico"
-      ? "basico"
-      : "avanzado";
+    return "avanzado";
   }
 
   private async cargarContinuacionBorradorSiAplica(): Promise<void> {

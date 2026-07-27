@@ -3,10 +3,15 @@
 ## Ruta
 
 - **`/empleados`** — `ListadoEmpleadosContainer`.
+- Query opcional: **`?filtro=incompletas`** o **`?filtro=aptas`** — precarga filtro de situación de ficha (puente desde Resumen).
 
 ## Objetivo
 
 Ver colaboradores, **estado visible** en la fila y la **acción principal** coherente con el negocio, sin recalcular toda la aptitud en el cliente (usa datos persistidos y reglas de prioridad).
+
+## Creación
+
+Acción primaria **Crear empleado** → `/empleados/nuevo?modo=avanzado` (única puerta de alta). La creación básica quedó fuera de producto.
 
 ## Reglas de acción principal (resumen)
 
@@ -23,4 +28,5 @@ El listado **no** recalcula el helper completo por fila: se apoya en campos ya m
 ## Documentación relacionada
 
 - Contrato completo y matriz: [`contrato-general.md`](./contrato-general.md) (secciones sobre listado y estados).
-- Flujo de rutas: [`../../temas/flujos/empleados.md`](../../temas/flujos/empleados.md).
+- Alta vigente: [`creacion-avanzada.md`](./creacion-avanzada.md).
+- Creación básica (legado): [`creacion-basica.md`](./creacion-basica.md).

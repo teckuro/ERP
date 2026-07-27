@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
@@ -21,17 +21,16 @@ import { AuthAccessShellComponent } from './auth-access-shell.component';
   styleUrl: './auth-access.shared.css',
   template: `
     <app-auth-access-shell
-      [brandEyebrow]="panel().eyebrow"
-      [brandTitle]="panel().title"
-      [brandLead]="panel().lead"
-      [featurePrimaryIcon]="panel().feature1.icon"
-      [featurePrimaryTitle]="panel().feature1.title"
-      [featurePrimaryLead]="panel().feature1.lead"
-      [featureSecondaryIcon]="panel().feature2.icon"
-      [featureSecondaryTitle]="panel().feature2.title"
-      [featureSecondaryLead]="panel().feature2.lead"
-      [supportTitle]="panel().supportTitle"
-      [supportLead]="panel().supportLead"
+      brandEyebrow="Recupera el"
+      brandTitle="Acceso al ERP"
+      brandLead="Te enviaremos un enlace seguro a tu correo corporativo para definir una nueva contraseña."
+      featurePrimaryIcon="mail"
+      featurePrimaryTitle="Enlace seguro"
+      featurePrimaryLead="El correo solo se envía si la cuenta está activa"
+      featureSecondaryIcon="lock"
+      featureSecondaryTitle="Sesión temporal"
+      featureSecondaryLead="El enlace caduca y no reutiliza tu clave anterior"
+      supportTitle="¿Necesitas ayuda?"
       [showSupport]="!mensajeExito()"
     >
       <div class="login-card">
@@ -40,19 +39,15 @@ import { AuthAccessShellComponent } from './auth-access-shell.component';
             <p class="login-result__status">Correo enviado</p>
             <h2 id="recovery-title" class="login-card__title">Revisa tu bandeja</h2>
 
-            <p class="login-card__lead">
-              Si hay una cuenta activa, el enlace llegó a:
-            </p>
-            <p class="login-result__email" title="{{ emailEnviado() }}">{{ emailEnviado() }}</p>
+            <p class="login-card__lead">Si hay una cuenta activa, el enlace llegó a:</p>
+            <p class="login-result__email" [attr.title]="emailEnviado()">{{ emailEnviado() }}</p>
 
             <p class="login-result__hint">
               Abre el mensaje, pulsa <strong>Elegir nueva contraseña</strong> y define la clave en el
               ERP. Revisa spam si no aparece en unos minutos.
             </p>
 
-            <p class="login-result__note">
-              Por seguridad no confirmamos si el correo existe.
-            </p>
+            <p class="login-result__note">Por seguridad no confirmamos si el correo existe.</p>
 
             <div class="login-result__actions">
               <a class="login-submit login-submit--link" routerLink="/login">
@@ -99,11 +94,16 @@ import { AuthAccessShellComponent } from './auth-access-shell.component';
               }
             </label>
 
-            <button class="login-submit" type="submit" [disabled]="isSubmitting()">
+            <button
+              class="login-submit"
+              type="submit"
+              [disabled]="isSubmitting()"
+              [attr.aria-busy]="isSubmitting()"
+            >
               @if (isSubmitting()) {
                 <span class="login-submit__spinner" aria-hidden="true"></span>
               }
-              {{ isSubmitting() ? 'Enviando…' : 'Enviar enlace' }}
+              Enviar enlace
             </button>
           </form>
         }
@@ -125,46 +125,6 @@ export class RecuperarContrasenaPage {
       nonNullable: true,
       validators: [Validators.required, Validators.email],
     }),
-  });
-
-  readonly panel = computed(() => {
-    if (this.mensajeExito()) {
-      return {
-        eyebrow: 'Siguiente paso',
-        title: 'Revisa el correo',
-        lead: 'El enlace es de un solo uso. Cuando lo abras, podrás definir una contraseña nueva.',
-        feature1: {
-          icon: 'mail',
-          title: 'Bandeja o spam',
-          lead: 'Si no llega en unos minutos, revisa correo no deseado',
-        },
-        feature2: {
-          icon: 'lock',
-          title: 'Enlace temporal',
-          lead: 'Caduca pronto y no reutiliza la clave anterior',
-        },
-        supportTitle: '',
-        supportLead: '',
-      };
-    }
-
-    return {
-      eyebrow: 'Recupera el',
-      title: 'Acceso al ERP',
-      lead: 'Te enviaremos un enlace seguro a tu correo corporativo para definir una nueva contraseña.',
-      feature1: {
-        icon: 'mail',
-        title: 'Enlace seguro',
-        lead: 'El correo solo se envía si la cuenta está activa',
-      },
-      feature2: {
-        icon: 'lock',
-        title: 'Sesión temporal',
-        lead: 'El enlace caduca y no reutiliza tu clave anterior',
-      },
-      supportTitle: '¿Necesitas ayuda?',
-      supportLead: 'Contacta al administrador del sistema',
-    };
   });
 
   showEmailError(): boolean {

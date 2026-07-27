@@ -21,6 +21,7 @@ export class EmpleadoDiagnosticoPanelComponent {
   @Input({ required: true }) estado!: FichaEstadoPanelVm;
   @Input({ required: true }) progressStyle!: Record<string, string>;
   @Input() validando = false;
+  @Input() puedeEditar = true;
   readonly navegarFaltante = output<FaltanteFichaEmpleado>();
   readonly accionPrincipal = output<void>();
   readonly chevronRightIcon = ChevronRight;

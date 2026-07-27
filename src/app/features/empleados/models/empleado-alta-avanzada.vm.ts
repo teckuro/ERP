@@ -146,6 +146,17 @@ export interface RevisionNormativaBitacoraAlta {
   puedeAplicarCorreccion: boolean;
   bajoRevision: boolean;
   coherenciaIssueId?: string;
+  /** Campo a enfocar cuando la corrección es “ir al dato” (aplicabilidad). */
+  controlPath?: string;
+}
+
+/** Pendiente de cierre del acta (accionable desde la bitácora). */
+export interface PendienteCierreBitacoraAlta {
+  id: string;
+  mensaje: string;
+  wizardStep: number;
+  controlPath?: string;
+  fieldLabel?: string;
 }
 
 /** Vista de la consola flotante de pendientes (alta avanzada). */
@@ -157,6 +168,6 @@ export interface VmConsolaBitacoraAlta {
   faltantes: readonly FaltanteFichaEmpleado[];
   revisionesNormativas: readonly RevisionNormativaBitacoraAlta[];
   registrosPendientes: readonly FilaRegistroPendienteBitacoraAlta[];
-  pendientesCierre: readonly string[];
+  pendientesCierre: readonly PendienteCierreBitacoraAlta[];
   totalVisible: number;
 }

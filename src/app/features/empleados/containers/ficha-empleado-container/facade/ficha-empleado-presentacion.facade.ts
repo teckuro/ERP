@@ -1,4 +1,4 @@
-import { DestroyRef, Injectable, OnInit, effect, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -53,6 +53,7 @@ import { DataGridColumn } from '../../../../../shared/components/ui/data-grid';
 import { type MessageBoxSection } from '../../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { bindShellPageContext } from '../../../../../layout/shell-page-context.binding';
 import { PeriodoActivoService } from '../../../../../core/services/periodo-activo.service';
+import { ErpPermisosRemuneracionesService } from '../../../../../core/auth/erp-permisos-remuneraciones.service';
 import { mapCondicionesTrabajadorFromFormValue } from '../../../mappers/empleado-form.mapper';
 import type { PerfilLaboralPersona } from '../../../models/empleado-perfil-laboral-rpc.model';
 import type { CondicionTrabajadorControlName } from '../../../models/empleado-perfil-laboral.model';
@@ -101,11 +102,16 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
   private readonly empleadosCatalogosService = inject(EmpleadosCatalogosService);
   private readonly empleadosFormService = inject(EmpleadosFormOrchestratorService);
   private readonly periodoActivo = inject(PeriodoActivoService);
+  private readonly permisos = inject(ErpPermisosRemuneracionesService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly overlaysPort = inject(FichaEmpleadoOverlaysPort);
 
   readonly empleadoId = Number(this.route.snapshot.paramMap.get('id'));
   readonly empleado = signal<EmpleadoFichaDetalle | null>(null);
+  /** Escritura de ficha según perfil (SEC-04 / permisosModulos). */
+  readonly puedeEditarEmpleados = computed(
+    () => this.permisos.permisosModulos().empleados.editar,
+  );
   readonly isLoading = signal(true);
   readonly cargandoCatalogos = signal(true);
   readonly isSavingSection = signal(false);
@@ -612,7 +618,18 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
       return 'complete';
     }
 
-    return idTab === 'documentos' || idTab === 'historial' ? 'pending' : 'complete';
+    if (idTab === 'documentos') {
+      return 'pending';
+    }
+
+    if (idTab === 'historial') {
+      const detalle = empleado as EmpleadoFichaDetalle;
+      return Array.isArray(detalle.historial) && detalle.historial.length > 0
+        ? 'complete'
+        : 'pending';
+    }
+
+    return 'complete';
   }
 
   estadoTabLabel(idTab: TabFichaEmpleado, empleado: EmpleadoListado): string {
@@ -648,6 +665,10 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
   async ejecutarAccionPrincipalPanel(): Promise<void> {
     const empleado = this.empleado();
     if (!empleado || this.isValidatingPayroll()) {
+      return;
+    }
+
+    if (!this.puedeEditarEmpleados()) {
       return;
     }
 
@@ -691,7 +712,7 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
       remuneracion: 'Jornada, sueldo y asignaciones del trabajador.',
       prevision: 'Régimen previsional, salud y APV cuando aplica.',
       pago: 'Cuenta de abono y datos para transferencia.',
-      documentos: 'Respaldo documental del trabajador.',
+      documentos: 'Gestión documental del trabajador (aún no habilitada en esta fase).',
       historial: 'Eventos y cambios registrados en la ficha.',
     };
     return descriptions[this.tabActivo()] ?? '';
@@ -947,21 +968,19 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
         ];
       case 'documentos':
         return [
-          { label: 'Contrato', value: empleado.estado === 'activo' ? 'Disponible' : 'Pendiente' },
-          { label: 'Anexos', value: 'Sin anexos registrados' },
-          { label: 'Certificados', value: 'Sin documentos asociados' },
+          this.detailSection('Documentos'),
           {
-            label: 'Pendientes',
-            value: `${this.evaluacionEmpleado(empleado).bloqueos.length}`,
+            label: 'Estado',
+            value: 'No disponible en esta fase',
+          },
+          {
+            label: 'Detalle',
+            value: 'El expediente documental aún no se gestiona en el sistema. Use la ficha por secciones para completar datos del trabajador.',
           },
         ];
       case 'historial':
-        return [
-          { label: 'Último cambio', value: 'Ficha consultada' },
-          { label: 'Estado actual', value: this.statusLabel(empleado.estado) },
-          { label: 'Origen', value: 'Módulo empleados' },
-          { label: 'Auditoría', value: 'Preparada para eventos' },
-        ];
+        // La grilla de historial se renderiza aparte; no inventar filas de detalle.
+        return [];
     }
   }
 
@@ -1264,10 +1283,16 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
   }
 
   canEditCurrentTab(): boolean {
+    if (!this.puedeEditarEmpleados()) {
+      return false;
+    }
     return !['documentos', 'historial'].includes(this.tabActivo());
   }
 
   canEditBlock(blockId: string): boolean {
+    if (!this.puedeEditarEmpleados()) {
+      return false;
+    }
     const tipoPrevision = this.form.controls.previsionSalud.controls.tipoRegimenPrevisional.value;
 
     if (blockId === 'afp' || blockId === 'apvi') {

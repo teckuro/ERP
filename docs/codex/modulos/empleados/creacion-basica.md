@@ -1,6 +1,11 @@
 # Integración Modo Básico - ERP Empleados
 
-## Objetivo
+> **Estado producto (2026-07-27):** la **creación básica ya no es entrada de producto**.
+> El listado ofrece solo **Crear empleado** → alta avanzada (`/empleados/nuevo`).
+> `?modo=basico` se redirige a `avanzado`. Este documento queda como **referencia de legado**
+> (`origenCreacion: 'basico'` en fichas históricas y servicios de escritura aún existentes).
+
+## Objetivo (legado)
 
 Integrar el modo básico dentro del sistema actual SIN romper:
 

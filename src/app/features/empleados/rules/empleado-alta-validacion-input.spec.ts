@@ -89,4 +89,42 @@ describe('empleado-alta-validacion-input', () => {
       true,
     );
   });
+
+  it('buildRevisionesNormativasConsola no ofrece Aplicar en aplicabilidad sin controlPath', () => {
+    const revisiones = buildRevisionesNormativasConsola(
+      [
+        {
+          id: 'aplicabilidad.demo-sin-campo',
+          tipo: 'warning',
+          paso: 3,
+          area: 'contrato',
+          titulo: 'Revisar condición',
+          detalle: 'Solo aviso administrativo.',
+          puedeCorregir: true,
+        },
+        {
+          id: 'aplicabilidad.demo-con-campo',
+          tipo: 'warning',
+          paso: 3,
+          area: 'contrato',
+          titulo: 'Completar dato',
+          detalle: 'Falta un campo concreto.',
+          puedeCorregir: true,
+          controlPath: 'contrato.sueldoBase',
+        },
+      ],
+      [],
+      new Set(),
+    );
+
+    expect(revisiones.find((r) => r.id === 'aplicabilidad.demo-sin-campo')?.puedeAplicarCorreccion).toBe(
+      false,
+    );
+    expect(revisiones.find((r) => r.id === 'aplicabilidad.demo-con-campo')?.puedeAplicarCorreccion).toBe(
+      true,
+    );
+    expect(revisiones.find((r) => r.id === 'aplicabilidad.demo-con-campo')?.controlPath).toBe(
+      'contrato.sueldoBase',
+    );
+  });
 });

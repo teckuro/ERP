@@ -52,15 +52,18 @@ Regla principal:
 Los estados visuales de tabs, bloques, badges o porcentajes son derivados de UI.
 No reemplazan estos campos.
 
-## 4. Flujo creacion basica
+## 4. Flujo creacion basica (legado — fuera de producto)
 
-Entrada:
+> **2026-07-27:** la UI ya no ofrece creación básica. Solo alta avanzada desde el listado.
+> Se conserva la semántica de dominio para fichas históricas con `origenCreacion = basico`.
+
+Entrada histórica (ya no disponible en menú):
 
 ```text
-Listado -> Crear empleado -> Creacion basica
+Listado -> Crear empleado -> Creacion basica  (retirado)
 ```
 
-Resultado obligatorio:
+Resultado obligatorio (si se usó el path legado):
 
 ```text
 persona.estado = EN_PROCESO
@@ -69,7 +72,7 @@ persona.apto_para_remuneraciones = false
 persona.paso_alta_avanzada = null
 ```
 
-Contrato:
+Contrato legado:
 
 - crea solo la persona;
 - no crea el alta laboral completa;

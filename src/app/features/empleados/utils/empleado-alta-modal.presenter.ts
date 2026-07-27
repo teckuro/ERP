@@ -330,8 +330,28 @@ export function mensajesNegocioDesdeReglas(
   rules: readonly ReglaValidacionEvaluada[],
   max = 10,
 ): readonly string[] {
+  return pendientesCierreDesdeReglas(rules, max).map((item) => item.mensaje);
+}
+
+/** Pendientes de cierre accionables (bitácora): mensaje + paso/campo. */
+export function pendientesCierreDesdeReglas(
+  rules: readonly ReglaValidacionEvaluada[],
+  max = 10,
+): readonly {
+  id: string;
+  mensaje: string;
+  wizardStep: number;
+  controlPath?: string;
+  fieldLabel?: string;
+}[] {
   const seen = new Set<string>();
-  const out: string[] = [];
+  const out: {
+    id: string;
+    mensaje: string;
+    wizardStep: number;
+    controlPath?: string;
+    fieldLabel?: string;
+  }[] = [];
   let sinMensaje = 0;
 
   for (const item of sortReglasValidacion(rules)) {
@@ -342,7 +362,13 @@ export function mensajesNegocioDesdeReglas(
     if (msg) {
       if (!seen.has(item.id)) {
         seen.add(item.id);
-        out.push(msg);
+        out.push({
+          id: item.id,
+          mensaje: msg,
+          wizardStep: item.wizardStep,
+          controlPath: item.sourcePath || undefined,
+          fieldLabel: item.label,
+        });
       }
     } else {
       sinMensaje += 1;
@@ -353,7 +379,11 @@ export function mensajesNegocioDesdeReglas(
   }
 
   if (out.length === 0 && sinMensaje > 0) {
-    out.push('Revisa las etapas con pendientes o errores antes de finalizar.');
+    out.push({
+      id: 'cierre.generico',
+      mensaje: 'Revisa las etapas con pendientes o errores antes de finalizar.',
+      wizardStep: 9,
+    });
   }
 
   return out.slice(0, max);

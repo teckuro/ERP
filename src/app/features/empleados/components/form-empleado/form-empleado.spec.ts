@@ -134,7 +134,8 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     const fixture = TestBed.createComponent(FormEmpleadoComponent);
     const component = fixture.componentInstance;
     component.cargandoCatalogos.set(false);
-    component.modo.set(options.modo === 'basico' ? 'basico' : 'avanzado');
+    // Producto: alta siempre avanzada. `modo: 'basico'` solo simula query legacy.
+    component.modo.set('avanzado');
     fixture.detectChanges();
     return { fixture, component, shell: TestBed.inject(ShellPageContextService) };
   }
@@ -241,15 +242,11 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     expect(submitSpy).toHaveBeenCalled();
   });
 
-  it('publica CTA de borrador en creacion basica', async () => {
-    const { shell } = await setupFixture({ modo: 'basico' });
+  it('modo=basico en URL se normaliza a creación avanzada (fuera de producto)', async () => {
+    const { component, shell } = await setupFixture({ modo: 'basico' });
 
-    expect(shell.primaryAction()).toMatchObject({
-      label: 'Guardar borrador',
-      disabled: true,
-      loading: false,
-      actionId: 'empleado-alta-basica-guardar-borrador',
-    });
+    expect(component.modo()).toBe('avanzado');
+    expect(shell.primaryAction()?.actionId).toBe('empleado-alta-avanzada-guardar');
   });
 
   it('no renderiza acciones locales duplicadas en la cabecera avanzada ni en resumen', async () => {

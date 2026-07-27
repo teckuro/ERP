@@ -13,9 +13,9 @@
       [mensajeError]="mensajeError() ?? ''"
       [bulkActionLoading]="cargandoAccionMasiva()"
       [bulkActionResult]="resultadoAccionMasiva()"
-      [destinoNavegacionCreacion]="destinoNavegacionCreacion()"
-      (createBasico)="crearBasico()"
-      (createAvanzado)="crearAvanzado()"
+      [navegandoCreacion]="navegandoCreacion()"
+      [filtroSituacionFicha]="filtroSituacionFicha()"
+      (createEmpleado)="crearEmpleado()"
       (bulkAction)="manejarAccionMasiva($event)"
       (refresh)="cargarEmpleados()"
     ></app-tabla-empleados>

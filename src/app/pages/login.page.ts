@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { AuthService } from '../core/auth/auth.service';
+import { getSupportMailtoHref } from '../config/runtime-config';
 
 @Component({
   selector: 'app-login-page',
@@ -137,11 +138,16 @@ import { AuthService } from '../core/auth/auth.service';
                 <a routerLink="/recuperar-contrasena" aria-label="Recuperar contrasena">Olvidaste tu contrasena?</a>
               </div>
 
-              <button class="login-submit" type="submit" [disabled]="isSubmitting()">
+              <button
+                class="login-submit"
+                type="submit"
+                [disabled]="isSubmitting()"
+                [attr.aria-busy]="isSubmitting()"
+              >
                 @if (isSubmitting()) {
                   <span class="login-submit__spinner" aria-hidden="true"></span>
                 }
-                {{ isSubmitting() ? 'Verificando credenciales...' : 'Iniciar sesion' }}
+                Iniciar sesión
               </button>
             </form>
           </div>
@@ -149,8 +155,11 @@ import { AuthService } from '../core/auth/auth.service';
           <div class="login-support">
             <lucide-icon name="mail" aria-hidden="true"></lucide-icon>
             <p>
-              <strong>Necesitas acceso o tienes problemas?</strong>
-              <span>Contacta al <a href="#">administrador del sistema</a></span>
+              <strong>¿Necesitas acceso o tienes problemas?</strong>
+              <span>
+                Contacta al
+                <a [href]="supportMailtoHref">administrador del sistema</a>
+              </span>
             </p>
           </div>
 
@@ -659,10 +668,10 @@ import { AuthService } from '../core/auth/auth.service';
         align-items: flex-start;
         gap: 12px;
         margin-top: 24px;
-        border: 1px solid #bfdbfe;
-        border-radius: 10px;
-        background: #eff6ff;
-        padding: 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        background: #f8fafc;
+        padding: 14px;
       }
 
       .login-support lucide-icon {
@@ -670,12 +679,12 @@ import { AuthService } from '../core/auth/auth.service';
         height: 18px;
         flex: 0 0 auto;
         margin-top: 2px;
-        color: #1e40af;
+        color: #64748b;
       }
 
       .login-support p {
         margin: 0;
-        color: #1e40af;
+        color: #475569;
         font-size: 0.8125rem;
         line-height: 1.5;
       }
@@ -687,7 +696,7 @@ import { AuthService } from '../core/auth/auth.service';
 
       .login-support strong {
         margin-bottom: 4px;
-        color: #1e3a8a;
+        color: #0f172a;
         font-weight: 600;
       }
 
@@ -801,6 +810,7 @@ export class LoginPage implements OnInit {
   readonly mensajeError = signal<string | null>(null);
   readonly rememberMe = signal(false);
   readonly showPassword = signal(false);
+  readonly supportMailtoHref = getSupportMailtoHref();
 
   readonly form = new FormGroup({
     email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),

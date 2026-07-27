@@ -31,6 +31,7 @@
             [estado]="estado"
             [progressStyle]="f.progressStyle(employee)"
             [validando]="f.isValidatingPayroll()"
+            [puedeEditar]="f.puedeEditarEmpleados()"
             (navegarFaltante)="f.navegarFaltante($event)"
             (accionPrincipal)="f.ejecutarAccionPrincipalPanel()"
           />
@@ -64,6 +65,18 @@
                       emptyTitle="Sin eventos de historial"
                       emptyDescription="La ficha aún no registra eventos de auditoría."
                     ></app-data-grid>
+                  } @else if (f.tabActivo() === 'documentos') {
+                    <div class="ficha-registro-tab ficha-registro-tab--empty" role="status">
+                      <header class="employee-record-block__intro">
+                        <div class="employee-record-block__intro-copy">
+                          <h2 class="employee-record-block__title">Documentos</h2>
+                          <p class="employee-record-block__desc">
+                            No disponible en esta fase. El expediente documental no se gestiona aún;
+                            complete la ficha por las demás secciones.
+                          </p>
+                        </div>
+                      </header>
+                    </div>
                   } @else {
                     <div class="ficha-registro-tab">
                       <header

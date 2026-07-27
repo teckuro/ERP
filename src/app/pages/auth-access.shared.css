@@ -673,3 +673,13 @@
     padding: 28px 20px;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .login-brand__glow,
+  .login-brand__logo,
+  .login-brand__message,
+  .login-brand__features,
+  .login-access__inner {
+    animation: none !important;
+  }
+}

@@ -167,7 +167,7 @@ No usar `app-message-box variant="loading"` para cargas (reservar MessageBox par
 - No tapar el menú lateral ni el header con loadings de página (usar nivel A `shell`, no `viewport`).
 - No bloquear toda la pantalla cuando solo cambia una parte (usar nivel B o C).
 - Usar texto contextual: `Cargando listado de empleados...`, `Cargando ficha...`, `Guardando ficha...`.
-- Auth público (login / recuperar / actualizar) mantiene spinner del botón.
+- Auth público (login / recuperar / actualizar) y **Salir** del header: spinner en el botón **sin cambiar el texto** de la acción (`Iniciar sesión`, `Salir`).
 
 ## Botones e iconos
 

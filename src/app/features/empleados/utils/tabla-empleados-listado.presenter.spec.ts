@@ -16,10 +16,38 @@ describe('tabla-empleados-listado.presenter', () => {
     expect(columnas.some((c) => c.id === 'avance')).toBe(true);
   });
 
-  it('crearFiltrosGridTablaEmpleados incluye RUT y estado', () => {
+  it('crearFiltrosGridTablaEmpleados incluye RUT, estado y situación ficha', () => {
     const filtros = crearFiltrosGridTablaEmpleados();
     expect(filtros.some((f) => f.id === 'rut')).toBe(true);
     expect(filtros.some((f) => f.id === 'estado')).toBe(true);
+    expect(filtros.some((f) => f.id === 'situacionFicha')).toBe(true);
+  });
+
+  it('filtro situacionFicha incompletas usa predicate', () => {
+    const filtro = crearFiltrosGridTablaEmpleados({ filtroInicial: 'incompletas' }).find(
+      (f) => f.id === 'situacionFicha',
+    );
+    expect(filtro?.initialValue).toBe('incompletas');
+    expect(
+      filtro?.predicate?.(
+        {
+          estadoFicha: 'INCOMPLETO',
+          aptoParaRemuneraciones: false,
+          pasoAltaAvanzada: null,
+        } as never,
+        'incompletas',
+      ),
+    ).toBe(true);
+    expect(
+      filtro?.predicate?.(
+        {
+          estadoFicha: 'VALIDO',
+          aptoParaRemuneraciones: true,
+          pasoAltaAvanzada: null,
+        } as never,
+        'incompletas',
+      ),
+    ).toBe(false);
   });
 
   it('etiquetas y formato', () => {

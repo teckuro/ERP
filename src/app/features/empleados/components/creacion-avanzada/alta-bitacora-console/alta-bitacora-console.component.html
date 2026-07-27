@@ -85,7 +85,7 @@
                         class="alta-bitacora-console__apply"
                         (click)="aplicarRevisionNormativa.emit(rev)"
                       >
-                        Aplicar sugerencia
+                        {{ rev.origen === 'aplicabilidad' ? 'Ir al campo' : 'Aplicar sugerencia' }}
                       </button>
                     }
                     @if (rev.origen === 'coherencia' && !rev.bajoRevision) {
@@ -147,9 +147,18 @@
                 Pendientes para cierre
               </h3>
             </header>
-            <ul class="alta-bitacora-console__list alta-bitacora-console__list--plain">
-              @for (msg of vm.pendientesCierre; track msg) {
-                <li>{{ msg }}</li>
+            <ul class="alta-bitacora-console__list">
+              @for (item of vm.pendientesCierre; track item.id) {
+                <li>
+                  <button
+                    type="button"
+                    class="alta-bitacora-console__issue"
+                    (click)="irAPendienteCierre.emit(item)"
+                  >
+                    <span class="alta-bitacora-console__issue-block">Cierre</span>
+                    <span class="alta-bitacora-console__issue-msg">{{ item.mensaje }}</span>
+                  </button>
+                </li>
               }
             </ul>
           </section>

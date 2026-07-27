@@ -2,8 +2,7 @@
   <app-data-grid
     title="Empleados"
     primaryActionLabel="Crear empleado"
-    (primaryAction)="toggleCrearMenu()"
-    [primaryActionMenuOpen]="crearMenuAbierto"
+    (primaryAction)="onCrearEmpleado()"
     [filtersCollapsible]="true"
     emptyTitleWhenFiltered="No se encontraron empleados con los filtros aplicados."
     emptyDescriptionWhenFiltered="Ajusta la búsqueda o limpia los filtros para ver más resultados."
@@ -35,39 +34,6 @@
     emptyTitle="Aún no hay empleados registrados."
     emptyDescription="Crea el primer empleado para comenzar a gestionar remuneraciones."
   >
-    <ng-template appDataGridPrimaryActionMenu>
-      @if (crearMenuAbierto) {
-        <div class="empleados-create-menu" data-empleados-create-menu role="menu" aria-label="Opciones de creacion">
-          <div class="empleados-create-menu__header">
-            <p>Crear empleado</p>
-            <span>Selecciona el tipo de creación</span>
-          </div>
-
-          <button
-            type="button"
-            class="empleados-create-menu__option"
-            role="menuitem"
-            [disabled]="destinoNavegacionCreacion !== null"
-            (click)="onCrearAvanzado()"
-          >
-            <span class="empleados-create-menu__option-copy">
-              <strong>Creación avanzada</strong>
-              <small>Ficha completa y configuración</small>
-            </span>
-            @if (destinoNavegacionCreacion === 'avanzado') {
-              <span class="empleados-create-menu-icon-wrap" aria-hidden="true">
-                <lucide-icon class="empleados-create-menu-icon empleados-create-menu-icon--spin" [img]="loaderIcon"></lucide-icon>
-              </span>
-            } @else {
-              <span class="empleados-create-menu-icon-wrap" aria-hidden="true">
-                <lucide-icon class="empleados-create-menu-icon" [img]="plusIcon"></lucide-icon>
-              </span>
-            }
-          </button>
-        </div>
-      }
-    </ng-template>
-
     <ng-template appDataGridCell="nombre" let-empleado>
       <div class="employee-name-cell" [title]="empleado.nombre">
         <p class="employee-name-cell__title">{{ empleado.nombre }}</p>

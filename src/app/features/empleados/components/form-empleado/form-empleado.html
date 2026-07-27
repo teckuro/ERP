@@ -289,7 +289,7 @@
                             class="form-action-button form-action-button--secondary advanced-step-normativa-hint__btn"
                             (click)="abrirGuiaNormativa()"
                           >
-                            Abrir guía normativa
+                            Abrir bitácora
                           </button>
                         </div>
                         }
@@ -718,215 +718,16 @@
                         (revisarPaso)="seleccionarPasoAsistente($event)"
                         (aplicarRevisionNormativa)="onAplicarRevisionNormativa($event)"
                         (mantenerRevisionNormativa)="onMantenerRevisionNormativa($event)"
+                        (irAPendienteCierre)="irAlPendienteCierreBitacora($event)"
                       />
                     </div>
                   </div>
                 </div>
               </section>
-              } @else {
-              <div
-                class="basic-create-page"
-                aria-label="Creación básica de empleado"
-              >
-                <div class="basic-create-shell">
-                  @if (cargandoCatalogos()) {
-                  <app-workspace-loading
-                    message="Preparando campos..."
-                    [fill]="true"
-                  />
-                  }
-                  <div class="basic-create-inner">
-                    <header
-                      class="summary-identity summary-identity--basic basic-create-shell-header"
-                    >
-                      <div class="summary-person summary-person--basic">
-                        <div class="summary-title-row">
-                          <h2>Creación básica</h2>
-                          <span
-                            class="summary-mode-badge"
-                            aria-label="Modo de alta"
-                            >Básica</span
-                          >
-                        </div>
-                        <p class="summary-subtitle">
-                          Registra los datos iniciales para continuar el alta en
-                          modo avanzado.
-                        </p>
-                      </div>
-                    </header>
-
-                    <div class="content-body content-body--basic">
-                      <div class="basic-create-stack">
-                        <section
-                          class="basic-create-summary-card"
-                          aria-label="Resumen del alta básica"
-                        >
-                          <div class="basic-create-summary-card__head">
-                            <h3 class="basic-create-summary-card__title">
-                              Alta rápida de empleado
-                            </h3>
-                          </div>
-                          <p class="basic-create-summary-card__lead">
-                            Registra los datos iniciales y continúa el alta en
-                            modo avanzado.
-                          </p>
-                          <div class="basic-create-summary-card__pending">
-                            <span
-                              class="basic-create-summary-card__pending-label"
-                              >Se completa en alta avanzada:</span
-                            >
-                            <div
-                              class="basic-create-summary-card__chips"
-                              role="list"
-                            >
-                              <span
-                                class="basic-create-summary-chip"
-                                role="listitem"
-                                >Contrato y organización</span
-                              >
-                              <span
-                                class="basic-create-summary-chip"
-                                role="listitem"
-                                >Jornada y remuneración</span
-                              >
-                              <span
-                                class="basic-create-summary-chip"
-                                role="listitem"
-                                >Previsión y salud</span
-                              >
-                              <span
-                                class="basic-create-summary-chip"
-                                role="listitem"
-                                >Banco</span
-                              >
-                            </div>
-                          </div>
-                        </section>
-
-                        <div class="basic-create-form">
-                          <div
-                            class="step-panel step-panel--basic basic-wizard"
-                          >
-                            <div class="basic-create-form-shell">
-                              <app-empleado-datos-personales
-                                [formGroup]="form.controls.datosPersonales"
-                                [contactoFormGroup]="form.controls.contacto"
-                                [sexos]="catalogos().sexos"
-                                [estadosCivil]="catalogos().estadosCivil"
-                                [paises]="catalogos().paises"
-                                [basicSectionLeads]="true"
-                              ></app-empleado-datos-personales>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
               }
             </section>
           </div>
 
-          <!-- <aside class="side-panel" aria-label="Progreso y validaciones">
-            <div class="side-panel-card side-panel-card--sticky">
-              <section class="side-section side-section--progress">
-                <div class="side-section-head">
-                  <p class="side-kicker">Panel de control</p>
-                  <h3>Alta en curso</h3>
-                  <progress
-                    class="side-progress-meter"
-                    [value]="cantidadPasosCompletados()"
-                    [max]="totalPasos"
-                  ></progress>
-                  <p class="side-progress-line">
-                    Paso activo: {{ numeroPasoActivo() }} de {{ totalPasos }}
-                  </p>
-                </div>
-              </section>
-
-              <section class="side-section side-section--validations">
-                <div class="side-section-head">
-                  <p class="side-kicker">Validaciones</p>
-                  <h3>{{ cantidadValidacionesPendientes() }} pendientes</h3>
-                </div>
-
-                @if (cantidadValidacionesPendientes() > 0) {
-                  <div class="validation-columns">
-                    <div class="validation-group">
-                      <div class="validation-group-head">
-                        <span>Errores bloqueantes</span>
-                        <strong>{{ itemsValidacionBloqueantesPanel().length }}</strong>
-                      </div>
-                      <ul class="validation-list">
-                        @for (item of itemsValidacionBloqueantesPanel().slice(0, 3); track item.id) {
-                          <li class="validation-item is-error">
-                            <span class="validation-dot" aria-hidden="true"></span>
-                            <span>{{ item.label }}</span>
-                          </li>
-                        } @empty {
-                          <li class="validation-item is-complete">
-                            <span class="validation-dot" aria-hidden="true"></span>
-                            <span>Sin errores bloqueantes.</span>
-                          </li>
-                        }
-                        @if (itemsValidacionBloqueantesPanel().length > 3) {
-                          <li class="validation-more">
-                            +{{ itemsValidacionBloqueantesPanel().length - 3 }} mas por resolver
-                          </li>
-                        }
-                      </ul>
-                    </div>
-
-                    <div class="validation-group">
-                      <div class="validation-group-head">
-                        <span>Advertencias</span>
-                        <strong>{{ itemsAdvertenciaValidacionPanel().length }}</strong>
-                      </div>
-                      <ul class="validation-list">
-                        @for (item of itemsAdvertenciaValidacionPanel().slice(0, 3); track item.id) {
-                          <li class="validation-item is-warning">
-                            <span class="validation-dot" aria-hidden="true"></span>
-                            <span>{{ item.label }}</span>
-                          </li>
-                        } @empty {
-                          <li class="validation-item is-complete">
-                            <span class="validation-dot" aria-hidden="true"></span>
-                            <span>Sin advertencias pendientes.</span>
-                          </li>
-                        }
-                        @if (itemsAdvertenciaValidacionPanel().length > 3) {
-                          <li class="validation-more">
-                            +{{ itemsAdvertenciaValidacionPanel().length - 3 }} mas por revisar
-                          </li>
-                        }
-                      </ul>
-                    </div>
-                  </div>
-                } @else {
-                  <ul class="validation-list">
-                    <li class="validation-item is-complete">
-                      <span class="validation-dot" aria-hidden="true"></span>
-                      <span>Sin validaciones pendientes en este paso.</span>
-                    </li>
-                  </ul>
-                }
-              </section>
-
-              <section class="side-section side-section--global">
-                <div class="side-section-head">
-                  <p class="side-kicker">Resumen global</p>
-                  <h3>Estado de ficha</h3>
-                </div>
-
-                <p class="side-summary-line">
-                  {{ obtenerResumenValidacionGlobal().completeSteps }}/{{ totalPasos }} etapas completas
-                  - {{ obtenerResumenValidacionGlobal().blockingPending }} bloqueantes -
-                  {{ obtenerResumenValidacionGlobal().warningsPending }} advertencias
-                </p>
-              </section>
-            </div>
-          </aside> -->
         </section>
       </app-card-content>
     </app-card>

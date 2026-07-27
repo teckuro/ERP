@@ -131,11 +131,16 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
               [attr.data-testid]="action.actionId"
               [attr.title]="action.tooltip ?? null"
               [attr.aria-label]="action.tooltip ?? null"
+              [attr.aria-busy]="action.loading"
               [disabled]="action.disabled || action.loading"
               (click)="onPrimaryAction()"
             >
-              <lucide-icon [img]="playIcon" aria-hidden="true"></lucide-icon>
-              <span>{{ action.loading ? 'Procesando...' : action.label }}</span>
+              @if (action.loading) {
+                <span class="erp-shell-header__btn-spinner" aria-hidden="true"></span>
+              } @else {
+                <lucide-icon [img]="playIcon" aria-hidden="true"></lucide-icon>
+              }
+              <span>{{ action.label }}</span>
             </button>
           }
 
@@ -145,9 +150,13 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
               type="button"
               class="erp-shell-header__logout"
               [disabled]="cerrandoSesion()"
+              [attr.aria-busy]="cerrandoSesion()"
               (click)="cerrarSesion()"
             >
-              {{ cerrandoSesion() ? 'Cerrando...' : 'Salir' }}
+              @if (cerrandoSesion()) {
+                <span class="erp-shell-header__btn-spinner" aria-hidden="true"></span>
+              }
+              Salir
             </button>
           </div>
         </div>
@@ -462,6 +471,9 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
       }
 
       .erp-shell-header__logout {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
         border: 0;
         background: transparent;
         padding: 0;
@@ -473,6 +485,32 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
 
       .erp-shell-header__logout:hover:not(:disabled) {
         color: #0f172a;
+      }
+
+      .erp-shell-header__logout:disabled {
+        cursor: wait;
+        opacity: 0.7;
+      }
+
+      .erp-shell-header__btn-spinner {
+        flex: 0 0 auto;
+        width: 12px;
+        height: 12px;
+        border: 1.5px solid #cbd5e1;
+        border-top-color: #2563eb;
+        border-radius: 999px;
+        animation: erp-shell-header-spin 0.7s linear infinite;
+      }
+
+      .erp-shell-header__cta .erp-shell-header__btn-spinner {
+        border-color: rgba(255, 255, 255, 0.45);
+        border-top-color: #ffffff;
+      }
+
+      @keyframes erp-shell-header-spin {
+        to {
+          transform: rotate(1turn);
+        }
       }
 
       @media (max-width: 1024px) {

@@ -213,7 +213,11 @@ export function crearColumnasGridTablaEmpleados(): DataGridColumn<EmpleadoListad
   ];
 }
 
-export function crearFiltrosGridTablaEmpleados(): DataGridFilter<EmpleadoListado>[] {
+export function crearFiltrosGridTablaEmpleados(
+  options: { filtroInicial?: 'incompletas' | 'aptas' | null } = {},
+): DataGridFilter<EmpleadoListado>[] {
+  const filtroInicial = options.filtroInicial ?? null;
+
   return [
     {
       id: 'rut',
@@ -233,6 +237,32 @@ export function crearFiltrosGridTablaEmpleados(): DataGridFilter<EmpleadoListado
       normalize: 'text',
       matchMode: 'tokens',
       placeholder: 'Buscar empleado',
+    },
+    {
+      id: 'situacionFicha',
+      label: 'Situación ficha',
+      field: 'estadoFicha',
+      type: 'select',
+      operator: 'equals',
+      emptyLabel: 'Todas',
+      initialValue: filtroInicial ?? undefined,
+      options: [
+        { label: 'Incompletas / no aptas', value: 'incompletas' },
+        { label: 'Aptas para nómina', value: 'aptas' },
+      ],
+      predicate: (row, value) => {
+        if (value === 'incompletas') {
+          return (
+            row.pasoAltaAvanzada !== null
+            || row.estadoFicha !== 'VALIDO'
+            || !row.aptoParaRemuneraciones
+          );
+        }
+        if (value === 'aptas') {
+          return row.estadoFicha === 'VALIDO' && row.aptoParaRemuneraciones;
+        }
+        return true;
+      },
     },
     {
       id: 'estado',

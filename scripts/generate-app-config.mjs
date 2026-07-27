@@ -6,6 +6,7 @@ loadEnv({ path: resolve('.env'), quiet: true });
 
 const url = (process.env.SUPABASE_URL ?? process.env.E2E_SUPABASE_URL)?.trim().replace(/\/$/, '');
 const key = (process.env.SUPABASE_ANON_KEY ?? process.env.E2E_SUPABASE_ANON_KEY)?.trim();
+const supportEmail = (process.env.SUPPORT_EMAIL ?? 'admin@erp.cl').trim().toLowerCase();
 
 const PLACEHOLDER_KEY = /YOUR_|REPLACE_ME|CHANGEME/i;
 const PLACEHOLDER_URL = /YOUR_PROJECT|example\.com/i;
@@ -49,6 +50,7 @@ writeFileSync(
       supabaseUrl: url,
       supabaseAnonKey: key,
       asistentePreguntorFunction: 'super-service',
+      supportEmail,
     },
     null,
     2,

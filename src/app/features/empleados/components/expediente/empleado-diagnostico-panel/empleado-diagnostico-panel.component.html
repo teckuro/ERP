@@ -56,13 +56,18 @@
       <p class="employee-record-status__label">Motivo principal</p>
       <p class="employee-record-status__motivo">{{ estado.motivoPrincipal }}</p>
     </div>
-    @if (estado.mostrarAccion) {
+    @if (estado.mostrarAccion && puedeEditar) {
       <div class="employee-record-status__section employee-record-status__section--action">
         <p class="employee-record-status__label">Acción recomendada</p>
         <p class="employee-record-status__action-hint">{{ estado.ayudaAccion }}</p>
         <button type="button" class="employee-record-status__cta" [disabled]="validando" (click)="accionPrincipal.emit()">
           @if (validando) { Procesando... } @else { {{ estado.etiquetaAccion }} }
         </button>
+      </div>
+    } @else if (estado.mostrarAccion && !puedeEditar) {
+      <div class="employee-record-status__section">
+        <p class="employee-record-status__label">Acción recomendada</p>
+        <p class="employee-record-status__action-hint">Solo lectura: no tiene permiso para editar fichas.</p>
       </div>
     }
   </div>

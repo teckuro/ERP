@@ -14,6 +14,7 @@ import { ChevronDown, ChevronUp } from 'lucide-angular/src/icons';
 import type {
   VmConsolaBitacoraAlta,
   RevisionNormativaBitacoraAlta,
+  PendienteCierreBitacoraAlta,
 } from '../../../models/empleado-alta-avanzada.vm';
 import type { FaltanteFichaEmpleado } from '../../../models/ficha-empleado.vm';
 
@@ -38,6 +39,7 @@ export class AltaBitacoraConsoleComponent implements OnChanges {
   readonly revisarPaso = output<number>();
   readonly aplicarRevisionNormativa = output<RevisionNormativaBitacoraAlta>();
   readonly mantenerRevisionNormativa = output<RevisionNormativaBitacoraAlta>();
+  readonly irAPendienteCierre = output<PendienteCierreBitacoraAlta>();
 
   readonly chevronDownIcon = ChevronDown;
   readonly chevronUpIcon = ChevronUp;

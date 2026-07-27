@@ -19,170 +19,363 @@
           />
         }
 
-        <p class="res-context" aria-label="Contexto del período">
-          <span class="res-context__saludo">Buenos días, {{ saludo() }}</span>
-          <span class="res-context__sep" aria-hidden="true">·</span>
-          <span class="res-context__periodo">{{ periodoActivo.etiqueta() }}</span>
-          @if (snapshot().empresaNombre; as empresa) {
-            <span class="res-context__sep" aria-hidden="true">·</span>
-            <span>{{ empresa }}</span>
-          }
-          <span class="res-context__sep" aria-hidden="true">·</span>
-          <span class="res-context__badge">{{ snapshot().estadoNominaDominante ?? 'Sin estado' }}</span>
-        </p>
-
-        <section
-          class="res-action"
-          [class.res-action--warning]="snapshot().accionRecomendada.tone === 'warning'"
-          aria-label="Acción recomendada"
-        >
-          <div class="res-action__copy">
-            <p class="res-action__eyebrow">Acción recomendada</p>
-            <h1 class="res-action__title">{{ snapshot().accionRecomendada.etiqueta }}</h1>
-            <p class="res-action__detail">{{ snapshot().accionRecomendada.detalle }}</p>
-          </div>
-          <button
-            type="button"
-            class="res-action__cta"
-            [class.res-action__cta--warning]="snapshot().accionRecomendada.tone === 'warning'"
-            (click)="ir(snapshot().accionRecomendada.ruta)"
-          >
-            Continuar
-            <lucide-icon name="arrow-right" aria-hidden="true"></lucide-icon>
-          </button>
-        </section>
-
-        <div class="res-split">
-          <section class="res-analytics" aria-label="Análisis del período">
-            <header class="res-analytics__head">
-              <div>
-                <h2>Análisis del período</h2>
-                <p>Costos y composición se mostrarán aquí cuando el período tenga liquidaciones.</p>
-              </div>
-            </header>
-
-            <div class="res-analytics__grid">
-              <article class="res-panel res-panel--wide" aria-label="Costo de remuneraciones">
-                <header class="res-panel__head">
-                  <h3>Costo de remuneraciones</h3>
-                  <span class="res-panel__tag">Próximo</span>
-                </header>
-                <div class="res-panel__body res-panel__body--chart">
-                  <div class="res-chart-skeleton" aria-hidden="true">
-                    <span style="--h: 42%"></span>
-                    <span style="--h: 68%"></span>
-                    <span style="--h: 55%"></span>
-                    <span style="--h: 78%"></span>
-                    <span style="--h: 48%"></span>
-                    <span style="--h: 62%"></span>
-                  </div>
-                  <p class="res-panel__hint">
-                    Evolución del costo mensual y comparación con períodos anteriores.
-                  </p>
-                </div>
-              </article>
-
-              <article class="res-panel" aria-label="Composición del gasto">
-                <header class="res-panel__head">
-                  <h3>Composición</h3>
-                  <span class="res-panel__tag">Próximo</span>
-                </header>
-                <div class="res-panel__body">
-                  <ul class="res-compose">
-                    <li>
-                      <span>Haberes imponibles</span>
-                      <span class="res-compose__bar" aria-hidden="true"><i style="--w: 72%"></i></span>
-                    </li>
-                    <li>
-                      <span>Haberes no imponibles</span>
-                      <span class="res-compose__bar" aria-hidden="true"><i style="--w: 28%"></i></span>
-                    </li>
-                    <li>
-                      <span>Descuentos legales</span>
-                      <span class="res-compose__bar" aria-hidden="true"><i style="--w: 45%"></i></span>
-                    </li>
-                  </ul>
-                  <p class="res-panel__hint">Distribución del gasto cuando exista cálculo oficial.</p>
-                </div>
-              </article>
-
-              <article class="res-panel res-panel--economicos" aria-label="Indicadores económicos">
-                <header class="res-panel__head">
-                  <h3>Indicadores económicos</h3>
-                  <button type="button" class="res-panel__link" (click)="ir('/parametros')">
-                    Parámetros
-                  </button>
-                </header>
-                <div class="res-panel__body res-panel__body--eco">
-                  @for (eco of snapshot().economicos; track eco.id) {
-                    <button
-                      type="button"
-                      [class]="claseEconomico(eco.tone, eco.disponible)"
-                      [title]="eco.detalle || eco.label"
-                      (click)="ir(eco.ruta)"
-                    >
-                      <small>{{ eco.label }}</small>
-                      <strong>{{ formatearEconomico(eco.value, eco.formato) }}</strong>
-                      @if (!eco.disponible && eco.detalle) {
-                        <span class="res-eco__note">{{ eco.detalle }}</span>
-                      }
-                    </button>
-                  }
-                </div>
-              </article>
-
-              <article class="res-panel" aria-label="Indicadores operativos">
-                <header class="res-panel__head">
-                  <h3>Indicadores operativos</h3>
-                </header>
-                <div class="res-panel__body res-panel__body--kpis">
-                  @for (kpi of snapshot().kpis; track kpi.id) {
-                    <button type="button" [class]="claseKpi(kpi.tone)" (click)="ir(kpi.ruta)">
-                      <strong>{{ formatearValorKpi(kpi.value) }}</strong>
-                      <small>{{ kpi.label }}</small>
-                    </button>
-                  }
-                </div>
-              </article>
+        <div class="res-head">
+          <header class="res-hero" aria-label="Contexto del período">
+            <div class="res-hero__copy">
+              <h1 class="res-hero__saludo">{{ saludoCompleto() }}</h1>
+              <p class="res-hero__empresa">{{ contextoEmpresa() }}</p>
             </div>
-          </section>
+            <div class="res-hero__meta">
+              <span>Período <strong>{{ periodoActivo.etiqueta() }}</strong></span>
+              <span>Dotación <strong>{{ formatearValorKpi(dotacion() ?? 0) }}</strong></span>
+            </div>
+          </header>
 
-          <section class="res-inbox" aria-label="Bandeja de pendientes">
-            <header class="res-inbox__head">
-              <h2>Bandeja</h2>
-              <span class="res-inbox__count" [class.is-empty]="snapshot().atencion.length === 0">
-                {{ snapshot().atencion.length }}
-              </span>
-            </header>
-
-            @if (snapshot().atencion.length === 0) {
-              <div class="res-inbox__ok" role="status">
-                <lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon>
-                <div>
-                  <strong>Sin pendientes</strong>
-                  <p>El período no tiene ítems esperando revisión.</p>
-                </div>
-              </div>
-            } @else {
-              <ul class="res-inbox__lista">
-                @for (item of snapshot().atencion; track item.id) {
-                  <li>
-                    <button type="button" [class]="claseAtencion(item.tone)" (click)="ir(item.ruta)">
-                      <span class="res-inbox-item__icon" aria-hidden="true">
-                        <lucide-icon [name]="item.icon"></lucide-icon>
-                      </span>
-                      <span class="res-inbox-item__copy">
-                        <strong>{{ item.titulo }}</strong>
-                        <small>{{ item.detalle }}</small>
-                      </span>
-                    </button>
-                  </li>
-                }
-              </ul>
-            }
+          <section
+            class="res-action"
+            [class.res-action--warning]="snapshot().accionRecomendada.tone === 'warning'"
+            [class.res-action--primary]="snapshot().accionRecomendada.tone === 'primary'"
+            aria-label="Acción recomendada"
+          >
+            <span class="res-action__icon" aria-hidden="true">
+              <lucide-icon [name]="iconoAccion(snapshot().accionRecomendada.ruta)"></lucide-icon>
+            </span>
+            <div class="res-action__copy">
+              <h2 class="res-action__title">
+                <span class="res-action__eyebrow">
+                  {{ snapshot().accionRecomendada.tone === 'warning' ? 'Acción requerida' : 'Acción recomendada' }}:
+                </span>
+                {{ snapshot().accionRecomendada.etiqueta }}
+              </h2>
+              <p class="res-action__detail">{{ snapshot().accionRecomendada.detalle }}</p>
+            </div>
+            <button
+              type="button"
+              class="res-action__cta"
+              [class.res-action__cta--warning]="snapshot().accionRecomendada.tone === 'warning'"
+              (click)="ir(snapshot().accionRecomendada.ruta)"
+            >
+              {{ etiquetaCta(snapshot().accionRecomendada.tone, snapshot().accionRecomendada.etiqueta) }}
+              <lucide-icon name="arrow-right" aria-hidden="true"></lucide-icon>
+            </button>
           </section>
         </div>
+
+        <section class="res-kpis" aria-label="Datos clave del período">
+          @for (kpi of snapshot().kpis; track kpi.id) {
+            <button type="button" [class]="claseKpi(kpi.tone)" (click)="ir(kpi.ruta)">
+              <span class="res-kpi__top">
+                <small>{{ kpi.label }}</small>
+                <span class="res-kpi__icon" aria-hidden="true">
+                  <lucide-icon [name]="kpi.icon"></lucide-icon>
+                </span>
+              </span>
+              <strong>{{ formatearValorKpi(kpi.value ?? 0, kpi.formato ?? 'entero') }}</strong>
+              @if (kpi.hint) {
+                <span class="res-kpi__hint">{{ kpi.hint }}</span>
+              }
+              @if (kpi.progreso != null && kpi.progreso > 0) {
+                <span class="res-kpi__bar" aria-hidden="true">
+                  <i [style.width.%]="kpi.progreso * 100"></i>
+                </span>
+              }
+            </button>
+          }
+        </section>
+
+        <div class="res-work">
+          <div class="res-work__main">
+            <article class="res-panel res-chart" aria-label="Evolución del costo">
+              <header class="res-panel__head">
+                <h2>Evolución del costo</h2>
+                <div class="res-chart__legend" aria-hidden="true">
+                  <span class="res-chart__leg res-chart__leg--now">{{ snapshot().evolucion.anioActual }}</span>
+                  <span class="res-chart__leg res-chart__leg--prev">{{ snapshot().evolucion.anioAnterior }}</span>
+                </div>
+              </header>
+              <div class="res-chart__body" [class.is-empty]="!snapshot().evolucion.hayDatos">
+                <svg
+                  class="res-chart__svg"
+                  viewBox="0 0 720 268"
+                  preserveAspectRatio="xMidYMid meet"
+                  role="img"
+                  aria-label="Evolución del costo de remuneraciones"
+                >
+                  <defs>
+                    <linearGradient id="resChartFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#2563eb" stop-opacity="0.28" />
+                      <stop offset="100%" stop-color="#2563eb" stop-opacity="0.02" />
+                    </linearGradient>
+                  </defs>
+                  <g class="res-chart__grid" stroke="#e8ecf1" stroke-width="1">
+                    @for (y of chartVista().gridY; track y) {
+                      <line x1="58" [attr.y1]="y" x2="700" [attr.y2]="y" />
+                    }
+                  </g>
+                  <g class="res-chart__axis" fill="#94a3b8" font-size="12">
+                    <text x="8" [attr.y]="chartVista().gridY[0] + 4">{{ chartVista().maxLabel }}</text>
+                    <text x="8" [attr.y]="chartVista().gridY[1] + 4">{{ chartVista().midLabel }}</text>
+                    <text x="22" [attr.y]="chartVista().gridY[2] + 4">$0</text>
+                    @for (label of chartVista().labels; track label.text) {
+                      <text [attr.x]="label.x" y="254" text-anchor="middle">{{ label.text }}</text>
+                    }
+                  </g>
+                  <path
+                    class="res-chart__area"
+                    [attr.d]="chartVista().areaActual"
+                    fill="url(#resChartFill)"
+                  />
+                  <polyline
+                    class="res-chart__line res-chart__line--prev"
+                    fill="none"
+                    stroke="#93c5fd"
+                    stroke-width="2.25"
+                    stroke-dasharray="5 5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    [attr.points]="chartVista().pointsAnterior"
+                  />
+                  <polyline
+                    class="res-chart__line res-chart__line--now"
+                    fill="none"
+                    stroke="#2563eb"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    [attr.points]="chartVista().pointsActual"
+                  />
+                  <g class="res-chart__dots res-chart__dots--prev" fill="#93c5fd">
+                    @for (dot of chartVista().dotsPrev; track $index) {
+                      <circle [attr.cx]="dot.x" [attr.cy]="dot.y" r="3">
+                        <title>{{ dot.title }}</title>
+                      </circle>
+                    }
+                  </g>
+                  <g class="res-chart__dots res-chart__dots--now" fill="#2563eb" stroke="#fff" stroke-width="1.5">
+                    @for (dot of chartVista().dots; track $index) {
+                      <circle [attr.cx]="dot.x" [attr.cy]="dot.y" r="4.5">
+                        <title>{{ dot.title }}</title>
+                      </circle>
+                    }
+                  </g>
+                </svg>
+                @if (!snapshot().evolucion.hayDatos) {
+                  <p class="res-empty-overlay" role="status">Sin costo en el período</p>
+                }
+              </div>
+              <p class="res-panel__foot">{{ notaEvolucion() }}</p>
+            </article>
+
+            <article class="res-panel res-compose" aria-label="Composición e indicadores">
+              <div class="res-compose__split">
+                <div class="res-compose__block">
+                  <header class="res-panel__head">
+                    <h2>Composición del costo</h2>
+                  </header>
+                  <div class="res-compose__body" [class.is-empty]="!snapshot().composicion.hayDatos">
+                    <div class="res-donut" aria-hidden="true">
+                      <div class="res-donut__ring" [ngStyle]="donutStyle()"></div>
+                      <div class="res-donut__center">
+                        <small>Total</small>
+                        <strong>{{ costoLabel() }}</strong>
+                      </div>
+                    </div>
+                    <ul class="res-compose__legend">
+                      @for (seg of snapshot().composicion.segmentos; track seg.id) {
+                        <li>
+                          <span class="res-compose__swatch" [style.background]="seg.color"></span>
+                          <span>{{ seg.label }}</span>
+                          <strong>{{ formatearMonto(seg.monto) }} · {{ seg.porcentaje }}%</strong>
+                        </li>
+                      }
+                    </ul>
+                    @if (!snapshot().composicion.hayDatos) {
+                      <p class="res-empty-overlay res-empty-overlay--compose" role="status">
+                        Sin costo en el período · se muestra $0
+                      </p>
+                    }
+                  </div>
+                </div>
+
+                <div class="res-compose__block res-compose__block--eco" aria-label="Indicadores económicos">
+                  <header class="res-panel__head">
+                    <h2>Indicadores</h2>
+                    <button type="button" class="res-panel__link" (click)="ir('/parametros')">
+                      Parámetros
+                    </button>
+                  </header>
+                  <div class="res-eco-panel__grid">
+                    @for (eco of snapshot().economicos; track eco.id) {
+                      <button
+                        type="button"
+                        [class]="claseEconomico(eco.tone, eco.disponible)"
+                        [title]="eco.detalle || eco.label"
+                        (click)="ir(eco.ruta)"
+                      >
+                        <small>{{ eco.label }}</small>
+                        <strong>{{ formatearEconomico(eco.value, eco.formato) }}</strong>
+                        <span class="res-eco__delta" [class]="'res-eco__delta--' + eco.tendencia">
+                          @if (eco.disponible && eco.tendencia !== 'unknown' && eco.tendencia !== 'flat') {
+                            <lucide-icon [name]="iconoTendencia(eco.tendencia)" aria-hidden="true"></lucide-icon>
+                          }
+                          {{ eco.variacionLabel }}
+                        </span>
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <aside class="res-work__side" aria-label="Operación del período">
+            <section class="res-panel res-inbox" aria-label="Bandeja inteligente">
+              <header class="res-panel__head">
+                <div>
+                  <h2>Bandeja</h2>
+                  <p>Pendientes del período</p>
+                </div>
+                <span class="res-inbox__count" [class.is-empty]="snapshot().atencion.length === 0">
+                  {{ snapshot().atencion.length }}
+                </span>
+              </header>
+
+              @if (snapshot().atencion.length === 0) {
+                <div class="res-inbox__ok" role="status">
+                  <lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon>
+                  <div>
+                    <strong>Sin pendientes</strong>
+                    <p>Nada espera revisión.</p>
+                  </div>
+                </div>
+              } @else {
+                <p class="res-inbox__orden">Ordenadas por prioridad</p>
+                <ul class="res-inbox__lista">
+                  @for (item of atencionPreview(); track item.id) {
+                    <li>
+                      <button type="button" [class]="claseAtencion(item.tone)" (click)="ir(item.ruta)">
+                        <span class="res-inbox-item__icon" aria-hidden="true">
+                          <lucide-icon [name]="item.icon"></lucide-icon>
+                        </span>
+                        <span class="res-inbox-item__copy">
+                          <span class="res-inbox-item__title">
+                            <strong>{{ item.titulo }}</strong>
+                            <span [class]="'res-prio res-prio--' + item.prioridad">
+                              {{ etiquetaPrioridad(item.prioridad) }}
+                            </span>
+                          </span>
+                          <small>{{ item.detalle }}</small>
+                        </span>
+                        <lucide-icon
+                          class="res-inbox-item__go"
+                          name="chevron-right"
+                          aria-hidden="true"
+                        ></lucide-icon>
+                      </button>
+                    </li>
+                  }
+                </ul>
+                @if (tieneMasTareas()) {
+                  <p class="res-inbox__more-hint">
+                    +{{ snapshot().atencion.length - atencionPreview().length }} más
+                  </p>
+                }
+              }
+
+              <button
+                type="button"
+                class="res-inbox__more"
+                [disabled]="!puedeAbrirTareas()"
+                (click)="abrirModalTareas()"
+              >
+                Ver todas las tareas
+                <lucide-icon name="chevron-right" aria-hidden="true"></lucide-icon>
+              </button>
+            </section>
+
+            <nav class="res-panel res-accesos" aria-label="Accesos relevantes">
+              <header class="res-panel__head">
+                <h2>Accesos</h2>
+              </header>
+              <div class="res-accesos__grid">
+                @for (acceso of accesos; track acceso.id) {
+                  <button type="button" class="res-acceso" (click)="ir(acceso.ruta)">
+                    <span class="res-acceso__icon" aria-hidden="true">
+                      <lucide-icon [name]="acceso.icon"></lucide-icon>
+                    </span>
+                    <span>{{ acceso.label }}</span>
+                  </button>
+                }
+              </div>
+            </nav>
+          </aside>
+        </div>
+
+        <footer class="res-footer">
+          <button
+            type="button"
+            class="res-footer__refresh"
+            (click)="actualizarResumen()"
+            aria-label="Actualizar resumen"
+          >
+            <lucide-icon name="refresh-cw" aria-hidden="true"></lucide-icon>
+            Actualizado {{ ultimaActualizacion() }}
+          </button>
+        </footer>
       </div>
     }
   </div>
+
+  @if (modalTareasAbierto()) {
+    <app-message-box
+      variant="info"
+      mode="modal"
+      width="md"
+      eyebrow="Bandeja del período"
+      title="Todas las tareas"
+      [message]="mensajeModalTareas()"
+      [actions]="accionesModalTareas"
+      panelClass="res-tareas-modal"
+      (dismiss)="cerrarModalTareas()"
+      (actionSelect)="cerrarModalTareas()"
+    >
+      <div class="res-tareas-modal__body">
+        @if (snapshot().atencion.length === 0) {
+          <div class="res-inbox__ok" role="status">
+            <lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon>
+            <div>
+              <strong>Sin pendientes</strong>
+              <p>El período no tiene ítems esperando revisión.</p>
+            </div>
+          </div>
+        } @else {
+          <ul class="res-tareas-modal__lista">
+            @for (item of snapshot().atencion; track item.id) {
+              <li>
+                <button type="button" [class]="claseAtencion(item.tone)" (click)="irDesdeTarea(item)">
+                  <span class="res-inbox-item__icon" aria-hidden="true">
+                    <lucide-icon [name]="item.icon"></lucide-icon>
+                  </span>
+                  <span class="res-inbox-item__copy">
+                    <span class="res-inbox-item__title">
+                      <strong>{{ item.titulo }}</strong>
+                      <span [class]="'res-prio res-prio--' + item.prioridad">
+                        {{ etiquetaPrioridad(item.prioridad) }}
+                      </span>
+                    </span>
+                    <small>{{ item.detalle }}</small>
+                  </span>
+                  <lucide-icon
+                    class="res-inbox-item__go"
+                    name="chevron-right"
+                    aria-hidden="true"
+                  ></lucide-icon>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </app-message-box>
+  }
 </section>

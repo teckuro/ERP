@@ -7,6 +7,7 @@ import { EmpleadoFichaDetalle } from '../../models/empleado-listado.model';
 import { EmpleadosCatalogosService } from '../../services/empleados-catalogos.service';
 import { EmpleadosService } from '../../services/empleados.service';
 import { ShellPageContextService } from '../../../../layout/shell-page-context.service';
+import { ErpPermisosRemuneracionesService } from '../../../../core/auth/erp-permisos-remuneraciones.service';
 import { FichaEmpleadoContainer } from './ficha-empleado-container';
 
 function empleado(over: Partial<EmpleadoFichaDetalle> = {}): EmpleadoFichaDetalle {
@@ -162,6 +163,14 @@ describe('FichaEmpleadoContainer', () => {
         {
           provide: EmpleadosService,
           useValue: empleadosServiceMock,
+        },
+        {
+          provide: ErpPermisosRemuneracionesService,
+          useValue: {
+            permisosModulos: () => ({
+              empleados: { ver: true, editar: true },
+            }),
+          },
         },
         {
           provide: EmpleadosCatalogosService,

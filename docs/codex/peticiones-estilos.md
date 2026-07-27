@@ -9,7 +9,107 @@
 
 ---
 
+## 2026-07-27 — Alta avanzada: bitácora y avisos accionables
+
+- **Pedido:** revisar flujos muertos en bitácora y avisos engañosos.
+- **Solución:** «Aplicar» solo con campo o acción real; pendientes de cierre clicables; franja «Abrir bitácora»; label «Ir al campo» en aplicabilidad; retirado panel lateral comentado y helpers muertos.
+- **Archivos:** `form-empleado.*`, `alta-bitacora-console.*`, `empleado-alta-validacion-input.*`, `empleado-alta-modal.presenter.ts`, `empleado-alta-avanzada.vm.ts`, `peticiones-estilos.md`.
+- **Sin tocar:** SQL, motor, estilos globales.
+
+## 2026-07-27 — Empleados: revisión por fases (solo avanzada + flujos)
+
+- **Pedido:** revisión completa Empleados; retirar creación básica del producto; limpiar stubs/huérfanos; puente Resumen.
+- **Solución:** CTA directa a avanzada; `?modo=basico` → avanzado; Documentos empty honesto; Historial real; filtro `situacionFicha` + `?filtro=`; edición ficha gated por `permisosModulos.empleados.editar`; script screenshots huérfano retirado; E2E básica reemplazado por alta-solo-avanzada.
+- **Archivos:** feature `empleados/**`, `resumen-operativo.rules.ts`, `package.json`, `tests/empleados-alta-solo-avanzada.spec.ts`, docs módulo, `peticiones-estilos.md`.
+- **Sin tocar:** SQL, motor, estilos globales.
+
+## 2026-07-27 — Resumen: gráfico propio ampliado + bandeja por prioridad
+
+- **Pedido:** gráfico más grande (sin lib externa) y mejor orden en bandeja.
+- **Solución:** SVG propio con área, ejes y viewBox mayor; bandeja ordenada crítica→alta→media→info, chip de prioridad al inicio.
+- **Archivos:** `resumen-container.html/.css/.ts`, `resumen-operativo.rules.ts/.spec.ts`, `peticiones-estilos.md`.
+- **Sin tocar:** dependencias nuevas, globales, SQL, motor.
+
+## 2026-07-27 — Resumen: densificar panel composición+indicadores
+
+- **Pedido:** feedback visual del panel unido (mucho vacío).
+- **Solución:** compose deja de estirarse; empty state en línea; bandeja llena la columna; gráfico un poco más bajo.
+- **Archivos:** `resumen-container.html/.css`, `peticiones-estilos.md`.
+
+## 2026-07-27 — Resumen: indicadores dentro de composición
+
+- **Pedido:** unir Indicadores y Composición en el mismo elemento.
+- **Solución:** panel único `res-compose` con split (donut/leyenda + indicadores); la columna operativa queda bandeja + accesos.
+- **Archivos:** `resumen-container.html/.css`, `peticiones-estilos.md`.
+- **Sin tocar:** otros módulos, globales, SQL, motor.
+
+## 2026-07-27 — Resumen: composición acoplada (cabecera + 2 columnas)
+
+- **Pedido:** acoplar mejor el diseño.
+- **Solución:** bloque `res-head` (saludo+acción); KPIs en franja única; área `res-work` con análisis (evolución+composición) a la izquierda y operación (bandeja+accesos+indicadores) a la derecha; densidad unificada y sin scroll en desktop.
+- **Archivos:** `resumen-container.html/.css`, `peticiones-estilos.md`.
+- **Sin tocar:** otros módulos, globales, SQL, motor.
+
+## 2026-07-27 — Resumen: accesos arriba y layout sin scroll
+
+- **Pedido:** accesos al final no sirven; encajar todo en la pestaña sin scroll.
+- **Solución:** franja compacta de accesos justo bajo la acción recomendada; densidad reducida (gaps/paddings/gráfico/donut); en desktop `overflow: hidden` y filas flex que llenan altura.
+- **Archivos:** `resumen-container.html/.css`, `peticiones-estilos.md`.
+- **Sin tocar:** otros módulos, globales, SQL, motor.
+
+## 2026-07-27 — Resumen: accesos, empty states y footer refresh (UI+flujos)
+
+- **Pedido:** cerrar módulo Resumen del menú con UI + flujos (mesa completa).
+- **Solución:** franja Accesos relevantes; footer clicable que recarga; empty overlay en gráfico/donut; tooltips SVG; cierra modal al cambiar período; copy empresa/estado; CTA “Abrir nóminas” al preparar; barra KPI solo con progreso real.
+- **Archivos:** `resumen-container.html/.css/.ts`, `resumen-operativo.rules.ts`, `peticiones-estilos.md`.
+- **Sin tocar:** otros módulos, estilos globales, SQL, motor.
+
+## 2026-07-27 — Resumen: modal de tareas + variación de indicadores
+
+- **Pedido:** «Ver todas las tareas» no funcionaba; faltaba detalle de alza/baja en parámetros económicos; pulir diseño.
+- **Solución:** modal MessageBox con todas las tareas (preview 3 en bandeja); variación % vs mes anterior en UF/UTM/UTA/sueldo; deltas con icono up/down.
+- **Archivos:** `resumen-container.html/.css/.ts`, `resumen-operativo.rules.ts/.spec.ts`, `peticiones-estilos.md`.
+- **Sin tocar:** estilos globales, SQL, motor.
+
+## 2026-07-27 — Resumen: datos reales en KPIs, evolución y composición
+
+- **Pedido:** pulir detalles; usar datos reales y dejar elementos en 0 si no hay información.
+- **Solución:** evolución (6 meses + año anterior) y composición desde totales de nómina; KPIs/costo en 0; donut/leyenda con montos reales; sin series ilustrativas.
+- **Archivos:** `resumen-operativo.rules.ts/.spec.ts`, `resumen-container.html/.css/.ts`, `peticiones-estilos.md`.
+- **Sin tocar:** estilos globales, SQL, motor.
+
+## 2026-07-27 — Resumen: mesa alineada al mock (KPIs, charts, bandeja, iconos)
+
+- **Pedido:** seguir el diseño del mock al 100% y mejorar iconos.
+- **Solución local:** layout hero + banner acción + 5 KPIs + evolución SVG + bandeja inteligente con prioridades + donut composición + indicadores; iconos `users`, `badge-check`, `clipboard-plus`, `circle-dollar-sign`, etc.; costo desde `totalHaberes` cuando exista.
+- **Archivos:** `resumen-container.html/.css/.ts`, `resumen-operativo.rules.ts`, `app.config.ts` (iconos Lucide), `peticiones-estilos.md`.
+- **Sin tocar:** estilos globales, SQL, motor.
+
+## 2026-07-27 — Resumen: mesa del período con identidad propia
+
+- **Pedido:** replicar/mejorar el mock de Dashboard sin look SaaS/IA ni plantilla rígida; identidad visual diferencial y correcta.
+- **Solución local:** cabecera editorial (saludo + meta período/dotación/estado), franja de acción requerida con CTA contextual, franja de KPIs con icono, split indicadores económicos + bandeja; se retiran skeletons de gráficos “Próximo”; nota breve sobre costos futuros.
+- **Archivos:** `resumen-container.html/.css/.ts`, `peticiones-estilos.md`.
+- **Sin tocar:** estilos globales, rules de priorización, SQL, motor, servicios.
+
+## 2026-07-20 — Auth: spinner en Iniciar sesión / Salir (sin texto de carga)
+
+- **Pedido:** mejorar cerrar e ingresar al sistema que cargaban mediante texto.
+- **Solución:** botones mantienen etiqueta (`Iniciar sesión`, `Salir`, CTA del shell); estado de espera solo con spinner + `aria-busy`.
+- **Archivos:** `login.page.ts`, `header.component.ts`, `recuperar-contrasena.page.ts`, `ui-form-guidelines.md`.
+- **Sin tocar:** estilos globales, AuthService, SQL, motor.
+
+## 2026-07-20 — Auth: mailto al administrador en login
+
+
+- **Pedido:** que «Contacta al administrador del sistema» abra un correo.
+- **Solución:** `supportEmail` en `app-config` (+ example); `getSupportMailtoHref()`; enlace real en login y `auth-access-shell`; caja de ayuda con borde neutro.
+- **Archivos:** `runtime-config.ts`, `app-config.example.json`, `login.page.ts`, `auth-access-shell.component.ts`, recuperar/actualizar bindings, `SUPABASE_SETUP.md`.
+- **Sin tocar:** estilos globales, AuthService de sesión, SQL, motor.
+- **Nota:** correo por defecto `admin@erp.cl` — cambiar en `public/app-config.json` por ambiente.
+
 ## 2026-07-20 — Auth: estado «correo enviado» más limpio
+
 
 - **Pedido:** mejorar la pantalla post-envío (cajas, bordes de color, textos duplicados).
 - **Solución:** sin lista en caja ni franja azul de ayuda; correo en línea propia; CTA primaria a login y secundaria «Usar otro correo»; copy alineado al botón del correo («Elegir nueva contraseña»); `showSupport` en shell.
