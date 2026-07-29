@@ -149,6 +149,16 @@ import { getSupportMailtoHref } from '../config/runtime-config';
                 }
                 Iniciar sesión
               </button>
+
+              <button
+                class="login-demo"
+                type="button"
+                (click)="loginDemo()"
+                [disabled]="isSubmitting()"
+                aria-label="Entrar con cuenta demo"
+              >
+                Entrar como demo
+              </button>
             </form>
           </div>
 
@@ -663,6 +673,40 @@ import { getSupportMailtoHref } from '../config/runtime-config';
         animation: login-spin 0.8s linear infinite;
       }
 
+      .login-demo {
+        display: inline-flex;
+        min-height: 44px;
+        width: 100%;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 4px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #334155;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        padding: 0 16px;
+        transition:
+          background 0.2s ease,
+          border-color 0.2s ease,
+          color 0.2s ease;
+      }
+
+      .login-demo:hover:not(:disabled) {
+        border-color: #94a3b8;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+
+      .login-demo:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
       .login-support {
         display: flex;
         align-items: flex-start;
@@ -840,6 +884,14 @@ export class LoginPage implements OnInit {
 
   togglePasswordVisibility(): void {
     this.showPassword.update((value) => !value);
+  }
+
+  async loginDemo(): Promise<void> {
+    this.form.setValue({
+      email: 'demo@demo.cl',
+      password: 'DEMO1234',
+    });
+    await this.submit();
   }
 
   async submit(): Promise<void> {

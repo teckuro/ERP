@@ -153,10 +153,19 @@ src/app/supabase
 !/bd/base/historico/
 /bd/base/historico/*
 !/bd/base/historico/crear_sql_v6_10_integrada.sql
-/.env
+# Env / secrets — nunca versionar valores reales (solo .env.example)
+.env
+.env.*
+!.env.example
+!.env.*.example
 /.env.local.e2e
 /supabase/.env
+/supabase/.env.*
+!/supabase/.env.example
 /supabase/.temp/
+*.pem
+*.p12
+serviceAccount*.json
 /src/app/shared/components/ui/peticion.txt
   
 # Ignorar archivos comprimidos
