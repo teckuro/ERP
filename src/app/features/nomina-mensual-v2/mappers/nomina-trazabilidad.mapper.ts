@@ -94,7 +94,7 @@ export function mapSnapshotsToEventosTrazabilidad(
         paso: 'closure',
         tipoEvento: 'PRENOMINA_APROBADA',
         usuarioId: snapshot.aprobacionOperativa.usuarioId,
-        usuarioNombre: snapshot.aprobacionOperativa.usuarioLabel || 'Usuario no disponible en esta sesion',
+        usuarioNombre: snapshot.aprobacionOperativa.usuarioLabel || 'Usuario no disponible en esta sesión',
         fechaEvento: snapshot.aprobacionOperativa.fecha,
         descripcion: 'Se registró la revisión de RRHH del período.',
         idSnapshotRelacionado: idSnapshot,
@@ -110,7 +110,7 @@ export function mapSnapshotsToEventosTrazabilidad(
         paso: 'closure',
         tipoEvento: 'LIQUIDACIONES_GENERADAS',
         usuarioId: snapshot.cierreOperativo.usuarioId,
-        usuarioNombre: snapshot.cierreOperativo.usuarioLabel || 'Usuario no disponible en esta sesion',
+        usuarioNombre: snapshot.cierreOperativo.usuarioLabel || 'Usuario no disponible en esta sesión',
         fechaEvento: snapshot.cierreOperativo.fecha,
         descripcion: 'Se cerró el proceso mensual del período.',
         idSnapshotRelacionado: idSnapshot,
@@ -126,7 +126,7 @@ export function mapSnapshotsToEventosTrazabilidad(
         paso: 'closure',
         tipoEvento: 'RECALCULO_SOLICITADO',
         usuarioId: snapshot.reaperturaOperativa.usuarioId,
-        usuarioNombre: snapshot.reaperturaOperativa.usuarioLabel || 'Usuario no disponible en esta sesion',
+        usuarioNombre: snapshot.reaperturaOperativa.usuarioLabel || 'Usuario no disponible en esta sesión',
         fechaEvento: snapshot.reaperturaOperativa.fecha,
         descripcion: 'Se reabrió la nómina para revisión.',
         idSnapshotRelacionado: idSnapshot,
@@ -142,7 +142,7 @@ export function mapSnapshotsToEventosTrazabilidad(
         paso: 'calculation',
         tipoEvento: 'SNAPSHOT_INVALIDADO',
         usuarioId: snapshot.anulacion.usuarioId,
-        usuarioNombre: snapshot.anulacion.usuarioLabel || 'Usuario no disponible en esta sesion',
+        usuarioNombre: snapshot.anulacion.usuarioLabel || 'Usuario no disponible en esta sesión',
         fechaEvento: snapshot.anulacion.fecha,
         descripcion: 'Se descartó la versión generada del período.',
         idSnapshotRelacionado: idSnapshot,
@@ -339,7 +339,7 @@ function resolverUsuarioSnapshot(
   if (usuarioMetadata?.nombre) return usuarioMetadata;
   return {
     id: snapshot.usuarioGenerador ?? null,
-    nombre: snapshot.usuarioGenerador || 'Usuario no disponible en esta sesion',
+    nombre: snapshot.usuarioGenerador || 'Usuario no disponible en esta sesión',
   };
 }
 

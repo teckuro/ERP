@@ -1,4 +1,4 @@
-/* Historial administrativo — modal ancho casi viewport, grilla acoplada. */
+/* Historial administrativo — modal ancho, bitácora compacta. */
 
 app-admin-nominas-modal-historial-nomina app-message-box.message-box-host-modal {
   padding: 1rem;
@@ -36,7 +36,8 @@ app-admin-nominas-modal-historial-nomina app-message-box.message-box-host-modal 
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid #e4e9f2;
+  background: #ffffff;
 }
 
 .adm-nom-historial__grid {
@@ -68,20 +69,33 @@ app-admin-nominas-modal-historial-nomina app-message-box.message-box-host-modal 
 
 .adm-nom-historial__grid-wrap .border-b.border-neutral-100,
 .adm-nom-historial__grid-wrap .data-grid-footer {
-  padding-left: 0;
-  padding-right: 0;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
 }
 
 .adm-nom-historial__grid-wrap .border-b.border-neutral-100 .text-sm.font-medium.uppercase {
   display: none;
 }
 
+.adm-nom-historial__grid-wrap .data-grid-table-view--fit thead th {
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.adm-nom-historial__grid-wrap .data-grid-table-view--fit tbody tr:hover td {
+  background: #f8fafc;
+}
+
 .adm-nom-historial__empty {
   display: grid;
   justify-items: center;
   gap: 6px;
-  margin: 0 1.5rem 1.25rem;
-  padding: 24px 16px;
+  margin: 1rem 1.25rem 1.25rem;
+  padding: 28px 16px;
   border: 1px solid #e4e9f2;
   border-radius: 8px;
   background: #f8fafc;
@@ -89,9 +103,9 @@ app-admin-nominas-modal-historial-nomina app-message-box.message-box-host-modal 
 }
 
 .adm-nom-historial__empty lucide-icon {
-  width: 20px;
-  height: 20px;
-  color: #475569;
+  width: 18px;
+  height: 18px;
+  color: #64748b;
 }
 
 .adm-nom-historial__empty strong {
@@ -112,16 +126,23 @@ app-admin-nominas-modal-historial-nomina app-message-box.message-box-host-modal 
   border-color: #ece3d4;
 }
 
+.adm-nom-historial__empty--attention lucide-icon {
+  color: #92400e;
+}
+
 .adm-nom-historial__fecha {
+  display: block;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
   font-size: 12px;
-  color: #64748b;
+  font-weight: 500;
+  color: #475569;
+  line-height: 1.3;
 }
 
 .adm-nom-historial__accion {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   min-width: 0;
   width: 100%;
@@ -138,13 +159,14 @@ app-admin-nominas-modal-historial-nomina app-message-box.message-box-host-modal 
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
   color: #475569;
   flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .adm-nom-historial__icon lucide-icon {
@@ -172,6 +194,7 @@ app-admin-nominas-modal-historial-nomina app-message-box.message-box-host-modal 
 
 .adm-nom-historial__usuario {
   font-size: 12.5px;
+  font-weight: 500;
   color: #334155;
 }
 
@@ -179,11 +202,12 @@ app-admin-nominas-modal-historial-nomina app-message-box.message-box-host-modal 
   display: block;
   font-size: 12.5px;
   line-height: 1.45;
-  color: #334155;
+  color: #475569;
   white-space: normal;
   word-break: break-word;
 }
 
 .adm-nom-historial__muted {
   color: #94a3b8;
+  font-size: 12px;
 }

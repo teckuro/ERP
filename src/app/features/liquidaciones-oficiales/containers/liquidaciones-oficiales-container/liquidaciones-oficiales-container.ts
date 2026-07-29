@@ -515,7 +515,7 @@ export class LiquidacionesOficialesContainer {
 
   readonly periodoSeleccionado = computed(() => this.periodoActivo.getPeriodo());
 
-  readonly volverNominaQuery = computed(() => ({ periodo: this.periodoSeleccionado() }));
+  readonly volverNominaQuery = computed(() => ({}));
 
   readonly rutaAdministradorNominas = '/remuneraciones/nominas';
 
@@ -1014,7 +1014,7 @@ export class LiquidacionesOficialesContainer {
       return;
     }
     void this.router.navigate(['/remuneraciones/nominas', id], {
-      queryParams: { paso: 'cierre' },
+      queryParams: { paso: 'closure' },
     });
   }
 

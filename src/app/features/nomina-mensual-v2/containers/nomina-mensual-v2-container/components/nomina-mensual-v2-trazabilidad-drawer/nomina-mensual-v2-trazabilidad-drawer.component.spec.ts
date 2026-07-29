@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { importProvidersFrom, signal } from '@angular/core';
-import { LucideAngularModule, CircleCheck, OctagonAlert, X } from 'lucide-angular';
+import { LucideAngularModule, CircleCheck, OctagonX, X } from 'lucide-angular';
 import { beforeEach, describe, expect, it, afterEach } from 'vitest';
 
 import { NominaMensualV2OrquestadorPort } from '../../facade/nomina-mensual-v2-orquestador.port';
@@ -20,7 +20,7 @@ describe('NominaMensualV2TrazabilidadDrawerComponent (NOIA-NMV2-REPAIR-12)', () 
     TestBed.configureTestingModule({
       imports: [NominaMensualV2TrazabilidadDrawerComponent],
       providers: [
-        importProvidersFrom(LucideAngularModule.pick({ CircleCheck, OctagonAlert, X })),
+        importProvidersFrom(LucideAngularModule.pick({ CircleCheck, OctagonX, X })),
         {
           provide: NominaMensualV2OrquestadorPort,
           useValue: {
@@ -67,7 +67,7 @@ describe('NominaMensualV2TrazabilidadDrawerComponent (NOIA-NMV2-REPAIR-12)', () 
     const fixture = TestBed.createComponent(NominaMensualV2TrazabilidadDrawerComponent);
     fixture.detectChanges();
 
-    const botones = fixture.debugElement.queryAll(By.css('.nmv2-trazabilidad-timeline__actions .text-link'));
+    const botones = fixture.debugElement.queryAll(By.css('.nmv2-trazabilidad-timeline__btn'));
     expect(botones.length).toBe(3);
     (botones[0].nativeElement as HTMLButtonElement).click();
 

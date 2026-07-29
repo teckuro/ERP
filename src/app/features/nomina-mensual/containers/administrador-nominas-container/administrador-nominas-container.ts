@@ -219,9 +219,9 @@ export class AdministradorNominasContainer {
       return `${conCriticas} nómina${conCriticas === 1 ? '' : 's'} con incidencias críticas pendientes.`;
     }
     if (requierenAccion > 0) {
-      return `${requierenAccion} nómina${requierenAccion === 1 ? '' : 's'} requiere${requierenAccion === 1 ? '' : 'n'} seguimiento en el generador.`;
+      return `${requierenAccion} nómina${requierenAccion === 1 ? '' : 's'} requiere${requierenAccion === 1 ? '' : 'n'} seguimiento.`;
     }
-    return 'Revisa el avance de cada nómina y continúa en el generador cuando corresponda.';
+    return 'Revisa el avance de cada nómina y continúa cuando corresponda.';
   });
 
   constructor() {
@@ -540,6 +540,8 @@ export class AdministradorNominasContainer {
       this.errorAccion.set(null);
       await this.cargarResumenes();
     } catch (error) {
+      this.accionPendiente.set(null);
+      this.motivoAccion.set('');
       this.errorAccion.set(
         mensajeErrorSupabaseParaUsuario(error, 'completar la acción'),
       );

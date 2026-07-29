@@ -19,9 +19,9 @@
                 <span>El responsable aparecerá cuando se complete o guarde una acción del flujo.</span>
               </div>
             } @else {
-              <dl class="nmv2-trace-modal__detail-grid">
+              <dl class="nmv2-trace-modal__detail-list">
                 @for (fila of filasResponsable(detalle); track trackFila($index, fila)) {
-                  <div>
+                  <div class="nmv2-trace-modal__detail-row">
                     <dt>{{ fila.label }}</dt>
                     <dd>{{ fila.value }}</dd>
                   </div>
@@ -135,9 +135,9 @@
                 </div>
               }
             } @else {
-              <dl class="nmv2-trace-modal__detail-grid">
+              <dl class="nmv2-trace-modal__detail-list">
                 @for (fila of filasControlOperativo(detalle); track trackFila($index, fila)) {
-                  <div>
+                  <div class="nmv2-trace-modal__detail-row">
                     <dt>{{ fila.label }}</dt>
                     <dd>{{ fila.value }}</dd>
                   </div>

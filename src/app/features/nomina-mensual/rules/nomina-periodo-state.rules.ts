@@ -49,7 +49,7 @@ export function proximoPasoNomina(estado: EstadoNomina): PasoSiguienteNomina {
     case 'validada': return 'cierre';
     case 'aprobada': return 'cierre';
     case 'liquidada': return 'cierre';
-    case 'cerrada': return 'liquidaciones';
+    case 'cerrada': return 'sin_accion';
     case 'anulada': return 'sin_accion';
   }
 }

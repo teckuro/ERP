@@ -64,8 +64,7 @@ export class AdminNominasModalHistorialNominaComponent {
     if (this.error()) {
       return this.error()!;
     }
-    const n = this.nomina();
-    return `Trazabilidad de cambios de estado y movimientos administrativos del período ${n.periodo}.`;
+    return 'Movimientos de estado y acciones administrativas del período.';
   });
 
   readonly filas = computed<FilaHistorialAdministrativo[]>(() => {

@@ -118,6 +118,56 @@ describe('NominaMensualV2PasoCierreComponent (CIE-ENUM-01)', () => {
     expect(cmp.estadoLabel(undefined)).toBe('');
   });
 
+  it('verLiquidacionesCompletas navega con nominaPeriodoId aunque falte idCalculoPeriodo', () => {
+    configurarTestBed();
+    const fixture = TestBed.createComponent(NominaMensualV2PasoCierreComponent);
+    fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+    const cmp = fixture.componentInstance;
+    const router = TestBed.inject(Router);
+
+    cmp.nomina.set(
+      nominaMock({
+        estado: 'aprobada',
+        periodo: '2026-06',
+        evidenciaCalculo: { versionCalculo: 1, calculoVigente: true },
+      }),
+    );
+    cmp.liquidaciones.set([liquidacionMock()]);
+    cmp.verLiquidacionesCompletas();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/remuneraciones/liquidaciones'], {
+      queryParams: {
+        nominaPeriodoId: 'np-1',
+        periodo: '2026-06',
+      },
+    });
+  });
+
+  it('verLiquidacionesCompletas incluye idCalculoPeriodo cuando existe', () => {
+    configurarTestBed();
+    const fixture = TestBed.createComponent(NominaMensualV2PasoCierreComponent);
+    fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
+    const cmp = fixture.componentInstance;
+    const router = TestBed.inject(Router);
+
+    cmp.nomina.set(
+      nominaMock({
+        estado: 'aprobada',
+        periodo: '2026-06',
+        evidenciaCalculo: { versionCalculo: 1, calculoVigente: true, idCalculoPeriodo: 42 },
+      }),
+    );
+    cmp.verLiquidacionesCompletas();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/remuneraciones/liquidaciones'], {
+      queryParams: {
+        nominaPeriodoId: 'np-1',
+        periodo: '2026-06',
+        idCalculoPeriodo: 42,
+      },
+    });
+  });
+
   it('accionRecomendada prioriza aprobación en estado validada', () => {
     const fixture = TestBed.createComponent(NominaMensualV2PasoCierreComponent);
     const cmp = fixture.componentInstance;

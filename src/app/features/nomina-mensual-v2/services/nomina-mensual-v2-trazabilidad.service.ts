@@ -164,7 +164,7 @@ export class NominaMensualV2TrazabilidadService {
       usuarioNombre:
         liquidacion.usuarioGeneracionLabel
         || usuarioMetadata.nombre
-        || 'Usuario no disponible en esta sesion',
+        || 'Usuario no disponible en esta sesión',
       fechaEvento: liquidacion.fechaGeneracion,
       descripcion: 'Liquidaciones generadas desde nomina confirmada',
       idSnapshotRelacionado: String(liquidacion.idCalculoPeriodo),

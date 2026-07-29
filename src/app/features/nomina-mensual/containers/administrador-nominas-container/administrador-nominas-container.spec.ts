@@ -314,6 +314,22 @@ describe('AdministradorNominasContainer (smoke F3c)', () => {
     expect(cmp.ejecutandoAccion()).toBe(false);
   });
 
+  it('Test 42b — error en confirmarAccion cierra confirmación y deja solo el error', async () => {
+    servicio.eliminarNomina = vi.fn().mockRejectedValueOnce(new Error('rpc falló'));
+    configurar({ servicio });
+    const fixture = TestBed.createComponent(AdministradorNominasContainer);
+    const cmp = fixture.componentInstance;
+    await cmp.cargarResumenes();
+    const fila = cmp.resumenes()[0]!;
+
+    cmp.solicitarAccion('eliminar', fila);
+    await cmp.confirmarAccion();
+
+    expect(cmp.accionPendiente()).toBeNull();
+    expect(cmp.errorAccion()).toBeTruthy();
+    expect(cmp.ejecutandoAccion()).toBe(false);
+  });
+
   it('Test 43 — confirmarAccion exige motivo solo para reabrir', async () => {
     configurar({ servicio });
     const fixture = TestBed.createComponent(AdministradorNominasContainer);

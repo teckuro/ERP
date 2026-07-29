@@ -15,10 +15,6 @@
   <div class="adm-nom__grid-shell" aria-labelledby="adm-nom-grid-title">
     <h2 id="adm-nom-grid-title" class="sr-only">Listado de nóminas</h2>
 
-    <section class="adm-nom__franja-operativa" aria-label="Contexto del listado">
-      <p class="adm-nom__franja-operativa__lead">{{ subtitulo() }}</p>
-    </section>
-
     @if (resumenes().length > 0) {
       <div class="adm-nom__kpis" role="status" aria-label="Resumen operativo de nóminas">
         @for (item of kpis().items; track item.id) {
@@ -305,6 +301,7 @@
     [totalesRectificacion]="totalesRectificacionSeleccionada()"
     (verLiquidaciones)="verLiquidaciones(nomina); cerrarResumen()"
     (consultarOriginal)="consultarOriginalDesdeResumen()"
+    (abrirNomina)="abrirGenerador(nomina); cerrarResumen()"
     (cerrar)="cerrarResumen()"
   />
 }

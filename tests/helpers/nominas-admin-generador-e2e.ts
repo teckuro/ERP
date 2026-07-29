@@ -3,10 +3,10 @@ import { expect, type Locator, type Page } from '@playwright/test';
 export const NOMINAS_E2E_TIMEOUT_MS = 120_000;
 
 const UUID_RE =
-  /\/remuneraciones\/nominas\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\/generador)?/i;
+  /\/remuneraciones\/nominas\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:[?#]|$)/i;
 
 const URL_NOMINA_ABIERTA_RE =
-  /\/remuneraciones\/nominas\/[^/?#]+(?:\/generador)?(?:[?#]|$)/;
+  /\/remuneraciones\/nominas\/[^/?#]+(?:[?#]|$)/;
 
 export type PasoGenerador =
   | 'parameters'

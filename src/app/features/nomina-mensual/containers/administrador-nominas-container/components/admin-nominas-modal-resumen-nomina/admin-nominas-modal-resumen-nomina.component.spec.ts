@@ -165,4 +165,22 @@ describe('AdminNominasModalResumenNominaComponent', () => {
     const acciones = fixture.componentInstance.acciones();
     expect(acciones.some((a) => a.value === 'liquidaciones')).toBe(true);
   });
+
+  it('Test 35b — sin liquidaciones ofrece Abrir/Continuar nómina', () => {
+    const fixture = TestBed.createComponent(AdminNominasModalResumenNominaComponent);
+    fixture.componentRef.setInput(
+      'nomina',
+      crearNominaResumen({
+        estado: 'aprobada',
+        naturaleza: 'liquidacion_legal',
+        evidenciaCalculo: undefined,
+        proximoPaso: 'liquidaciones',
+      }),
+    );
+    fixture.componentRef.setInput('cargando', false);
+    fixture.componentRef.setInput('resumen', resumenOk());
+    const acciones = fixture.componentInstance.acciones();
+    expect(acciones.some((a) => a.value === 'abrir')).toBe(true);
+    expect(acciones.some((a) => a.value === 'liquidaciones')).toBe(false);
+  });
 });

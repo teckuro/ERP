@@ -40,7 +40,7 @@ describe('nomina-periodo-state.rules', () => {
   it('expone siguiente paso y requerimiento de acción', () => {
     expect(proximoPasoNomina('calculada')).toBe('cierre');
     expect(proximoPasoNomina('liquidada')).toBe('cierre');
-    expect(proximoPasoNomina('cerrada')).toBe('liquidaciones');
+    expect(proximoPasoNomina('cerrada')).toBe('sin_accion');
     expect(nominaRequiereAccion('reabierta')).toBe(true);
     expect(nominaRequiereAccion('cerrada')).toBe(false);
   });

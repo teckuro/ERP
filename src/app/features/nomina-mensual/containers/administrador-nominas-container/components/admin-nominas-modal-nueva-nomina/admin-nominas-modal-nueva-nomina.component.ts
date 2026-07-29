@@ -178,9 +178,9 @@ export class AdminNominasModalNuevaNominaComponent {
 
   readonly subtituloConfiguracion = computed(() => {
     if (this.periodoEsValido()) {
-      return `Período ${etiquetaPeriodoLegible(this.periodo())}. La fecha de pago y el cierre se configuran en el generador.`;
+      return `Período ${etiquetaPeriodoLegible(this.periodo())}. La fecha de pago y el cierre se configuran en la nómina.`;
     }
-    return 'Indica el período a procesar. La fecha de pago y el cierre se configuran en el generador.';
+    return 'Indica el período a procesar. La fecha de pago y el cierre se configuran en la nómina.';
   });
 
   readonly resumenPreview = computed(() => {

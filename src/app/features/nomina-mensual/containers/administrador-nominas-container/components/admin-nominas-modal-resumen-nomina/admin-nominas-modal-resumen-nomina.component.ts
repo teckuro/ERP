@@ -30,6 +30,7 @@ import { tieneLiquidaciones } from '../../../../rules/admin-nominas.rules';
 import type { TotalesRectificacionVista } from '../../../../rules/proceso-mensual-motor-rectificacion.rules';
 import {
   esNominaRectificacion,
+  etiquetaAccionResumen,
   formatearMonedaClp,
   puedeConsultarOriginal,
 } from '../../../../rules/nomina-rectificacion-ui.rules';
@@ -73,6 +74,7 @@ export class AdminNominasModalResumenNominaComponent {
   readonly cerrar = output<void>();
   readonly verLiquidaciones = output<void>();
   readonly consultarOriginal = output<void>();
+  readonly abrirNomina = output<void>();
 
   readonly tituloModal = computed(() => {
     const n = this.nomina();
@@ -222,18 +224,18 @@ export class AdminNominasModalResumenNominaComponent {
     if (n.estado === 'aprobada') {
       return {
         tono: 'pendiente',
-        texto: 'Aprobada. Siguiente: generar liquidaciones en el generador.',
+        texto: 'Aprobada. Siguiente: generar liquidaciones en la nómina.',
       };
     }
     if (n.naturaleza === 'rectificacion') {
       return {
         tono: 'info',
-        texto: 'Rectificación. Siguiente: continuar en el generador o consultar el cierre original.',
+        texto: 'Rectificación. Siguiente: continuar en la nómina o consultar el cierre original.',
       };
     }
     return {
       tono: 'info',
-      texto: 'Resumen disponible. Siguiente: abrir el generador si falta completar el ciclo.',
+      texto: 'Resumen disponible. Siguiente: abrir la nómina si falta completar el ciclo.',
     };
   });
 
@@ -255,6 +257,13 @@ export class AdminNominasModalResumenNominaComponent {
         align: 'right',
         value: 'liquidaciones',
       });
+    } else {
+      items.push({
+        label: etiquetaAccionResumen(this.nomina()),
+        role: 'primary',
+        align: 'right',
+        value: 'abrir',
+      });
     }
     return items;
   });
@@ -270,6 +279,10 @@ export class AdminNominasModalResumenNominaComponent {
     }
     if (value === 'original') {
       this.consultarOriginal.emit();
+      return;
+    }
+    if (value === 'abrir') {
+      this.abrirNomina.emit();
     }
   }
 }

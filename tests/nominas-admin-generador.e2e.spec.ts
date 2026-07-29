@@ -60,7 +60,8 @@ test.describe('Administrador y generador de nóminas', () => {
 
     await expect(abrir.first()).toHaveAttribute('title', 'Abrir nómina');
     await abrir.first().click();
-    await page.waitForURL(/\/remuneraciones\/nominas\/[^/?#]+(?:\/generador)?(?:[?#]|$)/, { timeout: 30_000 });
+    await page.waitForURL(/\/remuneraciones\/nominas\/[^/?#]+(?:[?#]|$)/, { timeout: 30_000 });
+    await expect(page).not.toHaveURL(/\/generador/);
     await expect(page).not.toHaveURL(/\/remuneraciones\/nominas\/?$/);
     await expect(page.getByLabel('Generador de nómina')).toBeVisible();
   });

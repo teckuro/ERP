@@ -791,13 +791,15 @@ export class NominaMensualV2PasoCierreComponent implements PasoNominaPort {
 
   verLiquidacionesCompletas(): void {
     const id = this.nominaPeriodoId();
+    if (!id) return;
     const nomina = this.nomina();
-    if (!id || !nomina?.evidenciaCalculo?.idCalculoPeriodo) return;
+    const idCalculo = nomina?.evidenciaCalculo?.idCalculoPeriodo;
+    const periodo = nomina?.periodo ?? this.liquidacionVigente()?.periodo;
     void this.router.navigate(['/remuneraciones/liquidaciones'], {
       queryParams: {
-        periodo: nomina.periodo,
         nominaPeriodoId: id,
-        idCalculoPeriodo: nomina.evidenciaCalculo.idCalculoPeriodo,
+        ...(periodo ? { periodo } : {}),
+        ...(idCalculo != null ? { idCalculoPeriodo: idCalculo } : {}),
       },
     });
   }

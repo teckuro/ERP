@@ -397,35 +397,57 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
 
   private sincronizarHandoffDesdeQueryParams(qp: { get: (key: string) => string | null }): void {
     const from = qp.get('from');
+    const pasoRaw = qp.get('paso');
+    const dotacionRaw = qp.get('dotacion');
+    const reutilizadaRaw = qp.get('reutilizada');
+    const hayHandoffKeys =
+      from != null || pasoRaw != null || dotacionRaw != null || reutilizadaRaw != null;
+
+    // Query ya limpia: no tocar `pasoForzadoCreacion` (lo consume la rehidratación).
+    if (!hayHandoffKeys) {
+      return;
+    }
+
     if (from === 'create') {
-      const paso = qp.get('paso');
-      const dotacion = Number(qp.get('dotacion') ?? '0');
-      const reutilizada = qp.get('reutilizada') === '1';
-      if (paso === 'parameters' || paso === 'dotacion') {
-        this.pasoForzadoCreacion = paso;
-        this.currentStep.set(paso);
-        this.orquestador.pasoActual.set(paso);
+      const pasoCreate =
+        pasoRaw === 'parameters' || pasoRaw === 'dotacion' ? pasoRaw : null;
+      const dotacion = Number(dotacionRaw ?? '0');
+      const reutilizada = reutilizadaRaw === '1';
+      if (pasoCreate) {
+        this.pasoForzadoCreacion = pasoCreate;
+        this.currentStep.set(pasoCreate);
+        this.orquestador.pasoActual.set(pasoCreate);
       }
       this.bannerHandoff.set(this.componerBannerHandoff(dotacion, reutilizada));
       if (!this.handoffCreacionConsumido) {
         this.handoffCreacionConsumido = true;
-        void this.router.navigate([], {
-          relativeTo: this.route,
-          queryParams: {
-            from: null,
-            paso: null,
-            dotacion: null,
-            reutilizada: null,
-          },
-          queryParamsHandling: 'merge',
-          replaceUrl: true,
-        });
+        this.limpiarQueryHandoff();
       }
       return;
     }
-    if (!this.handoffCreacionConsumido) {
-      this.pasoForzadoCreacion = null;
+
+    const pasoCanonico = normalizarPasoQuery(pasoRaw);
+    if (pasoCanonico) {
+      this.pasoForzadoCreacion = pasoCanonico;
+      this.currentStep.set(pasoCanonico);
+      this.orquestador.pasoActual.set(pasoCanonico);
     }
+
+    this.limpiarQueryHandoff();
+  }
+
+  private limpiarQueryHandoff(): void {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        from: null,
+        paso: null,
+        dotacion: null,
+        reutilizada: null,
+      },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   private componerBannerHandoff(
@@ -486,14 +508,21 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
     // Limpieza inmediata: el container se va a destruir o re-inicializar; sin
     // esto, el effect que sincroniza el shell podría dispararse con la nómina
     // vieja antes de que el router termine de navegar.
+    const actual = this.nominaCargada();
     this.nominaCargada.set(null);
     this.ultimoNominaIdCargado = null;
     this.ultimoPeriodoInicializado = null;
     try {
       const resumenes = await this.nominaPeriodoService.listarResumenes();
-      const equivalente = resumenes.find((r) => r.periodo === periodo);
-      if (equivalente) {
-        await this.router.navigate(['/remuneraciones/nominas', equivalente.id]);
+      const candidatas = resumenes.filter((r) => {
+        if (r.periodo !== periodo) return false;
+        if (actual?.tipo && r.tipo !== actual.tipo) return false;
+        if (actual?.naturaleza && r.naturaleza !== actual.naturaleza) return false;
+        if (actual?.empresaId && r.empresaId !== actual.empresaId) return false;
+        return true;
+      });
+      if (candidatas.length === 1) {
+        await this.router.navigate(['/remuneraciones/nominas', candidatas[0]!.id]);
         return;
       }
     } catch (error) {
@@ -1085,4 +1114,13 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
       ),
     );
   }
+}
+
+/** Normaliza query `paso` a id canónico del stepper (alias `cierre` → `closure`). */
+function normalizarPasoQuery(raw: string | null): PayrollStepId | null {
+  if (!raw) return null;
+  const alias = raw === 'cierre' ? 'closure' : raw;
+  return (ORDEN_PASOS_NOMINA as readonly string[]).includes(alias)
+    ? (alias as PayrollStepId)
+    : null;
 }

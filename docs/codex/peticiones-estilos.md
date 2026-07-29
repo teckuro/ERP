@@ -9,6 +9,41 @@
 
 ---
 
+## 2026-07-27 — Cierre: «Ver detalle» abre liquidaciones sin exigir idCalculo
+
+- **Pedido:** el botón «Ver detalle por trabajador» en Liquidaciones (paso Cierre) no navegaba.
+- **Solución:** navegación con `nominaPeriodoId` (+ `periodo`/`idCalculoPeriodo` opcionales); se elimina el early-return que exigía `evidenciaCalculo.idCalculoPeriodo`. Botón con etiqueta visible «Ver detalle».
+- **Archivos:** `nomina-mensual-v2-paso-cierre.component.ts/.html/.spec.ts`, `peticiones-estilos.md`.
+- **Sin tocar:** SQL, motor, estilos globales, módulo liquidaciones.
+
+## 2026-07-27 — Modales Control/Responsable: lista operativa (sin cards)
+
+- **Pedido:** corregir modales de trazabilidad que se veían como grilla de cards con hueco vacío.
+- **Solución:** `Control` y `Responsable` pasan a lista `label | valor` en un solo panel (filas, sin celdas huérfanas); copy «sesión» corregido.
+- **Archivos:** `nomina-mensual-v2-trazabilidad-modal.component.html/.css`, `nomina-trazabilidad.mapper.ts`, `nomina-mensual-v2-trazabilidad.service.ts`, `peticiones-estilos.md`.
+- **Sin tocar:** SQL, motor, estilos globales, contratos de eventos.
+
+## 2026-07-27 — Trazabilidad + historial: bitácora compacta NOIA
+
+- **Pedido:** mejorar diseños de trazabilidad e historial.
+- **Solución:** drawer con timeline de rail, chips de integridad y botones compactos; empty estructurado; modal de bitácora con marcadores sobrios; historial admin con tipografía/hover densos y copy corto.
+- **Archivos:** `nomina-mensual-v2-trazabilidad-drawer.*`, `nomina-mensual-v2-container.css`, `nomina-mensual-v2-trazabilidad-modal.component.css`, `admin-nominas-modal-historial-nomina.*`, `peticiones-estilos.md`.
+- **Sin tocar:** SQL, motor, estilos globales, contratos de eventos.
+
+## 2026-07-27 — Admin nómina: solo resumen operativo KPI
+
+- **Pedido:** en pantalla principal dejar solo el resumen operativo; eliminar el bloque de arriba.
+- **Solución:** retirada de `adm-nom__franja-operativa` (lead duplicado); se mantiene la franja KPI «Resumen operativo de nóminas» y el subtítulo del shell.
+- **Archivos:** `administrador-nominas-container.html/.css`, `peticiones-estilos.md`.
+- **Sin tocar:** SQL, motor, estilos globales, lógica de KPIs.
+
+## 2026-07-27 — Admin/Nómina/Liquidaciones: flujos P0–P2
+
+- **Pedido:** corregir flujos extraños (deep-link paso, período, resumen, doble modal, copy).
+- **Solución:** `paso=closure` desde liquidaciones + handoff sin exigir `from=create`; strip query; período por tipo/naturaleza/empresa; resumen CTA «Abrir/Continuar nómina»; error admin cierra confirmación; `cerrada`→`sin_accion`; copy sin «generador».
+- **Archivos:** `nomina-mensual-v2-container.ts`, liquidaciones oficiales, Admin resumen/nueva/subtitulo, `nomina-periodo-state.rules.ts`, E2E helpers, `peticiones-estilos.md`.
+- **Sin tocar:** SQL, motor, estilos globales.
+
 ## 2026-07-27 — Admin nómina: URL canónica `/nominas/{uuid}` + pasos
 
 - **Pedido:** URL al abrir sin `/generador`; pulido visual de pasos.
