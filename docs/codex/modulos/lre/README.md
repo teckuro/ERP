@@ -3,12 +3,22 @@
 ## Cadena de datos
 
 ```
-Catálogo conceptos → Nómina (motor) → Snapshot (codigo_lre_snapshot) → Liquidación oficial → Borrador LRE CSV
+Catálogo conceptos → Nómina (motor) → Snapshot (codigo_lre_snapshot) → Liquidación oficial → Borrador / CSV oficial DT
 ```
 
 El RPC `generar_liquidaciones_oficiales` y **`generar_liquidaciones_nomina`** (F15/F17, migración `20260706180000`) copian `nomina_calculo_concepto.codigo_lre_snapshot` a `nomina_liquidacion_concepto.codigo_lre` (con fallback vía `concepto` → `catalogo_lre`).
 
 Para BD legacy sin la migración: `28_lre_concepto_canonico.sql` o `npm run repair:lre:cadena-bd`.
+
+## Canales de exportación
+
+| Canal | Uso |
+|-------|-----|
+| `csv_borrador` | Revisión interna (1 fila = 1 concepto) |
+| `formato_dt_v1` | Intermedio LRE-01b (legado) |
+| `formato_oficial_dt` | Carga masiva Mi DT (1 fila = 1 trabajador, headers códigos) |
+
+Contrato vivo: [`LRE-02-contrato-fase.md`](./LRE-02-contrato-fase.md). UI: franja operativa tipo Previred en `/remuneraciones/lre`.
 
 ## Dependencia del catálogo de conceptos
 

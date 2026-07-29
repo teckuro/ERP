@@ -29,3 +29,5 @@
 - Envío al portal DT / SII
 - Firma electrónica
 - Previred / banco / contabilidad
+
+**Siguiente:** [`LRE-02-contrato-fase.md`](./LRE-02-contrato-fase.md) — UI operativa + CSV oficial carga masiva.

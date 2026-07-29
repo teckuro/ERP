@@ -69,6 +69,7 @@ Documentación del módulo: [`docs/codex/modulos/administracion/README.md`](../m
 | PREVIRED-01/02 | Cerrada | Exportación Previred + archivo 105 posiciones |
 | LRE-01a | Cerrada | Borrador CSV `/remuneraciones/lre` |
 | LRE-01b | Cerrada (2026-07-17) | `nomina_lre_exportacion` + `registrar_exportacion_lre` + formato DT v1; migraciones `20260717180000` / `20260717181000` aplicadas BD |
+| LRE-UI-01 / LRE-02a | Cerrada (repo + BD 2026-07-29) | UI operativa + CSV oficial Mi DT; migración `20260729120000` aplicada BD |
 | LRE-CONCEPT-RULES-01 | Cerrada (repo + BD) | Estrategia LRE en `concepto` vía migración `20260717181000` |
 | REPORTES-01 | Contrato listo / UI placeholder | [`modulos/reportes/REPORTES-01-contrato-fase.md`](../modulos/reportes/REPORTES-01-contrato-fase.md) |
 

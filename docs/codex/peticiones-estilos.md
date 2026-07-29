@@ -9,6 +9,13 @@
 
 ---
 
+## 2026-07-29 — LRE: franja operativa tipo Previred
+
+- **Pedido:** mejorar interfaz del Libro de remuneraciones y alinear al formato DT.
+- **Solución:** franja `lre-operativa` (origen + métricas); grilla en modal «Ver líneas»; «Revisar conceptos» con CTA a catálogo; una primaria shell «Descargar para envío DT» (CSV oficial); CSV borrador secundario; confirmación de descarga; copy Listo/Pendiente.
+- **Archivos:** `lre-export-container.*`, `lre-export.presenter.ts`, helper E2E, `peticiones-estilos.md`.
+- **Sin tocar:** estilos globales, motor, SQL de liquidación (solo migración canal export).
+
 ## 2026-07-27 — Cierre: «Ver detalle» abre liquidaciones sin exigir idCalculo
 
 - **Pedido:** el botón «Ver detalle por trabajador» en Liquidaciones (paso Cierre) no navegaba.

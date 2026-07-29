@@ -84,3 +84,16 @@ export function etiquetaOpcionNominaLre(nomina: NominaPeriodoResumen): string {
   const estado = ETIQUETAS_ESTADO_NOMINA[nomina.estado] ?? nomina.estado;
   return `${periodo} · ${nomina.empresaNombre} (${estado})`;
 }
+
+/** Fecha corta para auditoría de descarga (misma densidad que Previred). */
+export function formatearFechaExportacionLre(iso: string): string {
+  const fecha = new Date(iso);
+  if (Number.isNaN(fecha.getTime())) return iso;
+  return new Intl.DateTimeFormat('es-CL', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(fecha);
+}

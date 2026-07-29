@@ -17,6 +17,8 @@ import type {
 } from '../models/lre-export.model';
 import { construirBorradorLre } from '../rules/lre-export.rules';
 import { LRE_FORMATO_DT_V1 } from '../rules/lre-formato-dt.rules';
+import { LRE_FORMATO_OFICIAL_DT } from '../rules/lre-formato-oficial.rules';
+import { DocumentoLiquidacionService } from '../../../core/services/documento-liquidacion.service';
 
 @Injectable({ providedIn: 'root' })
 export class LreExportService {
@@ -24,6 +26,7 @@ export class LreExportService {
   private readonly nominaService = inject(NominaPeriodoService);
   private readonly lreRepo = inject(LreExportRepository);
   private readonly auth = inject(AuthService);
+  private readonly documentoEmpresa = inject(DocumentoLiquidacionService);
 
   async listarNominasExportables(): Promise<NominaPeriodoResumen[]> {
     const resumenes = await this.nominaService.listarResumenes();
@@ -72,6 +75,12 @@ export class LreExportService {
     canal: LreCanalExportacion,
   ): Promise<LreExportacionRegistro> {
     const metadata = await this.metadataUsuarioResponsable();
+    const formatoArchivo =
+      canal === 'formato_oficial_dt'
+        ? LRE_FORMATO_OFICIAL_DT
+        : canal === 'formato_dt_v1'
+          ? LRE_FORMATO_DT_V1
+          : 'csv_borrador';
     return this.lreRepo.registrarExportacion({
       idLiquidacionPeriodo: borrador.idLiquidacionPeriodo,
       idNominaPeriodo: borrador.idNominaPeriodo,
@@ -83,9 +92,14 @@ export class LreExportService {
         ...metadata,
         listoParaEnvio: borrador.listoParaEnvio,
         versionLiquidacion: borrador.versionLiquidacion,
-        formatoArchivo: canal === 'formato_dt_v1' ? LRE_FORMATO_DT_V1 : 'csv_borrador',
+        formatoArchivo,
       },
     });
+  }
+
+  async obtenerRutEmpleador(fallbackNombre?: string | null): Promise<string | null> {
+    const empresa = await this.documentoEmpresa.obtenerEmpresaDocumento(fallbackNombre);
+    return empresa.rut?.trim() || null;
   }
 
   private async metadataUsuarioResponsable(): Promise<Record<string, unknown>> {

@@ -35,27 +35,27 @@ export async function loginYAbrirLre(page: Page, nominaPeriodoId?: string | null
 
 export async function esperarBorradorLre(page: Page): Promise<'listo' | 'vacio' | 'sin_nominas'> {
   const sinNominas = page.getByText('Sin nóminas exportables', { exact: false });
-  const resumen = page.locator('.sal-ext-resumen');
+  const operativa = page.locator('.lre-operativa, .sal-ext-resumen');
   const bloqueado = page.getByText('Sin líneas exportables', { exact: false });
 
   await Promise.race([
-    resumen.waitFor({ state: 'visible', timeout: LRE_E2E_TIMEOUT_MS }),
+    operativa.waitFor({ state: 'visible', timeout: LRE_E2E_TIMEOUT_MS }),
     sinNominas.waitFor({ state: 'visible', timeout: LRE_E2E_TIMEOUT_MS }),
     bloqueado.waitFor({ state: 'visible', timeout: LRE_E2E_TIMEOUT_MS }),
   ]).catch(() => undefined);
 
   if (await sinNominas.isVisible().catch(() => false)) return 'sin_nominas';
-  if (await resumen.isVisible().catch(() => false)) return 'listo';
+  if (await operativa.isVisible().catch(() => false)) return 'listo';
   return 'vacio';
 }
 
 export async function abrirPrimeraNominaExportableLre(page: Page): Promise<void> {
-  const resumen = page.locator('.sal-ext-resumen');
-  if (await resumen.isVisible().catch(() => false)) return;
+  const operativa = page.locator('.lre-operativa, .sal-ext-resumen');
+  if (await operativa.isVisible().catch(() => false)) return;
 
   await page.getByTestId('lre:abrir-modal-nomina').click();
   const fila = page.locator('.sal-ext-seleccion__grid-wrap tr.data-grid-row').first();
   await expect(fila).toBeVisible({ timeout: LRE_E2E_TIMEOUT_MS });
   await fila.click();
-  await expect(resumen).toBeVisible({ timeout: LRE_E2E_TIMEOUT_MS });
+  await expect(operativa).toBeVisible({ timeout: LRE_E2E_TIMEOUT_MS });
 }

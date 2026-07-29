@@ -4,7 +4,6 @@
     <div class="sal-ext-toolbar__fields">
       <div class="sal-ext-toolbar__lead">
         <strong>Libro de remuneraciones</strong>
-        <span>Exportación desde liquidaciones oficiales. CSV borrador o formato DT v1 con registro de auditoría.</span>
       </div>
 
       <div class="sal-ext-toolbar__field">
@@ -38,29 +37,19 @@
         class="sal-ext-secondary-link"
         [routerLink]="rutaLiquidaciones().path"
         [queryParams]="rutaLiquidaciones().queryParams"
+        title="Revisar liquidaciones oficiales"
       >
-        Liquidaciones oficiales
+        Liquidaciones
       </a>
-      @if (puedeDescargar()) {
+      @if (puedeDescargarDt() && puedeDescargar()) {
         <button
           type="button"
           class="sal-ext-secondary-btn"
           data-testid="lre:descargar-csv"
           [disabled]="cargandoBorrador() || registrandoDescarga()"
-          (click)="descargarCsv()"
+          (click)="solicitarDescargaCsv()"
         >
           CSV borrador
-        </button>
-      }
-      @if (puedeDescargarDt()) {
-        <button
-          type="button"
-          class="sal-ext-secondary-btn"
-          data-testid="lre:descargar-dt"
-          [disabled]="cargandoBorrador() || registrandoDescarga()"
-          (click)="descargarFormatoDt()"
-        >
-          Formato DT
         </button>
       }
       <button
@@ -87,7 +76,8 @@
     } @else if (error()) {
       <app-message-box
         variant="danger"
-        [sections]="[{ title: 'No se pudo cargar', text: error()! }]"
+        title="No se pudo cargar"
+        [message]="error()!"
         primaryLabel="Reintentar"
         (action)="reintentarCarga()"
       />
@@ -109,123 +99,112 @@
           </a>
         </div>
       </section>
-    } @else if (borrador(); as datos) {
-      @if (feedbackDescarga()) {
-        <div class="sal-ext-feedback">
+    } @else {
+      @if (alertaInline(); as alerta) {
+        <div class="lre-alerta-inline">
           <app-message-box
-            variant="warning"
-            [sections]="[{ title: 'Exportación parcial', text: feedbackDescarga()! }]"
+            [variant]="alerta.variant"
+            [title]="alerta.title"
+            [message]="alerta.message"
+            [primaryLabel]="alerta.primaryLabel ?? ''"
+            [dismissible]="alerta.dismissible ?? false"
+            (action)="onAlertaInlineAction(alerta.actionId)"
+            (dismiss)="onAlertaInlineDismiss(alerta.dismissId)"
           />
         </div>
       }
 
-      @if (datos.conceptosSinCodigoLre > 0) {
-        <div class="sal-ext-feedback">
-          <app-message-box
-            variant="warning"
-            [sections]="[
-              {
-                title: 'Revisar antes de exportar',
-                text:
-                  datos.conceptosSinCodigoLre +
-                  ' concepto(s) sin código LRE no se incluyen en el borrador. Complete el catálogo antes del envío oficial.',
-              },
-            ]"
-          />
-        </div>
-      }
-
-      @if (contextoOrigen(); as origen) {
-        <section class="sal-ext-origen" role="status" aria-label="Origen del borrador">
-          <div class="sal-ext-origen__main">
-            <p class="sal-ext-origen__eyebrow">{{ origen.eyebrow }}</p>
-            <strong class="sal-ext-origen__title">{{ origen.titulo }}</strong>
-            <span class="sal-ext-origen__meta">
-              <span class="sal-ext-origen__chip sal-ext-origen__chip--{{ origen.estadoVariant }}">
-                {{ origen.estadoLabel }}
-              </span>
-              <span class="sal-ext-origen__chip">{{ origen.versionLabel }}</span>
-              <span class="sal-ext-origen__note">{{ origen.nota }}</span>
-            </span>
-          </div>
-          <dl class="sal-ext-origen__metrics">
-            @for (metrica of origen.metricas; track metrica.label) {
-              <div>
-                <dt>{{ metrica.label }}</dt>
-                <dd>{{ metrica.value }}</dd>
+      @if (borrador(); as datos) {
+        <section class="lre-operativa" aria-label="Estado del borrador LRE">
+          @if (contextoOrigen(); as origen) {
+            <div class="lre-operativa__origen sal-ext-origen">
+              <div class="sal-ext-origen__main">
+                <p class="sal-ext-origen__eyebrow">{{ origen.eyebrow }}</p>
+                <strong class="sal-ext-origen__title">{{ origen.titulo }}</strong>
+                <span class="sal-ext-origen__meta">
+                  <span class="sal-ext-origen__chip sal-ext-origen__chip--{{ origen.estadoVariant }}">
+                    {{ origen.estadoLabel }}
+                  </span>
+                  <span class="sal-ext-origen__chip">{{ origen.versionLabel }}</span>
+                </span>
               </div>
+              <dl class="lre-resumen sal-ext-resumen sal-ext-origen__metrics" aria-label="Resumen del borrador">
+                <div>
+                  <dt>Trabajadores</dt>
+                  <dd>{{ datos.totalTrabajadores }}</dd>
+                </div>
+                <div>
+                  <dt>Líneas</dt>
+                  <dd>{{ datos.lineas.length }}</dd>
+                </div>
+                <div [class.sal-ext-resumen__ok]="datos.listoParaEnvio">
+                  <dt>Envío DT</dt>
+                  <dd>{{ datos.listoParaEnvio ? 'Listo' : 'Por revisar' }}</dd>
+                </div>
+                @if (datos.conceptosSinCodigoLre > 0) {
+                  <div class="sal-ext-resumen__danger">
+                    <dt>Sin código</dt>
+                    <dd>{{ datos.conceptosSinCodigoLre }}</dd>
+                  </div>
+                }
+              </dl>
+            </div>
+          }
+
+          <div class="lre-operativa__acciones">
+            @if (datos.lineas.length) {
+              <button
+                type="button"
+                class="lre-operativa__btn"
+                data-testid="lre:ver-lineas"
+                title="Ver líneas del borrador"
+                (click)="abrirModalLineas()"
+              >
+                <lucide-icon name="list" aria-hidden="true"></lucide-icon>
+                Ver líneas ({{ datos.lineas.length }})
+              </button>
             }
-          </dl>
-        </section>
-      }
-
-      <dl class="sal-ext-resumen" aria-label="Resumen del borrador">
-        <div>
-          <dt>Líneas</dt>
-          <dd>{{ datos.lineas.length }}</dd>
-        </div>
-        <div>
-          <dt>Trabajadores</dt>
-          <dd>{{ datos.totalTrabajadores }}</dd>
-        </div>
-        <div>
-          <dt>Versión liquidación</dt>
-          <dd>v{{ datos.versionLiquidacion }}</dd>
-        </div>
-        @if (datos.conceptosSinCodigoLre > 0) {
-          <div class="sal-ext-resumen__danger">
-            <dt>Sin código LRE</dt>
-            <dd>{{ datos.conceptosSinCodigoLre }}</dd>
-          </div>
-        }
-        @if (datos.listoParaEnvio) {
-          <div class="sal-ext-resumen__ok">
-            <dt>Estado</dt>
-            <dd>Listo para envío</dd>
-          </div>
-        }
-        @if (etiquetaUltimaExportacion(); as ultima) {
-          <div>
-            <dt>Última exportación</dt>
-            <dd>{{ ultima }}</dd>
-          </div>
-        }
-      </dl>
-
-      @if (datos.lineas.length) {
-        <section class="sal-ext-grid-block sal-ext-grid-block--grow" aria-label="Vista previa líneas LRE">
-          <div class="sal-ext-grid-block__head">
-            <h2 class="sal-ext-grid-block__title">Líneas exportables</h2>
-            <p class="sal-ext-grid-block__meta">
-              {{ etiquetaPeriodoDesdeYm(datos.periodo) }} · {{ datos.empresaNombre }}
-            </p>
-          </div>
-          <div class="sal-ext-grid-block__wrap">
-            <app-data-grid
-              title=""
-              [columns]="columnas"
-              [rows]="datos.lineas"
-              [persistenceKey]="persistenciaGrilla"
-              [filtersEnabled]="true"
-              toolbarLayout="operativa"
-              headerCountDisplay="text"
-              headerCountNoun="líneas"
-              [gridHeight]="'100%'"
-              emptyTitle="No hay líneas para mostrar."
-              className="lre-lineas-grid"
-              cardClassName="lre-lineas-grid__card"
-            />
+            @if (datos.conceptosSinCodigoLre > 0) {
+              <button
+                type="button"
+                class="lre-operativa__btn lre-operativa__btn--warn"
+                data-testid="lre:revisar-conceptos"
+                title="Revisar conceptos sin código LRE"
+                (click)="abrirModalAdvertencias()"
+              >
+                <lucide-icon name="alert-triangle" aria-hidden="true"></lucide-icon>
+                Revisar conceptos ({{ datos.conceptosSinCodigoLre }})
+              </button>
+            }
+            @if (ultimaExportacion(); as exportacion) {
+              <p class="lre-operativa__audit" [title]="origenNotaOperativa() ?? ''">
+                <lucide-icon name="clock-3" aria-hidden="true"></lucide-icon>
+                Última descarga: {{ formatearFechaExportacionLre(exportacion.exportadoEn) }}
+                · {{ etiquetaCanal(exportacion.canal) }}
+                · {{ exportacion.usuarioLabel }}
+              </p>
+            } @else if (origenNotaOperativa(); as nota) {
+              <p class="lre-operativa__audit">{{ nota }}</p>
+            }
           </div>
         </section>
-      } @else {
+
+        @if (!datos.lineas.length) {
+          <app-message-box
+            variant="blocked"
+            title="Sin líneas exportables"
+            message="La liquidación no tiene conceptos con código LRE asignado. Revise el catálogo de conceptos de remuneración."
+            primaryLabel="Ir a conceptos"
+            (action)="irAConceptos()"
+          />
+        }
+      } @else if (!cargandoBorrador() && !nominaId()) {
         <app-message-box
-          variant="blocked"
-          [sections]="[
-            {
-              title: 'Sin líneas exportables',
-              text: 'La liquidación no tiene conceptos con código LRE asignado. Revise el catálogo de conceptos.',
-            },
-          ]"
+          variant="info"
+          title="Seleccione una nómina"
+          message="Elija la nómina con liquidación oficial para preparar el libro de remuneraciones."
+          primaryLabel="Buscar nómina"
+          (action)="abrirModalNomina()"
         />
       }
     }
@@ -252,4 +231,70 @@
     (cerrar)="cerrarModalNomina()"
     (seleccionar)="onNominaSeleccionadaEnModal($event)"
   />
+
+  @if (modalAdvertenciasAbierto()) {
+    <app-message-box
+      mode="modal"
+      variant="warning"
+      width="lg"
+      panelClass="lre-adv-modal"
+      eyebrow="Libro de remuneraciones"
+      title="Revisar antes de exportar"
+      [message]="mensajeModalAdvertencias()"
+      [sections]="seccionesAdvertencia()"
+      primaryLabel="Ir a conceptos"
+      secondaryLabel="Cerrar"
+      (action)="irAConceptos()"
+      (secondary)="cerrarModalAdvertencias()"
+      (dismiss)="cerrarModalAdvertencias()"
+    />
+  }
+
+  @if (modalLineasAbierto() && borrador(); as datos) {
+    <app-message-box
+      mode="modal"
+      variant="info"
+      width="lg"
+      panelClass="lre-lineas-modal"
+      eyebrow="Libro de remuneraciones"
+      title="Líneas exportables"
+      [message]="etiquetaNominaActiva()"
+      (dismiss)="cerrarModalLineas()"
+    >
+      <div class="lre-lineas-modal__grid-wrap">
+        <app-data-grid
+          title=""
+          [columns]="columnas"
+          [rows]="datos.lineas"
+          [persistenceKey]="persistenciaGrilla"
+          [filtersEnabled]="true"
+          toolbarLayout="operativa"
+          headerCountDisplay="text"
+          headerCountNoun="líneas"
+          [gridHeight]="'100%'"
+          emptyTitle="No hay líneas para mostrar."
+          className="lre-lineas-grid"
+          cardClassName="lre-lineas-grid__card"
+        />
+      </div>
+    </app-message-box>
+  }
+
+  @if (modalConfirmarDescargaAbierto()) {
+    <app-message-box
+      mode="modal"
+      variant="decision"
+      width="md"
+      panelClass="lre-confirm-modal"
+      eyebrow="Libro de remuneraciones"
+      title="Confirmar descarga"
+      [message]="mensajeConfirmarDescarga()"
+      [sections]="seccionesConfirmarDescarga()"
+      primaryLabel="Descargar archivo"
+      secondaryLabel="Cancelar"
+      (action)="confirmarDescargaPendiente()"
+      (secondary)="cerrarModalConfirmarDescarga()"
+      (dismiss)="cerrarModalConfirmarDescarga()"
+    />
+  }
 </div>

@@ -19,7 +19,7 @@ export interface LreBorradorExport {
   listoParaEnvio: boolean;
 }
 
-export type LreCanalExportacion = 'csv_borrador' | 'formato_dt_v1';
+export type LreCanalExportacion = 'csv_borrador' | 'formato_dt_v1' | 'formato_oficial_dt';
 
 export interface LreExportacionRegistro {
   idLreExportacion: number;

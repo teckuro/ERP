@@ -1,1 +1,107 @@
-/* Overrides locales LRE; layout compartido en remuneraciones-salida-layout.css */
+/* LRE export — layout local sobre sal-ext-* (espejo Previred) */
+
+.lre-alerta-inline {
+  flex: 0 0 auto;
+}
+
+.lre-operativa {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.lre-operativa__origen {
+  margin: 0;
+}
+
+.lre-operativa__origen.sal-ext-origen {
+  align-items: stretch;
+}
+
+.lre-operativa__origen .lre-resumen {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  align-self: stretch;
+}
+
+.lre-operativa__origen .lre-resumen div {
+  min-width: 5.5rem;
+  padding: 6px 10px;
+}
+
+.lre-operativa__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 0 2px;
+}
+
+.lre-operativa__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 1.75rem;
+  padding: 0 0.65rem;
+  border: 1px solid var(--sal-ext-border, #daddd6);
+  border-radius: 4px;
+  background: var(--sal-ext-surface, #ffffff);
+  color: var(--sal-ext-ink, #172033);
+  font-size: 0.75rem;
+  font-weight: 650;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease;
+}
+
+.lre-operativa__btn lucide-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.lre-operativa__btn:hover {
+  border-color: #c7d0c4;
+  background: var(--sal-ext-surface-soft, #fafaf7);
+}
+
+.lre-operativa__btn--warn {
+  border-color: #dfc383;
+  background: #fff8e7;
+  color: #7a5a12;
+}
+
+.lre-operativa__audit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 0 auto;
+  font-size: 0.75rem;
+  color: var(--sal-ext-muted, #647084);
+}
+
+.lre-operativa__audit lucide-icon {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+.lre-lineas-modal__grid-wrap {
+  display: flex;
+  flex-direction: column;
+  min-height: min(24rem, 52vh);
+  max-height: min(32rem, 62vh);
+}
+
+.lre-lineas-modal__grid-wrap app-data-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+:host ::ng-deep .lre-lineas-modal .noia-msgbox__slot--modal,
+:host ::ng-deep .lre-adv-modal .noia-msgbox__slot--modal {
+  padding-top: 0;
+}
