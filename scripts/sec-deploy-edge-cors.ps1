@@ -1,4 +1,6 @@
-# SEC-05: redeploy Edge Functions con CORS restringido (ERP_ALLOWED_ORIGIN).
+# SEC-05/SEC-06: redeploy Edge Functions con CORS restringido (ERP_ALLOWED_ORIGIN).
+# SEC-06 también despliega rate-limit in-memory (asistente / admin-usuarios) y CORS que
+# rechaza OPTIONS de orígenes no permitidos (ver docs/codex/auditorias/SEC-06-limites-api.md).
 # Uso:
 #   $env:SUPABASE_PROJECT_REF = "<ref>"
 #   $env:ERP_ALLOWED_ORIGIN = "https://erp.ejemplo.cl"   # opcional; sin valor = CORS *

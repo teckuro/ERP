@@ -23,6 +23,7 @@ describe('AuthService', () => {
   afterEach(() => {
     try {
       sessionStorage.removeItem('angular-erp-password-recovery');
+      sessionStorage.removeItem('angular-erp-login-fail');
     } catch {
       // Sin DOM (p. ej. runner sin jsdom) no hay sessionStorage.
     }
@@ -68,6 +69,52 @@ describe('AuthService', () => {
     );
 
     await expect(service.login('', '')).rejects.toThrow('Ingresa correo y contrasena para iniciar sesion.');
+  });
+
+  it('SEC-06: tras 5 fallos de login aplica cooldown UX sin llamar Auth', async () => {
+    const supabase = createSupabaseMock();
+    supabase.auth.signInWithPassword.mockResolvedValue({
+      data: { session: null },
+      error: { message: 'invalid login' },
+    });
+
+    TestBed.configureTestingModule({
+      providers: [AuthService, { provide: SUPABASE_CLIENT, useValue: supabase }],
+    });
+
+    const service = TestBed.inject(AuthService);
+    for (let i = 0; i < 5; i++) {
+      await expect(service.login('rrhh@empresa.cl', 'bad')).rejects.toThrow(
+        'No se pudo iniciar sesion. Revisa el correo y la contrasena.',
+      );
+    }
+
+    expect(supabase.auth.signInWithPassword).toHaveBeenCalledTimes(5);
+    await expect(service.login('rrhh@empresa.cl', 'bad')).rejects.toThrow(/Demasiados intentos fallidos/);
+    expect(supabase.auth.signInWithPassword).toHaveBeenCalledTimes(5);
+    expect(service.loginCooldownRemainingSec()).toBeGreaterThan(0);
+  });
+
+  it('SEC-06: login exitoso limpia contador de fallos', async () => {
+    const supabase = createSupabaseMock();
+    supabase.auth.signInWithPassword
+      .mockResolvedValueOnce({
+        data: { session: null },
+        error: { message: 'invalid login' },
+      })
+      .mockResolvedValueOnce({
+        data: { session: { user: { id: 'u1', email: 'rrhh@empresa.cl' } } },
+        error: null,
+      });
+
+    TestBed.configureTestingModule({
+      providers: [AuthService, { provide: SUPABASE_CLIENT, useValue: supabase }],
+    });
+
+    const service = TestBed.inject(AuthService);
+    await expect(service.login('rrhh@empresa.cl', 'bad')).rejects.toThrow();
+    await service.login('rrhh@empresa.cl', 'secret');
+    expect(service.loginCooldownRemainingSec()).toBe(0);
   });
 
   it('logout limpia la sesion local', async () => {

@@ -6,6 +6,10 @@ import { injectSupabase } from '../services/supabase.service';
 @Injectable({ providedIn: 'root' })
 export class AuthService implements OnDestroy {
   private static readonly RECOVERY_FLAG_KEY = 'angular-erp-password-recovery';
+  /** SEC-06: anti-abuso UX (la capa real es Auth rate limit en Dashboard). */
+  private static readonly LOGIN_FAIL_KEY = 'angular-erp-login-fail';
+  private static readonly LOGIN_MAX_FAILURES = 5;
+  private static readonly LOGIN_COOLDOWN_MS = 45_000;
 
   private readonly supabase = injectSupabase();
   private readonly sessionState = signal<Session | null>(null);
@@ -42,18 +46,35 @@ export class AuthService implements OnDestroy {
       throw new Error('Ingresa correo y contrasena para iniciar sesion.');
     }
 
+    const cooldownSec = this.loginCooldownRemainingSec();
+    if (cooldownSec > 0) {
+      throw new Error(
+        `Demasiados intentos fallidos. Espera ${cooldownSec} segundos e intenta nuevamente.`,
+      );
+    }
+
     const { data, error } = await this.supabase.auth.signInWithPassword({
       email: normalizedEmail,
       password,
     });
 
     if (error || !data.session) {
+      this.recordLoginFailure();
       throw new Error('No se pudo iniciar sesion. Revisa el correo y la contrasena.');
     }
 
+    this.clearLoginFailures();
     this.markPasswordRecovery(false);
     this.sessionState.set(data.session);
     this.readyState.set(true);
+  }
+
+  /** Segundos restantes de cooldown UX tras fallos de login (0 = libre). */
+  loginCooldownRemainingSec(): number {
+    const state = this.readLoginFailState();
+    if (!state?.lockedUntil) return 0;
+    const remainingMs = state.lockedUntil - Date.now();
+    return remainingMs > 0 ? Math.ceil(remainingMs / 1000) : 0;
   }
 
   async solicitarRecuperacionContrasena(email: string): Promise<void> {
@@ -180,6 +201,61 @@ export class AuthService implements OnDestroy {
       return sessionStorage.getItem(AuthService.RECOVERY_FLAG_KEY) === '1';
     } catch {
       return false;
+    }
+  }
+
+  private recordLoginFailure(): void {
+    const prev = this.readLoginFailState();
+    const failures = (prev?.failures ?? 0) + 1;
+    const lockedUntil =
+      failures >= AuthService.LOGIN_MAX_FAILURES
+        ? Date.now() + AuthService.LOGIN_COOLDOWN_MS
+        : prev?.lockedUntil && prev.lockedUntil > Date.now()
+          ? prev.lockedUntil
+          : null;
+    this.writeLoginFailState({
+      failures: lockedUntil ? 0 : failures,
+      lockedUntil,
+    });
+  }
+
+  private clearLoginFailures(): void {
+    try {
+      sessionStorage.removeItem(AuthService.LOGIN_FAIL_KEY);
+    } catch {
+      // ignore
+    }
+  }
+
+  private readLoginFailState(): { failures: number; lockedUntil: number | null } | null {
+    try {
+      const raw = sessionStorage.getItem(AuthService.LOGIN_FAIL_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as { failures?: unknown; lockedUntil?: unknown };
+      const failures = typeof parsed.failures === 'number' ? parsed.failures : 0;
+      const lockedUntil =
+        typeof parsed.lockedUntil === 'number' && parsed.lockedUntil > Date.now()
+          ? parsed.lockedUntil
+          : null;
+      if (lockedUntil == null && failures <= 0) {
+        sessionStorage.removeItem(AuthService.LOGIN_FAIL_KEY);
+        return null;
+      }
+      return { failures, lockedUntil };
+    } catch {
+      return null;
+    }
+  }
+
+  private writeLoginFailState(state: { failures: number; lockedUntil: number | null }): void {
+    try {
+      if (!state.lockedUntil && state.failures <= 0) {
+        sessionStorage.removeItem(AuthService.LOGIN_FAIL_KEY);
+        return;
+      }
+      sessionStorage.setItem(AuthService.LOGIN_FAIL_KEY, JSON.stringify(state));
+    } catch {
+      // ignore
     }
   }
 

@@ -1,9 +1,11 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
 
-import { buildCorsHeaders } from '../_shared/cors.ts';
+import { corsPreflightResponse, resolveCors } from '../_shared/cors.ts';
+import { timingSafeEqualString } from '../_shared/rate-limit.ts';
 
 const FOLIO_REGEX = /\bLM[-\s]?\d{4}[-\s]?\d{3,}\b/i;
 const ISO_DATE_REGEX = /\b(20\d{2})[-/](\d{2})[-/](\d{2})\b/g;
+const LM_CORS_EXTRA = 'x-lm-webhook-secret, svix-id, svix-timestamp, svix-signature';
 
 interface ResendInboundEmail {
   from?: string;
@@ -41,10 +43,7 @@ interface MailgunPayload {
 console.info('licencia-medica-inbound: worker started');
 
 Deno.serve(async (req) => {
-  const corsHeaders = buildCorsHeaders(
-    req,
-    'x-lm-webhook-secret, svix-id, svix-timestamp, svix-signature',
-  );
+  const { headers: corsHeaders } = resolveCors(req, LM_CORS_EXTRA);
   const jsonResponse = (body: unknown, status = 200): Response =>
     new Response(JSON.stringify(body), {
       status,
@@ -52,8 +51,11 @@ Deno.serve(async (req) => {
     });
 
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return corsPreflightResponse(req, LM_CORS_EXTRA);
   }
+
+  // Webhooks (Resend/Mailgun) no envían Origin: no bloquear por CORS; auth = secreto.
+  // Origen browser ajeno: sin Allow-Origin útil (headers ya resueltos).
 
   if (req.method !== 'POST') {
     return jsonResponse({ error: 'Método no permitido' }, 405);
@@ -189,8 +191,9 @@ function validarSecreto(req: Request): boolean {
     req.headers
       .get('authorization')
       ?.replace(/^Bearer\s+/i, '')
-      .trim();
-  return recibido === esperado;
+      .trim() ??
+    '';
+  return timingSafeEqualString(recibido, esperado);
 }
 
 function normalizarCorreo(

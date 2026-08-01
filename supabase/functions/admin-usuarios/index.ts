@@ -16,7 +16,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
 import type { User } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
 
-import { buildCorsHeaders } from '../_shared/cors.ts';
+import { corsPreflightResponse, resolveCors } from '../_shared/cors.ts';
+import { checkRateLimit, clientKeyFromRequest } from '../_shared/rate-limit.ts';
 
 const ROLES_ADMIN_SISTEMA = new Set(['admin', 'admin_sistema', 'administrador', 'administrator']);
 
@@ -26,6 +27,10 @@ const ROLES_BASE_VALIDOS = new Set([
   'operador_remuneraciones',
   'consulta_remuneraciones',
 ]);
+
+/** SEC-06: tope admin usuarios (Admin API). */
+const RATE_LIMIT = 30;
+const RATE_WINDOW_MS = 60_000;
 
 interface AccionPayload {
   accion?: string;
@@ -59,11 +64,17 @@ function jsonResponse(corsHeaders: CorsHeaders, body: unknown, status = 200): Re
 console.info('admin-usuarios: worker started');
 
 Deno.serve(async (req) => {
-  const corsHeaders = buildCorsHeaders(req);
+  const { allowed, headers: corsHeaders } = resolveCors(req);
 
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return corsPreflightResponse(req);
   }
+
+  // Origen presente y no permitido: rechazar. Sin Origin (curl/scripts) se permite.
+  if (!allowed && req.headers.get('Origin')) {
+    return jsonResponse(corsHeaders, { error: 'Origen no permitido' }, 403);
+  }
+
   if (req.method !== 'POST') {
     return jsonResponse(corsHeaders, { error: 'Método no permitido' }, 405);
   }
@@ -90,6 +101,27 @@ Deno.serve(async (req) => {
   } = await supabaseCaller.auth.getUser();
   if (authError || !caller) {
     return jsonResponse(corsHeaders, { error: 'Sesión inválida' }, 401);
+  }
+
+  const rate = checkRateLimit({
+    key: `admin-usuarios:${clientKeyFromRequest(req, caller.id)}`,
+    limit: RATE_LIMIT,
+    windowMs: RATE_WINDOW_MS,
+  });
+  if (!rate.ok) {
+    return new Response(
+      JSON.stringify({
+        error: 'Demasiadas operaciones administrativas. Espera un momento e intenta nuevamente.',
+      }),
+      {
+        status: 429,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+          'Retry-After': String(rate.retryAfterSec),
+        },
+      },
+    );
   }
 
   const callerMeta = (caller.app_metadata ?? {}) as Record<string, unknown>;

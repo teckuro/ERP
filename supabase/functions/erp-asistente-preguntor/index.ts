@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-import { buildCorsHeaders } from "../_shared/cors.ts";
+import { corsPreflightResponse, resolveCors } from "../_shared/cors.ts";
+import { checkRateLimit, clientKeyFromRequest } from "../_shared/rate-limit.ts";
 
 const SYSTEM_PROMPT = `Eres un asistente para usuarios de RRHH de un ERP chileno de remuneraciones.
 Responde solo en español de Chile, de forma breve y clara.
@@ -9,6 +10,9 @@ No ejecutes acciones en el sistema; solo orienta.`;
 
 const DEFAULT_MODEL = "qwen/qwen3.5-122b-a10b";
 const NIM_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
+/** SEC-06: tope asistente (coste NVIDIA). */
+const RATE_LIMIT = 10;
+const RATE_WINDOW_MS = 60_000;
 
 interface ReqPayload {
   pregunta?: string;
@@ -17,7 +21,7 @@ interface ReqPayload {
 console.info("asistente-preguntor: worker started");
 
 Deno.serve(async (req) => {
-  const corsHeaders = buildCorsHeaders(req);
+  const { allowed, headers: corsHeaders } = resolveCors(req);
   const jsonResponse = (payload: unknown, status: number): Response =>
     new Response(JSON.stringify(payload), {
       status,
@@ -25,7 +29,12 @@ Deno.serve(async (req) => {
     });
 
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return corsPreflightResponse(req);
+  }
+
+  // Origen presente y no permitido: rechazar. Sin Origin (curl/scripts) se permite.
+  if (!allowed && req.headers.get("Origin")) {
+    return jsonResponse({ error: "Origen no permitido" }, 403);
   }
 
   if (req.method !== "POST") {
@@ -46,6 +55,27 @@ Deno.serve(async (req) => {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     return jsonResponse({ error: "Sesión inválida" }, 401);
+  }
+
+  const rate = checkRateLimit({
+    key: `asistente:${clientKeyFromRequest(req, user.id)}`,
+    limit: RATE_LIMIT,
+    windowMs: RATE_WINDOW_MS,
+  });
+  if (!rate.ok) {
+    return new Response(
+      JSON.stringify({
+        error: "Demasiadas consultas al asistente. Espera un momento e intenta nuevamente.",
+      }),
+      {
+        status: 429,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+          "Retry-After": String(rate.retryAfterSec),
+        },
+      },
+    );
   }
 
   let body: ReqPayload;

@@ -8,7 +8,7 @@ Webhook para correos reenviados (Resend Inbound o Mailgun Route).
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `LM_INBOUND_WEBHOOK_SECRET`
 - `LM_INBOUND_EMPRESA_ID`
-- `ERP_ALLOWED_ORIGIN` (opcional, SEC-05): origen del ERP en producción. Si no está definido, CORS responde `*`.
+- `ERP_ALLOWED_ORIGIN` (opcional, SEC-05/SEC-06): origen del ERP en producción. Si no está definido, CORS responde `*`. Los webhooks sin `Origin` no se rechazan por CORS; la auth es el secreto (comparación en tiempo constante, SEC-06).
 
 ## Despliegue
 
