@@ -16,6 +16,7 @@ import {
   ClockIcon,
   HomeIcon,
   LucideAngularModule,
+  MenuIcon,
   PlayIcon,
 } from 'lucide-angular';
 
@@ -27,6 +28,7 @@ import {
   SHELL_NAV_WIDTH_PX,
   SHELL_STRIP_PADDING_X_PX,
 } from './shell-navigation.config';
+import { ShellNavUiService } from './shell-nav-ui.service';
 import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-context.service';
 
 @Component({
@@ -42,19 +44,31 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
       [style.height.px]="headerHeight"
     >
       <div class="erp-shell-header__inner" [class.erp-shell-header__inner--with-title]="!!pageTitle()">
-        <nav class="erp-shell-header__breadcrumb" aria-label="Ruta actual">
-          <a routerLink="/" class="erp-shell-header__crumb-home" aria-label="Inicio">
-            <lucide-icon [img]="homeIcon"></lucide-icon>
-          </a>
-          @for (crumb of breadcrumbs(); track crumb.label; let last = $last) {
-            <span class="erp-shell-header__crumb-sep" aria-hidden="true">/</span>
-            @if (!last && crumb.path) {
-              <a [routerLink]="crumb.path" class="erp-shell-header__crumb">{{ crumb.label }}</a>
-            } @else {
-              <span class="erp-shell-header__crumb erp-shell-header__crumb--current">{{ crumb.label }}</span>
+        <div class="erp-shell-header__lead">
+          <button
+            type="button"
+            class="erp-shell-header__menu-btn"
+            aria-controls="erp-shell-nav"
+            [attr.aria-expanded]="navUi.mobileNavOpen()"
+            [attr.aria-label]="navUi.mobileNavOpen() ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'"
+            (click)="navUi.toggleNav()"
+          >
+            <lucide-icon [img]="menuIcon" aria-hidden="true"></lucide-icon>
+          </button>
+          <nav class="erp-shell-header__breadcrumb" aria-label="Ruta actual">
+            <a routerLink="/" class="erp-shell-header__crumb-home" aria-label="Inicio">
+              <lucide-icon [img]="homeIcon"></lucide-icon>
+            </a>
+            @for (crumb of breadcrumbs(); track crumb.label; let last = $last) {
+              <span class="erp-shell-header__crumb-sep" aria-hidden="true">/</span>
+              @if (!last && crumb.path) {
+                <a [routerLink]="crumb.path" class="erp-shell-header__crumb">{{ crumb.label }}</a>
+              } @else {
+                <span class="erp-shell-header__crumb erp-shell-header__crumb--current">{{ crumb.label }}</span>
+              }
             }
-          }
-        </nav>
+          </nav>
+        </div>
 
         @if (pageTitle(); as title) {
           <div class="erp-shell-header__title">
@@ -144,7 +158,7 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
             </button>
           }
 
-          <div class="erp-shell-header__user" aria-label="Sesión">
+          <div class="erp-shell-header__user erp-shell-header__user--inline" aria-label="Sesión">
             <span class="erp-shell-header__avatar" aria-hidden="true">{{ inicialUsuario() }}</span>
             <button
               type="button"
@@ -159,6 +173,32 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
               Salir
             </button>
           </div>
+
+          <details class="erp-shell-header__session">
+            <summary
+              class="erp-shell-header__session-trigger"
+              aria-label="Menú de sesión"
+            >
+              <span class="erp-shell-header__avatar" aria-hidden="true">{{ inicialUsuario() }}</span>
+            </summary>
+            <div class="erp-shell-header__session-panel" role="group" aria-label="Sesión">
+              @if (auth.currentEmail(); as email) {
+                <p class="erp-shell-header__session-email">{{ email }}</p>
+              }
+              <button
+                type="button"
+                class="erp-shell-header__logout erp-shell-header__logout--block"
+                [disabled]="cerrandoSesion()"
+                [attr.aria-busy]="cerrandoSesion()"
+                (click)="cerrarSesion()"
+              >
+                @if (cerrandoSesion()) {
+                  <span class="erp-shell-header__btn-spinner" aria-hidden="true"></span>
+                }
+                Salir
+              </button>
+            </div>
+          </details>
         </div>
       </div>
     </header>
@@ -191,6 +231,40 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
         gap: 10px 14px;
       }
 
+      .erp-shell-header__lead {
+        display: flex;
+        min-width: 0;
+        flex: 1 1 auto;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .erp-shell-header__menu-btn {
+        display: none;
+        flex: 0 0 auto;
+        width: 32px;
+        height: 32px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        background: #ffffff;
+        color: #334155;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      .erp-shell-header__menu-btn:hover {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+
+      .erp-shell-header__menu-btn lucide-icon {
+        width: 16px;
+        height: 16px;
+      }
+
       .erp-shell-header__breadcrumb {
         display: flex;
         min-width: 0;
@@ -200,7 +274,7 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
         overflow: hidden;
       }
 
-      .erp-shell-header__inner--with-title .erp-shell-header__breadcrumb {
+      .erp-shell-header__inner--with-title .erp-shell-header__lead {
         flex: none;
         justify-self: start;
       }
@@ -458,6 +532,60 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
         border-left: 1px solid #e2e8f0;
       }
 
+      .erp-shell-header__session {
+        display: none;
+        position: relative;
+        margin-left: 4px;
+        padding-left: 8px;
+        border-left: 1px solid #e2e8f0;
+      }
+
+      .erp-shell-header__session-trigger {
+        display: inline-flex;
+        list-style: none;
+        cursor: pointer;
+        border: 0;
+        background: transparent;
+        padding: 0;
+      }
+
+      .erp-shell-header__session-trigger::-webkit-details-marker {
+        display: none;
+      }
+
+      .erp-shell-header__session-panel {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        z-index: 20;
+        display: grid;
+        gap: 8px;
+        min-width: 11rem;
+        width: max-content;
+        max-width: min(16rem, calc(100vw - 24px));
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #ffffff;
+        padding: 10px;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+      }
+
+      .erp-shell-header__session-email {
+        margin: 0;
+        overflow: hidden;
+        color: #64748b;
+        font-size: 11px;
+        line-height: 1.35;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .erp-shell-header__logout--block {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 4px 2px;
+      }
+
       .erp-shell-header__avatar {
         display: grid;
         width: 28px;
@@ -517,11 +645,40 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
         .erp-shell-header {
           left: 0 !important;
         }
+
+        .erp-shell-header__menu-btn {
+          display: inline-flex;
+        }
+
+        .erp-shell-header__actions {
+          flex-wrap: wrap;
+          justify-content: flex-end;
+          row-gap: 6px;
+        }
+
+        .erp-shell-header__inner--with-title .erp-shell-header__actions {
+          flex-wrap: wrap;
+        }
+
+        .erp-shell-header__chip:not(.erp-shell-header__chip--period) {
+          max-width: 9.5rem;
+          overflow: hidden;
+        }
+
+        .erp-shell-header__chip:not(.erp-shell-header__chip--period) > span {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
       }
 
       @media (max-width: 760px) {
-        .erp-shell-header__logout {
+        .erp-shell-header__user--inline {
           display: none;
+        }
+
+        .erp-shell-header__session {
+          display: block;
         }
 
         .erp-shell-header__period-panel {
@@ -540,6 +697,10 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
         .erp-shell-header__inner--with-title .erp-shell-header__title {
           text-align: left;
         }
+
+        .erp-shell-header__actions {
+          gap: 6px;
+        }
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -556,6 +717,7 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
 })
 export class HeaderComponent {
   readonly homeIcon = HomeIcon;
+  readonly menuIcon = MenuIcon;
   readonly clockIcon = ClockIcon;
   readonly calendarIcon = CalendarIcon;
   readonly chevronDownIcon = ChevronDownIcon;
@@ -568,6 +730,7 @@ export class HeaderComponent {
   readonly periodoActivo = inject(PeriodoActivoService);
   readonly shellContext = inject(ShellPageContextService);
   readonly auth = inject(AuthService);
+  readonly navUi = inject(ShellNavUiService);
   private readonly empresaActiva = inject(EmpresaActivaService);
   readonly router = inject(Router);
   readonly cerrandoSesion = signal(false);

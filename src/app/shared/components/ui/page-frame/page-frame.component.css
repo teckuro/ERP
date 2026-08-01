@@ -162,7 +162,7 @@
 
 /* ---- Responsive ------------------------------------------------------ */
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   :host {
     --pf-padding-y: var(--pf-space-3);
     --pf-padding-x: var(--pf-space-3);

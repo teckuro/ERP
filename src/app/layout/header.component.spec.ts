@@ -2,30 +2,40 @@ import { vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
-import { Calendar, ChevronDown, Clock, Home, Play } from 'lucide-angular/src/icons';
+import { Calendar, ChevronDown, Clock, Home, Menu, Play } from 'lucide-angular/src/icons';
 import { signal } from '@angular/core';
 
 import { AuthService } from '../core/auth/auth.service';
+import { EmpresaActivaService } from '../core/services/empresa-activa.service';
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
 import { HeaderComponent } from './header.component';
 import { SHELL_HEADER_HEIGHT_PX } from './shell-navigation.config';
+import { ShellNavUiService } from './shell-nav-ui.service';
 import { ShellPageContextService } from './shell-page-context.service';
 
 describe('HeaderComponent', () => {
   let fixture: ComponentFixture<HeaderComponent>;
   let shellContext: ShellPageContextService;
+  let navUi: ShellNavUiService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HeaderComponent, LucideAngularModule.pick({ Calendar, ChevronDown, Clock, Home, Play })],
+      imports: [HeaderComponent, LucideAngularModule.pick({ Calendar, ChevronDown, Clock, Home, Menu, Play })],
       providers: [
         provideRouter([]),
         ShellPageContextService,
+        ShellNavUiService,
         {
           provide: AuthService,
           useValue: {
             currentUser: () => ({ email: 'rrhh@empresa.cl' }) as never,
             currentEmail: () => 'rrhh@empresa.cl',
+          },
+        },
+        {
+          provide: EmpresaActivaService,
+          useValue: {
+            limpiar: () => undefined,
           },
         },
         {
@@ -40,6 +50,7 @@ describe('HeaderComponent', () => {
     }).compileComponents();
 
     shellContext = TestBed.inject(ShellPageContextService);
+    navUi = TestBed.inject(ShellNavUiService);
     fixture = TestBed.createComponent(HeaderComponent);
     fixture.detectChanges();
   });
@@ -126,5 +137,30 @@ describe('HeaderComponent', () => {
     const cta = fixture.nativeElement.querySelector('.erp-shell-header__cta') as HTMLButtonElement;
     expect(cta).toBeTruthy();
     expect(cta.getAttribute('title')).toBeNull();
+  });
+
+  it('el botón de menú alterna el drawer móvil vía ShellNavUiService', () => {
+    const btn = fixture.nativeElement.querySelector('.erp-shell-header__menu-btn') as HTMLButtonElement;
+    expect(btn).toBeTruthy();
+    expect(btn.getAttribute('aria-controls')).toBe('erp-shell-nav');
+    expect(btn.getAttribute('aria-expanded')).toBe('false');
+    expect(navUi.mobileNavOpen()).toBe(false);
+
+    btn.click();
+    fixture.detectChanges();
+    expect(navUi.mobileNavOpen()).toBe(true);
+    expect(btn.getAttribute('aria-expanded')).toBe('true');
+
+    btn.click();
+    fixture.detectChanges();
+    expect(navUi.mobileNavOpen()).toBe(false);
+    expect(btn.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('expone Salir en sesión inline y en menú compacto', () => {
+    const logouts = fixture.nativeElement.querySelectorAll('.erp-shell-header__logout') as NodeListOf<HTMLButtonElement>;
+    expect(logouts.length).toBeGreaterThanOrEqual(2);
+    expect(fixture.nativeElement.querySelector('.erp-shell-header__session')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.erp-shell-header__user--inline')).toBeTruthy();
   });
 });

@@ -16,6 +16,7 @@ import {
   type ShellNavItem,
   type ShellNavSection,
 } from './shell-navigation.config';
+import { ShellNavUiService } from './shell-nav-ui.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -23,7 +24,13 @@ import {
   imports: [CommonModule, RouterLink, RouterLinkActive, LucideAngularModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <aside class="erp-sidebar" [style.width.px]="navWidth" aria-label="Navegación principal">
+    <aside
+      id="erp-shell-nav"
+      class="erp-sidebar"
+      [class.erp-sidebar--open]="navUi.mobileNavOpen()"
+      [style.width.px]="navWidth"
+      aria-label="Navegación principal"
+    >
       <div class="erp-sidebar__brand">
         <div class="erp-sidebar__brand-mark" aria-hidden="true">
           <lucide-icon [img]="buildingIcon"></lucide-icon>
@@ -322,7 +329,24 @@ import {
 
       @media (max-width: 1024px) {
         .erp-sidebar {
-          display: none;
+          z-index: 40;
+          transform: translateX(-100%);
+          transition: transform 180ms ease;
+          box-shadow: none;
+          visibility: visible;
+          pointer-events: none;
+        }
+
+        .erp-sidebar--open {
+          transform: translateX(0);
+          pointer-events: auto;
+          box-shadow: 2px 0 12px rgba(15, 23, 42, 0.12);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .erp-sidebar {
+          transition: none;
         }
       }
     `,
@@ -337,6 +361,7 @@ export class SidebarComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly permisosRemuneraciones = inject(ErpPermisosRemuneracionesService);
   private readonly periodoActivo = inject(PeriodoActivoService);
+  readonly navUi = inject(ShellNavUiService);
 
   readonly menuSections = computed(() => {
     const permisos = this.permisosRemuneraciones.permisosModulos();

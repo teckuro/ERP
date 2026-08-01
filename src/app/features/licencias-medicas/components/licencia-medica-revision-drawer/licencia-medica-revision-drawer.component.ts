@@ -14,6 +14,10 @@ import { FormsModule } from '@angular/forms';
 
 import { CalendarInputComponent } from '../../../../shared/components/ui/forms/calendar-input/calendar-input.component';
 import { SearchSelectComponent, SearchSelectOption, SearchSelectValue } from '../../../../shared/components/ui/forms/search-select.component';
+import {
+  MessageBoxComponent,
+  type MessageBoxSection,
+} from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import type { EmpleadoListado } from '../../../empleados/models/empleado-listado.model';
 import type { LicenciaMedica, LicenciaMedicaIngresoCorreo, LicenciaMedicaTipo } from '../../models/licencia-medica.model';
 import {
@@ -28,7 +32,7 @@ import {
 @Component({
   selector: 'app-licencia-medica-revision-drawer',
   standalone: true,
-  imports: [CommonModule, FormsModule, SearchSelectComponent, CalendarInputComponent],
+  imports: [CommonModule, FormsModule, SearchSelectComponent, CalendarInputComponent, MessageBoxComponent],
   templateUrl: './licencia-medica-revision-drawer.component.html',
   styleUrl: './licencia-medica-revision-drawer.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,6 +58,7 @@ export class LicenciaMedicaRevisionDrawerComponent implements OnChanges {
   readonly dias = signal<number | null>(null);
   readonly montoSubsidio = signal<number | null>(null);
   readonly observacion = signal('');
+  readonly alertaFaltantesAbierta = signal(false);
 
   readonly empleadoOptions = computed<SearchSelectOption<number>[]>(() =>
     this.empleados.map((e) => ({
@@ -87,6 +92,20 @@ export class LicenciaMedicaRevisionDrawerComponent implements OnChanges {
     }),
   );
 
+  readonly seccionesFaltantes = computed((): MessageBoxSection[] => {
+    const items = this.faltantes();
+    if (items.length === 0) {
+      return [];
+    }
+    return [
+      {
+        title: 'Datos pendientes',
+        items: [...items],
+        tone: 'attention',
+      },
+    ];
+  });
+
   esSoloLectura(): boolean {
     if (this.esBorradorLocal) {
       return false;
@@ -114,6 +133,21 @@ export class LicenciaMedicaRevisionDrawerComponent implements OnChanges {
     });
   }
 
+  onConfirmar(): void {
+    if (this.esSoloLectura() || this.guardando) {
+      return;
+    }
+    if (this.faltantes().length > 0) {
+      this.alertaFaltantesAbierta.set(true);
+      return;
+    }
+    this.confirmarVincular.emit();
+  }
+
+  cerrarAlertaFaltantes(): void {
+    this.alertaFaltantesAbierta.set(false);
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (!changes['licencia']?.currentValue && !changes['esBorradorLocal']) {
       return;
@@ -121,6 +155,7 @@ export class LicenciaMedicaRevisionDrawerComponent implements OnChanges {
     if (!this.licencia) {
       return;
     }
+    this.alertaFaltantesAbierta.set(false);
     this.idPersona.set(this.licencia.idPersona);
     this.idContrato.set(this.licencia.idContrato);
     this.folio.set(this.licencia.folio ?? '');

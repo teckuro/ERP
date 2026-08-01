@@ -16,11 +16,11 @@
 
     @if (esSoloLectura()) {
       <p class="lm-drawer__aviso" role="status">
-        Esta licencia está cerrada. Solo puede consultar los datos registrados.
+        Esta licencia está cerrada. Solo consulta.
       </p>
     } @else if (esBorradorLocal) {
       <p class="lm-drawer__aviso" role="status">
-        Complete trabajador, folio y vigencia. No se guarda en el sistema hasta que use Guardar o Confirmar.
+        No se guarda hasta usar Guardar o Confirmar.
       </p>
     }
 
@@ -40,7 +40,7 @@
       <fieldset class="lm-drawer__fieldset" [disabled]="esSoloLectura() || guardando">
         <p class="lm-drawer__section-label">Trabajador</p>
         <label class="lm-field">
-          <span>Nombre <em class="lm-req">obligatorio</em></span>
+          <span>Nombre <span class="lm-req" aria-hidden="true">*</span></span>
           <app-search-select
             [options]="empleadoOptions()"
             [ngModel]="idPersona()"
@@ -50,15 +50,13 @@
           />
           @if (empleadoSeleccionado(); as emp) {
             <span class="lm-field__hint">RUT {{ emp.rut }}@if (emp.cargo) { · {{ emp.cargo }} }</span>
-          } @else {
-            <span class="lm-field__hint">Debe existir en Empleados para impactar nómina.</span>
           }
         </label>
 
-        <p class="lm-drawer__section-label">Identificación de la licencia</p>
+        <p class="lm-drawer__section-label">Identificación</p>
         <div class="lm-drawer__grid">
           <label class="lm-field">
-            <span>Folio <em class="lm-req">obligatorio</em></span>
+            <span>Folio <span class="lm-req" aria-hidden="true">*</span></span>
             <input
               type="text"
               class="lm-input"
@@ -68,10 +66,9 @@
               placeholder="Ej. LM-2026-001234"
               autocomplete="off"
             />
-            <span class="lm-field__hint">Número COMPIN, Isapre o Mutual.</span>
           </label>
           <label class="lm-field">
-            <span>Tipo <em class="lm-req">obligatorio</em></span>
+            <span>Tipo <span class="lm-req" aria-hidden="true">*</span></span>
             <select class="lm-input" [ngModel]="tipo()" (ngModelChange)="tipo.set($event)" name="tipo">
               <option value="comun">Enfermedad común</option>
               <option value="accidente">Accidente del trabajo / trayecto</option>
@@ -84,7 +81,7 @@
         <p class="lm-drawer__section-label">Vigencia y reposo</p>
         <div class="lm-drawer__grid">
           <label class="lm-field">
-            <span>Desde <em class="lm-req">obligatorio</em></span>
+            <span>Desde <span class="lm-req" aria-hidden="true">*</span></span>
             <app-calendar-input
               [ngModel]="fechaInicio()"
               (ngModelChange)="fechaInicio.set($event ?? ''); onFechasChange()"
@@ -92,7 +89,7 @@
             />
           </label>
           <label class="lm-field">
-            <span>Hasta <em class="lm-req">obligatorio</em></span>
+            <span>Hasta <span class="lm-req" aria-hidden="true">*</span></span>
             <app-calendar-input
               [ngModel]="fechaTermino()"
               (ngModelChange)="fechaTermino.set($event ?? ''); onFechasChange()"
@@ -103,7 +100,7 @@
 
         <div class="lm-drawer__grid">
           <label class="lm-field">
-            <span>Días de reposo <em class="lm-req">obligatorio</em></span>
+            <span>Días de reposo <span class="lm-req" aria-hidden="true">*</span></span>
             <input
               type="number"
               class="lm-input"
@@ -112,13 +109,9 @@
               name="dias"
               min="1"
             />
-            <span class="lm-field__hint">
-              @if (diasCalculados(); as calc) {
-                Calculado desde vigencia: {{ calc }} día(s). Puede ajustarlo si el documento indica otro valor.
-              } @else {
-                Se calcula al indicar ambas fechas (días corridos inclusive).
-              }
-            </span>
+            @if (diasCalculados(); as calc) {
+              <span class="lm-field__hint">Calculado: {{ calc }} día(s)</span>
+            }
           </label>
           <label class="lm-field">
             <span>Monto subsidio</span>
@@ -131,14 +124,12 @@
               min="0"
               placeholder="Opcional"
             />
-            <span class="lm-field__hint">Solo si ya conoce el monto a registrar.</span>
           </label>
         </div>
 
         @if (periodosImpactados().length > 0) {
           <p class="lm-drawer__periodos" role="status">
-            Impactará nómina en:
-            <strong>{{ periodosImpactados().join(', ') }}</strong>
+            Impactará nómina: <strong>{{ periodosImpactados().join(', ') }}</strong>
           </p>
         }
 
@@ -146,24 +137,13 @@
           <span>Observación RRHH</span>
           <textarea
             class="lm-input lm-input--area"
-            rows="3"
+            rows="2"
             [ngModel]="observacion()"
             (ngModelChange)="observacion.set($event)"
             name="observacion"
-            placeholder="Notas internas: prórroga, rechazo parcial, contacto con mutual, etc."
+            placeholder="Notas internas (opcional)"
           ></textarea>
         </label>
-
-        @if (!esSoloLectura() && faltantes().length > 0) {
-          <div class="lm-drawer__faltantes" role="status">
-            <p class="lm-drawer__faltantes-title">Falta para vincular a nómina</p>
-            <ul>
-              @for (item of faltantes(); track item) {
-                <li>{{ item }}</li>
-              }
-            </ul>
-          </div>
-        }
       </fieldset>
     </form>
 
@@ -183,12 +163,27 @@
         <button
           type="button"
           class="lm-btn lm-btn--primary"
-          [disabled]="guardando || !puedeConfirmarVincular()"
-          (click)="confirmarVincular.emit()"
+          [disabled]="guardando"
+          (click)="onConfirmar()"
         >
           Confirmar y vincular nómina
         </button>
       }
     </footer>
   </aside>
+
+  @if (alertaFaltantesAbierta()) {
+    <app-message-box
+      mode="modal"
+      variant="warning"
+      width="md"
+      eyebrow="Licencias médicas"
+      title="Falta para vincular a nómina"
+      message="Complete estos datos antes de confirmar."
+      [sections]="seccionesFaltantes()"
+      primaryLabel="Entendido"
+      (action)="cerrarAlertaFaltantes()"
+      (dismiss)="cerrarAlertaFaltantes()"
+    />
+  }
 }

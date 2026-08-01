@@ -23,6 +23,7 @@ import { ErpPermisosRemuneracionesService } from '../core/auth/erp-permisos-remu
 import { permisosPorDefectoDesdeRol } from '../core/auth/erp-permisos-modulos.rules';
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
 import { SidebarComponent } from './sidebar.component';
+import { ShellNavUiService } from './shell-nav-ui.service';
 import { SHELL_HEADER_HEIGHT_PX, SHELL_NAV_WIDTH_PX } from './shell-navigation.config';
 
 describe('SidebarComponent', () => {
@@ -103,5 +104,20 @@ describe('SidebarComponent', () => {
       const border = getComputedStyle(link).borderWidth;
       expect(border).not.toBe('0px');
     }
+  });
+
+  it('expone id de navegación y clase abierta según ShellNavUiService', () => {
+    const aside = fixture.nativeElement.querySelector('#erp-shell-nav') as HTMLElement;
+    expect(aside).toBeTruthy();
+    expect(aside.classList.contains('erp-sidebar--open')).toBe(false);
+
+    const navUi = TestBed.inject(ShellNavUiService);
+    navUi.openNav();
+    fixture.detectChanges();
+    expect(aside.classList.contains('erp-sidebar--open')).toBe(true);
+
+    navUi.closeNav();
+    fixture.detectChanges();
+    expect(aside.classList.contains('erp-sidebar--open')).toBe(false);
   });
 });
