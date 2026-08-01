@@ -67,7 +67,8 @@ export function corsPreflightResponse(req: Request, extraAllowHeaders = ''): Res
   if (!allowed) {
     return new Response('Origen no permitido', { status: 403, headers });
   }
-  return new Response('ok', {
+  // 204 no puede llevar cuerpo (Edge runtime falla con body + 204).
+  return new Response(null, {
     status: 204,
     headers: {
       ...headers,
