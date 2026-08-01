@@ -18,7 +18,7 @@
       <div class="erp-doc-sheet__empresa">
         <p class="erp-doc-sheet__razon">{{ vista().empresa.razonSocial }}</p>
         @if (vista().empresa.rut) {
-          <p class="erp-doc-sheet__meta">{{ vista().empresa.rut }}</p>
+          <p class="erp-doc-sheet__meta">RUT {{ vista().empresa.rut }}</p>
         }
         @if (vista().empresa.direccion) {
           <p class="erp-doc-sheet__meta">{{ vista().empresa.direccion }}</p>
@@ -29,22 +29,18 @@
       </div>
     </div>
     <div class="erp-doc-sheet__top-doc">
+      <p class="erp-doc-sheet__doc-tipo">Liquidación de sueldo</p>
       @if (vista().mostrarNumeroDocumento) {
-        <p class="erp-doc-sheet__folio">N° {{ vista().numeroDocumento }}</p>
+        <p class="erp-doc-sheet__folio">N.º {{ vista().numeroDocumento }}</p>
       }
       <p class="erp-doc-sheet__periodo-corto">
-        PERIODO: {{ vista().periodoCorto || vista().periodoLabel }}
+        Período {{ vista().periodoCorto || vista().periodoLabel }}
       </p>
     </div>
   </header>
 
-  <div class="erp-doc-sheet__titulo-principal" aria-hidden="true">
-    <p>Remuneración</p>
-    <p>Liquidación de sueldo</p>
-  </div>
-
   <section class="erp-doc-sheet__panel" aria-label="Información del trabajador">
-    <h2 class="erp-doc-sheet__panel-head">Información del trabajador</h2>
+    <h2 class="erp-doc-sheet__panel-head">Trabajador</h2>
     <div class="erp-doc-sheet__info-grid">
       <dl class="erp-doc-sheet__info-col">
         <div>
@@ -62,7 +58,7 @@
       </dl>
       <dl class="erp-doc-sheet__info-col">
         <div>
-          <dt>Trabaja desde</dt>
+          <dt>Ingreso</dt>
           <dd>{{ vista().trabajador.fechaIngreso || '—' }}</dd>
         </div>
         <div>
@@ -78,15 +74,15 @@
   </section>
 
   <section class="erp-doc-sheet__panel" aria-label="Detalle">
-    <h2 class="erp-doc-sheet__panel-head">Detalle</h2>
+    <h2 class="erp-doc-sheet__panel-head">Detalle del período</h2>
 
     <div class="erp-doc-sheet__admin-row">
       <div><span>Días base</span><strong>{{ vista().valorDiasBase }}</strong></div>
       <div><span>Ausencias</span><strong>{{ vista().valorAusencias }}</strong></div>
       <div><span>Días trabajados</span><strong>{{ vista().valorDiasTrabajados }}</strong></div>
-      <div><span>UTM del período</span><strong>{{ vista().valorUtm }}</strong></div>
-      <div><span>UF del período</span><strong>{{ vista().valorUf }}</strong></div>
-      <div><span>Cargas familiares</span><strong>{{ vista().valorCargas }}</strong></div>
+      <div><span>UTM</span><strong>{{ vista().valorUtm }}</strong></div>
+      <div><span>UF</span><strong>{{ vista().valorUf }}</strong></div>
+      <div><span>Cargas</span><strong>{{ vista().valorCargas }}</strong></div>
     </div>
 
     <div class="erp-doc-sheet__inst-row">
@@ -94,11 +90,12 @@
       <div><span>Salud</span><strong>{{ vista().valorSalud }}</strong></div>
       <div><span>APV</span><strong>{{ vista().textoApvDetalle }}</strong></div>
       <div><span>Mutual</span><strong>{{ vista().valorMutual }}</strong></div>
-      <div><span>Caja de compensación</span><strong>{{ vista().valorCcaf }}</strong></div>
+      <div><span>CCAF</span><strong>{{ vista().valorCcaf }}</strong></div>
     </div>
 
     <div class="erp-doc-sheet__fin-grid">
       <div class="erp-doc-sheet__fin-col" aria-label="Haberes">
+        <p class="erp-doc-sheet__fin-title">Haberes</p>
         <table class="erp-doc-sheet__tabla">
           <tbody>
             @for (h of vista().haberesImponibles; track h.descripcion) {
@@ -141,6 +138,7 @@
       </div>
 
       <div class="erp-doc-sheet__fin-col" aria-label="Descuentos">
+        <p class="erp-doc-sheet__fin-title">Descuentos</p>
         <table class="erp-doc-sheet__tabla">
           <tbody>
             @for (d of vista().descuentosLegales; track d.descripcion) {
@@ -177,10 +175,13 @@
   <div class="erp-doc-sheet__inferior">
     <div class="erp-doc-sheet__inferior-izq">
       <section class="erp-doc-sheet__panel" aria-label="Bonificaciones y descuentos">
-        <h2 class="erp-doc-sheet__panel-head">Bonificaciones / Descuentos</h2>
-        <div class="erp-doc-sheet__panel-body erp-doc-sheet__panel-body--centro">
+        <h2 class="erp-doc-sheet__panel-head">Otros movimientos</h2>
+        <div
+          class="erp-doc-sheet__panel-body"
+          [class.erp-doc-sheet__panel-body--centro]="vista().mostrarBonificacionesVacias"
+        >
           @if (vista().mostrarBonificacionesVacias) {
-            <p>No Hay Bonificaciones / Descuentos</p>
+            <p class="erp-doc-sheet__empty">Sin bonificaciones ni descuentos adicionales</p>
           } @else {
             <table class="erp-doc-sheet__tabla">
               <tbody>
@@ -197,15 +198,16 @@
       </section>
 
       <section class="erp-doc-sheet__panel" aria-label="Pagos">
-        <h2 class="erp-doc-sheet__panel-head">Pagos</h2>
+        <h2 class="erp-doc-sheet__panel-head">Autorización de pago</h2>
         <div class="erp-doc-sheet__pagos-row">
-          <span>Autorizado</span>
+          <span>Autorizado por</span>
           <strong>{{ vista().valorAutorizadoPor }}</strong>
         </div>
       </section>
     </div>
 
     <aside class="erp-doc-sheet__caja-liquido" aria-label="Resumen de pago">
+      <p class="erp-doc-sheet__caja-titulo">Resumen a pagar</p>
       <p class="erp-doc-sheet__caja-linea">
         <span>Total remuneración</span>
         <strong>${{ vista().totalHaberes | number:'1.0-0' }}</strong>
@@ -249,6 +251,7 @@
       <div class="erp-doc-sheet__firma erp-doc-sheet__firma--empleador">
         <span class="erp-doc-sheet__firma-espacio" aria-hidden="true"></span>
         <span class="erp-doc-sheet__firma-label">{{ vista().valorFirmaEmpleador }}</span>
+        <span class="erp-doc-sheet__firma-hint">Empleador</span>
       </div>
       <div class="erp-doc-sheet__firma erp-doc-sheet__firma--trabajador">
         <span class="erp-doc-sheet__firma-espacio" aria-hidden="true"></span>

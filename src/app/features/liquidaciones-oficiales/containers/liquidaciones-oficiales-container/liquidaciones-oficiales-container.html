@@ -380,7 +380,7 @@
                         [attr.aria-label]="accionView.pdfLabel"
                         (click)="abrirPreviewPdf(fila)"
                       >
-                        <lucide-icon name="file-text" aria-hidden="true"></lucide-icon>
+                        <lucide-icon name="printer" aria-hidden="true"></lucide-icon>
                       </button>
                     </div>
                   </ng-template>
@@ -619,6 +619,14 @@
       (dismiss)="cancelarRegeneracionInterna()"
       (action)="confirmarRegeneracionInterna()"
     ></app-message-box>
+  }
+
+  @if (previewPdfCargando() && previewPdfTrabajador()) {
+    <app-workspace-loading
+      scope="viewport"
+      title="Preparando liquidación"
+      message="Estamos armando el documento para imprimir o guardar como PDF."
+    />
   }
 
   @if (previewPdfTrabajador(); as trabajadorPdf) {

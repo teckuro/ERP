@@ -18,10 +18,13 @@
       <div class="liq-preview__chrome-actions">
         <button
           type="button"
-          class="liq-preview__btn is-ghost"
+          class="liq-preview__btn liq-preview__btn--icon"
           (click)="emitirImprimir()"
-          title="Abre el diálogo de impresión del navegador con la vista de la liquidación"
-        >Imprimir</button>
+          title="Imprimir o guardar como PDF"
+          aria-label="Imprimir liquidación"
+        >
+          <lucide-icon [img]="printIcon" aria-hidden="true"></lucide-icon>
+        </button>
         <button
           type="button"
           class="liq-preview__btn liq-preview__btn--close"

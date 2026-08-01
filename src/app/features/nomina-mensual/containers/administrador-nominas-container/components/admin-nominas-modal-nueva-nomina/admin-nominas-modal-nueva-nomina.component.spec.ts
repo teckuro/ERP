@@ -212,9 +212,31 @@ describe('AdminNominasModalNuevaNominaComponent (F04 — creación directa)', ()
     cmp.setPeriodo('2026-07');
     await cmp.previsualizarDotacion();
     expect(cmp.error()).toContain('Ya existe');
+    expect(cmp.previewListo()).toBe(false);
     expect(cmp.puedeConfirmar()).toBe(false);
     await cmp.crearNomina();
     expect(confirmar).not.toHaveBeenCalled();
+  });
+
+  it('habilita previsualizar aunque empresaId aún no esté sincronizado', () => {
+    configurar({ empresaSnap: null });
+    const cmp = crearComponente();
+    cmp.setPeriodo('2026-07');
+    cmp.empresaId.set('');
+    expect(cmp.periodoEsValido()).toBe(true);
+    expect(cmp.puedePrevisualizar()).toBe(true);
+  });
+
+  it('expone empresas desde empresasDisponibles para el selector', () => {
+    configurar({ empresaSnap: null });
+    const fixture = TestBed.createComponent(AdminNominasModalNuevaNominaComponent);
+    fixture.componentRef.setInput('empresasDisponibles', [
+      resumenMock({ empresaId: '42', empresaNombre: 'Acme' }),
+    ]);
+    const cmp = fixture.componentInstance;
+    expect(cmp.empresas().map((e) => e.id)).toEqual(['42']);
+    cmp.setEmpresa(cmp.empresas()[0]!.id);
+    expect(cmp.empresaId()).toBe('42');
   });
 
   it('previsualizar carga trabajadores paginados cuando detallePaginado=true', async () => {

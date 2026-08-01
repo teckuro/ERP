@@ -154,8 +154,7 @@ export class AdminNominasModalNuevaNominaComponent {
   readonly puedePrevisualizar = computed(() => {
     return !this.guardando()
       && !this.previsualizando()
-      && this.periodoEsValido()
-      && this.empresaId().length > 0;
+      && this.periodoEsValido();
   });
 
   readonly puedeConfirmar = computed(() => {
@@ -163,7 +162,10 @@ export class AdminNominasModalNuevaNominaComponent {
     return !this.guardando() && !!snap?.puedeCrear && !!snap.fingerprint;
   });
 
-  readonly previewListo = computed(() => this.preview() !== null);
+  readonly previewListo = computed(() => {
+    const snap = this.preview();
+    return snap !== null && snap.puedeCrear;
+  });
   readonly previewUsaServidor = computed(() => this.preview()?.detallePaginado === true);
 
   readonly avisoNominaExistente = computed(() => {
@@ -198,6 +200,19 @@ export class AdminNominasModalNuevaNominaComponent {
       const inicial = this.periodoInicial();
       if (inicial && /^\d{4}-(0[1-9]|1[0-2])$/.test(inicial)) {
         this.periodo.set(inicial);
+      }
+    }, { allowSignalWrites: true });
+
+    // Empresa puede llegar después (resúmenes / JWT). Sin esto el botón queda
+    // deshabilitado para siempre si el constructor corrió con lista vacía.
+    effect(() => {
+      const list = this.empresas();
+      if (list.length === 0) {
+        return;
+      }
+      const actual = this.empresaId();
+      if (!actual || !list.some((e) => e.id === actual)) {
+        this.empresaId.set(list[0].id);
       }
     }, { allowSignalWrites: true });
 
@@ -257,19 +272,28 @@ export class AdminNominasModalNuevaNominaComponent {
     this.previsualizando.set(true);
     this.error.set(null);
     try {
+      await this.empresaActiva.asegurarCargada();
       const resultado = await this.servicio.previsualizarCreacion({
         periodo: this.periodo(),
         tipo: 'mensual',
         codigoCiclo: null,
       });
-      this.preview.set(resultado);
       if (!resultado.puedeCrear) {
-        this.error.set(mensajeBloqueoPreview(resultado));
+        this.preview.set(null);
         this.filasPreview.set([]);
         this.totalPreview.set(0);
+        this.error.set(mensajeBloqueoPreview(resultado));
         return;
       }
-      await this.cargarFilasPreview(resultado, 1, this.pageSizePreview(), '');
+      this.preview.set(resultado);
+      try {
+        await this.cargarFilasPreview(resultado, 1, this.pageSizePreview(), '');
+      } catch (errFilas) {
+        // Mantener el resumen del preview; el detalle es secundario.
+        this.filasPreview.set([]);
+        this.totalPreview.set(resultado.totales.incluidos);
+        this.error.set(mensajeErrorSupabaseParaUsuario(errFilas, 'cargar trabajadores del preview'));
+      }
     } catch (err) {
       this.preview.set(null);
       this.filasPreview.set([]);

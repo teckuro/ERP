@@ -17,7 +17,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
-import { X as XIcon } from 'lucide-angular/src/icons';
+import { Printer as PrinterIcon, X as XIcon } from 'lucide-angular/src/icons';
 
 import type { LiquidacionCalculada } from '../../../nomina-mensual/models/proceso-mensual.model';
 import {
@@ -48,6 +48,7 @@ export type LiquidacionPreviewCierre = LiquidacionDocumentoCierreInput;
 })
 export class LiquidacionPreviewModalComponent implements OnDestroy {
   readonly closeIcon = XIcon;
+  readonly printIcon = PrinterIcon;
 
   readonly liquidacion = input.required<LiquidacionCalculada>();
   readonly empresa = input.required<LiquidacionPreviewEmpresa>();

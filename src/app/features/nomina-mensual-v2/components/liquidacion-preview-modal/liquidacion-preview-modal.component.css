@@ -111,19 +111,36 @@
   outline-offset: 2px;
 }
 
+.liq-preview__btn--icon,
 .liq-preview__btn--close {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   padding: 0;
-  border-color: #cbd5e1;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  background: #fff;
 }
 
+.liq-preview__btn--icon:hover,
+.liq-preview__btn--close:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.liq-preview__btn--icon:focus-visible,
+.liq-preview__btn--close:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.liq-preview__btn--icon lucide-icon,
 .liq-preview__btn--close lucide-icon {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
 }
 
 /* -------------------------------------------------------------------------- */
