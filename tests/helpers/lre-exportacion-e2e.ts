@@ -35,7 +35,7 @@ export async function loginYAbrirLre(page: Page, nominaPeriodoId?: string | null
 
 export async function esperarBorradorLre(page: Page): Promise<'listo' | 'vacio' | 'sin_nominas'> {
   const sinNominas = page.getByText('Sin nóminas exportables', { exact: false });
-  const operativa = page.locator('.lre-operativa, .sal-ext-resumen');
+  const operativa = page.locator('.lre-panel, .lre-operativa, .sal-ext-resumen');
   const bloqueado = page.getByText('Sin líneas exportables', { exact: false });
 
   await Promise.race([
@@ -50,7 +50,7 @@ export async function esperarBorradorLre(page: Page): Promise<'listo' | 'vacio' 
 }
 
 export async function abrirPrimeraNominaExportableLre(page: Page): Promise<void> {
-  const operativa = page.locator('.lre-operativa, .sal-ext-resumen');
+  const operativa = page.locator('.lre-panel, .lre-operativa, .sal-ext-resumen');
   if (await operativa.isVisible().catch(() => false)) return;
 
   await page.getByTestId('lre:abrir-modal-nomina').click();

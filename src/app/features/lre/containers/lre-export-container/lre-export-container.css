@@ -1,107 +1,313 @@
-/* LRE export — layout local sobre sal-ext-* (espejo Previred) */
+/* LRE export — panel operativo compacto + modales amplios */
 
-.lre-alerta-inline {
+.lre-feedback {
   flex: 0 0 auto;
 }
 
-.lre-operativa {
+.lre-panel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  flex: 0 0 auto;
   min-width: 0;
+  border: 1px solid var(--sal-ext-border, #e2e8f0);
+  border-radius: 6px;
+  background: var(--sal-ext-surface, #ffffff);
+  overflow: hidden;
 }
 
-.lre-operativa__origen {
-  margin: 0;
+.lre-panel--warn {
+  border-color: #dfc383;
 }
 
-.lre-operativa__origen.sal-ext-origen {
-  align-items: stretch;
+.lre-panel--ok {
+  border-color: #b9d2b2;
 }
 
-.lre-operativa__origen .lre-resumen {
-  margin: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  align-self: stretch;
-}
-
-.lre-operativa__origen .lre-resumen div {
-  min-width: 5.5rem;
-  padding: 6px 10px;
-}
-
-.lre-operativa__acciones {
+.lre-panel__alerta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  padding: 0 2px;
+  gap: 8px 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #efd9a4;
+  background: #fff8e7;
+  color: #7a5a12;
+  font-size: 0.8125rem;
+  line-height: 1.35;
 }
 
-.lre-operativa__btn {
+.lre-panel__alerta lucide-icon {
+  flex: 0 0 auto;
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.lre-panel__alerta p {
+  margin: 0;
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.lre-panel__alerta strong {
+  font-weight: 750;
+}
+
+.lre-panel__alerta-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0 0.7rem;
+  border: 1px solid #dfc383;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #7a5a12;
+  font-size: 0.75rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.lre-panel__alerta-btn:hover {
+  background: #fffbeb;
+}
+
+.lre-panel__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 10px 12px;
+}
+
+.lre-panel__origen {
+  display: grid;
+  gap: 4px;
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.lre-panel__eyebrow {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--sal-ext-muted, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.lre-panel__title {
+  font-size: 0.9375rem;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.lre-panel__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lre-panel__chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.25rem;
+  padding: 0 7px;
+  border: 1px solid var(--sal-ext-border, #e2e8f0);
+  border-radius: 4px;
+  background: var(--sal-ext-surface-soft, #f8fafc);
+  font-size: 0.6875rem;
+  font-weight: 650;
+}
+
+.lre-panel__chip--success {
+  border-color: #b9d2b2;
+  background: #f1f7ed;
+}
+
+.lre-panel__chip--warning {
+  border-color: #dfc383;
+  background: #fff8e7;
+}
+
+.lre-panel__chip--danger {
+  border-color: #e2b8b3;
+  background: #fff1ee;
+}
+
+.lre-panel__metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 0;
+  border: 1px solid var(--sal-ext-border, #e2e8f0);
+  border-radius: 5px;
+  overflow: hidden;
+  background: var(--sal-ext-surface-soft, #f8fafc);
+}
+
+.lre-panel__metrics div {
+  display: grid;
+  gap: 1px;
+  min-width: 4.75rem;
+  padding: 5px 10px;
+  border-right: 1px solid var(--sal-ext-border, #e2e8f0);
+}
+
+.lre-panel__metrics div:last-child {
+  border-right: 0;
+}
+
+.lre-panel__metrics dt {
+  margin: 0;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--sal-ext-muted, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.lre-panel__metrics dd {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.lre-panel__metric--ok {
+  background: #f0fdf4;
+}
+
+.lre-panel__metric--ok dd {
+  color: #15803d;
+}
+
+.lre-panel__metric--danger dd {
+  color: #b91c1c;
+}
+
+.lre-panel__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--sal-ext-border, #e2e8f0);
+  background: var(--sal-ext-surface-soft, #f8fafc);
+}
+
+.lre-panel__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.lre-panel__btn {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   min-height: 1.75rem;
-  padding: 0 0.65rem;
-  border: 1px solid var(--sal-ext-border, #daddd6);
+  padding: 0 0.7rem;
+  border: 1px solid var(--sal-ext-border, #e2e8f0);
   border-radius: 4px;
-  background: var(--sal-ext-surface, #ffffff);
-  color: var(--sal-ext-ink, #172033);
+  background: #ffffff;
+  color: var(--sal-ext-ink, #1e293b);
   font-size: 0.75rem;
   font-weight: 650;
   line-height: 1;
   cursor: pointer;
-  transition:
-    border-color 150ms ease,
-    background-color 150ms ease;
 }
 
-.lre-operativa__btn lucide-icon {
+.lre-panel__btn lucide-icon {
   width: 0.85rem;
   height: 0.85rem;
 }
 
-.lre-operativa__btn:hover {
-  border-color: #c7d0c4;
-  background: var(--sal-ext-surface-soft, #fafaf7);
+.lre-panel__btn:hover {
+  border-color: #cbd5e1;
+  background: #ffffff;
 }
 
-.lre-operativa__btn--warn {
-  border-color: #dfc383;
-  background: #fff8e7;
-  color: #7a5a12;
+.lre-panel__hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--sal-ext-muted, #64748b);
 }
 
-.lre-operativa__audit {
+.lre-panel__audit {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   margin: 0 0 0 auto;
   font-size: 0.75rem;
-  color: var(--sal-ext-muted, #647084);
+  color: var(--sal-ext-muted, #64748b);
 }
 
-.lre-operativa__audit lucide-icon {
+.lre-panel__audit lucide-icon {
   width: 0.8rem;
   height: 0.8rem;
+}
+
+/* Modales amplios (espejo selección nómina) */
+:host ::ng-deep app-message-box.message-box-host-modal:has(.lre-lineas-modal),
+:host ::ng-deep app-message-box.message-box-host-modal:has(.lre-adv-modal) {
+  padding: 0.75rem 1rem;
+  align-items: stretch;
+}
+
+:host ::ng-deep .lre-lineas-modal.noia-msgbox--modal,
+:host ::ng-deep .lre-adv-modal.noia-msgbox--modal {
+  width: min(100%, calc(100vw - 2rem)) !important;
+  max-width: min(100%, calc(100vw - 2rem)) !important;
+  height: min(92vh, 56rem);
+  max-height: min(92vh, 56rem);
+  margin-inline: auto;
+}
+
+:host ::ng-deep .lre-confirm-modal.noia-msgbox--modal {
+  width: min(100%, 36rem) !important;
+  max-width: min(100%, 36rem) !important;
+}
+
+:host ::ng-deep .lre-lineas-modal .noia-msgbox__slot--modal:not(:empty),
+:host ::ng-deep .lre-adv-modal .noia-msgbox__slot--modal:not(:empty) {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0.75rem 1rem 1rem;
+  overflow: hidden;
+}
+
+:host ::ng-deep .lre-lineas-modal .noia-msgbox__slot--modal {
+  padding-top: 0;
 }
 
 .lre-lineas-modal__grid-wrap {
   display: flex;
   flex-direction: column;
-  min-height: min(24rem, 52vh);
-  max-height: min(32rem, 62vh);
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
 }
 
 .lre-lineas-modal__grid-wrap app-data-grid {
   flex: 1 1 auto;
   min-height: 0;
+  height: 100%;
 }
 
-:host ::ng-deep .lre-lineas-modal .noia-msgbox__slot--modal,
-:host ::ng-deep .lre-adv-modal .noia-msgbox__slot--modal {
-  padding-top: 0;
+:host ::ng-deep .lre-lineas-grid.erp-data-grid,
+:host ::ng-deep .lre-lineas-grid__card {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+:host ::ng-deep .lre-lineas-grid__card {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }

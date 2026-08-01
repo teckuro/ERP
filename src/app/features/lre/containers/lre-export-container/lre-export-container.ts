@@ -11,10 +11,7 @@ import { Router, RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
-import type {
-  MessageBoxSection,
-  MessageBoxVariantInput,
-} from '../../../../shared/components/ui/feedback/message-box/message-box.types';
+import type { MessageBoxSection } from '../../../../shared/components/ui/feedback/message-box/message-box.types';
 import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { DataGridComponent } from '../../../../shared/components/ui/data-grid/data-grid.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
@@ -42,19 +39,8 @@ import {
 } from '../../../remuneraciones-salidas/presenters/salida-externa-layout.presenter';
 import { construirEmptySalidaExterna } from '../../../remuneraciones-salidas/rules/salida-externa-vacio.rules';
 
-type LreAlertaInlineActionId = 'nomina' | 'advertencias' | 'conceptos' | 'none';
 type LreAlertaInlineDismissId = 'feedback' | 'none';
 type LreDescargaPendiente = 'csv' | 'formato_oficial';
-
-interface LreAlertaInlineVm {
-  variant: MessageBoxVariantInput;
-  title: string;
-  message: string;
-  primaryLabel?: string;
-  actionId: LreAlertaInlineActionId;
-  dismissible?: boolean;
-  dismissId?: LreAlertaInlineDismissId;
-}
 
 @Component({
   selector: 'app-lre-export-container',
@@ -152,31 +138,6 @@ export class LreExportContainer {
   readonly origenNotaOperativa = computed(() => {
     if (this.ultimaExportacion()) return null;
     return this.contextoOrigen()?.nota ?? null;
-  });
-
-  readonly alertaInline = computed((): LreAlertaInlineVm | null => {
-    const feedback = this.feedbackDescarga();
-    if (feedback) {
-      return {
-        variant: 'warning',
-        title: 'Descarga con advertencia',
-        message: feedback,
-        dismissible: true,
-        dismissId: 'feedback',
-        actionId: 'none',
-      };
-    }
-
-    const borrador = this.borrador();
-    if (!borrador || borrador.conceptosSinCodigoLre <= 0) return null;
-
-    return {
-      variant: 'warning',
-      title: 'Pendiente de revisión',
-      message: `${borrador.conceptosSinCodigoLre} concepto(s) sin código LRE no entran en el archivo. Complete el catálogo antes del envío a Mi DT.`,
-      primaryLabel: 'Revisar conceptos',
-      actionId: 'advertencias',
-    };
   });
 
   readonly mensajeModalAdvertencias = computed(() => {
@@ -312,20 +273,6 @@ export class LreExportContainer {
   cerrarModalConfirmarDescarga(): void {
     this.modalConfirmarDescargaAbierto.set(false);
     this.descargaPendiente.set(null);
-  }
-
-  onAlertaInlineAction(actionId: LreAlertaInlineActionId): void {
-    if (actionId === 'nomina') {
-      this.abrirModalNomina();
-      return;
-    }
-    if (actionId === 'advertencias') {
-      this.abrirModalAdvertencias();
-      return;
-    }
-    if (actionId === 'conceptos') {
-      this.irAConceptos();
-    }
   }
 
   onAlertaInlineDismiss(dismissId?: LreAlertaInlineDismissId): void {

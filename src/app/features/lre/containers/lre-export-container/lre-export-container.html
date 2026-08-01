@@ -99,63 +99,85 @@
           </a>
         </div>
       </section>
-    } @else {
-      @if (alertaInline(); as alerta) {
-        <div class="lre-alerta-inline">
+    } @else if (borrador(); as datos) {
+      @if (feedbackDescarga()) {
+        <div class="lre-feedback">
           <app-message-box
-            [variant]="alerta.variant"
-            [title]="alerta.title"
-            [message]="alerta.message"
-            [primaryLabel]="alerta.primaryLabel ?? ''"
-            [dismissible]="alerta.dismissible ?? false"
-            (action)="onAlertaInlineAction(alerta.actionId)"
-            (dismiss)="onAlertaInlineDismiss(alerta.dismissId)"
+            variant="warning"
+            title="Descarga con advertencia"
+            [message]="feedbackDescarga()!"
+            [dismissible]="true"
+            (dismiss)="onAlertaInlineDismiss('feedback')"
           />
         </div>
       }
 
-      @if (borrador(); as datos) {
-        <section class="lre-operativa" aria-label="Estado del borrador LRE">
+      <section
+        class="lre-panel"
+        [class.lre-panel--warn]="datos.conceptosSinCodigoLre > 0"
+        [class.lre-panel--ok]="datos.listoParaEnvio"
+        aria-label="Estado del borrador LRE"
+      >
+        @if (datos.conceptosSinCodigoLre > 0) {
+          <div class="lre-panel__alerta" role="status">
+            <lucide-icon name="alert-triangle" aria-hidden="true"></lucide-icon>
+            <p>
+              <strong>Pendiente de revisión.</strong>
+              {{ datos.conceptosSinCodigoLre }} concepto(s) sin código LRE no entran en el archivo.
+            </p>
+            <button
+              type="button"
+              class="lre-panel__alerta-btn"
+              data-testid="lre:revisar-conceptos"
+              (click)="abrirModalAdvertencias()"
+            >
+              Revisar conceptos
+            </button>
+          </div>
+        }
+
+        <div class="lre-panel__body">
           @if (contextoOrigen(); as origen) {
-            <div class="lre-operativa__origen sal-ext-origen">
-              <div class="sal-ext-origen__main">
-                <p class="sal-ext-origen__eyebrow">{{ origen.eyebrow }}</p>
-                <strong class="sal-ext-origen__title">{{ origen.titulo }}</strong>
-                <span class="sal-ext-origen__meta">
-                  <span class="sal-ext-origen__chip sal-ext-origen__chip--{{ origen.estadoVariant }}">
-                    {{ origen.estadoLabel }}
-                  </span>
-                  <span class="sal-ext-origen__chip">{{ origen.versionLabel }}</span>
+            <div class="lre-panel__origen">
+              <p class="lre-panel__eyebrow">{{ origen.eyebrow }}</p>
+              <strong class="lre-panel__title">{{ origen.titulo }}</strong>
+              <span class="lre-panel__meta">
+                <span class="lre-panel__chip lre-panel__chip--{{ origen.estadoVariant }}">
+                  {{ origen.estadoLabel }}
                 </span>
-              </div>
-              <dl class="lre-resumen sal-ext-resumen sal-ext-origen__metrics" aria-label="Resumen del borrador">
-                <div>
-                  <dt>Trabajadores</dt>
-                  <dd>{{ datos.totalTrabajadores }}</dd>
-                </div>
-                <div>
-                  <dt>Líneas</dt>
-                  <dd>{{ datos.lineas.length }}</dd>
-                </div>
-                <div [class.sal-ext-resumen__ok]="datos.listoParaEnvio">
-                  <dt>Envío DT</dt>
-                  <dd>{{ datos.listoParaEnvio ? 'Listo' : 'Por revisar' }}</dd>
-                </div>
-                @if (datos.conceptosSinCodigoLre > 0) {
-                  <div class="sal-ext-resumen__danger">
-                    <dt>Sin código</dt>
-                    <dd>{{ datos.conceptosSinCodigoLre }}</dd>
-                  </div>
-                }
-              </dl>
+                <span class="lre-panel__chip">{{ origen.versionLabel }}</span>
+              </span>
             </div>
           }
 
-          <div class="lre-operativa__acciones">
+          <dl class="lre-panel__metrics" aria-label="Resumen del borrador">
+            <div>
+              <dt>Trabajadores</dt>
+              <dd>{{ datos.totalTrabajadores }}</dd>
+            </div>
+            <div>
+              <dt>Líneas</dt>
+              <dd>{{ datos.lineas.length }}</dd>
+            </div>
+            <div [class.lre-panel__metric--ok]="datos.listoParaEnvio">
+              <dt>Envío DT</dt>
+              <dd>{{ datos.listoParaEnvio ? 'Listo' : 'Por revisar' }}</dd>
+            </div>
+            @if (datos.conceptosSinCodigoLre > 0) {
+              <div class="lre-panel__metric--danger">
+                <dt>Sin código</dt>
+                <dd>{{ datos.conceptosSinCodigoLre }}</dd>
+              </div>
+            }
+          </dl>
+        </div>
+
+        <div class="lre-panel__footer">
+          <div class="lre-panel__acciones">
             @if (datos.lineas.length) {
               <button
                 type="button"
-                class="lre-operativa__btn"
+                class="lre-panel__btn"
                 data-testid="lre:ver-lineas"
                 title="Ver líneas del borrador"
                 (click)="abrirModalLineas()"
@@ -164,49 +186,42 @@
                 Ver líneas ({{ datos.lineas.length }})
               </button>
             }
-            @if (datos.conceptosSinCodigoLre > 0) {
-              <button
-                type="button"
-                class="lre-operativa__btn lre-operativa__btn--warn"
-                data-testid="lre:revisar-conceptos"
-                title="Revisar conceptos sin código LRE"
-                (click)="abrirModalAdvertencias()"
-              >
-                <lucide-icon name="alert-triangle" aria-hidden="true"></lucide-icon>
-                Revisar conceptos ({{ datos.conceptosSinCodigoLre }})
-              </button>
-            }
-            @if (ultimaExportacion(); as exportacion) {
-              <p class="lre-operativa__audit" [title]="origenNotaOperativa() ?? ''">
-                <lucide-icon name="clock-3" aria-hidden="true"></lucide-icon>
-                Última descarga: {{ formatearFechaExportacionLre(exportacion.exportadoEn) }}
-                · {{ etiquetaCanal(exportacion.canal) }}
-                · {{ exportacion.usuarioLabel }}
-              </p>
-            } @else if (origenNotaOperativa(); as nota) {
-              <p class="lre-operativa__audit">{{ nota }}</p>
+            @if (datos.listoParaEnvio) {
+              <p class="lre-panel__hint">Listo para descargar el archivo de carga a Mi DT.</p>
+            } @else if (datos.lineas.length) {
+              <p class="lre-panel__hint">Complete conceptos o revise líneas antes del envío oficial.</p>
             }
           </div>
-        </section>
+          @if (ultimaExportacion(); as exportacion) {
+            <p class="lre-panel__audit" [title]="origenNotaOperativa() ?? ''">
+              <lucide-icon name="clock-3" aria-hidden="true"></lucide-icon>
+              Última descarga: {{ formatearFechaExportacionLre(exportacion.exportadoEn) }}
+              · {{ etiquetaCanal(exportacion.canal) }}
+              · {{ exportacion.usuarioLabel }}
+            </p>
+          } @else if (origenNotaOperativa(); as nota) {
+            <p class="lre-panel__audit">{{ nota }}</p>
+          }
+        </div>
+      </section>
 
-        @if (!datos.lineas.length) {
-          <app-message-box
-            variant="blocked"
-            title="Sin líneas exportables"
-            message="La liquidación no tiene conceptos con código LRE asignado. Revise el catálogo de conceptos de remuneración."
-            primaryLabel="Ir a conceptos"
-            (action)="irAConceptos()"
-          />
-        }
-      } @else if (!cargandoBorrador() && !nominaId()) {
+      @if (!datos.lineas.length) {
         <app-message-box
-          variant="info"
-          title="Seleccione una nómina"
-          message="Elija la nómina con liquidación oficial para preparar el libro de remuneraciones."
-          primaryLabel="Buscar nómina"
-          (action)="abrirModalNomina()"
+          variant="blocked"
+          title="Sin líneas exportables"
+          message="La liquidación no tiene conceptos con código LRE asignado. Revise el catálogo de conceptos de remuneración."
+          primaryLabel="Ir a conceptos"
+          (action)="irAConceptos()"
         />
       }
+    } @else if (!cargandoBorrador() && !nominaId()) {
+      <app-message-box
+        variant="info"
+        title="Seleccione una nómina"
+        message="Elija la nómina con liquidación oficial para preparar el libro de remuneraciones."
+        primaryLabel="Buscar nómina"
+        (action)="abrirModalNomina()"
+      />
     }
     @if (cargaBorradorOverlay()) {
       <app-workspace-loading
