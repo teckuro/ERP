@@ -49,6 +49,14 @@ supabase functions deploy licencia-medica-inbound --no-verify-jwt
 Write-Host "Desplegando erp-asistente-preguntor (verify JWT)..."
 supabase functions deploy erp-asistente-preguntor
 
+# Producción ERP usa el slug legacy `super-service` (app-config).
+Write-Host "Desplegando super-service (alias producción del asistente)..."
+$superDir = Join-Path $repoRoot "supabase\functions\super-service"
+$asistenteSrc = Join-Path $repoRoot "supabase\functions\erp-asistente-preguntor\index.ts"
+New-Item -ItemType Directory -Force -Path $superDir | Out-Null
+Copy-Item $asistenteSrc (Join-Path $superDir "index.ts") -Force
+supabase functions deploy super-service
+
 Write-Host ""
 Write-Host "Listo. Verifique en Dashboard -> Edge Functions -> Secrets -> ERP_ALLOWED_ORIGIN"
-Write-Host "Si el asistente usa otro nombre en producción (super-service), redeploy manual desde el dashboard."
+Write-Host "Asistente productivo: super-service (sincronizado desde erp-asistente-preguntor)."

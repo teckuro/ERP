@@ -94,3 +94,7 @@ serviceAccount*.json
 *.rar
 *.7z
 *.tar.gz
+
+# Generado por scripts/sec-deploy-edge-cors.ps1 (alias deploy de erp-asistente-preguntor)
+supabase/functions/super-service/
+
