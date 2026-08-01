@@ -1,4 +1,4 @@
-﻿.ficha-edit-modal-host {
+.ficha-edit-modal-host {
   /* Por encima del shell; popovers (search-select ~11060) deben superar el backdrop. */
   --emp-floating-z: 11070;
   --employee-floating-ui-z: 11070;
@@ -222,8 +222,8 @@
 }
 
 .ficha-edit-modal__body .ficha-edit-form :is(input, select):not([type='checkbox']):not([type='radio']) {
-  height: var(--erp-control-height, 22px);
-  min-height: var(--erp-control-height, 22px);
+  height: var(--erp-control-height, 21px);
+  min-height: var(--erp-control-height, 21px);
   border: 1px solid #d8dee8;
   border-radius: 6px;
   background: #ffffff;
@@ -232,7 +232,7 @@
 }
 
 .ficha-edit-modal__body .ficha-edit-form textarea {
-  min-height: var(--erp-control-height, 22px);
+  min-height: var(--erp-control-height, 21px);
   border: 1px solid #d8dee8;
   border-radius: 6px;
   background: #ffffff;

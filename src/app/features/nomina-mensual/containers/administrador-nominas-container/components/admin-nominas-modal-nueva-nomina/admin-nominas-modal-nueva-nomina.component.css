@@ -223,10 +223,13 @@
 }
 
 .adm-nom-modal__input {
-  font-size: 13px;
-  padding: 8px 10px;
+  box-sizing: border-box;
+  height: var(--erp-control-height, 21px);
+  min-height: var(--erp-control-height, 21px);
+  font-size: var(--erp-text-sm, 0.72rem);
+  padding: 0 8px;
   border: 1px solid var(--erp-border, #e5e7eb);
-  border-radius: 6px;
+  border-radius: 4px;
   background: #fff;
   color: var(--erp-text-strong, #0f172a);
   outline: none;

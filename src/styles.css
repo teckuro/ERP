@@ -25,7 +25,7 @@
   --bitacora-primary-soft: #eff6ff;
 
   /* ERP form controls (fuente de verdad: docs/codex/ui-form-guidelines.md) */
-  --erp-control-height: 22px;
+  --erp-control-height: 21px;
   --erp-field-min-width: 190px;
   --erp-field-max-width: 260px;
   --erp-field-row-gap: 3px;
@@ -367,8 +367,8 @@ app-listado-empleados app-data-grid > app-card.empleados-grid-card > div:first-c
 
 .parametros-page .period-arrow {
   display: inline-flex;
-  width: var(--erp-control-height, 22px);
-  height: var(--erp-control-height, 22px);
+  width: var(--erp-control-height, 21px);
+  height: var(--erp-control-height, 21px);
   align-items: center;
   justify-content: center;
   border: 1px solid #e5e7eb;
@@ -471,7 +471,7 @@ app-listado-empleados app-data-grid > app-card.empleados-grid-card > div:first-c
   align-items: center;
   justify-content: flex-start;
   gap: 6px;
-  min-height: var(--erp-control-height, 22px);
+  min-height: var(--erp-control-height, 21px);
   text-align: left;
 }
 
@@ -490,7 +490,7 @@ app-listado-empleados app-data-grid > app-card.empleados-grid-card > div:first-c
   row-gap: var(--erp-field-row-gap, 3px);
   column-gap: var(--erp-field-col-gap, 2px);
   text-align: left;
-  grid-template-rows: auto var(--erp-control-height, 22px);
+  grid-template-rows: auto var(--erp-control-height, 21px);
 }
 
 .erp-choice-radio > span:first-child {
@@ -514,7 +514,7 @@ app-listado-empleados app-data-grid > app-card.empleados-grid-card > div:first-c
   align-items: end;
   gap: var(--erp-field-row-gap, 3px);
   text-align: left;
-  grid-template-rows: auto var(--erp-control-height, 22px);
+  grid-template-rows: auto var(--erp-control-height, 21px);
 }
 
 .erp-flag-check > span:first-child {
@@ -1761,17 +1761,59 @@ app-form-empleado .form-action-button--secondary:hover:not(:disabled) {
     padding: 0;
   }
 
-  app-form-empleado .flow-tabs {
-    display: flex;
-    width: 100%;
-    gap: 0.24rem;
-    overflow-x: auto;
+  /* Stepper avanzado (móvil/tablet): carril compacto; no usar el estilo “tab con pestaña” */
+  app-form-empleado .advanced-wizard-content .advanced-stepper-scroll .flow-tabs {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    max-width: none !important;
+    gap: 6px !important;
+    overflow-x: auto !important;
     overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
     scrollbar-width: thin;
+    border: 0 !important;
+    background: transparent !important;
   }
 
-  app-form-empleado .flow-tabs li {
-    flex: 0 0 auto;
+  app-form-empleado .advanced-wizard-content .advanced-stepper-scroll .flow-tabs li {
+    flex: 0 0 auto !important;
+  }
+
+  app-form-empleado .advanced-wizard-content .advanced-stepper-scroll .flow-tab {
+    display: flex !important;
+    grid-template-columns: none !important;
+    width: auto !important;
+    min-width: 7.5rem !important;
+    max-width: 9.75rem !important;
+    min-height: 34px !important;
+    margin: 0 !important;
+    padding: 5px 8px !important;
+    border: 1px solid #dbe2ea !important;
+    border-radius: 6px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  app-form-empleado .advanced-wizard-content .advanced-stepper-scroll .flow-tab::after {
+    display: none !important;
+  }
+
+  app-form-empleado .advanced-wizard-content .advanced-stepper-scroll .flow-tab.is-active {
+    border-color: #93c5fd !important;
+    background: #eff6ff !important;
+  }
+
+  app-form-empleado .advanced-wizard-content .advanced-stepper-scroll .flow-tab.is-active::after {
+    display: none !important;
+  }
+
+  app-form-empleado .advanced-wizard-content .advanced-stepper-scroll .flow-tab span.flow-tab-num,
+  app-form-empleado .advanced-wizard-content .advanced-stepper-scroll .flow-tab-num {
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 5px !important;
   }
 
   app-form-empleado .editor-footer {
@@ -1786,7 +1828,6 @@ app-form-empleado .form-action-button--secondary:hover:not(:disabled) {
 }
 
 @media (max-width: 640px) {
-  app-form-empleado .flow-tabs,
   app-form-empleado .validation-status-grid,
   app-form-empleado .global-summary-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -1810,18 +1851,26 @@ app-form-empleado .form-action-button--secondary:hover:not(:disabled) {
     margin-left: 8px;
   }
 
-  app-form-empleado .flow-tabs li {
-    flex-basis: auto;
+  app-form-empleado .advanced-wizard-content .advanced-stepper-scroll .flow-tab {
+    min-width: 5.75rem !important;
+    max-width: 7.25rem !important;
+    min-height: 30px !important;
+    padding: 4px 7px !important;
   }
 
-  app-form-empleado .flow-tab {
-    max-width: 12.5rem;
-    min-height: 40px;
-    padding-inline: 8px;
+  app-form-empleado .advanced-wizard-content .advanced-stepper-scroll .flow-tab.is-active {
+    min-width: 7.5rem !important;
+    max-width: 9rem !important;
   }
 
-  app-form-empleado .flow-tab p {
-    white-space: normal;
+  app-form-empleado .advanced-wizard-content .advanced-stepper-scroll .flow-tab:not(.is-active) .flow-tab-state {
+    display: none !important;
+  }
+
+  app-form-empleado .advanced-wizard-content .advanced-stepper-scroll .flow-tab p {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 
   app-form-empleado .editor-footer-actions,
@@ -2277,7 +2326,7 @@ app-message-box .message-detail:not(.erp-md) code {
   gap: 16px;
   width: 100%;
   max-width: 100%;
-  --erp-control-height: 22px;
+  --erp-control-height: 21px;
   --form-border: #e5e7eb;
   --form-primary: #2563eb;
   --form-primary-soft: #eff6ff;

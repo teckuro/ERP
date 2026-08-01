@@ -61,7 +61,7 @@
         flex-direction: row;
         align-items: center;
         gap: 8px;
-        min-height: var(--erp-control-height, 22px);
+        min-height: var(--erp-control-height, 21px);
         margin: 0;
         font-size: 0.74rem;
         font-weight: 700;
@@ -305,8 +305,8 @@
         box-sizing: border-box;
         width: 100%;
         min-width: 0;
-        min-height: var(--erp-control-height, 22px);
-        height: var(--erp-control-height, 22px);
+        min-height: var(--erp-control-height, 21px);
+        height: var(--erp-control-height, 21px);
         padding: 0 6px 0 8px;
         border: 1px solid var(--prm-input-border);
         border-radius: 6px;

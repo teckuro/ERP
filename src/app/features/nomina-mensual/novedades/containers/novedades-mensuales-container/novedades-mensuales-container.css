@@ -8,7 +8,7 @@
   height: 100%;
   overflow: hidden;
   box-sizing: border-box;
-  --nm-control-height: var(--erp-control-height, 22px);
+  --nm-control-height: var(--erp-control-height, 21px);
   --nm-text-xs: var(--erp-text-xs, 0.665rem);
   --nm-text-sm: var(--erp-text-sm, 0.72rem);
   --nm-bg: #f6f7f4;

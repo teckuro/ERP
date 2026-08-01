@@ -110,12 +110,14 @@
 }
 
 .mv-dialog-input {
+  box-sizing: border-box;
   width: 100%;
-  min-height: 2.35rem;
-  padding: 0.35rem 0.65rem;
-  border-radius: 8px;
+  height: var(--erp-control-height, 21px);
+  min-height: var(--erp-control-height, 21px);
+  padding: 0 0.5rem;
+  border-radius: 6px;
   border: 1px solid #cbd5e1;
-  font-size: 0.875rem;
+  font-size: var(--erp-text-sm, 0.72rem);
   color: #0f172a;
   background: #fff;
 }

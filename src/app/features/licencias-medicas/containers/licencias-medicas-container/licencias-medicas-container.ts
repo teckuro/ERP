@@ -24,19 +24,48 @@ import { EmpleadosService } from '../../../empleados/services/empleados.service'
 import { LicenciaMedicaRevisionDrawerComponent } from '../../components/licencia-medica-revision-drawer/licencia-medica-revision-drawer.component';
 import { LicenciasMedicasNovedadesOrquestador } from '../../facade/licencias-medicas-novedades.orquestador';
 import { LicenciasMedicasRepository } from '../../data-access/licencias-medicas.repository';
-import type { LicenciaMedica, LicenciaMedicaIngresoCorreo } from '../../models/licencia-medica.model';
+import type {
+  GuardarLicenciaMedicaInput,
+  LicenciaMedica,
+  LicenciaMedicaIngresoCorreo,
+} from '../../models/licencia-medica.model';
 import {
   etiquetaEstadoLicenciaMedica,
   etiquetaOrigenLicenciaMedica,
   etiquetaTipoLicenciaMedica,
   licenciaMedicaPermiteEdicion,
+  licenciaMedicaRequiereAtencion,
 } from '../../rules/licencia-medica-novedades.rules';
 import { LicenciasMedicasService } from '../../services/licencias-medicas.service';
+
+const LM_ALERTA_SESSION_KEY = 'lm-alerta-pendientes-dismissed';
 
 type LicenciaGridRow = LicenciaMedica & {
   busqueda: string;
   filtroEstado: string;
 };
+
+function crearBorradorLocalManual(): LicenciaMedica {
+  return {
+    idLicencia: 0,
+    idEmpresa: null,
+    idPersona: null,
+    idContrato: null,
+    folio: null,
+    tipo: 'comun',
+    fechaInicio: null,
+    fechaTermino: null,
+    dias: null,
+    estado: 'pendiente_revision',
+    montoSubsidio: null,
+    observacion: null,
+    origen: 'manual',
+    idIngreso: null,
+    fechaCreacion: new Date().toISOString(),
+    nombreTrabajador: null,
+    rutTrabajador: null,
+  };
+}
 
 @Component({
   selector: 'app-licencias-medicas-container',
@@ -74,15 +103,15 @@ export class LicenciasMedicasContainer implements OnInit {
   readonly mensajeExito = signal<string | null>(null);
   readonly mensajeError = signal<string | null>(null);
   readonly alertaPendientesVisible = signal(false);
-  private alertaPendientesMostrada = false;
+  readonly esBorradorLocal = signal(false);
 
   readonly pendientesCount = computed(
-    () => this.filas().filter((f) => f.estado === 'pendiente_revision').length,
+    () => this.filas().filter((f) => licenciaMedicaRequiereAtencion(f)).length,
   );
 
   readonly mensajeAlertaPendientes = computed(() => {
     const total = this.pendientesCount();
-    return `${total} licencia${total === 1 ? '' : 's'} recibida${total === 1 ? '' : 's'} por correo requiere${total === 1 ? '' : 'n'} revisión antes de impactar nómina.`;
+    return `${total} licencia${total === 1 ? '' : 's'} pendiente${total === 1 ? '' : 's'} de revisión (correo o con datos cargados). Complete folio, trabajador y vigencia antes de vincular nómina.`;
   });
 
   readonly columns: DataGridColumn<LicenciaGridRow>[] = [
@@ -180,7 +209,7 @@ export class LicenciasMedicasContainer implements OnInit {
       pageTitle: 'Licencias médicas',
       pageSubtitle:
         pendientes > 0
-          ? `${pendientes} licencia(s) pendiente(s) de revisión.`
+          ? `${pendientes} licencia(s) con datos pendientes de revisión.`
           : 'Revise folio, trabajador y vigencia antes de vincular movimientos del mes.',
       primaryAction:
         pendientes > 0
@@ -224,14 +253,25 @@ export class LicenciasMedicasContainer implements OnInit {
 
   cerrarAlertaPendientes(): void {
     this.alertaPendientesVisible.set(false);
+    try {
+      sessionStorage.setItem(LM_ALERTA_SESSION_KEY, '1');
+    } catch {
+      /* ignore */
+    }
   }
 
   private evaluarAlertaPendientes(silenciar: boolean): void {
-    if (silenciar || this.alertaPendientesMostrada || this.pendientesCount() === 0) {
+    if (silenciar || this.pendientesCount() === 0) {
       return;
     }
+    try {
+      if (sessionStorage.getItem(LM_ALERTA_SESSION_KEY) === '1') {
+        return;
+      }
+    } catch {
+      /* ignore */
+    }
     this.alertaPendientesVisible.set(true);
-    this.alertaPendientesMostrada = true;
   }
 
   filtrarPendientes(): void {
@@ -248,34 +288,30 @@ export class LicenciasMedicasContainer implements OnInit {
       grid.pageInput = '1';
     }
 
-    const primera = this.filas().find((f) => f.estado === 'pendiente_revision');
+    const primera = this.filas().find((f) => licenciaMedicaRequiereAtencion(f));
     if (primera) {
       void this.abrirRevision(primera);
     }
   }
 
-  async abrirRegistroManual(): Promise<void> {
-    this.guardando.set(true);
-    try {
-      const creada = await this.licenciasService.guardar({
-        origen: 'manual',
-        estado: 'pendiente_revision',
-      });
-      await this.cargar();
-      await this.abrirRevision(creada);
-    } catch (err) {
-      this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'registrar la licencia'));
-    } finally {
-      this.guardando.set(false);
-    }
+  abrirRegistroManual(): void {
+    this.mensajeError.set(null);
+    this.esBorradorLocal.set(true);
+    this.ingresoSeleccionado.set(null);
+    this.licenciaSeleccionada.set(crearBorradorLocalManual());
   }
 
   async abrirRevision(row: LicenciaGridRow | LicenciaMedica): Promise<void> {
+    if (!row.idLicencia) {
+      this.mensajeError.set('No se encontró la licencia seleccionada.');
+      return;
+    }
     const licencia = await this.licenciasService.obtener(row.idLicencia);
     if (!licencia) {
       this.mensajeError.set('No se encontró la licencia seleccionada.');
       return;
     }
+    this.esBorradorLocal.set(false);
     this.licenciaSeleccionada.set(licencia);
     if (licencia.idIngreso) {
       this.ingresoSeleccionado.set(await this.licenciasRepository.obtenerIngreso(licencia.idIngreso));
@@ -287,15 +323,27 @@ export class LicenciasMedicasContainer implements OnInit {
   cerrarRevision(): void {
     this.licenciaSeleccionada.set(null);
     this.ingresoSeleccionado.set(null);
+    this.esBorradorLocal.set(false);
+  }
+
+  private payloadDesdeDrawer(): GuardarLicenciaMedicaInput | null {
+    const raw = this.drawer?.payload();
+    if (!raw) {
+      return null;
+    }
+    return {
+      ...raw,
+      idLicencia: raw.idLicencia > 0 ? raw.idLicencia : null,
+    };
   }
 
   async guardarBorradorDrawer(): Promise<void> {
     const licencia = this.licenciaSeleccionada();
-    if (licencia && !licenciaMedicaPermiteEdicion(licencia.estado)) {
+    if (licencia && !this.esBorradorLocal() && !licenciaMedicaPermiteEdicion(licencia.estado)) {
       this.mensajeError.set('Esta licencia está cerrada y no admite cambios.');
       return;
     }
-    const payload = this.drawer?.payload();
+    const payload = this.payloadDesdeDrawer();
     if (!payload) {
       return;
     }
@@ -305,7 +353,7 @@ export class LicenciasMedicasContainer implements OnInit {
       await this.orquestador.guardarBorrador(payload);
       this.mensajeExito.set('Borrador guardado.');
       this.cerrarRevision();
-      await this.cargar();
+      await this.cargar({ silenciarAlertaPendientes: true });
     } catch (err) {
       this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'guardar el borrador'));
     } finally {
@@ -315,11 +363,11 @@ export class LicenciasMedicasContainer implements OnInit {
 
   async confirmarDrawer(): Promise<void> {
     const licencia = this.licenciaSeleccionada();
-    if (licencia && !licenciaMedicaPermiteEdicion(licencia.estado)) {
+    if (licencia && !this.esBorradorLocal() && !licenciaMedicaPermiteEdicion(licencia.estado)) {
       this.mensajeError.set('Esta licencia ya está cerrada y no puede vincularse nuevamente.');
       return;
     }
-    const payload = this.drawer?.payload();
+    const payload = this.payloadDesdeDrawer();
     if (!payload) {
       return;
     }
@@ -331,7 +379,7 @@ export class LicenciasMedicasContainer implements OnInit {
         `Licencia vinculada. Se crearon ${resultado.novedadesCreadas} movimiento(s) del mes.`,
       );
       this.cerrarRevision();
-      await this.cargar();
+      await this.cargar({ silenciarAlertaPendientes: true });
     } catch (err) {
       this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'confirmar la licencia'));
     } finally {
@@ -340,12 +388,16 @@ export class LicenciasMedicasContainer implements OnInit {
   }
 
   async rechazarDrawer(): Promise<void> {
+    if (this.esBorradorLocal()) {
+      this.cerrarRevision();
+      return;
+    }
     const licencia = this.licenciaSeleccionada();
     if (licencia && !licenciaMedicaPermiteEdicion(licencia.estado)) {
       this.mensajeError.set('Esta licencia está cerrada y no puede rechazarse nuevamente.');
       return;
     }
-    const payload = this.drawer?.payload();
+    const payload = this.payloadDesdeDrawer();
     if (!payload?.idLicencia) {
       return;
     }
@@ -355,7 +407,7 @@ export class LicenciasMedicasContainer implements OnInit {
       await this.licenciasService.rechazar(payload.idLicencia, payload.observacion);
       this.mensajeExito.set('Licencia rechazada.');
       this.cerrarRevision();
-      await this.cargar();
+      await this.cargar({ silenciarAlertaPendientes: true });
     } catch (err) {
       this.mensajeError.set(mensajeErrorSupabaseParaUsuario(err, 'rechazar la licencia'));
     } finally {

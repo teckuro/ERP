@@ -16,7 +16,14 @@ import { CalendarInputComponent } from '../../../../shared/components/ui/forms/c
 import { SearchSelectComponent, SearchSelectOption, SearchSelectValue } from '../../../../shared/components/ui/forms/search-select.component';
 import type { EmpleadoListado } from '../../../empleados/models/empleado-listado.model';
 import type { LicenciaMedica, LicenciaMedicaIngresoCorreo, LicenciaMedicaTipo } from '../../models/licencia-medica.model';
-import { calcularDiasLicenciaInclusive, etiquetaEstadoLicenciaMedica, licenciaMedicaEstadoEsFinal, licenciaMedicaListaParaVincular } from '../../rules/licencia-medica-novedades.rules';
+import {
+  calcularDiasLicenciaInclusive,
+  etiquetaEstadoLicenciaMedica,
+  licenciaMedicaEstadoEsFinal,
+  licenciaMedicaListaParaVincular,
+  pendientesRevisionLicencia,
+  periodosIntersectadosLicencia,
+} from '../../rules/licencia-medica-novedades.rules';
 
 @Component({
   selector: 'app-licencia-medica-revision-drawer',
@@ -31,6 +38,7 @@ export class LicenciaMedicaRevisionDrawerComponent implements OnChanges {
   @Input() ingreso: LicenciaMedicaIngresoCorreo | null = null;
   @Input() empleados: readonly EmpleadoListado[] = [];
   @Input() guardando = false;
+  @Input() esBorradorLocal = false;
 
   @Output() cerrar = new EventEmitter<void>();
   @Output() guardarBorrador = new EventEmitter<void>();
@@ -55,15 +63,41 @@ export class LicenciaMedicaRevisionDrawerComponent implements OnChanges {
     })),
   );
 
+  readonly empleadoSeleccionado = computed(() => {
+    const id = this.idPersona();
+    return id == null ? null : (this.empleados.find((e) => e.id === id) ?? null);
+  });
+
   readonly diasCalculados = computed(() =>
     calcularDiasLicenciaInclusive(this.fechaInicio(), this.fechaTermino()),
   );
 
+  readonly periodosImpactados = computed(() =>
+    periodosIntersectadosLicencia(this.fechaInicio(), this.fechaTermino()),
+  );
+
+  readonly faltantes = computed(() =>
+    pendientesRevisionLicencia({
+      idPersona: this.idPersona(),
+      folio: this.folio(),
+      tipo: this.tipo(),
+      fechaInicio: this.fechaInicio(),
+      fechaTermino: this.fechaTermino(),
+      dias: this.dias(),
+    }),
+  );
+
   esSoloLectura(): boolean {
+    if (this.esBorradorLocal) {
+      return false;
+    }
     return licenciaMedicaEstadoEsFinal(this.licencia?.estado);
   }
 
   etiquetaEstado(): string {
+    if (this.esBorradorLocal) {
+      return 'Nueva (sin guardar)';
+    }
     return etiquetaEstadoLicenciaMedica(this.licencia?.estado);
   }
 
@@ -81,7 +115,10 @@ export class LicenciaMedicaRevisionDrawerComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (!changes['licencia']?.currentValue) {
+    if (!changes['licencia']?.currentValue && !changes['esBorradorLocal']) {
+      return;
+    }
+    if (!this.licencia) {
       return;
     }
     this.idPersona.set(this.licencia.idPersona);

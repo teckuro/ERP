@@ -1075,7 +1075,7 @@ export class DataGridPrimaryActionMenuDirective {
       }
 
       .data-grid-filter-panel {
-        --data-grid-filter-h: var(--erp-control-height, 22px);
+        --data-grid-filter-h: var(--erp-control-height, 21px);
         background: #fafaf7 !important;
         border-color: var(--data-grid-border) !important;
       }

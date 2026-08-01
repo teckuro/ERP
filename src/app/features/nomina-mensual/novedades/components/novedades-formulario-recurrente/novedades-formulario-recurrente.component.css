@@ -1,6 +1,6 @@
 app-novedades-formulario-recurrente {
   display: block;
-  --nfm-control-height: var(--nm-control-height, var(--erp-control-height, 22px));
+  --nfm-control-height: var(--nm-control-height, var(--erp-control-height, 21px));
   --nfm-text-xs: var(--nm-text-xs, var(--erp-text-xs, 0.665rem));
   --nfm-text-sm: var(--nm-text-sm, var(--erp-text-sm, 0.72rem));
   --nfm-border: var(--nm-border, #dadfd7);

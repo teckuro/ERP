@@ -765,7 +765,8 @@
 }
 
 .hd-input--compact {
-  min-height: 2.1rem;
+  height: var(--erp-control-height, 21px);
+  min-height: var(--erp-control-height, 21px);
   max-width: 11rem;
 }
 

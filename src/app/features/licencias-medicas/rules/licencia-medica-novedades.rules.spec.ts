@@ -3,8 +3,11 @@ import { describe, expect, it } from 'vitest';
 import {
   calcularDiasLicenciaInclusive,
   codigoMotivoDesdeTipoLicencia,
+  licenciaMedicaEsBorradorVacio,
   licenciaMedicaEstadoEsFinal,
   licenciaMedicaListaParaVincular,
+  licenciaMedicaRequiereAtencion,
+  pendientesRevisionLicencia,
   planificarNovedadesLicencia,
   periodosIntersectadosLicencia,
 } from './licencia-medica-novedades.rules';
@@ -58,5 +61,54 @@ describe('licencia-medica-novedades.rules', () => {
         dias: 7,
       }),
     ).toBe(false);
+  });
+
+  it('no alerta borradores manuales vacíos; sí correo o con datos', () => {
+    expect(
+      licenciaMedicaEsBorradorVacio({
+        origen: 'manual',
+        folio: null,
+        idPersona: null,
+        fechaInicio: null,
+        fechaTermino: null,
+      }),
+    ).toBe(true);
+    expect(
+      licenciaMedicaRequiereAtencion({
+        estado: 'pendiente_revision',
+        origen: 'manual',
+        folio: null,
+        idPersona: null,
+      }),
+    ).toBe(false);
+    expect(
+      licenciaMedicaRequiereAtencion({
+        estado: 'pendiente_revision',
+        origen: 'correo',
+        folio: null,
+        idPersona: null,
+      }),
+    ).toBe(true);
+    expect(
+      licenciaMedicaRequiereAtencion({
+        estado: 'pendiente_revision',
+        origen: 'manual',
+        folio: 'LM-9',
+        idPersona: null,
+      }),
+    ).toBe(true);
+  });
+
+  it('lista pendientes legibles para el drawer', () => {
+    expect(
+      pendientesRevisionLicencia({
+        idPersona: null,
+        folio: '',
+        tipo: 'comun',
+        fechaInicio: '',
+        fechaTermino: '',
+        dias: null,
+      }),
+    ).toEqual(['Trabajador', 'Folio de la licencia', 'Inicio de vigencia', 'Término de vigencia', 'Días de reposo']);
   });
 });

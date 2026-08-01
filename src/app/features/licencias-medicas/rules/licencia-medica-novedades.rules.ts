@@ -28,6 +28,77 @@ export function licenciaMedicaListaParaVincular(input: {
   );
 }
 
+/** Borrador manual vacío (sin folio ni trabajador ni vigencia). No debe alertar al entrar. */
+export function licenciaMedicaEsBorradorVacio(input: {
+  origen?: string | null;
+  folio?: string | null;
+  idPersona?: number | null;
+  fechaInicio?: string | null;
+  fechaTermino?: string | null;
+}): boolean {
+  if (input.origen === 'correo') {
+    return false;
+  }
+  const sinFolio = !(input.folio ?? '').trim();
+  const sinPersona = input.idPersona == null;
+  const sinVigencia = !(input.fechaInicio ?? '').trim() && !(input.fechaTermino ?? '').trim();
+  return sinFolio && sinPersona && sinVigencia;
+}
+
+/** Pendiente que sí debe pedir atención a RRHH (correo o con datos cargados). */
+export function licenciaMedicaRequiereAtencion(input: {
+  estado?: string | null;
+  origen?: string | null;
+  folio?: string | null;
+  idPersona?: number | null;
+  fechaInicio?: string | null;
+  fechaTermino?: string | null;
+}): boolean {
+  if (input.estado !== 'pendiente_revision') {
+    return false;
+  }
+  return !licenciaMedicaEsBorradorVacio(input);
+}
+
+export function pendientesRevisionLicencia(
+  input: {
+    idPersona: number | null;
+    folio: string;
+    tipo: string | null;
+    fechaInicio: string;
+    fechaTermino: string;
+    dias: number | null;
+  },
+): string[] {
+  const faltantes: string[] = [];
+  if (input.idPersona == null) {
+    faltantes.push('Trabajador');
+  }
+  if (!input.folio.trim()) {
+    faltantes.push('Folio de la licencia');
+  }
+  if (!(input.tipo ?? '').trim()) {
+    faltantes.push('Tipo de licencia');
+  }
+  if (!input.fechaInicio.trim()) {
+    faltantes.push('Inicio de vigencia');
+  }
+  if (!input.fechaTermino.trim()) {
+    faltantes.push('Término de vigencia');
+  }
+  if (input.dias == null || input.dias <= 0) {
+    faltantes.push('Días de reposo');
+  }
+  if (
+    input.fechaInicio.trim() &&
+    input.fechaTermino.trim() &&
+    input.fechaTermino.trim() < input.fechaInicio.trim()
+  ) {
+    faltantes.push('La fecha de término debe ser igual o posterior al inicio');
+  }
+  return faltantes;
+}
+
 function parseSqlDate(value: string): Date | null {
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value.trim());
   if (!match) {

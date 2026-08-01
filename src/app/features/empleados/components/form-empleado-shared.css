@@ -1,4 +1,4 @@
-﻿:host {
+:host {
   display: block;
   font-family: var(--erp-font-sans, system-ui, sans-serif);
   color: #111827;
@@ -273,7 +273,7 @@
   gap: 8px;
   box-sizing: border-box;
   height: auto;
-  min-height: var(--erp-control-height, 22px);
+  min-height: var(--erp-control-height, 21px);
   margin: 0;
   padding: 0 10px;
   border: 1px solid var(--form-border);
@@ -327,8 +327,8 @@
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  height: var(--erp-control-height, 22px);
-  min-height: var(--erp-control-height, 22px);
+  height: var(--erp-control-height, 21px);
+  min-height: var(--erp-control-height, 21px);
   border: 1px solid var(--form-border);
   border-radius: 6px;
   background: var(--form-surface);

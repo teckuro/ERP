@@ -194,8 +194,8 @@
 
 .param-select,
 .param-input {
-  height: var(--erp-control-height, 22px);
-  min-height: var(--erp-control-height, 22px);
+  height: var(--erp-control-height, 21px);
+  min-height: var(--erp-control-height, 21px);
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;

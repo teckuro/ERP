@@ -1,4 +1,4 @@
-﻿@import '../../form-empleado-shared.css';
+@import '../../form-empleado-shared.css';
 
 :host.labor-layout-inline-record .labor-block-head {
   display: none;
@@ -158,8 +158,8 @@
 .relation-option {
   display: inline-flex;
   box-sizing: border-box;
-  height: var(--erp-control-height, 22px);
-  min-height: var(--erp-control-height, 22px);
+  height: var(--erp-control-height, 21px);
+  min-height: var(--erp-control-height, 21px);
   align-items: center;
   gap: 8px;
   border: 1px solid #e5e7eb;
@@ -181,7 +181,7 @@
 
 .readonly-field {
   display: flex;
-  min-height: var(--erp-control-height, 22px);
+  min-height: var(--erp-control-height, 21px);
   align-items: center;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
@@ -259,7 +259,7 @@
   align-items: center;
   gap: 8px;
   height: auto;
-  min-height: var(--erp-control-height, 22px);
+  min-height: var(--erp-control-height, 21px);
   padding: 0 10px;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
@@ -549,7 +549,7 @@
 }
 
 :host.labor-layout-advanced .labor-block--pay-conditions .employee-checkbox-row {
-  min-height: var(--erp-control-height, 22px);
+  min-height: var(--erp-control-height, 21px);
 }
 
 :host.labor-layout-advanced .labor-grid--base-pay .field-message {
@@ -592,7 +592,7 @@
 }
 
 :host.labor-layout-advanced :is(.labor-block--zone, .labor-block--week) .employee-checkbox-row {
-  min-height: var(--erp-control-height, 22px);
+  min-height: var(--erp-control-height, 21px);
 }
 
 :host.labor-layout-advanced :is(.labor-block--zone, .labor-block--week) .employee-checkbox-row span {

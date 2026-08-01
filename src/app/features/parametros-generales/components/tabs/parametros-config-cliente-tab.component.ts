@@ -142,8 +142,8 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
     `
       .param-field-search-select ::ng-deep .select-field {
         border-radius: 6px;
-        height: var(--erp-control-height, 22px);
-        min-height: var(--erp-control-height, 22px);
+        height: var(--erp-control-height, 21px);
+        min-height: var(--erp-control-height, 21px);
       }
 
       .param-group--ccaf-current {

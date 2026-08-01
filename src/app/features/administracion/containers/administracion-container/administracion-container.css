@@ -336,19 +336,23 @@
 }
 
 .adm-input {
-  min-height: 38px;
+  box-sizing: border-box;
+  height: var(--erp-control-height, 21px);
+  min-height: var(--erp-control-height, 21px);
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  border-radius: 4px;
   background: #fff;
-  padding: 6px 10px;
+  padding: 0 8px;
   color: #111827;
-  font-size: 13px;
+  font-size: var(--erp-text-sm, 0.72rem);
   font-family: inherit;
 }
 
 .adm-input--area {
+  height: auto;
   min-height: 72px;
   resize: vertical;
+  padding: 6px 8px;
 }
 
 .adm-input:focus-visible {

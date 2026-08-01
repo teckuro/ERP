@@ -63,13 +63,15 @@
 }
 
 .emp-input {
-  min-height: 38px;
-  padding: 0 10px;
+  box-sizing: border-box;
+  height: var(--erp-control-height, 21px);
+  min-height: var(--erp-control-height, 21px);
+  padding: 0 8px;
   border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border-radius: 4px;
   background: #fff;
   color: var(--emp-ink);
-  font-size: 0.8125rem;
+  font-size: var(--erp-text-sm, 0.72rem);
 }
 
 .emp-input:focus {
@@ -90,7 +92,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 38px;
+  min-height: var(--erp-control-height, 21px);
   color: var(--emp-ink);
   font-size: 0.8125rem;
 }

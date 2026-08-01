@@ -75,8 +75,8 @@ export interface ParametrosInnerTabItem {
 
       .param-inner-tabs__select ::ng-deep .select-field {
         border-radius: 8px;
-        height: var(--erp-control-height, 22px);
-        min-height: var(--erp-control-height, 22px);
+        height: var(--erp-control-height, 21px);
+        min-height: var(--erp-control-height, 21px);
         font-size: 0.78rem;
       }
 

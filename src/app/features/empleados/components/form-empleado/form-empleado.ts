@@ -2872,6 +2872,11 @@ export class FormEmpleadoComponent implements OnInit, DelegadoModalAltaEmpleado 
       // Mantener el cambio de paso estable: sube al inicio útil del paso.
       target.scrollIntoView({ behavior: "auto", block: "start" });
 
+      // En carril móvil/tablet, centra el chip activo en el scroll horizontal.
+      host
+        .querySelector<HTMLElement>(".advanced-stepper-scroll .flow-tab.is-active")
+        ?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+
       // En desktop, opcionalmente enfocar el primer campo habilitado para dejar el cursor listo.
       // En mobile/tablet evitamos enfocar para no abrir el teclado automáticamente.
       if (

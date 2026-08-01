@@ -105,13 +105,15 @@ app-admin-perfil-drawer app-message-box.message-box-host-modal {
 }
 
 .adm-input {
-  min-height: 38px;
+  box-sizing: border-box;
+  height: var(--erp-control-height, 21px);
+  min-height: var(--erp-control-height, 21px);
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  border-radius: 4px;
   background: #fff;
-  padding: 6px 10px;
+  padding: 0 8px;
   color: #111827;
-  font-size: 13px;
+  font-size: var(--erp-text-sm, 0.72rem);
   font-family: inherit;
 }
 

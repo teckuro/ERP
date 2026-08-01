@@ -167,14 +167,14 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
     `
       /*
        * Tokens ERP (docs/codex/ui-form-guidelines.md): respaldo si el arbol no hereda :root;
-       * alineacion con inputs/calendar (~22px alto).
+       * alineacion con inputs/calendar (~21px alto).
        */
       :host {
         display: block;
         box-sizing: border-box;
         width: 100%;
         font-family: var(--erp-font-sans, inherit);
-        --erp-control-height: 22px;
+        /* Hereda --erp-control-height de :root / padre (21px). */
         --erp-field-min-width: 190px;
         --erp-text-sm: 0.72rem;
         --erp-select-panel-z: 11060;
@@ -199,8 +199,8 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         grid-template-columns: minmax(0, 1fr) auto auto;
         align-items: center;
         width: 100%;
-        height: var(--erp-control-height, 22px);
-        min-height: var(--erp-control-height, 22px);
+        height: var(--erp-control-height, 21px);
+        min-height: var(--erp-control-height, 21px);
         border: 1px solid #daddd6;
         border-radius: 6px;
         background: #ffffff;
@@ -257,8 +257,8 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
       .select-icon-button,
       .select-chevron {
         display: inline-flex;
-        width: calc(var(--erp-control-height, 22px) - 2px);
-        height: calc(var(--erp-control-height, 22px) - 2px);
+        width: calc(var(--erp-control-height, 21px) - 2px);
+        height: calc(var(--erp-control-height, 21px) - 2px);
         align-items: center;
         justify-content: center;
         border-radius: 5px;
@@ -301,7 +301,7 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         display: grid;
         grid-template-columns: 18px minmax(0, 1fr);
         align-items: center;
-        height: calc(var(--erp-control-height, 22px) + 6px);
+        height: calc(var(--erp-control-height, 21px) + 6px);
         border: 1px solid #daddd6;
         border-radius: 5px;
         background: #ffffff;
@@ -372,7 +372,7 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         width: 100%;
         align-items: center;
         gap: 8px;
-        min-height: calc(var(--erp-control-height, 22px) + 6px);
+        min-height: calc(var(--erp-control-height, 21px) + 6px);
         border: 0;
         border-radius: 5px;
         background: transparent;

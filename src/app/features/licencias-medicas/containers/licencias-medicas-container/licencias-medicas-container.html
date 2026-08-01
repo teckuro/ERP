@@ -38,14 +38,15 @@
   <div class="lm-grid-shell">
     <section class="lm-franja-operativa" aria-label="Contexto de licencias médicas">
       <p class="lm-franja-operativa__lead">
-        Licencias recibidas por correo. Revise folio, trabajador y vigencia antes de vincular movimientos del mes.
+        Bandeja de licencias (correo o registro manual). Complete folio, trabajador y vigencia antes de vincular
+        movimientos del mes. Un registro vacío no se crea hasta guardar.
       </p>
     </section>
 
     <app-data-grid
         className="lm-grid"
         title="Licencias médicas"
-        primaryActionLabel="Registrar manual"
+        primaryActionLabel="Registrar licencia"
         [primaryActionDisabled]="guardando() || loading()"
         (primaryAction)="abrirRegistroManual()"
         [rows]="filas()"
@@ -62,7 +63,7 @@
         cardClassName="lm-grid-card erp-fullscreen-grid-card"
         (refresh)="cargar({ silenciarAlertaPendientes: true })"
         emptyTitle="Sin licencias médicas registradas"
-        emptyDescription="Reenvíe el correo oficial a la casilla del ERP o registre una licencia manualmente."
+        emptyDescription="Reenvíe el correo oficial a la casilla del ERP o registre una licencia con folio, trabajador y vigencia."
         emptyTitleWhenFiltered="No hay licencias que coincidan con los filtros aplicados."
         emptyDescriptionWhenFiltered="Ajuste la búsqueda o restablezca los filtros para ampliar el listado."
       >
@@ -80,6 +81,7 @@
       [ingreso]="ingresoSeleccionado()"
       [empleados]="empleados()"
       [guardando]="guardando()"
+      [esBorradorLocal]="esBorradorLocal()"
       (cerrar)="cerrarRevision()"
       (guardarBorrador)="guardarBorradorDrawer()"
       (confirmarVincular)="confirmarDrawer()"

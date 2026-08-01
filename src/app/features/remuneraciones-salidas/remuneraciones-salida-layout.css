@@ -130,12 +130,13 @@
 .sal-ext-nomina-trigger__value {
   flex: 1 1 auto;
   min-width: 0;
-  min-height: 32px;
+  height: var(--erp-control-height, 21px);
+  min-height: var(--erp-control-height, 21px);
   border: 0;
   background: transparent;
   color: var(--sal-ext-ink);
   padding: 0 10px;
-  font-size: 12px;
+  font-size: var(--erp-text-sm, 0.72rem);
   font-weight: 600;
   text-align: left;
   cursor: pointer;
@@ -158,8 +159,9 @@
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  min-height: 32px;
+  width: var(--erp-control-height, 21px);
+  min-height: var(--erp-control-height, 21px);
+  height: var(--erp-control-height, 21px);
   border: 0;
   border-left: 1px solid var(--sal-ext-border);
   background: var(--sal-ext-surface-soft);

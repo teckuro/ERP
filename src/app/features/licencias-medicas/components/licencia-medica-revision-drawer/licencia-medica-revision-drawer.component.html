@@ -3,7 +3,9 @@
   <aside class="lm-drawer" aria-label="Revisión de licencia médica">
     <header class="lm-drawer__head">
       <h2 class="lm-drawer__title">
-        @if (esSoloLectura()) {
+        @if (esBorradorLocal) {
+          Registrar licencia médica
+        } @else if (esSoloLectura()) {
           Licencia médica · {{ etiquetaEstado() }}
         } @else {
           Revisar licencia médica
@@ -15,6 +17,10 @@
     @if (esSoloLectura()) {
       <p class="lm-drawer__aviso" role="status">
         Esta licencia está cerrada. Solo puede consultar los datos registrados.
+      </p>
+    } @else if (esBorradorLocal) {
+      <p class="lm-drawer__aviso" role="status">
+        Complete trabajador, folio y vigencia. No se guarda en el sistema hasta que use Guardar o Confirmar.
       </p>
     }
 
@@ -32,109 +38,156 @@
 
     <form class="lm-drawer__form" (submit)="$event.preventDefault()">
       <fieldset class="lm-drawer__fieldset" [disabled]="esSoloLectura() || guardando">
-      <label class="lm-field">
-        <span>Trabajador</span>
-        <app-search-select
-          [options]="empleadoOptions()"
-          [ngModel]="idPersona()"
-          (ngModelChange)="onEmpleadoChange($event)"
-          placeholder="Seleccione trabajador"
-          name="trabajador"
-        />
-      </label>
-
-      <div class="lm-drawer__grid">
+        <p class="lm-drawer__section-label">Trabajador</p>
         <label class="lm-field">
-          <span>Folio</span>
-          <input type="text" class="lm-input" [ngModel]="folio()" (ngModelChange)="folio.set($event)" name="folio" />
-        </label>
-        <label class="lm-field">
-          <span>Tipo</span>
-          <select class="lm-input" [ngModel]="tipo()" (ngModelChange)="tipo.set($event)" name="tipo">
-            <option value="comun">Común</option>
-            <option value="accidente">Accidente del trabajo</option>
-            <option value="maternal">Maternal</option>
-            <option value="paternal">Paternal</option>
-          </select>
-        </label>
-      </div>
-
-      <div class="lm-drawer__grid">
-        <label class="lm-field">
-          <span>Vigencia desde</span>
-          <app-calendar-input
-            [ngModel]="fechaInicio()"
-            (ngModelChange)="fechaInicio.set($event ?? ''); onFechasChange()"
-            name="fechaInicio"
+          <span>Nombre <em class="lm-req">obligatorio</em></span>
+          <app-search-select
+            [options]="empleadoOptions()"
+            [ngModel]="idPersona()"
+            (ngModelChange)="onEmpleadoChange($event)"
+            placeholder="Buscar por nombre o RUT"
+            name="trabajador"
           />
+          @if (empleadoSeleccionado(); as emp) {
+            <span class="lm-field__hint">RUT {{ emp.rut }}@if (emp.cargo) { · {{ emp.cargo }} }</span>
+          } @else {
+            <span class="lm-field__hint">Debe existir en Empleados para impactar nómina.</span>
+          }
         </label>
-        <label class="lm-field">
-          <span>Vigencia hasta</span>
-          <app-calendar-input
-            [ngModel]="fechaTermino()"
-            (ngModelChange)="fechaTermino.set($event ?? ''); onFechasChange()"
-            name="fechaTermino"
-          />
-        </label>
-      </div>
 
-      <div class="lm-drawer__grid">
-        <label class="lm-field">
-          <span>Días totales</span>
-          <input
-            type="number"
-            class="lm-input"
-            [ngModel]="dias()"
-            (ngModelChange)="dias.set($event === '' ? null : +$event)"
-            name="dias"
-            min="1"
-          />
-        </label>
-        <label class="lm-field">
-          <span>Monto subsidio</span>
-          <input
-            type="number"
-            class="lm-input"
-            [ngModel]="montoSubsidio()"
-            (ngModelChange)="montoSubsidio.set($event === '' ? null : +$event)"
-            name="montoSubsidio"
-            min="0"
-          />
-        </label>
-      </div>
+        <p class="lm-drawer__section-label">Identificación de la licencia</p>
+        <div class="lm-drawer__grid">
+          <label class="lm-field">
+            <span>Folio <em class="lm-req">obligatorio</em></span>
+            <input
+              type="text"
+              class="lm-input"
+              [ngModel]="folio()"
+              (ngModelChange)="folio.set($event)"
+              name="folio"
+              placeholder="Ej. LM-2026-001234"
+              autocomplete="off"
+            />
+            <span class="lm-field__hint">Número COMPIN, Isapre o Mutual.</span>
+          </label>
+          <label class="lm-field">
+            <span>Tipo <em class="lm-req">obligatorio</em></span>
+            <select class="lm-input" [ngModel]="tipo()" (ngModelChange)="tipo.set($event)" name="tipo">
+              <option value="comun">Enfermedad común</option>
+              <option value="accidente">Accidente del trabajo / trayecto</option>
+              <option value="maternal">Maternal / prenatal-postnatal</option>
+              <option value="paternal">Paternal</option>
+            </select>
+          </label>
+        </div>
 
-      <label class="lm-field">
-        <span>Observación</span>
-        <textarea
-          class="lm-input lm-input--area"
-          rows="3"
-          [ngModel]="observacion()"
-          (ngModelChange)="observacion.set($event)"
-          name="observacion"
-        ></textarea>
-      </label>
+        <p class="lm-drawer__section-label">Vigencia y reposo</p>
+        <div class="lm-drawer__grid">
+          <label class="lm-field">
+            <span>Desde <em class="lm-req">obligatorio</em></span>
+            <app-calendar-input
+              [ngModel]="fechaInicio()"
+              (ngModelChange)="fechaInicio.set($event ?? ''); onFechasChange()"
+              name="fechaInicio"
+            />
+          </label>
+          <label class="lm-field">
+            <span>Hasta <em class="lm-req">obligatorio</em></span>
+            <app-calendar-input
+              [ngModel]="fechaTermino()"
+              (ngModelChange)="fechaTermino.set($event ?? ''); onFechasChange()"
+              name="fechaTermino"
+            />
+          </label>
+        </div>
+
+        <div class="lm-drawer__grid">
+          <label class="lm-field">
+            <span>Días de reposo <em class="lm-req">obligatorio</em></span>
+            <input
+              type="number"
+              class="lm-input"
+              [ngModel]="dias()"
+              (ngModelChange)="dias.set($event === '' || $event == null ? null : +$event)"
+              name="dias"
+              min="1"
+            />
+            <span class="lm-field__hint">
+              @if (diasCalculados(); as calc) {
+                Calculado desde vigencia: {{ calc }} día(s). Puede ajustarlo si el documento indica otro valor.
+              } @else {
+                Se calcula al indicar ambas fechas (días corridos inclusive).
+              }
+            </span>
+          </label>
+          <label class="lm-field">
+            <span>Monto subsidio</span>
+            <input
+              type="number"
+              class="lm-input"
+              [ngModel]="montoSubsidio()"
+              (ngModelChange)="montoSubsidio.set($event === '' || $event == null ? null : +$event)"
+              name="montoSubsidio"
+              min="0"
+              placeholder="Opcional"
+            />
+            <span class="lm-field__hint">Solo si ya conoce el monto a registrar.</span>
+          </label>
+        </div>
+
+        @if (periodosImpactados().length > 0) {
+          <p class="lm-drawer__periodos" role="status">
+            Impactará nómina en:
+            <strong>{{ periodosImpactados().join(', ') }}</strong>
+          </p>
+        }
+
+        <label class="lm-field">
+          <span>Observación RRHH</span>
+          <textarea
+            class="lm-input lm-input--area"
+            rows="3"
+            [ngModel]="observacion()"
+            (ngModelChange)="observacion.set($event)"
+            name="observacion"
+            placeholder="Notas internas: prórroga, rechazo parcial, contacto con mutual, etc."
+          ></textarea>
+        </label>
+
+        @if (!esSoloLectura() && faltantes().length > 0) {
+          <div class="lm-drawer__faltantes" role="status">
+            <p class="lm-drawer__faltantes-title">Falta para vincular a nómina</p>
+            <ul>
+              @for (item of faltantes(); track item) {
+                <li>{{ item }}</li>
+              }
+            </ul>
+          </div>
+        }
       </fieldset>
     </form>
 
     <footer class="lm-drawer__foot">
       <button type="button" class="lm-btn lm-btn--ghost" [disabled]="guardando" (click)="cerrar.emit()">
-        {{ esSoloLectura() ? 'Cerrar' : 'Cancelar' }}
+        {{ esSoloLectura() || esBorradorLocal ? 'Cerrar' : 'Cancelar' }}
       </button>
       @if (!esSoloLectura()) {
-      <button type="button" class="lm-btn lm-btn--ghost" [disabled]="guardando" (click)="rechazar.emit()">
-        Rechazar
-      </button>
-      <button type="button" class="lm-btn lm-btn--ghost" [disabled]="guardando" (click)="guardarBorrador.emit()">
-        Guardar borrador
-      </button>
-      <button
-        type="button"
-        class="lm-btn lm-btn--primary"
-        [disabled]="guardando || !puedeConfirmarVincular()"
-        (click)="confirmarVincular.emit()"
-      >
-        Confirmar y vincular nómina
-      </button>
+        @if (!esBorradorLocal) {
+          <button type="button" class="lm-btn lm-btn--ghost" [disabled]="guardando" (click)="rechazar.emit()">
+            Rechazar
+          </button>
+        }
+        <button type="button" class="lm-btn lm-btn--ghost" [disabled]="guardando" (click)="guardarBorrador.emit()">
+          Guardar borrador
+        </button>
+        <button
+          type="button"
+          class="lm-btn lm-btn--primary"
+          [disabled]="guardando || !puedeConfirmarVincular()"
+          (click)="confirmarVincular.emit()"
+        >
+          Confirmar y vincular nómina
+        </button>
       }
     </footer>
   </aside>
