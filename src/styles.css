@@ -10,7 +10,7 @@
   --erp-title-sm: 0.92rem;
   --erp-title-md: 1.08rem;
 
-  /* Acción primaria ERP (alineada a MessageBox NOIA / AGENTS) */
+  /* Acción primaria ERP (alineada a MessageBox / botones del sistema) */
   --erp-primary: #2563eb;
   --erp-primary-hover: #1d4ed8;
   --erp-primary-soft: #eff6ff;

@@ -1,4 +1,4 @@
-/** Variantes oficiales NOIA (+ alias legacy `error` / `confirm` / `loading`). */
+/** Variantes oficiales del MessageBox (+ alias legacy `error` / `confirm` / `loading`). */
 export type MessageBoxVariant =
   | 'info'
   | 'success'

@@ -30,90 +30,11 @@ yarn-error.log
 !.vscode/mcp.json
 .history/*
 
-# Cursor (reglas/skills operativos versionables; el resto sigue local)
+# Cursor — reglas/skills locales (no publicar)
 .cursor/
-!.cursor/
-!.cursor/rules/
-.cursor/rules/*
-!.cursor/rules/erp-ui-noia.mdc
-!.cursor/rules/erp-ui-visual-guardrails.mdc
-!.cursor/rules/erp-codex-contract.mdc
-!.cursor/rules/erp-orquestador.mdc
-!.cursor/rules/erp-protected-files.mdc
-!.cursor/rules/erp-estandares.mdc
-!.cursor/skills/
-!.cursor/skills/erp-codex-docs/
-!.cursor/skills/erp-codex-docs/SKILL.md
-!.cursor/README.md
 
-# Guías y bitácora Codex (copia local del contrato de agente; no publicar en remoto)
-/docs/codex/*
-!/docs/codex/contexto-rapido.md
-!/docs/codex/observaciones.md
-!/docs/codex/flujo-git-developer-main.md
-!/docs/codex/ui-form-guidelines.md
-!/docs/codex/estandares/
-!/docs/codex/estandares/**
-!/docs/codex/auditorias/
-!/docs/codex/auditorias/**
-!/docs/codex/diseno/
-/docs/codex/diseno/*
-!/docs/codex/diseno/bitacora-operativa-noia.md
-!/docs/codex/diseno/noia-antipatrones-ia.md
-!/docs/codex/diseno/noia-bases-sistema-referencia.md
-!/docs/codex/diseno/noia-prompt-cursor.md
-!/docs/codex/diseno/noia-ui-guardrails.md
-!/docs/codex/diseno/noia-ui-manual.md
-!/docs/codex/diseno/noia-ui-review-checklist.md
-!/docs/codex/diseno/nomenclatura-es-camelcase-01.md
-!/docs/codex/diseno/nom-mensual-workspace-ui-01.md
-!/docs/codex/estilos/
-/docs/codex/estilos/*
-!/docs/codex/estilos/README.md
-!/docs/codex/estilos/observaciones.md
-!/docs/codex/modulos/
-/docs/codex/modulos/*
-!/docs/codex/modulos/auth/
-!/docs/codex/modulos/auth/README.md
-!/docs/codex/modulos/auth/contrato-general.md
-!/docs/codex/modulos/movimientos-variables/
-/docs/codex/modulos/movimientos-variables/*
-!/docs/codex/modulos/movimientos-variables/README.md
-!/docs/codex/modulos/nomina-mensual/
-/docs/codex/modulos/nomina-mensual/*
-!/docs/codex/modulos/nomina-mensual/README.md
-!/docs/codex/modulos/nomina-mensual/contrato-general.md
-!/docs/codex/modulos/nomina-mensual/arquitectura-administrador-generador.md
-!/docs/codex/modulos/nomina-mensual/roadmap-admin-generador-operativo-100.md
-!/docs/codex/modulos/nomina-mensual/auditorias/
-/docs/codex/modulos/nomina-mensual/auditorias/*
-!/docs/codex/modulos/nomina-mensual/auditorias/README.md
-!/docs/codex/modulos/nomina-mensual/auditorias/auditoria-admin-generador-nomina-2026-06.md
-!/docs/codex/modulos/nomina-mensual/nomina-mensual-confirmacion-flow.md
-!/docs/codex/modulos/nomina-mensual/nomina-v10-2-alcance-trabajadores-preparacion-conceptual.md
-!/docs/codex/modulos/nomina-mensual/nomina-v11-contrato-funcional-preparaciones-lotes-por-tipo.md
-!/docs/codex/modulos/nomina-mensual/nomina-v11-backend-preparaciones-lotes.md
-!/docs/codex/modulos/liquidaciones-oficiales/
-/docs/codex/modulos/liquidaciones-oficiales/*
-!/docs/codex/modulos/liquidaciones-oficiales/README.md
-!/docs/codex/modulos/liquidaciones-oficiales/contrato-general.md
-!/docs/codex/modulos/previred/
-/docs/codex/modulos/previred/*
-!/docs/codex/modulos/previred/README.md
-!/docs/codex/modulos/previred/PREVIRED-01-contrato-fase.md
-!/docs/codex/modulos/previred/formato-archivo-rem-v1.md
-!/docs/codex/modulos/previred/formato-archivo-105-posicion-reforma.md
-!/docs/codex/modulos/lre/
-/docs/codex/modulos/lre/*
-!/docs/codex/modulos/lre/README.md
-!/docs/codex/modulos/lre/LRE-01-contrato-fase.md
-!/docs/codex/modulos/reportes/
-/docs/codex/modulos/reportes/*
-!/docs/codex/modulos/reportes/README.md
-!/docs/codex/modulos/reportes/REPORTES-01-contrato-fase.md
-!/docs/codex/modulos/remuneraciones/
-/docs/codex/modulos/remuneraciones/*
-!/docs/codex/modulos/remuneraciones/movimientos-remuneracion-simple.md
+# Documentación interna de agentes / diseño / bitácora (solo local)
+/docs/
 
 # Miscellaneous
 # Copia local de respaldo del proyecto (no versionar)

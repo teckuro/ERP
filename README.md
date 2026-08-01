@@ -1,6 +1,6 @@
 # ERP Remuneraciones Chile
 
-Sistema ERP enfocado en cálculo de remuneraciones según normativa chilena 2026.
+Sistema ERP enfocado en cálculo de remuneraciones según normativa chilena.
 
 ## Módulos
 
@@ -13,13 +13,17 @@ Sistema ERP enfocado en cálculo de remuneraciones según normativa chilena 2026
 
 - Angular (frontend)
 - PostgreSQL (Supabase)
-- Node.js (futuro backend)
 
-## Documentación (agentes y reglas)
+## Setup
 
-- **Índice padre** (reglas por petición, jerarquía y temas): [`docs/codex/README.md`](docs/codex/README.md)
-- **Contrato UI del agente**: [`docs/codex/AGENTS.md`](docs/codex/AGENTS.md)
+```bash
+npm install
+cp .env.example .env   # completar valores locales
+npm start
+```
+
+Configura Supabase según `SUPABASE_SETUP.md`. No versionar `.env` ni `public/app-config.json` con claves reales.
 
 ## Estado
 
-En desarrollo 🚧
+En desarrollo

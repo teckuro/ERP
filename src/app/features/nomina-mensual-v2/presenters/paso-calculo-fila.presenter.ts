@@ -4,7 +4,7 @@
  * Convierte una `LiquidacionCalculada` del motor V1 en un viewmodel listo
  * para la grilla unificada (fila por trabajador) con desglose expandible.
  *
- * Filosofía NOIA: lenguaje RRHH. No exponer códigos técnicos del motor en
+ * Preferir lenguaje RRHH. No exponer códigos técnicos del motor en
  * los strings visibles; en su lugar, etiquetar cada concepto y cada bloque
  * en español operativo. La trazabilidad técnica completa queda fuera de
  * este presenter (vive en la liquidación cruda para el modal de
@@ -370,7 +370,7 @@ function round4(v: number): number {
 }
 
 // -----------------------------------------------------------------------------
-// Etiquetas humanas (lenguaje RRHH NOIA)
+// Etiquetas humanas (lenguaje RRHH)
 // -----------------------------------------------------------------------------
 
 export function presentarEstadoChip(estado: MotorCalculoEstadoTrabajador): EstadoCalculoChip {

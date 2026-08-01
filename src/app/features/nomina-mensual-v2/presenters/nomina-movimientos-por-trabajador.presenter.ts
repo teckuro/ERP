@@ -9,7 +9,7 @@
  *
  * Fuente de filas: `NominaPeriodoService.listarMovimientosPorTrabajador()`.
  *
- * Idea NOIA: lenguaje RRHH. La columna primaria es "Trabajador" (no "ID"),
+ * Preferir lenguaje RRHH. La columna primaria es "Trabajador" (no "ID"),
  * los subtotales son "$ Haberes" / "$ Descuentos" (no "monto agregado"), los
  * filtros agrupan multi-estado a nivel trabajador ("Con pendientes" en lugar
  * de "Estado individual del movimiento"). Origen e items planos quedan en el
@@ -109,7 +109,7 @@ export function filtroMovimientosDesdeGrid(
 }
 
 // -----------------------------------------------------------------------------
-// Etiquetas humanas (lenguaje RRHH NOIA)
+// Etiquetas humanas (lenguaje RRHH)
 // -----------------------------------------------------------------------------
 
 export function etiquetaEstadoItem(estado: EstadoItemMovimiento): string {

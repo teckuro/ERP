@@ -9,7 +9,7 @@ export type PageFrameDensity = 'compact' | 'comfortable';
 export type PageFrameTone = 'page' | 'workspace' | 'flush';
 
 /**
- * Marco de página unificado del ERP (sistema de diseño NOIA).
+ * Marco de página unificado del ERP (densidad compacta operativa).
  *
  * Encapsula header (eyebrow / title / subtitle / actions), barra de resumen,
  * toolbar, cuerpo y footer mediante content-projection. Define la capa de

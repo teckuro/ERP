@@ -1,13 +1,10 @@
-# Instrucciones para agentes (Cursor / Codex)
+# Instrucciones para agentes
 
-Contrato completo: [`docs/codex/AGENTS.md`](docs/codex/AGENTS.md)
+La documentación operativa del proyecto (`docs/`, `.cursor/`) es **local** y no forma parte del repositorio público.
 
-**Constitución técnica (obligatoria):** [`docs/codex/estandares/README.md`](docs/codex/estandares/README.md) · agentes leer primero [`EST-008-ia.md`](docs/codex/estandares/EST-008-ia.md)
+Antes de cambiar código:
 
-Inicio rápido: [`docs/codex/contexto-rapido.md`](docs/codex/contexto-rapido.md)
-
-Orquestador (fases y mapa): [`docs/codex/orquestador/estado-fases.md`](docs/codex/orquestador/estado-fases.md) · [`docs/codex/orquestador/contexto-proyecto.md`](docs/codex/orquestador/contexto-proyecto.md)
-
-Reglas del proyecto en Cursor: [`.cursor/README.md`](.cursor/README.md)
-
-UI NOIA: [`docs/codex/diseno/noia-ui-manual.md`](docs/codex/diseno/noia-ui-manual.md) · prompt copiable: [`docs/codex/diseno/noia-prompt-cursor.md`](docs/codex/diseno/noia-prompt-cursor.md)
+1. Confirmar alcance con el usuario (pantalla/módulo concreto).
+2. Preferir diff mínimo y patrones ya usados en el módulo tocado.
+3. No commitear secretos (`.env`, `app-config.json` con claves, service role).
+4. No tocar estilos globales ni SQL de producción sin pedirlo explícitamente.

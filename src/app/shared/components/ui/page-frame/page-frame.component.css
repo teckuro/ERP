@@ -1,5 +1,5 @@
 /**
- * Page-frame: sistema de diseno de pagina del ERP (NOIA, densidad compacta).
+ * Page-frame: sistema de diseno de pagina del ERP (densidad compacta).
  *
  * Capa de tokens local --pf-*: NO se define en estilos globales. Se mapea a
  * tokens globales protegidos (--erp-* / --bitacora-*) declarados en
