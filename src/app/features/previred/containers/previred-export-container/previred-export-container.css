@@ -7,7 +7,7 @@
 .prev-operativa {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
   min-width: 0;
 }
 
@@ -37,7 +37,8 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  padding: 0 2px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--sal-ext-border, #d7dde5);
 }
 
 .prev-operativa__btn {

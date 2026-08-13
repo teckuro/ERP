@@ -101,25 +101,25 @@
       </section>
     } @else if (borrador(); as datos) {
       @if (feedbackDescarga()) {
-        <div class="lre-feedback">
-          <app-message-box
-            variant="warning"
-            title="Descarga con advertencia"
-            [message]="feedbackDescarga()!"
-            [dismissible]="true"
-            (dismiss)="onAlertaInlineDismiss('feedback')"
-          />
+        <div class="sal-ext-status-note sal-ext-status-note--review" role="status">
+          <lucide-icon name="alert-triangle" aria-hidden="true"></lucide-icon>
+          <p>
+            <strong>Descarga con advertencia.</strong>
+            {{ feedbackDescarga() }}
+          </p>
+          <button
+            type="button"
+            class="sal-ext-status-note__btn"
+            (click)="onAlertaInlineDismiss('feedback')"
+          >
+            Cerrar
+          </button>
         </div>
       }
 
-      <section
-        class="lre-panel"
-        [class.lre-panel--warn]="datos.conceptosSinCodigoLre > 0"
-        [class.lre-panel--ok]="datos.listoParaEnvio"
-        aria-label="Estado del borrador LRE"
-      >
+      <section class="lre-operativa lre-panel" aria-label="Estado del borrador LRE">
         @if (datos.conceptosSinCodigoLre > 0) {
-          <div class="lre-panel__alerta" role="status">
+          <div class="sal-ext-status-note sal-ext-status-note--review" role="status">
             <lucide-icon name="alert-triangle" aria-hidden="true"></lucide-icon>
             <p>
               <strong>Pendiente de revisión.</strong>
@@ -127,80 +127,98 @@
             </p>
             <button
               type="button"
-              class="lre-panel__alerta-btn"
+              class="sal-ext-status-note__btn"
               data-testid="lre:revisar-conceptos"
               (click)="abrirModalAdvertencias()"
             >
               Revisar conceptos
             </button>
           </div>
+        } @else if (datos.listoParaEnvio) {
+          <div class="sal-ext-status-note sal-ext-status-note--success" role="status">
+            <lucide-icon name="circle-check" aria-hidden="true"></lucide-icon>
+            <p>
+              <strong>Listo para envío DT.</strong>
+              El archivo de carga a Mi DT puede descargarse.
+            </p>
+          </div>
         }
 
-        <div class="lre-panel__body">
-          @if (contextoOrigen(); as origen) {
-            <div class="lre-panel__origen">
-              <p class="lre-panel__eyebrow">{{ origen.eyebrow }}</p>
-              <strong class="lre-panel__title">{{ origen.titulo }}</strong>
-              <span class="lre-panel__meta">
-                <span class="lre-panel__chip lre-panel__chip--{{ origen.estadoVariant }}">
+        @if (contextoOrigen(); as origen) {
+          <section class="sal-ext-origen" aria-label="Origen del libro de remuneraciones">
+            <div class="sal-ext-origen__main">
+              <div class="sal-ext-origen__row">
+                <strong class="sal-ext-origen__title">{{ origen.titulo }}</strong>
+                <span class="sal-ext-origen__chip sal-ext-origen__chip--{{ origen.estadoVariant }}">
                   {{ origen.estadoLabel }}
                 </span>
-                <span class="lre-panel__chip">{{ origen.versionLabel }}</span>
-              </span>
-            </div>
-          }
-
-          <dl class="lre-panel__metrics" aria-label="Resumen del borrador">
-            <div>
-              <dt>Trabajadores</dt>
-              <dd>{{ datos.totalTrabajadores }}</dd>
-            </div>
-            <div>
-              <dt>Líneas</dt>
-              <dd>{{ datos.lineas.length }}</dd>
-            </div>
-            <div [class.lre-panel__metric--ok]="datos.listoParaEnvio">
-              <dt>Envío DT</dt>
-              <dd>{{ datos.listoParaEnvio ? 'Listo' : 'Por revisar' }}</dd>
-            </div>
-            @if (datos.conceptosSinCodigoLre > 0) {
-              <div class="lre-panel__metric--danger">
-                <dt>Sin código</dt>
-                <dd>{{ datos.conceptosSinCodigoLre }}</dd>
+                <span class="sal-ext-origen__chip">{{ origen.versionLabel }}</span>
               </div>
-            }
-          </dl>
-        </div>
+            </div>
+            <div class="sal-ext-origen__aside">
+              <dl class="sal-ext-origen__metrics sal-ext-origen__metrics--icons" aria-label="Resumen del borrador">
+                <div>
+                  <dt title="Trabajadores">
+                    <lucide-icon name="users" aria-hidden="true"></lucide-icon>
+                    <span class="sal-ext-sr-only">Trabajadores</span>
+                  </dt>
+                  <dd>{{ datos.totalTrabajadores }}</dd>
+                </div>
+                <div>
+                  <dt title="Líneas exportables">
+                    <lucide-icon name="list" aria-hidden="true"></lucide-icon>
+                    <span class="sal-ext-sr-only">Líneas</span>
+                  </dt>
+                  <dd>{{ datos.lineas.length }}</dd>
+                </div>
+                <div [class.sal-ext-origen__metrics--ok]="datos.listoParaEnvio">
+                  <dt title="Envío a Mi DT">
+                    <lucide-icon name="send" aria-hidden="true"></lucide-icon>
+                    <span class="sal-ext-sr-only">Envío DT</span>
+                  </dt>
+                  <dd>{{ datos.listoParaEnvio ? 'Listo' : 'Por revisar' }}</dd>
+                </div>
+                @if (datos.conceptosSinCodigoLre > 0) {
+                  <div class="sal-ext-origen__metrics--danger">
+                    <dt title="Conceptos sin código LRE">
+                      <lucide-icon name="alert-triangle" aria-hidden="true"></lucide-icon>
+                      <span class="sal-ext-sr-only">Sin código</span>
+                    </dt>
+                    <dd>{{ datos.conceptosSinCodigoLre }}</dd>
+                  </div>
+                }
+              </dl>
+            </div>
+          </section>
+        }
 
-        <div class="lre-panel__footer">
-          <div class="lre-panel__acciones">
-            @if (datos.lineas.length) {
-              <button
-                type="button"
-                class="lre-panel__btn"
-                data-testid="lre:ver-lineas"
-                title="Ver líneas del borrador"
-                (click)="abrirModalLineas()"
-              >
-                <lucide-icon name="list" aria-hidden="true"></lucide-icon>
-                Ver líneas ({{ datos.lineas.length }})
-              </button>
-            }
-            @if (datos.listoParaEnvio) {
-              <p class="lre-panel__hint">Listo para descargar el archivo de carga a Mi DT.</p>
-            } @else if (datos.lineas.length) {
-              <p class="lre-panel__hint">Complete conceptos o revise líneas antes del envío oficial.</p>
-            }
-          </div>
+        <div class="sal-ext-actions">
+          @if (datos.lineas.length) {
+            <button
+              type="button"
+              class="lre-operativa__btn"
+              data-testid="lre:ver-lineas"
+              title="Ver líneas del borrador"
+              (click)="abrirModalLineas()"
+            >
+              <lucide-icon name="list" aria-hidden="true"></lucide-icon>
+              Ver líneas ({{ datos.lineas.length }})
+            </button>
+          }
+          @if (datos.listoParaEnvio) {
+            <p class="lre-operativa__hint">Listo para descargar el archivo de carga a Mi DT.</p>
+          } @else if (datos.lineas.length) {
+            <p class="lre-operativa__hint">Complete conceptos o revise líneas antes del envío oficial.</p>
+          }
           @if (ultimaExportacion(); as exportacion) {
-            <p class="lre-panel__audit" [title]="origenNotaOperativa() ?? ''">
+            <p class="lre-operativa__audit" [title]="origenNotaOperativa() ?? ''">
               <lucide-icon name="clock-3" aria-hidden="true"></lucide-icon>
               Última descarga: {{ formatearFechaExportacionLre(exportacion.exportadoEn) }}
               · {{ etiquetaCanal(exportacion.canal) }}
               · {{ exportacion.usuarioLabel }}
             </p>
           } @else if (origenNotaOperativa(); as nota) {
-            <p class="lre-panel__audit">{{ nota }}</p>
+            <p class="lre-operativa__audit">{{ nota }}</p>
           }
         </div>
       </section>
