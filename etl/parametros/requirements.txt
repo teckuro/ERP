@@ -1,0 +1,16 @@
+# Pipeline parámetros v6.11 (Python 3.12+ recomendado; probado también en 3.14)
+requests==2.33.1
+urllib3==2.6.3
+beautifulsoup4==4.14.3
+lxml==6.1.0
+pdfplumber==0.11.9
+pdfminer.six==20251230
+pypdfium2==5.7.1
+pandas==3.0.2
+numpy==2.4.4
+openpyxl==3.1.5
+xlrd==2.0.2
+psycopg[binary]==3.3.3
+
+# Tests
+pytest==8.4.1

@@ -1,12 +1,21 @@
 name: sync-parametros-v611
 
+# Carga mensual de parámetros previsionales (UF, UTM, topes, SIS, impuesto único,
+# asignación familiar, AFC, IPS...) desde fuentes oficiales (PreviRed, SII, SP, IPS)
+# usando el pipeline de etl/parametros. Ver etl/parametros/README.md.
+
 on:
   schedule:
-    # Corre el dia 1 de cada mes a las 08:00 UTC.
-    - cron: "0 8 1 * *"
+    # Días 3, 6 y 9 a las 12:00 UTC. PreviRed publica los indicadores en los primeros
+    # días del mes; las corridas extra son reintentos (el SQL es reejecutable).
+    - cron: "0 12 3,6,9 * *"
   workflow_dispatch:
     inputs:
-      apply:
+      periodo:
+        description: "Periodo YYYY-MM (vacío = mes actual en Chile)"
+        required: false
+        default: ""
+      aplicar:
         description: "Aplicar SQL a Supabase"
         required: true
         default: "true"
@@ -19,40 +28,97 @@ concurrency:
   group: sync-parametros-v611
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   sync:
     runs-on: ubuntu-latest
-    env:
-      SQL_PATH: scripts/parametros-v611/data/parametros_mensuales_v611.sql
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: etl/parametros
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: etl/parametros/requirements.txt
 
-      - name: Install psql
+      - name: Instalar psql
         run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
 
-      - name: Generate monthly SQL
-        run: python scripts/parametros-v611/scripts/mensual/render_parametros_mensuales_v611.py
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
 
-      - name: Upload generated SQL
-        uses: actions/upload-artifact@v4
+      - name: Resolver periodo
+        id: periodo
+        env:
+          PERIODO_INPUT: ${{ inputs.periodo }}
+        run: |
+          p="${PERIODO_INPUT:-}"
+          if [ -z "$p" ]; then p="$(TZ=America/Santiago date +%Y-%m)"; fi
+          if ! [[ "$p" =~ ^20[0-9]{2}-(0[1-9]|1[0-2])$ ]]; then
+            echo "::error::Periodo inválido: $p (formato YYYY-MM)"; exit 1
+          fi
+          echo "periodo=$p" >> "$GITHUB_OUTPUT"
+          echo "Periodo: $p"
+
+      - name: Tests del pipeline
+        run: python -m pytest -q
+
+      - name: Generar JSON + SQL (fuentes estrictas)
+        env:
+          PYTHONIOENCODING: utf-8
+        run: >
+          python 00_ejecutar_flujo_parametros_v611.py
+          --periodo "${{ steps.periodo.outputs.periodo }}"
+          --modo full
+          --strict-sources
+          --seed skip
+
+      - name: Subir artefactos del periodo
+        if: always()
+        uses: actions/upload-artifact@v5
         with:
-          name: parametros_mensuales_v611_sql
-          path: ${{ env.SQL_PATH }}
+          name: parametros-${{ steps.periodo.outputs.periodo }}
+          path: etl/parametros/runs/${{ steps.periodo.outputs.periodo }}
+          if-no-files-found: warn
+          retention-days: 90
 
-      - name: Apply SQL to Supabase
-        if: github.event_name == 'schedule' || inputs.apply == 'true'
+      - name: Aplicar SQL en Supabase
+        if: github.event_name == 'schedule' || inputs.aplicar == 'true'
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PERIODO: ${{ steps.periodo.outputs.periodo }}
         run: |
-          test -n "$SUPABASE_DB_URL"
-          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$SQL_PATH"
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::error::Falta el secreto de repositorio SUPABASE_DB_URL (URL del pooler de Supabase)."
+            exit 1
+          fi
+          psql "$SUPABASE_DB_URL" -X -q -v ON_ERROR_STOP=1 \
+            -f "runs/${PERIODO}/mensual/parametros_mensuales_${PERIODO}_v611.sql"
 
+      - name: Verificar carga
+        if: github.event_name == 'schedule' || inputs.aplicar == 'true'
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PERIODO: ${{ steps.periodo.outputs.periodo }}
+        run: |
+          resultado="$(psql "$SUPABASE_DB_URL" -X -q -A -t -v ON_ERROR_STOP=1 -v periodo="$PERIODO" <<'SQL'
+          select count(*) || ' ' || coalesce(max(uf)::text, '-') || ' ' || coalesce(max(utm)::text, '-')
+          from public.parametros_generales where periodo = :'periodo';
+          SQL
+          )"
+          echo "parametros_generales $PERIODO -> filas/UF/UTM: $resultado"
+          case "$resultado" in
+            1\ *) echo "OK" ;;
+            *) echo "::error::No quedó exactamente una fila de parametros_generales para $PERIODO"; exit 1 ;;
+          esac
