@@ -1,0 +1,1195 @@
+{
+  "afp": [
+    {
+      "codigo": "03",
+      "nombre": "Cuprum",
+      "tasa_obligatoria": 10.0,
+      "comision": 1.44,
+      "sis": 0.0,
+      "tasa_empleador": 0.0,
+      "vigente": true,
+      "forma_pago_apvi": null,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "codigo": "05",
+      "nombre": "Habitat",
+      "tasa_obligatoria": 10.0,
+      "comision": 1.27,
+      "sis": 0.0,
+      "tasa_empleador": 0.0,
+      "vigente": true,
+      "forma_pago_apvi": null,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "codigo": "08",
+      "nombre": "Provida",
+      "tasa_obligatoria": 10.0,
+      "comision": 1.45,
+      "sis": 0.0,
+      "tasa_empleador": 0.0,
+      "vigente": true,
+      "forma_pago_apvi": null,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "codigo": "33",
+      "nombre": "Capital",
+      "tasa_obligatoria": 10.0,
+      "comision": 1.44,
+      "sis": 0.0,
+      "tasa_empleador": 0.0,
+      "vigente": true,
+      "forma_pago_apvi": null,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "codigo": "34",
+      "nombre": "Modelo",
+      "tasa_obligatoria": 10.0,
+      "comision": 0.58,
+      "sis": 0.0,
+      "tasa_empleador": 0.0,
+      "vigente": true,
+      "forma_pago_apvi": null,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "codigo": "35",
+      "nombre": "Uno",
+      "tasa_obligatoria": 10.0,
+      "comision": 0.46,
+      "sis": 0.0,
+      "tasa_empleador": 0.0,
+      "vigente": true,
+      "forma_pago_apvi": null,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    }
+  ],
+  "afp_vigencia": [
+    {
+      "afp_nombre": "Cuprum",
+      "tasa_obligatoria": 10.0,
+      "comision": 1.44,
+      "sis": 1.54,
+      "tasa_empleador": 0.0,
+      "tope_imponible_uf": 89.9,
+      "forma_pago_apvi": null,
+      "vigente": true,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "afp_nombre": "Habitat",
+      "tasa_obligatoria": 10.0,
+      "comision": 1.27,
+      "sis": 1.54,
+      "tasa_empleador": 0.0,
+      "tope_imponible_uf": 89.9,
+      "forma_pago_apvi": null,
+      "vigente": true,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "afp_nombre": "Provida",
+      "tasa_obligatoria": 10.0,
+      "comision": 1.45,
+      "sis": 1.54,
+      "tasa_empleador": 0.0,
+      "tope_imponible_uf": 89.9,
+      "forma_pago_apvi": null,
+      "vigente": true,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "afp_nombre": "Capital",
+      "tasa_obligatoria": 10.0,
+      "comision": 1.44,
+      "sis": 1.54,
+      "tasa_empleador": 0.0,
+      "tope_imponible_uf": 89.9,
+      "forma_pago_apvi": null,
+      "vigente": true,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "afp_nombre": "Modelo",
+      "tasa_obligatoria": 10.0,
+      "comision": 0.58,
+      "sis": 1.54,
+      "tasa_empleador": 0.0,
+      "tope_imponible_uf": 89.9,
+      "forma_pago_apvi": null,
+      "vigente": true,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "afp_nombre": "Uno",
+      "tasa_obligatoria": 10.0,
+      "comision": 0.46,
+      "sis": 1.54,
+      "tasa_empleador": 0.0,
+      "tope_imponible_uf": 89.9,
+      "forma_pago_apvi": null,
+      "vigente": true,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    }
+  ],
+  "salud": [
+    {
+      "codigo": "07",
+      "nombre": "Fonasa",
+      "tipo": "FONASA",
+      "porcentaje_cotizacion": 7.0,
+      "vigente": true,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "codigo": "00",
+      "nombre": "Sin Isapre",
+      "tipo": "ISAPRE",
+      "porcentaje_cotizacion": 7.0,
+      "vigente": true,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "codigo": "01",
+      "nombre": "Banmédica",
+      "tipo": "ISAPRE",
+      "porcentaje_cotizacion": 7.0,
+      "vigente": true,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "codigo": "02",
+      "nombre": "Consalud",
+      "tipo": "ISAPRE",
+      "porcentaje_cotizacion": 7.0,
+      "vigente": true,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "codigo": "03",
+      "nombre": "Vida Tres",
+      "tipo": "ISAPRE",
+      "porcentaje_cotizacion": 7.0,
+      "vigente": true,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "codigo": "04",
+      "nombre": "Colmena",
+      "tipo": "ISAPRE",
+      "porcentaje_cotizacion": 7.0,
+      "vigente": true,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "codigo": "05",
+      "nombre": "Cruz Blanca",
+      "tipo": "ISAPRE",
+      "porcentaje_cotizacion": 7.0,
+      "vigente": true,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "codigo": "10",
+      "nombre": "Nueva Masvida",
+      "tipo": "ISAPRE",
+      "porcentaje_cotizacion": 7.0,
+      "vigente": true,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "codigo": "11",
+      "nombre": "Isalud",
+      "tipo": "ISAPRE",
+      "porcentaje_cotizacion": 7.0,
+      "vigente": true,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    },
+    {
+      "codigo": "12",
+      "nombre": "Fundación",
+      "tipo": "ISAPRE",
+      "porcentaje_cotizacion": 7.0,
+      "vigente": true,
+      "vigencia_inicio": "2026-01-01",
+      "vigencia_fin": null
+    }
+  ],
+  "entidad_previsional_ips": [
+    {
+      "nombre": "IPS (Ex-INP)",
+      "vigente": true
+    }
+  ],
+  "ex_caja_previsional": [
+    {
+      "codigo_base": "01",
+      "codigo_previred_ejemplo": "0104",
+      "nombre": "Empart",
+      "vigente": true
+    },
+    {
+      "codigo_base": "02",
+      "codigo_previred_ejemplo": "0201",
+      "nombre": "Bancaria",
+      "vigente": true
+    },
+    {
+      "codigo_base": "07",
+      "codigo_previred_ejemplo": "0701",
+      "nombre": "Triomar",
+      "vigente": true
+    },
+    {
+      "codigo_base": "08",
+      "codigo_previred_ejemplo": "0801",
+      "nombre": "Hípica Nacional",
+      "vigente": true
+    },
+    {
+      "codigo_base": "09",
+      "codigo_previred_ejemplo": "0901",
+      "nombre": "Servicios de Seguro Social",
+      "vigente": true
+    },
+    {
+      "codigo_base": "10",
+      "codigo_previred_ejemplo": "1001",
+      "nombre": "Empleados de Emos",
+      "vigente": true
+    },
+    {
+      "codigo_base": "11",
+      "codigo_previred_ejemplo": "1101",
+      "nombre": "Obreros de Emos",
+      "vigente": true
+    },
+    {
+      "codigo_base": "12",
+      "codigo_previred_ejemplo": "1202",
+      "nombre": "Caja Ferro",
+      "vigente": true
+    },
+    {
+      "codigo_base": "14",
+      "codigo_previred_ejemplo": "1401",
+      "nombre": "Canaempu: Periodistas",
+      "vigente": true
+    },
+    {
+      "codigo_base": "16",
+      "codigo_previred_ejemplo": "1601",
+      "nombre": "Caja de Previsión Social de los EE",
+      "vigente": true
+    },
+    {
+      "codigo_base": "18",
+      "codigo_previred_ejemplo": "1801",
+      "nombre": "OO Municipales de la Republica",
+      "vigente": true
+    },
+    {
+      "codigo_base": "21",
+      "codigo_previred_ejemplo": "2101",
+      "nombre": "Sección Esp.Previsión Empleados",
+      "vigente": true
+    },
+    {
+      "codigo_base": "22",
+      "codigo_previred_ejemplo": "2201",
+      "nombre": "Caja de Previsión de Gildemeister",
+      "vigente": true
+    },
+    {
+      "codigo_base": "23",
+      "codigo_previred_ejemplo": "2301",
+      "nombre": "Mauricio, Hochschild",
+      "vigente": true
+    },
+    {
+      "codigo_base": "24",
+      "codigo_previred_ejemplo": "2401",
+      "nombre": "Secgasco",
+      "vigente": true
+    }
+  ],
+  "regimen_ex_caja": [
+    {
+      "codigo_previred": "0104",
+      "codigo_base": "01",
+      "codigo_subcaja": "04",
+      "ex_caja_nombre": "Empart",
+      "nombre": "Régimen 4",
+      "glosa_previred": "Empart - Régimen 4 Código Glosa",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "0106",
+      "codigo_base": "01",
+      "codigo_subcaja": "06",
+      "ex_caja_nombre": "Empart",
+      "nombre": "Régimen 6",
+      "glosa_previred": "Empart - Régimen 6",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "0201",
+      "codigo_base": "02",
+      "codigo_subcaja": "01",
+      "ex_caja_nombre": "Bancaria",
+      "nombre": "Régimen 1",
+      "glosa_previred": "Bancaria - Régimen 1",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "0202",
+      "codigo_base": "02",
+      "codigo_subcaja": "02",
+      "ex_caja_nombre": "Bancaria",
+      "nombre": "Régimen 2",
+      "glosa_previred": "Bancaria - Régimen 2",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "0203",
+      "codigo_base": "02",
+      "codigo_subcaja": "03",
+      "ex_caja_nombre": "Bancaria",
+      "nombre": "Régimen 3",
+      "glosa_previred": "Bancaria - Régimen 3",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "0214",
+      "codigo_base": "02",
+      "codigo_subcaja": "14",
+      "ex_caja_nombre": "Bancaria",
+      "nombre": "Régimen 14",
+      "glosa_previred": "Bancaria - Régimen 14",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "0221",
+      "codigo_base": "02",
+      "codigo_subcaja": "21",
+      "ex_caja_nombre": "Bancaria",
+      "nombre": "Régimen 21",
+      "glosa_previred": "Bancaria - Régimen 21",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "0234",
+      "codigo_base": "02",
+      "codigo_subcaja": "34",
+      "ex_caja_nombre": "Bancaria",
+      "nombre": "Régimen 34",
+      "glosa_previred": "Bancaria - Régimen 34",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "0701",
+      "codigo_base": "07",
+      "codigo_subcaja": "01",
+      "ex_caja_nombre": "Triomar",
+      "nombre": "Régimen 1",
+      "glosa_previred": "Triomar - Régimen 1",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "0702",
+      "codigo_base": "07",
+      "codigo_subcaja": "02",
+      "ex_caja_nombre": "Triomar",
+      "nombre": "Régimen 2",
+      "glosa_previred": "Triomar - Régimen 2",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "0703",
+      "codigo_base": "07",
+      "codigo_subcaja": "03",
+      "ex_caja_nombre": "Triomar",
+      "nombre": "Régimen 3",
+      "glosa_previred": "Triomar - Régimen 3",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "0704",
+      "codigo_base": "07",
+      "codigo_subcaja": "04",
+      "ex_caja_nombre": "Triomar",
+      "nombre": "Régimen 4",
+      "glosa_previred": "Triomar - Régimen 4",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "0801",
+      "codigo_base": "08",
+      "codigo_subcaja": "01",
+      "ex_caja_nombre": "Hípica Nacional",
+      "nombre": "Régimen 1",
+      "glosa_previred": "Hípica Nacional - Régimen 1",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "0802",
+      "codigo_base": "08",
+      "codigo_subcaja": "02",
+      "ex_caja_nombre": "Hípica Nacional",
+      "nombre": "Régimen 2",
+      "glosa_previred": "Hípica Nacional - Régimen 2",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "0803",
+      "codigo_base": "08",
+      "codigo_subcaja": "03",
+      "ex_caja_nombre": "Hípica Nacional",
+      "nombre": "Régimen 3",
+      "glosa_previred": "Hípica Nacional - Régimen 3",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "0804",
+      "codigo_base": "08",
+      "codigo_subcaja": "04",
+      "ex_caja_nombre": "Hípica Nacional",
+      "nombre": "Régimen 4",
+      "glosa_previred": "Hípica Nacional - Régimen 4",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "0901",
+      "codigo_base": "09",
+      "codigo_subcaja": "01",
+      "ex_caja_nombre": "Servicios de Seguro Social",
+      "nombre": "Régimen 1",
+      "glosa_previred": "Servicios de Seguro Social - Régimen 1",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "0902",
+      "codigo_base": "09",
+      "codigo_subcaja": "02",
+      "ex_caja_nombre": "Servicios de Seguro Social",
+      "nombre": "Régimen 2",
+      "glosa_previred": "Servicios de Seguro Social - Régimen 2",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1001",
+      "codigo_base": "10",
+      "codigo_subcaja": "01",
+      "ex_caja_nombre": "Empleados de Emos",
+      "nombre": "Régimen 1",
+      "glosa_previred": "Empleados de Emos - Régimen 1",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1101",
+      "codigo_base": "11",
+      "codigo_subcaja": "01",
+      "ex_caja_nombre": "Obreros de Emos",
+      "nombre": "Régimen 1",
+      "glosa_previred": "Obreros de Emos - Régimen 1",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1202",
+      "codigo_base": "12",
+      "codigo_subcaja": "02",
+      "ex_caja_nombre": "Caja Ferro",
+      "nombre": "Régimen 2",
+      "glosa_previred": "Caja Ferro - Régimen 2",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1203",
+      "codigo_base": "12",
+      "codigo_subcaja": "03",
+      "ex_caja_nombre": "Caja Ferro",
+      "nombre": "Régimen 3",
+      "glosa_previred": "Caja Ferro - Régimen 3",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1204",
+      "codigo_base": "12",
+      "codigo_subcaja": "04",
+      "ex_caja_nombre": "Caja Ferro",
+      "nombre": "Régimen 4",
+      "glosa_previred": "Caja Ferro - Régimen 4",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1205",
+      "codigo_base": "12",
+      "codigo_subcaja": "05",
+      "ex_caja_nombre": "Caja Ferro",
+      "nombre": "Régimen 5",
+      "glosa_previred": "Caja Ferro - Régimen 5",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1207",
+      "codigo_base": "12",
+      "codigo_subcaja": "07",
+      "ex_caja_nombre": "Caja Ferro",
+      "nombre": "Régimen 7",
+      "glosa_previred": "Caja Ferro - Régimen 7",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1401",
+      "codigo_base": "14",
+      "codigo_subcaja": "01",
+      "ex_caja_nombre": "Canaempu: Periodistas",
+      "nombre": "Régimen 1",
+      "glosa_previred": "Canaempu: Periodistas - Régimen 1",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1402",
+      "codigo_base": "14",
+      "codigo_subcaja": "02",
+      "ex_caja_nombre": "Canaempu: Periodistas",
+      "nombre": "Régimen 2",
+      "glosa_previred": "Canaempu: Periodistas - Régimen 2",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1403",
+      "codigo_base": "14",
+      "codigo_subcaja": "03",
+      "ex_caja_nombre": "Canaempu: Periodistas",
+      "nombre": "Régimen 3",
+      "glosa_previred": "Canaempu: Periodistas - Régimen 3",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1404",
+      "codigo_base": "14",
+      "codigo_subcaja": "04",
+      "ex_caja_nombre": "Canaempu: Periodistas",
+      "nombre": "Régimen 4",
+      "glosa_previred": "Canaempu: Periodistas - Régimen 4",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1405",
+      "codigo_base": "14",
+      "codigo_subcaja": "05",
+      "ex_caja_nombre": "Canaempu: Periodistas",
+      "nombre": "Régimen 5",
+      "glosa_previred": "Canaempu: Periodistas - Régimen 5",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1406",
+      "codigo_base": "14",
+      "codigo_subcaja": "06",
+      "ex_caja_nombre": "Canaempu: Periodistas",
+      "nombre": "Régimen 6",
+      "glosa_previred": "Canaempu: Periodistas - Régimen 6",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1407",
+      "codigo_base": "14",
+      "codigo_subcaja": "07",
+      "ex_caja_nombre": "Canaempu: Periodistas",
+      "nombre": "Régimen 7",
+      "glosa_previred": "Canaempu: Periodistas - Régimen 7",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1408",
+      "codigo_base": "14",
+      "codigo_subcaja": "08",
+      "ex_caja_nombre": "Canaempu: Periodistas",
+      "nombre": "Régimen 8",
+      "glosa_previred": "Canaempu: Periodistas - Régimen 8",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1601",
+      "codigo_base": "16",
+      "codigo_subcaja": "01",
+      "ex_caja_nombre": "Caja de Previsión Social de los EE",
+      "nombre": "Régimen 1",
+      "glosa_previred": "Caja de Previsión Social de los EE - Régimen 1",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1602",
+      "codigo_base": "16",
+      "codigo_subcaja": "02",
+      "ex_caja_nombre": "Caja de Previsión Social de los EE",
+      "nombre": "Régimen 2",
+      "glosa_previred": "Caja de Previsión Social de los EE - Régimen 2",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1801",
+      "codigo_base": "18",
+      "codigo_subcaja": "01",
+      "ex_caja_nombre": "OO Municipales de la Republica",
+      "nombre": "Régimen 1",
+      "glosa_previred": "OO Municipales de la Republica - Régimen 1",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1802",
+      "codigo_base": "18",
+      "codigo_subcaja": "02",
+      "ex_caja_nombre": "OO Municipales de la Republica",
+      "nombre": "Régimen 2",
+      "glosa_previred": "OO Municipales de la Republica - Régimen 2",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "1803",
+      "codigo_base": "18",
+      "codigo_subcaja": "03",
+      "ex_caja_nombre": "OO Municipales de la Republica",
+      "nombre": "Régimen 3",
+      "glosa_previred": "OO Municipales de la Republica - Régimen 3",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "2101",
+      "codigo_base": "21",
+      "codigo_subcaja": "01",
+      "ex_caja_nombre": "Sección Esp.Previsión Empleados",
+      "nombre": "Régimen 1",
+      "glosa_previred": "Sección Esp.Previsión Empleados - Régimen 1",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "2102",
+      "codigo_base": "21",
+      "codigo_subcaja": "02",
+      "ex_caja_nombre": "Sección Esp.Previsión Empleados",
+      "nombre": "Régimen 2",
+      "glosa_previred": "Sección Esp.Previsión Empleados - Régimen 2",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "2201",
+      "codigo_base": "22",
+      "codigo_subcaja": "01",
+      "ex_caja_nombre": "Caja de Previsión de Gildemeister",
+      "nombre": "Régimen 1",
+      "glosa_previred": "Caja de Previsión de Gildemeister - Régimen 1",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "2202",
+      "codigo_base": "22",
+      "codigo_subcaja": "02",
+      "ex_caja_nombre": "Caja de Previsión de Gildemeister",
+      "nombre": "Régimen 2",
+      "glosa_previred": "Caja de Previsión de Gildemeister - Régimen 2",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "2301",
+      "codigo_base": "23",
+      "codigo_subcaja": "01",
+      "ex_caja_nombre": "Mauricio, Hochschild",
+      "nombre": "Régimen 1",
+      "glosa_previred": "Mauricio, Hochschild - Régimen 1",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "2302",
+      "codigo_base": "23",
+      "codigo_subcaja": "02",
+      "ex_caja_nombre": "Mauricio, Hochschild",
+      "nombre": "Régimen 2",
+      "glosa_previred": "Mauricio, Hochschild - Régimen 2",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "2401",
+      "codigo_base": "24",
+      "codigo_subcaja": "01",
+      "ex_caja_nombre": "Secgasco",
+      "nombre": "Régimen 1",
+      "glosa_previred": "Secgasco - Régimen 1",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    },
+    {
+      "codigo_previred": "2402",
+      "codigo_base": "24",
+      "codigo_subcaja": "02",
+      "ex_caja_nombre": "Secgasco",
+      "nombre": "Régimen 2",
+      "glosa_previred": "Secgasco - Régimen 2",
+      "tasa_cotizacion_referencia": null,
+      "vigente": true
+    }
+  ],
+  "tipo_movimiento": [
+    {
+      "id_tipo_movimiento": 0,
+      "codigo": "MOV_0",
+      "nombre": "Sin Movimiento en el Mes",
+      "afecta_dias_trabajados": false,
+      "afecta_horas": false,
+      "activo": true
+    },
+    {
+      "id_tipo_movimiento": 1,
+      "codigo": "MOV_1",
+      "nombre": "Contratación a plazo indefinido",
+      "afecta_dias_trabajados": false,
+      "afecta_horas": false,
+      "activo": true
+    },
+    {
+      "id_tipo_movimiento": 2,
+      "codigo": "MOV_2",
+      "nombre": "Retiro",
+      "afecta_dias_trabajados": true,
+      "afecta_horas": false,
+      "activo": true
+    },
+    {
+      "id_tipo_movimiento": 3,
+      "codigo": "MOV_3",
+      "nombre": "Subsidios",
+      "afecta_dias_trabajados": true,
+      "afecta_horas": false,
+      "activo": true
+    },
+    {
+      "id_tipo_movimiento": 4,
+      "codigo": "MOV_4",
+      "nombre": "Permiso Sin Goce de Sueldos",
+      "afecta_dias_trabajados": true,
+      "afecta_horas": false,
+      "activo": true
+    },
+    {
+      "id_tipo_movimiento": 5,
+      "codigo": "MOV_5",
+      "nombre": "Incorporación en el Lugar de Trabajo",
+      "afecta_dias_trabajados": false,
+      "afecta_horas": false,
+      "activo": true
+    },
+    {
+      "id_tipo_movimiento": 6,
+      "codigo": "MOV_6",
+      "nombre": "Accidentes del Trabajo",
+      "afecta_dias_trabajados": true,
+      "afecta_horas": false,
+      "activo": true
+    },
+    {
+      "id_tipo_movimiento": 7,
+      "codigo": "MOV_7",
+      "nombre": "Contratación a plazo fijo",
+      "afecta_dias_trabajados": false,
+      "afecta_horas": false,
+      "activo": true
+    },
+    {
+      "id_tipo_movimiento": 8,
+      "codigo": "MOV_8",
+      "nombre": "Cambio Contrato plazo fijo a plazo indefinido",
+      "afecta_dias_trabajados": false,
+      "afecta_horas": false,
+      "activo": true
+    },
+    {
+      "id_tipo_movimiento": 11,
+      "codigo": "MOV_11",
+      "nombre": "Otros Movimientos (Ausentismos)",
+      "afecta_dias_trabajados": true,
+      "afecta_horas": true,
+      "activo": true
+    },
+    {
+      "id_tipo_movimiento": 12,
+      "codigo": "MOV_12",
+      "nombre": "Reliquidación, premio o bono posterior al finiquito",
+      "afecta_dias_trabajados": true,
+      "afecta_horas": false,
+      "activo": true
+    }
+  ],
+  "motivo_inasistencia": [
+    {
+      "id_motivo_inasistencia": 101,
+      "codigo": "LICENCIA_MEDICA",
+      "nombre": "Licencia médica",
+      "descuenta_dias": false,
+      "activo": true
+    },
+    {
+      "id_motivo_inasistencia": 102,
+      "codigo": "INASISTENCIA_INJUSTIFICADA",
+      "nombre": "Inasistencia injustificada",
+      "descuenta_dias": true,
+      "activo": true
+    },
+    {
+      "id_motivo_inasistencia": 103,
+      "codigo": "PERMISO_SIN_GOCE",
+      "nombre": "Permiso sin goce de sueldo",
+      "descuenta_dias": true,
+      "activo": true
+    },
+    {
+      "id_motivo_inasistencia": 104,
+      "codigo": "ACCIDENTE_TRABAJO",
+      "nombre": "Accidente del trabajo",
+      "descuenta_dias": false,
+      "activo": true
+    },
+    {
+      "id_motivo_inasistencia": 105,
+      "codigo": "ATRASO",
+      "nombre": "Atraso",
+      "descuenta_dias": false,
+      "activo": true
+    },
+    {
+      "id_motivo_inasistencia": 106,
+      "codigo": "SUSPENSION_LABORAL",
+      "nombre": "Suspensión laboral",
+      "descuenta_dias": true,
+      "activo": true
+    }
+  ],
+  "concepto": [
+    {
+      "codigo": "SUELDO_BASE",
+      "codigo_motor": "SUELDO_BASE",
+      "nombre": "Sueldo base",
+      "tipo": "HABER",
+      "naturaleza": "IMPONIBLE",
+      "imponible": true,
+      "tributable": true,
+      "afecta_afp": true,
+      "afecta_salud": true,
+      "afecta_afc": true,
+      "afecta_sis": true,
+      "orden_impresion": 10,
+      "calculo_automatico": false,
+      "formula_json": null
+    },
+    {
+      "codigo": "GRATIFICACION",
+      "codigo_motor": "GRATIFICACION",
+      "nombre": "Gratificación",
+      "tipo": "HABER",
+      "naturaleza": "IMPONIBLE",
+      "imponible": true,
+      "tributable": true,
+      "afecta_afp": true,
+      "afecta_salud": true,
+      "afecta_afc": true,
+      "afecta_sis": true,
+      "orden_impresion": 20,
+      "calculo_automatico": true,
+      "formula_json": {
+        "tipo": "regla",
+        "codigo": "GRATIFICACION_LEGAL"
+      }
+    },
+    {
+      "codigo": "HORAS_EXTRA",
+      "codigo_motor": "HORAS_EXTRA",
+      "nombre": "Horas extra",
+      "tipo": "HABER",
+      "naturaleza": "IMPONIBLE",
+      "imponible": true,
+      "tributable": true,
+      "afecta_afp": true,
+      "afecta_salud": true,
+      "afecta_afc": true,
+      "afecta_sis": true,
+      "orden_impresion": 30,
+      "calculo_automatico": false,
+      "formula_json": null
+    },
+    {
+      "codigo": "COLACION",
+      "codigo_motor": "COLACION",
+      "nombre": "Colación",
+      "tipo": "HABER",
+      "naturaleza": "NO_IMPONIBLE",
+      "imponible": false,
+      "tributable": false,
+      "afecta_afp": false,
+      "afecta_salud": false,
+      "afecta_afc": false,
+      "afecta_sis": false,
+      "orden_impresion": 40,
+      "calculo_automatico": false,
+      "formula_json": null
+    },
+    {
+      "codigo": "MOVILIZACION",
+      "codigo_motor": "MOVILIZACION",
+      "nombre": "Movilización",
+      "tipo": "HABER",
+      "naturaleza": "NO_IMPONIBLE",
+      "imponible": false,
+      "tributable": false,
+      "afecta_afp": false,
+      "afecta_salud": false,
+      "afecta_afc": false,
+      "afecta_sis": false,
+      "orden_impresion": 50,
+      "calculo_automatico": false,
+      "formula_json": null
+    },
+    {
+      "codigo": "BONO",
+      "codigo_motor": "BONO",
+      "nombre": "Bono",
+      "tipo": "HABER",
+      "naturaleza": "IMPONIBLE",
+      "imponible": true,
+      "tributable": true,
+      "afecta_afp": true,
+      "afecta_salud": true,
+      "afecta_afc": true,
+      "afecta_sis": true,
+      "orden_impresion": 60,
+      "calculo_automatico": false,
+      "formula_json": null
+    },
+    {
+      "codigo": "AFP",
+      "codigo_motor": "AFP",
+      "nombre": "Descuento AFP",
+      "tipo": "DESCUENTO",
+      "naturaleza": "IMPONIBLE",
+      "imponible": false,
+      "tributable": false,
+      "afecta_afp": false,
+      "afecta_salud": false,
+      "afecta_afc": false,
+      "afecta_sis": false,
+      "orden_impresion": 200,
+      "calculo_automatico": true,
+      "formula_json": {
+        "tipo": "regla",
+        "codigo": "DESCUENTO_AFP"
+      }
+    },
+    {
+      "codigo": "SALUD",
+      "codigo_motor": "SALUD",
+      "nombre": "Descuento salud",
+      "tipo": "DESCUENTO",
+      "naturaleza": "IMPONIBLE",
+      "imponible": false,
+      "tributable": false,
+      "afecta_afp": false,
+      "afecta_salud": false,
+      "afecta_afc": false,
+      "afecta_sis": false,
+      "orden_impresion": 210,
+      "calculo_automatico": true,
+      "formula_json": {
+        "tipo": "regla",
+        "codigo": "DESCUENTO_SALUD"
+      }
+    },
+    {
+      "codigo": "CESANTIA",
+      "codigo_motor": "CESANTIA",
+      "nombre": "Seguro de cesantía",
+      "tipo": "DESCUENTO",
+      "naturaleza": "IMPONIBLE",
+      "imponible": false,
+      "tributable": false,
+      "afecta_afp": false,
+      "afecta_salud": false,
+      "afecta_afc": false,
+      "afecta_sis": false,
+      "orden_impresion": 220,
+      "calculo_automatico": true,
+      "formula_json": {
+        "tipo": "regla",
+        "codigo": "DESCUENTO_AFC"
+      }
+    },
+    {
+      "codigo": "IMPUESTO_UNICO",
+      "codigo_motor": "IMPUESTO_UNICO",
+      "nombre": "Impuesto único",
+      "tipo": "DESCUENTO",
+      "naturaleza": "IMPONIBLE",
+      "imponible": false,
+      "tributable": false,
+      "afecta_afp": false,
+      "afecta_salud": false,
+      "afecta_afc": false,
+      "afecta_sis": false,
+      "orden_impresion": 230,
+      "calculo_automatico": true,
+      "formula_json": {
+        "tipo": "regla",
+        "codigo": "IMPUESTO_UNICO"
+      }
+    },
+    {
+      "codigo": "PRESTAMO",
+      "codigo_motor": "PRESTAMO",
+      "nombre": "Préstamo",
+      "tipo": "DESCUENTO",
+      "naturaleza": "NO_IMPONIBLE",
+      "imponible": false,
+      "tributable": false,
+      "afecta_afp": false,
+      "afecta_salud": false,
+      "afecta_afc": false,
+      "afecta_sis": false,
+      "orden_impresion": 240,
+      "calculo_automatico": false,
+      "formula_json": null
+    },
+    {
+      "codigo": "AFP_EMPLEADOR",
+      "codigo_motor": "AFP_EMPLEADOR",
+      "nombre": "Aporte empleador AFP",
+      "tipo": "APORTE_EMPLEADOR",
+      "naturaleza": "IMPONIBLE",
+      "imponible": false,
+      "tributable": false,
+      "afecta_afp": false,
+      "afecta_salud": false,
+      "afecta_afc": false,
+      "afecta_sis": false,
+      "orden_impresion": 300,
+      "calculo_automatico": true,
+      "formula_json": {
+        "tipo": "regla",
+        "codigo": "APORTE_AFP_EMPLEADOR"
+      }
+    },
+    {
+      "codigo": "SIS_EMPLEADOR",
+      "codigo_motor": "SIS_EMPLEADOR",
+      "nombre": "SIS empleador",
+      "tipo": "APORTE_EMPLEADOR",
+      "naturaleza": "IMPONIBLE",
+      "imponible": false,
+      "tributable": false,
+      "afecta_afp": false,
+      "afecta_salud": false,
+      "afecta_afc": false,
+      "afecta_sis": false,
+      "orden_impresion": 310,
+      "calculo_automatico": true,
+      "formula_json": {
+        "tipo": "regla",
+        "codigo": "SIS_EMPLEADOR"
+      }
+    },
+    {
+      "codigo": "AFC_EMPLEADOR",
+      "codigo_motor": "AFC_EMPLEADOR",
+      "nombre": "AFC empleador",
+      "tipo": "APORTE_EMPLEADOR",
+      "naturaleza": "IMPONIBLE",
+      "imponible": false,
+      "tributable": false,
+      "afecta_afp": false,
+      "afecta_salud": false,
+      "afecta_afc": false,
+      "afecta_sis": false,
+      "orden_impresion": 320,
+      "calculo_automatico": true,
+      "formula_json": {
+        "tipo": "regla",
+        "codigo": "AFC_EMPLEADOR"
+      }
+    }
+  ],
+  "metadata": {
+    "periodo_origen": "2026-01",
+    "sp_xls_url": "https://www.spensiones.cl/inf_estadistica/series_afp/comisiones/estructura_comisiones.xls",
+    "previred_equiv_url": "https://www.previred.com/wp-content/uploads/2025/10/TablasEquivalenciaSeptiembre2025.pdf",
+    "previred_indicadores_url": "https://www.previred.com/wp-content/uploads/2026/01/Indicadores-Previsionales-Previred-Enero-2026.pdf",
+    "supersalud_isapres_url": "https://www.superdesalud.gob.cl/registro/isapres/",
+    "generated_at": "2026-05-07T14:27:14.900622",
+    "script_version": "v4"
+  }
+}

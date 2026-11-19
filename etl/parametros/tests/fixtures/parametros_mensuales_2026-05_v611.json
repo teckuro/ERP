@@ -1,0 +1,1925 @@
+{
+  "periodo_remuneracion": {
+    "codigo": "2026-05",
+    "anio": 2026,
+    "mes": 5,
+    "fecha_inicio": "2026-05-01",
+    "fecha_fin": "2026-05-31",
+    "estado": "cargado"
+  },
+  "parametros_legales": [
+    {
+      "nombre": "UF",
+      "valor_decimal": 40610.69,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "UF_MES_ANTERIOR",
+      "valor_decimal": 40120.2,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "UTM",
+      "valor_decimal": null,
+      "valor_entero": 70588,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "UTA",
+      "valor_decimal": null,
+      "valor_entero": 847056,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "SIS",
+      "valor_decimal": 1.62,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "TOPE_AFP_UF",
+      "valor_decimal": 90.0,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "TOPE_AFP_PESOS",
+      "valor_decimal": null,
+      "valor_entero": 3654962,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "TOPE_INP_UF",
+      "valor_decimal": 60.0,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "TOPE_INP_PESOS",
+      "valor_decimal": null,
+      "valor_entero": 2407212,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "TOPE_AFC_UF",
+      "valor_decimal": 135.2,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "TOPE_AFC_PESOS",
+      "valor_decimal": null,
+      "valor_entero": 5490565,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "SUELDO_MINIMO",
+      "valor_decimal": null,
+      "valor_entero": 539000,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "SUELDO_MINIMO_18_65",
+      "valor_decimal": null,
+      "valor_entero": 402082,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "SUELDO_MINIMO_TPC",
+      "valor_decimal": null,
+      "valor_entero": 539000,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "SUELDO_MINIMO_NO_REM",
+      "valor_decimal": null,
+      "valor_entero": 347434,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "SALUD_CCAF",
+      "valor_decimal": 4.2,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "SALUD_FONASA",
+      "valor_decimal": 2.8,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "SALUD_OBLIGATORIA",
+      "valor_decimal": 7.0,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "SALUD_FONASA_CON_CCAF",
+      "valor_decimal": 7.0,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "AFC_EMPLEADOR_INDEFINIDO_11_ANOS_MAS",
+      "valor_decimal": 0.8,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "TOPE_APV_MENSUAL_UF",
+      "valor_decimal": 50.0,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "TOPE_APV_MENSUAL_PESOS",
+      "valor_decimal": null,
+      "valor_entero": 2030534,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "TOPE_APV_ANUAL_UF",
+      "valor_decimal": 600.0,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "TOPE_APV_ANUAL_PESOS",
+      "valor_decimal": null,
+      "valor_entero": 24366414,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "TOPE_DEPOSITO_CONVENIDO_ANUAL_UF",
+      "valor_decimal": 900.0,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "nombre": "TOPE_DEPOSITO_CONVENIDO_ANUAL_PESOS",
+      "valor_decimal": null,
+      "valor_entero": 36549621,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    }
+  ],
+  "parametros_generales_compat": {
+    "periodo": "2026-05",
+    "uf": 40610.69,
+    "utm": 70588,
+    "uta": 847056,
+    "sueldo_minimo": 539000,
+    "sueldo_minimo18_65": 402082,
+    "sueldo_minimo_menor18_mayor65": null,
+    "sueldo_minimo_casa_particular": 539000,
+    "ingreso_minimo_no_remuneracional": 347434,
+    "gratificacion": true,
+    "imm_gratificacion": 4.75,
+    "tope_afp_uf": 90.0,
+    "tope_afp": 3654962,
+    "tope_ips_uf": 60.0,
+    "tope_ips": 2407212,
+    "tope_cesantia_uf": 135.2,
+    "tope_cesantia": 5490565,
+    "tope_apv_mensual_uf": 50.0,
+    "tope_apv_mensual": 2030534,
+    "tope_apv_anual_uf": 600.0,
+    "tope_apv_anual": 24366414,
+    "tope_deposito_convenido_anual_uf": 900.0,
+    "tope_deposito_convenido_anual": 36549621,
+    "tope_afpvoluntario": 2030534,
+    "sis": 1.62,
+    "sanna": null,
+    "salud_obligatoria": 7.0,
+    "salud_ccaf": 4.2,
+    "salud_fonasa_con_ccaf": 7.0,
+    "dsctosbpordia": true,
+    "afc_trabajador_indefinido": 0.6,
+    "afc_empleador_indefinido": 2.4,
+    "afc_empleador_plazo": 3.0
+  },
+  "afc_parametro": [
+    {
+      "codigo_tipo_contrato": "INDEFINIDO",
+      "aplica_seguro": true,
+      "aplica_trabajador": true,
+      "tasa_trabajador": 0.6,
+      "tasa_empleador": 2.4,
+      "observacion": "Carga mensual separada v6.11",
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "codigo_tipo_contrato": "PLAZO_FIJO",
+      "aplica_seguro": true,
+      "aplica_trabajador": false,
+      "tasa_trabajador": 0.0,
+      "tasa_empleador": 3.0,
+      "observacion": "Carga mensual separada v6.11",
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "codigo_tipo_contrato": "OBRA_SERVICIO",
+      "aplica_seguro": true,
+      "aplica_trabajador": false,
+      "tasa_trabajador": 0.0,
+      "tasa_empleador": 3.0,
+      "observacion": "Carga mensual separada v6.11",
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    },
+    {
+      "codigo_tipo_contrato": "CASA_PARTICULAR",
+      "aplica_seguro": true,
+      "aplica_trabajador": false,
+      "tasa_trabajador": 0.0,
+      "tasa_empleador": 3.0,
+      "observacion": "Carga mensual separada v6.11",
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null,
+      "periodo": "2026-05"
+    }
+  ],
+  "tramo_carga": [
+    {
+      "periodo": "2026-05",
+      "desde": 0,
+      "hasta": 631976,
+      "valor": 22007,
+      "tramo": "A"
+    },
+    {
+      "periodo": "2026-05",
+      "desde": 631976,
+      "hasta": 923067,
+      "valor": 13505,
+      "tramo": "B"
+    },
+    {
+      "periodo": "2026-05",
+      "desde": 923067,
+      "hasta": 1439668,
+      "valor": 4267,
+      "tramo": "C"
+    },
+    {
+      "periodo": "2026-05",
+      "desde": 1439668,
+      "hasta": null,
+      "valor": 0,
+      "tramo": "D"
+    }
+  ],
+  "tabla_impuesto_unico": [
+    {
+      "tramo": 1,
+      "desde": 0.0,
+      "hasta": 952938.0,
+      "factor": 0.0,
+      "rebaja": 0.0,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null
+    },
+    {
+      "tramo": 2,
+      "desde": 952938.01,
+      "hasta": 2117640.0,
+      "factor": 0.04,
+      "rebaja": 38117.52,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null
+    },
+    {
+      "tramo": 3,
+      "desde": 2117640.01,
+      "hasta": 3529400.0,
+      "factor": 0.08,
+      "rebaja": 122823.12,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null
+    },
+    {
+      "tramo": 4,
+      "desde": 3529400.01,
+      "hasta": 4941160.0,
+      "factor": 0.135,
+      "rebaja": 316940.12,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null
+    },
+    {
+      "tramo": 5,
+      "desde": 4941160.01,
+      "hasta": 6352920.0,
+      "factor": 0.23,
+      "rebaja": 786350.32,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null
+    },
+    {
+      "tramo": 6,
+      "desde": 6352920.01,
+      "hasta": 8470560.0,
+      "factor": 0.304,
+      "rebaja": 1256466.4,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null
+    },
+    {
+      "tramo": 7,
+      "desde": 8470560.01,
+      "hasta": 10588200.0,
+      "factor": 0.35,
+      "rebaja": 1646112.16,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null
+    },
+    {
+      "tramo": 8,
+      "desde": 10588200.01,
+      "hasta": null,
+      "factor": 0.4,
+      "rebaja": 2175522.16,
+      "vigencia_inicio": "2026-05-01",
+      "vigencia_fin": null
+    }
+  ],
+  "tramo_impuesto_compat": [
+    {
+      "periodo": "2026-05",
+      "desde": 0.0,
+      "hasta": 952938.0,
+      "factor": 0.0,
+      "rebaja": 0.0
+    },
+    {
+      "periodo": "2026-05",
+      "desde": 952938.01,
+      "hasta": 2117640.0,
+      "factor": 0.04,
+      "rebaja": 38117.52
+    },
+    {
+      "periodo": "2026-05",
+      "desde": 2117640.01,
+      "hasta": 3529400.0,
+      "factor": 0.08,
+      "rebaja": 122823.12
+    },
+    {
+      "periodo": "2026-05",
+      "desde": 3529400.01,
+      "hasta": 4941160.0,
+      "factor": 0.135,
+      "rebaja": 316940.12
+    },
+    {
+      "periodo": "2026-05",
+      "desde": 4941160.01,
+      "hasta": 6352920.0,
+      "factor": 0.23,
+      "rebaja": 786350.32
+    },
+    {
+      "periodo": "2026-05",
+      "desde": 6352920.01,
+      "hasta": 8470560.0,
+      "factor": 0.304,
+      "rebaja": 1256466.4
+    },
+    {
+      "periodo": "2026-05",
+      "desde": 8470560.01,
+      "hasta": 10588200.0,
+      "factor": 0.35,
+      "rebaja": 1646112.16
+    },
+    {
+      "periodo": "2026-05",
+      "desde": 10588200.01,
+      "hasta": null,
+      "factor": 0.4,
+      "rebaja": 2175522.16
+    }
+  ],
+  "afp_vigencia_updates": [
+    {
+      "afp_nombre": "Cuprum",
+      "vigencia_inicio": "2026-05-01",
+      "sis": 1.62,
+      "tope_imponible_uf": 90.0
+    },
+    {
+      "afp_nombre": "Habitat",
+      "vigencia_inicio": "2026-05-01",
+      "sis": 1.62,
+      "tope_imponible_uf": 90.0
+    },
+    {
+      "afp_nombre": "Provida",
+      "vigencia_inicio": "2026-05-01",
+      "sis": 1.62,
+      "tope_imponible_uf": 90.0
+    },
+    {
+      "afp_nombre": "Capital",
+      "vigencia_inicio": "2026-05-01",
+      "sis": 1.62,
+      "tope_imponible_uf": 90.0
+    },
+    {
+      "afp_nombre": "Modelo",
+      "vigencia_inicio": "2026-05-01",
+      "sis": 1.62,
+      "tope_imponible_uf": 90.0
+    },
+    {
+      "afp_nombre": "Uno",
+      "vigencia_inicio": "2026-05-01",
+      "sis": 1.62,
+      "tope_imponible_uf": 90.0
+    }
+  ],
+  "metadata": {
+    "periodo_origen": "2026-05",
+    "previred_indicadores_url": "https://www.previred.com/wp-content/uploads/2026/05/Indicadores-Previsionales-Previred-Mayo-2026.pdf",
+    "afc_cotizaciones_url": "https://www.afc.cl/empleadores/pagos-y-dudas-sobre-cotizaciones/cotizaciones-cuanto-y-como-se-paga/",
+    "sii_impuesto_url": "https://www.sii.cl/valores_y_fechas/impuesto_2da_categoria/impuesto2026_art52.htm",
+    "seed_base_json": "C:\\Users\\PC\\Desktop\\ERP\\Python\\out_v611_seed\\seed_v611.json",
+    "generated_at": "2026-05-27T19:59:10.919661",
+    "script_version": "mensual_v3_json_only",
+    "responsabilidad": "scraper_json_only",
+    "source_status": {
+      "previred_indicadores": {
+        "key": "previred_indicadores",
+        "status": "scraped",
+        "url": "https://www.previred.com/wp-content/uploads/2026/05/Indicadores-Previsionales-Previred-Mayo-2026.pdf",
+        "ok": true
+      },
+      "sii_impuesto": {
+        "key": "sii_impuesto",
+        "status": "scraped",
+        "url": "https://www.sii.cl/valores_y_fechas/impuesto_2da_categoria/impuesto2026_art52.htm",
+        "ok": true
+      }
+    }
+  },
+  "normativa_base": {
+    "generated_at": "2026-05-27T19:59:15",
+    "flow": "all",
+    "offline": false,
+    "data": {
+      "trabajo_pesado": [
+        {
+          "codigo": "PESADO",
+          "nombre": "Trabajo pesado",
+          "tasa_trabajador": 2.0,
+          "tasa_empleador": 2.0,
+          "tasa_total": 4.0,
+          "requiere_dictamen_cen": true,
+          "fuente": "https://www.spensiones.cl/portal/compendio/596/w3-propertyvalue-4282.html"
+        },
+        {
+          "codigo": "MENOS_PESADO",
+          "nombre": "Trabajo pesado con menor desgaste relativo",
+          "tasa_trabajador": 1.0,
+          "tasa_empleador": 1.0,
+          "tasa_total": 2.0,
+          "requiere_dictamen_cen": true,
+          "fuente": "https://www.spensiones.cl/portal/compendio/596/w3-propertyvalue-4282.html"
+        }
+      ],
+      "ley_sanna": {
+        "codigo": "SANNA",
+        "nombre": "Seguro SANNA",
+        "valor_decimal": 0.03,
+        "valor_entero": null,
+        "vigencia_inicio": "2026-04-01",
+        "vigencia_fin": null,
+        "tasa_empleador": 0.03,
+        "tasa_trabajador": 0.0,
+        "fuente": "https://www.suseso.cl/622/w3-propertyvalue-133496.html"
+      },
+      "reforma_previsional": [
+        {
+          "codigo": "GRAD_EMP_2025_08",
+          "periodo": "2025-08",
+          "vigencia_inicio": "2025-08-01",
+          "vigencia_fin": "2026-07-31",
+          "aporte_empleador_total": 1.0,
+          "cuenta_capitalizacion_individual": 0.1,
+          "cotizacion_rentabilidad_protegida": 0.0,
+          "seguro_social_sis_cev": 0.9,
+          "fapp_seguro_social": 0.9,
+          "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+          "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+          "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+          "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+        },
+        {
+          "codigo": "GRAD_EMP_2026_08",
+          "periodo": "2026-08",
+          "vigencia_inicio": "2026-08-01",
+          "vigencia_fin": "2027-07-31",
+          "aporte_empleador_total": 3.5,
+          "cuenta_capitalizacion_individual": 0.1,
+          "cotizacion_rentabilidad_protegida": 0.9,
+          "seguro_social_sis_cev": 2.5,
+          "fapp_seguro_social": 3.4,
+          "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+          "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+          "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+          "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+        },
+        {
+          "codigo": "GRAD_EMP_2027_08",
+          "periodo": "2027-08",
+          "vigencia_inicio": "2027-08-01",
+          "vigencia_fin": "2028-07-31",
+          "aporte_empleador_total": 4.25,
+          "cuenta_capitalizacion_individual": 0.25,
+          "cotizacion_rentabilidad_protegida": 1.5,
+          "seguro_social_sis_cev": 2.5,
+          "fapp_seguro_social": 4.0,
+          "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+          "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+          "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+          "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+        },
+        {
+          "codigo": "GRAD_EMP_2028_08",
+          "periodo": "2028-08",
+          "vigencia_inicio": "2028-08-01",
+          "vigencia_fin": "2029-07-31",
+          "aporte_empleador_total": 5.0,
+          "cuenta_capitalizacion_individual": 1.0,
+          "cotizacion_rentabilidad_protegida": 1.5,
+          "seguro_social_sis_cev": 2.5,
+          "fapp_seguro_social": 4.0,
+          "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+          "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+          "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+          "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+        },
+        {
+          "codigo": "GRAD_EMP_2029_08",
+          "periodo": "2029-08",
+          "vigencia_inicio": "2029-08-01",
+          "vigencia_fin": "2030-07-31",
+          "aporte_empleador_total": 5.7,
+          "cuenta_capitalizacion_individual": 1.7,
+          "cotizacion_rentabilidad_protegida": 1.5,
+          "seguro_social_sis_cev": 2.5,
+          "fapp_seguro_social": 4.0,
+          "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+          "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+          "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+          "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+        },
+        {
+          "codigo": "GRAD_EMP_2030_08",
+          "periodo": "2030-08",
+          "vigencia_inicio": "2030-08-01",
+          "vigencia_fin": "2031-07-31",
+          "aporte_empleador_total": 6.4,
+          "cuenta_capitalizacion_individual": 2.4,
+          "cotizacion_rentabilidad_protegida": 1.5,
+          "seguro_social_sis_cev": 2.5,
+          "fapp_seguro_social": 4.0,
+          "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+          "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+          "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+          "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+        },
+        {
+          "codigo": "GRAD_EMP_2031_08",
+          "periodo": "2031-08",
+          "vigencia_inicio": "2031-08-01",
+          "vigencia_fin": "2032-07-31",
+          "aporte_empleador_total": 7.1,
+          "cuenta_capitalizacion_individual": 3.1,
+          "cotizacion_rentabilidad_protegida": 1.5,
+          "seguro_social_sis_cev": 2.5,
+          "fapp_seguro_social": 4.0,
+          "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+          "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+          "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+          "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+        },
+        {
+          "codigo": "GRAD_EMP_2032_08",
+          "periodo": "2032-08",
+          "vigencia_inicio": "2032-08-01",
+          "vigencia_fin": "2033-07-31",
+          "aporte_empleador_total": 7.8,
+          "cuenta_capitalizacion_individual": 3.8,
+          "cotizacion_rentabilidad_protegida": 1.5,
+          "seguro_social_sis_cev": 2.5,
+          "fapp_seguro_social": 4.0,
+          "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+          "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+          "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+          "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+        },
+        {
+          "codigo": "GRAD_EMP_2033_08",
+          "periodo": "2033-08",
+          "vigencia_inicio": "2033-08-01",
+          "vigencia_fin": "2045-07-31",
+          "aporte_empleador_total": 8.5,
+          "cuenta_capitalizacion_individual": 4.5,
+          "cotizacion_rentabilidad_protegida": 1.5,
+          "seguro_social_sis_cev": 2.5,
+          "fapp_seguro_social": 4.0,
+          "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+          "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+          "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+          "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+        }
+      ],
+      "organismo_administrador_ley_16744": [
+        {
+          "codigo": "ACHS",
+          "nombre": "Asociacion Chilena de Seguridad",
+          "tipo": "MUTUALIDAD",
+          "vigente": true
+        },
+        {
+          "codigo": "MUSEG",
+          "nombre": "Mutual de Seguridad de la Camara Chilena de la Construccion",
+          "tipo": "MUTUALIDAD",
+          "vigente": true
+        },
+        {
+          "codigo": "IST",
+          "nombre": "Instituto de Seguridad del Trabajo",
+          "tipo": "MUTUALIDAD",
+          "vigente": true
+        },
+        {
+          "codigo": "ISL",
+          "nombre": "Instituto de Seguridad Laboral",
+          "tipo": "PUBLICO",
+          "vigente": true
+        }
+      ],
+      "ley_16744_parametros": {
+        "cotizacion_basica_empleador": 0.9,
+        "cotizacion_adicional_diferenciada": "depende de actividad/siniestralidad de la empresa",
+        "fuente_financiamiento": "https://www.suseso.cl/606/w3-article-18613.html",
+        "fuente_organismos": "https://www.suseso.cl/606/w3-article-19892.html"
+      },
+      "ccaf_entidad": [
+        {
+          "codigo": "LOS_ANDES",
+          "nombre": "CCAF Los Andes",
+          "vigente": true
+        },
+        {
+          "codigo": "LA_ARAUCANA",
+          "nombre": "CCAF La Araucana",
+          "vigente": true
+        },
+        {
+          "codigo": "LOS_HEROES",
+          "nombre": "CCAF Los Heroes",
+          "vigente": true
+        },
+        {
+          "codigo": "18_SEPTIEMBRE",
+          "nombre": "CCAF 18 de Septiembre",
+          "vigente": true
+        }
+      ],
+      "fuente": "https://www.previred.com/wp-content/uploads/2025/10/TablasEquivalenciaSeptiembre2025.pdf",
+      "institucion_apv": [
+        {
+          "codigo": "000",
+          "nombre": "No Cotiza A.P.V.",
+          "vigente": true
+        },
+        {
+          "codigo": "003",
+          "nombre": "Cuprum",
+          "vigente": true
+        },
+        {
+          "codigo": "005",
+          "nombre": "Habitat",
+          "vigente": true
+        },
+        {
+          "codigo": "008",
+          "nombre": "Provida",
+          "vigente": true
+        },
+        {
+          "codigo": "029",
+          "nombre": "Planvital",
+          "vigente": true
+        },
+        {
+          "codigo": "033",
+          "nombre": "Capital",
+          "vigente": true
+        },
+        {
+          "codigo": "034",
+          "nombre": "Modelo",
+          "vigente": true
+        },
+        {
+          "codigo": "035",
+          "nombre": "Uno",
+          "vigente": true
+        },
+        {
+          "codigo": "102",
+          "nombre": "SANTANDER SEGUROS DE VIDA S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "103",
+          "nombre": "BCI SEGUROS VIDA S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "106",
+          "nombre": "BICE VIDA COMPAÑIA DE SEGUROS S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "107",
+          "nombre": "ZURICH CHILE SEGUROS DE VIDA.",
+          "vigente": true
+        },
+        {
+          "codigo": "111",
+          "nombre": "CIA DE SEG. DE VIDA CONSORCIO NACIONAL DE SEG S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "116",
+          "nombre": "COMPAÑIA DE SEGUROS CONFUTURO S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "118",
+          "nombre": "SEGUROS DE VIDA SURA S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "121",
+          "nombre": "METLIFE CHILE SEGUROS DE VIDA S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "128",
+          "nombre": "OHIO NATIONAL SEGUROS DE VIDA S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "129",
+          "nombre": "PRINCIPAL COMPAÑIA DE SEGUROS DE VIDA CHILE S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "131",
+          "nombre": "SEGUROS DE VIDA SECURITY PREVISION S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "137",
+          "nombre": "PRUDENTIAL AGF. (APV)",
+          "vigente": true
+        },
+        {
+          "codigo": "151",
+          "nombre": "CREDICORP CAPITAL ASSET MANAGMENT S.A AGF",
+          "vigente": true
+        },
+        {
+          "codigo": "204",
+          "nombre": "BCI ASSET MANAGEMENT ADMINISTRADORA GENERAL DE FONDOS S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "205",
+          "nombre": "BICE INVERSIONES AGF S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "208",
+          "nombre": "BTG PACTUAL CHILE S.A. ADMINISTRADORA GENERAL DE FONDOS",
+          "vigente": true
+        },
+        {
+          "codigo": "214",
+          "nombre": "PRINCIPAL ASSET MANAGEMENT AGF S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "215",
+          "nombre": "SANTANDER ASSET MANAGEMENT S.A. ADM. GENERAL DE FONDOS",
+          "vigente": true
+        },
+        {
+          "codigo": "217",
+          "nombre": "SCOTIA SUDAMERICANO ADMINISTRADORA DE FONDOS MUTUOS S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "218",
+          "nombre": "ADMINISTRADORA GENERAL DE FONDOS SECURITY S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "225",
+          "nombre": "ITAU ADMINISTRADORA GENERAL DE FONDOS S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "229",
+          "nombre": "BANCOESTADO S.A. ADMINISTRADORA GENERAL DE FONDOS",
+          "vigente": true
+        },
+        {
+          "codigo": "237",
+          "nombre": "FINTUAL ADMINISTRADORA GENERAL DE FONDOS S.A",
+          "vigente": true
+        },
+        {
+          "codigo": "238",
+          "nombre": "FOCUS AGF S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "600",
+          "nombre": "ZURICH CHILE ASSET MANAGEMENT ADMINISTRADORA GENERAL DE FONDOS S.A",
+          "vigente": true
+        },
+        {
+          "codigo": "601",
+          "nombre": "LARRAIN VIAL ADMINISTRADORA GENERAL DE FONDOS S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "213",
+          "nombre": "LARRAIN VIAL S.A. CORREDORA DE BOLSA",
+          "vigente": true
+        },
+        {
+          "codigo": "222",
+          "nombre": "BANCHILE CORREDORES DE BOLSA S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "227",
+          "nombre": "CORREDORES DE BOLSA SURA S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "228",
+          "nombre": "BTG PACTUAL CHILE S.A. CORREDORES DE BOLSA",
+          "vigente": true
+        },
+        {
+          "codigo": "232",
+          "nombre": "BICE INVERSIONES CORREDORES DE BOLSA S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "235",
+          "nombre": "MBI CORREDORES DE BOLSA S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "236",
+          "nombre": "CONSORCIO CORREDORES DE BOLSA S.A.",
+          "vigente": true
+        },
+        {
+          "codigo": "240",
+          "nombre": "FINANZAS Y NEGOCIOS S.A. CORREDORES DE BOLSA",
+          "vigente": true
+        }
+      ],
+      "forma_pago_apv": [
+        {
+          "codigo": "1",
+          "nombre": "Directa"
+        },
+        {
+          "codigo": "2",
+          "nombre": "Indirecta"
+        }
+      ],
+      "ley_16744_empresa": {
+        "requiere_configuracion_empresa": true,
+        "campos_recomendados": [
+          "organismo_administrador_codigo",
+          "tasa_adicional_diferenciada",
+          "vigencia_inicio",
+          "vigencia_fin",
+          "actividad_economica",
+          "fuente_resolucion_o_certificado"
+        ],
+        "nota": "La tasa adicional diferenciada no es universal; depende de actividad economica y/o siniestralidad efectiva de cada empleador.",
+        "fuente": "https://www.suseso.cl/606/w3-article-18613.html"
+      }
+    },
+    "sources": [
+      {
+        "key": "ccaf_vigentes",
+        "url": "https://www.suseso.cl/606/w3-propertyvalue-34003.html",
+        "ok": true,
+        "status_code": 200,
+        "content_type": "text/html",
+        "text_path": "C:\\Users\\PC\\Desktop\\ERP\\Python\\runs\\2026-05\\normativa_base\\raw_faltantes_v611\\ccaf_vigentes.txt",
+        "error": null
+      },
+      {
+        "key": "ley_16744_financiamiento",
+        "url": "https://www.suseso.cl/606/w3-article-18613.html",
+        "ok": true,
+        "status_code": 200,
+        "content_type": "text/html",
+        "text_path": "C:\\Users\\PC\\Desktop\\ERP\\Python\\runs\\2026-05\\normativa_base\\raw_faltantes_v611\\ley_16744_financiamiento.txt",
+        "error": null
+      },
+      {
+        "key": "ley_16744_organismos",
+        "url": "https://www.suseso.cl/606/w3-article-19892.html",
+        "ok": true,
+        "status_code": 200,
+        "content_type": "text/html",
+        "text_path": "C:\\Users\\PC\\Desktop\\ERP\\Python\\runs\\2026-05\\normativa_base\\raw_faltantes_v611\\ley_16744_organismos.txt",
+        "error": null
+      },
+      {
+        "key": "previred_equivalencias",
+        "url": "https://www.previred.com/wp-content/uploads/2025/10/TablasEquivalenciaSeptiembre2025.pdf",
+        "ok": true,
+        "status_code": 200,
+        "content_type": "application/pdf",
+        "text_path": "C:\\Users\\PC\\Desktop\\ERP\\Python\\runs\\2026-05\\normativa_base\\raw_faltantes_v611\\previred_equivalencias.txt",
+        "error": null
+      },
+      {
+        "key": "reforma_previsional_chileatiende",
+        "url": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+        "ok": true,
+        "status_code": 200,
+        "content_type": "text/html; charset=utf-8",
+        "text_path": "C:\\Users\\PC\\Desktop\\ERP\\Python\\runs\\2026-05\\normativa_base\\raw_faltantes_v611\\reforma_previsional_chileatiende.txt",
+        "error": null
+      },
+      {
+        "key": "reforma_previsional_hacienda",
+        "url": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+        "ok": true,
+        "status_code": 200,
+        "content_type": "text/html; charset=UTF-8",
+        "text_path": "C:\\Users\\PC\\Desktop\\ERP\\Python\\runs\\2026-05\\normativa_base\\raw_faltantes_v611\\reforma_previsional_hacienda.txt",
+        "error": null
+      },
+      {
+        "key": "reforma_previsional_sp",
+        "url": "https://www.spensiones.cl/portal/institucional/594/w3-article-16615.html",
+        "ok": true,
+        "status_code": 200,
+        "content_type": "text/html",
+        "text_path": "C:\\Users\\PC\\Desktop\\ERP\\Python\\runs\\2026-05\\normativa_base\\raw_faltantes_v611\\reforma_previsional_sp.txt",
+        "error": null
+      },
+      {
+        "key": "sanna_ley_21010",
+        "url": "https://www.suseso.cl/622/w3-propertyvalue-133496.html",
+        "ok": true,
+        "status_code": 200,
+        "content_type": "text/html",
+        "text_path": "C:\\Users\\PC\\Desktop\\ERP\\Python\\runs\\2026-05\\normativa_base\\raw_faltantes_v611\\sanna_ley_21010.txt",
+        "error": null
+      },
+      {
+        "key": "trabajo_pesado_compendio",
+        "url": "https://www.spensiones.cl/portal/compendio/596/w3-propertyvalue-4282.html",
+        "ok": true,
+        "status_code": 200,
+        "content_type": "text/html",
+        "text_path": "C:\\Users\\PC\\Desktop\\ERP\\Python\\runs\\2026-05\\normativa_base\\raw_faltantes_v611\\trabajo_pesado_compendio.txt",
+        "error": null
+      },
+      {
+        "key": "trabajo_pesado_pago",
+        "url": "https://www.spensiones.cl/portal/compendio/596/w3-propertyvalue-4284.html",
+        "ok": true,
+        "status_code": 200,
+        "content_type": "text/html",
+        "text_path": "C:\\Users\\PC\\Desktop\\ERP\\Python\\runs\\2026-05\\normativa_base\\raw_faltantes_v611\\trabajo_pesado_pago.txt",
+        "error": null
+      }
+    ],
+    "flows": [
+      {
+        "flow": "mensual_normativo",
+        "status": "ok",
+        "data": {
+          "trabajo_pesado": [
+            {
+              "codigo": "PESADO",
+              "nombre": "Trabajo pesado",
+              "tasa_trabajador": 2.0,
+              "tasa_empleador": 2.0,
+              "tasa_total": 4.0,
+              "requiere_dictamen_cen": true,
+              "fuente": "https://www.spensiones.cl/portal/compendio/596/w3-propertyvalue-4282.html"
+            },
+            {
+              "codigo": "MENOS_PESADO",
+              "nombre": "Trabajo pesado con menor desgaste relativo",
+              "tasa_trabajador": 1.0,
+              "tasa_empleador": 1.0,
+              "tasa_total": 2.0,
+              "requiere_dictamen_cen": true,
+              "fuente": "https://www.spensiones.cl/portal/compendio/596/w3-propertyvalue-4282.html"
+            }
+          ]
+        },
+        "warnings": []
+      },
+      {
+        "flow": "mensual_normativo",
+        "status": "ok",
+        "data": {
+          "ley_sanna": {
+            "codigo": "SANNA",
+            "nombre": "Seguro SANNA",
+            "valor_decimal": 0.03,
+            "valor_entero": null,
+            "vigencia_inicio": "2026-04-01",
+            "vigencia_fin": null,
+            "tasa_empleador": 0.03,
+            "tasa_trabajador": 0.0,
+            "fuente": "https://www.suseso.cl/622/w3-propertyvalue-133496.html"
+          }
+        },
+        "warnings": []
+      },
+      {
+        "flow": "mensual_normativo",
+        "status": "ok",
+        "data": {
+          "reforma_previsional": [
+            {
+              "codigo": "GRAD_EMP_2025_08",
+              "periodo": "2025-08",
+              "vigencia_inicio": "2025-08-01",
+              "vigencia_fin": "2026-07-31",
+              "aporte_empleador_total": 1.0,
+              "cuenta_capitalizacion_individual": 0.1,
+              "cotizacion_rentabilidad_protegida": 0.0,
+              "seguro_social_sis_cev": 0.9,
+              "fapp_seguro_social": 0.9,
+              "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+              "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+              "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+              "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+            },
+            {
+              "codigo": "GRAD_EMP_2026_08",
+              "periodo": "2026-08",
+              "vigencia_inicio": "2026-08-01",
+              "vigencia_fin": "2027-07-31",
+              "aporte_empleador_total": 3.5,
+              "cuenta_capitalizacion_individual": 0.1,
+              "cotizacion_rentabilidad_protegida": 0.9,
+              "seguro_social_sis_cev": 2.5,
+              "fapp_seguro_social": 3.4,
+              "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+              "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+              "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+              "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+            },
+            {
+              "codigo": "GRAD_EMP_2027_08",
+              "periodo": "2027-08",
+              "vigencia_inicio": "2027-08-01",
+              "vigencia_fin": "2028-07-31",
+              "aporte_empleador_total": 4.25,
+              "cuenta_capitalizacion_individual": 0.25,
+              "cotizacion_rentabilidad_protegida": 1.5,
+              "seguro_social_sis_cev": 2.5,
+              "fapp_seguro_social": 4.0,
+              "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+              "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+              "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+              "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+            },
+            {
+              "codigo": "GRAD_EMP_2028_08",
+              "periodo": "2028-08",
+              "vigencia_inicio": "2028-08-01",
+              "vigencia_fin": "2029-07-31",
+              "aporte_empleador_total": 5.0,
+              "cuenta_capitalizacion_individual": 1.0,
+              "cotizacion_rentabilidad_protegida": 1.5,
+              "seguro_social_sis_cev": 2.5,
+              "fapp_seguro_social": 4.0,
+              "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+              "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+              "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+              "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+            },
+            {
+              "codigo": "GRAD_EMP_2029_08",
+              "periodo": "2029-08",
+              "vigencia_inicio": "2029-08-01",
+              "vigencia_fin": "2030-07-31",
+              "aporte_empleador_total": 5.7,
+              "cuenta_capitalizacion_individual": 1.7,
+              "cotizacion_rentabilidad_protegida": 1.5,
+              "seguro_social_sis_cev": 2.5,
+              "fapp_seguro_social": 4.0,
+              "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+              "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+              "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+              "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+            },
+            {
+              "codigo": "GRAD_EMP_2030_08",
+              "periodo": "2030-08",
+              "vigencia_inicio": "2030-08-01",
+              "vigencia_fin": "2031-07-31",
+              "aporte_empleador_total": 6.4,
+              "cuenta_capitalizacion_individual": 2.4,
+              "cotizacion_rentabilidad_protegida": 1.5,
+              "seguro_social_sis_cev": 2.5,
+              "fapp_seguro_social": 4.0,
+              "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+              "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+              "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+              "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+            },
+            {
+              "codigo": "GRAD_EMP_2031_08",
+              "periodo": "2031-08",
+              "vigencia_inicio": "2031-08-01",
+              "vigencia_fin": "2032-07-31",
+              "aporte_empleador_total": 7.1,
+              "cuenta_capitalizacion_individual": 3.1,
+              "cotizacion_rentabilidad_protegida": 1.5,
+              "seguro_social_sis_cev": 2.5,
+              "fapp_seguro_social": 4.0,
+              "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+              "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+              "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+              "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+            },
+            {
+              "codigo": "GRAD_EMP_2032_08",
+              "periodo": "2032-08",
+              "vigencia_inicio": "2032-08-01",
+              "vigencia_fin": "2033-07-31",
+              "aporte_empleador_total": 7.8,
+              "cuenta_capitalizacion_individual": 3.8,
+              "cotizacion_rentabilidad_protegida": 1.5,
+              "seguro_social_sis_cev": 2.5,
+              "fapp_seguro_social": 4.0,
+              "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+              "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+              "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+              "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+            },
+            {
+              "codigo": "GRAD_EMP_2033_08",
+              "periodo": "2033-08",
+              "vigencia_inicio": "2033-08-01",
+              "vigencia_fin": "2045-07-31",
+              "aporte_empleador_total": 8.5,
+              "cuenta_capitalizacion_individual": 4.5,
+              "cotizacion_rentabilidad_protegida": 1.5,
+              "seguro_social_sis_cev": 2.5,
+              "fapp_seguro_social": 4.0,
+              "fuente": "https://www.hacienda.cl/noticias-y-eventos/noticias/implementacion-de-la-reforma-previsional-nueva-cotizacion-del-empleador-regira",
+              "fuente_complementaria": "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones",
+              "ley_referencia": "Ley N° 21.735, articulo cuarto transitorio",
+              "observacion": "Gradualidad por mes de devengamiento de la remuneracion; no calcula liquidaciones."
+            }
+          ]
+        },
+        "warnings": []
+      },
+      {
+        "flow": "maestros",
+        "status": "ok",
+        "data": {
+          "organismo_administrador_ley_16744": [
+            {
+              "codigo": "ACHS",
+              "nombre": "Asociacion Chilena de Seguridad",
+              "tipo": "MUTUALIDAD",
+              "vigente": true
+            },
+            {
+              "codigo": "MUSEG",
+              "nombre": "Mutual de Seguridad de la Camara Chilena de la Construccion",
+              "tipo": "MUTUALIDAD",
+              "vigente": true
+            },
+            {
+              "codigo": "IST",
+              "nombre": "Instituto de Seguridad del Trabajo",
+              "tipo": "MUTUALIDAD",
+              "vigente": true
+            },
+            {
+              "codigo": "ISL",
+              "nombre": "Instituto de Seguridad Laboral",
+              "tipo": "PUBLICO",
+              "vigente": true
+            }
+          ],
+          "ley_16744_parametros": {
+            "cotizacion_basica_empleador": 0.9,
+            "cotizacion_adicional_diferenciada": "depende de actividad/siniestralidad de la empresa",
+            "fuente_financiamiento": "https://www.suseso.cl/606/w3-article-18613.html",
+            "fuente_organismos": "https://www.suseso.cl/606/w3-article-19892.html"
+          }
+        },
+        "warnings": []
+      },
+      {
+        "flow": "maestros",
+        "status": "ok",
+        "data": {
+          "ccaf_entidad": [
+            {
+              "codigo": "LOS_ANDES",
+              "nombre": "CCAF Los Andes",
+              "vigente": true
+            },
+            {
+              "codigo": "LA_ARAUCANA",
+              "nombre": "CCAF La Araucana",
+              "vigente": true
+            },
+            {
+              "codigo": "LOS_HEROES",
+              "nombre": "CCAF Los Heroes",
+              "vigente": true
+            },
+            {
+              "codigo": "18_SEPTIEMBRE",
+              "nombre": "CCAF 18 de Septiembre",
+              "vigente": true
+            }
+          ],
+          "fuente": "https://www.suseso.cl/606/w3-propertyvalue-34003.html"
+        },
+        "warnings": []
+      },
+      {
+        "flow": "maestros",
+        "status": "ok",
+        "data": {
+          "institucion_apv": [
+            {
+              "codigo": "000",
+              "nombre": "No Cotiza A.P.V.",
+              "vigente": true
+            },
+            {
+              "codigo": "003",
+              "nombre": "Cuprum",
+              "vigente": true
+            },
+            {
+              "codigo": "005",
+              "nombre": "Habitat",
+              "vigente": true
+            },
+            {
+              "codigo": "008",
+              "nombre": "Provida",
+              "vigente": true
+            },
+            {
+              "codigo": "029",
+              "nombre": "Planvital",
+              "vigente": true
+            },
+            {
+              "codigo": "033",
+              "nombre": "Capital",
+              "vigente": true
+            },
+            {
+              "codigo": "034",
+              "nombre": "Modelo",
+              "vigente": true
+            },
+            {
+              "codigo": "035",
+              "nombre": "Uno",
+              "vigente": true
+            },
+            {
+              "codigo": "102",
+              "nombre": "SANTANDER SEGUROS DE VIDA S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "103",
+              "nombre": "BCI SEGUROS VIDA S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "106",
+              "nombre": "BICE VIDA COMPAÑIA DE SEGUROS S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "107",
+              "nombre": "ZURICH CHILE SEGUROS DE VIDA.",
+              "vigente": true
+            },
+            {
+              "codigo": "111",
+              "nombre": "CIA DE SEG. DE VIDA CONSORCIO NACIONAL DE SEG S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "116",
+              "nombre": "COMPAÑIA DE SEGUROS CONFUTURO S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "118",
+              "nombre": "SEGUROS DE VIDA SURA S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "121",
+              "nombre": "METLIFE CHILE SEGUROS DE VIDA S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "128",
+              "nombre": "OHIO NATIONAL SEGUROS DE VIDA S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "129",
+              "nombre": "PRINCIPAL COMPAÑIA DE SEGUROS DE VIDA CHILE S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "131",
+              "nombre": "SEGUROS DE VIDA SECURITY PREVISION S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "137",
+              "nombre": "PRUDENTIAL AGF. (APV)",
+              "vigente": true
+            },
+            {
+              "codigo": "151",
+              "nombre": "CREDICORP CAPITAL ASSET MANAGMENT S.A AGF",
+              "vigente": true
+            },
+            {
+              "codigo": "204",
+              "nombre": "BCI ASSET MANAGEMENT ADMINISTRADORA GENERAL DE FONDOS S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "205",
+              "nombre": "BICE INVERSIONES AGF S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "208",
+              "nombre": "BTG PACTUAL CHILE S.A. ADMINISTRADORA GENERAL DE FONDOS",
+              "vigente": true
+            },
+            {
+              "codigo": "214",
+              "nombre": "PRINCIPAL ASSET MANAGEMENT AGF S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "215",
+              "nombre": "SANTANDER ASSET MANAGEMENT S.A. ADM. GENERAL DE FONDOS",
+              "vigente": true
+            },
+            {
+              "codigo": "217",
+              "nombre": "SCOTIA SUDAMERICANO ADMINISTRADORA DE FONDOS MUTUOS S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "218",
+              "nombre": "ADMINISTRADORA GENERAL DE FONDOS SECURITY S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "225",
+              "nombre": "ITAU ADMINISTRADORA GENERAL DE FONDOS S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "229",
+              "nombre": "BANCOESTADO S.A. ADMINISTRADORA GENERAL DE FONDOS",
+              "vigente": true
+            },
+            {
+              "codigo": "237",
+              "nombre": "FINTUAL ADMINISTRADORA GENERAL DE FONDOS S.A",
+              "vigente": true
+            },
+            {
+              "codigo": "238",
+              "nombre": "FOCUS AGF S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "600",
+              "nombre": "ZURICH CHILE ASSET MANAGEMENT ADMINISTRADORA GENERAL DE FONDOS S.A",
+              "vigente": true
+            },
+            {
+              "codigo": "601",
+              "nombre": "LARRAIN VIAL ADMINISTRADORA GENERAL DE FONDOS S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "213",
+              "nombre": "LARRAIN VIAL S.A. CORREDORA DE BOLSA",
+              "vigente": true
+            },
+            {
+              "codigo": "222",
+              "nombre": "BANCHILE CORREDORES DE BOLSA S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "227",
+              "nombre": "CORREDORES DE BOLSA SURA S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "228",
+              "nombre": "BTG PACTUAL CHILE S.A. CORREDORES DE BOLSA",
+              "vigente": true
+            },
+            {
+              "codigo": "232",
+              "nombre": "BICE INVERSIONES CORREDORES DE BOLSA S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "235",
+              "nombre": "MBI CORREDORES DE BOLSA S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "236",
+              "nombre": "CONSORCIO CORREDORES DE BOLSA S.A.",
+              "vigente": true
+            },
+            {
+              "codigo": "240",
+              "nombre": "FINANZAS Y NEGOCIOS S.A. CORREDORES DE BOLSA",
+              "vigente": true
+            }
+          ],
+          "forma_pago_apv": [
+            {
+              "codigo": "1",
+              "nombre": "Directa"
+            },
+            {
+              "codigo": "2",
+              "nombre": "Indirecta"
+            }
+          ],
+          "fuente": "https://www.previred.com/wp-content/uploads/2025/10/TablasEquivalenciaSeptiembre2025.pdf"
+        },
+        "warnings": []
+      },
+      {
+        "flow": "empresa",
+        "status": "requires_company_data",
+        "data": {
+          "ley_16744_empresa": {
+            "requiere_configuracion_empresa": true,
+            "campos_recomendados": [
+              "organismo_administrador_codigo",
+              "tasa_adicional_diferenciada",
+              "vigencia_inicio",
+              "vigencia_fin",
+              "actividad_economica",
+              "fuente_resolucion_o_certificado"
+            ],
+            "nota": "La tasa adicional diferenciada no es universal; depende de actividad economica y/o siniestralidad efectiva de cada empleador.",
+            "fuente": "https://www.suseso.cl/606/w3-article-18613.html"
+          }
+        },
+        "warnings": []
+      }
+    ]
+  },
+  "ips_tasas": {
+    "periodo_origen": "2026-05",
+    "vigencia_inicio": "2026-05-01",
+    "generated_at": "2026-05-27T19:59:15",
+    "script_version": "ips_tasas_v611_v1",
+    "responsabilidad": "tasas_basicas_ips_ex_cajas",
+    "sources": [
+      {
+        "url": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "ok": true,
+        "error": null
+      },
+      {
+        "url": "https://ips.gob.cl/tasas-mas-comunes-del-regimen-general",
+        "uso": "referencia para tasas frecuentes por régimen"
+      }
+    ],
+    "warnings": [],
+    "ips_tasa_basica": [
+      {
+        "grupo_trabajador": "SERVICIO_SEGURO_SOCIAL",
+        "nombre_grupo": "Trabajadores Servicio Seguro Social",
+        "tipo_salud": "FONASA",
+        "escenario_empresa": "SIN_CCAF_SIN_MUTUAL",
+        "nombre_escenario": "No adherido a CCAF ni Mutual",
+        "tasa_cotizacion": 26.79,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "SERVICIO_SEGURO_SOCIAL",
+        "nombre_grupo": "Trabajadores Servicio Seguro Social",
+        "tipo_salud": "ISAPRE",
+        "escenario_empresa": "SIN_CCAF_SIN_MUTUAL",
+        "nombre_escenario": "No adherido a CCAF ni Mutual",
+        "tasa_cotizacion": 19.79,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "EMPLEADOS_PARTICULARES",
+        "nombre_grupo": "Trabajadores Empleados Particulares",
+        "tipo_salud": "FONASA",
+        "escenario_empresa": "SIN_CCAF_SIN_MUTUAL",
+        "nombre_escenario": "No adherido a CCAF ni Mutual",
+        "tasa_cotizacion": 29.79,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "EMPLEADOS_PARTICULARES",
+        "nombre_grupo": "Trabajadores Empleados Particulares",
+        "tipo_salud": "ISAPRE",
+        "escenario_empresa": "SIN_CCAF_SIN_MUTUAL",
+        "nombre_escenario": "No adherido a CCAF ni Mutual",
+        "tasa_cotizacion": 22.79,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "EMPLEADOS_PUBLICOS",
+        "nombre_grupo": "Trabajadores Empleados Públicos",
+        "tipo_salud": "FONASA",
+        "escenario_empresa": "SIN_CCAF_SIN_MUTUAL",
+        "nombre_escenario": "No adherido a CCAF ni Mutual",
+        "tasa_cotizacion": 26.57,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "EMPLEADOS_PUBLICOS",
+        "nombre_grupo": "Trabajadores Empleados Públicos",
+        "tipo_salud": "ISAPRE",
+        "escenario_empresa": "SIN_CCAF_SIN_MUTUAL",
+        "nombre_escenario": "No adherido a CCAF ni Mutual",
+        "tasa_cotizacion": 19.57,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "SERVICIO_SEGURO_SOCIAL",
+        "nombre_grupo": "Trabajadores Servicio Seguro Social",
+        "tipo_salud": "FONASA",
+        "escenario_empresa": "SOLO_CCAF",
+        "nombre_escenario": "Adherido sólo a CCAF",
+        "tasa_cotizacion": 26.19,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "SERVICIO_SEGURO_SOCIAL",
+        "nombre_grupo": "Trabajadores Servicio Seguro Social",
+        "tipo_salud": "ISAPRE",
+        "escenario_empresa": "SOLO_CCAF",
+        "nombre_escenario": "Adherido sólo a CCAF",
+        "tasa_cotizacion": 19.79,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "EMPLEADOS_PARTICULARES",
+        "nombre_grupo": "Trabajadores Empleados Particulares",
+        "tipo_salud": "FONASA",
+        "escenario_empresa": "SOLO_CCAF",
+        "nombre_escenario": "Adherido sólo a CCAF",
+        "tasa_cotizacion": 29.19,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "EMPLEADOS_PARTICULARES",
+        "nombre_grupo": "Trabajadores Empleados Particulares",
+        "tipo_salud": "ISAPRE",
+        "escenario_empresa": "SOLO_CCAF",
+        "nombre_escenario": "Adherido sólo a CCAF",
+        "tasa_cotizacion": 22.79,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "EMPLEADOS_PUBLICOS",
+        "nombre_grupo": "Trabajadores Empleados Públicos",
+        "tipo_salud": "FONASA",
+        "escenario_empresa": "SOLO_CCAF",
+        "nombre_escenario": "Adherido sólo a CCAF",
+        "tasa_cotizacion": 25.97,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "EMPLEADOS_PUBLICOS",
+        "nombre_grupo": "Trabajadores Empleados Públicos",
+        "tipo_salud": "ISAPRE",
+        "escenario_empresa": "SOLO_CCAF",
+        "nombre_escenario": "Adherido sólo a CCAF",
+        "tasa_cotizacion": 19.57,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "SERVICIO_SEGURO_SOCIAL",
+        "nombre_grupo": "Trabajadores Servicio Seguro Social",
+        "tipo_salud": "FONASA",
+        "escenario_empresa": "SOLO_MUTUAL",
+        "nombre_escenario": "Adherido sólo a Mutual",
+        "tasa_cotizacion": 25.84,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "SERVICIO_SEGURO_SOCIAL",
+        "nombre_grupo": "Trabajadores Servicio Seguro Social",
+        "tipo_salud": "ISAPRE",
+        "escenario_empresa": "SOLO_MUTUAL",
+        "nombre_escenario": "Adherido sólo a Mutual",
+        "tasa_cotizacion": 18.84,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "EMPLEADOS_PARTICULARES",
+        "nombre_grupo": "Trabajadores Empleados Particulares",
+        "tipo_salud": "FONASA",
+        "escenario_empresa": "SOLO_MUTUAL",
+        "nombre_escenario": "Adherido sólo a Mutual",
+        "tasa_cotizacion": 28.84,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "EMPLEADOS_PARTICULARES",
+        "nombre_grupo": "Trabajadores Empleados Particulares",
+        "tipo_salud": "ISAPRE",
+        "escenario_empresa": "SOLO_MUTUAL",
+        "nombre_escenario": "Adherido sólo a Mutual",
+        "tasa_cotizacion": 21.84,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "EMPLEADOS_PUBLICOS",
+        "nombre_grupo": "Trabajadores Empleados Públicos",
+        "tipo_salud": "FONASA",
+        "escenario_empresa": "SOLO_MUTUAL",
+        "nombre_escenario": "Adherido sólo a Mutual",
+        "tasa_cotizacion": 25.62,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "EMPLEADOS_PUBLICOS",
+        "nombre_grupo": "Trabajadores Empleados Públicos",
+        "tipo_salud": "ISAPRE",
+        "escenario_empresa": "SOLO_MUTUAL",
+        "nombre_escenario": "Adherido sólo a Mutual",
+        "tasa_cotizacion": 18.62,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "SERVICIO_SEGURO_SOCIAL",
+        "nombre_grupo": "Trabajadores Servicio Seguro Social",
+        "tipo_salud": "FONASA",
+        "escenario_empresa": "CCAF_Y_MUTUAL",
+        "nombre_escenario": "Adherido a CCAF y Mutual",
+        "tasa_cotizacion": 25.24,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "SERVICIO_SEGURO_SOCIAL",
+        "nombre_grupo": "Trabajadores Servicio Seguro Social",
+        "tipo_salud": "ISAPRE",
+        "escenario_empresa": "CCAF_Y_MUTUAL",
+        "nombre_escenario": "Adherido a CCAF y Mutual",
+        "tasa_cotizacion": 18.84,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "EMPLEADOS_PARTICULARES",
+        "nombre_grupo": "Trabajadores Empleados Particulares",
+        "tipo_salud": "FONASA",
+        "escenario_empresa": "CCAF_Y_MUTUAL",
+        "nombre_escenario": "Adherido a CCAF y Mutual",
+        "tasa_cotizacion": 28.24,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "EMPLEADOS_PARTICULARES",
+        "nombre_grupo": "Trabajadores Empleados Particulares",
+        "tipo_salud": "ISAPRE",
+        "escenario_empresa": "CCAF_Y_MUTUAL",
+        "nombre_escenario": "Adherido a CCAF y Mutual",
+        "tasa_cotizacion": 21.84,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "EMPLEADOS_PUBLICOS",
+        "nombre_grupo": "Trabajadores Empleados Públicos",
+        "tipo_salud": "FONASA",
+        "escenario_empresa": "CCAF_Y_MUTUAL",
+        "nombre_escenario": "Adherido a CCAF y Mutual",
+        "tasa_cotizacion": 25.02,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      },
+      {
+        "grupo_trabajador": "EMPLEADOS_PUBLICOS",
+        "nombre_grupo": "Trabajadores Empleados Públicos",
+        "tipo_salud": "ISAPRE",
+        "escenario_empresa": "CCAF_Y_MUTUAL",
+        "nombre_escenario": "Adherido a CCAF y Mutual",
+        "tasa_cotizacion": 18.62,
+        "vigente": true,
+        "vigencia_inicio": "2026-05-01",
+        "vigencia_fin": null,
+        "fuente": "https://ips.gob.cl/tasas-ex-cajas-regimen-antiguo",
+        "observacion": "Matriz básica IPS/Ex-Cajas régimen antiguo. Usar para configuración empresa/trabajador cuando no exista una tasa específica por régimen."
+      }
+    ]
+  }
+}
