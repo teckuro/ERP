@@ -1,7 +1,7 @@
 <div class="empleados-grid-wrap">
   <app-data-grid
     title="Empleados"
-    primaryActionLabel="Crear empleado"
+    [primaryActionLabel]="puedeEditar ? 'Crear empleado' : ''"
     (primaryAction)="onCrearEmpleado()"
     [filtersCollapsible]="true"
     emptyTitleWhenFiltered="No se encontraron empleados con los filtros aplicados."
@@ -18,7 +18,7 @@
     [mensajeError]="mensajeError"
     [bulkActionLoading]="bulkActionLoading"
     [bulkActionResult]="bulkActionResult"
-    [bulkActions]="bulkStateActions"
+    [bulkActions]="puedeEditar ? bulkStateActions : []"
     [showHeader]="true"
     [trackBy]="trackByEmpleadoId"
     [selectable]="true"
@@ -125,15 +125,17 @@
             ></lucide-icon>
             {{ menuPrimaryActionLabel(menuEmpleado) }}
           </a>
-          <button
-            type="button"
-            class="employee-action-menu__item employee-action-menu__item--danger"
-            role="menuitem"
-            (click)="closeActionMenu()"
-          >
-            <lucide-icon class="employee-action-menu__item-icon" [img]="powerOffIcon"></lucide-icon>
-            Desactivar
-          </button>
+          @if (puedeEditar) {
+            <button
+              type="button"
+              class="employee-action-menu__item employee-action-menu__item--danger"
+              role="menuitem"
+              (click)="closeActionMenu()"
+            >
+              <lucide-icon class="employee-action-menu__item-icon" [img]="powerOffIcon"></lucide-icon>
+              Desactivar
+            </button>
+          }
         </div>
       </div>
     }

@@ -3,7 +3,6 @@ import { adminSistemaGuard } from './core/auth/admin-sistema.guard';
 import { authChildGuard } from './core/auth/auth.guard';
 import {
   crearModuloPermisoGuard,
-  remuneracionesEscrituraGuard,
 } from './core/auth/remuneraciones-permisos.guard';
 import { LayoutShellComponent } from './layout/layout-shell.component';
 
@@ -74,13 +73,13 @@ export const routes: Routes = [
           },
           {
             path: 'conceptos',
-            canActivate: [crearModuloPermisoGuard('conceptos', 'editar')],
+            canActivate: [crearModuloPermisoGuard('conceptos')],
             loadComponent: () =>
               import('./pages/conceptos-remuneracion.page').then((m) => m.ConceptosRemuneracionPage),
           },
           {
             path: 'haberes-descuentos',
-            canActivate: [crearModuloPermisoGuard('movimientos', 'editar')],
+            canActivate: [crearModuloPermisoGuard('movimientos')],
             loadComponent: () =>
               import('./pages/haberes-descuentos.page').then((m) => m.HaberesDescuentosPage),
           },
@@ -96,7 +95,7 @@ export const routes: Routes = [
           },
           {
             path: 'novedades-mensuales',
-            canActivate: [crearModuloPermisoGuard('movimientos', 'editar')],
+            canActivate: [crearModuloPermisoGuard('movimientos')],
             loadComponent: () =>
               import('./pages/novedades-mensuales.page').then((m) => m.NovedadesMensualesPage),
           },
@@ -126,10 +125,9 @@ export const routes: Routes = [
           },
           {
             path: 'nominas/:nominaPeriodoId',
-            canActivate: [
-              crearModuloPermisoGuard('nominas', 'editar'),
-              remuneracionesEscrituraGuard,
-            ],
+            // Solo consulta puede recorrer la nómina; las acciones se ocultan en la UI
+            // y los servicios/RLS rechazan escrituras (SEC-08).
+            canActivate: [crearModuloPermisoGuard('nominas')],
             loadComponent: () =>
               import(
                 './features/nomina-mensual-v2/containers/nomina-mensual-v2-container/nomina-mensual-v2-container'
@@ -170,7 +168,7 @@ export const routes: Routes = [
       },
       {
         path: 'licencias-medicas',
-        canActivate: [crearModuloPermisoGuard('licencias', 'editar')],
+        canActivate: [crearModuloPermisoGuard('licencias')],
         loadComponent: () => import('./pages/licencias-medicas.page').then((m) => m.LicenciasMedicasPage),
       },
       {
@@ -184,7 +182,7 @@ export const routes: Routes = [
       },
       {
         path: 'parametros',
-        canActivate: [crearModuloPermisoGuard('parametros', 'editar')],
+        canActivate: [crearModuloPermisoGuard('parametros')],
         loadComponent: () => import('./pages/parametros.page').then((m) => m.ParametrosPage),
       },
       {

@@ -18,6 +18,7 @@ import {
 } from '../../../../shared/components/ui/data-grid';
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { mensajeErrorSupabaseParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
+import { ErpPermisosRemuneracionesService } from '../../../../core/auth/erp-permisos-remuneraciones.service';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import type { ShellPageContext } from '../../../../layout/shell-page-context.service';
 import { EmpleadosService } from '../../../empleados/services/empleados.service';
@@ -87,6 +88,10 @@ export class LicenciasMedicasContainer implements OnInit {
   private readonly orquestador = inject(LicenciasMedicasNovedadesOrquestador);
   private readonly empleadosService = inject(EmpleadosService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly permisos = inject(ErpPermisosRemuneracionesService);
+
+  /** false = perfil de solo consulta (ver sin registrar ni confirmar). */
+  readonly puedeEditarLicencias = computed(() => this.permisos.permisosModulos().licencias.editar);
 
   @ViewChild(DataGridComponent)
   private grid?: DataGridComponent<LicenciaGridRow>;

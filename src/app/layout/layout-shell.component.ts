@@ -24,6 +24,12 @@ import { SHELL_HEADER_HEIGHT_PX, SHELL_NAV_WIDTH_PX } from './shell-navigation.c
       }
       <app-header></app-header>
       <main class="erp-shell-main" aria-label="Contenido operativo">
+        @if (modoConsulta()) {
+          <p class="erp-modo-consulta" role="status">
+            <strong>Modo consulta</strong>
+            <span>Perfil de solo lectura: puedes recorrer todo el ERP, pero no guardar cambios.</span>
+          </p>
+        }
         <div class="app-outlet-scroll erp-shell-scroll">
           <router-outlet></router-outlet>
         </div>
@@ -47,12 +53,33 @@ import { SHELL_HEADER_HEIGHT_PX, SHELL_NAV_WIDTH_PX } from './shell-navigation.c
         height: 100vh;
         overflow: hidden;
         padding-top: ${SHELL_HEADER_HEIGHT_PX}px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .erp-modo-consulta {
+        flex: 0 0 auto;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.25rem 0.6rem;
+        margin: 0;
+        padding: 0.45rem 1.25rem;
+        background: #fff8e1;
+        border-bottom: 1px solid #f0d98c;
+        color: #5b4708;
+        font-size: 0.8125rem;
+        line-height: 1.4;
+      }
+
+      .erp-modo-consulta strong {
+        font-weight: 600;
       }
 
       .erp-shell-scroll {
         display: flex;
         flex-direction: column;
-        height: 100%;
+        flex: 1 1 auto;
         width: 100%;
         min-height: 0;
         overflow-y: auto;
@@ -105,6 +132,9 @@ export class LayoutShellComponent {
   private readonly shellContext = inject(ShellPageContextService);
   private readonly permisos = inject(ErpPermisosRemuneracionesService);
   readonly navUi = inject(ShellNavUiService);
+
+  /** Aviso persistente para perfiles de solo consulta (p. ej. la cuenta demo). */
+  readonly modoConsulta = this.permisos.esSoloConsulta;
 
   constructor() {
     void this.permisos.asegurarPermisosPerfil();

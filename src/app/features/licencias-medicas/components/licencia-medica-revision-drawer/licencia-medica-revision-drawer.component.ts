@@ -43,6 +43,8 @@ export class LicenciaMedicaRevisionDrawerComponent implements OnChanges {
   @Input() empleados: readonly EmpleadoListado[] = [];
   @Input() guardando = false;
   @Input() esBorradorLocal = false;
+  /** false = perfil de solo consulta: el drawer se abre solo para revisar. */
+  @Input() puedeEditar = true;
 
   @Output() cerrar = new EventEmitter<void>();
   @Output() guardarBorrador = new EventEmitter<void>();
@@ -107,6 +109,9 @@ export class LicenciaMedicaRevisionDrawerComponent implements OnChanges {
   });
 
   esSoloLectura(): boolean {
+    if (!this.puedeEditar) {
+      return true;
+    }
     if (this.esBorradorLocal) {
       return false;
     }

@@ -45,7 +45,7 @@
       ></lucide-icon>
       <strong class="paso-cierre__franja-title">{{ accion.titulo }}</strong>
       @if (accion.ejecutable) {
-        <button
+        <button *erpPuedeEscribir="'nominas'"
           type="button"
           class="paso-cierre__btn is-primary"
           [disabled]="ejecutando()"
@@ -182,7 +182,7 @@
                   >Ver en dotación</button>
                 }
                 @if (incidenciaCriticaPendiente(inc)) {
-                  <button
+                  <button *erpPuedeEscribir="'nominas'"
                     type="button"
                     class="paso-cierre__btn is-secondary"
                     [disabled]="procesandoDecision() === inc.id"
@@ -201,7 +201,7 @@
                       placeholder="Motivo operativo para continuar"
                     ></textarea>
                   </label>
-                  <button
+                  <button *erpPuedeEscribir="'nominas'"
                     type="button"
                     class="paso-cierre__btn is-secondary"
                     [disabled]="procesandoDecision() === inc.id"
@@ -384,7 +384,7 @@
             && ['aprobada', 'liquidada'].includes(nomina()?.estado ?? '')
             && accionRecomendada()?.tipo !== 'liquidaciones'
           ) {
-            <button
+            <button *erpPuedeEscribir="'nominas'"
               type="button"
               class="paso-cierre__btn is-secondary"
               [disabled]="ejecutando() || !puedeRegenerarLiquidaciones()"
@@ -413,7 +413,7 @@
           </label>
         </div>
       } @else if (puedeAccionesAdmin() && accionRecomendada()?.tipo !== 'reabrir') {
-        <button type="button" class="paso-cierre__btn is-secondary" (click)="abrirReaperturaModal()">
+        <button *erpPuedeEscribir="'nominas'" type="button" class="paso-cierre__btn is-secondary" (click)="abrirReaperturaModal()">
           <lucide-icon name="lock-open" aria-hidden="true"></lucide-icon>
           Reabrir
         </button>

@@ -67,6 +67,7 @@ import {
   statsDesdeResumenMovimientos,
   type StatsMovimientosPorTrabajador,
 } from '../../../../presenters/nomina-movimientos-por-trabajador.presenter';
+import { PuedeEscribirDirective } from '../../../../../../core/auth/puede-escribir.directive';
 
 interface BorradorManual {
   trabajadorId: string;
@@ -96,7 +97,7 @@ const RESUMEN_MOVIMIENTOS_VACIO: ResumenMovimientosNomina = {
 @Component({
   selector: 'app-nomina-mensual-v2-paso-movimientos',
   standalone: true,
-  imports: [
+  imports: [PuedeEscribirDirective, 
     CommonModule,
     FormsModule,
     DataGridComponent,

@@ -50,6 +50,7 @@ import type {
   ResultadoAvancePaso,
 } from '../../facade/nomina-mensual-v2-navegacion';
 import { NominaMensualV2ModalIncluirTrabajadoresComponent } from '../nomina-mensual-v2-modal-incluir-trabajadores/nomina-mensual-v2-modal-incluir-trabajadores.component';
+import { PuedeEscribirDirective } from '../../../../../../core/auth/puede-escribir.directive';
 
 interface VistaDotacion {
   filas: FilaTrabajadorNominaResumen[];
@@ -67,7 +68,7 @@ const RESUMEN_VACIO: DotacionResumenNomina = {
 @Component({
   selector: 'app-nomina-mensual-v2-paso-dotacion',
   standalone: true,
-  imports: [
+  imports: [PuedeEscribirDirective, 
     CommonModule,
     FormsModule,
     DataGridComponent,

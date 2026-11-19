@@ -27,6 +27,7 @@ import type {
   PeriodoCargaEstado,
 } from '../models/parametros-workspace.vm';
 import { ParametrosGeneralesService } from '../services/parametros-generales.service';
+import { ErpPermisosRemuneracionesService } from '../../../core/auth/erp-permisos-remuneraciones.service';
 import {
   ParametrosConfigClienteBaseOpcion,
   compararOficialCliente,
@@ -102,6 +103,10 @@ export class ParametrosWorkspaceOrquestador {
   private readonly destroyRef = inject(DestroyRef);
   private readonly presentacion = inject(ParametrosPresentacionFacade);
   readonly periodoGlobal = inject(PeriodoActivoService);
+  private readonly permisos = inject(ErpPermisosRemuneracionesService);
+
+  /** false = perfil de solo consulta: se ven los parámetros, sin Modificar ni Guardar. */
+  readonly puedeEditarParametros = computed(() => this.permisos.permisosModulos().parametros.editar);
 
   readonly tabs = TABS_PARAMETROS_WORKSPACE;
   readonly areas = AREAS_PARAMETROS_WORKSPACE;
@@ -572,7 +577,10 @@ export class ParametrosWorkspaceOrquestador {
   });
 
   readonly cierreAccionVisible = computed(
-    () => this.cierrePendientePrincipal() !== 'Sin pendientes críticos.',
+    () =>
+      this.cierrePendientePrincipal() !== 'Sin pendientes críticos.' &&
+      // Solo consulta: el pendiente se informa, pero sin el atajo que abre la edición.
+      this.puedeEditarParametros(),
   );
 
   readonly cierreAccionSiguienteLabel = computed(() => {
@@ -1466,6 +1474,10 @@ export class ParametrosWorkspaceOrquestador {
 
   async editarParametros(): Promise<void> {
     this.cerrarDialogo();
+
+    if (!this.puedeEditarParametros()) {
+      return;
+    }
 
     if (this.isPreparingEdit()) {
       return;

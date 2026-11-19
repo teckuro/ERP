@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { TablaEmpleadosComponent } from '../../components/tabla-empleados/tabla-empleados';
@@ -10,6 +10,7 @@ import {
   DataGridBulkActionResult,
 } from '../../../../shared/components/ui/data-grid';
 import { mensajeErrorSupabaseParaUsuario } from '../../../../core/errors/erp-supabase-user-message';
+import { ErpPermisosRemuneracionesService } from '../../../../core/auth/erp-permisos-remuneraciones.service';
 
 @Component({
   selector: 'app-listado-empleados',
@@ -21,6 +22,9 @@ export class ListadoEmpleadosContainer implements OnInit {
   private readonly empleadosService = inject(EmpleadosService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly permisos = inject(ErpPermisosRemuneracionesService);
+
+  readonly puedeEditarEmpleados = computed(() => this.permisos.permisosModulos().empleados.editar);
 
   readonly empleados = signal<EmpleadoListado[]>([]);
   readonly cargando = signal(true);
