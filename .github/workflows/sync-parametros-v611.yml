@@ -93,26 +93,44 @@ jobs:
           if-no-files-found: warn
           retention-days: 90
 
-      - name: Aplicar SQL en Supabase
+      - name: Preparar conexión
         if: github.event_name == 'schedule' || inputs.aplicar == 'true'
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-          PERIODO: ${{ steps.periodo.outputs.periodo }}
+          SECRETO: ${{ secrets.SUPABASE_DB_URL }}
         run: |
-          if [ -z "$SUPABASE_DB_URL" ]; then
+          # Tolera los errores de pegado más comunes: espacios/saltos de línea,
+          # comillas alrededor y el prefijo "SUPABASE_DB_URL=" copiado desde .env.
+          url="$(printf '%s' "$SECRETO" | tr -d '\r\n' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+          url="${url#SUPABASE_DB_URL=}"
+          url="${url#\"}"; url="${url%\"}"; url="${url#\'}"; url="${url%\'}"
+          if [ -z "$url" ]; then
             echo "::error::Falta el secreto de repositorio SUPABASE_DB_URL (URL del pooler de Supabase)."
             exit 1
           fi
-          psql "$SUPABASE_DB_URL" -X -q -v ON_ERROR_STOP=1 \
+          echo "::add-mask::$url"
+          if ! [[ "$url" =~ ^postgres(ql)?:// ]]; then
+            echo "::error::SUPABASE_DB_URL no empieza con postgresql:// (largo ${#url}, primer carácter '${url:0:1}' oculto si es parte del secreto). Pega solo la URL, sin comillas ni 'SUPABASE_DB_URL='."
+            exit 1
+          fi
+          if [[ "$url" =~ @db\.[^.]+\.supabase\.co ]]; then
+            echo "::warning::La URL es la conexión directa (IPv6). Usa la del pooler (*.pooler.supabase.com)."
+          fi
+          echo "PGURL=$url" >> "$GITHUB_ENV"
+
+      - name: Aplicar SQL en Supabase
+        if: github.event_name == 'schedule' || inputs.aplicar == 'true'
+        env:
+          PERIODO: ${{ steps.periodo.outputs.periodo }}
+        run: |
+          psql "$PGURL" -X -q -v ON_ERROR_STOP=1 \
             -f "runs/${PERIODO}/mensual/parametros_mensuales_${PERIODO}_v611.sql"
 
       - name: Verificar carga
         if: github.event_name == 'schedule' || inputs.aplicar == 'true'
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           PERIODO: ${{ steps.periodo.outputs.periodo }}
         run: |
-          resultado="$(psql "$SUPABASE_DB_URL" -X -q -A -t -v ON_ERROR_STOP=1 -v periodo="$PERIODO" <<'SQL'
+          resultado="$(psql "$PGURL" -X -q -A -t -v ON_ERROR_STOP=1 -v periodo="$PERIODO" <<'SQL'
           select count(*) || ' ' || coalesce(max(uf)::text, '-') || ' ' || coalesce(max(utm)::text, '-')
           from public.parametros_generales where periodo = :'periodo';
           SQL
