@@ -6,6 +6,7 @@ import { PeriodoActivoService } from '../../../core/services/periodo-activo.serv
 import { ParametrosGeneralesService } from '../services/parametros-generales.service';
 import { ParametrosPresentacionFacade } from './parametros-presentacion.facade';
 import { ParametrosWorkspaceOrquestador } from './parametros-workspace.orquestador';
+import { provideErpPermisosStub } from '../../../core/auth/testing/erp-permisos.stub';
 
 describe('ParametrosWorkspaceOrquestador', () => {
   const setPeriodoYm = vi.fn();
@@ -13,6 +14,7 @@ describe('ParametrosWorkspaceOrquestador', () => {
   function crearOrquestador(periodo = '2026-05') {
     TestBed.configureTestingModule({
       providers: [
+        provideErpPermisosStub(),
         ParametrosPresentacionFacade,
         ParametrosWorkspaceOrquestador,
         {
@@ -65,6 +67,7 @@ describe('ParametrosWorkspaceOrquestador', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
+        provideErpPermisosStub(),
         ParametrosPresentacionFacade,
         ParametrosWorkspaceOrquestador,
         { provide: ParametrosGeneralesService, useValue: svc },

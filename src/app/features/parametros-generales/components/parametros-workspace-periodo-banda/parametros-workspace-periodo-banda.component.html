@@ -37,7 +37,7 @@
     </div>
 
     <div class="parametros-period-band__actions" aria-label="Acciones del período">
-      @if (!ws.hasAnySyncedData()) {
+      @if (!ws.hasAnySyncedData() && ws.puedeEditarParametros()) {
         <app-tooltip preferredPlacement="top" [text]="ws.sincronizarTooltip()">
           <app-button
             variant="outline"
@@ -68,7 +68,7 @@
           (saveClick)="ws.guardar()"
           (backClick)="ws.volverParametrosAction()"
         ></app-page-actions>
-      } @else {
+      } @else if (ws.puedeEditarParametros()) {
         <app-page-actions
           [visibleActions]="['edit']"
           [editLabel]="ws.accionConfigClienteLabel()"

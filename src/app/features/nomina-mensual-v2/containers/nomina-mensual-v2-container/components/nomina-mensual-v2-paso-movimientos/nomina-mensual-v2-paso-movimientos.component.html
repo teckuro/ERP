@@ -28,7 +28,7 @@
         </div>
       </dl>
       <div class="paso-mov__toolbar">
-        <button
+        <button *erpPuedeEscribir="'nominas'"
           type="button"
           class="paso-mov__btn is-secondary"
           (click)="cargarPendientesGlobales()"
@@ -48,7 +48,7 @@
             Sin pendientes por cargar
           }
         </button>
-        <button
+        <button *erpPuedeEscribir="'nominas'"
           type="button"
           class="paso-mov__btn is-secondary"
           (click)="abrirModalManual()"
@@ -175,7 +175,7 @@
       <ng-template appDataGridCell="acciones" let-fila="row">
         <div class="paso-mov__acciones-fila">
           @if (fila.cuentaPendientes > 0) {
-            <button
+            <button *erpPuedeEscribir="'nominas'"
               type="button"
               class="paso-mov__btn is-primary is-small"
               (click)="cargarPendientesDeTrabajador(fila.trabajadorId)"
@@ -189,7 +189,7 @@
               }
             </button>
           }
-          <button
+          <button *erpPuedeEscribir="'nominas'"
             type="button"
             class="paso-mov__btn is-ghost is-small paso-mov__btn-agregar"
             (click)="abrirModalManual(fila.trabajadorId)"
@@ -219,7 +219,7 @@
               </span>
             </div>
             <div class="paso-mov__detalle-head-actions">
-              <button
+              <button *erpPuedeEscribir="'nominas'"
                 type="button"
                 class="paso-mov__btn is-ghost is-small paso-mov__btn-agregar"
                 (click)="abrirModalManual(fila.trabajadorId)"
@@ -293,21 +293,21 @@
                       {{ etiquetaEstadoItem(item.estado) }}
                     </span>
                     @if (item.estado === 'pendiente') {
-                      <button
+                      <button *erpPuedeEscribir="'nominas'"
                         type="button"
                         class="paso-mov__link"
                         (click)="cargarItem(item, fila.trabajadorId)"
                         [disabled]="estaCargandoItem(item)"
                       >Cargar a la nómina</button>
                     } @else if (item.estado === 'aplicado') {
-                      <button
+                      <button *erpPuedeEscribir="'nominas'"
                         type="button"
                         class="paso-mov__link"
                         (click)="omitirItem(item)"
                         [disabled]="estaCargandoItem(item)"
                       >Omitir este mes</button>
                       @if (itemAdmiteEliminacion(item)) {
-                        <button
+                        <button *erpPuedeEscribir="'nominas'"
                           type="button"
                           class="paso-mov__link is-danger"
                           (click)="eliminarItemManual(item)"
@@ -315,14 +315,14 @@
                         >Eliminar</button>
                       }
                     } @else if (item.estado === 'omitido') {
-                      <button
+                      <button *erpPuedeEscribir="'nominas'"
                         type="button"
                         class="paso-mov__link"
                         (click)="reaplicarItem(item)"
                         [disabled]="estaCargandoItem(item)"
                       >Reaplicar</button>
                       @if (itemAdmiteEliminacion(item)) {
-                        <button
+                        <button *erpPuedeEscribir="'nominas'"
                           type="button"
                           class="paso-mov__link is-danger"
                           (click)="eliminarItemManual(item)"
@@ -422,7 +422,7 @@
           }
           <div class="paso-mov__concepto-block">
             <span class="paso-mov__field-label">Concepto y categoría</span>
-            <button
+            <button *erpPuedeEscribir="'nominas'"
               type="button"
               class="paso-mov__concepto-trigger"
               (click)="abrirModalConcepto()"

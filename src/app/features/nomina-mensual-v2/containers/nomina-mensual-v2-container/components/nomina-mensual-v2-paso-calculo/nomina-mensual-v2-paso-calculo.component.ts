@@ -80,6 +80,7 @@ import {
   ultimoDiffRecalculoConCambios,
   type DiffRecalculoView,
 } from '../../../../presenters/nomina-calculo-version-diff.presenter';
+import { PuedeEscribirDirective } from '../../../../../../core/auth/puede-escribir.directive';
 
 const RESUMEN_CALCULO_VACIO: ResumenCalculoNomina = {
   trabajadoresCalculados: 0,
@@ -93,7 +94,7 @@ const RESUMEN_CALCULO_VACIO: ResumenCalculoNomina = {
 @Component({
   selector: 'app-nomina-mensual-v2-paso-calculo',
   standalone: true,
-  imports: [
+  imports: [PuedeEscribirDirective, 
     CommonModule,
     DataGridComponent,
     DataGridCellDirective,

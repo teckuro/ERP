@@ -63,6 +63,8 @@ export class TablaEmpleadosComponent implements OnInit, OnDestroy {
   @Input() navegandoCreacion = false;
   /** Precarga filtro de situación (puente Resumen `?filtro=`). */
   @Input() filtroSituacionFicha: 'incompletas' | 'aptas' | null = null;
+  /** false = perfil de solo consulta: oculta crear, acciones masivas y desactivar. */
+  @Input() puedeEditar = true;
   @Output() readonly refresh = new EventEmitter<void>();
   @Output() readonly bulkAction = new EventEmitter<DataGridBulkActionEvent<EmpleadoListado>>();
   @Output() readonly createEmpleado = new EventEmitter<void>();

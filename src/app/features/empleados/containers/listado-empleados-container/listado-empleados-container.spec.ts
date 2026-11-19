@@ -6,6 +6,7 @@ import { ChevronRight, Home } from 'lucide-angular/src/icons';
 
 import { EmpleadosService } from '../../services/empleados.service';
 import { ListadoEmpleadosContainer } from './listado-empleados-container';
+import { provideErpPermisosStub } from '../../../../core/auth/testing/erp-permisos.stub';
 
 describe('ListadoEmpleadosContainer', () => {
   let component: ListadoEmpleadosContainer;
@@ -15,6 +16,7 @@ describe('ListadoEmpleadosContainer', () => {
     await TestBed.configureTestingModule({
       imports: [ListadoEmpleadosContainer],
       providers: [
+        provideErpPermisosStub(),
         provideRouter([]),
         importProvidersFrom(LucideAngularModule.pick({ Home, ChevronRight })),
         {

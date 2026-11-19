@@ -58,6 +58,7 @@ import { NominaMensualV2TrazabilidadDrawerComponent } from './components/nomina-
 import { NominaMensualV2TrazabilidadModalComponent } from './components/nomina-mensual-v2-trazabilidad-modal/nomina-mensual-v2-trazabilidad-modal.component';
 import type { NominaCabeceraCambiadaEvent } from '../../models/nomina-cabecera-cambiada.models';
 import { construirContextoGeneradorNomina } from '../../presenters/nomina-generador-context.presenter';
+import { ErpPermisosRemuneracionesService } from '../../../../core/auth/erp-permisos-remuneraciones.service';
 
 @Component({
   selector: 'app-nomina-mensual-v2-container',
@@ -92,6 +93,10 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
   readonly orquestador = inject(NominaMensualV2OrquestadorPort);
   private readonly accesoBaseService = inject(NominaParametrosBaseAccesoService);
   private readonly nominaCapabilities = inject(NominaMensualCapabilitiesService);
+  private readonly permisosRemuneraciones = inject(ErpPermisosRemuneracionesService);
+
+  /** false = perfil de solo consulta: recorre los pasos sin acciones que modifiquen la nómina. */
+  readonly puedeEscribirNomina = computed(() => this.permisosRemuneraciones.puedeEscribirNomina());
 
   private readonly pasoParametros = viewChild(NominaMensualV2PasoParametrosComponent);
   private readonly pasoDotacion = viewChild(NominaMensualV2PasoDotacionComponent);
@@ -848,7 +853,7 @@ export class NominaMensualV2Container implements OnInit, OnDestroy {
             label: `Paso ${currentIndex + 1} de ${ORDEN_PASOS_NOMINA.length}`,
             tone: 'neutral',
           },
-      primaryAction: {
+      primaryAction: !this.puedeEscribirNomina() ? undefined : {
         label: accionParametros?.label ?? this.primaryActionLabel(),
         disabled: (accionParametros?.disabled ?? false)
           || disabledPorContenido

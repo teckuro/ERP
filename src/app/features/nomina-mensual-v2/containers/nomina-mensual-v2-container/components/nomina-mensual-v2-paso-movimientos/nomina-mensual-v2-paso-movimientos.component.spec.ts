@@ -9,6 +9,7 @@ import type { FilaTrabajadorNominaResumen } from '../../../../../nomina-mensual/
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
 import { HaberesDescuentosService } from '../../../../../haberes-descuentos/services/haberes-descuentos.service';
 import { NominaMensualV2PasoMovimientosComponent } from './nomina-mensual-v2-paso-movimientos.component';
+import { provideErpPermisosStub } from '../../../../../../core/auth/testing/erp-permisos.stub';
 
 const CONCEPTOS_CATALOGO_MOCK = [
   {
@@ -90,6 +91,7 @@ function configurarTestBed(
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
     providers: [
+      provideErpPermisosStub(),
       { provide: NominaPeriodoService, useValue: servicio },
       { provide: HaberesDescuentosService, useValue: haberesDescuentos },
     ],

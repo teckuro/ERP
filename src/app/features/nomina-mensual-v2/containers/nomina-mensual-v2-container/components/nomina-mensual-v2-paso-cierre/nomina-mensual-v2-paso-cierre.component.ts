@@ -60,6 +60,7 @@ import {
   esLiquidacionesSoloLectura,
   puedeRegenerarLiquidacionesInternas,
 } from '../../../../../nomina-mensual/rules/nomina-liquidaciones-internas-ui.rules';
+import { PuedeEscribirDirective } from '../../../../../../core/auth/puede-escribir.directive';
 
 interface ChecklistItem {
   id: string;
@@ -110,7 +111,7 @@ function etiquetaTipoIncidencia(tipo: string): string {
 @Component({
   selector: 'app-nomina-mensual-v2-paso-cierre',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, MessageBoxComponent, WorkspaceLoadingComponent],
+  imports: [PuedeEscribirDirective, CommonModule, FormsModule, LucideAngularModule, MessageBoxComponent, WorkspaceLoadingComponent],
   templateUrl: './nomina-mensual-v2-paso-cierre.component.html',
   styleUrl: './nomina-mensual-v2-paso-cierre.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -5,6 +5,7 @@ import type { FilaTrabajadorNominaResumen } from '../../../../../nomina-mensual/
 import { NominaPeriodoService } from '../../../../../nomina-mensual/services/nomina-periodo.service';
 import { EmpleadosService } from '../../../../../empleados/services/empleados.service';
 import { NominaMensualV2PasoDotacionComponent } from './nomina-mensual-v2-paso-dotacion.component';
+import { provideErpPermisosStub } from '../../../../../../core/auth/testing/erp-permisos.stub';
 
 function filaMock(parcial: Partial<FilaTrabajadorNominaResumen> = {}): FilaTrabajadorNominaResumen {
   return {
@@ -34,6 +35,7 @@ function configurarTestBed(servicio: Record<string, unknown>): void {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
     providers: [
+      provideErpPermisosStub(),
       { provide: NominaPeriodoService, useValue: servicio },
       {
         provide: EmpleadosService,

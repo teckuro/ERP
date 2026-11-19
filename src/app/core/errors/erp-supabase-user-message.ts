@@ -45,7 +45,12 @@ export function mensajeErrorSupabaseParaUsuario(error: unknown, contexto = 'la o
   }
 
   if (/solo consulta|no puedes modificar n[oó]minas/i.test(texto)) {
-    return 'Tu perfil es de solo consulta. No puedes crear nóminas.';
+    return 'Tu perfil es de solo consulta. No puedes modificar nóminas.';
+  }
+
+  // RLS / permisos de escritura (SEC-08): el rol de consulta llega hasta la base y se rechaza.
+  if (/row-level security|violates row level security|42501|permission denied|sin permiso para modificar/i.test(texto)) {
+    return 'Tu perfil es de solo consulta: puedes revisar la información, pero no guardar cambios.';
   }
 
   if (/el universo cambi[oó] desde la vista previa/i.test(texto)) {

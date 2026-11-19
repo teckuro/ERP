@@ -35,6 +35,7 @@ import { HaberesDescuentosService } from '../../../../haberes-descuentos/service
 import type { CrearNovedadMensualInput, NovedadMensual } from '../../models/novedad-mensual.model';
 import { NovedadesMensualesService } from '../../services/novedades-mensuales.service';
 import { NovedadesMensualesContainer } from './novedades-mensuales-container';
+import { provideErpPermisosStub } from '../../../../../core/auth/testing/erp-permisos.stub';
 
 function novedad(over: Partial<NovedadMensual> = {}): NovedadMensual {
   return {
@@ -150,6 +151,7 @@ describe('NovedadesMensualesContainer', () => {
     await TestBed.configureTestingModule({
       imports: [NovedadesMensualesContainer],
       providers: [
+        provideErpPermisosStub(),
         provideRouter([]),
         importProvidersFrom(
           LucideAngularModule.pick({
@@ -196,6 +198,7 @@ describe('NovedadesMensualesContainer', () => {
       await TestBed.configureTestingModule({
         imports: [NovedadesMensualesContainer],
         providers: [
+          provideErpPermisosStub(),
           provideRouter([]),
           importProvidersFrom(
             LucideAngularModule.pick({

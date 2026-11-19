@@ -36,7 +36,7 @@
       <app-data-grid
         className="nm-grid"
         title="Movimientos de remuneración"
-        primaryActionLabel="Registrar movimiento del mes"
+        [primaryActionLabel]="puedeEscribirMovimientos() ? 'Registrar movimiento del mes' : ''"
         (primaryAction)="abrirNuevo()"
         [rows]="trabajadoresMovimientos()"
         [columns]="trabajadorColumns"
@@ -152,6 +152,7 @@
                     }
                   }
                 </div>
+                @if (puedeEscribirMovimientos()) {
                 <div class="nm-gestion-toolbar-actions">
                   <app-button variant="primary" size="sm" (click)="abrirNuevoParaTrabajador(detalle.row, gestionFiltroActivo())">
                     <lucide-icon icon class="w-4 h-4" [img]="plusIcon"></lucide-icon>
@@ -161,6 +162,7 @@
                     Recurrente
                   </app-button>
                 </div>
+                }
               </div>
 
               <details class="nm-gestion-leyenda-wrap">

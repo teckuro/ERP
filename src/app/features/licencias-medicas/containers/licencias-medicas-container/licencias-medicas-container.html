@@ -46,7 +46,7 @@
     <app-data-grid
         className="lm-grid"
         title="Licencias médicas"
-        primaryActionLabel="Registrar licencia"
+        [primaryActionLabel]="puedeEditarLicencias() ? 'Registrar licencia' : ''"
         [primaryActionDisabled]="guardando() || loading()"
         (primaryAction)="abrirRegistroManual()"
         [rows]="filas()"
@@ -82,6 +82,7 @@
       [empleados]="empleados()"
       [guardando]="guardando()"
       [esBorradorLocal]="esBorradorLocal()"
+      [puedeEditar]="puedeEditarLicencias()"
       (cerrar)="cerrarRevision()"
       (guardarBorrador)="guardarBorradorDrawer()"
       (confirmarVincular)="confirmarDrawer()"

@@ -23,6 +23,7 @@ import {
   ultimoDiaSqlDesdeYm,
 } from '../../../../../core/services/periodo-activo.service';
 import { mensajeErrorParaUsuario } from '../../../../../core/errors/erp-supabase-user-message';
+import { ErpPermisosRemuneracionesService } from '../../../../../core/auth/erp-permisos-remuneraciones.service';
 import { ButtonComponent } from '../../../../../shared/components/ui/primitives/button.component';
 import {
   DataGridCellDirective,
@@ -304,6 +305,9 @@ function formInicial(periodo: string): NovedadForm {
   };
 }
 
+const MENSAJE_SOLO_LECTURA_MOVIMIENTOS =
+  'Tu perfil es de solo consulta: puedes revisar los movimientos, pero no registrarlos ni aprobarlos.';
+
 @Component({
   selector: 'app-novedades-mensuales-container',
   standalone: true,
@@ -330,6 +334,10 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly permisos = inject(ErpPermisosRemuneracionesService);
+
+  /** false = perfil de solo consulta: se puede revisar todo, sin registrar ni aprobar. */
+  readonly puedeEscribirMovimientos = computed(() => this.permisos.permisosModulos().movimientos.editar);
   readonly periodoActivo = inject(PeriodoActivoService);
   private readonly flowQueryParams = toSignal(this.route.queryParams, { initialValue: {} });
   private pantallaInicializada = false;
@@ -1373,6 +1381,9 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   }
 
   mensajeAccionesBloqueadas(row: MovimientoGestionUnificadoRow): string {
+    if (!this.puedeEscribirMovimientos()) {
+      return MENSAJE_SOLO_LECTURA_MOVIMIENTOS;
+    }
     if (row.novedad) {
       return mensajeAccionBloqueadaMensual(row.estadoEtiqueta);
     }
@@ -1380,6 +1391,9 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   }
 
   mensajeAccionesBloqueadasCorto(row: MovimientoGestionUnificadoRow): string {
+    if (!this.puedeEscribirMovimientos()) {
+      return 'Solo lectura';
+    }
     return mensajeAccionBloqueadaCorto(row.estadoEtiqueta, row.ambito);
   }
 
@@ -1618,7 +1632,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   }
 
   esAsignarTrabajadorGrilla(row: TrabajadorMovimientoRow): boolean {
-    return row.movimientosMes === 0 && row.recurrentes === 0;
+    return this.puedeEscribirMovimientos() && row.movimientosMes === 0 && row.recurrentes === 0;
   }
 
   tituloAccionTrabajadorGrilla(row: TrabajadorMovimientoRow): string {
@@ -2331,6 +2345,9 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   }
 
   tieneAccionesGestionUnificada(row: MovimientoGestionUnificadoRow): boolean {
+    if (!this.puedeEscribirMovimientos()) {
+      return false;
+    }
     if (row.novedad) {
       const novedad = row.novedad;
       return (
