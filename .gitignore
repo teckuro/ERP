@@ -54,15 +54,10 @@ __screenshots__/
 Thumbs.db
 
 src/app/supabase
-/tests/*
-!/tests/nominas-admin-generador.e2e.spec.ts
-!/tests/sec-guards-consulta.e2e.spec.ts
-!/tests/helpers/
-!/tests/helpers/nominas-admin-generador-e2e.ts
-!/tests/helpers/previred-exportacion-e2e.ts
-!/tests/previred-exportacion.e2e.spec.ts
-!/tests/nomina-mensual.e2e.spec.ts
-!/tests/empleados-nomina-error-fixtures.spec.ts
+/tests/__snapshots__/
+/tests/**/*.png
+/tests/**/*.bak
+/playwright-report
 /test-results
 /bd/*
 !/bd/README.md
