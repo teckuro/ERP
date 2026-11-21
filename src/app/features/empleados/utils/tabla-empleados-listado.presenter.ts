@@ -24,13 +24,13 @@ export function etiquetaEstadoEmpleado(estado: EmpleadoEstado): string {
   }
 }
 
+/**
+ * Pone en mayúscula solo la primera letra de un cargo o texto corto, sin tocar el resto.
+ * Respeta lo que se guardó: «Jefe de Turno» y «Asistente de RR.HH.» se muestran igual.
+ */
 export function capitalizarTextoEmpleado(value: string): string {
-  return value
-    .toLowerCase()
-    .split(' ')
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
+  const texto = value.trim();
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
 export function formatearFechaIngresoListado(value: string): string {
@@ -253,9 +253,9 @@ export function crearFiltrosGridTablaEmpleados(
       predicate: (row, value) => {
         if (value === 'incompletas') {
           return (
-            row.pasoAltaAvanzada !== null
-            || row.estadoFicha !== 'VALIDO'
-            || !row.aptoParaRemuneraciones
+            row.pasoAltaAvanzada !== null ||
+            row.estadoFicha !== 'VALIDO' ||
+            !row.aptoParaRemuneraciones
           );
         }
         if (value === 'aptas') {
