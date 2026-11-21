@@ -5,7 +5,8 @@
  *   - public/app-config.json con Supabase configurado
  *   - E2E_SUPABASE_AUTH_EMAIL / E2E_SUPABASE_AUTH_PASSWORD (usuario con empresa en JWT)
  *
- * Verifica infraestructura, sesión, feature gates Anexo B y lectura de nomina_periodo.
+ * Verifica infraestructura, sesión, feature gates Anexo B, vista previa de
+ * «Nueva nómina» (período actual, mensual) y lectura de nomina_periodo.
  * No modifica datos. Exit 0 = listo para piloto; exit 1 = bloqueante.
  *
  * Rollback de incidente: npm run rollback:nomina:feature-gates -- --empresa-id=N
@@ -76,6 +77,47 @@ function loadAppConfig() {
   return { supabaseUrl, supabaseAnonKey };
 }
 
+/**
+ * Vista previa del modal «Nueva nómina» (solo lectura, ambas RPC son STABLE).
+ * Cualquier error es bloqueante: con él el modal muestra el conteo y la lista vacía.
+ */
+async function smokeVistaPreviaCreacion(client) {
+  const hoy = new Date();
+  const periodo = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+  const tipo = 'mensual';
+
+  const { data: preview, error: previewErr } = await client.rpc('previsualizar_creacion_nomina', {
+    p_periodo: periodo,
+    p_tipo: tipo,
+  });
+  if (previewErr) {
+    fail(`RPC previsualizar_creacion_nomina(${periodo}) → ${previewErr.code ?? ''} ${previewErr.message}`);
+    process.exit(1);
+  }
+  const totalIncluidos = Number(preview?.totales?.incluidos ?? 0);
+  ok(`RPC previsualizar_creacion_nomina(${periodo}) → ${totalIncluidos} incluido(s)`);
+
+  for (const clasificacion of ['incluidos', 'excluidos']) {
+    const { data: filas, error } = await client.rpc('listar_preview_creacion_trabajadores', {
+      p_periodo: periodo,
+      p_tipo: tipo,
+      p_clasificacion: clasificacion,
+      p_page: 1,
+      p_page_size: 10,
+    });
+    if (error) {
+      fail(`RPC listar_preview_creacion_trabajadores(${clasificacion}) → ${error.code ?? ''} ${error.message}`);
+      process.exit(1);
+    }
+    const total = Number(filas?.[0]?.total_count ?? 0);
+    if (clasificacion === 'incluidos' && total !== totalIncluidos) {
+      fail(`Vista previa inconsistente: ${totalIncluidos} incluidos en el resumen, ${total} en la lista`);
+      process.exit(1);
+    }
+    ok(`RPC listar_preview_creacion_trabajadores(${clasificacion}) → ${total} fila(s)`);
+  }
+}
+
 async function main() {
   const email = process.env['E2E_SUPABASE_AUTH_EMAIL'] ?? '';
   const password = process.env['E2E_SUPABASE_AUTH_PASSWORD'] ?? '';
@@ -135,6 +177,8 @@ async function main() {
     }
     ok(`RPC ${rpc} registrada${error ? ` (${error.code ?? 'negocio'}: ${error.message})` : ''}`);
   }
+
+  await smokeVistaPreviaCreacion(client);
 
   const { count, error: countErr } = await client
     .from('nomina_periodo')
