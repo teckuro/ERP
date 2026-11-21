@@ -10,6 +10,26 @@ import {
 } from './tabla-empleados-listado.presenter';
 
 describe('tabla-empleados-listado.presenter', () => {
+  describe('capitalizarTextoEmpleado', () => {
+    it('pone en mayúscula solo la primera letra', () => {
+      expect(capitalizarTextoEmpleado('jefe de turno')).toBe('Jefe de turno');
+      expect(capitalizarTextoEmpleado('de turno')).toBe('De turno');
+    });
+
+    it('no reescribe el resto del texto guardado', () => {
+      expect(capitalizarTextoEmpleado('Jefe de Turno')).toBe('Jefe de Turno');
+      expect(capitalizarTextoEmpleado('Asistente de RR.HH.')).toBe('Asistente de RR.HH.');
+      expect(capitalizarTextoEmpleado('JEFE DE TURNO')).toBe('JEFE DE TURNO');
+    });
+
+    it('respeta paréntesis, espacios y vacíos', () => {
+      expect(capitalizarTextoEmpleado('diseñadora (honorarios)')).toBe('Diseñadora (honorarios)');
+      expect(capitalizarTextoEmpleado('  analista  ')).toBe('Analista');
+      expect(capitalizarTextoEmpleado('')).toBe('');
+    });
+  });
+
+
   it('crearColumnasGridTablaEmpleados incluye acciones y avance', () => {
     const columnas = crearColumnasGridTablaEmpleados();
     expect(columnas.some((c) => c.id === 'acciones')).toBe(true);
@@ -52,7 +72,6 @@ describe('tabla-empleados-listado.presenter', () => {
 
   it('etiquetas y formato', () => {
     expect(etiquetaEstadoEmpleado('activo')).toBe('Activo');
-    expect(capitalizarTextoEmpleado('analista rrhh')).toBe('Analista Rrhh');
     expect(formatearFechaIngresoListado('01/05/2024')).toContain('2024');
     expect(crearAccionesMasivasEstadoEmpleado().length).toBeGreaterThan(3);
   });
