@@ -8,6 +8,8 @@ type AppConfig = {
    * Abre el cliente de correo vía mailto.
    */
   supportEmail?: string;
+  /** Ambiente de la base: 'dev' (erp-staging) o 'prod'. Lo escribe scripts/generate-app-config.mjs. */
+  ambiente?: 'dev' | 'prod';
 };
 
 const DEFAULT_ASISTENTE_FUNCTION = 'super-service';
@@ -30,6 +32,7 @@ function normalizeConfig(input: Partial<AppConfig> | null | undefined): AppConfi
     supabaseAnonKey: input?.supabaseAnonKey?.trim() ?? '',
     asistentePreguntorFunction: fn || DEFAULT_ASISTENTE_FUNCTION,
     supportEmail: EMAIL_OK.test(support) ? support : DEFAULT_SUPPORT_EMAIL,
+    ambiente: input?.ambiente === 'dev' ? 'dev' : 'prod',
   };
 }
 
@@ -119,4 +122,29 @@ export function getSupportEmail(): string {
 export function getSupportMailtoHref(subject = 'Acceso ERP Remuneraciones'): string {
   const email = getSupportEmail();
   return `mailto:${email}?subject=${encodeURIComponent(subject)}`;
+}
+
+export type EtiquetaAmbiente = 'dev' | 'prod-local' | null;
+
+/**
+ * Qué aviso de ambiente mostrar:
+ * - 'dev': la app usa la base de pruebas (erp-staging).
+ * - 'prod-local': la app usa PRODUCCIÓN desde la máquina de un desarrollador.
+ * - null: producción publicada (lo que ven los usuarios): sin aviso.
+ */
+export function etiquetaAmbiente(ambiente: 'dev' | 'prod' | undefined, hostname: string): EtiquetaAmbiente {
+  if (ambiente === 'dev') {
+    return 'dev';
+  }
+  const esLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+  return esLocal ? 'prod-local' : null;
+}
+
+/** Etiqueta del ambiente actual; null si la configuración no cargó o no corresponde aviso. */
+export function getEtiquetaAmbiente(): EtiquetaAmbiente {
+  try {
+    return etiquetaAmbiente(getAppConfig().ambiente, typeof location === 'undefined' ? '' : location.hostname);
+  } catch {
+    return null;
+  }
 }

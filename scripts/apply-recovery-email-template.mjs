@@ -5,16 +5,21 @@
  *   set SUPABASE_ACCESS_TOKEN=...   (https://supabase.com/dashboard/account/tokens)
  *   node scripts/apply-recovery-email-template.mjs
  *
- * Opcional:
- *   set SUPABASE_PROJECT_REF=mjrckxodzrfkyqjkyjkn
+ *   set SUPABASE_PROJECT_REF=<id-del-proyecto>   (obligatorio: no hay valor por defecto,
+ *                                                 para no tocar producción por accidente)
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const projectRef = process.env.SUPABASE_PROJECT_REF || 'mjrckxodzrfkyqjkyjkn';
+const projectRef = process.env.SUPABASE_PROJECT_REF?.trim();
 const token = process.env.SUPABASE_ACCESS_TOKEN;
 const subject = 'Restablecer contraseña — ERP Remuneraciones';
 const htmlPath = resolve('supabase/templates/recovery.html');
+
+if (!projectRef) {
+  console.error('Falta SUPABASE_PROJECT_REF: indique explícitamente el proyecto (dev o producción).');
+  process.exit(1);
+}
 
 if (!token) {
   console.error('Falta SUPABASE_ACCESS_TOKEN (Dashboard → Account → Access Tokens).');

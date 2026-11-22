@@ -6,6 +6,17 @@ import { config as loadEnv } from 'dotenv';
 const envArg = process.argv.find((a) => a.startsWith('--env='));
 const envFile = envArg ? envArg.slice('--env='.length) : '.env';
 loadEnv({ path: resolve(envFile), quiet: true });
+const esDev = envFile.includes('staging');
+
+// Usar PRODUCCIÓN desde un equipo local exige confirmarlo. El build de Vercel no pasa --env,
+// así que no se ve afectado.
+if (envArg && !esDev && process.env.ERP_CONFIRMO_PROD !== 'si') {
+  console.error('Va a usar la base de PRODUCCIÓN desde este equipo. Para confirmarlo:');
+  console.error("  PowerShell:  $env:ERP_CONFIRMO_PROD='si'; npm run start:prod");
+  console.error('  Bash:        ERP_CONFIRMO_PROD=si npm run start:prod');
+  console.error('Para trabajar en la base de pruebas use: npm run start');
+  process.exit(1);
+}
 
 const url = (process.env.SUPABASE_URL ?? process.env.STAGING_SUPABASE_URL ?? process.env.E2E_SUPABASE_URL)
   ?.trim()
@@ -60,11 +71,12 @@ writeFileSync(
       supabaseAnonKey: key,
       asistentePreguntorFunction: 'super-service',
       supportEmail,
+      ambiente: esDev ? 'dev' : 'prod',
     },
     null,
     2,
   ),
 );
 
-const ambiente = envFile.includes('staging') ? 'PRUEBAS (staging)' : 'PRODUCCIÓN';
+const ambiente = esDev ? 'DEV (erp-staging)' : 'PRODUCCIÓN';
 console.log(`public/app-config.json generado · ambiente: ${ambiente} (${envFile}).`);
