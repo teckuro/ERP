@@ -2,11 +2,25 @@
   "recommendations": [
     "angular.ng-template",
     "esbenp.prettier-vscode",
+    "editorconfig.editorconfig",
+    "bradlc.vscode-tailwindcss",
     "ms-playwright.playwright",
-    "editorconfig.editorconfig"
+    "denoland.vscode-deno",
+    "usernamehw.errorlens",
+    "streetsidesoftware.code-spell-checker",
+    "streetsidesoftware.code-spell-checker-spanish",
+    "github.vscode-pull-request-github",
+    "github.vscode-github-actions",
+    "ms-python.python",
+    "anthropic.claude-code"
   ],
   "unwantedRecommendations": [
     "hookyqr.beautify",
-    "dbaeumer.vscode-eslint"
+    "dbaeumer.vscode-eslint",
+    "coenraads.bracket-pair-colorizer-2",
+    "johnpapa.angular2",
+    "mikael.angular-beastcode",
+    "natewallace.angular2-inline",
+    "pmneo.tsimporter"
   ]
 }
