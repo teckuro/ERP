@@ -36,9 +36,11 @@ ERP remuneraciones Chile: Angular 21 standalone + Supabase alojado. No requiere 
 - En los specs que inyectan permisos, usa `provideErpPermisosStub({ soloConsulta? })` de `src/app/core/auth/testing/erp-permisos.stub.ts` (evita NG0201 por `SupabaseClient`).
 - Para ocultar botones de escritura según el perfil, usa `*erpPuedeEscribir="'<modulo>'"`. La base valida igual con RLS (SEC-08).
 - El rol y la empresa se leen solo de `app_metadata` (SEC-07). Nunca de `user_metadata`.
-- `public/app-config.json` apunta a la base **de producción**. En local:
-  - No guardes, confirmes, emitas ni elimines nada.
-  - Ver o imprimir una liquidación oficial registra una emisión.
-  - Las consultas con psql van dentro de `begin read only; … rollback;`.
+- **Ambientes:** `npm run start` usa **staging** (proyecto Supabase `erp-staging`, credenciales en `.env.staging`, fuera de git). `npm run start:prod` usa **producción** (`.env`). `npm run config:staging` / `config:prod` solo regeneran `public/app-config.json`.
+  - En **staging** se puede guardar, confirmar y probar flujos completos. Usuarios de prueba: `admin@erp-staging.test` (admin_sistema) y `consulta@erp-staging.test` (consulta); las contraseñas las tiene el usuario.
+  - En **producción**: no guardes, confirmes, emitas ni elimines nada. Ver o imprimir una liquidación oficial registra una emisión. Las consultas con psql van dentro de `begin read only; … rollback;`.
+  - Al conectar a cualquier base con psql, no imprimas errores sin filtrar: pueden mostrar partes de la URL (contraseña).
+- SQL desde la terminal: `npm run db:dev -- <archivo.sql>` (o `--sql "..."`) contra dev/staging; `npm run db:prod -- …` contra producción, **siempre en una transacción de solo lectura con rollback** (el pooler ignora PGOPTIONS, por eso no se usa). Ambos ocultan la URL en los errores. `start:dev` y `config:dev` son alias de staging.
+- Las migraciones se prueban primero en **staging** (`STAGING_DB_URL`) y se aplican en producción solo con el OK explícito del usuario.
 - Los cambios de esquema van como migración en `supabase/migrations/`, y se aplican en producción solo con el OK explícito del usuario.
 - Las Edge Functions (`admin-usuarios`, asistente) rechazan `localhost` por CORS: no se pueden probar en local.
