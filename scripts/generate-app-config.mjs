@@ -2,10 +2,19 @@ import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { config as loadEnv } from 'dotenv';
 
-loadEnv({ path: resolve('.env'), quiet: true });
+// --env=<archivo> elige el ambiente: .env (producción, por defecto) o .env.staging (pruebas).
+const envArg = process.argv.find((a) => a.startsWith('--env='));
+const envFile = envArg ? envArg.slice('--env='.length) : '.env';
+loadEnv({ path: resolve(envFile), quiet: true });
 
-const url = (process.env.SUPABASE_URL ?? process.env.E2E_SUPABASE_URL)?.trim().replace(/\/$/, '');
-const key = (process.env.SUPABASE_ANON_KEY ?? process.env.E2E_SUPABASE_ANON_KEY)?.trim();
+const url = (process.env.SUPABASE_URL ?? process.env.STAGING_SUPABASE_URL ?? process.env.E2E_SUPABASE_URL)
+  ?.trim()
+  .replace(/\/$/, '');
+const key = (
+  process.env.SUPABASE_ANON_KEY ??
+  process.env.STAGING_SUPABASE_ANON_KEY ??
+  process.env.E2E_SUPABASE_ANON_KEY
+)?.trim();
 const supportEmail = (process.env.SUPPORT_EMAIL ?? 'admin@erp.cl').trim().toLowerCase();
 
 const PLACEHOLDER_KEY = /YOUR_|REPLACE_ME|CHANGEME/i;
@@ -57,4 +66,5 @@ writeFileSync(
   ),
 );
 
-console.log('public/app-config.json generado para el build.');
+const ambiente = envFile.includes('staging') ? 'PRUEBAS (staging)' : 'PRODUCCIÓN';
+console.log(`public/app-config.json generado · ambiente: ${ambiente} (${envFile}).`);
