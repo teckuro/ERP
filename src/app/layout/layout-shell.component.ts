@@ -1,6 +1,7 @@
 import { Component, HostListener, inject } from '@angular/core';
 import { NavigationEnd, NavigationStart, Router, RouterOutlet } from '@angular/router';
 import { ErpPermisosRemuneracionesService } from '../core/auth/erp-permisos-remuneraciones.service';
+import { getEtiquetaAmbiente } from '../config/runtime-config';
 import { SidebarComponent } from './sidebar.component';
 import { HeaderComponent } from './header.component';
 import { ShellPageContextService } from './shell-page-context.service';
@@ -24,6 +25,17 @@ import { SHELL_HEADER_HEIGHT_PX, SHELL_NAV_WIDTH_PX } from './shell-navigation.c
       }
       <app-header></app-header>
       <main class="erp-shell-main" aria-label="Contenido operativo">
+        @if (ambiente === 'dev') {
+          <p class="erp-ambiente erp-ambiente--dev" role="status" data-testid="ambiente-dev">
+            <strong>DEV</strong>
+            <span>Base de pruebas (erp-staging). Los cambios no afectan a producción.</span>
+          </p>
+        } @else if (ambiente === 'prod-local') {
+          <p class="erp-ambiente erp-ambiente--prod" role="alert" data-testid="ambiente-prod-local">
+            <strong>PRODUCCIÓN</strong>
+            <span>Está trabajando contra la base real desde su equipo. Todo lo que guarde es definitivo.</span>
+          </p>
+        }
         @if (modoConsulta()) {
           <p class="erp-modo-consulta" role="status">
             <strong>Modo consulta</strong>
@@ -55,6 +67,35 @@ import { SHELL_HEADER_HEIGHT_PX, SHELL_NAV_WIDTH_PX } from './shell-navigation.c
         padding-top: ${SHELL_HEADER_HEIGHT_PX}px;
         display: flex;
         flex-direction: column;
+      }
+
+      .erp-ambiente {
+        flex: 0 0 auto;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.25rem 0.6rem;
+        margin: 0;
+        padding: 0.35rem 1.25rem;
+        font-size: 0.8125rem;
+        line-height: 1.4;
+      }
+
+      .erp-ambiente strong {
+        font-weight: 700;
+        letter-spacing: 0.06em;
+      }
+
+      .erp-ambiente--dev {
+        background: #e0ecff;
+        border-bottom: 1px solid #b6ccf5;
+        color: #1e3a8a;
+      }
+
+      .erp-ambiente--prod {
+        background: #fee2e2;
+        border-bottom: 1px solid #f5b5b5;
+        color: #7f1d1d;
       }
 
       .erp-modo-consulta {
@@ -135,6 +176,9 @@ export class LayoutShellComponent {
 
   /** Aviso persistente para perfiles de solo consulta (p. ej. la cuenta demo). */
   readonly modoConsulta = this.permisos.esSoloConsulta;
+
+  /** Aviso de ambiente: DEV (base de pruebas) o PRODUCCIÓN usada desde localhost. */
+  readonly ambiente = getEtiquetaAmbiente();
 
   constructor() {
     void this.permisos.asegurarPermisosPerfil();

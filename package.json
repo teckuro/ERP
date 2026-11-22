@@ -11,6 +11,7 @@
     "config:dev": "node scripts/generate-app-config.mjs --env=.env.staging",
     "db:dev": "node scripts/db.mjs dev",
     "db:prod": "node scripts/db.mjs prod",
+    "check:secretos": "node scripts/check-secretos.mjs",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
