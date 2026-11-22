@@ -30,6 +30,20 @@ ERP remuneraciones Chile: Angular 21 standalone + Supabase alojado. No requiere 
 - Verifica de la forma más barata posible: `npx tsc --noEmit` y luego `npx ng test --watch=false --include='**/<modulo>/**/*.spec.ts'`. La suite completa y el navegador, solo al cerrar el bloque, leyendo texto (no capturas).
 - Al terminar, marca el ítem en `docs/backlog.md` y responde en 3 líneas (qué cambió, cómo se verificó, qué falta).
 
+## Ramas y despliegues
+
+| Rama | Base de datos | Despliegue |
+|------|---------------|------------|
+| `main` | Producción | Vercel Production (`erp-beta-bay.vercel.app`) |
+| `develop` | Dev (`erp-staging`) | Vercel Preview de la rama `develop` (URL fija `…-git-develop-…`) |
+| `fix/*`, `feat/*`, `chore/*` | Dev | Vercel Preview del PR |
+
+- Toda rama de trabajo sale de **`develop`** y vuelve a `develop` por PR. `develop` es la rama por defecto del repo.
+- **Release:** PR `develop → main` cuando lo probado en dev está listo. `main` está protegida: solo recibe PRs.
+- **Migraciones:** se aplican en dev al mergear a `develop` (`npm run db:dev -- <archivo>`) y en producción al hacer el release, con el OK explícito del usuario.
+- En Vercel, las variables de **Preview** apuntan a dev (con `ERP_AMBIENTE=dev`, que activa la franja DEV) y las de **Production** a producción.
+- El workflow programado de parámetros corre con la versión de la rama por defecto (`develop`) y escribe en producción con el secreto `SUPABASE_DB_URL`.
+
 ## Convenciones del repo
 
 - Muchos archivos usan **CRLF**: al reemplazar texto con scripts, normaliza `\r\n` y restáuralo al escribir.
