@@ -6,7 +6,8 @@ import { config as loadEnv } from 'dotenv';
 const envArg = process.argv.find((a) => a.startsWith('--env='));
 const envFile = envArg ? envArg.slice('--env='.length) : '.env';
 loadEnv({ path: resolve(envFile), quiet: true });
-const esDev = envFile.includes('staging');
+// ERP_AMBIENTE=dev marca como DEV un despliegue de Vercel (previews y rama develop) que usa la base de pruebas.
+const esDev = envFile.includes('staging') || process.env.ERP_AMBIENTE?.trim().toLowerCase() === 'dev';
 
 // Usar PRODUCCIÓN desde un equipo local exige confirmarlo. El build de Vercel no pasa --env,
 // así que no se ve afectado.
