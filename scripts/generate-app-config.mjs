@@ -1,10 +1,20 @@
-import { writeFileSync } from 'node:fs';
+import { existsSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { config as loadEnv } from 'dotenv';
 
 // --env=<archivo> elige el ambiente: .env (producción, por defecto) o .env.staging (pruebas).
 const envArg = process.argv.find((a) => a.startsWith('--env='));
 const envFile = envArg ? envArg.slice('--env='.length) : '.env';
+// Recién clonado no hay archivo de ambiente: decir cuál falta y cómo crearlo (Vercel no pasa --env).
+if (envArg && !existsSync(resolve(envFile))) {
+  console.error(`No existe ${envFile}.`);
+  if (envFile.includes('staging')) {
+    console.error('Cópielo desde .env.staging.example y complete los valores del proyecto de PRUEBAS (ver README).');
+  } else {
+    console.error('Tiene credenciales de producción y solo lo tiene el dueño. Para trabajar use: npm run start');
+  }
+  process.exit(1);
+}
 loadEnv({ path: resolve(envFile), quiet: true });
 // ERP_AMBIENTE=dev marca como DEV un despliegue de Vercel (previews y rama develop) que usa la base de pruebas.
 const esDev = envFile.includes('staging') || process.env.ERP_AMBIENTE?.trim().toLowerCase() === 'dev';

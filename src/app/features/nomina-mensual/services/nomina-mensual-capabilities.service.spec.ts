@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { ErpPermisosRemuneracionesService } from '../../../core/auth/erp-permisos-remuneraciones.service';
+import { SUPABASE_CLIENT } from '../../../core/services/supabase.service';
 import { NominaMensualCapabilitiesService } from './nomina-mensual-capabilities.service';
 
 describe('NominaMensualCapabilitiesService', () => {
@@ -11,6 +12,7 @@ describe('NominaMensualCapabilitiesService', () => {
       providers: [
         NominaMensualCapabilitiesService,
         ErpPermisosRemuneracionesService,
+        { provide: SUPABASE_CLIENT, useValue: {} },
         {
           provide: AuthService,
           useValue: {
@@ -29,6 +31,7 @@ describe('NominaMensualCapabilitiesService', () => {
       providers: [
         NominaMensualCapabilitiesService,
         ErpPermisosRemuneracionesService,
+        { provide: SUPABASE_CLIENT, useValue: {} },
         {
           provide: AuthService,
           useValue: {
@@ -47,6 +50,7 @@ describe('NominaMensualCapabilitiesService', () => {
       providers: [
         NominaMensualCapabilitiesService,
         ErpPermisosRemuneracionesService,
+        { provide: SUPABASE_CLIENT, useValue: {} },
         {
           provide: AuthService,
           useValue: {

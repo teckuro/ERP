@@ -272,7 +272,7 @@ describe('NominaPeriodoRepository', () => {
   it('lanza error claro cuando supabase falla', async () => {
     const builder = makeBuilder({ data: null, error: { message: 'denied' } });
     setSupabase(() => builder);
-    await expect(repo.listarResumenes(7)).rejects.toThrow(/listarResumenes: denied/);
+    await expect(repo.listarResumenes(7)).rejects.toThrow(/No se pudo listarResumenes\./);
   });
 
   it('actualizarUltimoPasoVisitado invoca el RPC con los parámetros correctos', async () => {
@@ -288,7 +288,7 @@ describe('NominaPeriodoRepository', () => {
     setSupabase(() => makeBuilder({ data: null, error: null }), { data: null, error: { message: 'rpc not found' } });
     await expect(
       repo.actualizarUltimoPasoVisitado('nom-uuid-1', 'closure'),
-    ).rejects.toThrow(/actualizarUltimoPasoVisitado: rpc not found/);
+    ).rejects.toThrow(/No se pudo actualizarUltimoPasoVisitado\./);
   });
 
   it('actualizarMaximoPasoCompletado invoca el RPC monótono con los parámetros correctos', async () => {
@@ -304,6 +304,6 @@ describe('NominaPeriodoRepository', () => {
     setSupabase(() => makeBuilder({ data: null, error: null }), { data: null, error: { message: 'rpc fail' } });
     await expect(
       repo.actualizarMaximoPasoCompletado('nom-uuid-1', 'closure'),
-    ).rejects.toThrow(/actualizarMaximoPasoCompletado: rpc fail/);
+    ).rejects.toThrow(/No se pudo actualizarMaximoPasoCompletado\./);
   });
 });

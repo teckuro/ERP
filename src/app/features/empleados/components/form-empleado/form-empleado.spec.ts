@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -264,9 +264,11 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
   it('Siguiente con bloqueos: primario enfoca el primer fieldItem del modal', async () => {
     const { component, fixture } = await setupFixture();
     const scrollIntoView = vi.fn();
-    const focus = vi.fn();
     HTMLElement.prototype.scrollIntoView = scrollIntoView;
-    HTMLElement.prototype.focus = focus;
+    // Los specs comparten jsdom (isolate: false): sin restaurar, el focus() falso rompía
+    // otros archivos que corrían después en el mismo worker (p. ej. QA-FOC-01 de dotación).
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus').mockImplementation(() => undefined);
+    onTestFinished(() => focus.mockRestore());
 
     component.irAPestanaSiguiente();
     const firstPath = component.modalAccionAvanzada()?.fieldItems?.[0]?.controlPath;

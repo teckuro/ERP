@@ -75,7 +75,7 @@ describe('ActualizarContrasenaPage', () => {
     fixture.detectChanges();
 
     expect(auth.actualizarContrasena).not.toHaveBeenCalled();
-    expect(fixture.nativeElement.textContent).toContain('Revisa la nueva contrasena antes de guardar.');
+    expect(fixture.nativeElement.textContent).toContain('Revisa la nueva contraseña antes de guardar.');
   });
 
   it('actualiza contrasena y cierra sesion temporal', async () => {
@@ -90,6 +90,6 @@ describe('ActualizarContrasenaPage', () => {
 
     expect(auth.actualizarContrasena).toHaveBeenCalledWith('nueva-clave');
     expect(auth.logout).toHaveBeenCalled();
-    expect(fixture.nativeElement.textContent).toContain('Contrasena actualizada');
+    expect(fixture.nativeElement.textContent).toContain('Contraseña actualizada');
   });
 });

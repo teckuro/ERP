@@ -216,13 +216,13 @@ describe('NominaPlantillaCicloRepository', () => {
 
     await expect(
       repo.crearVersion({ plantillaId: 'plant-1' }),
-    ).rejects.toThrow(/crearVersionPlantilla.*boom/);
+    ).rejects.toThrow(/No se pudo crearVersionPlantilla\./);
   });
 
   it('listar lanza si supabase devuelve error', async () => {
     const builder = makeBuilder({ data: null, error: { message: 'rls denied' } });
     const repo = configurar(builder);
 
-    await expect(repo.listar()).rejects.toThrow(/listarPlantillasCiclo.*rls denied/);
+    await expect(repo.listar()).rejects.toThrow(/No se pudo listarPlantillasCiclo\./);
   });
 });

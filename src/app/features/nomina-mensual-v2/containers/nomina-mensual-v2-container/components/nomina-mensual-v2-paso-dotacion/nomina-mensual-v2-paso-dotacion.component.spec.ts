@@ -125,7 +125,10 @@ describe('NominaMensualV2PasoDotacionComponent (DOT-DET-04)', () => {
     fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
     const cmp = fixture.componentInstance;
 
+    // Render automático (zoneless): se espera cada paso para verificar el <aside> real.
+    await fixture.whenStable();
     cmp.vista.set({ filas: [filaMock()], total: 1 });
+    await fixture.whenStable();
 
     const trigger = document.createElement('button');
     trigger.textContent = 'Ver detalle';
@@ -134,11 +137,14 @@ describe('NominaMensualV2PasoDotacionComponent (DOT-DET-04)', () => {
     expect(document.activeElement).toBe(trigger);
 
     await cmp.abrirDetalle('tr-1');
-    cmp.cerrarDetalle();
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('aside')).not.toBeNull();
 
-    // queueMicrotask programa el foco; resolvemos la promesa para esperar el tick
-    await new Promise<void>((resolve) => queueMicrotask(resolve));
-    expect(document.activeElement).toBe(trigger);
+    cmp.cerrarDetalle();
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('aside')).toBeNull();
+
+    await vi.waitFor(() => expect(document.activeElement).toBe(trigger));
 
     trigger.remove();
   });
