@@ -125,7 +125,12 @@ describe('NominaMensualV2PasoDotacionComponent (DOT-DET-04)', () => {
     fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
     const cmp = fixture.componentInstance;
 
+    // El render es automático (zoneless) y asíncrono. Sin esperarlo, el primer render y el
+    // del <aside> caían en medio del escenario y movían el foco según la velocidad de la
+    // máquina (fallaba a veces en CI Linux). Cada paso espera a que el DOM quede estable.
+    await fixture.whenStable();
     cmp.vista.set({ filas: [filaMock()], total: 1 });
+    await fixture.whenStable();
 
     const trigger = document.createElement('button');
     trigger.textContent = 'Ver detalle';
@@ -134,10 +139,13 @@ describe('NominaMensualV2PasoDotacionComponent (DOT-DET-04)', () => {
     expect(document.activeElement).toBe(trigger);
 
     await cmp.abrirDetalle('tr-1');
-    cmp.cerrarDetalle();
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('aside')).not.toBeNull();
 
-    // El foco se restaura en un microtask que compite con el foco al panel que programa
-    // abrirDetalle; el orden varía por plataforma (en CI Linux fallaba con un solo tick).
+    cmp.cerrarDetalle();
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('aside')).toBeNull();
+
     await vi.waitFor(() => expect(document.activeElement).toBe(trigger));
 
     trigger.remove();
