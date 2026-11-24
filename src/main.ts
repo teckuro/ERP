@@ -4,6 +4,7 @@ import { App } from './app/app';
 import { getConfigLoadError, loadRuntimeConfig } from './app/config/runtime-config';
 import { renderConfigErrorScreen } from './app/config/render-config-error-screen';
 import { mensajeErrorSupabaseParaUsuario } from './app/core/errors/erp-supabase-user-message';
+import { initVercelAnalytics } from './app/config/vercel-analytics';
 
 loadRuntimeConfig()
   .then(() => {
@@ -13,6 +14,7 @@ loadRuntimeConfig()
       renderConfigErrorScreen(configError);
       return;
     }
+    initVercelAnalytics();
     return bootstrapApplication(App, appConfig);
   })
   .catch((err) => {
