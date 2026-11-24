@@ -16,9 +16,9 @@ on:
         required: false
         default: ""
       aplicar:
-        description: "Aplicar SQL a Supabase"
+        description: "Aplicar SQL en PRODUCCIÓN (solo funciona desde main)"
         required: true
-        default: "true"
+        default: "false"
         type: choice
         options:
           - "true"
@@ -32,9 +32,12 @@ permissions:
   contents: read
 
 jobs:
-  sync:
+  # Genera y prueba el SQL sin secretos: se puede correr desde cualquier rama.
+  generar:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      periodo: ${{ steps.periodo.outputs.periodo }}
     defaults:
       run:
         working-directory: etl/parametros
@@ -49,11 +52,6 @@ jobs:
           python-version: "3.12"
           cache: pip
           cache-dependency-path: etl/parametros/requirements.txt
-
-      - name: Instalar psql
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq postgresql-client
 
       - name: Instalar dependencias
         run: pip install -r requirements.txt
@@ -93,8 +91,30 @@ jobs:
           if-no-files-found: warn
           retention-days: 90
 
+  # Escribe en PRODUCCIÓN. SUPABASE_DB_URL vive en el Environment `produccion-db`,
+  # que solo acepta la rama main: desde otra rama este job falla sin ver el secreto.
+  aplicar:
+    needs: generar
+    if: github.event_name == 'schedule' || inputs.aplicar == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: produccion-db
+    env:
+      PERIODO: ${{ needs.generar.outputs.periodo }}
+
+    steps:
+      - name: Descargar SQL generado
+        uses: actions/download-artifact@v5
+        with:
+          name: parametros-${{ needs.generar.outputs.periodo }}
+          path: runs/${{ needs.generar.outputs.periodo }}
+
+      - name: Instalar psql
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+
       - name: Preparar conexión
-        if: github.event_name == 'schedule' || inputs.aplicar == 'true'
         env:
           SECRETO: ${{ secrets.SUPABASE_DB_URL }}
         run: |
@@ -104,7 +124,7 @@ jobs:
           url="${url#SUPABASE_DB_URL=}"
           url="${url#\"}"; url="${url%\"}"; url="${url#\'}"; url="${url%\'}"
           if [ -z "$url" ]; then
-            echo "::error::Falta el secreto de repositorio SUPABASE_DB_URL (URL del pooler de Supabase)."
+            echo "::error::Falta el secreto SUPABASE_DB_URL en el Environment produccion-db (URL del pooler de Supabase)."
             exit 1
           fi
           echo "::add-mask::$url"
@@ -118,17 +138,11 @@ jobs:
           echo "PGURL=$url" >> "$GITHUB_ENV"
 
       - name: Aplicar SQL en Supabase
-        if: github.event_name == 'schedule' || inputs.aplicar == 'true'
-        env:
-          PERIODO: ${{ steps.periodo.outputs.periodo }}
         run: |
           psql "$PGURL" -X -q -v ON_ERROR_STOP=1 \
             -f "runs/${PERIODO}/mensual/parametros_mensuales_${PERIODO}_v611.sql"
 
       - name: Verificar carga
-        if: github.event_name == 'schedule' || inputs.aplicar == 'true'
-        env:
-          PERIODO: ${{ steps.periodo.outputs.periodo }}
         run: |
           resultado="$(psql "$PGURL" -X -q -A -t -v ON_ERROR_STOP=1 -v periodo="$PERIODO" <<'SQL'
           select count(*) || ' ' || coalesce(max(uf)::text, '-') || ' ' || coalesce(max(utm)::text, '-')
