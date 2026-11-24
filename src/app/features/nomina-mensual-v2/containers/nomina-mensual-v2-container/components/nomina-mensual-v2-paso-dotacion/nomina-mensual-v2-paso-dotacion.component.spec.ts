@@ -136,9 +136,9 @@ describe('NominaMensualV2PasoDotacionComponent (DOT-DET-04)', () => {
     await cmp.abrirDetalle('tr-1');
     cmp.cerrarDetalle();
 
-    // queueMicrotask programa el foco; resolvemos la promesa para esperar el tick
-    await new Promise<void>((resolve) => queueMicrotask(resolve));
-    expect(document.activeElement).toBe(trigger);
+    // El foco se restaura en un microtask que compite con el foco al panel que programa
+    // abrirDetalle; el orden varía por plataforma (en CI Linux fallaba con un solo tick).
+    await vi.waitFor(() => expect(document.activeElement).toBe(trigger));
 
     trigger.remove();
   });

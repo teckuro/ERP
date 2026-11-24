@@ -369,10 +369,10 @@ describe('DataGridComponent barra masiva', () => {
     fixture.detectChanges();
 
     component.toggleRowSelection(rows[0]!, { target: { checked: true } } as unknown as Event);
-    expect(component.bulkSelectionSummary).toBe('trabajador seleccionado');
+    expect(component.bulkSelectionSummary).toBe('trabajador seleccionado en esta página');
 
     component.toggleRowSelection(rows[1]!, { target: { checked: true } } as unknown as Event);
-    expect(component.bulkSelectionSummary).toBe('trabajadores seleccionados');
+    expect(component.bulkSelectionSummary).toBe('2 trabajadores seleccionados en esta página');
   });
 
   it('emite bulkAction sin confirmación cuando skipConfirm es true', () => {

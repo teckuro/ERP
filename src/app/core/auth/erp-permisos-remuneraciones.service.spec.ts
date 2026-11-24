@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
+import { SUPABASE_CLIENT } from '../services/supabase.service';
 import { AuthService } from './auth.service';
 import {
   ErpPermisosRemuneracionesService,
@@ -18,6 +19,8 @@ describe('ErpPermisosRemuneracionesService', () => {
           provide: AuthService,
           useValue: { currentUser: () => user },
         },
+        // Solo lo usa asegurarPermisosPerfil(), que estos tests no llaman.
+        { provide: SUPABASE_CLIENT, useValue: {} },
       ],
     });
     return TestBed.inject(ErpPermisosRemuneracionesService);

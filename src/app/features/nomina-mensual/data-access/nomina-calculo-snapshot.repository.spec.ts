@@ -833,7 +833,7 @@ describe('NominaCalculoSnapshotRepository', () => {
     });
 
     const repo = TestBed.inject(NominaCalculoSnapshotRepository);
-    await expect(repo.obtenerSnapshotCompletoPorId(1)).rejects.toThrow('No fue posible consultar el resultado guardado');
+    await expect(repo.obtenerSnapshotCompletoPorId(1)).rejects.toThrow('No se pudo consultar el resultado guardado');
   });
 
   it('obtenerSnapshotParametrosBase filtra por nominaPeriodoId', async () => {
