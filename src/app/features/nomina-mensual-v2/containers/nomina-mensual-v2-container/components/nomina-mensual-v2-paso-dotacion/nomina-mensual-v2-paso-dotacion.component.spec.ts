@@ -125,9 +125,7 @@ describe('NominaMensualV2PasoDotacionComponent (DOT-DET-04)', () => {
     fixture.componentRef.setInput('nominaPeriodoId', 'np-1');
     const cmp = fixture.componentInstance;
 
-    // El render es automático (zoneless) y asíncrono. Sin esperarlo, el primer render y el
-    // del <aside> caían en medio del escenario y movían el foco según la velocidad de la
-    // máquina (fallaba a veces en CI Linux). Cada paso espera a que el DOM quede estable.
+    // Render automático (zoneless): se espera cada paso para verificar el <aside> real.
     await fixture.whenStable();
     cmp.vista.set({ filas: [filaMock()], total: 1 });
     await fixture.whenStable();
