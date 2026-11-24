@@ -38,11 +38,11 @@ ERP remuneraciones Chile: Angular 21 standalone + Supabase alojado. No requiere 
 | `develop` | Dev (`erp-staging`) | Vercel Preview de la rama `develop` (URL fija `…-git-develop-…`) |
 | `fix/*`, `feat/*`, `chore/*` | Dev | Vercel Preview del PR |
 
-- Toda rama de trabajo sale de **`develop`** y vuelve a `develop` por PR. `develop` es la rama por defecto del repo.
+- Toda rama de trabajo sale de **`develop`** y vuelve a `develop` por PR. La rama por defecto del repo es `main`: al abrir un PR, elegir **`develop` como base** (`gh pr create --base develop`).
 - **Release:** PR `develop → main` cuando lo probado en dev está listo. `main` está protegida: solo recibe PRs.
 - **Migraciones:** se aplican en dev al mergear a `develop` (`npm run db:dev -- <archivo>`) y en producción al hacer el release, con el OK explícito del usuario.
 - En Vercel, las variables de **Preview** apuntan a dev (con `ERP_AMBIENTE=dev`, que activa la franja DEV) y las de **Production** a producción.
-- El workflow programado de parámetros corre con la versión de la rama por defecto (`develop`) y escribe en producción con el secreto `SUPABASE_DB_URL`.
+- El workflow de parámetros (`sync-parametros-v611`) tiene dos jobs. `generar` no usa secretos y se puede correr desde cualquier rama (`aplicar=false`). `aplicar` escribe en **producción** con `SUPABASE_DB_URL`, que vive en el Environment `produccion-db` y solo se entrega a `main`. La corrida programada usa `main` por ser la rama por defecto.
 
 ## Convenciones del repo
 
