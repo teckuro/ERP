@@ -17,11 +17,13 @@ describe('AsistentePreguntorService', () => {
       'fetch',
       vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => ({
-          supabaseUrl: 'https://test.supabase.co',
-          supabaseAnonKey: 'anon-key',
-          asistentePreguntorFunction: 'super-service',
-        }),
+        // loadRuntimeConfig lee el cuerpo con text() y lo parsea con JSON.parse.
+        text: async () =>
+          JSON.stringify({
+            supabaseUrl: 'https://test.supabase.co',
+            supabaseAnonKey: 'sb_publishable_clave-de-prueba',
+            asistentePreguntorFunction: 'super-service',
+          }),
       }),
     );
     await loadRuntimeConfig();

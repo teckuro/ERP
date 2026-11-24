@@ -16,6 +16,21 @@ import {
   presentarFilaCalculo,
 } from '../../../../presenters/paso-calculo-fila.presenter';
 import { NominaMensualV2PasoCalculoComponent } from './nomina-mensual-v2-paso-calculo.component';
+import { provideErpPermisosStub } from '../../../../../../core/auth/testing/erp-permisos.stub';
+import { DocumentoLiquidacionService } from '../../../../../../core/services/documento-liquidacion.service';
+import { ParametrosGeneralesService } from '../../../../../parametros-generales/services/parametros-generales.service';
+
+/** Empresa y UF/UTM de la previsualización de liquidación: no se prueban aquí. */
+const stubsPreviewDocumento = [
+  {
+    provide: DocumentoLiquidacionService,
+    useValue: { obtenerEmpresaDocumento: vi.fn().mockResolvedValue(null) },
+  },
+  {
+    provide: ParametrosGeneralesService,
+    useValue: { obtenerUltimoHastaPeriodo: vi.fn().mockResolvedValue(null) },
+  },
+];
 
 function seedCalculoEnComponente(
   cmp: NominaMensualV2PasoCalculoComponent,
@@ -175,6 +190,8 @@ function configurarTestBed(
           crearEventoLocal: vi.fn().mockReturnValue({ idEvento: 'local-test' }),
         },
       },
+      ...stubsPreviewDocumento,
+      provideErpPermisosStub(),
     ],
   });
 }
@@ -290,6 +307,8 @@ describe('NominaMensualV2PasoCalculoComponent (CAL-INV-05)', () => {
             crearEventoLocal: vi.fn().mockReturnValue({ idEvento: 'local-test' }),
           },
         },
+        ...stubsPreviewDocumento,
+        provideErpPermisosStub(),
       ],
     });
 

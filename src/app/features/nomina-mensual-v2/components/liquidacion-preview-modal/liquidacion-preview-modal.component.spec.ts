@@ -73,10 +73,10 @@ describe('LiquidacionPreviewModalComponent', () => {
     expect(html).toContain('Empresa de Prueba S.A.');
     expect(html).toContain('76.111.222-3');
     expect(html).toContain('MAY-26');
-    expect(html).toContain('PERIODO:');
+    expect(html).toContain('Período');
     expect(html).toContain('Liquidación de sueldo');
-    expect(html).toContain('Información del trabajador');
-    expect(html).toContain('Detalle');
+    expect(html).toContain('Trabajador');
+    expect(html).toContain('Detalle del período');
     expect(html).toContain('Dependiente Activo Auditoria');
     expect(html).toContain('25050001');
     expect(html).toContain('Cuprum');
@@ -164,7 +164,7 @@ describe('LiquidacionPreviewModalComponent', () => {
     expect(html).toContain('Sueldo líquido');
     expect(html).toContain('Líquido a pago');
     expect(html).toContain('Recibí conforme');
-    expect(html).toContain('Bonificaciones / Descuentos');
+    expect(html).toContain('Otros movimientos');
   });
 });
 
