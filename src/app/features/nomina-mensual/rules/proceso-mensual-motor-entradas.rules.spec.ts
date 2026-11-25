@@ -404,3 +404,39 @@ describe('entradaMensualAptaParaMotor: recurrentes', () => {
     expect(entradaMensualAptaParaMotor({ ...base, origen: 'movimiento_nomina' } as EntradaMensualPeriodo)).toBe(true);
   });
 });
+
+describe('identidad del concepto en la línea (nombre, código y código LRE)', () => {
+  const COLACION = {
+    idConcepto: 4, codigo: 'COLACION', nombre: 'Colación', codigoLre: '2302',
+    naturaleza: 'NO_IMPONIBLE', imponible: false, tributable: false,
+  };
+  function entrada(extra: Partial<EntradaMensualPeriodo> = {}): EntradaMensualPeriodo {
+    return {
+      idEntrada: 'movimiento_nomina:9', origen: 'movimiento_nomina', origenId: 9, periodo: '2026-06',
+      idPersona: 2, idContrato: 2, idConcepto: 4, tipoEntrada: 'haber', categoria: 'HABER',
+      tipoMovimiento: 'HABER', cantidad: null, unidad: null, monto: 20000, moneda: 'CLP',
+      estado: 'aprobada', fechaEvento: null, observacion: null, referenciaExterna: null,
+      requiereRevision: false, bloqueaProceso: false, warnings: [], metadata: {}, ...extra,
+    } as EntradaMensualPeriodo;
+  }
+
+  it('usa el código, nombre y código LRE del catálogo', () => {
+    const [conCatalogo] = aplicarClasificacionConceptos([entrada()], [COLACION]);
+    const c = clasificarEntradaMensualMotor(mapEntradaMensualMotor(conCatalogo));
+
+    expect(c).toMatchObject({ codigo: 'COLACION', descripcion: 'Colación', codigoLre: '2302' });
+  });
+
+  it('sin concepto en el catálogo conserva la etiqueta por categoría', () => {
+    const c = clasificarEntradaMensualMotor(mapEntradaMensualMotor(entrada()));
+
+    expect(c).toMatchObject({ codigo: 'BONO', descripcion: 'Bono o haber variable', codigoLre: null });
+  });
+
+  it('un anticipo mantiene su etiqueta aunque su concepto esté en el catálogo', () => {
+    const [anticipo] = aplicarClasificacionConceptos([entrada({ tipoEntrada: 'anticipo', categoria: 'ANTICIPO' })], [COLACION]);
+    const c = clasificarEntradaMensualMotor(mapEntradaMensualMotor(anticipo));
+
+    expect(c).toMatchObject({ clase: 'ANTICIPO', codigo: 'ANTICIPO' });
+  });
+});

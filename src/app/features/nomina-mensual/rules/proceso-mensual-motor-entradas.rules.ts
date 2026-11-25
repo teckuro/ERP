@@ -23,6 +23,24 @@ export interface EntradaMotorClasificada {
   tributable: boolean;
   codigo: string;
   descripcion: string;
+  /** Código LRE del concepto, si la entrada lo trae desde el catálogo. */
+  codigoLre?: string | null;
+}
+
+/** Identidad del concepto (catálogo) o, si no viene, la etiqueta por categoría. */
+function identidadEntrada(
+  entrada: EntradaMensualMotor,
+  porCategoria: { codigo: string; descripcion: string },
+): { codigo: string; descripcion: string; codigoLre: string | null } {
+  const texto = (clave: string): string | null => {
+    const valor = entrada.metadata?.[clave];
+    return typeof valor === 'string' && valor.trim() ? valor.trim() : null;
+  };
+  return {
+    codigo: texto('codigoConcepto') ?? porCategoria.codigo,
+    descripcion: texto('nombreConcepto') ?? porCategoria.descripcion,
+    codigoLre: texto('codigoLre'),
+  };
 }
 
 function up(v: string | null | undefined): string {
@@ -94,8 +112,7 @@ export function clasificarEntradaMensualMotor(entrada: EntradaMensualMotor): Ent
       clase: esLegal ? 'DESCUENTO_LEGAL' : 'DESCUENTO_VOLUNTARIO',
       imponible: false,
       tributable: false,
-      codigo,
-      descripcion,
+      ...identidadEntrada(entrada, { codigo, descripcion }),
     };
   }
   if (tipoEntrada === 'HABER' || tipoMovimiento === 'HABER') {
@@ -105,8 +122,7 @@ export function clasificarEntradaMensualMotor(entrada: EntradaMensualMotor): Ent
       clase: imponible ? 'HABER_IMPONIBLE' : 'HABER_NO_IMPONIBLE',
       imponible,
       tributable,
-      codigo,
-      descripcion,
+      ...identidadEntrada(entrada, { codigo, descripcion }),
     };
   }
   // ajuste, retroactivo, reintegro, otro, informativo: aun no soportados en el motor.
@@ -297,6 +313,10 @@ export interface ClasificacionConcepto {
   naturaleza: string | null;
   imponible: boolean;
   tributable: boolean;
+  /** Identidad del concepto para la línea de liquidación y el LRE. */
+  codigo?: string | null;
+  nombre?: string | null;
+  codigoLre?: string | null;
 }
 
 /**
@@ -306,6 +326,8 @@ export interface ClasificacionConcepto {
  * imponible (colación, movilización, viáticos…) e infla la base de cotizaciones e
  * impuesto. Mismo criterio que los haberes recurrentes: imponible si el concepto lo
  * marca o su naturaleza es IMPONIBLE. Una entrada que ya trae la bandera no se toca.
+ * También agrega código, nombre y código LRE del concepto, para que la línea de la
+ * liquidación y el LRE no queden con la etiqueta genérica de la categoría.
  */
 export function aplicarClasificacionConceptos(
   entradas: readonly EntradaMensualPeriodo[],
@@ -324,6 +346,12 @@ export function aplicarClasificacionConceptos(
       (concepto.imponible === true || up(concepto.naturaleza) === 'IMPONIBLE');
     const tributable = leerBandera(metadata['tributable']) ?? concepto.tributable === true;
 
-    return { ...entrada, metadata: { ...metadata, imponible, tributable } };
+    // Identidad del concepto: nombre en la liquidación y código LRE (como los recurrentes).
+    const identidad: Record<string, string> = {};
+    if (concepto.codigo?.trim()) identidad['codigoConcepto'] = concepto.codigo.trim();
+    if (concepto.nombre?.trim()) identidad['nombreConcepto'] = concepto.nombre.trim();
+    if (concepto.codigoLre?.trim()) identidad['codigoLre'] = concepto.codigoLre.trim();
+
+    return { ...entrada, metadata: { ...identidad, ...metadata, imponible, tributable } };
   });
 }

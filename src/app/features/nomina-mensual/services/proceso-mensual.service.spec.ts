@@ -736,6 +736,47 @@ describe('ProcesoMensualService', () => {
     expect(conMovimiento.liquidaciones[0].totalHaberes - sinMovimiento.liquidaciones[0].totalHaberes).toBe(50000);
   });
 
+  it('la línea de un movimiento manual lleva el nombre, código y código LRE de su concepto', async () => {
+    empleados.listar.mockResolvedValue([
+      { id: 1, estado: 'activo', aptoParaRemuneraciones: true, idContrato: 10, estadoFicha: 'VALIDO' },
+    ]);
+    haberes.listarConceptosMantenimiento.mockResolvedValue([
+      {
+        idConcepto: 4,
+        codigo: 'COLACION',
+        nombre: 'Colación',
+        codigoLre: '2302',
+        naturaleza: 'NO_IMPONIBLE',
+        imponible: false,
+        tributable: false,
+      },
+    ] as never);
+    const colacion = {
+      id: 'mov-colacion',
+      nominaPeriodoId: 'nom-1',
+      trabajadorId: '1',
+      conceptoId: 4,
+      tipo: 'COLACION',
+      categoria: 'haber',
+      monto: 20000,
+      cantidad: null,
+      unidad: null,
+      origen: 'manual',
+      estado: 'aplicado',
+      glosa: null,
+    } as unknown as MovimientoNomina;
+    const svc = TestBed.inject(ProcesoMensualService);
+
+    const r = await svc.generarCalculoPeriodo('2026-05', [1], {
+      nominaPeriodoId: 'nom-1',
+      movimientosNomina: [colacion],
+    });
+
+    expect(r.liquidaciones[0].haberesNoImponibles).toContainEqual(
+      expect.objectContaining({ codigo: 'COLACION', descripcion: 'Colación', codigoLre: '2302', monto: 20000 }),
+    );
+  });
+
   it('un movimiento manual de concepto no imponible no infla la base imponible', async () => {
     empleados.listar.mockResolvedValue([
       { id: 1, estado: 'activo', aptoParaRemuneraciones: true, idContrato: 10, estadoFicha: 'VALIDO' },
