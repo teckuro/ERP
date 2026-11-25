@@ -38,10 +38,8 @@ export class DocumentoLiquidacionService {
 
   private cache: DocumentoLiquidacionEmpresa | null = null;
 
-  constructor() {
-    // Razón social, RUT y logo impresos en la liquidación: nunca de la sesión anterior.
-    limpiarAlCambiarUsuario(() => this.limpiar());
-  }
+  // Razón social, RUT y logo impresos en la liquidación: nunca de la sesión anterior.
+  private readonly generacionSesion = limpiarAlCambiarUsuario(() => this.limpiar());
 
   /**
    * Arma el bloque de empresa del documento. `fallbackNombre` cubre el caso
@@ -52,6 +50,7 @@ export class DocumentoLiquidacionService {
       return this.aplicarFallback(this.cache, fallbackNombre);
     }
 
+    const generacion = this.generacionSesion();
     const empresa = await this.empresaActiva.asegurarCargada().catch(() => null);
     if (!empresa) {
       return { razonSocial: fallbackNombre?.trim() || 'Empleador' };
@@ -71,7 +70,10 @@ export class DocumentoLiquidacionService {
       textoPie: config.textoPie,
       nombreFirmaEmpleador: config.nombreFirmaEmpleador,
     };
-    this.cache = resultado;
+    // Si la sesión cambió durante la carga, se responde a quien lo pidió pero no se cachea.
+    if (generacion === this.generacionSesion()) {
+      this.cache = resultado;
+    }
     return resultado;
   }
 

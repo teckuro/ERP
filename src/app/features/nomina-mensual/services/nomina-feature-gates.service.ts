@@ -17,18 +17,24 @@ export class NominaFeatureGatesService {
   private readonly _gates = signal<NominaFeatureGates>(NOMINA_FEATURE_GATES_APAGADOS);
   readonly gates = this._gates.asReadonly();
 
-  constructor() {
-    // Los tipos de nómina habilitados dependen de la empresa de la sesión.
-    limpiarAlCambiarUsuario(() => this._gates.set(NOMINA_FEATURE_GATES_APAGADOS));
-  }
+  // Los tipos de nómina habilitados dependen de la empresa de la sesión.
+  private readonly generacionSesion = limpiarAlCambiarUsuario(() =>
+    this._gates.set(NOMINA_FEATURE_GATES_APAGADOS),
+  );
 
   async cargar(): Promise<NominaFeatureGates> {
+    const generacion = this.generacionSesion();
     try {
       const gates = await this.repo.obtener();
-      this._gates.set(gates);
+      if (generacion === this.generacionSesion()) {
+        this._gates.set(gates);
+      }
       return gates;
     } catch {
-      this._gates.set(NOMINA_FEATURE_GATES_APAGADOS);
+      // Un fallo tardío de la sesión anterior no debe apagar los tipos del usuario actual.
+      if (generacion === this.generacionSesion()) {
+        this._gates.set(NOMINA_FEATURE_GATES_APAGADOS);
+      }
       return NOMINA_FEATURE_GATES_APAGADOS;
     }
   }

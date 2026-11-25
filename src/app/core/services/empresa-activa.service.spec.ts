@@ -152,4 +152,28 @@ describe('EmpresaActivaService', () => {
     service.limpiar();
     expect(service.empresaActivaId()).toBeNull();
   });
+
+  it('descarta la carga de la sesión anterior si el usuario cambió mientras cargaba', async () => {
+    let responder!: (valor: { data: unknown; error: unknown }) => void;
+    builder.maybeSingle.mockReturnValue(new Promise((resolve) => (responder = resolve)));
+    const usuario: WritableSignal<User | null> = signal({ id: 'u-a', app_metadata: { id_empresa: 7 } } as unknown as User);
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        EmpresaActivaService,
+        { provide: SUPABASE_CLIENT, useValue: supabase },
+        { provide: AuthService, useValue: { currentUser: usuario } },
+      ],
+    });
+    const service = TestBed.inject(EmpresaActivaService);
+    TestBed.tick();
+
+    const carga = service.asegurarCargada();
+    usuario.set(null); // cierre de sesión con la consulta de A todavía en curso
+    TestBed.tick();
+    responder({ data: EMPRESA_DEMO, error: null });
+
+    await expect(carga).resolves.toBeNull();
+    expect(service.empresa()).toBeNull();
+  });
 });

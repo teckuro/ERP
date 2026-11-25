@@ -9,9 +9,7 @@ const limpiar = vi.fn();
 
 @Injectable({ providedIn: 'root' })
 class ServicioConCache {
-  constructor() {
-    limpiarAlCambiarUsuario(limpiar);
-  }
+  readonly generacion = limpiarAlCambiarUsuario(limpiar);
 }
 
 function preparar(usuarioInicial: string | null) {
@@ -23,6 +21,10 @@ function preparar(usuarioInicial: string | null) {
   TestBed.inject(ServicioConCache);
   TestBed.tick();
   return usuario;
+}
+
+function generacion(): number {
+  return TestBed.inject(ServicioConCache).generacion();
 }
 
 describe('limpiarAlCambiarUsuario', () => {
@@ -51,5 +53,18 @@ describe('limpiarAlCambiarUsuario', () => {
     TestBed.tick();
 
     expect(limpiar).toHaveBeenCalledTimes(1);
+  });
+
+  it('la generación sube solo cuando cambia el usuario', () => {
+    const usuario = preparar('u-1');
+    const inicial = generacion();
+
+    usuario.set({ id: 'u-1' });
+    TestBed.tick();
+    expect(generacion()).toBe(inicial);
+
+    usuario.set(null);
+    TestBed.tick();
+    expect(generacion()).toBe(inicial + 1);
   });
 });
