@@ -76,7 +76,10 @@ import {
 import { aislarConsultaSoloParametros } from '../rules/proceso-mensual-parametros-refresh.rules';
 import { revisarGruposParametrosMinimos } from '../rules/proceso-mensual-parametros-minimos.rules';
 import { construirPreNominaPeriodo } from '../rules/proceso-mensual-prenomina.rules';
-import { construirEntradasMensualesMotor } from '../rules/proceso-mensual-motor-entradas.rules';
+import {
+  aplicarClasificacionConceptos,
+  construirEntradasMensualesMotor,
+} from '../rules/proceso-mensual-motor-entradas.rules';
 import {
   construirPrevalidacionMensual,
   contarRecurrentesParaPrevalidacionMensual,
@@ -1103,12 +1106,14 @@ export class ProcesoMensualService {
       movimientosNomina?: readonly MovimientoNomina[];
     } = {},
   ): Promise<MotorCalculoInput> {
-    const [prevalidacion, parametrosPeriodo, catalogos, empleadosListado, recurrentes] = await Promise.all([
+    const [prevalidacion, parametrosPeriodo, catalogos, empleadosListado, recurrentes, conceptos] = await Promise.all([
       this.ejecutarPrevalidaciones(periodo),
       this.parametrosGenerales.obtenerUltimoHastaPeriodo(periodo),
       this.parametrosGenerales.listarCatalogos(periodo),
       this.empleados.listar(),
       this.haberesDescuentos.listarAsignacionesParaPrevalidacionMensual(periodo),
+      // Clasificación imponible/tributable por concepto para novedades y movimientos.
+      this.haberesDescuentos.listarConceptosMantenimiento().catch(() => []),
     ]);
     const empresaRow = await this.cargarEmpresaLey16744();
     const preNomina = construirPreNominaPeriodo(prevalidacion, new Date().toISOString());
@@ -1159,7 +1164,9 @@ export class ProcesoMensualService {
       catalogos,
       trabajadores,
       recurrentes: recurrentesFiltrados,
-      entradasMensuales: construirEntradasMensualesMotor(entradasPeriodo),
+      entradasMensuales: construirEntradasMensualesMotor(
+        aplicarClasificacionConceptos(entradasPeriodo, asArray(conceptos)),
+      ),
       empresaLey16744: resolveEmpresaMutualSnapshot(empresaRow, periodo),
     };
   }

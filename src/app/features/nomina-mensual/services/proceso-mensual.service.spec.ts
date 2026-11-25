@@ -690,6 +690,39 @@ describe('ProcesoMensualService', () => {
     expect(conMovimiento.liquidaciones[0].totalHaberes - sinMovimiento.liquidaciones[0].totalHaberes).toBe(50000);
   });
 
+  it('un movimiento manual de concepto no imponible no infla la base imponible', async () => {
+    empleados.listar.mockResolvedValue([
+      { id: 1, estado: 'activo', aptoParaRemuneraciones: true, idContrato: 10, estadoFicha: 'VALIDO' },
+    ]);
+    haberes.listarConceptosMantenimiento.mockResolvedValue([
+      { idConcepto: 5, codigo: 'MOVILIZACION', naturaleza: 'NO_IMPONIBLE', imponible: false, tributable: false },
+    ] as never);
+    const movilizacion = {
+      id: 'mov-movil',
+      nominaPeriodoId: 'nom-1',
+      trabajadorId: '1',
+      conceptoId: 5,
+      tipo: 'MOVILIZACION',
+      categoria: 'haber',
+      monto: 20000,
+      cantidad: null,
+      unidad: null,
+      origen: 'manual',
+      estado: 'aplicado',
+      glosa: null,
+    } as unknown as MovimientoNomina;
+    const svc = TestBed.inject(ProcesoMensualService);
+
+    const sin = await svc.generarCalculoPeriodo('2026-05', [1], { nominaPeriodoId: 'nom-1' });
+    const con = await svc.generarCalculoPeriodo('2026-05', [1], {
+      nominaPeriodoId: 'nom-1',
+      movimientosNomina: [movilizacion],
+    });
+
+    expect(con.liquidaciones[0].totalHaberes - sin.liquidaciones[0].totalHaberes).toBe(20000);
+    expect(con.liquidaciones[0].baseImponiblePrevisional).toBe(sin.liquidaciones[0].baseImponiblePrevisional);
+  });
+
   it('no duplica: ignora movimientos recurrentes y manuales iguales a una novedad existente', async () => {
     empleados.listar.mockResolvedValue([
       { id: 1, estado: 'activo', aptoParaRemuneraciones: true, idContrato: 10, estadoFicha: 'VALIDO' },

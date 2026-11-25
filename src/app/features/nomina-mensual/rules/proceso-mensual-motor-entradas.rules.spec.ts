@@ -2,6 +2,7 @@ import type { EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-p
 import type { EntradaMensualMotor } from '../models/proceso-mensual.model';
 import {
   DIAS_BASE_MES,
+  aplicarClasificacionConceptos,
   calcularDiasAusenciaEntradas,
   calcularDiasCalendarioTrabajados,
   calcularDiasLicenciaMedicaEntradas,
@@ -326,5 +327,70 @@ describe('DIAS-TS paridad con fn_calcular_dias_trabajados', () => {
       entradaMotor({ categoria: 'haber_variable', monto: 1000 }),
     ]);
     expect(dias).toBe(5);
+  });
+});
+
+describe('aplicarClasificacionConceptos (imponible/tributable desde el catálogo)', () => {
+  function entradaHaber(extra: Partial<EntradaMensualPeriodo> = {}): EntradaMensualPeriodo {
+    return {
+      idEntrada: 'movimiento_nomina:1',
+      origen: 'movimiento_nomina',
+      origenId: 1,
+      periodo: '2026-05',
+      idPersona: 1,
+      idContrato: 10,
+      idConcepto: 5,
+      tipoEntrada: 'haber',
+      categoria: 'HABER',
+      tipoMovimiento: 'HABER',
+      cantidad: null,
+      unidad: null,
+      monto: 20000,
+      moneda: 'CLP',
+      estado: 'aprobada',
+      fechaEvento: null,
+      observacion: null,
+      referenciaExterna: null,
+      requiereRevision: false,
+      bloqueaProceso: false,
+      warnings: [],
+      metadata: {},
+      ...extra,
+    } as EntradaMensualPeriodo;
+  }
+
+  const MOVILIZACION = { idConcepto: 5, naturaleza: 'NO_IMPONIBLE', imponible: false, tributable: false };
+  const BONO = { idConcepto: 7, naturaleza: 'IMPONIBLE', imponible: true, tributable: true };
+
+  it('un haber de concepto no imponible queda como HABER_NO_IMPONIBLE (antes caía en imponible)', () => {
+    const [entrada] = aplicarClasificacionConceptos([entradaHaber()], [MOVILIZACION]);
+    const clasificada = clasificarEntradaMensualMotor(mapEntradaMensualMotor(entrada));
+
+    expect(clasificada.clase).toBe('HABER_NO_IMPONIBLE');
+    expect(clasificada.tributable).toBe(false);
+  });
+
+  it('un haber de concepto imponible sigue siendo imponible y tributable', () => {
+    const [entrada] = aplicarClasificacionConceptos([entradaHaber({ idConcepto: 7 })], [BONO]);
+    const clasificada = clasificarEntradaMensualMotor(mapEntradaMensualMotor(entrada));
+
+    expect(clasificada.clase).toBe('HABER_IMPONIBLE');
+    expect(clasificada.tributable).toBe(true);
+  });
+
+  it('respeta las banderas que la entrada ya trae', () => {
+    const [entrada] = aplicarClasificacionConceptos(
+      [entradaHaber({ metadata: { imponible: true, tributable: true } })],
+      [MOVILIZACION],
+    );
+
+    expect(entrada.metadata).toMatchObject({ imponible: true, tributable: true });
+  });
+
+  it('deja igual una entrada cuyo concepto no está en el catálogo', () => {
+    const original = entradaHaber({ idConcepto: 999 });
+    const [entrada] = aplicarClasificacionConceptos([original], [MOVILIZACION]);
+
+    expect(entrada).toEqual(original);
   });
 });
