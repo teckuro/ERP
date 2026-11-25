@@ -164,7 +164,11 @@ describe('ProcesoMensualService', () => {
     obtenerClienteConfig: ReturnType<typeof vi.fn>;
     listarCatalogos: ReturnType<typeof vi.fn>;
   };
-  let empleados: { listar: ReturnType<typeof vi.fn>; obtenerPorId: ReturnType<typeof vi.fn> };
+  let empleados: {
+    listar: ReturnType<typeof vi.fn>;
+    obtenerPorId: ReturnType<typeof vi.fn>;
+    congelarFichasNomina: ReturnType<typeof vi.fn>;
+  };
   let haberes: {
     listarConceptosMantenimiento: ReturnType<typeof vi.fn>;
     listarAsignacionesParaPrevalidacionMensual: ReturnType<typeof vi.fn>;
@@ -203,6 +207,7 @@ describe('ProcesoMensualService', () => {
       listarCatalogos: vi.fn().mockResolvedValue(catalogosMock),
     };
     empleados = {
+      congelarFichasNomina: vi.fn().mockResolvedValue([]),
       listar: vi.fn().mockResolvedValue([
         { id: 1, estado: 'activo', aptoParaRemuneraciones: true, idContrato: 10, estadoFicha: 'VALIDO' },
         { id: 2, estado: 'activo', aptoParaRemuneraciones: true, idContrato: 20, estadoFicha: 'VALIDO' },
@@ -543,6 +548,38 @@ describe('ProcesoMensualService', () => {
     expect(r.liquidaciones.length).toBe(2);
     expect(r.resumen.totalTrabajadoresCalculados).toBe(2);
     expect(svc.obtenerResultadoCalculoPeriodo('2026-05')).toBe(r);
+  });
+
+  it('con nómina usa los insumos congelados y no relee cada ficha (NOM-INSUMOS-01)', async () => {
+    const leerFicha = empleados.obtenerPorId as unknown as (id: number) => Promise<unknown>;
+    const fichas = await Promise.all([1, 2].map((id) => leerFicha(id)));
+    empleados.congelarFichasNomina.mockResolvedValue(fichas);
+    empleados.obtenerPorId.mockClear();
+    const svc = TestBed.inject(ProcesoMensualService);
+
+    const r = await svc.generarCalculoPeriodo('2026-05', undefined, { nominaPeriodoId: 'nom-1' });
+
+    expect(empleados.congelarFichasNomina).toHaveBeenCalledWith('nom-1');
+    expect(empleados.obtenerPorId).not.toHaveBeenCalled();
+    expect(r.liquidaciones.length).toBe(2);
+  });
+
+  it('si congelar los insumos falla, lee las fichas en vivo y calcula igual', async () => {
+    empleados.congelarFichasNomina.mockRejectedValue(new Error('sin permiso de escritura'));
+    const svc = TestBed.inject(ProcesoMensualService);
+
+    const r = await svc.generarCalculoPeriodo('2026-05', undefined, { nominaPeriodoId: 'nom-1' });
+
+    expect(empleados.obtenerPorId).toHaveBeenCalledTimes(2);
+    expect(r.liquidaciones.length).toBe(2);
+  });
+
+  it('sin nómina no congela (cálculo por periodo)', async () => {
+    const svc = TestBed.inject(ProcesoMensualService);
+
+    await svc.generarCalculoPeriodo('2026-05');
+
+    expect(empleados.congelarFichasNomina).not.toHaveBeenCalled();
   });
 
   it('lee la mutual (Ley 16.744) de la empresa activa, no la primera visible', async () => {
