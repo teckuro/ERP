@@ -14,8 +14,20 @@ export function initVercelAnalytics(): void {
   injectVercelAnalytics({
     mode: 'production',
     framework: 'angular',
-    beforeSend: (event) => sanitizarEvento(event),
+    beforeSend: (event) => (visitaPropia() ? null : sanitizarEvento(event)),
   });
+}
+
+/**
+ * Excluye las visitas del dueño: Vercel Analytics no filtra por IP, así que se marca el navegador.
+ * Activar una vez por navegador/dispositivo en la consola: localStorage.setItem('va-disable', '1')
+ */
+function visitaPropia(): boolean {
+  try {
+    return localStorage.getItem('va-disable') !== null;
+  } catch {
+    return false;
+  }
 }
 
 /**
