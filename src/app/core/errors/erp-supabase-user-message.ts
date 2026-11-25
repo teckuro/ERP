@@ -108,7 +108,7 @@ export function lanzarSiErrorSupabase(error: unknown, contexto: string): void {
   }
 }
 
-function esMensajeTecnico(texto: string): boolean {
+export function esMensajeTecnico(texto: string): boolean {
   return /PGRST\d+|42P01|42703|could not find|relation |column |violates |duplicate key|syntax error|permission denied|42501|jwt|session|not authenticated|failed to fetch|network|timeout/i.test(
     texto,
   );

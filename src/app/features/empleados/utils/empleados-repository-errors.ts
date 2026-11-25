@@ -1,4 +1,7 @@
-import { mensajeErrorSupabaseConocido } from '../../../core/errors/erp-supabase-user-message';
+import {
+  esMensajeTecnico,
+  mensajeErrorSupabaseConocido,
+} from '../../../core/errors/erp-supabase-user-message';
 
 export interface SupabaseWriteError {
   code?: string;
@@ -25,11 +28,17 @@ export class EmpleadoReferenciaInvalidaError extends Error {
 
 /**
  * `message`: texto de negocio del repositorio (p. ej. 'No fue posible cargar las comunas.').
- * `details`: `error.message` crudo de Supabase/Postgres. Nunca se muestra tal cual: solo se agrega
- * su versión humanizada cuando es un caso conocido (RLS/solo consulta, sesión, red, entorno).
+ * `details`: texto de negocio (validación del repositorio o `raise exception` de un RPC) o
+ * `error.message` crudo de Supabase/Postgres. El de negocio se conserva; el técnico solo se agrega
+ * humanizado cuando es un caso conocido (RLS/solo consulta, sesión, red, entorno) y si no, se omite.
  */
 export function buildRepositoryError(message: string, details?: string): Error {
-  const causa = details ? mensajeErrorSupabaseConocido({ message: details }) : null;
+  const detalle = details?.trim();
+  const causa = !detalle
+    ? null
+    : esMensajeTecnico(detalle)
+      ? mensajeErrorSupabaseConocido({ message: detalle })
+      : detalle;
   return new Error(causa ? `${message} ${causa}` : message);
 }
 

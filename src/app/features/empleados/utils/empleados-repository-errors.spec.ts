@@ -28,6 +28,17 @@ describe('buildRepositoryError', () => {
     expect(error.message).toContain('Su sesión expiró');
   });
 
+  it('conserva el detalle de negocio generado por el repositorio', () => {
+    const error = buildRepositoryError(
+      'No fue posible validar las condiciones laborales seleccionadas.',
+      'Condiciones no encontradas: NOCTURNA, ALTURA',
+    );
+
+    expect(error.message).toBe(
+      'No fue posible validar las condiciones laborales seleccionadas. Condiciones no encontradas: NOCTURNA, ALTURA',
+    );
+  });
+
   it('devuelve solo el mensaje de negocio sin detalle', () => {
     expect(buildRepositoryError('No fue posible cargar los bancos.').message).toBe(
       'No fue posible cargar los bancos.',
