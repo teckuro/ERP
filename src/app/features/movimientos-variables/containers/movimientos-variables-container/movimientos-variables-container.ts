@@ -1,3 +1,4 @@
+import { esPeriodoRemuneracionValido } from '../../../../shared/dominio/periodo';
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -29,7 +30,6 @@ import type { FilaGridMovimientoVariable } from '../../models/movimiento-variabl
 import type { MovimientoVariableEstado } from '../../models/movimiento-variable.model';
 import {
   puedeAnularMovimientoVariable,
-  esPeriodoRemuneracionValido,
 } from '../../rules/movimiento-variable-validacion.rules';
 import { MovimientosVariablesService } from '../../services/movimientos-variables.service';
 import {

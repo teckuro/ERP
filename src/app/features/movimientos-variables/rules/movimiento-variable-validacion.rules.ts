@@ -1,3 +1,4 @@
+import { esPeriodoRemuneracionValido } from '../../../shared/dominio/periodo';
 import type { MovimientoVariableConceptoSnapshot, MovimientoVariableEstado } from '../models/movimiento-variable.model';
 import { MOVIMIENTO_VARIABLE_ESTADOS } from '../models/movimiento-variable.model';
 import {
@@ -38,23 +39,6 @@ export function esEstadoMovimientoVariableValido(valor: string | null | undefine
  * Formato periodo remuneracion YYYY-MM (mes 01-12, anio razonable).
  * No consulta periodo cerrado (fase futura).
  */
-export function esPeriodoRemuneracionValido(periodo: string | null | undefined): boolean {
-  if (periodo == null || typeof periodo !== 'string') {
-    return false;
-  }
-  const t = periodo.trim();
-  if (!/^\d{4}-\d{2}$/.test(t)) {
-    return false;
-  }
-  const [, mm] = t.split('-');
-  const mes = Number(mm);
-  if (mes < 1 || mes > 12) {
-    return false;
-  }
-  const anio = Number(t.slice(0, 4));
-  return anio >= 2000 && anio <= 2100;
-}
-
 function esMontoMovimientoVariableValido(monto: number | null): boolean {
   if (monto == null || typeof monto !== 'number') {
     return false;

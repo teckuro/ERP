@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { DataGridColumn, DataGridComponent, DataGridFilter } from '../../../../shared/components/ui/data-grid';
+import { formatearClp } from '../../../../shared/dominio/moneda';
 import { ParametroGeneral } from '../../models/parametro-general.model';
 import {
   PARAMETROS_DATA_GRID_SHELL,
@@ -67,10 +68,6 @@ export class TablaParametrosGeneralesComponent {
     },
   ];
 
-  private readonly clpFormatter = new Intl.NumberFormat('es-CL', {
-    maximumFractionDigits: 0,
-  });
-
   private readonly decimalFormatter = new Intl.NumberFormat('es-CL', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -88,7 +85,7 @@ export class TablaParametrosGeneralesComponent {
 
   private formatMoney = (value: unknown): string => {
     const numberValue = Number(value);
-    return Number.isFinite(numberValue) ? `$ ${this.clpFormatter.format(numberValue)}` : '—';
+    return Number.isFinite(numberValue) ? formatearClp(numberValue) : '—';
   };
 
   private formatDecimal = (value: unknown): string => {

@@ -1,3 +1,4 @@
+import { formatearClp } from '../../../../../shared/dominio/moneda';
 import { DestroyRef, Injectable, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -1148,11 +1149,7 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
 
   private moneyText(value: number | null | undefined): string {
     return typeof value === 'number' && !Number.isNaN(value)
-      ? new Intl.NumberFormat('es-CL', {
-          style: 'currency',
-          currency: 'CLP',
-          maximumFractionDigits: 0,
-        }).format(value)
+      ? formatearClp(value)
       : 'Sin información';
   }
 

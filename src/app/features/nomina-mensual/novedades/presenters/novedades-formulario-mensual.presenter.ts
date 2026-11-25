@@ -1,4 +1,5 @@
 import type { MessageBoxSection } from '../../../../shared/components/ui/feedback/message-box/message-box.types';
+import { formatearClp } from '../../../../shared/dominio/moneda';
 
 import type { FormularioMovimientoMesValores, ResumenFormularioMensualUi } from '../models/novedades-formulario-movimiento-mes.model';
 
@@ -148,6 +149,9 @@ export function resumenFormularioMasivo(
 export function formatearMontoFormulario(monto: number | null, moneda = 'CLP'): string {
   if (monto == null) {
     return '';
+  }
+  if (moneda.trim().toUpperCase() === 'CLP') {
+    return formatearClp(Number(monto));
   }
   return `${moneda} ${Number(monto).toLocaleString('es-CL')}`;
 }

@@ -1,3 +1,4 @@
+import { formatearClp } from '../../../shared/dominio/moneda';
 import type { MessageBoxSection } from '../../../shared/components/ui/feedback/message-box/message-box.types';
 import type {
   PreviredArchivo105Resumen,
@@ -33,11 +34,7 @@ function formatearPeriodo(periodo: string): string {
 }
 
 function formatearMonto(monto: number): string {
-  return new Intl.NumberFormat('es-CL', {
-    style: 'currency',
-    currency: 'CLP',
-    maximumFractionDigits: 0,
-  }).format(Math.round(monto));
+  return formatearClp(Math.round(monto));
 }
 
 function lineaConceptoObservacion(concepto: PreviredConceptoObservacion): string {

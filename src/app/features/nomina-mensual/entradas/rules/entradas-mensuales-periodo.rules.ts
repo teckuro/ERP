@@ -16,14 +16,6 @@ function asArray<T>(value: readonly T[] | null | undefined): T[] {
   return Array.isArray(value) ? [...value] : [];
 }
 
-export function validarPeriodoEntradaMensual(periodo: string | null | undefined): boolean {
-  if (typeof periodo !== 'string') return false;
-  const value = periodo.trim();
-  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) return false;
-  const anio = Number(value.slice(0, 4));
-  return anio >= 2000 && anio <= 2100;
-}
-
 export function normalizarEstadoNovedadMensual(estado: NovedadMensualEstado | string): EntradaMensualEstado {
   switch (estado) {
     case 'borrador':

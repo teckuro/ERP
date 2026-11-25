@@ -59,14 +59,6 @@ export function etiquetaAccionResumen(
   return esNominaRectificacion(fila) ? 'Continuar rectificación' : 'Continuar en la nómina';
 }
 
-export function formatearMonedaClp(valor: number): string {
-  return new Intl.NumberFormat('es-CL', {
-    style: 'currency',
-    currency: 'CLP',
-    maximumFractionDigits: 0,
-  }).format(valor);
-}
-
 export function tieneComparativaRectificacion(
   totales: TotalesRectificacionVista | null | undefined,
 ): totales is TotalesRectificacionVista {

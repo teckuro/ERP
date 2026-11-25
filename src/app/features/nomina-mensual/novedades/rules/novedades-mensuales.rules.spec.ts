@@ -1,3 +1,4 @@
+import { esPeriodoRemuneracionValido } from '../../../../shared/dominio/periodo';
 import type { NovedadMensual } from '../models/novedad-mensual.model';
 import {
   normalizarMoneda,
@@ -5,7 +6,6 @@ import {
   puedeCambiarEstadoNovedad,
   puedeEditarNovedad,
   validarNovedadMensualInput,
-  validarPeriodoNovedad,
 } from './novedades-mensuales.rules';
 
 function novedad(over: Partial<NovedadMensual> = {}): NovedadMensual {
@@ -39,12 +39,12 @@ function novedad(over: Partial<NovedadMensual> = {}): NovedadMensual {
 
 describe('novedades-mensuales.rules', () => {
   it('periodo valido YYYY-MM pasa', () => {
-    expect(validarPeriodoNovedad('2026-05')).toBe(true);
+    expect(esPeriodoRemuneracionValido('2026-05')).toBe(true);
   });
 
   it('periodo invalido falla', () => {
-    expect(validarPeriodoNovedad('2026-13')).toBe(false);
-    expect(validarPeriodoNovedad('202605')).toBe(false);
+    expect(esPeriodoRemuneracionValido('2026-13')).toBe(false);
+    expect(esPeriodoRemuneracionValido('202605')).toBe(false);
   });
 
   it('crear novedad minima valida', () => {

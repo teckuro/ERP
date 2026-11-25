@@ -1,4 +1,5 @@
-﻿import { CommonModule } from '@angular/common';
+﻿import { esPeriodoRemuneracionValido } from '../../../../../shared/dominio/periodo';
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -80,7 +81,6 @@ import {
   puedeEditarNovedad,
   puedeEliminarNovedad,
   validarNovedadMensualInput,
-  validarPeriodoNovedad,
 } from '../../rules/novedades-mensuales.rules';
 import { NovedadesMensualesService } from '../../services/novedades-mensuales.service';
 import {
@@ -1108,7 +1108,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
 
   async cargarNovedades(): Promise<void> {
     const periodo = this.periodoActual().trim();
-    if (!validarPeriodoNovedad(periodo)) {
+    if (!esPeriodoRemuneracionValido(periodo)) {
       this.filas.set([]);
       this.mensaje.set({
         variant: 'warning',

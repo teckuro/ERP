@@ -1,3 +1,4 @@
+import { formatearClp } from '../../../../shared/dominio/moneda';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
@@ -70,11 +71,7 @@ export class LiquidacionDetallePanelComponent {
   }
 
   money(value: number): string {
-    return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-      maximumFractionDigits: 0,
-    }).format(value);
+    return formatearClp(value);
   }
 
   fechaCorta(value: string | null): string {

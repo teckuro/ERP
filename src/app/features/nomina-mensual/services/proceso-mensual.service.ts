@@ -1,3 +1,4 @@
+import { esPeriodoRemuneracionValido } from '../../../shared/dominio/periodo';
 import { inject, Injectable } from '@angular/core';
 
 import { resolverUsuarioResponsableActual } from '../../../core/auth/auth-user-label';
@@ -29,7 +30,6 @@ import { aplicarMovimientosNominaAlMotor } from '../rules/nomina-movimientos-mot
 import type { EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
 import { LiquidacionesOficialesRepository } from '../../liquidaciones-oficiales/data-access/liquidaciones-oficiales.repository';
 import { EntradasMensualesPeriodoService } from '../entradas/services/entradas-mensuales-periodo.service';
-import { validarPeriodoEntradaMensual } from '../entradas/rules/entradas-mensuales-periodo.rules';
 import {
   entradaBloqueaProceso,
   entradaRequiereRevision,
@@ -113,7 +113,7 @@ export class ProcesoMensualService {
    */
   async ejecutarPrevalidaciones(periodo: string): Promise<ProcesoMensualPrevalidacion> {
     const p = periodo.trim();
-    if (!validarPeriodoEntradaMensual(p)) {
+    if (!esPeriodoRemuneracionValido(p)) {
       return construirPrevalidacionMensual(this.hechosMinimos(p));
     }
 
@@ -136,7 +136,7 @@ export class ProcesoMensualService {
    */
   async consultarEstadoParametrosPeriodo(periodo: string): Promise<ProcesoMensualPrevalidacion> {
     const p = periodo.trim();
-    if (!validarPeriodoEntradaMensual(p)) {
+    if (!esPeriodoRemuneracionValido(p)) {
       return construirPrevalidacionMensual(this.hechosMinimos(p));
     }
 

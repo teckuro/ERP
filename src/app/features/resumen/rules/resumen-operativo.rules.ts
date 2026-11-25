@@ -1,4 +1,5 @@
 import type { EmpleadoListado } from '../../empleados/models/empleado-listado.model';
+import { formatearClp } from '../../../shared/dominio/moneda';
 import type { LicenciaMedica } from '../../licencias-medicas/models/licencia-medica.model';
 import type { NominaPeriodoResumen } from '../../nomina-mensual/models/nomina-periodo.models';
 import type { NovedadMensual } from '../../nomina-mensual/novedades/models/novedad-mensual.model';
@@ -652,7 +653,7 @@ export function formatearValorKpi(
     return '—';
   }
   if (formato === 'clp-entero') {
-    return `$${new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(value)}`;
+    return formatearClp(value);
   }
   return String(value);
 }

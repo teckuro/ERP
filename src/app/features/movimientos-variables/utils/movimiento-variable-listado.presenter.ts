@@ -1,4 +1,5 @@
 import type { DataGridColumn, DataGridFilter } from '../../../shared/components/ui/data-grid';
+import { formatearClp } from '../../../shared/dominio/moneda';
 import type { EmpleadoListado } from '../../empleados/models/empleado-listado.model';
 import type { ConceptoListado } from '../../haberes-descuentos/models/haber-descuento-asignacion.model';
 import type {
@@ -53,7 +54,7 @@ export function etiquetaOrigenMovimientoVariable(origen: string): string {
 }
 
 export function formatMontoMovimientoVariable(monto: number): string {
-  return `$ ${Number(monto).toLocaleString('es-CL')}`;
+  return formatearClp(Number(monto));
 }
 
 export function crearColumnasGridMovimientoVariable(): DataGridColumn<FilaGridMovimientoVariable>[] {

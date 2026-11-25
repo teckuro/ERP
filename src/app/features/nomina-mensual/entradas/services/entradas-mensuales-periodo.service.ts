@@ -1,3 +1,4 @@
+import { esPeriodoRemuneracionValido } from '../../../../shared/dominio/periodo';
 import { Injectable, inject } from '@angular/core';
 
 import { HaberesDescuentosService } from '../../../haberes-descuentos/services/haberes-descuentos.service';
@@ -12,14 +13,13 @@ import {
   normalizarEntradaMovimientoLegacy,
   normalizarEntradaNovedadMensual,
   normalizarEntradaRecurrente,
-  validarPeriodoEntradaMensual,
 } from '../rules/entradas-mensuales-periodo.rules';
 
 const MSG_PERIODO_INVALIDO = 'El periodo debe tener formato YYYY-MM.';
 const MSG_PERSONA_INVALIDA = 'Debe indicar un trabajador valido.';
 
 function assertPeriodo(periodo: string): void {
-  if (!validarPeriodoEntradaMensual(periodo)) {
+  if (!esPeriodoRemuneracionValido(periodo)) {
     throw new Error(MSG_PERIODO_INVALIDO);
   }
 }

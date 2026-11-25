@@ -1,3 +1,4 @@
+import { esPeriodoRemuneracionValido } from '../../../../shared/dominio/periodo';
 import {
   NOVEDAD_MENSUAL_CATEGORIAS,
   NOVEDAD_MENSUAL_ESTADOS,
@@ -80,14 +81,6 @@ const TRANSICIONES_PERMITIDAS: Readonly<Record<NovedadMensualEstado, readonly No
 
 function error(codigo: NovedadMensualErrorCodigo, mensaje: string): NovedadMensualError {
   return { codigo, mensaje };
-}
-
-export function validarPeriodoNovedad(periodo: string | null | undefined): boolean {
-  if (typeof periodo !== 'string') return false;
-  const value = periodo.trim();
-  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) return false;
-  const anio = Number(value.slice(0, 4));
-  return anio >= 2000 && anio <= 2100;
 }
 
 export function esEstadoNovedadMensualValido(value: string | null | undefined): value is NovedadMensualEstado {
@@ -220,7 +213,7 @@ export function validarNovedadMensualInput(
   const estado = input.estado ?? 'borrador';
   const moneda = normalizarMoneda(input.moneda);
 
-  if (!validarPeriodoNovedad(input.periodo)) {
+  if (!esPeriodoRemuneracionValido(input.periodo)) {
     errores.push(error('NOVEDAD_PERIODO_INVALIDO', 'El periodo debe tener formato YYYY-MM.'));
   }
   if (input.idPersona == null || input.idPersona <= 0) {

@@ -1,3 +1,4 @@
+import { esPeriodoRemuneracionValido } from '../../../../shared/dominio/periodo';
 import { describe, expect, it } from 'vitest';
 import type { MovimientoVariableListadoFila } from '../../../movimientos-variables/models/movimiento-variable.model';
 import type { NovedadMensual } from '../../novedades/models/novedad-mensual.model';
@@ -10,7 +11,6 @@ import {
   normalizarEstadoMovimientoLegacy,
   normalizarEstadoNovedadMensual,
   puedeEntrarAPreNomina,
-  validarPeriodoEntradaMensual,
 } from './entradas-mensuales-periodo.rules';
 
 function novedad(over: Partial<NovedadMensual> = {}): NovedadMensual {
@@ -86,12 +86,12 @@ function entrada(over: Partial<EntradaMensualPeriodo> = {}): EntradaMensualPerio
 
 describe('entradas mensuales periodo rules', () => {
   it('periodo YYYY-MM valido pasa', () => {
-    expect(validarPeriodoEntradaMensual('2026-05')).toBe(true);
+    expect(esPeriodoRemuneracionValido('2026-05')).toBe(true);
   });
 
   it('periodo invalido falla', () => {
-    expect(validarPeriodoEntradaMensual('2026-13')).toBe(false);
-    expect(validarPeriodoEntradaMensual('bad')).toBe(false);
+    expect(esPeriodoRemuneracionValido('2026-13')).toBe(false);
+    expect(esPeriodoRemuneracionValido('bad')).toBe(false);
   });
 
   it('estado novedad aprobada normaliza a aprobada', () => {
