@@ -17,7 +17,8 @@
 -- Seguridad:
 --   - La función es SECURITY INVOKER: lee las tablas de origen con la RLS del
 --     usuario (solo su empresa) y escribe con la RLS de la tabla nueva
---     (empresa + permiso de escritura 'nominas', SEC-08).
+--     (empresa + permiso de escritura 'nominas', SEC-08, y nómina de la misma
+--     empresa).
 --
 -- Regla "último registro" = mismo criterio que EmpleadosRepository:
 --   contrato y cuenta_bancaria: por id_persona, id más alto;
@@ -59,6 +60,14 @@ create policy nomina_insumo_trabajador_insert_tenant
   with check (
     id_empresa = public.current_user_empresa_id()
     and public.sec_permiso_modulo_escritura_ok('nominas')
+    -- La nómina referenciada debe ser de la misma empresa: la FK solo valida que
+    -- exista, y una fila ajena bloquearía el congelado de la otra empresa (unique).
+    and exists (
+      select 1
+      from public.nomina_periodo np
+      where np.id = nomina_insumo_trabajador.id_nomina_periodo
+        and np.id_empresa = nomina_insumo_trabajador.id_empresa
+    )
   );
 
 create policy nomina_insumo_trabajador_delete_tenant
