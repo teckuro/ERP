@@ -1,6 +1,6 @@
+import { esPeriodoRemuneracionValido } from '../../../shared/dominio/periodo';
 import {
   esEstadoMovimientoVariableValido,
-  esPeriodoRemuneracionValido,
   existeDuplicadoMovimientoVariable,
   puedeAnularMovimientoVariable,
   validarMovimientoVariableInput,

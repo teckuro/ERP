@@ -1,3 +1,4 @@
+import { esPeriodoRemuneracionValido } from '../../../shared/dominio/periodo';
 import type { HaberDescuentoAsignacionPrevalidacionMensualFila } from '../../haberes-descuentos/models/haber-descuento-asignacion.model';
 import type { ConceptoMantenimientoFila } from '../../haberes-descuentos/models/haber-descuento-asignacion.model';
 import type { MovimientoVariableEstado, MovimientoVariableListadoFila } from '../../movimientos-variables/models/movimiento-variable.model';
@@ -11,7 +12,6 @@ import {
   construirResumenEntradas,
   entradaBloqueaProceso,
   entradaRequiereRevision,
-  validarPeriodoEntradaMensual,
 } from '../entradas/rules/entradas-mensuales-periodo.rules';
 import { advertenciasEntradasConceptoReservadoContrato } from './proceso-mensual-concepto-reservado-prevalidacion.rules';
 
@@ -183,7 +183,7 @@ function mergeEstadoFinal(bloqueos: ProcesoMensualMensaje[], advertencias: Proce
  */
 export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPrevalidacion): ProcesoMensualPrevalidacion {
   const periodo = hechos.periodo.trim();
-  const periodoFormatoValido = validarPeriodoEntradaMensual(periodo);
+  const periodoFormatoValido = esPeriodoRemuneracionValido(periodo);
   const parametrosGrupos = asArray(hechos.parametrosGrupos);
   const trabajadoresPendientesRevision = asArray(hechos.trabajadoresPendientesRevision);
   const entradasMensuales = asArray(hechos.entradasMensuales);

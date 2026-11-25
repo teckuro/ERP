@@ -1,3 +1,4 @@
+import { esPeriodoRemuneracionValido } from '../../../../shared/dominio/periodo';
 import { Injectable, inject } from '@angular/core';
 
 import { HaberesDescuentosService } from '../../../haberes-descuentos/services/haberes-descuentos.service';
@@ -18,7 +19,6 @@ import {
   requiereConceptoCatalogo,
   validarNovedadMensualInput,
   validarObservacionRechazo,
-  validarPeriodoNovedad,
   type NovedadMensualValidacionInput,
   type ResultadoValidacionNovedadMensual,
 } from '../rules/novedades-mensuales.rules';
@@ -41,7 +41,7 @@ function assertIdNovedad(idNovedad: number): void {
 }
 
 function assertPeriodo(periodo: string): void {
-  if (!validarPeriodoNovedad(periodo)) {
+  if (!esPeriodoRemuneracionValido(periodo)) {
     throw new Error(MSG_PERIODO);
   }
 }

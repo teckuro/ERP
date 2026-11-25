@@ -1,3 +1,4 @@
+import { formatearClp } from '../../../../../shared/dominio/moneda';
 import { Component, HostBinding, Input } from '@angular/core';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 
@@ -321,11 +322,7 @@ export class ContratoComponent {
       return '$0';
     }
 
-    return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-      maximumFractionDigits: 0,
-    }).format(tramo.valor);
+    return formatearClp(tramo.valor);
   }
 
   get periodoTramoVigente(): string | null {

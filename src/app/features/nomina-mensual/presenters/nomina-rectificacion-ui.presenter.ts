@@ -1,8 +1,8 @@
+import { formatearClp } from '../../../shared/dominio/moneda';
 import type { EstadoNomina, NominaPeriodoResumen } from '../models/nomina-periodo.models';
 import type { RectificacionPreview } from '../models/nomina-rectificacion-preview.models';
 import type { TotalesRectificacionVista } from '../rules/proceso-mensual-motor-rectificacion.rules';
 import {
-  formatearMonedaClp,
   indiceRectificacionEnCadena,
   rectificacionesDeOrigen,
 } from '../rules/nomina-rectificacion-ui.rules';
@@ -40,25 +40,25 @@ export function prepararComparativaRectificacion(
     {
       id: 'original',
       label: 'Original cerrada',
-      haberes: formatearMonedaClp(totales.original.haberes),
-      descuentos: formatearMonedaClp(totales.original.descuentos),
-      liquido: formatearMonedaClp(totales.original.liquido),
+      haberes: formatearClp(totales.original.haberes),
+      descuentos: formatearClp(totales.original.descuentos),
+      liquido: formatearClp(totales.original.liquido),
       destacada: false,
     },
     {
       id: 'diferencia',
       label: 'Ajuste',
-      haberes: formatearMonedaClp(totales.diferencia.haberes),
-      descuentos: formatearMonedaClp(totales.diferencia.descuentos),
-      liquido: formatearMonedaClp(totales.diferencia.liquido),
+      haberes: formatearClp(totales.diferencia.haberes),
+      descuentos: formatearClp(totales.diferencia.descuentos),
+      liquido: formatearClp(totales.diferencia.liquido),
       destacada: false,
     },
     {
       id: 'acumulado',
       label: 'Resultado acumulado',
-      haberes: formatearMonedaClp(totales.acumulado.haberes),
-      descuentos: formatearMonedaClp(totales.acumulado.descuentos),
-      liquido: formatearMonedaClp(totales.acumulado.liquido),
+      haberes: formatearClp(totales.acumulado.haberes),
+      descuentos: formatearClp(totales.acumulado.descuentos),
+      liquido: formatearClp(totales.acumulado.liquido),
       destacada: true,
     },
   ];
@@ -71,7 +71,7 @@ export function prepararContextoRectificacionModal(
   const referenciaEsOriginal =
     !preview?.nominaReferenciaId || preview.nominaReferenciaId === preview.nominaOrigenId;
   return {
-    liquidoOriginal: formatearMonedaClp(origen.totalLiquido),
+    liquidoOriginal: formatearClp(origen.totalLiquido),
     trabajadoresOriginal: origen.totalTrabajadores,
     seleccionados: preview?.totales.seleccionados ?? 0,
     referenciaEsOriginal,
@@ -91,7 +91,7 @@ export function prepararFilasCadenaRectificacion(
     indice: index + 1,
     estado: fila.estado,
     trabajadores: fila.totalTrabajadores,
-    liquido: formatearMonedaClp(fila.totalLiquido),
+    liquido: formatearClp(fila.totalLiquido),
     actualizada: formatearFecha(fila.updatedAt),
   }));
 }

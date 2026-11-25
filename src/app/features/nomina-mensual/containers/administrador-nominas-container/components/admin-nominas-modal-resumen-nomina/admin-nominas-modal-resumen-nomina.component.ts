@@ -5,6 +5,7 @@
  * del cierre: totales, fechas clave y observaciones. Shell MessageBox modal lg.
  */
 
+import { formatearClp } from '../../../../../../shared/dominio/moneda';
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -31,7 +32,6 @@ import type { TotalesRectificacionVista } from '../../../../rules/proceso-mensua
 import {
   esNominaRectificacion,
   etiquetaAccionResumen,
-  formatearMonedaClp,
   puedeConsultarOriginal,
 } from '../../../../rules/nomina-rectificacion-ui.rules';
 import { prepararComparativaRectificacion } from '../../../../presenters/nomina-rectificacion-ui.presenter';
@@ -136,17 +136,17 @@ export class AdminNominasModalResumenNominaComponent {
       {
         id: 'haberes',
         label: 'Total haberes',
-        valor: formatearMonedaClp(n.totalHaberes),
+        valor: formatearClp(n.totalHaberes),
       },
       {
         id: 'descuentos',
         label: 'Total descuentos',
-        valor: formatearMonedaClp(n.totalDescuentos),
+        valor: formatearClp(n.totalDescuentos),
       },
       {
         id: 'liquido',
         label: 'Líquido a pago',
-        valor: formatearMonedaClp(n.totalLiquido),
+        valor: formatearClp(n.totalLiquido),
         destacado: true,
       },
     ];

@@ -1,3 +1,4 @@
+import { esPeriodoRemuneracionValido } from '../../../shared/dominio/periodo';
 import { Injectable, inject } from '@angular/core';
 
 import { primerDiaSqlDesdeYm, vigenciaIntersecaMes } from '../../../core/services/periodo-activo.service';
@@ -15,7 +16,6 @@ import type {
   MovimientoVariableConceptoSnapshot,
 } from '../models/movimiento-variable.model';
 import {
-  esPeriodoRemuneracionValido,
   existeDuplicadoMovimientoVariable,
   puedeAnularMovimientoVariable,
   validarMovimientoVariableInput,

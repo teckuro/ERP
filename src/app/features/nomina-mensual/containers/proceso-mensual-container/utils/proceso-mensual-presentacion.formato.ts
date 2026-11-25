@@ -1,3 +1,5 @@
+import { formatearClp } from '../../../../../shared/dominio/moneda';
+
 function normalizarCodigoMoneda(moneda: string | null | undefined): string {
   return (moneda ?? 'CLP').trim().toUpperCase() || 'CLP';
 }
@@ -14,9 +16,10 @@ export function formatoMontoNomina(
       maximumFractionDigits: 2,
     }).format(valor)}`;
   }
+  if (codigo === 'CLP' || codigo.length !== 3) return formatearClp(valor);
   return new Intl.NumberFormat('es-CL', {
     style: 'currency',
-    currency: codigo === 'CLP' || codigo.length !== 3 ? 'CLP' : codigo,
+    currency: codigo,
     maximumFractionDigits: 0,
   }).format(valor);
 }

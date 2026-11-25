@@ -1,4 +1,4 @@
-import { validarPeriodoEntradaMensual } from '../entradas/rules/entradas-mensuales-periodo.rules';
+import { esPeriodoRemuneracionValido } from '../../../shared/dominio/periodo';
 import type {
   BaseNominaTrazabilidad,
   ClasificacionParametroGrupo,
@@ -38,7 +38,7 @@ export function buildValidacionCalculoPreliminarView(
   const advertencias: ValidacionOperativaItemView[] = [];
   const informaciones: ValidacionOperativaItemView[] = [];
 
-  if (!validarPeriodoEntradaMensual(periodo)) {
+  if (!esPeriodoRemuneracionValido(periodo)) {
     bloqueos.push({
       codigo: 'BLOQ-001',
       titulo: 'Período inválido',
