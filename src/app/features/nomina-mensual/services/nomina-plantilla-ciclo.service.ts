@@ -62,11 +62,16 @@ export class NominaPlantillaCicloService {
       }
       return data;
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Error desconocido al listar plantillas';
-      this._error.set(msg);
+      if (generacion === this.generacionSesion()) {
+        const msg = e instanceof Error ? e.message : 'Error desconocido al listar plantillas';
+        this._error.set(msg);
+      }
       throw e;
     } finally {
-      this._cargando.set(false);
+      // Solo la carga de la sesión vigente apaga el indicador de carga.
+      if (generacion === this.generacionSesion()) {
+        this._cargando.set(false);
+      }
     }
   }
 

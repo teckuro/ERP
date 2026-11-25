@@ -31,7 +31,10 @@ export class NominaFeatureGatesService {
       }
       return gates;
     } catch {
-      this._gates.set(NOMINA_FEATURE_GATES_APAGADOS);
+      // Un fallo tardío de la sesión anterior no debe apagar los tipos del usuario actual.
+      if (generacion === this.generacionSesion()) {
+        this._gates.set(NOMINA_FEATURE_GATES_APAGADOS);
+      }
       return NOMINA_FEATURE_GATES_APAGADOS;
     }
   }
