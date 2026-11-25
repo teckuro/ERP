@@ -47,9 +47,7 @@ export class EmpresaActivaService {
   );
   readonly isLoading = computed(() => this.loadingState());
 
-  constructor() {
-    limpiarAlCambiarUsuario(() => this.limpiar());
-  }
+  private readonly generacionSesion = limpiarAlCambiarUsuario(() => this.limpiar());
 
   /**
    * Asegura que la empresa activa esté cargada. Múltiples llamadas concurrentes
@@ -106,11 +104,17 @@ export class EmpresaActivaService {
         return null;
       }
 
+      const generacion = this.generacionSesion();
       const { data, error } = await this.supabase
         .from('empresa')
         .select('id_empresa, razon_social, nombre_fantasia, rut, dv')
         .eq('id_empresa', idDesdeJwt)
         .maybeSingle();
+
+      // La sesión cambió mientras se cargaba: no publicar la empresa anterior.
+      if (generacion !== this.generacionSesion()) {
+        return null;
+      }
 
       if (error || !data) {
         this.motivoSinEmpresaState.set(

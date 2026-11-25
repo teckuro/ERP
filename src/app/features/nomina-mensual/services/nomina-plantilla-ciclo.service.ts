@@ -42,13 +42,11 @@ export class NominaPlantillaCicloService {
   readonly cargando = this._cargando.asReadonly();
   readonly error = this._error.asReadonly();
 
-  constructor() {
-    limpiarAlCambiarUsuario(() => {
-      this._plantillas.set([]);
-      this._cargando.set(false);
-      this._error.set(null);
-    });
-  }
+  private readonly generacionSesion = limpiarAlCambiarUsuario(() => {
+    this._plantillas.set([]);
+    this._cargando.set(false);
+    this._error.set(null);
+  });
   readonly plantillasActivas = computed(() =>
     this._plantillas().filter((p) => p.activo),
   );
@@ -56,9 +54,12 @@ export class NominaPlantillaCicloService {
   async refrescar(filtro: ListarPlantillasFiltro = {}): Promise<readonly NominaPlantillaCiclo[]> {
     this._cargando.set(true);
     this._error.set(null);
+    const generacion = this.generacionSesion();
     try {
       const data = await this.repo.listar(filtro);
-      this._plantillas.set(data);
+      if (generacion === this.generacionSesion()) {
+        this._plantillas.set(data);
+      }
       return data;
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Error desconocido al listar plantillas';

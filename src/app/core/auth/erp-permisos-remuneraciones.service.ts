@@ -43,13 +43,11 @@ export class ErpPermisosRemuneracionesService {
   private readonly permisosFinosState = signal<PermisosFinosPerfil | null>(null);
   private cargaPermisosFinosPromise: Promise<void> | null = null;
 
-  constructor() {
-    // Los ajustes finos son del perfil del usuario: no se heredan entre sesiones.
-    limpiarAlCambiarUsuario(() => {
-      this.permisosFinosState.set(null);
-      this.cargaPermisosFinosPromise = null;
-    });
-  }
+  // Los ajustes finos son del perfil del usuario: no se heredan entre sesiones.
+  private readonly generacionSesion = limpiarAlCambiarUsuario(() => {
+    this.permisosFinosState.set(null);
+    this.cargaPermisosFinosPromise = null;
+  });
 
   readonly rol = computed<RolRemuneracionesLogico>(() =>
     resolverRolRemuneracionesDesdeUser(this.auth.currentUser()),
@@ -71,10 +69,11 @@ export class ErpPermisosRemuneracionesService {
     if (this.permisosFinosState() !== null) return;
     if (this.cargaPermisosFinosPromise) return this.cargaPermisosFinosPromise;
 
+    const generacion = this.generacionSesion();
     this.cargaPermisosFinosPromise = (async () => {
       try {
         const { data, error } = await this.supabase.rpc('obtener_perfil_acceso_actual');
-        if (error) return;
+        if (error || generacion !== this.generacionSesion()) return;
         const perfil = (data ?? [])[0];
         if (perfil) {
           this.permisosFinosState.set(normalizarPermisosFinos(perfil.permisos));
