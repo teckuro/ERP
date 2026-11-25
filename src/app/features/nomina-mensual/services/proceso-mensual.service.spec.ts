@@ -13,6 +13,7 @@ import type {
   ParametrosGeneralesClienteConfig,
 } from '../../parametros-generales/models/parametro-general.model';
 import { ParametrosGeneralesService } from '../../parametros-generales/services/parametros-generales.service';
+import type { MovimientoNomina } from '../models/movimiento-nomina.models';
 
 import { EntradasMensualesPeriodoService } from '../entradas/services/entradas-mensuales-periodo.service';
 import { LiquidacionesOficialesRepository } from '../../liquidaciones-oficiales/data-access/liquidaciones-oficiales.repository';
@@ -658,6 +659,92 @@ describe('ProcesoMensualService', () => {
     expect(r.liquidaciones[0].baseImponiblePrevisional).toBe(50100);
     expect(r.liquidaciones[0].impuestoUnico).toBe(0);
     expect(r.liquidaciones[0].liquidoAPago).toBe(r.liquidaciones[0].totalHaberes - r.liquidaciones[0].totalDescuentos);
+  });
+
+  it('suma al cálculo los movimientos manuales de la nómina (paso Movimientos)', async () => {
+    empleados.listar.mockResolvedValue([
+      { id: 1, estado: 'activo', aptoParaRemuneraciones: true, idContrato: 10, estadoFicha: 'VALIDO' },
+    ]);
+    const movimientoManual = {
+      id: 'mov-1',
+      nominaPeriodoId: 'nom-1',
+      trabajadorId: '1',
+      conceptoId: 99,
+      tipo: 'HORAS_EXTRAS',
+      categoria: 'haber',
+      monto: 50000,
+      cantidad: null,
+      unidad: null,
+      origen: 'manual',
+      estado: 'aplicado',
+      glosa: 'Horas extra',
+    } as unknown as MovimientoNomina;
+    const svc = TestBed.inject(ProcesoMensualService);
+
+    const sinMovimiento = await svc.generarCalculoPeriodo('2026-05', [1], { nominaPeriodoId: 'nom-1' });
+    const conMovimiento = await svc.generarCalculoPeriodo('2026-05', [1], {
+      nominaPeriodoId: 'nom-1',
+      movimientosNomina: [movimientoManual],
+    });
+
+    expect(conMovimiento.liquidaciones[0].totalHaberes - sinMovimiento.liquidaciones[0].totalHaberes).toBe(50000);
+  });
+
+  it('no duplica: ignora movimientos recurrentes y manuales iguales a una novedad existente', async () => {
+    empleados.listar.mockResolvedValue([
+      { id: 1, estado: 'activo', aptoParaRemuneraciones: true, idContrato: 10, estadoFicha: 'VALIDO' },
+    ]);
+    entradasMensuales.listarEntradasPeriodo.mockResolvedValue([
+      {
+        idEntrada: 'novedad:1',
+        origen: 'novedad_mensual',
+        origenId: 1,
+        idPersona: 1,
+        idContrato: 10,
+        idConcepto: 99,
+        periodo: '2026-05',
+        tipoEntrada: 'haber',
+        categoria: 'haber_variable',
+        tipoMovimiento: 'haber',
+        cantidad: null,
+        unidad: null,
+        monto: 50000,
+        moneda: 'CLP',
+        estado: 'aprobada',
+        fechaEvento: null,
+        observacion: null,
+        referenciaExterna: null,
+        requiereRevision: false,
+        bloqueaProceso: false,
+        warnings: [],
+        metadata: { origenTecnico: 'novedad_remuneracion_periodo' },
+      },
+    ]);
+    const base = {
+      nominaPeriodoId: 'nom-1',
+      trabajadorId: '1',
+      conceptoId: 99,
+      tipo: 'BONO',
+      categoria: 'haber',
+      monto: 50000,
+      cantidad: null,
+      unidad: null,
+      estado: 'aplicado',
+      glosa: null,
+    };
+    const movimientos = [
+      { ...base, id: 'mov-rec', origen: 'recurrente' },
+      { ...base, id: 'mov-dup', origen: 'manual' },
+    ] as unknown as MovimientoNomina[];
+    const svc = TestBed.inject(ProcesoMensualService);
+
+    const sin = await svc.generarCalculoPeriodo('2026-05', [1], { nominaPeriodoId: 'nom-1' });
+    const con = await svc.generarCalculoPeriodo('2026-05', [1], {
+      nominaPeriodoId: 'nom-1',
+      movimientosNomina: movimientos,
+    });
+
+    expect(con.liquidaciones[0].totalHaberes).toBe(sin.liquidaciones[0].totalHaberes);
   });
 
   it('guarda snapshot preliminar desde calculo en memoria sin cerrar periodo', async () => {

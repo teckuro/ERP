@@ -258,8 +258,11 @@ export class ProcesoMensualService {
     // F09: con nómina el resultado en memoria se aísla por nominaPeriodoId
     // (dos nóminas del mismo mes no comparten cache de cálculo).
     const claveCache = opciones.nominaPeriodoId ?? p;
+    // movimientosNomina: manuales del paso Movimientos y recurrentes omitidos
+    // (antes no llegaban al armado del input y no afectaban el cálculo).
     const input = await this.construirInputMotorPeriodo(p, trabajadorIds, {
       nominaPeriodoId: opciones.nominaPeriodoId,
+      movimientosNomina: opciones.movimientosNomina,
     });
     const resultado = generarCalculoPreliminarPeriodo(input, new Date().toISOString());
     this.calculosPorPeriodo.set(claveCache, resultado);
