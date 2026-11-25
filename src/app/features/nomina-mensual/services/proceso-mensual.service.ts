@@ -30,6 +30,7 @@ import { aplicarMovimientosNominaAlMotor } from '../rules/nomina-movimientos-mot
 import type { EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
 import { LiquidacionesOficialesRepository } from '../../liquidaciones-oficiales/data-access/liquidaciones-oficiales.repository';
 import { limpiarAlCambiarUsuario } from '../../../core/auth/limpiar-al-cambiar-usuario';
+import type { EmpleadoFichaDetalle } from '../../empleados/models/empleado-listado.model';
 import { EmpresaActivaService } from '../../../core/services/empresa-activa.service';
 import {
   EmpresasRepository,
@@ -257,7 +258,9 @@ export class ProcesoMensualService {
     // F09: con nómina el resultado en memoria se aísla por nominaPeriodoId
     // (dos nóminas del mismo mes no comparten cache de cálculo).
     const claveCache = opciones.nominaPeriodoId ?? p;
-    const input = await this.construirInputMotorPeriodo(p, trabajadorIds);
+    const input = await this.construirInputMotorPeriodo(p, trabajadorIds, {
+      nominaPeriodoId: opciones.nominaPeriodoId,
+    });
     const resultado = generarCalculoPreliminarPeriodo(input, new Date().toISOString());
     this.calculosPorPeriodo.set(claveCache, resultado);
     this.insumosCalculoPorPeriodo.set(claveCache, {
@@ -276,7 +279,9 @@ export class ProcesoMensualService {
   ): Promise<MotorCalculoPeriodoResultado> {
     const p = periodo.trim();
     const claveCache = opciones.nominaPeriodoId ?? p;
-    const input = await this.construirInputMotorPeriodo(p, trabajadorIds);
+    const input = await this.construirInputMotorPeriodo(p, trabajadorIds, {
+      nominaPeriodoId: opciones.nominaPeriodoId,
+    });
     const resultado = generarCalculoAnticipoPeriodo({
       periodo: p,
       reglaAnticipo,
@@ -1114,7 +1119,10 @@ export class ProcesoMensualService {
     const aptos = empleadosListado.filter(
       (e) => evaluarAptitudOperativaNominaTrabajador(e, entradasPorPersona.get(e.id) ?? []).listoParaNomina,
     ).filter((e) => !alcance || alcance.has(e.id));
-    const fichas = await Promise.all(aptos.map((e) => this.empleados.obtenerPorId(e.id)));
+    const fichas = await this.cargarFichasCalculo(
+      aptos.map((e) => e.id),
+      opciones.nominaPeriodoId ?? null,
+    );
     const trabajadores = fichas.filter((f): f is NonNullable<typeof f> => f != null).map(trabajadorSnapshotDesdeFicha);
 
     let recurrentesFiltrados = alcance
@@ -1151,6 +1159,30 @@ export class ProcesoMensualService {
       entradasMensuales: construirEntradasMensualesMotor(entradasPeriodo),
       empresaLey16744: resolveEmpresaMutualSnapshot(empresaRow, periodo),
     };
+  }
+
+  /**
+   * NOM-INSUMOS-01: con nómina, congela los insumos de ficha de su dotación en una
+   * sola llamada y los usa (queda registro de con qué datos se calculó). Los
+   * trabajadores que no vengan congelados, o si congelar falla (p. ej. perfil sin
+   * escritura), se leen en vivo como antes. Respeta el orden de `idsPersona`.
+   */
+  private async cargarFichasCalculo(
+    idsPersona: readonly number[],
+    nominaPeriodoId: string | null,
+  ): Promise<(EmpleadoFichaDetalle | null)[]> {
+    let congeladas = new Map<number, EmpleadoFichaDetalle>();
+    if (nominaPeriodoId && idsPersona.length > 0) {
+      try {
+        const fichas = await this.empleados.congelarFichasNomina(nominaPeriodoId);
+        congeladas = new Map(fichas.map((ficha) => [ficha.id, ficha]));
+      } catch {
+        congeladas = new Map();
+      }
+    }
+    return Promise.all(
+      idsPersona.map((id) => congeladas.get(id) ?? this.empleados.obtenerPorId(id)),
+    );
   }
 
   /**

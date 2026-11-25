@@ -3208,6 +3208,57 @@ export type Database = {
           },
         ]
       }
+      nomina_insumo_trabajador: {
+        Row: {
+          congelado_at: string
+          congelado_by: string | null
+          datos: Json
+          huella: string
+          id: number
+          id_contrato: number | null
+          id_empresa: number
+          id_nomina_periodo: string
+          id_persona: number
+        }
+        Insert: {
+          congelado_at?: string
+          congelado_by?: string | null
+          datos: Json
+          huella: string
+          id?: never
+          id_contrato?: number | null
+          id_empresa: number
+          id_nomina_periodo: string
+          id_persona: number
+        }
+        Update: {
+          congelado_at?: string
+          congelado_by?: string | null
+          datos?: Json
+          huella?: string
+          id?: never
+          id_contrato?: number | null
+          id_empresa?: number
+          id_nomina_periodo?: string
+          id_persona?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_insumo_trabajador_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+          {
+            foreignKeyName: "nomina_insumo_trabajador_id_nomina_periodo_fkey"
+            columns: ["id_nomina_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_periodo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       nomina_liquidacion_concepto: {
         Row: {
           base: number | null
@@ -6827,6 +6878,13 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      congelar_insumos_nomina: {
+        Args: { p_nomina_periodo_id: string }
+        Returns: {
+          datos: Json
+          id_persona: number
+        }[]
       }
       confirmar_creacion_nomina: {
         Args: {

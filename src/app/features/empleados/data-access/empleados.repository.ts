@@ -107,6 +107,60 @@ interface CentroCostoLookupRow {
   centro_costo: Pick<CentroCostoRow, 'nombre'> | null;
 }
 
+interface CondicionTrabajadorRow {
+  codigo: string | null;
+  vigencia_inicio: string | null;
+  vigencia_fin: string | null;
+  respaldo_registrado: boolean | null;
+  observacion: string | null;
+}
+
+/** Filas con que se arma una ficha (último registro de cada bloque del contrato). */
+interface FilasFichaEmpleado {
+  persona: PersonaRow;
+  contrato: ContratoRow | null;
+  cuentaBancaria: CuentaBancariaRow | null;
+  remuneracion: RemuneracionRow | null;
+  prevision: PrevisionRow | null;
+  salud: SaludTrabajadorRow | null;
+  centroCosto: { id_centro_costo: number | null } | null;
+  semanaCorrida: SemanaCorridaRow | null;
+  zonaExtrema: ZonaExtremaRow | null;
+  apv: ApvRow | null;
+  cuenta2: Cuenta2AfpRow | null;
+  condiciones: CondicionTrabajadorPersistida[];
+}
+
+/** `nomina_insumo_trabajador.datos` (ver migración NOM-INSUMOS-01). */
+interface InsumoFichaCongelado {
+  resumen: PersonaFactorRow | null;
+  departamento: string | null;
+  persona: PersonaRow | null;
+  contrato: ContratoRow | null;
+  cuenta_bancaria: CuentaBancariaRow | null;
+  remuneracion: RemuneracionRow | null;
+  prevision: PrevisionRow | null;
+  salud_trabajador: SaludTrabajadorRow | null;
+  contrato_centro_costo: { id_centro_costo: number | null } | null;
+  semana_corrida: SemanaCorridaRow | null;
+  zona_extrema: ZonaExtremaRow | null;
+  apv: ApvRow | null;
+  cuenta2_afp: Cuenta2AfpRow | null;
+  condiciones: CondicionTrabajadorRow[] | null;
+}
+
+function mapCondicionesPersistidas(rows: CondicionTrabajadorRow[]): CondicionTrabajadorPersistida[] {
+  return rows
+    .map((row) => ({
+      codigo: row.codigo ?? '',
+      vigenciaInicio: row.vigencia_inicio,
+      vigenciaFin: row.vigencia_fin,
+      respaldoRegistrado: row.respaldo_registrado === true,
+      observacion: row.observacion,
+    }))
+    .filter((row) => row.codigo.length > 0);
+}
+
 export { EmpleadoReferenciaInvalidaError, EmpleadoRutDuplicadoError };
 
 @Injectable({
@@ -1336,28 +1390,117 @@ export class EmpleadosRepository {
         ])
       : [null, null, null, null, null, null, null, null, [], await this.obtenerHistorialFicha(resumen.id)];
 
+    return this.construirFichaDetalle(
+      resumen,
+      {
+        persona: personaResult.data,
+        contrato,
+        cuentaBancaria: cuentaResult.data,
+        remuneracion: remuneracion as RemuneracionRow | null,
+        prevision: prevision as PrevisionRow | null,
+        salud: salud as SaludTrabajadorRow | null,
+        centroCosto: centroCosto as { id_centro_costo: number | null } | null,
+        semanaCorrida: semanaCorrida as SemanaCorridaRow | null,
+        zonaExtrema: zonaExtrema as ZonaExtremaRow | null,
+        apv: apv as ApvRow | null,
+        cuenta2: cuenta2 as Cuenta2AfpRow | null,
+        condiciones: condicionesTrabajador as CondicionTrabajadorPersistida[],
+      },
+      historial,
+    );
+  }
+
+  /** Arma la ficha desde sus filas. Lo comparten la lectura en vivo y los insumos congelados. */
+  private construirFichaDetalle(
+    resumen: EmpleadoListado,
+    filas: FilasFichaEmpleado,
+    historial: EmpleadoFichaDetalle['historial'],
+  ): EmpleadoFichaDetalle {
     const sinDefaultsLecturaBorrador = resumen.pasoAltaAvanzada !== null;
 
     return {
       ...resumen,
-      idContrato: contratoId,
+      idContrato: filas.contrato?.id_contrato ?? null,
       historial,
       formValue: this.mapFichaFormValue(
-        personaResult.data,
-        contrato,
-        remuneracion as RemuneracionRow | null,
-        prevision as PrevisionRow | null,
-        salud as SaludTrabajadorRow | null,
-        cuentaResult.data,
-        centroCosto as { id_centro_costo: number | null } | null,
-        semanaCorrida as SemanaCorridaRow | null,
-        zonaExtrema as ZonaExtremaRow | null,
-        apv as ApvRow | null,
-        cuenta2 as Cuenta2AfpRow | null,
-        condicionesTrabajador as CondicionTrabajadorPersistida[],
+        filas.persona,
+        filas.contrato,
+        filas.remuneracion,
+        filas.prevision,
+        filas.salud,
+        filas.cuentaBancaria,
+        filas.centroCosto,
+        filas.semanaCorrida,
+        filas.zonaExtrema,
+        filas.apv,
+        filas.cuenta2,
+        filas.condiciones,
         { sinDefaultsLecturaBorrador },
       ),
     };
+  }
+
+  /**
+   * NOM-INSUMOS-01: congela en la base los insumos de ficha de la dotación de la
+   * nómina (RPC `congelar_insumos_nomina`) y devuelve las fichas armadas con ellos.
+   * Una llamada en lugar de ~16 consultas por trabajador. `historial` queda vacío:
+   * no forma parte de los insumos del cálculo.
+   */
+  async congelarFichasNomina(nominaPeriodoId: string): Promise<EmpleadoFichaDetalle[]> {
+    const { data, error } = await this.supabase.rpc('congelar_insumos_nomina', {
+      p_nomina_periodo_id: nominaPeriodoId,
+    });
+
+    if (error) {
+      throw buildRepositoryError(
+        'No fue posible congelar los datos de los trabajadores de la nómina.',
+        error.message,
+      );
+    }
+
+    return (data ?? []).flatMap((fila) => {
+      const ficha = this.fichaDesdeInsumoCongelado(fila.datos as unknown as InsumoFichaCongelado);
+      return ficha ? [ficha] : [];
+    });
+  }
+
+  private fichaDesdeInsumoCongelado(datos: InsumoFichaCongelado | null): EmpleadoFichaDetalle | null {
+    if (!datos?.persona || typeof datos.resumen?.id_persona !== 'number') {
+      return null;
+    }
+
+    const departamentos = new Map<number, string>();
+    if (typeof datos.resumen.id_contrato === 'number' && datos.departamento) {
+      departamentos.set(datos.resumen.id_contrato, datos.departamento);
+    }
+
+    const pasoAltaAvanzada = datos.persona.paso_alta_avanzada;
+    const resumen = mapPersonaFactorToEmpleado(
+      {
+        ...(datos.resumen as PersonaFactorRow & { id_persona: number }),
+        paso_alta_avanzada: typeof pasoAltaAvanzada === 'number' ? pasoAltaAvanzada : null,
+      },
+      departamentos,
+    );
+
+    return this.construirFichaDetalle(
+      resumen,
+      {
+        persona: datos.persona,
+        contrato: datos.contrato,
+        cuentaBancaria: datos.cuenta_bancaria,
+        remuneracion: datos.remuneracion,
+        prevision: datos.prevision,
+        salud: datos.salud_trabajador,
+        centroCosto: datos.contrato_centro_costo,
+        semanaCorrida: datos.semana_corrida,
+        zonaExtrema: datos.zona_extrema,
+        apv: datos.apv,
+        cuenta2: datos.cuenta2_afp,
+        condiciones: mapCondicionesPersistidas(datos.condiciones ?? []),
+      },
+      [],
+    );
   }
 
 
@@ -1512,15 +1655,12 @@ export class EmpleadosRepository {
       ),
     );
 
-    return typedRows
-      .map((row) => ({
-        codigo: codeById.get(row.id_tipo_condicion_trabajador) ?? '',
-        vigenciaInicio: row.vigencia_inicio,
-        vigenciaFin: row.vigencia_fin,
-        respaldoRegistrado: row.respaldo_registrado === true,
-        observacion: row.observacion,
-      }))
-      .filter((row) => row.codigo.length > 0);
+    return mapCondicionesPersistidas(
+      typedRows.map((row) => ({
+        ...row,
+        codigo: codeById.get(row.id_tipo_condicion_trabajador) ?? null,
+      })),
+    );
   }
 
   private mapCondicionesTrabajadorFormValue(

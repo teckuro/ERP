@@ -38,6 +38,11 @@ export class EmpleadosService {
     return this.empleadosRepository.obtenerPorId(id);
   }
 
+  /** Congela los insumos de ficha de la dotación de la nómina y devuelve las fichas. */
+  congelarFichasNomina(nominaPeriodoId: string): Promise<EmpleadoFichaDetalle[]> {
+    return this.empleadosRepository.congelarFichasNomina(nominaPeriodoId);
+  }
+
   obtenerPerfilLaboralPersona(
     idPersona: number,
     periodoYm: string,
