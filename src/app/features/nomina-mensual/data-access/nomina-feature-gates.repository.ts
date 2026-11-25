@@ -1,15 +1,9 @@
 import { Injectable } from '@angular/core';
 
-import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
+import { lanzarSiErrorSupabase } from '../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import type { NominaFeatureGates } from '../models/nomina-feature-gates.models';
 import { NOMINA_FEATURE_GATES_APAGADOS } from '../models/nomina-feature-gates.models';
-
-function throwIfError(error: { message: string } | null, contexto: string): void {
-  if (error) {
-    lanzarErrorSupabaseRepositorio(error, contexto);
-  }
-}
 
 @Injectable({ providedIn: 'root' })
 export class NominaFeatureGatesRepository {
@@ -18,7 +12,7 @@ export class NominaFeatureGatesRepository {
   async obtener(): Promise<NominaFeatureGates> {
     const { data, error } = await this.supabase.rpc('obtener_feature_gates_nomina');
     if (error) {
-      throwIfError(error, 'obtenerFeatureGatesNomina');
+      lanzarSiErrorSupabase(error, 'obtenerFeatureGatesNomina');
     }
     return mapFeatureGates(data);
   }

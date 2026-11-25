@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
+import { lanzarSiErrorSupabase } from '../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import {
   parseResultadoAplicarConsolidaciones,
@@ -13,10 +13,6 @@ import type {
   ResultadoAplicarConsolidaciones,
 } from '../models/nomina-consolidacion.models';
 
-function throwIfError(error: { message: string } | null, context: string): void {
-  if (error) lanzarErrorSupabaseRepositorio(error, context);
-}
-
 @Injectable({ providedIn: 'root' })
 export class NominaConsolidacionRepository {
   private readonly supabase = injectSupabase();
@@ -25,7 +21,7 @@ export class NominaConsolidacionRepository {
     const { data, error } = await this.supabase.rpc('registrar_consolidacion_calculo', {
       p_id_nomina_origen: nominaOrigenId,
     });
-    throwIfError(error, 'registrarConsolidacionCalculo');
+    lanzarSiErrorSupabase(error, 'registrarConsolidacionCalculo');
     return data ? rowToNominaConsolidacion(data) : null;
   }
 
@@ -33,7 +29,7 @@ export class NominaConsolidacionRepository {
     const { data, error } = await this.supabase.rpc('listar_consolidaciones_pendientes', {
       p_id_nomina_destino: nominaDestinoId,
     });
-    throwIfError(error, 'listarConsolidacionesPendientes');
+    lanzarSiErrorSupabase(error, 'listarConsolidacionesPendientes');
     return (data ?? []).map(rowToNominaConsolidacion);
   }
 
@@ -42,7 +38,7 @@ export class NominaConsolidacionRepository {
       p_id_consolidacion: consolidacionId,
       p_id_nomina_destino: nominaDestinoId,
     });
-    throwIfError(error, 'vincularConsolidacion');
+    lanzarSiErrorSupabase(error, 'vincularConsolidacion');
     if (!data) throw new Error('vincularConsolidacion: la BD no retornó la consolidación.');
     return rowToNominaConsolidacion(data);
   }
@@ -51,7 +47,7 @@ export class NominaConsolidacionRepository {
     const { data, error } = await this.supabase.rpc('desvincular_consolidacion_nomina', {
       p_id_consolidacion: consolidacionId,
     });
-    throwIfError(error, 'desvincularConsolidacion');
+    lanzarSiErrorSupabase(error, 'desvincularConsolidacion');
     if (!data) throw new Error('desvincularConsolidacion: la BD no retornó la consolidación.');
     return rowToNominaConsolidacion(data);
   }
@@ -60,7 +56,7 @@ export class NominaConsolidacionRepository {
     const { data, error } = await this.supabase.rpc('aplicar_consolidaciones_nomina', {
       p_id_nomina_destino: nominaDestinoId,
     });
-    throwIfError(error, 'aplicarConsolidaciones');
+    lanzarSiErrorSupabase(error, 'aplicarConsolidaciones');
     return parseResultadoAplicarConsolidaciones(data);
   }
 
@@ -68,7 +64,7 @@ export class NominaConsolidacionRepository {
     const { data, error } = await this.supabase.rpc('listar_liquidaciones_nomina', {
       p_id_nomina_periodo: nominaPeriodoId,
     });
-    throwIfError(error, 'listarLiquidacionesNomina');
+    lanzarSiErrorSupabase(error, 'listarLiquidacionesNomina');
     return (data ?? []).map(rowToNominaLiquidacionResumen);
   }
 
@@ -80,7 +76,7 @@ export class NominaConsolidacionRepository {
       p_id_nomina_periodo: nominaPeriodoId,
       p_motivo: motivo,
     });
-    throwIfError(error, 'invalidarLiquidacionesPorReapertura');
+    lanzarSiErrorSupabase(error, 'invalidarLiquidacionesPorReapertura');
     return Number(data ?? 0);
   }
 
@@ -88,7 +84,7 @@ export class NominaConsolidacionRepository {
     const { data, error } = await this.supabase.rpc('generar_liquidaciones_nomina', {
       p_id_nomina_periodo: nominaPeriodoId,
     });
-    throwIfError(error, 'generarLiquidacionesNomina');
+    lanzarSiErrorSupabase(error, 'generarLiquidacionesNomina');
     if (!data) throw new Error('generarLiquidacionesNomina: la BD no retornó la liquidación.');
     return rowToNominaLiquidacionResumen(data);
   }

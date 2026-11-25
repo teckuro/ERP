@@ -1,5 +1,14 @@
 /** Mensaje RRHH para errores de red/Supabase sin exponer JSON crudo. */
 export function mensajeErrorSupabaseParaUsuario(error: unknown, contexto = 'la operación'): string {
+  const contextoLimpio = contexto.replace(/\.\s*$/, '').trim() || 'la operación';
+  return (
+    mensajeErrorSupabaseConocido(error, contextoLimpio) ??
+    `No se pudo ${contextoLimpio}. Intente de nuevo o contacte a soporte.`
+  );
+}
+
+/** Mensaje RRHH si el error es un caso reconocido (RLS, sesión, red, entorno…); `null` si no. */
+export function mensajeErrorSupabaseConocido(error: unknown, contexto = 'la operación'): string | null {
   const texto = extraerTextoError(error);
   const contextoLimpio = contexto.replace(/\.\s*$/, '').trim() || 'la operación';
 
@@ -73,7 +82,7 @@ export function mensajeErrorSupabaseParaUsuario(error: unknown, contexto = 'la o
     return 'No hay conexión con el servidor. Compruebe su red e intente de nuevo.';
   }
 
-  return `No se pudo ${contextoLimpio}. Intente de nuevo o contacte a soporte.`;
+  return null;
 }
 
 /**
@@ -92,7 +101,14 @@ export function lanzarErrorSupabaseRepositorio(error: unknown, contexto: string)
   throw new Error(mensajeErrorSupabaseParaUsuario(error, contexto));
 }
 
-function esMensajeTecnico(texto: string): boolean {
+/** Atajo para `if (error) lanzarErrorSupabaseRepositorio(...)` tras una consulta Supabase. */
+export function lanzarSiErrorSupabase(error: unknown, contexto: string): void {
+  if (error) {
+    lanzarErrorSupabaseRepositorio(error, contexto);
+  }
+}
+
+export function esMensajeTecnico(texto: string): boolean {
   return /PGRST\d+|42P01|42703|could not find|relation |column |violates |duplicate key|syntax error|permission denied|42501|jwt|session|not authenticated|failed to fetch|network|timeout/i.test(
     texto,
   );
