@@ -170,15 +170,15 @@ export function calcularTrabajador(args: {
     const montoRed = redondear(monto);
     switch (clasificada.clase) {
       case 'HABER_IMPONIBLE':
-        haberesImponibles.push({ codigo: clasificada.codigo, descripcion: clasificada.descripcion, monto: montoRed, origen: 'entrada_mensual', imponible: true, tributable: clasificada.tributable });
+        haberesImponibles.push({ codigo: clasificada.codigo, descripcion: clasificada.descripcion, monto: montoRed, origen: 'entrada_mensual', codigoLre: clasificada.codigoLre ?? null, imponible: true, tributable: clasificada.tributable });
         pushTraza(trazabilidad, 'ENTRADA_HABER_IMPONIBLE', 'entrada_mensual', 'novedad', clasificada.codigo, montoRed, 'suma haber imponible', montoRed, periodoEntrada, null);
         break;
       case 'HABER_NO_IMPONIBLE':
-        haberesNoImponibles.push({ codigo: clasificada.codigo, descripcion: clasificada.descripcion, monto: montoRed, origen: 'entrada_mensual', imponible: false, tributable: clasificada.tributable });
+        haberesNoImponibles.push({ codigo: clasificada.codigo, descripcion: clasificada.descripcion, monto: montoRed, origen: 'entrada_mensual', codigoLre: clasificada.codigoLre ?? null, imponible: false, tributable: clasificada.tributable });
         pushTraza(trazabilidad, 'ENTRADA_HABER_NO_IMPONIBLE', 'entrada_mensual', 'novedad', clasificada.codigo, montoRed, 'suma haber no imponible', montoRed, periodoEntrada, null);
         break;
       case 'DESCUENTO_LEGAL':
-        descuentosLegales.push({ codigo: clasificada.codigo, descripcion: clasificada.descripcion, monto: montoRed, origen: 'entrada_mensual' });
+        descuentosLegales.push({ codigo: clasificada.codigo, descripcion: clasificada.descripcion, monto: montoRed, origen: 'entrada_mensual', codigoLre: clasificada.codigoLre ?? null });
         pushTraza(trazabilidad, 'ENTRADA_DESCUENTO_LEGAL', 'entrada_mensual', 'novedad', clasificada.codigo, montoRed, 'descuento legal informado', montoRed, periodoEntrada, null);
         break;
       case 'ANTICIPO':
@@ -188,7 +188,7 @@ export function calcularTrabajador(args: {
         break;
       case 'DESCUENTO_VOLUNTARIO':
       default:
-        descuentosVoluntarios.push({ codigo: clasificada.codigo, descripcion: clasificada.descripcion, monto: montoRed, origen: 'entrada_mensual' });
+        descuentosVoluntarios.push({ codigo: clasificada.codigo, descripcion: clasificada.descripcion, monto: montoRed, origen: 'entrada_mensual', codigoLre: clasificada.codigoLre ?? null });
         pushTraza(trazabilidad, 'ENTRADA_DESCUENTO_VOLUNTARIO', 'entrada_mensual', 'novedad', clasificada.codigo, montoRed, 'descuento voluntario informado', montoRed, periodoEntrada, null);
         break;
     }
