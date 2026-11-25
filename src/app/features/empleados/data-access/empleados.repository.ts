@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 import { Tables, TablesUpdate } from '../../../core/models/database.types';
+import { EmpresaActivaService } from '../../../core/services/empresa-activa.service';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import { ESTADO_CIVIL_OPTIONS } from '../catalogs/estado-civil.options';
 import { TIPO_GRATIFICACION_OPTIONS } from '../catalogs/tipo-gratificacion.options';
@@ -113,6 +114,7 @@ export { EmpleadoReferenciaInvalidaError, EmpleadoRutDuplicadoError };
 })
 export class EmpleadosRepository {
   private readonly supabase = injectSupabase();
+  private readonly empresaActiva = inject(EmpresaActivaService);
 
   async obtenerCatalogosFormulario(): Promise<EmpleadoFormCatalogos> {
     const [
@@ -621,23 +623,21 @@ export class EmpleadosRepository {
     return (data ?? []).map((row) => row.id_persona);
   }
 
+  /**
+   * Empresa a la que se asocia un contrato nuevo: la empresa activa de la sesión.
+   * Antes tomaba la primera empresa visible (`order + limit(1)`), correcto solo
+   * mientras la RLS limite a una empresa por usuario.
+   */
   async obtenerEmpresaIdParaContrato(): Promise<number> {
-    const { data, error } = await this.supabase
-      .from('empresa')
-      .select('id_empresa')
-      .order('id_empresa', { ascending: true })
-      .limit(1)
-      .maybeSingle();
-
-    if (error || !data) {
+    const empresa = await this.empresaActiva.asegurarCargada();
+    if (!empresa) {
       throw buildRepositoryError(
         'No se encontro una empresa configurada para crear contratos.',
-        error?.message ??
-          'La tabla empresa no devolvio registros visibles para la clave publica de Supabase.',
+        this.empresaActiva.motivoSinEmpresa() ?? undefined,
       );
     }
 
-    return data.id_empresa;
+    return empresa.idEmpresa;
   }
 
   async insertarPersona(payload: CrearEmpleadoPayload, rut: RutParts): Promise<number> {
