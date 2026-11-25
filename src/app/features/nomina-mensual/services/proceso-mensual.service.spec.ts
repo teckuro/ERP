@@ -14,6 +14,8 @@ import type {
 } from '../../parametros-generales/models/parametro-general.model';
 import { ParametrosGeneralesService } from '../../parametros-generales/services/parametros-generales.service';
 import type { MovimientoNomina } from '../models/movimiento-nomina.models';
+import type { HaberDescuentoAsignacionPrevalidacionMensualFila } from '../../haberes-descuentos/models/haber-descuento-asignacion.model';
+import { normalizarEntradaRecurrente } from '../entradas/rules/entradas-mensuales-periodo.rules';
 
 import { EntradasMensualesPeriodoService } from '../entradas/services/entradas-mensuales-periodo.service';
 import { LiquidacionesOficialesRepository } from '../../liquidaciones-oficiales/data-access/liquidaciones-oficiales.repository';
@@ -659,6 +661,50 @@ describe('ProcesoMensualService', () => {
     expect(r.liquidaciones[0].baseImponiblePrevisional).toBe(50100);
     expect(r.liquidaciones[0].impuestoUnico).toBe(0);
     expect(r.liquidaciones[0].liquidoAPago).toBe(r.liquidaciones[0].totalHaberes - r.liquidaciones[0].totalDescuentos);
+  });
+
+  it('cuenta una sola vez un haber recurrente (llega como asignación y como entrada mensual)', async () => {
+    empleados.listar.mockResolvedValue([
+      { id: 1, estado: 'activo', aptoParaRemuneraciones: true, idContrato: 10, estadoFicha: 'VALIDO' },
+    ]);
+    const svc = TestBed.inject(ProcesoMensualService);
+    const sin = await svc.generarCalculoPeriodo('2026-05', [1]);
+
+    const fila = {
+      asignacion: {
+        idAsignacion: 1,
+        idPersona: 1,
+        idConcepto: 5,
+        idContrato: 10,
+        codigoConcepto: 'MOVILIZACION',
+        nombreConcepto: 'Movilización',
+        tipoConcepto: 'HABER',
+        naturalezaConcepto: 'NO_IMPONIBLE',
+        codigoLre: null,
+        esSistemaConcepto: false,
+        calculoAutomaticoConcepto: false,
+        imponible: false,
+        tributable: false,
+        monto: 20000,
+        porcentaje: null,
+        tipoValor: 'FIJO',
+        tipohaber: 'NO_IMPONIBLE',
+        periodicidad: 'MENSUAL',
+        vigenciaInicio: '2026-05-01',
+        vigenciaFin: null,
+        observacion: null,
+        estado: true,
+      },
+      estadoVigencia: 'VIGENTE',
+      intersectaPeriodo: true,
+    } as unknown as HaberDescuentoAsignacionPrevalidacionMensualFila;
+    // Igual que en la app: la misma asignación llega por haberes y por entradas mensuales.
+    haberes.listarAsignacionesParaPrevalidacionMensual.mockResolvedValue([fila]);
+    entradasMensuales.listarEntradasPeriodo.mockResolvedValue([normalizarEntradaRecurrente(fila, '2026-05')]);
+
+    const con = await svc.generarCalculoPeriodo('2026-05', [1]);
+
+    expect(con.liquidaciones[0].totalHaberes - sin.liquidaciones[0].totalHaberes).toBe(20000);
   });
 
   it('suma al cálculo los movimientos manuales de la nómina (paso Movimientos)', async () => {
