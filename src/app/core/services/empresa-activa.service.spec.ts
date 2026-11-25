@@ -70,12 +70,20 @@ describe('EmpresaActivaService', () => {
     expect(service.resolverIdEmpresaDesdeJwt()).toBe(42);
   });
 
-  it('resuelve id_empresa desde user_metadata cuando no hay app_metadata', () => {
+  it('ignora user_metadata.id_empresa (SEC-07: lo edita el propio usuario)', () => {
     const service = crear({
       app_metadata: {},
+      user_metadata: { id_empresa: 99, idEmpresa: 99 },
+    } as Partial<User>);
+    expect(service.resolverIdEmpresaDesdeJwt()).toBeNull();
+  });
+
+  it('app_metadata manda aunque user_metadata traiga otra empresa', () => {
+    const service = crear({
+      app_metadata: { id_empresa: 7 },
       user_metadata: { id_empresa: 99 },
     } as Partial<User>);
-    expect(service.resolverIdEmpresaDesdeJwt()).toBe(99);
+    expect(service.resolverIdEmpresaDesdeJwt()).toBe(7);
   });
 
   it('retorna null cuando el usuario no está logueado', () => {

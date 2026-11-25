@@ -4,7 +4,7 @@
  * Creado en `NOM-REBUILD-NOMINA-MENSUAL-01` (F3a, 2026-06-04).
  *
  * Estrategia de resolución (BKL-07):
- * 1. JWT (`app_metadata.id_empresa` o `user_metadata.id_empresa`) — obligatorio
+ * 1. JWT (`app_metadata.id_empresa`, SEC-07) — obligatorio
  *    para cargar empresa; consistente con `current_user_empresa_id()` en RLS.
  * 2. Sin `id_empresa` en el JWT: no se consulta BD ni se elige la primera
  *    empresa del tenant (evita filtraciones cross-empresa en sesiones mal configuradas).
@@ -66,19 +66,17 @@ export class EmpresaActivaService {
     }
   }
 
-  /** Lee `id_empresa` desde el JWT (sin red). Retorna `null` si no está. */
+  /**
+   * Lee `app_metadata.id_empresa` del JWT (sin red). Retorna `null` si no está.
+   * SEC-07: igual que `current_user_empresa_id()` en la base; `user_metadata` lo
+   * edita el propio usuario y nunca define la empresa.
+   */
   resolverIdEmpresaDesdeJwt(): number | null {
     const usuario = this.auth.currentUser();
     if (!usuario) return null;
 
     const appMeta = (usuario.app_metadata ?? {}) as Record<string, unknown>;
-    const userMeta = (usuario.user_metadata ?? {}) as Record<string, unknown>;
-
-    const raw =
-      appMeta['id_empresa'] ??
-      appMeta['idEmpresa'] ??
-      userMeta['id_empresa'] ??
-      userMeta['idEmpresa'];
+    const raw = appMeta['id_empresa'];
 
     if (raw == null) return null;
     const parsed = typeof raw === 'string' ? Number(raw) : Number(raw);
