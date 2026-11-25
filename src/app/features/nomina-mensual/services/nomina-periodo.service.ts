@@ -21,14 +21,9 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 
 import { ErpPermisosRemuneracionesService } from '../../../core/auth/erp-permisos-remuneraciones.service';
-import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
 import { EmpresaActivaService } from '../../../core/services/empresa-activa.service';
-import { injectSupabase } from '../../../core/services/supabase.service';
-import { NominaPeriodoRepository } from '../data-access/nomina-periodo.repository';
+import { NominaPeriodoRepository, type PersonaResumenRow } from '../data-access/nomina-periodo.repository';
 import { NominaConsolidacionRepository } from '../data-access/nomina-consolidacion.repository';
-import type { Database } from '../../../core/models/database.types';
-
-type NominaPeriodoUpdate = Database['public']['Tables']['nomina_periodo']['Update'];
 import type {
   DetalleTrabajadorNomina,
   DotacionResumenNomina,
@@ -110,21 +105,11 @@ export interface ReabrirNominaPayload {
   motivo: string;
 }
 
-interface PersonaResumenRow {
-  id_persona: number;
-  rut: string;
-  dv: string;
-  nombres: string;
-  apellido_paterno: string;
-  apellido_materno: string | null;
-}
-
 @Injectable({ providedIn: 'root' })
 export class NominaPeriodoService {
   private readonly repo = inject(NominaPeriodoRepository);
   private readonly consolidacionRepo = inject(NominaConsolidacionRepository);
   private readonly empresaActiva = inject(EmpresaActivaService);
-  private readonly supabase = injectSupabase();
   private readonly empleados = inject(EmpleadosService);
   /** F08: validación de conceptos del catálogo (misma regla que HD/MV). */
   private readonly haberesDescuentos = inject(HaberesDescuentosService);
@@ -254,18 +239,7 @@ export class NominaPeriodoService {
     cambios: { fechaPago?: string | null; estado?: EstadoNomina },
   ): Promise<void> {
     this.permisosRemuneraciones.exigirPermisoEscrituraNomina();
-    const update: NominaPeriodoUpdate = {};
-    if (cambios.fechaPago !== undefined) update.fecha_pago = cambios.fechaPago;
-    if (cambios.estado !== undefined) update.estado = cambios.estado;
-    if (Object.keys(update).length === 0) return;
-
-    const { error } = await this.supabase
-      .from('nomina_periodo')
-      .update(update)
-      .eq('id', nominaPeriodoId);
-    if (error) {
-      lanzarErrorSupabaseRepositorio(error, 'guardar los parámetros de la nómina');
-    }
+    await this.repo.actualizarParametros(nominaPeriodoId, cambios);
   }
 
   async cerrarNomina(nominaPeriodoId: string, payload: CerrarNominaPayload = {}): Promise<void> {
@@ -1545,18 +1519,14 @@ export class NominaPeriodoService {
     trabajadorIds: string[],
   ): Promise<Map<string, PersonaResumenRow>> {
     if (trabajadorIds.length === 0) return new Map();
-    const ids = trabajadorIds.map(Number);
-    const { data, error } = await this.supabase
-      .from('persona')
-      .select('id_persona, rut, dv, nombres, apellido_paterno, apellido_materno')
-      .in('id_persona', ids);
-
-    if (error || !data) return new Map();
-    const map = new Map<string, PersonaResumenRow>();
-    for (const p of data) {
-      map.set(String(p.id_persona), p as PersonaResumenRow);
+    let personas: PersonaResumenRow[];
+    try {
+      personas = await this.repo.listarPersonasResumidas(trabajadorIds.map(Number));
+    } catch {
+      // Sin datos de persona las etiquetas degradan al id; no bloquea la nómina.
+      return new Map();
     }
-    return map;
+    return new Map(personas.map((p) => [String(p.id_persona), p]));
   }
 
   private armarNombreCompleto(p: PersonaResumenRow): string {

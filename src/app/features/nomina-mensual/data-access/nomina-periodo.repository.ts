@@ -108,6 +108,15 @@ export interface TransicionNominaPayload {
   totalLiquido?: number;
 }
 
+export interface PersonaResumenRow {
+  id_persona: number;
+  rut: string;
+  dv: string;
+  nombres: string;
+  apellido_paterno: string;
+  apellido_materno: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class NominaPeriodoRepository {
   private readonly supabase = injectSupabase();
@@ -314,6 +323,30 @@ export class NominaPeriodoRepository {
 
     const { error } = await this.supabase.from('nomina_periodo').update(update).eq('id', id);
     lanzarSiErrorSupabase(error, 'actualizarTotales');
+  }
+
+  async actualizarParametros(
+    id: string,
+    cambios: { fechaPago?: string | null; estado?: EstadoNomina },
+  ): Promise<void> {
+    const update: NominaPeriodoUpdate = {};
+    if (cambios.fechaPago !== undefined) update.fecha_pago = cambios.fechaPago;
+    if (cambios.estado !== undefined) update.estado = cambios.estado;
+    if (Object.keys(update).length === 0) return;
+
+    const { error } = await this.supabase.from('nomina_periodo').update(update).eq('id', id);
+    lanzarSiErrorSupabase(error, 'guardar los parámetros de la nómina');
+  }
+
+  /** RUT y nombre de las personas indicadas (para etiquetas de trabajadores en la nómina). */
+  async listarPersonasResumidas(idsPersona: number[]): Promise<PersonaResumenRow[]> {
+    if (idsPersona.length === 0) return [];
+    const { data, error } = await this.supabase
+      .from('persona')
+      .select('id_persona, rut, dv, nombres, apellido_paterno, apellido_materno')
+      .in('id_persona', idsPersona);
+    lanzarSiErrorSupabase(error, 'consultar los datos de los trabajadores');
+    return data ?? [];
   }
 
   /**

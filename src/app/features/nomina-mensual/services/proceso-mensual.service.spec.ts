@@ -1,7 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { EmpresaActivaService } from '../../../core/services/empresa-activa.service';
 import { SUPABASE_CLIENT } from '../../../core/services/supabase.service';
+import { EmpresasRepository } from '../../empresas/data-access/empresas.repository';
 import { EmpleadosService } from '../../empleados/services/empleados.service';
 import { HaberesDescuentosService } from '../../haberes-descuentos/services/haberes-descuentos.service';
 import { MovimientosVariablesService } from '../../movimientos-variables/services/movimientos-variables.service';
@@ -184,6 +186,8 @@ describe('ProcesoMensualService', () => {
     obtenerActivo: ReturnType<typeof vi.fn>;
     cerrar: ReturnType<typeof vi.fn>;
   };
+  let empresas: { obtenerDatosLey16744: ReturnType<typeof vi.fn> };
+  let empresaActiva: { asegurarCargada: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     parametros = {
@@ -282,23 +286,17 @@ describe('ProcesoMensualService', () => {
       cerrar: vi.fn().mockResolvedValue(undefined),
     };
 
-    const supabaseFrom = vi.fn().mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        order: vi.fn().mockReturnValue({
-          limit: vi.fn().mockReturnValue({
-            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-          }),
-        }),
-      }),
-    });
+    empresas = { obtenerDatosLey16744: vi.fn().mockResolvedValue(null) };
+    empresaActiva = { asegurarCargada: vi.fn().mockResolvedValue({ idEmpresa: 7 }) };
 
     TestBed.configureTestingModule({
       providers: [
         ProcesoMensualService,
+        { provide: EmpresasRepository, useValue: empresas },
+        { provide: EmpresaActivaService, useValue: empresaActiva },
         {
           provide: SUPABASE_CLIENT,
           useValue: {
-            from: supabaseFrom,
             auth: {
               getUser: vi.fn().mockResolvedValue({
                 data: { user: { id: 'test-user', email: 'rrhh@test.cl' } },
@@ -543,6 +541,22 @@ describe('ProcesoMensualService', () => {
     expect(r.liquidaciones.length).toBe(2);
     expect(r.resumen.totalTrabajadoresCalculados).toBe(2);
     expect(svc.obtenerResultadoCalculoPeriodo('2026-05')).toBe(r);
+  });
+
+  it('lee la mutual (Ley 16.744) de la empresa activa, no la primera visible', async () => {
+    const svc = TestBed.inject(ProcesoMensualService);
+    await svc.generarCalculoPeriodo('2026-05');
+
+    expect(empresas.obtenerDatosLey16744).toHaveBeenCalledWith(7);
+  });
+
+  it('no bloquea el cálculo si falla la lectura de la mutual', async () => {
+    empresas.obtenerDatosLey16744.mockRejectedValueOnce(new Error('red'));
+    const svc = TestBed.inject(ProcesoMensualService);
+
+    const r = await svc.generarCalculoPeriodo('2026-05');
+
+    expect(r.liquidaciones.length).toBe(2);
   });
 
   it('construye calculo desde entradas canonicas sin alterar resultados legales en MOTOR-04', async () => {
