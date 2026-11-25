@@ -284,3 +284,40 @@ export function construirEntradasMensualesMotor(
 ): EntradaMensualMotor[] {
   return entradas.filter(entradaMensualAptaParaMotor).map(mapEntradaMensualMotor);
 }
+
+/** Clasificación tributaria de un concepto del catálogo de haberes y descuentos. */
+export interface ClasificacionConcepto {
+  idConcepto: number;
+  naturaleza: string | null;
+  imponible: boolean;
+  tributable: boolean;
+}
+
+/**
+ * Completa `metadata.imponible` / `metadata.tributable` de las entradas (novedades y
+ * movimientos manuales de la nómina) desde el catálogo de conceptos. Sin esto,
+ * `resolverImponible` cae en su fallback "imponible" aunque el concepto sea no
+ * imponible (colación, movilización, viáticos…) e infla la base de cotizaciones e
+ * impuesto. Mismo criterio que los haberes recurrentes: imponible si el concepto lo
+ * marca o su naturaleza es IMPONIBLE. Una entrada que ya trae la bandera no se toca.
+ */
+export function aplicarClasificacionConceptos(
+  entradas: readonly EntradaMensualPeriodo[],
+  conceptos: readonly ClasificacionConcepto[],
+): EntradaMensualPeriodo[] {
+  if (conceptos.length === 0) return [...entradas];
+  const porId = new Map(conceptos.map((concepto) => [concepto.idConcepto, concepto]));
+
+  return entradas.map((entrada) => {
+    const concepto = porId.get(entrada.idConcepto);
+    if (!concepto) return entrada;
+
+    const metadata = entrada.metadata ?? {};
+    const imponible =
+      leerBandera(metadata['imponible']) ??
+      (concepto.imponible === true || up(concepto.naturaleza) === 'IMPONIBLE');
+    const tributable = leerBandera(metadata['tributable']) ?? concepto.tributable === true;
+
+    return { ...entrada, metadata: { ...metadata, imponible, tributable } };
+  });
+}
