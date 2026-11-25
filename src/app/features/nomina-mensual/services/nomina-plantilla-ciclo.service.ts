@@ -17,6 +17,8 @@
 
 import { Injectable, computed, inject, signal } from '@angular/core';
 
+import { limpiarAlCambiarUsuario } from '../../../core/auth/limpiar-al-cambiar-usuario';
+
 import {
   type ListarPlantillasFiltro,
   NominaPlantillaCicloRepository,
@@ -39,6 +41,14 @@ export class NominaPlantillaCicloService {
   readonly plantillas = this._plantillas.asReadonly();
   readonly cargando = this._cargando.asReadonly();
   readonly error = this._error.asReadonly();
+
+  constructor() {
+    limpiarAlCambiarUsuario(() => {
+      this._plantillas.set([]);
+      this._cargando.set(false);
+      this._error.set(null);
+    });
+  }
   readonly plantillasActivas = computed(() =>
     this._plantillas().filter((p) => p.activo),
   );

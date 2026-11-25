@@ -29,6 +29,7 @@ import type { MovimientoNomina } from '../models/movimiento-nomina.models';
 import { aplicarMovimientosNominaAlMotor } from '../rules/nomina-movimientos-motor.rules';
 import type { EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
 import { LiquidacionesOficialesRepository } from '../../liquidaciones-oficiales/data-access/liquidaciones-oficiales.repository';
+import { limpiarAlCambiarUsuario } from '../../../core/auth/limpiar-al-cambiar-usuario';
 import { EmpresaActivaService } from '../../../core/services/empresa-activa.service';
 import {
   EmpresasRepository,
@@ -114,6 +115,14 @@ export class ProcesoMensualService {
     parametrosPeriodo: ParametroGeneral | null;
     entradasMensuales: EntradaMensualMotor[];
   }>();
+
+  constructor() {
+    // Cálculos en memoria por periodo: pertenecen a la empresa de la sesión.
+    limpiarAlCambiarUsuario(() => {
+      this.calculosPorPeriodo.clear();
+      this.insumosCalculoPorPeriodo.clear();
+    });
+  }
 
   /**
    * Orquesta lecturas y devuelve prevalidacion. No calcula remuneraciones ni liquidaciones.

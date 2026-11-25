@@ -1,5 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 
+import { limpiarAlCambiarUsuario } from '../../../core/auth/limpiar-al-cambiar-usuario';
+
 import { NominaFeatureGatesRepository } from '../data-access/nomina-feature-gates.repository';
 import {
   NOMINA_FEATURE_GATES_APAGADOS,
@@ -14,6 +16,11 @@ export class NominaFeatureGatesService {
 
   private readonly _gates = signal<NominaFeatureGates>(NOMINA_FEATURE_GATES_APAGADOS);
   readonly gates = this._gates.asReadonly();
+
+  constructor() {
+    // Los tipos de nómina habilitados dependen de la empresa de la sesión.
+    limpiarAlCambiarUsuario(() => this._gates.set(NOMINA_FEATURE_GATES_APAGADOS));
+  }
 
   async cargar(): Promise<NominaFeatureGates> {
     try {
