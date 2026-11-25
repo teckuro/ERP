@@ -13,6 +13,17 @@ import {
 import type { EmpresaDetalle, EmpresaFormPayload, EmpresaListadoFila, OrganismoMutualCatalogo } from '../models/empresa.model';
 
 type EmpresaRow = Database['public']['Tables']['empresa']['Row'];
+
+/** Datos de mutual (Ley 16.744) que usa el motor de cálculo de nómina. */
+export type EmpresaLey16744Datos = Pick<
+  EmpresaRow,
+  | 'id_empresa'
+  | 'aplica_ley_16744'
+  | 'id_organismo_administrador_ley_16744'
+  | 'tasa_adicional_diferenciada'
+  | 'vigencia_inicio'
+  | 'vigencia_fin'
+>;
 type OrganismoMutualRow = {
   id_organismo_administrador_ley_16744: number;
   codigo: string;
@@ -24,6 +35,21 @@ type OrganismoMutualRow = {
 @Injectable({ providedIn: 'root' })
 export class EmpresasRepository {
   private readonly supabase = injectSupabase();
+
+  async obtenerDatosLey16744(idEmpresa: number): Promise<EmpresaLey16744Datos | null> {
+    const { data, error } = await this.supabase
+      .from('empresa')
+      .select(
+        'id_empresa, aplica_ley_16744, id_organismo_administrador_ley_16744, tasa_adicional_diferenciada, vigencia_inicio, vigencia_fin',
+      )
+      .eq('id_empresa', idEmpresa)
+      .maybeSingle();
+
+    if (error) {
+      lanzarErrorSupabaseRepositorio(error, 'consultar los datos de mutual de la empresa');
+    }
+    return data;
+  }
 
   async listar(): Promise<EmpresaListadoFila[]> {
     const { data, error } = await this.supabase

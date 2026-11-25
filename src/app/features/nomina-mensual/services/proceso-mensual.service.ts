@@ -28,6 +28,11 @@ import type { MovimientoNomina } from '../models/movimiento-nomina.models';
 import { aplicarMovimientosNominaAlMotor } from '../rules/nomina-movimientos-motor.rules';
 import type { EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
 import { LiquidacionesOficialesRepository } from '../../liquidaciones-oficiales/data-access/liquidaciones-oficiales.repository';
+import { EmpresaActivaService } from '../../../core/services/empresa-activa.service';
+import {
+  EmpresasRepository,
+  type EmpresaLey16744Datos,
+} from '../../empresas/data-access/empresas.repository';
 import { EntradasMensualesPeriodoService } from '../entradas/services/entradas-mensuales-periodo.service';
 import { validarPeriodoEntradaMensual } from '../entradas/rules/entradas-mensuales-periodo.rules';
 import {
@@ -101,6 +106,8 @@ export class ProcesoMensualService {
   private readonly snapshots = inject(NominaCalculoSnapshotRepository);
   private readonly diagnosticoPeriodo = inject(NominaPeriodoDiagnosticoRepository);
   private readonly liquidaciones = inject(LiquidacionesOficialesRepository);
+  private readonly empresas = inject(EmpresasRepository);
+  private readonly empresaActiva = inject(EmpresaActivaService);
   private readonly calculosPorPeriodo = new Map<string, MotorCalculoPeriodoResultado>();
   /** Insumos congelables del ultimo calculo por periodo (parametros y entradas) para auditoria/hashes. */
   private readonly insumosCalculoPorPeriodo = new Map<string, {
@@ -1086,15 +1093,7 @@ export class ProcesoMensualService {
       this.empleados.listar(),
       this.haberesDescuentos.listarAsignacionesParaPrevalidacionMensual(periodo),
     ]);
-    const { data: empresaRow, error: empresaError } = await this.supabase
-      .from('empresa')
-      .select('id_empresa, aplica_ley_16744, id_organismo_administrador_ley_16744, tasa_adicional_diferenciada, vigencia_inicio, vigencia_fin')
-      .order('id_empresa', { ascending: true })
-      .limit(1)
-      .maybeSingle();
-    if (empresaError) {
-      // No bloquea: la tasa adicional es un ajuste empleador no crítico para el flujo preliminar.
-    }
+    const empresaRow = await this.cargarEmpresaLey16744();
     const preNomina = construirPreNominaPeriodo(prevalidacion, new Date().toISOString());
     const entradasPorPersona = new Map<number, EntradaMensualPeriodo[]>();
     for (const entrada of asArray(prevalidacion.entradasMensuales)) {
@@ -1143,6 +1142,19 @@ export class ProcesoMensualService {
       entradasMensuales: construirEntradasMensualesMotor(entradasPeriodo),
       empresaLey16744: resolveEmpresaMutualSnapshot(empresaRow, periodo),
     };
+  }
+
+  /**
+   * Datos de mutual de la empresa activa (antes: la primera empresa visible por RLS).
+   * No bloquea: la tasa adicional es un ajuste empleador no crítico para el flujo preliminar.
+   */
+  private async cargarEmpresaLey16744(): Promise<EmpresaLey16744Datos | null> {
+    try {
+      const empresa = await this.empresaActiva.asegurarCargada();
+      return empresa ? await this.empresas.obtenerDatosLey16744(empresa.idEmpresa) : null;
+    } catch {
+      return null;
+    }
   }
 
   private async resolverUsuarioActual() {
