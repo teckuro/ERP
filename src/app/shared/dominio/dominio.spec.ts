@@ -1,4 +1,4 @@
-import { formatearClp } from './moneda';
+import { formatearClp, formatearClpDecimal } from './moneda';
 import { esPeriodoRemuneracionValido } from './periodo';
 
 describe('esPeriodoRemuneracionValido', () => {
@@ -22,5 +22,12 @@ describe('formatearClp', () => {
 
   it('redondea los decimales', () => {
     expect(formatearClp(999.6)).toBe('$1.000');
+  });
+});
+
+describe('formatearClpDecimal', () => {
+  it('muestra los decimales pedidos con el mismo símbolo', () => {
+    expect(formatearClpDecimal(38123.456)).toBe('$38.123,46');
+    expect(formatearClpDecimal(1.5, 3)).toBe('$1,500');
   });
 });

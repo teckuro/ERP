@@ -1,4 +1,5 @@
 import type { DataGridColumn } from '../../../shared/components/ui/data-grid';
+import { formatearClp, formatearClpDecimal } from '../../../shared/dominio/moneda';
 import type {
   AfpParametro,
   ApvApvcFormaPago,
@@ -100,19 +101,12 @@ function numeroDesdeDesconocido(value: unknown): number | null {
 
 export function formatoMontoGridParametros(value: unknown): string {
   const numberValue = numeroDesdeDesconocido(value);
-  return numberValue === null
-    ? '—'
-    : `$ ${new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(numberValue)}`;
+  return numberValue === null ? '—' : formatearClp(numberValue);
 }
 
 export function formatoMontoDecimalGridParametros(value: unknown, digits = 2): string {
   const numberValue = numeroDesdeDesconocido(value);
-  return numberValue === null
-    ? '—'
-    : `$ ${new Intl.NumberFormat('es-CL', {
-        minimumFractionDigits: digits,
-        maximumFractionDigits: digits,
-      }).format(numberValue)}`;
+  return numberValue === null ? '—' : formatearClpDecimal(numberValue, digits);
 }
 
 export function formatoDecimalGridParametros(value: unknown, digits = 2): string {
