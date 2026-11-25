@@ -1,4 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
+
+import { limpiarAlCambiarUsuario } from './limpiar-al-cambiar-usuario';
 import type { User } from '@supabase/supabase-js';
 
 import { injectSupabase } from '../services/supabase.service';
@@ -40,6 +42,14 @@ export class ErpPermisosRemuneracionesService {
   /** Ajustes finos del perfil asignado (`perfil_acceso.permisos`); null = solo rol base. */
   private readonly permisosFinosState = signal<PermisosFinosPerfil | null>(null);
   private cargaPermisosFinosPromise: Promise<void> | null = null;
+
+  constructor() {
+    // Los ajustes finos son del perfil del usuario: no se heredan entre sesiones.
+    limpiarAlCambiarUsuario(() => {
+      this.permisosFinosState.set(null);
+      this.cargaPermisosFinosPromise = null;
+    });
+  }
 
   readonly rol = computed<RolRemuneracionesLogico>(() =>
     resolverRolRemuneracionesDesdeUser(this.auth.currentUser()),

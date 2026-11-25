@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { provideAuthStub } from '../../../core/auth/testing/auth.stub';
 import { NominaPlantillaCicloRepository } from '../data-access/nomina-plantilla-ciclo.repository';
 import { NominaPlantillaCicloService } from './nomina-plantilla-ciclo.service';
 import type {
@@ -34,6 +35,7 @@ const PLANTILLA_INACTIVA: NominaPlantillaCiclo = {
 
 function configurar(): {
   service: NominaPlantillaCicloService;
+  usuario: ReturnType<typeof provideAuthStub>['usuario'];
   repo: {
     listar: ReturnType<typeof vi.fn>;
     obtenerPorId: ReturnType<typeof vi.fn>;
@@ -55,18 +57,32 @@ function configurar(): {
     previsualizarCortes: vi.fn().mockResolvedValue([] as PreviewCorte[]),
     crearVersion: vi.fn().mockResolvedValue('nuevo-id'),
   };
+  const auth = provideAuthStub();
   TestBed.configureTestingModule({
     providers: [
       { provide: NominaPlantillaCicloRepository, useValue: repo },
+      auth.provider,
       NominaPlantillaCicloService,
     ],
   });
-  return { service: TestBed.inject(NominaPlantillaCicloService), repo };
+  return { service: TestBed.inject(NominaPlantillaCicloService), repo, usuario: auth.usuario };
 }
 
 describe('NominaPlantillaCicloService', () => {
   beforeEach(() => {
     TestBed.resetTestingModule();
+  });
+
+  it('vacía las plantillas de la sesión anterior al cerrar sesión', async () => {
+    const { service, usuario } = configurar();
+    TestBed.tick();
+    await service.refrescar();
+    expect(service.plantillas().length).toBe(1);
+
+    usuario.set(null);
+    TestBed.tick();
+
+    expect(service.plantillas()).toEqual([]);
   });
 
   it('refrescar pobla el signal plantillas y resetea error', async () => {

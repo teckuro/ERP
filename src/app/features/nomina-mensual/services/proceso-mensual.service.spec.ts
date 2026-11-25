@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { provideAuthStub } from '../../../core/auth/testing/auth.stub';
 import { EmpresaActivaService } from '../../../core/services/empresa-activa.service';
 import { SUPABASE_CLIENT } from '../../../core/services/supabase.service';
 import { EmpresasRepository } from '../../empresas/data-access/empresas.repository';
@@ -292,6 +293,7 @@ describe('ProcesoMensualService', () => {
     TestBed.configureTestingModule({
       providers: [
         ProcesoMensualService,
+        provideAuthStub().provider,
         { provide: EmpresasRepository, useValue: empresas },
         { provide: EmpresaActivaService, useValue: empresaActiva },
         {

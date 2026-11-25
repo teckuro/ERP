@@ -8,6 +8,7 @@
 
 import { inject, Injectable } from '@angular/core';
 
+import { limpiarAlCambiarUsuario } from '../auth/limpiar-al-cambiar-usuario';
 import { EmpresaActivaService } from './empresa-activa.service';
 import { injectSupabase } from './supabase.service';
 
@@ -36,6 +37,11 @@ export class DocumentoLiquidacionService {
   private readonly empresaActiva = inject(EmpresaActivaService);
 
   private cache: DocumentoLiquidacionEmpresa | null = null;
+
+  constructor() {
+    // Razón social, RUT y logo impresos en la liquidación: nunca de la sesión anterior.
+    limpiarAlCambiarUsuario(() => this.limpiar());
+  }
 
   /**
    * Arma el bloque de empresa del documento. `fallbackNombre` cubre el caso

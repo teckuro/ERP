@@ -16,6 +16,8 @@
 
 import { computed, inject, Injectable, signal } from '@angular/core';
 
+import { limpiarAlCambiarUsuario } from '../auth/limpiar-al-cambiar-usuario';
+
 import { AuthService } from '../auth/auth.service';
 import { injectSupabase } from './supabase.service';
 
@@ -44,6 +46,10 @@ export class EmpresaActivaService {
     this.state()?.nombre ?? this.state()?.razonSocial ?? null,
   );
   readonly isLoading = computed(() => this.loadingState());
+
+  constructor() {
+    limpiarAlCambiarUsuario(() => this.limpiar());
+  }
 
   /**
    * Asegura que la empresa activa esté cargada. Múltiples llamadas concurrentes
