@@ -1,3 +1,5 @@
+import { mensajeErrorSupabaseConocido } from '../../../core/errors/erp-supabase-user-message';
+
 export interface SupabaseWriteError {
   code?: string;
   message?: string;
@@ -21,8 +23,14 @@ export class EmpleadoReferenciaInvalidaError extends Error {
   }
 }
 
+/**
+ * `message`: texto de negocio del repositorio (p. ej. 'No fue posible cargar las comunas.').
+ * `details`: `error.message` crudo de Supabase/Postgres. Nunca se muestra tal cual: solo se agrega
+ * su versión humanizada cuando es un caso conocido (RLS/solo consulta, sesión, red, entorno).
+ */
 export function buildRepositoryError(message: string, details?: string): Error {
-  return new Error(details ? `${message} ${details}` : message);
+  const causa = details ? mensajeErrorSupabaseConocido({ message: details }) : null;
+  return new Error(causa ? `${message} ${causa}` : message);
 }
 
 export function isUniqueConstraintError(

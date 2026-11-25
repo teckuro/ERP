@@ -19,7 +19,7 @@
 
 import { Injectable } from '@angular/core';
 
-import { lanzarErrorSupabaseRepositorio } from '../../../core/errors/erp-supabase-user-message';
+import { lanzarSiErrorSupabase } from '../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import type { Json } from '../../../core/models/database.types';
 import type {
@@ -33,12 +33,6 @@ import {
   rowToNominaPlantillaCiclo,
   rowToPreviewCorte,
 } from '../mappers/nomina-plantilla-ciclo.mapper';
-
-function throwIfError(error: { message: string } | null, contexto: string): void {
-  if (error) {
-    lanzarErrorSupabaseRepositorio(error, contexto);
-  }
-}
 
 export interface ListarPlantillasFiltro {
   readonly soloActivas?: boolean;
@@ -64,7 +58,7 @@ export class NominaPlantillaCicloRepository {
     }
 
     const { data, error } = await query;
-    throwIfError(error, 'listarPlantillasCiclo');
+    lanzarSiErrorSupabase(error, 'listarPlantillasCiclo');
     return (data ?? []).map(rowToNominaPlantillaCiclo);
   }
 
@@ -74,7 +68,7 @@ export class NominaPlantillaCicloRepository {
       .select('*')
       .eq('id', plantillaId)
       .maybeSingle();
-    throwIfError(error, 'obtenerPlantillaPorId');
+    lanzarSiErrorSupabase(error, 'obtenerPlantillaPorId');
     return data ? rowToNominaPlantillaCiclo(data) : null;
   }
 
@@ -85,7 +79,7 @@ export class NominaPlantillaCicloRepository {
       .insert(insert)
       .select('*')
       .single();
-    throwIfError(error, 'crearPlantillaNueva');
+    lanzarSiErrorSupabase(error, 'crearPlantillaNueva');
     if (!data) {
       throw new Error('crearPlantillaNueva: insert no devolvió fila');
     }
@@ -97,7 +91,7 @@ export class NominaPlantillaCicloRepository {
       .from('nomina_plantilla_ciclo')
       .update({ activo: false })
       .eq('id', plantillaId);
-    throwIfError(error, 'desactivarPlantilla');
+    lanzarSiErrorSupabase(error, 'desactivarPlantilla');
   }
 
   async reactivar(plantillaId: string): Promise<void> {
@@ -105,7 +99,7 @@ export class NominaPlantillaCicloRepository {
       .from('nomina_plantilla_ciclo')
       .update({ activo: true })
       .eq('id', plantillaId);
-    throwIfError(error, 'reactivarPlantilla');
+    lanzarSiErrorSupabase(error, 'reactivarPlantilla');
   }
 
   async eliminarInactiva(plantillaId: string): Promise<void> {
@@ -114,7 +108,7 @@ export class NominaPlantillaCicloRepository {
       .from('nomina_plantilla_ciclo')
       .delete()
       .eq('id', plantillaId);
-    throwIfError(error, 'eliminarPlantillaInactiva');
+    lanzarSiErrorSupabase(error, 'eliminarPlantillaInactiva');
   }
 
   async previsualizarCortes(
@@ -131,7 +125,7 @@ export class NominaPlantillaCicloRepository {
     }
 
     const { data, error } = await this.supabase.rpc('previsualizar_cortes_plantilla', args);
-    throwIfError(error, 'previsualizarCortesPlantilla');
+    lanzarSiErrorSupabase(error, 'previsualizarCortesPlantilla');
     return (data ?? []).map(rowToPreviewCorte);
   }
 
@@ -162,7 +156,7 @@ export class NominaPlantillaCicloRepository {
     if (payload.activar !== undefined) args.p_activar = payload.activar;
 
     const { data, error } = await this.supabase.rpc('crear_version_plantilla', args);
-    throwIfError(error, 'crearVersionPlantilla');
+    lanzarSiErrorSupabase(error, 'crearVersionPlantilla');
     if (!data) {
       throw new Error('crearVersionPlantilla: RPC no devolvió id');
     }

@@ -16,7 +16,7 @@
 
 import { Injectable } from '@angular/core';
 
-import { lanzarErrorSupabaseRepositorio, mensajeErrorParaUsuario } from '../../../core/errors/erp-supabase-user-message';
+import { lanzarSiErrorSupabase, mensajeErrorParaUsuario } from '../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import type {
   EstadoNomina,
@@ -108,12 +108,6 @@ export interface TransicionNominaPayload {
   totalLiquido?: number;
 }
 
-function throwIfError(error: { message: string } | null, contexto: string): void {
-  if (error) {
-    lanzarErrorSupabaseRepositorio(error, contexto);
-  }
-}
-
 @Injectable({ providedIn: 'root' })
 export class NominaPeriodoRepository {
   private readonly supabase = injectSupabase();
@@ -130,7 +124,7 @@ export class NominaPeriodoRepository {
       .order('periodo', { ascending: false })
       .order('created_at', { ascending: false });
 
-    throwIfError(error, 'listarResumenes');
+    lanzarSiErrorSupabase(error, 'listarResumenes');
     return (data ?? []).map((row) => rowToNominaPeriodoResumen(row));
   }
 
@@ -141,7 +135,7 @@ export class NominaPeriodoRepository {
       .eq('id', id)
       .maybeSingle();
 
-    throwIfError(error, 'obtenerCabecera');
+    lanzarSiErrorSupabase(error, 'obtenerCabecera');
     return data ? rowToNominaPeriodoResumen(data) : null;
   }
 
@@ -167,11 +161,11 @@ export class NominaPeriodoRepository {
 
     const [cab, seg, mov, inc] = await Promise.all([cabPromise, segPromise, movPromise, incPromise]);
 
-    throwIfError(cab.error, 'obtenerNominaCompleta.cabecera');
+    lanzarSiErrorSupabase(cab.error, 'obtenerNominaCompleta.cabecera');
     if (!cab.data) return null;
-    throwIfError(seg.error, 'obtenerNominaCompleta.segmentos');
-    throwIfError(mov.error, 'obtenerNominaCompleta.movimientos');
-    throwIfError(inc.error, 'obtenerNominaCompleta.incidencias');
+    lanzarSiErrorSupabase(seg.error, 'obtenerNominaCompleta.segmentos');
+    lanzarSiErrorSupabase(mov.error, 'obtenerNominaCompleta.movimientos');
+    lanzarSiErrorSupabase(inc.error, 'obtenerNominaCompleta.incidencias');
 
     return ensamblarNominaPeriodo({
       cabecera: cab.data,
@@ -193,7 +187,7 @@ export class NominaPeriodoRepository {
       p_tipo: request.tipo,
       p_codigo_ciclo: request.codigoCiclo ?? undefined,
     });
-    throwIfError(error, 'previsualizarCreacion');
+    lanzarSiErrorSupabase(error, 'previsualizarCreacion');
     return mapNominaCreatePreview(data);
   }
 
@@ -211,7 +205,7 @@ export class NominaPeriodoRepository {
       p_fingerprint: request.fingerprint,
       p_codigo_ciclo: request.codigoCiclo ?? undefined,
     });
-    throwIfError(error, 'confirmarCreacion');
+    lanzarSiErrorSupabase(error, 'confirmarCreacion');
     return mapConfirmarCreacionResultado(data);
   }
 
@@ -225,7 +219,7 @@ export class NominaPeriodoRepository {
       p_trabajador_ids: args.trabajadorIds?.length ? args.trabajadorIds : undefined,
       p_motivo: args.motivo ?? undefined,
     });
-    throwIfError(error, 'previsualizarRectificacion');
+    lanzarSiErrorSupabase(error, 'previsualizarRectificacion');
     return mapRectificacionPreview(data);
   }
 
@@ -238,7 +232,7 @@ export class NominaPeriodoRepository {
       p_motivo: request.motivo,
       p_trabajador_ids: request.trabajadorIds?.length ? request.trabajadorIds : undefined,
     });
-    throwIfError(error, 'confirmarRectificacion');
+    lanzarSiErrorSupabase(error, 'confirmarRectificacion');
     return mapConfirmarRectificacionResultado(data);
   }
 
@@ -258,7 +252,7 @@ export class NominaPeriodoRepository {
       p_total_liquido: payload.totalLiquido ?? undefined,
       p_version_estado_esperada: payload.versionEstadoEsperada,
     });
-    throwIfError(error, 'transicionarEstado');
+    lanzarSiErrorSupabase(error, 'transicionarEstado');
     if (!data) {
       throw new Error('transicionarEstado: BD no retornó la nómina actualizada');
     }
@@ -275,7 +269,7 @@ export class NominaPeriodoRepository {
       p_nomina_id: id,
       p_paso: paso,
     });
-    throwIfError(error, 'actualizarUltimoPasoVisitado');
+    lanzarSiErrorSupabase(error, 'actualizarUltimoPasoVisitado');
   }
 
   /**
@@ -288,7 +282,7 @@ export class NominaPeriodoRepository {
       p_nomina_id: id,
       p_paso: paso,
     });
-    throwIfError(error, 'actualizarMaximoPasoCompletado');
+    lanzarSiErrorSupabase(error, 'actualizarMaximoPasoCompletado');
   }
 
   async invalidarCalculo(id: string): Promise<void> {
@@ -301,7 +295,7 @@ export class NominaPeriodoRepository {
         aprobado_at: null,
       })
       .eq('id', id);
-    throwIfError(error, 'invalidarCalculo');
+    lanzarSiErrorSupabase(error, 'invalidarCalculo');
   }
 
   async actualizarTotales(id: string, totales: GuardarTotalesPayload): Promise<void> {
@@ -319,7 +313,7 @@ export class NominaPeriodoRepository {
     if (Object.keys(update).length === 0) return;
 
     const { error } = await this.supabase.from('nomina_periodo').update(update).eq('id', id);
-    throwIfError(error, 'actualizarTotales');
+    lanzarSiErrorSupabase(error, 'actualizarTotales');
   }
 
   /**
@@ -376,7 +370,7 @@ export class NominaPeriodoRepository {
       .eq('id_nomina_periodo', nominaPeriodoId)
       .order('ordinal', { ascending: true });
 
-    throwIfError(error, 'listarSegmentos');
+    lanzarSiErrorSupabase(error, 'listarSegmentos');
     return (data ?? []).map(rowToSegmentoNomina);
   }
 
@@ -386,7 +380,7 @@ export class NominaPeriodoRepository {
       .select('*')
       .eq('id', id)
       .maybeSingle();
-    throwIfError(error, 'obtenerSegmento');
+    lanzarSiErrorSupabase(error, 'obtenerSegmento');
     return data ? rowToSegmentoNomina(data) : null;
   }
 
@@ -401,7 +395,7 @@ export class NominaPeriodoRepository {
       .select('*')
       .single();
 
-    throwIfError(error, 'upsertSegmento');
+    lanzarSiErrorSupabase(error, 'upsertSegmento');
     if (!data) {
       throw new Error('upsertSegmento: BD no retornó la fila guardada');
     }
@@ -410,7 +404,7 @@ export class NominaPeriodoRepository {
 
   async eliminarSegmento(id: string): Promise<void> {
     const { error } = await this.supabase.from('segmento_nomina').delete().eq('id', id);
-    throwIfError(error, 'eliminarSegmento');
+    lanzarSiErrorSupabase(error, 'eliminarSegmento');
   }
 
   async listarDotacionPaginada(
@@ -428,7 +422,7 @@ export class NominaPeriodoRepository {
       p_con_incidencias: filtro.conIncidencias ?? undefined,
       p_con_movimientos: filtro.conMovimientos ?? undefined,
     });
-    throwIfError(error, 'listarDotacionPaginada');
+    lanzarSiErrorSupabase(error, 'listarDotacionPaginada');
     const rows = data ?? [];
     return {
       total: Number(rows[0]?.total_count ?? 0),
@@ -463,7 +457,7 @@ export class NominaPeriodoRepository {
       p_con_incidencias: filtro.conIncidencias ?? undefined,
       p_con_movimientos: filtro.conMovimientos ?? undefined,
     });
-    throwIfError(error, 'listarIdsDotacion');
+    lanzarSiErrorSupabase(error, 'listarIdsDotacion');
     return (data ?? []).map((row) => String(row.trabajador_id));
   }
 
@@ -471,7 +465,7 @@ export class NominaPeriodoRepository {
     const { data, error } = await this.supabase.rpc('resumen_dotacion_nomina', {
       p_nomina_id: nominaPeriodoId,
     });
-    throwIfError(error, 'obtenerResumenDotacion');
+    lanzarSiErrorSupabase(error, 'obtenerResumenDotacion');
     const row = (data ?? [])[0];
     return {
       total: Number(row?.total ?? 0),
@@ -505,7 +499,7 @@ export class NominaPeriodoRepository {
       p_solo_disponibles: filtro.soloDisponibles ?? undefined,
       p_solo_en_nomina: filtro.soloEnNomina ?? undefined,
     });
-    throwIfError(error, 'listarTrabajadoresElegiblesNomina');
+    lanzarSiErrorSupabase(error, 'listarTrabajadoresElegiblesNomina');
     const rows = data ?? [];
     return {
       total: Number(rows[0]?.total_count ?? 0),
@@ -526,7 +520,7 @@ export class NominaPeriodoRepository {
     const { data, error } = await this.supabase.rpc('resumen_trabajadores_elegibles_nomina', {
       p_nomina_id: nominaPeriodoId,
     });
-    throwIfError(error, 'obtenerResumenTrabajadoresElegibles');
+    lanzarSiErrorSupabase(error, 'obtenerResumenTrabajadoresElegibles');
     const row = (data ?? [])[0];
     return {
       totalActivos: Number(row?.total_activos ?? 0),
@@ -545,7 +539,7 @@ export class NominaPeriodoRepository {
       .select('*')
       .eq('id_empresa', idEmpresa)
       .order('created_at', { ascending: false });
-    throwIfError(error, 'listarRecurrentes');
+    lanzarSiErrorSupabase(error, 'listarRecurrentes');
     return (data ?? []).map(rowToMovimientoRecurrente);
   }
 
@@ -555,7 +549,7 @@ export class NominaPeriodoRepository {
       .select('*')
       .eq('id_empresa', idEmpresa)
       .eq('estado', 'activo');
-    throwIfError(error, 'listarRecurrentesActivos');
+    lanzarSiErrorSupabase(error, 'listarRecurrentesActivos');
     return (data ?? []).map(rowToMovimientoRecurrente);
   }
 
@@ -568,7 +562,7 @@ export class NominaPeriodoRepository {
       .from('movimiento_nomina')
       .select('*')
       .eq('id_nomina_periodo', nominaPeriodoId);
-    throwIfError(error, 'listarMovimientos');
+    lanzarSiErrorSupabase(error, 'listarMovimientos');
     return (data ?? []).map(rowToMovimientoNomina);
   }
 
@@ -582,7 +576,7 @@ export class NominaPeriodoRepository {
       .select('*')
       .eq('id_nomina_periodo', nominaPeriodoId)
       .eq('id_persona', Number(trabajadorId));
-    throwIfError(error, 'listarMovimientosDeTrabajador');
+    lanzarSiErrorSupabase(error, 'listarMovimientosDeTrabajador');
     return (data ?? []).map(rowToMovimientoNomina);
   }
 
@@ -605,7 +599,7 @@ export class NominaPeriodoRepository {
       p_estado: filtro.estado ?? undefined,
       p_categoria: filtro.categoria ?? undefined,
     });
-    throwIfError(error, 'listarMovimientosTrabajadoresPaginado');
+    lanzarSiErrorSupabase(error, 'listarMovimientosTrabajadoresPaginado');
     const rows = data ?? [];
     return {
       total: Number(rows[0]?.total_count ?? 0),
@@ -637,7 +631,7 @@ export class NominaPeriodoRepository {
     const { data, error } = await this.supabase.rpc('resumen_movimientos_nomina', {
       p_nomina_id: nominaPeriodoId,
     });
-    throwIfError(error, 'obtenerResumenMovimientos');
+    lanzarSiErrorSupabase(error, 'obtenerResumenMovimientos');
     const row = (data ?? [])[0];
     return {
       trabajadoresConMovimientos: Number(row?.trabajadores_con_movimientos ?? 0),
@@ -655,7 +649,7 @@ export class NominaPeriodoRepository {
       .select('*')
       .eq('id', id)
       .maybeSingle();
-    throwIfError(error, 'obtenerMovimiento');
+    lanzarSiErrorSupabase(error, 'obtenerMovimiento');
     return data ? rowToMovimientoNomina(data) : null;
   }
 
@@ -674,7 +668,7 @@ export class NominaPeriodoRepository {
       .insert(inserts)
       .select('*');
 
-    throwIfError(error, 'insertarMovimientos');
+    lanzarSiErrorSupabase(error, 'insertarMovimientos');
     return (data ?? []).map(rowToMovimientoNomina);
   }
 
@@ -686,7 +680,7 @@ export class NominaPeriodoRepository {
       .from('movimiento_nomina')
       .update({ estado })
       .eq('id', id);
-    throwIfError(error, 'actualizarEstadoMovimiento');
+    lanzarSiErrorSupabase(error, 'actualizarEstadoMovimiento');
   }
 
   /**
@@ -699,7 +693,7 @@ export class NominaPeriodoRepository {
       .from('movimiento_nomina')
       .delete()
       .eq('id', id);
-    throwIfError(error, 'eliminarMovimiento');
+    lanzarSiErrorSupabase(error, 'eliminarMovimiento');
   }
 
   // -------------------------------------------------------------------------
@@ -712,7 +706,7 @@ export class NominaPeriodoRepository {
       .select('*')
       .eq('id_nomina_periodo', nominaPeriodoId)
       .eq('estado_decision', 'pendiente');
-    throwIfError(error, 'listarIncidencias');
+    lanzarSiErrorSupabase(error, 'listarIncidencias');
     return (data ?? []).map(rowToIncidenciaNomina);
   }
 
@@ -720,7 +714,7 @@ export class NominaPeriodoRepository {
     const { error } = await this.supabase.rpc('sincronizar_incidencias_nomina', {
       p_nomina_id: nominaPeriodoId,
     });
-    throwIfError(error, 'sincronizarIncidenciasNomina');
+    lanzarSiErrorSupabase(error, 'sincronizarIncidenciasNomina');
   }
 
   async registrarDecisionIncidencia(
@@ -733,7 +727,7 @@ export class NominaPeriodoRepository {
       p_accion: accion,
       p_justificacion: justificacion ?? undefined,
     });
-    throwIfError(error, 'registrarDecisionIncidencia');
+    lanzarSiErrorSupabase(error, 'registrarDecisionIncidencia');
     if (!data) {
       throw new Error('registrarDecisionIncidencia: la BD no retornó la incidencia actualizada.');
     }
@@ -744,14 +738,14 @@ export class NominaPeriodoRepository {
     const { error } = await this.supabase.rpc('validar_nomina', {
       p_nomina_id: nominaPeriodoId,
     });
-    throwIfError(error, 'validarNominaRpc');
+    lanzarSiErrorSupabase(error, 'validarNominaRpc');
   }
 
   async aprobarNominaRpc(nominaPeriodoId: string): Promise<void> {
     const { error } = await this.supabase.rpc('aprobar_nomina', {
       p_nomina_id: nominaPeriodoId,
     });
-    throwIfError(error, 'aprobarNominaRpc');
+    lanzarSiErrorSupabase(error, 'aprobarNominaRpc');
   }
 
   async cerrarNominaRpc(nominaPeriodoId: string, motivo?: string): Promise<void> {
@@ -759,7 +753,7 @@ export class NominaPeriodoRepository {
       p_nomina_id: nominaPeriodoId,
       p_motivo: motivo ?? undefined,
     });
-    throwIfError(error, 'cerrarNominaRpc');
+    lanzarSiErrorSupabase(error, 'cerrarNominaRpc');
   }
 
   async reemplazarIncidencias(
@@ -770,7 +764,7 @@ export class NominaPeriodoRepository {
       .from('incidencia_nomina')
       .delete()
       .eq('id_nomina_periodo', nominaPeriodoId);
-    throwIfError(errDel, 'reemplazarIncidencias.delete');
+    lanzarSiErrorSupabase(errDel, 'reemplazarIncidencias.delete');
 
     if (incidencias.length === 0) return;
 
@@ -778,7 +772,7 @@ export class NominaPeriodoRepository {
       incidenciaNominaToInsert({ ...inc, nominaPeriodoId }),
     );
     const { error: errIns } = await this.supabase.from('incidencia_nomina').insert(inserts);
-    throwIfError(errIns, 'reemplazarIncidencias.insert');
+    lanzarSiErrorSupabase(errIns, 'reemplazarIncidencias.insert');
   }
 
   // -------------------------------------------------------------------------
@@ -789,7 +783,7 @@ export class NominaPeriodoRepository {
     const { data, error } = await this.supabase.rpc('listar_eventos_auditoria_nomina', {
       p_nomina_id: nominaPeriodoId,
     });
-    throwIfError(error, 'listarEventosAuditoria');
+    lanzarSiErrorSupabase(error, 'listarEventosAuditoria');
     return (data ?? []).map(rowRpcToEventoAuditoria);
   }
 
@@ -798,7 +792,7 @@ export class NominaPeriodoRepository {
     const { data, error } = await this.supabase.rpc('resumen_calculo_nomina', {
       p_nomina_id: nominaPeriodoId,
     });
-    throwIfError(error, 'obtenerResumenCalculo');
+    lanzarSiErrorSupabase(error, 'obtenerResumenCalculo');
     const row = (data ?? [])[0];
     if (!row) return null;
     return {
@@ -825,7 +819,7 @@ export class NominaPeriodoRepository {
       p_busqueda: filtro.busqueda ?? undefined,
       p_estado: filtro.estado ?? undefined,
     });
-    throwIfError(error, 'listarCalculoTrabajadoresPaginado');
+    lanzarSiErrorSupabase(error, 'listarCalculoTrabajadoresPaginado');
     const rows = data ?? [];
     return {
       total: Number(rows[0]?.total_count ?? 0),
@@ -872,7 +866,7 @@ export class NominaPeriodoRepository {
       p_busqueda: busqueda ?? undefined,
       p_codigo_ciclo: codigoCiclo ?? undefined,
     });
-    throwIfError(error, 'listarPreviewCreacionTrabajadores');
+    lanzarSiErrorSupabase(error, 'listarPreviewCreacionTrabajadores');
     const rows = data ?? [];
     const total = Number(rows[0]?.total_count ?? 0);
     if (clasificacion === 'incluidos') {
@@ -906,7 +900,7 @@ export class NominaPeriodoRepository {
       .insert(eventoAuditoriaToInsert(evento))
       .select('*')
       .single();
-    throwIfError(error, 'registrarEventoAuditoria');
+    lanzarSiErrorSupabase(error, 'registrarEventoAuditoria');
     if (!data) {
       throw new Error('registrarEventoAuditoria: BD no retornó la fila creada');
     }

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 
+import { lanzarErrorSupabaseRepositorio } from '../../../../core/errors/erp-supabase-user-message';
 import { injectSupabase } from '../../../../core/services/supabase.service';
 import type {
   ActualizarNovedadMensualInput,
@@ -17,10 +18,6 @@ import {
 const SELECT_NOVEDAD =
   'id_novedad_remuneracion_periodo, periodo, id_persona, id_contrato, id_concepto, categoria, tipo_movimiento, cantidad, unidad, monto, moneda, origen, fecha_evento, estado, observacion, referencia_externa, codigo_motivo_ausencia, id_licencia, creado_por, aprobado_por, fecha_aprobacion, fecha_creacion, fecha_actualizacion';
 
-function errorSupabase(contexto: string, message: string): Error {
-  return new Error(`${contexto}: ${message}`);
-}
-
 @Injectable({ providedIn: 'root' })
 export class NovedadesMensualesRepository {
   private readonly supabase = injectSupabase();
@@ -32,7 +29,7 @@ export class NovedadesMensualesRepository {
       .eq('periodo', periodo.trim())
       .order('id_novedad_remuneracion_periodo', { ascending: true });
 
-    if (error) throw errorSupabase('No fue posible listar novedades del periodo', error.message);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'listar novedades del periodo');
     return (data ?? []).map((row) => mapRowToNovedadMensual(row));
   }
 
@@ -44,7 +41,7 @@ export class NovedadesMensualesRepository {
       .eq('id_persona', idPersona)
       .order('id_novedad_remuneracion_periodo', { ascending: true });
 
-    if (error) throw errorSupabase('No fue posible listar novedades del trabajador', error.message);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'listar novedades del trabajador');
     return (data ?? []).map((row) => mapRowToNovedadMensual(row));
   }
 
@@ -55,7 +52,7 @@ export class NovedadesMensualesRepository {
       .eq('id_novedad_remuneracion_periodo', idNovedad)
       .maybeSingle();
 
-    if (error) throw errorSupabase('No fue posible obtener la novedad', error.message);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'obtener la novedad');
     return data ? mapRowToNovedadMensual(data) : null;
   }
 
@@ -67,7 +64,7 @@ export class NovedadesMensualesRepository {
       .select(SELECT_NOVEDAD)
       .single();
 
-    if (error) throw errorSupabase('No fue posible crear la novedad', error.message);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'crear la novedad');
     return mapRowToNovedadMensual(data);
   }
 
@@ -80,7 +77,7 @@ export class NovedadesMensualesRepository {
       .select(SELECT_NOVEDAD)
       .single();
 
-    if (error) throw errorSupabase('No fue posible actualizar la novedad', error.message);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'actualizar la novedad');
     return mapRowToNovedadMensual(data);
   }
 
@@ -110,7 +107,7 @@ export class NovedadesMensualesRepository {
       .select(SELECT_NOVEDAD)
       .single();
 
-    if (error) throw errorSupabase('No fue posible cambiar el estado de la novedad', error.message);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'cambiar el estado de la novedad');
     return mapRowToNovedadMensual(data);
   }
 
@@ -125,6 +122,6 @@ export class NovedadesMensualesRepository {
       .eq('id_novedad_remuneracion_periodo', idNovedad)
       .eq('estado', 'borrador');
 
-    if (error) throw errorSupabase('No fue posible eliminar la novedad en borrador', error.message);
+    if (error) lanzarErrorSupabaseRepositorio(error, 'eliminar la novedad en borrador');
   }
 }
