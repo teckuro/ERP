@@ -245,8 +245,14 @@ export function calcularDiasPagablesBase30(params: CalcularDiasPagablesParams): 
   return Math.max(0, diasBase - reduccion);
 }
 
+/**
+ * Las asignaciones recurrentes no entran al motor como entradas mensuales: el motor
+ * ya las recibe por `input.recurrentes` (con su naturaleza y los omitidos de la
+ * nómina). Como entrada se sumaban dos veces. Siguen en las entradas del período
+ * para la prevalidación y sus conteos.
+ */
 export function entradaMensualAptaParaMotor(entrada: EntradaMensualPeriodo): boolean {
-  return puedeEntrarAPreNomina(entrada);
+  return entrada.origen !== 'recurrente' && puedeEntrarAPreNomina(entrada);
 }
 
 export function mapEntradaMensualMotor(entrada: EntradaMensualPeriodo): EntradaMensualMotor {

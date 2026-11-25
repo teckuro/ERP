@@ -394,3 +394,13 @@ describe('aplicarClasificacionConceptos (imponible/tributable desde el catálogo
     expect(entrada).toEqual(original);
   });
 });
+
+describe('entradaMensualAptaParaMotor: recurrentes', () => {
+  it('excluye las asignaciones recurrentes (el motor las recibe por input.recurrentes)', () => {
+    const base = { estado: 'aprobada', bloqueaProceso: false } as EntradaMensualPeriodo;
+
+    expect(entradaMensualAptaParaMotor({ ...base, origen: 'recurrente' } as EntradaMensualPeriodo)).toBe(false);
+    expect(entradaMensualAptaParaMotor({ ...base, origen: 'novedad_mensual' } as EntradaMensualPeriodo)).toBe(true);
+    expect(entradaMensualAptaParaMotor({ ...base, origen: 'movimiento_nomina' } as EntradaMensualPeriodo)).toBe(true);
+  });
+});
