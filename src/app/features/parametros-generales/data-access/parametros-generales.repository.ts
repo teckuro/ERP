@@ -390,29 +390,26 @@ export class ParametrosGeneralesRepository {
     };
   }
 
+  /**
+   * Periodos (`YYYY-MM`, del más reciente al más antiguo) con datos en alguna tabla mensual.
+   * Las cinco consultas son independientes: se lanzan en paralelo (una sola espera de red).
+   */
   async listarPeriodosConDatosMensuales(): Promise<string[]> {
+    const resultados = await Promise.all([
+      this.supabase.from('parametros_generales').select('periodo').not('periodo', 'is', null),
+      this.supabase.from('tramo_carga').select('periodo').not('periodo', 'is', null),
+      this.supabase.from('tramo_impuesto').select('periodo').not('periodo', 'is', null),
+      this.supabase.from('tabla_impuesto_unico').select('periodo').not('periodo', 'is', null),
+      this.supabase.from('ley_16744_parametros').select('periodo').not('periodo', 'is', null),
+    ]);
+
     const periodos = new Set<string>();
-    const sources: Array<{ table: string; column: string }> = [
-      { table: 'parametros_generales', column: 'periodo' },
-      { table: 'tramo_carga', column: 'periodo' },
-      { table: 'tramo_impuesto', column: 'periodo' },
-      { table: 'tabla_impuesto_unico', column: 'periodo' },
-      { table: 'ley_16744_parametros', column: 'periodo' },
-    ];
-
-    for (const source of sources) {
-      const { data, error } = await this.supabaseUntyped
-        .from(source.table)
-        .select(source.column)
-        .not(source.column, 'is', null)
-        .order(source.column, { ascending: false });
-
+    for (const { data, error } of resultados) {
       if (error) {
         falloParametros(error);
       }
-
-      for (const row of (data ?? []) as Record<string, unknown>[]) {
-        const periodo = String(row[source.column] ?? '').slice(0, 7);
+      for (const row of data ?? []) {
+        const periodo = String(row.periodo ?? '').slice(0, 7);
         if (/^\d{4}-\d{2}$/.test(periodo)) {
           periodos.add(periodo);
         }
