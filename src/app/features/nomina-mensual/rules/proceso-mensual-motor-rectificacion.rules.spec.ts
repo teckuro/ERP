@@ -63,10 +63,9 @@ function snapshotOrigen(trabajadores: LiquidacionCalculada[]): NominaSnapshotCom
       cotizacionAfp: 0,
       cotizacionSalud: 0,
       cotizacionAfc: 0,
-      cotizacionAfcEmpleador: 0,
-      cotizacionSis: 0,
-      cotizacionSanna: 0,
-      cotizacionLey16744Empleador: 0,
+      cotizacionSis: t.cotizacionSis,
+      cotizacionSanna: t.cotizacionSanna,
+      cotizacionLey16744Empleador: t.cotizacionLey16744,
       impuestoUnico: 0,
       conceptos: t.haberesImponibles.map((l) => ({
         tipo: 'haber' as const,
@@ -131,6 +130,47 @@ describe('proceso-mensual-motor-rectificacion.rules', () => {
     expect(resultado.liquidaciones).toHaveLength(1);
     expect(resultado.liquidaciones[0]?.haberesImponibles[0]?.monto).toBe(50_000);
     expect(resultado.liquidaciones[0]?.liquidoAPago).toBe(40_000);
+  });
+
+  it('incluye al trabajador si solo cambian aportes del empleador (SANNA y AFC empleador)', () => {
+    const comun = {
+      idPersona: 3,
+      haberesImponibles: [linea('SUELDO', 1_109_157)],
+      totalHaberes: 1_109_157,
+      liquidoAPago: 937_974,
+    };
+    const orig = liquidacion({ ...comun, cotizacionSanna: 33_275, cotizacionAfcEmpleador: 0 });
+    const rect = liquidacion({ ...comun, cotizacionSanna: 333, cotizacionAfcEmpleador: 26_620 });
+
+    const resultado = generarCalculoRectificacionPeriodo({
+      periodo: '2026-06',
+      snapshotOrigen: snapshotOrigen([orig]),
+      resultadoRectificado: {
+        periodo: '2026-06',
+        estado: 'calculado_preliminar',
+        generadoEn: '2026-06-01',
+        resumen: {
+          totalTrabajadoresCalculados: 1,
+          totalBloqueados: 0,
+          totalConAdvertencias: 0,
+          totalHaberes: 1_109_157,
+          totalDescuentos: 0,
+          totalLiquidoPreliminar: 937_974,
+        },
+        liquidaciones: [rect],
+        issues: [],
+      },
+      nominaOrigenId: 'origen-1',
+      versionCalculoOrigen: 4,
+      generadoEn: '2026-06-02',
+    });
+
+    expect(resultado.liquidaciones).toHaveLength(1);
+    expect(resultado.liquidaciones[0]).toMatchObject({
+      liquidoAPago: 0,
+      cotizacionSanna: -32_942,
+      cotizacionAfcEmpleador: 26_620,
+    });
   });
 
   it('omite trabajador cuando la diferencia es cero', () => {
