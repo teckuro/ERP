@@ -283,8 +283,16 @@ export function calcularTrabajador(args: {
     descuentosLegales.push({ codigo: 'AFC', descripcion: 'Seguro de cesantia trabajador', monto: cotizacionAfc, origen: 'afc_parametro' });
     pushTraza(trazabilidad, 'AFC_PARAMETRO_APLICADO', 'parametros', 'afc_parametro', 'tasa_trabajador', tasaAfc, 'baseAfc * tasaTrabajador', cotizacionAfc, afc?.vigenciaInicio, afc?.vigenciaFin);
   }
+  // Aporte empleador al seguro de cesantía (Ley 19.728): misma base AFC; no afecta el líquido.
+  const tasaAfcEmpleador = afc ? normalizarTasa(afc.tasaEmpleador) : null;
+  const cotizacionAfcEmpleador = tasaAfcEmpleador == null ? 0 : redondear(baseAfc * tasaAfcEmpleador);
+  if (cotizacionAfcEmpleador > 0) {
+    pushTraza(trazabilidad, 'AFC_EMPLEADOR_PARAMETRO_APLICADO', 'parametros', 'afc_parametro', 'tasa_empleador', tasaAfcEmpleador, 'baseAfc * tasaEmpleador', cotizacionAfcEmpleador, afc?.vigenciaInicio, afc?.vigenciaFin, 'Cargo empleador separado de descuentos trabajador');
+  }
 
-  const tasaSanna = normalizarTasa(input.parametrosPeriodo?.sanna ?? null);
+  // parametros_generales.sanna se guarda e ingresa en porcentaje (0.03 = 0,03 %, Ley 21.063).
+  // No usa normalizarTasa: su heurística trata valores < 0,3 como fracción y lo aplicaba como 3 %.
+  const tasaSanna = porcentajeAFraccion(input.parametrosPeriodo?.sanna ?? null);
   if (tasaSanna == null) {
     pushIssue(issues, 'SANNA_NO_DEFINIDO', 'ADVERTENCIA', 'SANNA no definido en parametros_generales.sanna. Queda pendiente sin afectar liquido trabajador.', 'parametros_generales', input.periodo, 'sanna');
   }
@@ -359,6 +367,7 @@ export function calcularTrabajador(args: {
     cotizacionAfp,
     cotizacionSalud: saludCalc.monto,
     cotizacionAfc,
+    cotizacionAfcEmpleador,
     cotizacionSis,
     cotizacionSanna,
     cotizacionLey16744,
@@ -639,6 +648,11 @@ export function normalizarTasaNomina(v: number | null): number | null {
 
 function normalizarTasa(v: number | null): number | null {
   return normalizarTasaNomina(v);
+}
+
+/** Para parámetros cuya unidad es siempre porcentaje (p. ej. 0.03 = 0,03 %). */
+function porcentajeAFraccion(v: number | null): number | null {
+  return v == null || !Number.isFinite(v) ? null : v / 100;
 }
 
 function sumar(values: number[]): number {

@@ -33,7 +33,7 @@ function parametros(over: Partial<ParametroGeneral> = {}): ParametroGeneral {
     topeDepositoConvenidoAnual: null,
     topeAfpVoluntario: null,
     sis: 0.015,
-    sanna: 0.0003,
+    sanna: 0.03, // porcentaje (0,03 %), como en parametros_generales
     seguroSocialExpectativaVida: null,
     aporteEmpleadorAfp: null,
     saludObligatoria: 0.07,
@@ -272,6 +272,38 @@ describe('proceso-mensual-motor.rules', () => {
     const liq = generarCalculoPreliminarPeriodo(input(), 'now').liquidaciones[0];
     expect(liq.cotizacionLey16744).toBe(8000);
     expect(liq.totalDescuentos).not.toBeGreaterThan(800000);
+  });
+
+  it('SANNA 0.03 es 0,03 % (porcentaje, como se guarda y se ingresa), no 3 %', () => {
+    const liq = generarCalculoPreliminarPeriodo(input({ parametrosPeriodo: parametros({ sanna: 0.03 }) }), 'now').liquidaciones[0];
+
+    // base imponible previsional 800.000 * 0,03 % = 240 (antes: 24.000)
+    expect(liq.baseImponiblePrevisional).toBe(800000);
+    expect(liq.cotizacionSanna).toBe(240);
+  });
+
+  it('AFC empleador contrato indefinido: 2,4 % sobre la base AFC, como cargo empleador', () => {
+    const liq = generarCalculoPreliminarPeriodo(input({
+      catalogos: catalogos({
+        afcParametros: [{ ...catalogos().afcParametros[0], tasaTrabajador: 0.6, tasaEmpleador: 2.4 }],
+      }),
+    }), 'now').liquidaciones[0];
+
+    expect(liq.cotizacionAfcEmpleador).toBe(19200);
+    // No es descuento del trabajador: el líquido no cambia por el aporte empleador.
+    expect(liq.descuentosLegales.some((d) => d.codigo === 'AFC_EMPLEADOR')).toBe(false);
+  });
+
+  it('AFC empleador contrato a plazo fijo: 3 % aunque el trabajador no cotice', () => {
+    const liq = generarCalculoPreliminarPeriodo(input({
+      trabajadores: [{ ...input().trabajadores[0], tipoContrato: 'PLAZO_FIJO' }],
+      catalogos: catalogos({
+        afcParametros: [{ ...catalogos().afcParametros[0], codigoTipoContrato: 'PLAZO_FIJO', tasaTrabajador: 0, tasaEmpleador: 3 }],
+      }),
+    }), 'now').liquidaciones[0];
+
+    expect(liq.cotizacionAfc).toBe(0);
+    expect(liq.cotizacionAfcEmpleador).toBe(24000);
   });
 
   it('AFC interpreta 0.6 como 0,6% (no 60%)', () => {

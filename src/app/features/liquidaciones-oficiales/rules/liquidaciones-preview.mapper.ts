@@ -65,8 +65,11 @@ function textoConcepto(concepto: LiquidacionConcepto): string {
   return `${concepto.codigo ?? ''} ${concepto.codigoLre ?? ''} ${concepto.nombre}`.toLowerCase();
 }
 
-function clasificarAporteEmpleador(concepto: LiquidacionConcepto): 'sis' | 'sanna' | 'mutual' | null {
+function clasificarAporteEmpleador(
+  concepto: LiquidacionConcepto,
+): 'afc_empleador' | 'sis' | 'sanna' | 'mutual' | null {
   const texto = textoConcepto(concepto);
+  if (/\b4151\b|afc empleador/.test(texto)) return 'afc_empleador';
   if (/\bsis\b/.test(texto)) return 'sis';
   if (/sanna/.test(texto)) return 'sanna';
   if (/ley\s*16|mutual/.test(texto)) return 'mutual';
@@ -74,10 +77,12 @@ function clasificarAporteEmpleador(concepto: LiquidacionConcepto): 'sis' | 'sann
 }
 
 function acumularAportesEmpleador(conceptos: readonly LiquidacionConcepto[]): {
+  cotizacionAfcEmpleador: number;
   cotizacionSis: number;
   cotizacionSanna: number;
   cotizacionLey16744: number;
 } {
+  let cotizacionAfcEmpleador = 0;
   let cotizacionSis = 0;
   let cotizacionSanna = 0;
   let cotizacionLey16744 = 0;
@@ -85,12 +90,13 @@ function acumularAportesEmpleador(conceptos: readonly LiquidacionConcepto[]): {
   for (const concepto of conceptos) {
     if (!esAporteReferenciaEmpleador(concepto) || concepto.monto === 0) continue;
     const tipo = clasificarAporteEmpleador(concepto);
-    if (tipo === 'sis') cotizacionSis += concepto.monto;
+    if (tipo === 'afc_empleador') cotizacionAfcEmpleador += concepto.monto;
+    else if (tipo === 'sis') cotizacionSis += concepto.monto;
     else if (tipo === 'sanna') cotizacionSanna += concepto.monto;
     else if (tipo === 'mutual') cotizacionLey16744 += concepto.monto;
   }
 
-  return { cotizacionSis, cotizacionSanna, cotizacionLey16744 };
+  return { cotizacionAfcEmpleador, cotizacionSis, cotizacionSanna, cotizacionLey16744 };
 }
 
 /** Metadatos del trabajador para la hoja compartida (liquidaciones oficiales). */
@@ -167,6 +173,7 @@ export function mapLiquidacionOficialAPreview(
     cotizacionAfp: numeroMetadata(meta, 'cotizacionAfp'),
     cotizacionSalud: numeroMetadata(meta, 'cotizacionSalud'),
     cotizacionAfc: numeroMetadata(meta, 'cotizacionAfc'),
+    cotizacionAfcEmpleador: aportes.cotizacionAfcEmpleador,
     cotizacionSis: aportes.cotizacionSis,
     cotizacionSanna: aportes.cotizacionSanna,
     cotizacionLey16744: aportes.cotizacionLey16744,

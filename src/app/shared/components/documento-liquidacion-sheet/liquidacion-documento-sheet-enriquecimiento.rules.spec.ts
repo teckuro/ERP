@@ -102,6 +102,7 @@ function trabajadorRpcMock(): LiquidacionTrabajador {
       cotizacionAfp: 100_000,
       cotizacionSalud: 40_000,
       cotizacionAfc: 5_000,
+      cotizacionAfcEmpleador: 0,
       camposNoDisponiblesEnSnapshot: [
         'id_contrato',
         'cargo',
@@ -248,6 +249,7 @@ describe('liquidacion-documento-sheet-enriquecimiento.rules', () => {
       cotizacionAfp: 0,
       cotizacionSalud: 0,
       cotizacionAfc: 0,
+      cotizacionAfcEmpleador: 0,
       cotizacionSis: 0,
       cotizacionSanna: 0,
       cotizacionLey16744: 0,
