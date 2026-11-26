@@ -236,6 +236,7 @@ function mapTrabajador(liq: MotorCalculoPeriodoResultado['liquidaciones'][number
     conceptos: [
       ...haberes.map((l) => mapConcepto(l, 'haber', true)),
       ...descuentos.map((l) => mapConcepto(l, l.codigo === 'IMPUESTO_UNICO' ? 'impuesto' : 'descuento', true)),
+      mapConcepto({ codigo: 'AFC_EMPLEADOR', descripcion: 'AFC empleador', monto: liq.cotizacionAfcEmpleador ?? 0, origen: 'afc_parametro', imponible: false, tributable: false }, 'cotizacion', false),
       mapConcepto({ codigo: 'SIS', descripcion: 'SIS empleador', monto: liq.cotizacionSis, origen: 'parametros_generales', imponible: false, tributable: false }, 'cotizacion', false),
       mapConcepto({ codigo: 'SANNA', descripcion: 'SANNA empleador', monto: liq.cotizacionSanna, origen: 'parametros_generales', imponible: false, tributable: false }, 'cotizacion', false),
       mapConcepto({ codigo: 'LEY_16744', descripcion: 'Mutual empleador', monto: liq.cotizacionLey16744, origen: 'ley_16744_parametros', imponible: false, tributable: false }, 'cotizacion', false),
@@ -406,6 +407,10 @@ export function mapTrabajadorSnapshotToLiquidacion(
     cotizacionAfp: trabajador.cotizacionAfp,
     cotizacionSalud: trabajador.cotizacionSalud,
     cotizacionAfc: trabajador.cotizacionAfc,
+    // Sin columna propia: se guarda como línea de cotización (código LRE 4151).
+    cotizacionAfcEmpleador: trabajador.conceptos
+      .filter((c) => c.tipo === 'cotizacion' && c.codigoLreSnapshot === '4151')
+      .reduce((total, c) => total + c.monto, 0),
     cotizacionSis: trabajador.cotizacionSis,
     cotizacionSanna: trabajador.cotizacionSanna,
     cotizacionLey16744: trabajador.cotizacionLey16744Empleador,

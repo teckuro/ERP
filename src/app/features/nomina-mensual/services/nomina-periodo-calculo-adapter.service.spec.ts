@@ -112,6 +112,7 @@ describe('NominaPeriodoCalculoAdapterService', () => {
           cotizacionAfp: 100000,
           cotizacionSalud: 70000,
           cotizacionAfc: 0,
+          cotizacionAfcEmpleador: 0,
           cotizacionSis: 12000,
           cotizacionSanna: 300,
           cotizacionLey16744: 9000,

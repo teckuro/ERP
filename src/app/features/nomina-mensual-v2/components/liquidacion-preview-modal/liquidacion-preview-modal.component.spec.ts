@@ -32,6 +32,7 @@ function liquidacionMock(parcial: Partial<LiquidacionCalculada> = {}): Liquidaci
     cotizacionAfp: 124600,
     cotizacionSalud: 76241,
     cotizacionAfc: 6535,
+    cotizacionAfcEmpleador: 0,
     cotizacionSis: 17645,
     cotizacionSanna: 32674,
     cotizacionLey16744: 10128,

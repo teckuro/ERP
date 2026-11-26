@@ -308,6 +308,8 @@ export interface LiquidacionCalculada {
   cotizacionAfp: number;
   cotizacionSalud: number;
   cotizacionAfc: number;
+  /** Aporte empleador al seguro de cesantía (Ley 19.728): cargo empleador, no descuenta al trabajador. */
+  cotizacionAfcEmpleador: number;
   cotizacionSis: number;
   cotizacionSanna: number;
   cotizacionLey16744: number;

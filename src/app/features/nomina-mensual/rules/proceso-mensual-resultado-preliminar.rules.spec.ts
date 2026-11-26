@@ -32,6 +32,7 @@ function calculoBase(over: Partial<MotorCalculoPeriodoResultado> = {}): MotorCal
       cotizacionAfp: 0,
       cotizacionSalud: 0,
       cotizacionAfc: 0,
+      cotizacionAfcEmpleador: 0,
       cotizacionSis: 0,
       cotizacionSanna: 0,
       cotizacionLey16744: 0,

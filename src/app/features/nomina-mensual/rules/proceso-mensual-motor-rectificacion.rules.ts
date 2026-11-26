@@ -118,6 +118,9 @@ function calcularTrabajadorRectificacion(args: {
     cotizacionAfp: redondear(trabajadorRectificado.cotizacionAfp - trabajadorOrigen.cotizacionAfp),
     cotizacionSalud: redondear(trabajadorRectificado.cotizacionSalud - trabajadorOrigen.cotizacionSalud),
     cotizacionAfc: redondear(trabajadorRectificado.cotizacionAfc - trabajadorOrigen.cotizacionAfc),
+    cotizacionAfcEmpleador: redondear(
+      (trabajadorRectificado.cotizacionAfcEmpleador ?? 0) - (trabajadorOrigen.cotizacionAfcEmpleador ?? 0),
+    ),
     cotizacionSis: redondear(trabajadorRectificado.cotizacionSis - trabajadorOrigen.cotizacionSis),
     cotizacionSanna: redondear(trabajadorRectificado.cotizacionSanna - trabajadorOrigen.cotizacionSanna),
     cotizacionLey16744: redondear(

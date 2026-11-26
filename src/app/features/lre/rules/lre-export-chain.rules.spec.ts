@@ -44,6 +44,7 @@ function resultadoMotorBase(): MotorCalculoPeriodoResultado {
       cotizacionAfp: 90000,
       cotizacionSalud: 63000,
       cotizacionAfc: 0,
+      cotizacionAfcEmpleador: 0,
       cotizacionSis: 12000,
       cotizacionSanna: 300,
       cotizacionLey16744: 9000,
