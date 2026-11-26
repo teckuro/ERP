@@ -51,11 +51,20 @@ function sumarLineas(lineas: readonly LineaLiquidacionCalculada[]): number {
   return lineas.reduce((acc, l) => acc + l.monto, 0);
 }
 
+/**
+ * Hay algo que rectificar si cambia lo del trabajador (haberes, descuentos, líquido)
+ * o lo que declara el empleador (SIS, SANNA, mutual, AFC empleador), aunque el
+ * líquido no se mueva: esos aportes también van a Previred y al LRE.
+ */
 function tieneDelta(liquidacion: LiquidacionCalculada): boolean {
   return (
     liquidacion.totalHaberes !== 0
     || liquidacion.totalDescuentos !== 0
     || liquidacion.liquidoAPago !== 0
+    || liquidacion.cotizacionSis !== 0
+    || liquidacion.cotizacionSanna !== 0
+    || liquidacion.cotizacionLey16744 !== 0
+    || (liquidacion.cotizacionAfcEmpleador ?? 0) !== 0
   );
 }
 
