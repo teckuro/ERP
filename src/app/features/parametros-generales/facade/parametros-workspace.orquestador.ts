@@ -79,6 +79,7 @@ import {
   detalleAreaParametros,
   detalleRegistroTabActivo,
   formatearPeriodoMesAnio,
+  pendienteRepiteDetalle,
   primerTabDeAreaParametros,
   tabsDeAreaParametros,
   tipoAreaParametros,
@@ -580,15 +581,7 @@ export class ParametrosWorkspaceOrquestador {
     // Mientras se edita, la banda informa la edición; el pendiente vuelve a verse al guardar o cancelar.
     if (this.generalesEditando()) return false;
 
-    // Compara sin tildes ni «del período» final: el detalle y el pendiente pueden decir lo mismo con otra redacción.
-    const normalizar = (texto: string) =>
-      texto
-        .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
-        .toLocaleLowerCase()
-        .replace(/\s+del periodo\.?$/, '')
-        .replace(/\.$/, '');
-    return !normalizar(this.periodoEstadoDetalle()).includes(normalizar(pendiente));
+    return !pendienteRepiteDetalle(this.periodoEstadoDetalle(), pendiente);
   });
 
   readonly cierreAccionVisible = computed(

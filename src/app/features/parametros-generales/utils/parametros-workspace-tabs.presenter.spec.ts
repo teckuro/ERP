@@ -7,6 +7,7 @@ import {
   detalleRegistroTabActivo,
   etiquetaTabParametros,
   formatearPeriodoMesAnio,
+  pendienteRepiteDetalle,
   primerTabDeAreaParametros,
   tabsDeAreaParametros,
   tituloRegistroTabActivo,
@@ -66,5 +67,34 @@ describe('parametros-workspace-tabs.presenter', () => {
       }),
     ).toContain('UF');
     expect(formatearPeriodoMesAnio('2026-05')).toContain('2026');
+  });
+});
+
+describe('pendienteRepiteDetalle', () => {
+  it('reconoce el mismo pendiente con y sin tildes', () => {
+    expect(
+      pendienteRepiteDetalle(
+        'Datos oficiales cargados. Falta configuración cliente.',
+        'Falta configuracion cliente del periodo.',
+      ),
+    ).toBe(true);
+  });
+
+  it('compara solo la primera oración del pendiente', () => {
+    expect(
+      pendienteRepiteDetalle(
+        'Datos oficiales cargados. Falta la configuración de la empresa.',
+        'Falta la configuración de la empresa para este período. Créala en Configuración cliente.',
+      ),
+    ).toBe(true);
+  });
+
+  it('no oculta un pendiente distinto del detalle', () => {
+    expect(
+      pendienteRepiteDetalle(
+        'Período parcial.',
+        'Falta seleccionar la CCAF de la empresa. Elígela en Configuración cliente.',
+      ),
+    ).toBe(false);
   });
 });

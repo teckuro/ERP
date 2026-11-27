@@ -236,3 +236,25 @@ export function formatearPeriodoMesAnio(
   const monthName = meses.find((item) => item.value === month)?.label ?? month;
   return `${monthName} ${year}`;
 }
+
+/** Texto sin tildes, en minúsculas y sin el período al final, para comparar redacciones parecidas. */
+function nucleoMensaje(texto: string): string {
+  return texto
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase()
+    .trim()
+    .replace(/\.$/, '')
+    .replace(/\s+(del periodo|para este periodo|del mes)$/, '');
+}
+
+/**
+ * Indica si el pendiente principal ya está dicho en el detalle del estado, para no repetirlo en la banda.
+ * Se compara solo la primera oración del pendiente: la segunda suele indicar dónde corregirlo
+ * («… para este período. Créala en Configuración cliente.»).
+ */
+export function pendienteRepiteDetalle(detalle: string, pendiente: string): boolean {
+  const primeraOracion = pendiente.split(/\.\s/)[0] ?? pendiente;
+  const nucleo = nucleoMensaje(primeraOracion);
+  return nucleo.length > 0 && nucleoMensaje(detalle).includes(nucleo);
+}
