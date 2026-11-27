@@ -207,11 +207,16 @@ const ETIQUETA_CAMPO_OFICIAL: Readonly<Record<string, string>> = {
   afcTrabajadorIndefinido: 'AFC trabajador indefinido',
   afcEmpleadorIndefinido: 'AFC empleador indefinido',
   afcEmpleadorPlazo: 'AFC empleador plazo fijo',
+  trabajoPesadoEmpleador: 'trabajo pesado (empleador)',
+  trabajoPesadoTrabajador: 'trabajo pesado (trabajador)',
+  trabajoMenosPesadoEmpleador: 'trabajo menos pesado (empleador)',
+  trabajoMenosPesadoTrabajador: 'trabajo menos pesado (trabajador)',
 };
 
-function etiquetaCampoOficial(campo: string): string {
-  const clave = campo.trim().toLowerCase();
-  const conocido = ETIQUETA_CAMPO_OFICIAL[clave];
+/** Nombre legible de un campo de parámetros (`topeAfpUf` → «tope AFP (UF)»). */
+export function etiquetaCampoOficial(campo: string): string {
+  const clave = campo.trim();
+  const conocido = ETIQUETA_CAMPO_OFICIAL[clave] ?? ETIQUETA_CAMPO_OFICIAL[clave.toLowerCase()];
   if (conocido) {
     return conocido;
   }

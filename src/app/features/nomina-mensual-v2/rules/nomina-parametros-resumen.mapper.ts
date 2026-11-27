@@ -1,5 +1,9 @@
 import type { ClasificacionParametroGrupo, ProcesoMensualGrupoParametro } from '../../nomina-mensual/models/proceso-mensual.model';
-import type { ParametrosCompletitudResultado } from '../../parametros-generales/rules/parametros-completitud.rules';
+import {
+  MENSAJES_COMPLETITUD,
+  PREFIJO_FALTA_CONFIG_EMPRESA,
+  type ParametrosCompletitudResultado,
+} from '../../parametros-generales/rules/parametros-completitud.rules';
 import type {
   NominaParametrosResumen,
   ParametroResumenAcceso,
@@ -50,12 +54,12 @@ const DETALLES: Record<string, string> = {
 };
 
 const CONFIG_CLIENTE_CHECKS: Array<{ label: string; pendiente: string }> = [
-  { label: 'Configuración del período', pendiente: 'Falta configuracion cliente del periodo.' },
-  { label: 'Gratificación', pendiente: 'Falta definir gratificacion.' },
-  { label: 'IMM gratificación', pendiente: 'Falta IMM de gratificacion.' },
-  { label: 'Descuentos por ausencias', pendiente: 'Falta metodo de descuento por ausencias.' },
-  { label: 'CCAF', pendiente: 'Falta CCAF seleccionada.' },
-  { label: 'Mutual Ley 16.744', pendiente: 'Falta mutual seleccionada.' },
+  { label: 'Configuración del período', pendiente: MENSAJES_COMPLETITUD.sinConfigEmpresa },
+  { label: 'Gratificación', pendiente: MENSAJES_COMPLETITUD.sinGratificacion },
+  { label: 'IMM gratificación', pendiente: MENSAJES_COMPLETITUD.sinImmGratificacion },
+  { label: 'Descuentos por ausencias', pendiente: MENSAJES_COMPLETITUD.sinMetodoAusencias },
+  { label: 'CCAF', pendiente: MENSAJES_COMPLETITUD.sinCcaf },
+  { label: 'Mutual Ley 16.744', pendiente: MENSAJES_COMPLETITUD.sinMutual },
 ];
 
 const GRUPOS_OFICIALES_NO_BLOQUEANTES = new Set([
@@ -188,8 +192,8 @@ function buildAreas(
 
 function buildConfigClienteItems(completitud?: ParametrosCompletitudResultado | null): ParametroResumenItem[] {
   const pendientes = completitud?.pendientes ?? [];
-  const sinConfig = pendientes.includes('Falta configuracion cliente del periodo.');
-  const operativosPendiente = pendientes.find((p) => p.startsWith('Falta configuracion cliente:'));
+  const sinConfig = pendientes.includes(MENSAJES_COMPLETITUD.sinConfigEmpresa);
+  const operativosPendiente = pendientes.find((p) => p.startsWith(`${PREFIJO_FALTA_CONFIG_EMPRESA}:`));
 
   const items: ParametroResumenItem[] = CONFIG_CLIENTE_CHECKS.map(({ label, pendiente }) => {
     if (pendientes.includes(pendiente)) {
@@ -214,10 +218,7 @@ function buildConfigClienteItems(completitud?: ParametrosCompletitudResultado | 
     items.push({
       label: 'Reconciliación oficial/cliente',
       estado: consistencia.completo ? 'ok' : 'revisar',
-      detalle: consistencia.completo
-        ? undefined
-        : (completitud?.advertencias.find((a) => a.includes('diferencias pendientes'))
-          ?? 'Existen diferencias pendientes entre valores oficiales y configuración cliente.'),
+      detalle: consistencia.completo ? undefined : MENSAJES_COMPLETITUD.diferenciasOficialEmpresa,
       advertenciaNoBloqueante: !consistencia.completo,
     });
   }
