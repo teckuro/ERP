@@ -77,6 +77,8 @@ export class ParametrosValoresTabComponent {
   @Input() periodoLabel = 'este período';
   /** Período `AAAA-MM`: fija la fecha a la que corresponde la UF. */
   @Input() periodoYm: string | null = null;
+  /** Período del que vienen los valores mostrados; difiere de `periodoYm` si se muestra una referencia. */
+  @Input() periodoIndicadoresYm: string | null = null;
   @Input() referenciaPeriodoLabel: string | null = null;
   @Input() fechaActualizacionLabel: string | null = null;
   @Input() enviarFormulario: (() => void) | null = null;
@@ -84,7 +86,15 @@ export class ParametrosValoresTabComponent {
   @Input() capturarValores: (() => void) | null = null;
 
   get notaUf(): string | null {
-    const fecha = fechaUfDelPeriodo(this.periodoYm);
-    return fecha ? `Valor al último día del período (${fecha})` : null;
+    const origen = this.periodoIndicadoresYm ?? this.periodoYm;
+    // En edición se captura la UF del período seleccionado; en lectura puede mostrarse la de referencia.
+    if (this.officialEditable || !origen || origen === this.periodoYm) {
+      const fecha = fechaUfDelPeriodo(this.periodoYm);
+      return fecha ? `Valor al último día del período (${fecha})` : null;
+    }
+    const fechaReferencia = fechaUfDelPeriodo(origen);
+    return fechaReferencia
+      ? `Referencia: valor al ${fechaReferencia}. Falta la carga oficial del período.`
+      : null;
   }
 }

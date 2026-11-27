@@ -336,7 +336,27 @@ export class ParametrosWorkspaceOrquestador {
     }
   });
 
+  /**
+   * Período al que corresponden los indicadores que se muestran (UF, UTM, UTA): el seleccionado,
+   * o el de referencia mientras falta la carga oficial del mes y el cliente no capturó los suyos.
+   */
+  readonly periodoIndicadoresYm = computed(() => {
+    const seleccionado = this.selectedPeriodo();
+    if (this.clienteConfig()?.uf != null) {
+      return seleccionado;
+    }
+    return this.contextoOficialComparacion().periodoOrigen ?? seleccionado;
+  });
+
   readonly periodoEstadoDetalle = computed(() => {
+    // Sin carga oficial del mes, la completitud usa la referencia: decirlo en vez de «Datos oficiales cargados».
+    const contexto = this.contextoOficialComparacion();
+    if (this.periodoCargaEstado() === 'oficial_sin_config' && contexto.origen === 'referencia_visual') {
+      const referencia = contexto.periodoOrigen ? this.capitalizarPeriodoLabel(formatearPeriodoMesAnio(contexto.periodoOrigen, this.monthOptions)) : null;
+      return referencia
+        ? `Sin carga oficial del mes: se usan los datos de ${referencia}. Falta configuración cliente.`
+        : 'Sin carga oficial del mes. Falta configuración cliente.';
+    }
     switch (this.periodoCargaEstado()) {
       case 'error':
         return 'No se completó la carga mensual. Revisa el detalle de carga.';
@@ -661,6 +681,10 @@ export class ParametrosWorkspaceOrquestador {
       return 'Aún no hay carga oficial. Puedes capturar valores tentativos; la carga de fin de mes los actualizará.';
     }
     const referencia = this.referenciaVisualPrincipalLabelCapitalizado();
+    if (referencia && this.periodoEstadoDetalle().includes(referencia)) {
+      // El detalle del estado ya nombra la referencia; no repetirla.
+      return '';
+    }
     if (referencia) {
       return `Referencia oficial: ${referencia}.`;
     }
