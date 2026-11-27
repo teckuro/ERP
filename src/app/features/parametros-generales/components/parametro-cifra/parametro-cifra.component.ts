@@ -5,6 +5,7 @@ import {
   DecimalesCifra,
   UnidadParametro,
   formatearCifraParametro,
+  numeroParametro,
 } from '../../utils/parametros-formato';
 
 /**
@@ -18,8 +19,17 @@ import {
   template: `
     @if (editable && formControl) {
       <span class="unit-field unit-field--suffix" [attr.data-unit]="unidad === 'CLP' ? '$' : unidad">
-        <input class="param-input text-right" type="number" [step]="step" [formControl]="formControl" />
+        <input
+          class="param-input text-right"
+          type="number"
+          [step]="step"
+          [formControl]="formControl"
+          [attr.aria-invalid]="error ? 'true' : null"
+        />
       </span>
+      @if (error) {
+        <small class="param-cifra__error" role="alert">{{ error }}</small>
+      }
     } @else {
       <span
         class="param-cifra"
@@ -35,6 +45,9 @@ import {
           }
         }
       </span>
+    }
+    @if (textoOficialDistinto; as oficialTexto) {
+      <small class="param-cifra__nota param-cifra__nota--oficial">Oficial del mes: {{ oficialTexto }}</small>
     }
     @if (nota) {
       <small class="param-cifra__nota">{{ nota }}</small>
@@ -102,6 +115,26 @@ import {
         line-height: 1.35;
         text-align: right;
       }
+
+      /* Difiere del oficial: tono ámbar, el mismo de los pendientes del cierre. */
+      .param-cifra__nota--oficial {
+        color: #92400e;
+      }
+
+      .unit-field:has(.param-input.ng-invalid.ng-touched) {
+        border-color: #dc2626;
+        box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.12);
+      }
+
+      .param-cifra__error {
+        display: block;
+        margin-top: 4px;
+        color: #b91c1c;
+        font-size: 0.68rem;
+        font-weight: 600;
+        line-height: 1.3;
+        text-align: right;
+      }
     `,
   ],
 })
@@ -115,13 +148,47 @@ export class ParametroCifraComponent {
   @Input() editable = false;
   @Input() destacada = false;
   @Input() nota: string | null = null;
+  /** Valor oficial del mes. Si la cifra mostrada (configuración del cliente) difiere, se indica debajo. */
+  @Input() oficial: number | null | undefined = undefined;
 
   get formControl(): FormControl | null {
     return this.control instanceof FormControl ? this.control : null;
   }
 
+  private get valorActual(): unknown {
+    return this.control ? this.control.value : this.valor;
+  }
+
   get texto(): string | null {
-    const valor = this.control ? this.control.value : this.valor;
-    return formatearCifraParametro(valor, this.unidad, this.decimales);
+    return formatearCifraParametro(this.valorActual, this.unidad, this.decimales);
+  }
+
+  get textoOficialDistinto(): string | null {
+    const oficial = numeroParametro(this.oficial);
+    const actual = numeroParametro(this.valorActual);
+    if (oficial === null || actual === null || Math.abs(oficial - actual) < 1e-9) {
+      return null;
+    }
+    const cifra = formatearCifraParametro(oficial, this.unidad, this.decimales);
+    return this.unidad === 'CLP' ? cifra : `${cifra} ${this.unidad}`;
+  }
+
+  get error(): string | null {
+    const control = this.formControl;
+    if (!control || !control.invalid || !control.touched) {
+      return null;
+    }
+    const errores = control.errors ?? {};
+    if (errores['required']) {
+      return 'Ingresa un valor.';
+    }
+    if (errores['min']) {
+      return 'No puede ser negativo.';
+    }
+    if (errores['max']) {
+      const maximo = errores['max'].max;
+      return this.unidad === '%' ? `No puede superar ${maximo} %.` : `No puede superar ${maximo}.`;
+    }
+    return 'Valor no válido.';
   }
 }

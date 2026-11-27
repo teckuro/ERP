@@ -134,6 +134,7 @@
     @case ('valores') {
       <app-parametros-valores-tab
         [form]="ws.form"
+        [oficial]="ws.parametroOficialSeleccionado()"
         [editable]="ws.generalesEditando()"
         [officialEditable]="ws.generalesEditando()"
         [configEditable]="ws.generalesEditando()"
@@ -152,6 +153,7 @@
     @case ('remuneraciones') {
       <app-parametros-remuneraciones-tab
         [form]="ws.form"
+        [oficial]="ws.parametroOficialSeleccionado()"
         [editable]="ws.generalesEditando()"
         [hasPeriodoData]="ws.hasSelectedInRows()"
         [hasClienteConfig]="ws.clienteConfig() !== null"

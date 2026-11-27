@@ -224,7 +224,13 @@ export class ParametrosWorkspaceOrquestador {
     return 'Modificar';
   });
 
-  volverParametrosAction(): void {
+  /** Cancelar desde la banda: si hay cambios sin guardar, pide confirmación antes de descartarlos. */
+  async volverParametrosAction(): Promise<void> {
+    const puedeDescartar = await this.confirmarAbandonarEdicionConDialog('cancelar');
+    if (!puedeDescartar) {
+      this.cdr.markForCheck();
+      return;
+    }
     this.volverParametros();
   }
 
@@ -334,7 +340,7 @@ export class ParametrosWorkspaceOrquestador {
       case 'error':
         return 'No se completó la carga mensual. Revisa el detalle de carga.';
       case 'editando':
-        return 'Configuración guardada con pendientes. Pueden completarse valores de fin de mes.';
+        return 'Los cambios se aplican al guardar.';
       case 'cargado':
         return this.completitudDetalle('Período listo para revisar.');
       case 'pendiente_reconciliacion':
@@ -571,9 +577,18 @@ export class ParametrosWorkspaceOrquestador {
   readonly periodoBandaPendienteVisible = computed(() => {
     const pendiente = this.cierrePendientePrincipal();
     if (!pendiente || pendiente === 'Sin pendientes críticos.') return false;
+    // Mientras se edita, la banda informa la edición; el pendiente vuelve a verse al guardar o cancelar.
+    if (this.generalesEditando()) return false;
 
-    const detalle = this.periodoEstadoDetalle();
-    return !detalle.toLocaleLowerCase().includes(pendiente.toLocaleLowerCase());
+    // Compara sin tildes ni «del período» final: el detalle y el pendiente pueden decir lo mismo con otra redacción.
+    const normalizar = (texto: string) =>
+      texto
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLocaleLowerCase()
+        .replace(/\s+del periodo\.?$/, '')
+        .replace(/\.$/, '');
+    return !normalizar(this.periodoEstadoDetalle()).includes(normalizar(pendiente));
   });
 
   readonly cierreAccionVisible = computed(
@@ -650,7 +665,7 @@ export class ParametrosWorkspaceOrquestador {
       return 'Editando configuración del cliente.';
     }
     if (!this.hasAnySyncedData()) {
-      return 'Aún no hay carga oficial. Puede capturar valores; se actualizarán con la carga de fin de mes.';
+      return 'Aún no hay carga oficial. Puedes capturar valores tentativos; la carga de fin de mes los actualizará.';
     }
     const referencia = this.referenciaVisualPrincipalLabelCapitalizado();
     if (referencia) {
@@ -1837,7 +1852,7 @@ export class ParametrosWorkspaceOrquestador {
       return 'Usa las acciones del resumen de cierre para completar la configuración.';
     }
     if (!this.hasAnySyncedData()) {
-      return 'Capture valores tentativos del cliente para este período. La carga oficial de fin de mes actualizará los datos y se revisarán diferencias.';
+      return 'Captura valores tentativos del cliente para este período. La carga oficial de fin de mes los actualizará y te mostrará las diferencias.';
     }
     if (!this.isConfigurableTab()) {
       return 'Modificar aplica a la configuración del cliente. Los datos oficiales se cargan por proceso normativo.';
@@ -1868,7 +1883,9 @@ export class ParametrosWorkspaceOrquestador {
 
   private abandonoEdicionPendiente: ((continuar: boolean) => void) | null = null;
 
-  private confirmarAbandonarEdicionConDialog(): Promise<boolean> {
+  private confirmarAbandonarEdicionConDialog(
+    motivo: 'cambiar-periodo' | 'cancelar' = 'cambiar-periodo',
+  ): Promise<boolean> {
     if (!this.generalesEditando() || !this.form.dirty) {
       return Promise.resolve(true);
     }
@@ -1878,7 +1895,7 @@ export class ParametrosWorkspaceOrquestador {
     }
     return new Promise<boolean>((resolve) => {
       this.abandonoEdicionPendiente = resolve;
-      this.dialogState.set(buildParametrosConfirmarAbandonarEdicionDialog());
+      this.dialogState.set(buildParametrosConfirmarAbandonarEdicionDialog(motivo));
       this.cdr.markForCheck();
     });
   }

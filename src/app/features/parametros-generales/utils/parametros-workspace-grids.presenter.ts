@@ -33,27 +33,27 @@ export const PARAMETROS_GRID_EMPTY = {
   afp: {
     title: 'Administradoras de fondos de pensiones',
     emptyTitle: 'Sin registros de AFP para el período',
-    emptyDescription: 'Seleccione otro período o sincronice la carga normativa del mes.',
+    emptyDescription: 'Elige otro período o sincroniza la carga normativa del mes.',
   },
   isapre: {
     title: 'Instituciones ISAPRE',
     emptyTitle: 'Sin registros de ISAPRE para el período',
-    emptyDescription: 'Seleccione otro período o sincronice la carga normativa del mes.',
+    emptyDescription: 'Elige otro período o sincroniza la carga normativa del mes.',
   },
   saludInstituciones: {
     title: 'Instituciones de salud',
     emptyTitle: 'Sin instituciones de salud para el período',
-    emptyDescription: 'Seleccione otro período o sincronice la carga normativa del mes.',
+    emptyDescription: 'Elige otro período o sincroniza la carga normativa del mes.',
   },
   ccaf: {
     title: 'Cajas de compensación',
     emptyTitle: 'Sin cajas de compensación en catálogo',
-    emptyDescription: 'Revise la carga de maestros o la normativa base del período.',
+    emptyDescription: 'Revisa la carga de maestros o la normativa base del período.',
   },
   mutuales: {
     title: 'Organismos mutual',
     emptyTitle: 'Sin organismos mutual en catálogo',
-    emptyDescription: 'Revise la carga de maestros o la normativa Ley 16.744 del período.',
+    emptyDescription: 'Revisa la carga de maestros o la normativa Ley 16.744 del período.',
   },
   tramosCarga: {
     title: 'Tramos de asignación familiar',
@@ -63,12 +63,12 @@ export const PARAMETROS_GRID_EMPTY = {
   tablaImpuesto: {
     title: 'Tabla impuesto único (SII)',
     emptyTitle: 'Sin tabla de impuesto único',
-    emptyDescription: 'Ejecute la sincronización mensual con fuente SII para el período.',
+    emptyDescription: 'Ejecuta la sincronización mensual con fuente SII para el período.',
   },
   reforma: {
     title: 'Gradualidad previsional',
     emptyTitle: 'Sin gradualidad vigente al período',
-    emptyDescription: 'Revise las fechas de vigencia de la reforma previsional.',
+    emptyDescription: 'Revisa las fechas de vigencia de la reforma previsional.',
   },
   listado: {
     title: 'Parámetros por período',

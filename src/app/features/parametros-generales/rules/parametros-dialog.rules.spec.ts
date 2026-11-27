@@ -85,7 +85,7 @@ describe('parametros-dialog.rules', () => {
 
   it('form inválido lista campos pendientes cuando se le pasan', () => {
     const dialog = buildParametrosFormularioInvalidoDialog(['UF', 'UTM']);
-    expect(dialog.detail).toBe('Campos pendientes: UF, UTM.');
+    expect(dialog.detail).toBe('Campos por corregir: UF, UTM.');
   });
 
   it('form inválido sin lista muestra mensaje genérico', () => {
@@ -108,5 +108,26 @@ describe('parametros-dialog.rules', () => {
       primaryLabel: 'Descartar y cambiar',
       secondaryLabel: 'Seguir editando',
     });
+  });
+
+  it('confirmar abandono al cancelar no habla de cambiar de período', () => {
+    const dialog = buildParametrosConfirmarAbandonarEdicionDialog('cancelar');
+    expect(dialog.primaryLabel).toBe('Descartar cambios');
+    expect(dialog.message).not.toContain('período');
+  });
+
+  it('detalle de diferencias muestra cifras con formato y unidad', () => {
+    const detalle = detalleDiferenciasOficialesCliente('2026-11', [
+      { campo: 'uf', oficial: 41439.89, cliente: 41000 },
+      { campo: 'topeAfpUf', oficial: 90, cliente: 87.8 },
+      { campo: 'sis', oficial: 1.79, cliente: 1.5 },
+      { campo: 'saludCcaf', oficial: 4.2, cliente: 4 },
+    ]);
+
+    expect(detalle).toContain('UF: $41.439,89 oficial, $41.000,00 en tu configuración');
+    expect(detalle).toContain('Tope AFP (UF): 90 UF oficial, 87,8 UF en tu configuración');
+    expect(detalle).toContain('SIS: 1,79 % oficial, 1,5 % en tu configuración');
+    expect(detalle).toContain('Salud CCAF');
+    expect(detalle).not.toContain('saludCcaf');
   });
 });

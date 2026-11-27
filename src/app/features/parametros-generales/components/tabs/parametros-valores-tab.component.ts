@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
+import type { ParametroGeneral } from '../../models/parametro-general.model';
+
 import { fechaUfDelPeriodo } from '../../utils/parametros-formato';
 import { ParametroCifraComponent } from '../parametro-cifra/parametro-cifra.component';
 
@@ -21,7 +23,7 @@ import { ParametroCifraComponent } from '../parametro-cifra/parametro-cifra.comp
           <label class="param-field">
             <span>UF</span>
             <app-parametro-cifra
-              [control]="form.get('uf')"
+              [control]="form.get('uf')" [oficial]="oficial?.uf"
               unidad="CLP"
               [decimales]="{ min: 2, max: 2 }"
               step="0.01"
@@ -34,7 +36,7 @@ import { ParametroCifraComponent } from '../parametro-cifra/parametro-cifra.comp
           <label class="param-field">
             <span>UTM</span>
             <app-parametro-cifra
-              [control]="form.get('utm')"
+              [control]="form.get('utm')" [oficial]="oficial?.utm"
               unidad="CLP"
               step="1"
               [editable]="officialEditable"
@@ -45,7 +47,7 @@ import { ParametroCifraComponent } from '../parametro-cifra/parametro-cifra.comp
           <label class="param-field">
             <span>UTA</span>
             <app-parametro-cifra
-              [control]="form.get('uta')"
+              [control]="form.get('uta')" [oficial]="oficial?.uta"
               unidad="CLP"
               step="1"
               [editable]="officialEditable"
@@ -65,6 +67,8 @@ import { ParametroCifraComponent } from '../parametro-cifra/parametro-cifra.comp
 })
 export class ParametrosValoresTabComponent {
   @Input({ required: true }) form!: FormGroup;
+  /** Fila oficial del mes; si la configuración del cliente difiere, cada cifra lo indica. */
+  @Input() oficial: ParametroGeneral | null = null;
   @Input() editable = false;
   @Input() officialEditable = false;
   @Input() configEditable = false;

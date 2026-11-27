@@ -4,6 +4,7 @@ import type {
   ParametrosDialogAction,
   ParametrosDialogState,
 } from '../models/parametros-workspace.vm';
+import { formatearCifraParametro, type UnidadParametro } from '../utils/parametros-formato';
 import { formatearPeriodoMesAnio } from '../utils/parametros-workspace-tabs.presenter';
 import {
   diferenciasConDesviacionExtrema,
@@ -37,14 +38,14 @@ export function buildParametrosFormularioInvalidoDialog(
   camposPendientes: readonly string[] = [],
 ): ParametrosDialogState {
   const detalle = camposPendientes.length > 0
-    ? `Campos pendientes: ${camposPendientes.join(', ')}.`
-    : 'Hay campos obligatorios o con formato inválido.';
+    ? `Campos por corregir: ${camposPendientes.join(', ')}.`
+    : 'Hay campos obligatorios vacíos o con valores fuera de rango.';
 
   return {
     kind: 'alerta',
     variant: 'warning',
-    title: 'Faltan datos por completar',
-    message: 'Revisa los campos marcados antes de guardar.',
+    title: 'Hay campos por corregir',
+    message: 'Revisa los campos marcados en rojo antes de guardar.',
     detail: detalle,
     primaryLabel: 'Aceptar',
   };
@@ -154,7 +155,7 @@ export function buildParametrosSoloConfigClienteEditableDialog(): ParametrosDial
     variant: 'info',
     title: 'Datos oficiales en solo lectura',
     message: 'Los datos oficiales se cargan desde el proceso normativo del mes.',
-    detail: 'Desde Parámetros sólo se edita la configuración del cliente para el período.',
+    detail: 'Desde Parámetros solo se edita la configuración del cliente para el período.',
     primaryLabel: 'Aceptar',
   };
 }
@@ -175,7 +176,7 @@ export function buildParametrosPeriodoCerradoSoloLecturaDialog(): ParametrosDial
     kind: 'alerta',
     variant: 'warning',
     title: 'Período cerrado',
-    message: 'El período está cerrado y queda en sólo lectura.',
+    message: 'El período está cerrado y queda en solo lectura.',
     detail: 'Cualquier cambio requiere reapertura desde el flujo de corrección auditado.',
     primaryLabel: 'Aceptar',
   };
@@ -248,7 +249,7 @@ export function buildParametrosConfirmacionModificacionDialog(periodo: string): 
       },
       {
         title: 'Acción',
-        text: 'Esta acción sobrescribe los valores guardados. Confirma sólo si los datos están revisados.',
+        text: 'Esta acción sobrescribe los valores guardados. Confirma solo si los datos están revisados.',
         tone: 'info',
       },
     ],
@@ -267,7 +268,7 @@ export function buildParametrosDecisionConfigClienteDialog(
     variant: 'confirm',
     title: 'Configurar el período',
     message: `No hay configuración del cliente para ${periodoLabel}.`,
-    detail: 'Elige una base para continuar. La configuración se crea sólo al guardar.',
+    detail: 'Elige una base para continuar. La configuración se crea solo al guardar.',
     primaryLabel: 'Crear desde cero',
     secondaryLabel: actions[0]?.label,
     secondaryAction: actions[0]?.action,
@@ -290,14 +291,19 @@ export function buildParametrosSinConfigClienteAnteriorDialog(periodo: string): 
   };
 }
 
-export function buildParametrosConfirmarAbandonarEdicionDialog(): ParametrosDialogState {
+export function buildParametrosConfirmarAbandonarEdicionDialog(
+  motivo: 'cambiar-periodo' | 'cancelar' = 'cambiar-periodo',
+): ParametrosDialogState {
+  const cancelar = motivo === 'cancelar';
   return {
     kind: 'confirmar-abandonar-edicion',
     variant: 'confirm',
     title: 'Cambios sin guardar',
-    message: '¿Quieres descartar los cambios y cambiar de período?',
+    message: cancelar
+      ? '¿Quieres descartar los cambios que hiciste?'
+      : '¿Quieres descartar los cambios y cambiar de período?',
     detail: 'Los datos editados se perderán si continúas.',
-    primaryLabel: 'Descartar y cambiar',
+    primaryLabel: cancelar ? 'Descartar cambios' : 'Descartar y cambiar',
     secondaryLabel: 'Seguir editando',
   };
 }
@@ -308,7 +314,7 @@ export const ETIQUETAS_CAMPO_DIFERENCIA: Partial<Record<keyof ParametroGeneral, 
   uta: 'UTA',
   sueldoMinimo: 'Sueldo mínimo',
   sueldoMinimo18a65: 'Sueldo mínimo 18 a 65',
-  sueldoMinimoMenor18Mayor65: 'Sueldo mínimo menor 18 o mayor 65',
+  sueldoMinimoMenor18Mayor65: 'Sueldo mínimo menores de 18 y mayores de 65',
   sueldoMinimoCasaParticular: 'Sueldo mínimo casa particular',
   ingresoMinimoNoRemuneracional: 'Ingreso mínimo no remuneracional',
   topeAfpUf: 'Tope AFP (UF)',
@@ -329,21 +335,56 @@ export const ETIQUETAS_CAMPO_DIFERENCIA: Partial<Record<keyof ParametroGeneral, 
   saludObligatoria: 'Salud obligatoria',
   afcTrabajadorIndefinido: 'AFC trabajador indefinido',
   afcEmpleadorIndefinido: 'AFC empleador indefinido',
-  afcEmpleadorPlazo: 'AFC empleador plazo',
+  afcEmpleadorPlazo: 'AFC empleador plazo fijo / obra',
+  afcEmpleadorIndefinidoOnceAnosMas: 'AFC empleador indefinido 11 años o más',
+  afcEmpleadorCasaParticular: 'AFC empleador casa particular',
+  seguroSocialExpectativaVida: 'Seguro social expectativa de vida',
+  aporteEmpleadorAfp: 'Aporte empleador AFP',
+  saludCcaf: 'Salud CCAF',
+  saludFonasaConCcaf: 'Salud Fonasa con CCAF',
   trabajoPesadoEmpleador: 'Trabajo pesado empleador',
   trabajoPesadoTrabajador: 'Trabajo pesado trabajador',
   trabajoMenosPesadoEmpleador: 'Trabajo menos pesado empleador',
   trabajoMenosPesadoTrabajador: 'Trabajo menos pesado trabajador',
 };
 
-function formatearValorDiferencia(value: number | boolean | null): string {
+const CAMPOS_EN_PESOS = new Set<keyof ParametroGeneral>([
+  'uf',
+  'utm',
+  'uta',
+  'sueldoMinimo',
+  'sueldoMinimo18a65',
+  'sueldoMinimoMenor18Mayor65',
+  'sueldoMinimoCasaParticular',
+  'ingresoMinimoNoRemuneracional',
+  'topeAfp',
+  'topeIps',
+  'topeCesantia',
+  'topeApvMensual',
+  'topeApvAnual',
+  'topeDepositoConvenidoAnual',
+  'topeAfpVoluntario',
+]);
+
+/** Unidad con que se publica cada campo: pesos, UF (topes `…Uf`) o porcentaje. */
+export function unidadCampoParametro(campo: keyof ParametroGeneral): UnidadParametro {
+  if (CAMPOS_EN_PESOS.has(campo)) {
+    return 'CLP';
+  }
+  return String(campo).endsWith('Uf') ? 'UF' : '%';
+}
+
+function formatearValorDiferencia(campo: keyof ParametroGeneral, value: number | boolean | null): string {
   if (value === null) {
     return 'sin valor';
   }
   if (typeof value === 'boolean') {
     return value ? 'Sí' : 'No';
   }
-  return String(value);
+  const unidad = unidadCampoParametro(campo);
+  const decimales = campo === 'uf' ? { min: 2, max: 2 } : undefined;
+  const cifra = formatearCifraParametro(value, unidad, decimales) ?? String(value);
+  return unidad === 'CLP' ? cifra : `${cifra} ${unidad}`;
 }
 
 export interface DetalleDiferenciasOficialesOpciones {
@@ -377,7 +418,7 @@ export function detalleDiferenciasOficialesCliente(
 
   const lineas = diferencias.map((d) => {
     const etiqueta = ETIQUETAS_CAMPO_DIFERENCIA[d.campo] ?? String(d.campo);
-    return `· ${etiqueta}: oficial ${formatearValorDiferencia(d.oficial)} · tu configuración ${formatearValorDiferencia(d.cliente)}`;
+    return `• ${etiqueta}: ${formatearValorDiferencia(d.campo, d.oficial)} oficial, ${formatearValorDiferencia(d.campo, d.cliente)} en tu configuración`;
   });
 
   return [...encabezado, '', 'Campos distintos:', ...lineas].join('\n');
