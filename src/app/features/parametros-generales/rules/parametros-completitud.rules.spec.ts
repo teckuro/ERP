@@ -73,7 +73,13 @@ describe('parametros-completitud.rules', () => {
 
     expect(resultado.estadoCalculado).toBe('parcial');
     expect(resultado.grupos.configuracionCliente.completo).toBe(false);
-    expect(resultado.pendientes).toContain('Falta configuración cliente del período.');
+    expect(resultado.pendientes).toContain('Falta la configuración de la empresa para este período. Créala en Configuración cliente.');
+    expect(resultado.pendientes).toContain(
+      'Falta en la configuración de la empresa: tope AFP (UF). Ingresa el valor en Configuración cliente.',
+    );
+    expect(resultado.pendientes).toContain(
+      'Falta en la configuración de la empresa: trabajo pesado (empleador). Ingresa el valor en Configuración cliente.',
+    );
   });
 
   it('queda pendiente si no hay datos oficiales mensuales aunque exista configuracion cliente', () => {
@@ -87,7 +93,7 @@ describe('parametros-completitud.rules', () => {
 
     expect(resultado.estadoCalculado).toBe('pendiente');
     expect(resultado.grupos.oficialesMensuales.completo).toBe(false);
-    expect(resultado.pendientes).toContain('Datos oficiales del período.');
+    expect(resultado.pendientes).toContain('Faltan los datos oficiales del período. Cárgalos en Datos oficiales › Valores.');
   });
 
   it('mes sin datos oficiales no evalua consistencia (no 1/1 artificial)', () => {
@@ -122,8 +128,8 @@ describe('parametros-completitud.rules', () => {
     expect(resultado.estadoCalculado).toBe('pendiente');
     expect(resultado.porcentaje).toBeLessThan(100);
     expect(resultado.grupos.oficialesMensuales.completo).toBe(false);
-    expect(resultado.pendientes).toContain('Datos oficiales del período.');
-    expect(resultado.pendientes).toContain('Faltan tramos de carga familiar.');
+    expect(resultado.pendientes).toContain('Faltan los datos oficiales del período. Cárgalos en Datos oficiales › Valores.');
+    expect(resultado.pendientes).toContain('Faltan los tramos de asignación familiar del período. Revísalos en Datos oficiales › Cargas.');
   });
 
   it('valida trabajo pesado por solape de vigencia y no por fila mensual exacta', () => {
@@ -146,7 +152,7 @@ describe('parametros-completitud.rules', () => {
     });
 
     expect(resultado.grupos.vigencias.completo).toBe(true);
-    expect(resultado.pendientes).not.toContain('Falta vigencia aplicable de trabajo pesado.');
+    expect(resultado.pendientes).not.toContain('No hay tasas de trabajo pesado vigentes para el período. Revisa la carga de parámetros oficiales del período.');
   });
 
   it('queda parcial si no existe vigencia aplicable de trabajo pesado', () => {
@@ -169,7 +175,7 @@ describe('parametros-completitud.rules', () => {
 
     expect(resultado.estadoCalculado).toBe('parcial');
     expect(resultado.grupos.vigencias.completo).toBe(false);
-    expect(resultado.pendientes).toContain('Falta vigencia aplicable de trabajo pesado.');
+    expect(resultado.pendientes).toContain('No hay tasas de trabajo pesado vigentes para el período. Revisa la carga de parámetros oficiales del período.');
   });
 
   it('marca valores oficiales en cero como pendientes (p. ej. UF del mes)', () => {
@@ -201,7 +207,7 @@ describe('parametros-completitud.rules', () => {
       { campo: 'uf', oficial: 38000, cliente: 40000 },
     ]);
     expect(resultado.advertencias).toContain(
-      'Existen diferencias pendientes entre valores oficiales y configuración cliente.',
+      'Hay valores de la configuración de la empresa que no coinciden con los oficiales. Revísalos en Configuración cliente y decide cuál usar.',
     );
   });
 
@@ -631,7 +637,7 @@ describe('parametros-completitud.rules', () => {
 
     expect(resultado.estadoCalculado).toBe('error');
     expect(resultado.grupos.tecnico.completo).toBe(false);
-    expect(resultado.errores).toContain('Existe una falla técnica o error de carga asociado al período.');
+    expect(resultado.errores).toContain('Los parámetros del período no se cargaron bien. Recarga la página y, si el error sigue, avisa a soporte.');
   });
 });
 

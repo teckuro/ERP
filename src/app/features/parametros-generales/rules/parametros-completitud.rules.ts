@@ -3,11 +3,17 @@ import type {
   ParametrosGeneralesCatalogos,
   ParametrosGeneralesClienteConfig,
   ParametrosGeneralesClienteConfigUpsert,
+  ParametrosTabId,
   PeriodoRemuneracionEstado,
   PeriodoRemuneracionEstadoInfo,
 } from '../models/parametro-general.model';
+import type { ParametrosAreaId } from '../models/parametros-workspace.vm';
+import { etiquetaTabParametros, tituloAreaParametros } from '../utils/parametros-workspace-tabs.presenter';
 
-import { humanizarFaltaDatoOficial } from '../../nomina-mensual/rules/proceso-mensual-copy-limpio.rules';
+import {
+  etiquetaCampoOficial,
+  humanizarFaltaDatoOficial,
+} from '../../nomina-mensual/rules/proceso-mensual-copy-limpio.rules';
 
 export type ParametrosCompletitudEstado = PeriodoRemuneracionEstado;
 export type ParametrosEstadoVisual =
@@ -51,23 +57,48 @@ export interface ParametrosCompletitudResultado {
   reconciliacionPendiente: boolean;
 }
 
+/** Ruta visible en el workspace de Parámetros, con los mismos nombres que usa el menú. */
+function ubicacionParametros(area: ParametrosAreaId, tab?: ParametrosTabId): string {
+  const titulo = tituloAreaParametros(area);
+  return tab ? `${titulo} › ${etiquetaTabParametros(tab)}` : titulo;
+}
+
+const EN_CONFIG_EMPRESA = ubicacionParametros('configuracionCliente');
+const CARGA_OFICIAL = 'Revisa la carga de parámetros oficiales del período.';
+
 /**
- * Mensajes de completitud que otros módulos (p. ej. nómina v2) reconocen.
- * Compararlos siempre contra estas constantes, nunca contra el texto literal.
+ * Mensajes de completitud: dicen qué falta y dónde completarlo.
+ * Otros módulos (p. ej. nómina v2) los reconocen comparando contra estas
+ * constantes, nunca contra el texto literal.
  */
 export const MENSAJES_COMPLETITUD = {
-  sinConfigCliente: 'Falta configuración cliente del período.',
-  sinGratificacion: 'Falta definir gratificación.',
-  sinImmGratificacion: 'Falta IMM de gratificación.',
-  sinMetodoAusencias: 'Falta método de descuento por ausencias.',
-  sinCcaf: 'Falta CCAF seleccionada.',
-  sinMutual: 'Falta mutual seleccionada.',
-  diferenciasOficialCliente: 'Existen diferencias pendientes entre valores oficiales y configuración cliente.',
-  fallaTecnica: 'Existe una falla técnica o error de carga asociado al período.',
+  sinDatosOficiales: `Faltan los datos oficiales del período. Cárgalos en ${ubicacionParametros('datosOficiales', 'valores')}.`,
+  sinTramosCarga: `Faltan los tramos de asignación familiar del período. Revísalos en ${ubicacionParametros('datosOficiales', 'tramosCarga')}.`,
+  sinTramosImpuesto: `Faltan los tramos del impuesto único. Revísalos en ${ubicacionParametros('datosOficiales', 'impuestoUnico')}.`,
+  sinTablaImpuesto: `Falta la tabla de impuesto único del período. Revísala en ${ubicacionParametros('datosOficiales', 'impuestoUnico')}.`,
+  sinConfigEmpresa: `Falta la configuración de la empresa para este período. Créala en ${EN_CONFIG_EMPRESA}.`,
+  sinGratificacion: `Falta indicar si la empresa paga gratificación legal. Defínelo en ${EN_CONFIG_EMPRESA}.`,
+  sinImmGratificacion: `Falta el IMM con que se calcula la gratificación. Ingrésalo en ${EN_CONFIG_EMPRESA}.`,
+  sinMetodoAusencias: `Falta elegir cómo se descuentan las ausencias. Defínelo en ${EN_CONFIG_EMPRESA}.`,
+  sinCcaf: `Falta seleccionar la CCAF de la empresa. Elígela en ${EN_CONFIG_EMPRESA}.`,
+  sinMutual: `Falta seleccionar la mutual de la empresa. Elígela en ${EN_CONFIG_EMPRESA}.`,
+  sinAfp: `No hay tasas de AFP vigentes para el período. Revísalas en ${ubicacionParametros('catalogosVigencias', 'prevision')}.`,
+  sinSalud: `No hay instituciones de salud vigentes para el período. Revísalas en ${ubicacionParametros('catalogosVigencias', 'salud')}.`,
+  sinAfc: `No hay tasas de AFC vigentes para el período. ${CARGA_OFICIAL}`,
+  sinReformaPrevisional: `Falta la gradualidad de la reforma previsional que aplica al período. Revísala en ${ubicacionParametros('observacionNormativa', 'reforma')}.`,
+  sinTrabajoPesado: `No hay tasas de trabajo pesado vigentes para el período. ${CARGA_OFICIAL}`,
+  sinReformaPensiones: `Faltan los parámetros vigentes de la reforma de pensiones. ${CARGA_OFICIAL}`,
+  diferenciasOficialEmpresa: `Hay valores de la configuración de la empresa que no coinciden con los oficiales. Revísalos en ${EN_CONFIG_EMPRESA} y decide cuál usar.`,
+  fallaTecnica: 'Los parámetros del período no se cargaron bien. Recarga la página y, si el error sigue, avisa a soporte.',
 } as const;
 
-/** Prefijo de los pendientes por campo operativo: `${PREFIJO_FALTA_CONFIG_CLIENTE}: campo.` */
-export const PREFIJO_FALTA_CONFIG_CLIENTE = 'Falta configuración cliente';
+/** Inicio de los pendientes por dato faltante: `${PREFIJO_FALTA_CONFIG_EMPRESA}: <dato>. …` */
+export const PREFIJO_FALTA_CONFIG_EMPRESA = 'Falta en la configuración de la empresa';
+
+/** Pendiente de un dato operativo de la configuración de la empresa, con su nombre legible. */
+export function mensajeFaltaCampoConfigEmpresa(campo: string): string {
+  return `${PREFIJO_FALTA_CONFIG_EMPRESA}: ${etiquetaCampoOficial(campo)}. Ingresa el valor en ${EN_CONFIG_EMPRESA}.`;
+}
 
 export type OficialComparacionOrigen = 'fila_exacta' | 'ultimo_hasta_periodo' | 'referencia_visual';
 
@@ -239,7 +270,7 @@ export function evaluarCompletitudParametrosMensual(
     ? grupo('consistencia', reconciliacionPendiente ? 0 : 1, 1)
     : grupoNoAplica('consistencia');
   if (reconciliacionPendiente) {
-    advertencias.push(MENSAJES_COMPLETITUD.diferenciasOficialCliente);
+    advertencias.push(MENSAJES_COMPLETITUD.diferenciasOficialEmpresa);
   }
 
   const tecnicoCompleto = !input.errorTecnico && input.periodoRemuneracion?.estado !== 'error';
@@ -298,13 +329,13 @@ function evaluarOficiales(
   if (input.oficial) {
     completos += 1;
   } else {
-    pendientes.push('Datos oficiales del período.');
+    pendientes.push(MENSAJES_COMPLETITUD.sinDatosOficiales);
   }
 
-  completos += contarCampos(input.oficial, CAMPOS_OFICIALES_OBLIGATORIOS, pendientes, 'Falta dato oficial');
-  completos += sumaArray(input.catalogos.tramosCarga, 'Faltan tramos de carga familiar.', pendientes);
-  completos += sumaArray(input.catalogos.tramosImpuesto, 'Faltan tramos de impuesto único.', pendientes);
-  completos += sumaArray(input.catalogos.tablaImpuestoUnico, 'Falta tabla de impuesto único del período.', pendientes);
+  completos += contarCampos(input.oficial, CAMPOS_OFICIALES_OBLIGATORIOS, pendientes, (campo) => `Falta dato oficial: ${campo}.`);
+  completos += sumaArray(input.catalogos.tramosCarga, MENSAJES_COMPLETITUD.sinTramosCarga, pendientes);
+  completos += sumaArray(input.catalogos.tramosImpuesto, MENSAJES_COMPLETITUD.sinTramosImpuesto, pendientes);
+  completos += sumaArray(input.catalogos.tablaImpuestoUnico, MENSAJES_COMPLETITUD.sinTablaImpuesto, pendientes);
 
   return grupo('oficialesMensuales', completos, total);
 }
@@ -320,7 +351,7 @@ function evaluarConfigCliente(
   if (cfg) {
     completos += 1;
   } else {
-    pendientes.push(MENSAJES_COMPLETITUD.sinConfigCliente);
+    pendientes.push(MENSAJES_COMPLETITUD.sinConfigEmpresa);
   }
 
   completos += cfg?.gratificacion !== null && cfg?.gratificacion !== undefined ? 1 : 0;
@@ -354,7 +385,7 @@ function evaluarConfigCliente(
     pendientes.push(MENSAJES_COMPLETITUD.sinMutual);
   }
 
-  completos += contarCampos(cfg, CAMPOS_CLIENTE_OPERATIVOS, pendientes, PREFIJO_FALTA_CONFIG_CLIENTE);
+  completos += contarCampos(cfg, CAMPOS_CLIENTE_OPERATIVOS, pendientes, mensajeFaltaCampoConfigEmpresa);
   return grupo('configuracionCliente', completos, total);
 }
 
@@ -363,23 +394,23 @@ function evaluarVigencias(
   pendientes: string[],
 ): ParametrosCompletitudGrupo {
   const checks = [
-    { ok: input.catalogos.afp.length > 0, pendiente: 'Falta vigencia aplicable de AFP.' },
+    { ok: input.catalogos.afp.length > 0, pendiente: MENSAJES_COMPLETITUD.sinAfp },
     {
       ok: input.catalogos.isapres.length > 0 || input.catalogos.saludInstituciones.length > 0,
-      pendiente: 'Falta vigencia aplicable de salud.',
+      pendiente: MENSAJES_COMPLETITUD.sinSalud,
     },
-    { ok: input.catalogos.afcParametros.length > 0, pendiente: 'Falta vigencia aplicable de AFC.' },
+    { ok: input.catalogos.afcParametros.length > 0, pendiente: MENSAJES_COMPLETITUD.sinAfc },
     {
       ok: tieneVigenciaAplicable(input.catalogos.reformaPrevisional, input.periodo),
-      pendiente: 'Falta reforma previsional aplicable al período.',
+      pendiente: MENSAJES_COMPLETITUD.sinReformaPrevisional,
     },
     {
       ok: tieneVigenciaAplicable(input.catalogos.trabajosPesados, input.periodo),
-      pendiente: 'Falta vigencia aplicable de trabajo pesado.',
+      pendiente: MENSAJES_COMPLETITUD.sinTrabajoPesado,
     },
     {
       ok: input.catalogos.reformaPensiones.length > 0,
-      pendiente: 'Faltan parámetros legales vigentes para el período.',
+      pendiente: MENSAJES_COMPLETITUD.sinReformaPensiones,
     },
   ];
 
@@ -451,7 +482,7 @@ function contarCampos<T extends Partial<Record<keyof ParametroGeneral, unknown>>
   source: T | null,
   fields: Array<keyof ParametroGeneral>,
   pendientes: string[],
-  prefix: string,
+  mensajeFalta: (campo: string) => string,
 ): number {
   let out = 0;
   for (const field of fields) {
@@ -461,7 +492,7 @@ function contarCampos<T extends Partial<Record<keyof ParametroGeneral, unknown>>
     } else if (typeof valor === 'number' && Number.isFinite(valor) && valor <= 0) {
       pendientes.push(`Dato oficial en cero: ${String(field)}.`);
     } else {
-      pendientes.push(`${prefix}: ${String(field)}.`);
+      pendientes.push(mensajeFalta(String(field)));
     }
   }
   return out;

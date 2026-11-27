@@ -338,9 +338,9 @@ export class ParametrosWorkspaceOrquestador {
       case 'cargado':
         return this.completitudDetalle('Período listo para revisar.');
       case 'pendiente_reconciliacion':
-        return 'Diferencias pendientes de revisar.';
+        return 'Hay valores de la empresa distintos a los oficiales. Revísalos en Configuración cliente.';
       case 'oficial_sin_config':
-        return 'Datos oficiales cargados. Falta configuración cliente.';
+        return 'Datos oficiales cargados. Falta la configuración de la empresa.';
       case 'configuracion_parcial':
         return 'Configuración guardada. Carga oficial pendiente.';
       case 'referencia_anterior':

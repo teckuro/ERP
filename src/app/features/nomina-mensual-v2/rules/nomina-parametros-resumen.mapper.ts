@@ -1,7 +1,7 @@
 import type { ClasificacionParametroGrupo, ProcesoMensualGrupoParametro } from '../../nomina-mensual/models/proceso-mensual.model';
 import {
   MENSAJES_COMPLETITUD,
-  PREFIJO_FALTA_CONFIG_CLIENTE,
+  PREFIJO_FALTA_CONFIG_EMPRESA,
   type ParametrosCompletitudResultado,
 } from '../../parametros-generales/rules/parametros-completitud.rules';
 import type {
@@ -54,7 +54,7 @@ const DETALLES: Record<string, string> = {
 };
 
 const CONFIG_CLIENTE_CHECKS: Array<{ label: string; pendiente: string }> = [
-  { label: 'Configuración del período', pendiente: MENSAJES_COMPLETITUD.sinConfigCliente },
+  { label: 'Configuración del período', pendiente: MENSAJES_COMPLETITUD.sinConfigEmpresa },
   { label: 'Gratificación', pendiente: MENSAJES_COMPLETITUD.sinGratificacion },
   { label: 'IMM gratificación', pendiente: MENSAJES_COMPLETITUD.sinImmGratificacion },
   { label: 'Descuentos por ausencias', pendiente: MENSAJES_COMPLETITUD.sinMetodoAusencias },
@@ -192,8 +192,8 @@ function buildAreas(
 
 function buildConfigClienteItems(completitud?: ParametrosCompletitudResultado | null): ParametroResumenItem[] {
   const pendientes = completitud?.pendientes ?? [];
-  const sinConfig = pendientes.includes(MENSAJES_COMPLETITUD.sinConfigCliente);
-  const operativosPendiente = pendientes.find((p) => p.startsWith(`${PREFIJO_FALTA_CONFIG_CLIENTE}:`));
+  const sinConfig = pendientes.includes(MENSAJES_COMPLETITUD.sinConfigEmpresa);
+  const operativosPendiente = pendientes.find((p) => p.startsWith(`${PREFIJO_FALTA_CONFIG_EMPRESA}:`));
 
   const items: ParametroResumenItem[] = CONFIG_CLIENTE_CHECKS.map(({ label, pendiente }) => {
     if (pendientes.includes(pendiente)) {
@@ -218,7 +218,7 @@ function buildConfigClienteItems(completitud?: ParametrosCompletitudResultado | 
     items.push({
       label: 'Reconciliación oficial/cliente',
       estado: consistencia.completo ? 'ok' : 'revisar',
-      detalle: consistencia.completo ? undefined : MENSAJES_COMPLETITUD.diferenciasOficialCliente,
+      detalle: consistencia.completo ? undefined : MENSAJES_COMPLETITUD.diferenciasOficialEmpresa,
       advertenciaNoBloqueante: !consistencia.completo,
     });
   }

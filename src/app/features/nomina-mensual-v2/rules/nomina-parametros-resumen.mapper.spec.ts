@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { ProcesoMensualGrupoParametro } from '../../nomina-mensual/models/proceso-mensual.model';
 import {
   MENSAJES_COMPLETITUD,
-  PREFIJO_FALTA_CONFIG_CLIENTE,
+  mensajeFaltaCampoConfigEmpresa,
   type ParametrosCompletitudGrupo,
   type ParametrosCompletitudResultado,
 } from '../../parametros-generales/rules/parametros-completitud.rules';
@@ -28,7 +28,7 @@ describe('nomina-parametros-resumen.mapper', () => {
         configuracionCliente: grupo('configuracionCliente', 0, 1),
         consistencia: grupo('consistencia', 0, 1),
       },
-      advertencias: [MENSAJES_COMPLETITUD.diferenciasOficialCliente],
+      advertencias: [MENSAJES_COMPLETITUD.diferenciasOficialEmpresa],
     });
 
     const resumen = buildNominaParametrosResumen({
@@ -130,26 +130,26 @@ describe('nomina-parametros-resumen.mapper', () => {
     expect(resumen.advertenciasNoBloqueantes).toHaveLength(3);
   });
 
-  it('sin configuración cliente deja los checks pendientes y omite valores operativos', () => {
+  it('sin configuración de la empresa deja los checks pendientes y omite valores operativos', () => {
     const resumen = buildNominaParametrosResumen({
       periodo: '2026-05',
       gruposMinimos: gruposOk,
       completitud: completitudMock({
-        pendientes: [MENSAJES_COMPLETITUD.sinConfigCliente, `${PREFIJO_FALTA_CONFIG_CLIENTE}: uf.`],
+        pendientes: [MENSAJES_COMPLETITUD.sinConfigEmpresa, mensajeFaltaCampoConfigEmpresa('uf')],
         grupos: { configuracionCliente: grupo('configuracionCliente', 0, 1) },
       }),
     });
 
     const items = resumen.areas.find((area) => area.id === 'configuracionCliente')?.items ?? [];
     expect(items.find((item) => item.label === 'Configuración del período')).toEqual(
-      expect.objectContaining({ estado: 'revisar', detalle: MENSAJES_COMPLETITUD.sinConfigCliente }),
+      expect.objectContaining({ estado: 'revisar', detalle: MENSAJES_COMPLETITUD.sinConfigEmpresa }),
     );
     expect(items.find((item) => item.label === 'Gratificación')?.estado).toBe('pendiente');
     expect(items.some((item) => item.label === 'Valores operativos')).toBe(false);
   });
 
-  it('marca valores operativos a revisar cuando falta un campo de configuración cliente', () => {
-    const pendiente = `${PREFIJO_FALTA_CONFIG_CLIENTE}: uf.`;
+  it('marca valores operativos a revisar cuando falta un dato de la configuración de la empresa', () => {
+    const pendiente = mensajeFaltaCampoConfigEmpresa('uf');
     const resumen = buildNominaParametrosResumen({
       periodo: '2026-05',
       gruposMinimos: gruposOk,
@@ -167,7 +167,7 @@ describe('nomina-parametros-resumen.mapper', () => {
       expect.objectContaining({ estado: 'revisar', detalle: pendiente }),
     );
     expect(items.find((item) => item.label === 'Reconciliación oficial/cliente')?.detalle)
-      .toBe(MENSAJES_COMPLETITUD.diferenciasOficialCliente);
+      .toBe(MENSAJES_COMPLETITUD.diferenciasOficialEmpresa);
   });
 
   it('configuracion cliente incompleta bloquea preparacion', () => {
