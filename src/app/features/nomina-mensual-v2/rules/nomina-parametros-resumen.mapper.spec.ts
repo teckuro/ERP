@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import type { ProcesoMensualGrupoParametro } from '../../nomina-mensual/models/proceso-mensual.model';
-import type { ParametrosCompletitudResultado, ParametrosCompletitudGrupo } from '../../parametros-generales/rules/parametros-completitud.rules';
+import {
+  MENSAJES_COMPLETITUD,
+  PREFIJO_FALTA_CONFIG_CLIENTE,
+  type ParametrosCompletitudGrupo,
+  type ParametrosCompletitudResultado,
+} from '../../parametros-generales/rules/parametros-completitud.rules';
 import { buildNominaParametrosResumen } from './nomina-parametros-resumen.mapper';
 
 describe('nomina-parametros-resumen.mapper', () => {
@@ -18,12 +23,12 @@ describe('nomina-parametros-resumen.mapper', () => {
 
   it('configuracion cliente solo incluye validaciones de cliente y reconciliacion', () => {
     const completitud = completitudMock({
-      pendientes: ['Falta CCAF seleccionada.'],
+      pendientes: [MENSAJES_COMPLETITUD.sinCcaf],
       grupos: {
         configuracionCliente: grupo('configuracionCliente', 0, 1),
         consistencia: grupo('consistencia', 0, 1),
       },
-      advertencias: ['Existen diferencias pendientes entre valores oficiales y configuracion cliente.'],
+      advertencias: [MENSAJES_COMPLETITUD.diferenciasOficialCliente],
     });
 
     const resumen = buildNominaParametrosResumen({
@@ -93,7 +98,7 @@ describe('nomina-parametros-resumen.mapper', () => {
         { id: 'mensuales_uf_utm_sueldo', clasificacion: 'FALTANTE', detalle: 'sin_fila' },
       ],
       completitud: completitudMock({
-        pendientes: ['Falta mutual seleccionada.'],
+        pendientes: [MENSAJES_COMPLETITUD.sinMutual],
         grupos: {
           configuracionCliente: grupo('configuracionCliente', 0, 1),
         },
@@ -125,12 +130,52 @@ describe('nomina-parametros-resumen.mapper', () => {
     expect(resumen.advertenciasNoBloqueantes).toHaveLength(3);
   });
 
+  it('sin configuración cliente deja los checks pendientes y omite valores operativos', () => {
+    const resumen = buildNominaParametrosResumen({
+      periodo: '2026-05',
+      gruposMinimos: gruposOk,
+      completitud: completitudMock({
+        pendientes: [MENSAJES_COMPLETITUD.sinConfigCliente, `${PREFIJO_FALTA_CONFIG_CLIENTE}: uf.`],
+        grupos: { configuracionCliente: grupo('configuracionCliente', 0, 1) },
+      }),
+    });
+
+    const items = resumen.areas.find((area) => area.id === 'configuracionCliente')?.items ?? [];
+    expect(items.find((item) => item.label === 'Configuración del período')).toEqual(
+      expect.objectContaining({ estado: 'revisar', detalle: MENSAJES_COMPLETITUD.sinConfigCliente }),
+    );
+    expect(items.find((item) => item.label === 'Gratificación')?.estado).toBe('pendiente');
+    expect(items.some((item) => item.label === 'Valores operativos')).toBe(false);
+  });
+
+  it('marca valores operativos a revisar cuando falta un campo de configuración cliente', () => {
+    const pendiente = `${PREFIJO_FALTA_CONFIG_CLIENTE}: uf.`;
+    const resumen = buildNominaParametrosResumen({
+      periodo: '2026-05',
+      gruposMinimos: gruposOk,
+      completitud: completitudMock({
+        pendientes: [pendiente],
+        grupos: {
+          configuracionCliente: grupo('configuracionCliente', 0, 1),
+          consistencia: grupo('consistencia', 0, 1),
+        },
+      }),
+    });
+
+    const items = resumen.areas.find((area) => area.id === 'configuracionCliente')?.items ?? [];
+    expect(items.find((item) => item.label === 'Valores operativos')).toEqual(
+      expect.objectContaining({ estado: 'revisar', detalle: pendiente }),
+    );
+    expect(items.find((item) => item.label === 'Reconciliación oficial/cliente')?.detalle)
+      .toBe(MENSAJES_COMPLETITUD.diferenciasOficialCliente);
+  });
+
   it('configuracion cliente incompleta bloquea preparacion', () => {
     const resumen = buildNominaParametrosResumen({
       periodo: '2026-05',
       gruposMinimos: gruposOk,
       completitud: completitudMock({
-        pendientes: ['Falta CCAF seleccionada.'],
+        pendientes: [MENSAJES_COMPLETITUD.sinCcaf],
         grupos: {
           configuracionCliente: grupo('configuracionCliente', 0, 1),
         },

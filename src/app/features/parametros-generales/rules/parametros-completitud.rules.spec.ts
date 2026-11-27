@@ -73,7 +73,7 @@ describe('parametros-completitud.rules', () => {
 
     expect(resultado.estadoCalculado).toBe('parcial');
     expect(resultado.grupos.configuracionCliente.completo).toBe(false);
-    expect(resultado.pendientes).toContain('Falta configuracion cliente del periodo.');
+    expect(resultado.pendientes).toContain('Falta configuración cliente del período.');
   });
 
   it('queda pendiente si no hay datos oficiales mensuales aunque exista configuracion cliente', () => {
@@ -201,7 +201,7 @@ describe('parametros-completitud.rules', () => {
       { campo: 'uf', oficial: 38000, cliente: 40000 },
     ]);
     expect(resultado.advertencias).toContain(
-      'Existen diferencias pendientes entre valores oficiales y configuracion cliente.',
+      'Existen diferencias pendientes entre valores oficiales y configuración cliente.',
     );
   });
 
@@ -631,7 +631,7 @@ describe('parametros-completitud.rules', () => {
 
     expect(resultado.estadoCalculado).toBe('error');
     expect(resultado.grupos.tecnico.completo).toBe(false);
-    expect(resultado.errores).toContain('Existe una falla tecnica o error de carga asociado al periodo.');
+    expect(resultado.errores).toContain('Existe una falla técnica o error de carga asociado al período.');
   });
 });
 

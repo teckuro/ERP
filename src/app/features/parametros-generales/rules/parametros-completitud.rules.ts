@@ -51,6 +51,24 @@ export interface ParametrosCompletitudResultado {
   reconciliacionPendiente: boolean;
 }
 
+/**
+ * Mensajes de completitud que otros módulos (p. ej. nómina v2) reconocen.
+ * Compararlos siempre contra estas constantes, nunca contra el texto literal.
+ */
+export const MENSAJES_COMPLETITUD = {
+  sinConfigCliente: 'Falta configuración cliente del período.',
+  sinGratificacion: 'Falta definir gratificación.',
+  sinImmGratificacion: 'Falta IMM de gratificación.',
+  sinMetodoAusencias: 'Falta método de descuento por ausencias.',
+  sinCcaf: 'Falta CCAF seleccionada.',
+  sinMutual: 'Falta mutual seleccionada.',
+  diferenciasOficialCliente: 'Existen diferencias pendientes entre valores oficiales y configuración cliente.',
+  fallaTecnica: 'Existe una falla técnica o error de carga asociado al período.',
+} as const;
+
+/** Prefijo de los pendientes por campo operativo: `${PREFIJO_FALTA_CONFIG_CLIENTE}: campo.` */
+export const PREFIJO_FALTA_CONFIG_CLIENTE = 'Falta configuración cliente';
+
 export type OficialComparacionOrigen = 'fila_exacta' | 'ultimo_hasta_periodo' | 'referencia_visual';
 
 export interface OficialParaComparacionResult {
@@ -221,13 +239,13 @@ export function evaluarCompletitudParametrosMensual(
     ? grupo('consistencia', reconciliacionPendiente ? 0 : 1, 1)
     : grupoNoAplica('consistencia');
   if (reconciliacionPendiente) {
-    advertencias.push('Existen diferencias pendientes entre valores oficiales y configuracion cliente.');
+    advertencias.push(MENSAJES_COMPLETITUD.diferenciasOficialCliente);
   }
 
   const tecnicoCompleto = !input.errorTecnico && input.periodoRemuneracion?.estado !== 'error';
   const tecnico = grupo('tecnico', tecnicoCompleto ? 1 : 0, 1);
   if (!tecnicoCompleto) {
-    errores.push('Existe una falla tecnica o error de carga asociado al periodo.');
+    errores.push(MENSAJES_COMPLETITUD.fallaTecnica);
   }
 
   const grupos = {
@@ -285,8 +303,8 @@ function evaluarOficiales(
 
   completos += contarCampos(input.oficial, CAMPOS_OFICIALES_OBLIGATORIOS, pendientes, 'Falta dato oficial');
   completos += sumaArray(input.catalogos.tramosCarga, 'Faltan tramos de carga familiar.', pendientes);
-  completos += sumaArray(input.catalogos.tramosImpuesto, 'Faltan tramos de impuesto unico.', pendientes);
-  completos += sumaArray(input.catalogos.tablaImpuestoUnico, 'Falta tabla de impuesto unico del periodo.', pendientes);
+  completos += sumaArray(input.catalogos.tramosImpuesto, 'Faltan tramos de impuesto único.', pendientes);
+  completos += sumaArray(input.catalogos.tablaImpuestoUnico, 'Falta tabla de impuesto único del período.', pendientes);
 
   return grupo('oficialesMensuales', completos, total);
 }
@@ -302,18 +320,18 @@ function evaluarConfigCliente(
   if (cfg) {
     completos += 1;
   } else {
-    pendientes.push('Falta configuracion cliente del periodo.');
+    pendientes.push(MENSAJES_COMPLETITUD.sinConfigCliente);
   }
 
   completos += cfg?.gratificacion !== null && cfg?.gratificacion !== undefined ? 1 : 0;
   if (cfg?.gratificacion === null || cfg?.gratificacion === undefined) {
-    pendientes.push('Falta definir gratificacion.');
+    pendientes.push(MENSAJES_COMPLETITUD.sinGratificacion);
   }
 
   if (cfg?.gratificacion === true) {
     completos += tieneValor(cfg.immGratificacion) ? 1 : 0;
     if (!tieneValor(cfg.immGratificacion)) {
-      pendientes.push('Falta IMM de gratificacion.');
+      pendientes.push(MENSAJES_COMPLETITUD.sinImmGratificacion);
     }
   } else {
     completos += 1;
@@ -321,22 +339,22 @@ function evaluarConfigCliente(
 
   completos += cfg?.descuentosBasePorDia !== null && cfg?.descuentosBasePorDia !== undefined ? 1 : 0;
   if (cfg?.descuentosBasePorDia === null || cfg?.descuentosBasePorDia === undefined) {
-    pendientes.push('Falta metodo de descuento por ausencias.');
+    pendientes.push(MENSAJES_COMPLETITUD.sinMetodoAusencias);
   }
 
   const requiereCcaf = input.catalogos.ccafEntidades.length > 0;
   completos += !requiereCcaf || cfg?.idCcafEntidad ? 1 : 0;
   if (requiereCcaf && !cfg?.idCcafEntidad) {
-    pendientes.push('Falta CCAF seleccionada.');
+    pendientes.push(MENSAJES_COMPLETITUD.sinCcaf);
   }
 
   const requiereOrganismoLey16744 = input.catalogos.organismosLey16744.length > 0;
   completos += !requiereOrganismoLey16744 || cfg?.idOrganismoAdministradorLey16744 ? 1 : 0;
   if (requiereOrganismoLey16744 && !cfg?.idOrganismoAdministradorLey16744) {
-    pendientes.push('Falta mutual seleccionada.');
+    pendientes.push(MENSAJES_COMPLETITUD.sinMutual);
   }
 
-  completos += contarCampos(cfg, CAMPOS_CLIENTE_OPERATIVOS, pendientes, 'Falta configuracion cliente');
+  completos += contarCampos(cfg, CAMPOS_CLIENTE_OPERATIVOS, pendientes, PREFIJO_FALTA_CONFIG_CLIENTE);
   return grupo('configuracionCliente', completos, total);
 }
 
@@ -353,7 +371,7 @@ function evaluarVigencias(
     { ok: input.catalogos.afcParametros.length > 0, pendiente: 'Falta vigencia aplicable de AFC.' },
     {
       ok: tieneVigenciaAplicable(input.catalogos.reformaPrevisional, input.periodo),
-      pendiente: 'Falta reforma previsional aplicable al periodo.',
+      pendiente: 'Falta reforma previsional aplicable al período.',
     },
     {
       ok: tieneVigenciaAplicable(input.catalogos.trabajosPesados, input.periodo),
@@ -361,7 +379,7 @@ function evaluarVigencias(
     },
     {
       ok: input.catalogos.reformaPensiones.length > 0,
-      pendiente: 'Faltan parametros legales vigentes para el periodo.',
+      pendiente: 'Faltan parámetros legales vigentes para el período.',
     },
   ];
 
