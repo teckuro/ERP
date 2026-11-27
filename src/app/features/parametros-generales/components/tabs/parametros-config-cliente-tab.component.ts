@@ -9,34 +9,25 @@ import {
   SearchSelectValue,
 } from '../../../../shared/components/ui/forms/search-select.component';
 import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.model';
+import { ParametroCifraComponent } from '../parametro-cifra/parametro-cifra.component';
 
 @Component({
   selector: 'app-parametros-config-cliente-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, SearchSelectComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SearchSelectComponent, ParametroCifraComponent],
   template: `
     <form class="tab-panel parametros-tab-panel parametros-form" [formGroup]="form" (ngSubmit)="enviarFormulario?.()">
       <section class="param-group parametros-section-card" aria-labelledby="gratificacion-title">
-        <h2 id="gratificacion-title">Gratificacion</h2>
+        <h2 id="gratificacion-title">Gratificación</h2>
         <div class="field-grid parametros-form-grid field-grid--gratificacion">
           <label class="param-field">
             <span>Porcentaje legal</span>
-            <span class="unit-field unit-field--suffix" data-unit="%">
-              <input class="param-input text-right" type="number" step="0.01" [value]="25" readonly />
-            </span>
+            <app-parametro-cifra [valor]="25" unidad="%" />
           </label>
 
           <label class="param-field">
-            <span>Factor I.M.M</span>
-            <span class="unit-field unit-field--suffix" data-unit="IMM">
-              <input
-                class="param-input text-right"
-                type="number"
-                step="0.01"
-                formControlName="immGratificacion"
-                [readonly]="!editable"
-              />
-            </span>
+            <span>Factor IMM</span>
+            <app-parametro-cifra [control]="form.get('immGratificacion')" unidad="IMM" step="0.01" [editable]="editable" />
           </label>
 
           <label
@@ -44,7 +35,7 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
             [class.param-checkbox-inline--locked]="!editable"
           >
             <input type="checkbox" formControlName="gratificacion" (click)="onReadonlyToggle($event)" />
-            <span>Con gratificacion</span>
+            <span>Con gratificación</span>
           </label>
           <label class="param-checkbox-inline param-checkbox-inline--locked">
             <input type="checkbox" checked disabled aria-disabled="true" title="Valor normativo fijo" />
@@ -55,10 +46,10 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
 
       <section class="param-group parametros-section-card" aria-labelledby="ausencias-title">
         <h2 id="ausencias-title">Ausencias</h2>
-        <p class="param-section-lead">Metodo de descuento por ausencias.</p>
+        <p class="param-section-lead">Método de descuento por ausencias.</p>
         <div class="field-grid parametros-form-grid field-grid--values">
           <label class="erp-choice-radio">
-            <span>En base 30 dias</span>
+            <span>En base a 30 días</span>
             <input
               type="radio"
               name="descuentosBase"
@@ -68,7 +59,7 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
             />
           </label>
           <label class="erp-choice-radio">
-            <span>En base dias del mes</span>
+            <span>En base a los días del mes</span>
             <input
               type="radio"
               name="descuentosBase"
@@ -86,14 +77,14 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
       >
         <h2 id="ccaf-title">CCAF y mutual</h2>
         <p class="param-section-lead">
-          Caja de compensacion, organismo mutual y tasa base usados como referencia para el periodo activo.
+          Caja de compensación, mutual y tasa base usadas como referencia en el período activo.
         </p>
         <div
           class="field-grid parametros-form-grid parametros-form-grid-compact field-grid--ccaf field-grid--ccaf-compact"
-          aria-label="Configuracion CCAF y mutual"
+          aria-label="Configuración CCAF y mutual"
         >
           <label class="param-field">
-            <span>Caja de compensacion</span>
+            <span>Caja de compensación</span>
             <app-search-select
               class="param-field-search-select"
               [ngModel]="selectedCcafId"
@@ -121,21 +112,13 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
           </label>
 
           <label class="param-field">
-            <span>Porcentaje</span>
-            <span class="unit-field unit-field--suffix" data-unit="%">
-              <input
-                class="param-input text-right"
-                type="number"
-                step="0.01"
-                [value]="selectedLey16744CotizacionBasica"
-                readonly
-              />
-            </span>
+            <span>Cotización básica</span>
+            <app-parametro-cifra [valor]="selectedLey16744CotizacionBasica" unidad="%" />
           </label>
         </div>
       </section>
 
-      <footer class="tab-footnote tab-footnote--muted">Ultima actualizacion: {{ fechaActualizacionLabel }}</footer>
+      <footer class="tab-footnote tab-footnote--muted">Última actualización: {{ fechaActualizacionLabel }}</footer>
     </form>
   `,
   styles: [
@@ -163,7 +146,7 @@ export class ParametrosConfigClienteTabComponent {
   @Input({ required: true }) catalogos!: ParametrosGeneralesCatalogos;
   @Input() editable = false;
   @Input() hasClienteConfig = false;
-  @Input() periodoLabel = 'este periodo';
+  @Input() periodoLabel = 'este período';
   @Input() selectedCcafId: number | null = null;
   @Input() selectedOrganismoLey16744Id: number | null = null;
   @Input() selectedLey16744CotizacionBasica: number | null = null;

@@ -11,7 +11,9 @@
       .field-grid--ccaf {
         grid-template-columns: repeat(8, minmax(0, 1fr));
         justify-content: start;
-        align-items: end;
+        /* start: una nota bajo una cifra (fecha UF, «Oficial del mes», error) no desplaza a sus vecinas;
+           las etiquetas tienen alto mínimo, así los campos siguen alineados. */
+        align-items: start;
       }
 
       .field-grid > .field-grid-slot {

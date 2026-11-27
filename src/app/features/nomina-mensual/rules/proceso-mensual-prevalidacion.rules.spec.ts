@@ -210,7 +210,7 @@ describe('proceso-mensual-prevalidacion.rules', () => {
       baseHechos({
         parametrosOperativos: false,
         parametrosEstadoVisual: 'oficial_sin_config',
-        parametrosEstadoDetalle: 'Parámetros del período pendientes: falta completar la configuración cliente.',
+        parametrosEstadoDetalle: 'Parámetros del período pendientes: falta completar la configuración de la empresa.',
       }),
     );
     expect(r.estado).toBe('BLOQUEADO');

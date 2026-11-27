@@ -79,10 +79,9 @@
 .param-eyebrow {
   display: inline-flex;
   color: #64748b;
-  font-size: 0.66rem;
-  font-weight: 750;
+  font-size: 0.72rem;
+  font-weight: 650;
   line-height: 1.15;
-  text-transform: uppercase;
 }
 
 .param-franja-operativa p,
@@ -510,6 +509,7 @@ select.param-input {
   font-size: 1.1rem;
   font-weight: 700;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .parametros-cierre-groups {
@@ -663,11 +663,42 @@ select.param-input {
   margin: 0;
   color: #64748b;
   font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .parametros-cierre-meter strong {
-  color: var(--prm-blue, #2563eb);
-  font-size: 0.88rem;
+  color: var(--prm-ink, #111827);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Barra de avance del grupo: ocupa todo el ancho bajo la etiqueta y el conteo. */
+.parametros-cierre-bar {
+  grid-column: 1 / -1;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.parametros-cierre-group .parametros-cierre-bar > span {
+  display: block;
+  height: 100%;
+  margin: 0;
+  border-radius: inherit;
+  background: var(--prm-blue, #2563eb);
+  transition: width 240ms ease;
+}
+
+.parametros-cierre-group--ok .parametros-cierre-bar > span {
+  background: #16a34a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .parametros-cierre-group .parametros-cierre-bar > span {
+    transition: none;
+  }
 }
 
 .parametros-cierre-alertas {
@@ -941,12 +972,10 @@ select.param-input {
   margin: 0;
   padding: 10px 0 4px;
   border-top: 1px solid #f1f5f9;
-  color: #64748b;
-  font-size: 0.72rem;
-  font-weight: 750;
-  letter-spacing: 0.03em;
+  color: #334155;
+  font-size: 0.75rem;
+  font-weight: 700;
   line-height: 1.2;
-  text-transform: uppercase;
 }
 
 .field-grid .param-subsection-title--first {

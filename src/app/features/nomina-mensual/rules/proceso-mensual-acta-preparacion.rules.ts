@@ -68,7 +68,7 @@ export const LABEL_VERIFICAR_Y_GENERAR = 'Verificar y generar nómina';
 export const LABEL_ABRIR_PARAMETROS = 'Abrir parámetros';
 
 export const NOTA_DOS_FUENTES_PARAMETROS =
-  'La configuración del cliente y los datos oficiales del período se revisan por separado en Parámetros. '
+  'La configuración de la empresa y los datos oficiales del período se revisan por separado en Parámetros. '
   + 'Hasta cargar los datos oficiales, la nómina se preparará con la información vigente disponible.';
 export const LABEL_PREPARACION_NOMINA_EN_CURSO = 'Verificando y generando nómina';
 

@@ -48,7 +48,7 @@
         </div>
         <div class="parametros-cierre-score" aria-label="Completitud del período">
           <span>Completitud</span>
-          <strong>{{ ws.completitudParametros().porcentaje }}%</strong>
+          <strong>{{ ws.completitudParametros().porcentaje }}&nbsp;%</strong>
         </div>
       </div>
 
@@ -80,9 +80,19 @@
               <strong>{{ grupo.label }}</strong>
               <span>{{ grupo.detail }}</span>
             </div>
-            <div class="parametros-cierre-meter" aria-label="Avance {{ grupo.label }}">
-              <span>{{ grupo.completos }}/{{ grupo.total }}</span>
-              <strong>{{ grupo.porcentaje }}%</strong>
+            <div class="parametros-cierre-meter">
+              <strong>{{ grupo.completos }} de {{ grupo.total }}</strong>
+              <span>{{ grupo.porcentaje }}&nbsp;%</span>
+            </div>
+            <div
+              class="parametros-cierre-bar"
+              role="progressbar"
+              [attr.aria-label]="'Avance ' + grupo.label"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              [attr.aria-valuenow]="grupo.porcentaje"
+            >
+              <span [style.width.%]="grupo.porcentaje"></span>
             </div>
           </article>
         }
@@ -124,12 +134,15 @@
     @case ('valores') {
       <app-parametros-valores-tab
         [form]="ws.form"
+        [oficial]="ws.parametroOficialSeleccionado()"
         [editable]="ws.generalesEditando()"
         [officialEditable]="ws.generalesEditando()"
         [configEditable]="ws.generalesEditando()"
         [hasPeriodoData]="ws.hasSelectedInRows()"
         [hasClienteConfig]="ws.clienteConfig() !== null"
         [periodoLabel]="ws.periodoSeleccionadoLabel()"
+        [periodoYm]="ws.selectedPeriodo()"
+        [periodoIndicadoresYm]="ws.periodoIndicadoresYm()"
         [referenciaPeriodoLabel]="ws.referenciaParametrosGeneralesLabel()"
         [fechaActualizacionLabel]="ws.fechaActualizacionLabel()"
         [enviarFormulario]="ws.guardar.bind(ws)"
@@ -141,6 +154,7 @@
     @case ('remuneraciones') {
       <app-parametros-remuneraciones-tab
         [form]="ws.form"
+        [oficial]="ws.parametroOficialSeleccionado()"
         [editable]="ws.generalesEditando()"
         [hasPeriodoData]="ws.hasSelectedInRows()"
         [hasClienteConfig]="ws.clienteConfig() !== null"

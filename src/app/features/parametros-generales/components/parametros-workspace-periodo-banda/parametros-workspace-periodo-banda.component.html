@@ -1,7 +1,9 @@
 <div class="parametros-viewhead">
   <div class="period-row parametros-period-band" aria-label="Período">
     <div class="parametros-period-band__identity">
-      <span class="period-label">Parámetros del período {{ ws.periodoGlobal.etiqueta() }}</span>
+      <h2 class="period-label">
+        Parámetros del período <span class="period-label__mes">{{ ws.periodoGlobal.etiqueta() }}</span>
+      </h2>
       <span
         class="period-chip"
         role="status"
@@ -17,21 +19,18 @@
       </span>
 
       @if (ws.periodoReferenciaAnteriorLabel(); as refLabel) {
-        <span class="parametros-period-band__sep" aria-hidden="true">·</span>
         <span class="parametros-period-band__meta-item">
           Referencia disponible: <strong>{{ refLabel }}</strong>
         </span>
       }
 
       @if (ws.periodoBandaPendienteVisible()) {
-        <span class="parametros-period-band__sep" aria-hidden="true">·</span>
         <span class="parametros-period-band__meta-item">
           Siguiente: <strong>{{ ws.cierrePendientePrincipal() }}</strong>
         </span>
       }
 
       @if (ws.periodoContextoHint(); as hint) {
-        <span class="parametros-period-band__sep" aria-hidden="true">·</span>
         <span class="parametros-period-band__meta-item">{{ hint }}</span>
       }
     </div>
@@ -62,8 +61,7 @@
             ws.guardando() ||
             ws.isLoading() ||
             ws.isLoadingPlantilla() ||
-            !ws.datosFormularioListos() ||
-            ws.form.invalid
+            !ws.datosFormularioListos()
           "
           (saveClick)="ws.guardar()"
           (backClick)="ws.volverParametrosAction()"

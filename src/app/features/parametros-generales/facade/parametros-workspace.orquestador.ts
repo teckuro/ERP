@@ -79,6 +79,7 @@ import {
   detalleAreaParametros,
   detalleRegistroTabActivo,
   formatearPeriodoMesAnio,
+  pendienteRepiteDetalle,
   primerTabDeAreaParametros,
   tabsDeAreaParametros,
   tipoAreaParametros,
@@ -89,8 +90,8 @@ import {
 
 /** Copy estable usado al persistir decisiones de reconciliación (queda en historial). */
 const OBSERVACIONES_RECONCILIACION = {
-  actualizadoConOficiales: 'Configuración del cliente alineada con los valores oficiales del período.',
-  mantenerConfiguracion: 'No se sobrescribió la configuración del cliente.',
+  actualizadoConOficiales: 'Configuración de la empresa alineada con los valores oficiales del período.',
+  mantenerConfiguracion: 'No se sobrescribió la configuración de la empresa.',
   revisarDespues: 'Revisión de diferencias postergada por el usuario.',
 } as const;
 
@@ -224,7 +225,13 @@ export class ParametrosWorkspaceOrquestador {
     return 'Modificar';
   });
 
-  volverParametrosAction(): void {
+  /** Cancelar desde la banda: si hay cambios sin guardar, pide confirmación antes de descartarlos. */
+  async volverParametrosAction(): Promise<void> {
+    const puedeDescartar = await this.confirmarAbandonarEdicionConDialog('cancelar');
+    if (!puedeDescartar) {
+      this.cdr.markForCheck();
+      return;
+    }
     this.volverParametros();
   }
 
@@ -329,12 +336,32 @@ export class ParametrosWorkspaceOrquestador {
     }
   });
 
+  /**
+   * Período al que corresponden los indicadores que se muestran (UF, UTM, UTA): el seleccionado,
+   * o el de referencia mientras falta la carga oficial del mes y el cliente no capturó los suyos.
+   */
+  readonly periodoIndicadoresYm = computed(() => {
+    const seleccionado = this.selectedPeriodo();
+    if (this.clienteConfig()?.uf != null) {
+      return seleccionado;
+    }
+    return this.contextoOficialComparacion().periodoOrigen ?? seleccionado;
+  });
+
   readonly periodoEstadoDetalle = computed(() => {
+    // Sin carga oficial del mes, la completitud usa la referencia: decirlo en vez de «Datos oficiales cargados».
+    const contexto = this.contextoOficialComparacion();
+    if (this.periodoCargaEstado() === 'oficial_sin_config' && contexto.origen === 'referencia_visual') {
+      const referencia = contexto.periodoOrigen ? this.capitalizarPeriodoLabel(formatearPeriodoMesAnio(contexto.periodoOrigen, this.monthOptions)) : null;
+      return referencia
+        ? `Sin carga oficial del mes: se usan los datos de ${referencia}. Falta la configuración de la empresa.`
+        : 'Sin carga oficial del mes. Falta la configuración de la empresa.';
+    }
     switch (this.periodoCargaEstado()) {
       case 'error':
         return 'No se completó la carga mensual. Revisa el detalle de carga.';
       case 'editando':
-        return 'Configuración guardada con pendientes. Pueden completarse valores de fin de mes.';
+        return 'Los cambios se aplican al guardar.';
       case 'cargado':
         return this.completitudDetalle('Período listo para revisar.');
       case 'pendiente_reconciliacion':
@@ -531,7 +558,7 @@ export class ParametrosWorkspaceOrquestador {
           ...grupos.consistencia,
           id: 'consistencia',
           label: 'Consistencia',
-          detail: 'Diferencias entre oficial y configuración cliente',
+          detail: 'Diferencias entre oficial y configuración de la empresa',
         }]
         : []),
     ];
@@ -571,9 +598,10 @@ export class ParametrosWorkspaceOrquestador {
   readonly periodoBandaPendienteVisible = computed(() => {
     const pendiente = this.cierrePendientePrincipal();
     if (!pendiente || pendiente === 'Sin pendientes críticos.') return false;
+    // Mientras se edita, la banda informa la edición; el pendiente vuelve a verse al guardar o cancelar.
+    if (this.generalesEditando()) return false;
 
-    const detalle = this.periodoEstadoDetalle();
-    return !detalle.toLocaleLowerCase().includes(pendiente.toLocaleLowerCase());
+    return !pendienteRepiteDetalle(this.periodoEstadoDetalle(), pendiente);
   });
 
   readonly cierreAccionVisible = computed(
@@ -633,9 +661,11 @@ export class ParametrosWorkspaceOrquestador {
       .sort((left, right) => right.localeCompare(left))[0] ?? null;
   });
 
-  readonly periodoSeleccionadoLabel = computed(() =>
-    formatearPeriodoMesAnio(this.selectedPeriodo(), this.monthOptions),
-  );
+  /** «Noviembre 2026»: se usa dentro de frases, así que no va en mayúsculas. */
+  readonly periodoSeleccionadoLabel = computed(() => {
+    const label = formatearPeriodoMesAnio(this.selectedPeriodo(), this.monthOptions);
+    return this.capitalizarPeriodoLabel(label) ?? label;
+  });
 
   readonly periodoReferenciaAnteriorLabel = computed(() => {
     const periodo = this.periodoReferenciaAnterior();
@@ -645,12 +675,16 @@ export class ParametrosWorkspaceOrquestador {
 
   readonly periodoContextoHint = computed(() => {
     if (this.generalesEditando()) {
-      return 'Editando configuración del cliente.';
+      return 'Editando configuración de la empresa.';
     }
     if (!this.hasAnySyncedData()) {
-      return 'Aún no hay carga oficial. Puede capturar valores; se actualizarán con la carga de fin de mes.';
+      return 'Aún no hay carga oficial. Puedes capturar valores tentativos; la carga de fin de mes los actualizará.';
     }
     const referencia = this.referenciaVisualPrincipalLabelCapitalizado();
+    if (referencia && this.periodoEstadoDetalle().includes(referencia)) {
+      // El detalle del estado ya nombra la referencia; no repetirla.
+      return '';
+    }
     if (referencia) {
       return `Referencia oficial: ${referencia}.`;
     }
@@ -1320,7 +1354,7 @@ export class ParametrosWorkspaceOrquestador {
   private async actualizarClienteConOficiales(): Promise<void> {
     const oficial = this.parametroOficialSeleccionado();
     if (!oficial) {
-      this.mostrarErrorClienteConfig('No hay valores oficiales actuales para actualizar la configuración cliente.');
+      this.mostrarErrorClienteConfig('No hay valores oficiales actuales para actualizar la configuración de la empresa.');
       return;
     }
 
@@ -1353,7 +1387,7 @@ export class ParametrosWorkspaceOrquestador {
       'cliente_confirmado',
       'mantener_configuracion',
       OBSERVACIONES_RECONCILIACION.mantenerConfiguracion,
-      'No se sobrescribió la configuración del cliente.',
+      'No se sobrescribió la configuración de la empresa.',
       'La decisión quedó registrada para este período.',
     );
   }
@@ -1364,7 +1398,7 @@ export class ParametrosWorkspaceOrquestador {
       'revisar_despues',
       OBSERVACIONES_RECONCILIACION.revisarDespues,
       'La revisión de diferencias quedó postergada.',
-      'Nada se actualizó automáticamente. Puedes volver a revisar la configuración del cliente cuando corresponda.',
+      'Nada se actualizó automáticamente. Puedes volver a revisar la configuración de la empresa cuando corresponda.',
     );
   }
 
@@ -1377,7 +1411,7 @@ export class ParametrosWorkspaceOrquestador {
   ): Promise<void> {
     const periodo = this.selectedPeriodo();
     if (!this.clienteConfig()) {
-      this.mostrarErrorClienteConfig('No hay configuración del cliente para registrar la decisión de reconciliación.');
+      this.mostrarErrorClienteConfig('No hay configuración de la empresa para registrar la decisión de reconciliación.');
       return;
     }
 
@@ -1535,7 +1569,7 @@ export class ParametrosWorkspaceOrquestador {
       this.generalesEditando.set(true);
       this.form.markAsPristine();
     } catch (err) {
-      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible cargar la última configuración cliente.');
+      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible cargar la última configuración de la empresa.');
     } finally {
       this.isLoadingPlantilla.set(false);
       this.cdr.markForCheck();
@@ -1705,7 +1739,7 @@ export class ParametrosWorkspaceOrquestador {
       if (isDevMode()) {
         console.error('[Parametros] guardarClienteConfig', err);
       }
-      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible guardar la configuración cliente.');
+      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible guardar la configuración de la empresa.');
     } finally {
       this.guardando.set(false);
       this.cdr.markForCheck();
@@ -1835,12 +1869,12 @@ export class ParametrosWorkspaceOrquestador {
       return 'Usa las acciones del resumen de cierre para completar la configuración.';
     }
     if (!this.hasAnySyncedData()) {
-      return 'Capture valores tentativos del cliente para este período. La carga oficial de fin de mes actualizará los datos y se revisarán diferencias.';
+      return 'Captura valores tentativos del cliente para este período. La carga oficial de fin de mes los actualizará y te mostrará las diferencias.';
     }
     if (!this.isConfigurableTab()) {
-      return 'Modificar aplica a la configuración del cliente. Los datos oficiales se cargan por proceso normativo.';
+      return 'Modificar aplica a la configuración de la empresa. Los datos oficiales se cargan por proceso normativo.';
     }
-    return 'Abrir edición de la configuración del cliente para este período.';
+    return 'Abrir edición de la configuración de la empresa para este período.';
   }
 
   fechaActualizacionLabel(): string {
@@ -1866,7 +1900,9 @@ export class ParametrosWorkspaceOrquestador {
 
   private abandonoEdicionPendiente: ((continuar: boolean) => void) | null = null;
 
-  private confirmarAbandonarEdicionConDialog(): Promise<boolean> {
+  private confirmarAbandonarEdicionConDialog(
+    motivo: 'cambiar-periodo' | 'cancelar' = 'cambiar-periodo',
+  ): Promise<boolean> {
     if (!this.generalesEditando() || !this.form.dirty) {
       return Promise.resolve(true);
     }
@@ -1876,7 +1912,7 @@ export class ParametrosWorkspaceOrquestador {
     }
     return new Promise<boolean>((resolve) => {
       this.abandonoEdicionPendiente = resolve;
-      this.dialogState.set(buildParametrosConfirmarAbandonarEdicionDialog());
+      this.dialogState.set(buildParametrosConfirmarAbandonarEdicionDialog(motivo));
       this.cdr.markForCheck();
     });
   }
@@ -2172,8 +2208,12 @@ export class ParametrosWorkspaceOrquestador {
     }
 
     return new Intl.DateTimeFormat('es-CL', {
-      dateStyle: 'short',
-      timeStyle: 'short',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
     }).format(date);
   }
 
