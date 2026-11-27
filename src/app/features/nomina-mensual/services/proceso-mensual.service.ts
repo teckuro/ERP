@@ -903,13 +903,13 @@ export class ProcesoMensualService {
       return 'Parámetros del período pendientes: falta la fila oficial del período.';
     }
     if (input.visual === 'oficial_sin_config') {
-      return 'Parámetros del período pendientes: falta completar la configuración cliente.';
+      return 'Parámetros del período pendientes: falta completar la configuración de la empresa.';
     }
     if (input.visual === 'configuracion_parcial') {
-      return 'Parámetros del período pendientes: hay configuración cliente sin fila oficial del período.';
+      return 'Parámetros del período pendientes: hay configuración de la empresa sin fila oficial del período.';
     }
     if (input.visual === 'pendiente_reconciliacion') {
-      return 'Parámetros del período pendientes: hay diferencias entre valores oficiales y configuración cliente por reconciliar.';
+      return 'Parámetros del período pendientes: hay diferencias entre valores oficiales y configuración de la empresa por reconciliar.';
     }
     const pendientesTexto = [
       ...input.completitud.errores,

@@ -381,7 +381,7 @@ export function buildParametrosOverlayContexto(
   );
   const puntos: string[] = [];
   if (pendienteIntegracion) {
-    puntos.push('Revise carga oficial del mes o reconciliación con la configuración cliente.');
+    puntos.push('Revise carga oficial del mes o reconciliación con la configuración de la empresa.');
   }
   for (const grupo of faltantes) {
     puntos.push(`${etiquetaGrupoParametroUi(grupo.id)}: ${etiquetaClasificacionGrupoParametro(grupo.clasificacion)}.`);

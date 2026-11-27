@@ -68,7 +68,7 @@ export function buildParametrosExitoGuardadoDialog(periodo: string): ParametrosD
     variant: 'success',
     title: 'Parámetros guardados',
     message: `Parámetros guardados para ${etiquetaPeriodo(periodo)}.`,
-    detail: 'Continúa con la configuración del cliente para cerrar el período.',
+    detail: 'Continúa con la configuración de la empresa para cerrar el período.',
     primaryLabel: 'Aceptar',
   };
 }
@@ -110,7 +110,7 @@ export function buildParametrosExitoClienteConfigDialog(
     kind: 'alerta',
     variant: 'success',
     title: 'Configuración guardada',
-    message: `Configuración del cliente guardada para ${periodoLabel}.`,
+    message: `Configuración de la empresa guardada para ${periodoLabel}.`,
     detail,
     primaryLabel: 'Aceptar',
   };
@@ -143,7 +143,7 @@ export function buildParametrosErrorClienteConfigDialog(mensajeError: string): P
     kind: 'alerta',
     variant: 'error',
     title: 'No se pudo guardar la configuración',
-    message: 'No se pudo guardar la configuración del cliente. Reintenta en unos segundos.',
+    message: 'No se pudo guardar la configuración de la empresa. Reintenta en unos segundos.',
     detail: envolverDetalleTecnico(mensajeError) || 'Si el problema continúa, contacta a soporte.',
     primaryLabel: 'Aceptar',
   };
@@ -155,7 +155,7 @@ export function buildParametrosSoloConfigClienteEditableDialog(): ParametrosDial
     variant: 'info',
     title: 'Datos oficiales en solo lectura',
     message: 'Los datos oficiales se cargan desde el proceso normativo del mes.',
-    detail: 'Desde Parámetros solo se edita la configuración del cliente para el período.',
+    detail: 'Desde Parámetros solo se edita la configuración de la empresa para el período.',
     primaryLabel: 'Aceptar',
   };
 }
@@ -244,7 +244,7 @@ export function buildParametrosConfirmacionModificacionDialog(periodo: string): 
     sections: [
       {
         title: 'Cambio principal',
-        text: `Se actualizará la configuración del cliente para ${periodoLabel}.`,
+        text: `Se actualizará la configuración de la empresa para ${periodoLabel}.`,
         tone: 'attention',
       },
       {
@@ -267,7 +267,7 @@ export function buildParametrosDecisionConfigClienteDialog(
     kind: 'confirmar-config-cliente-extendido',
     variant: 'confirm',
     title: 'Configurar el período',
-    message: `No hay configuración del cliente para ${periodoLabel}.`,
+    message: `No hay configuración de la empresa para ${periodoLabel}.`,
     detail: 'Elige una base para continuar. La configuración se crea solo al guardar.',
     primaryLabel: 'Crear desde cero',
     secondaryLabel: actions[0]?.label,
@@ -284,7 +284,7 @@ export function buildParametrosSinConfigClienteAnteriorDialog(periodo: string): 
     kind: 'config-cliente-sin-base',
     variant: 'info',
     title: 'Sin configuración previa',
-    message: 'No hay configuración del cliente anterior para reutilizar como base.',
+    message: 'No hay una configuración anterior de la empresa para reutilizar como base.',
     detail: `Período: ${etiquetaPeriodo(periodo)}. Puedes crear la configuración desde cero.`,
     primaryLabel: 'Crear desde cero',
     secondaryLabel: 'Cancelar',
@@ -437,8 +437,8 @@ export function buildParametrosReconciliacionDiferenciasDialog(
       ? 'Guardado. Revisa las diferencias'
       : 'Diferencias con los datos oficiales',
     message: esPostGuardado
-      ? 'La configuración del cliente quedó guardada, pero difiere de los datos oficiales del mes. No se actualizará nada automáticamente.'
-      : 'Tu configuración del cliente difiere de los datos oficiales del mes. No se actualizará nada automáticamente.',
+      ? 'La configuración de la empresa quedó guardada, pero difiere de los datos oficiales del mes. No se actualizará nada automáticamente.'
+      : 'Tu configuración de la empresa difiere de los datos oficiales del mes. No se actualizará nada automáticamente.',
     detail: detalleDiferenciasOficialesCliente(periodo, diferencias, opciones),
     primaryLabel: 'Mantener mi configuración',
     secondaryLabel: 'Actualizar con oficiales',

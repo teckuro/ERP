@@ -143,7 +143,7 @@ export function buildValidacionCalculoPreliminarView(
     bloqueos.push({
       codigo: 'BLOQ-004',
       titulo: 'Parámetros del período pendientes',
-      descripcion: 'Revisa la fila oficial, configuración cliente, vigencias, calendario o reconciliación antes de calcular.',
+      descripcion: 'Revisa la fila oficial, configuración de la empresa, vigencias, calendario o reconciliación antes de calcular.',
       severidad: 'bloqueo',
       accionLabel: 'Revisar parámetros',
       ruta: '/parametros',

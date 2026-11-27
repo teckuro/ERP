@@ -90,8 +90,8 @@ import {
 
 /** Copy estable usado al persistir decisiones de reconciliación (queda en historial). */
 const OBSERVACIONES_RECONCILIACION = {
-  actualizadoConOficiales: 'Configuración del cliente alineada con los valores oficiales del período.',
-  mantenerConfiguracion: 'No se sobrescribió la configuración del cliente.',
+  actualizadoConOficiales: 'Configuración de la empresa alineada con los valores oficiales del período.',
+  mantenerConfiguracion: 'No se sobrescribió la configuración de la empresa.',
   revisarDespues: 'Revisión de diferencias postergada por el usuario.',
 } as const;
 
@@ -354,8 +354,8 @@ export class ParametrosWorkspaceOrquestador {
     if (this.periodoCargaEstado() === 'oficial_sin_config' && contexto.origen === 'referencia_visual') {
       const referencia = contexto.periodoOrigen ? this.capitalizarPeriodoLabel(formatearPeriodoMesAnio(contexto.periodoOrigen, this.monthOptions)) : null;
       return referencia
-        ? `Sin carga oficial del mes: se usan los datos de ${referencia}. Falta configuración cliente.`
-        : 'Sin carga oficial del mes. Falta configuración cliente.';
+        ? `Sin carga oficial del mes: se usan los datos de ${referencia}. Falta la configuración de la empresa.`
+        : 'Sin carga oficial del mes. Falta la configuración de la empresa.';
     }
     switch (this.periodoCargaEstado()) {
       case 'error':
@@ -558,7 +558,7 @@ export class ParametrosWorkspaceOrquestador {
           ...grupos.consistencia,
           id: 'consistencia',
           label: 'Consistencia',
-          detail: 'Diferencias entre oficial y configuración cliente',
+          detail: 'Diferencias entre oficial y configuración de la empresa',
         }]
         : []),
     ];
@@ -675,7 +675,7 @@ export class ParametrosWorkspaceOrquestador {
 
   readonly periodoContextoHint = computed(() => {
     if (this.generalesEditando()) {
-      return 'Editando configuración del cliente.';
+      return 'Editando configuración de la empresa.';
     }
     if (!this.hasAnySyncedData()) {
       return 'Aún no hay carga oficial. Puedes capturar valores tentativos; la carga de fin de mes los actualizará.';
@@ -1354,7 +1354,7 @@ export class ParametrosWorkspaceOrquestador {
   private async actualizarClienteConOficiales(): Promise<void> {
     const oficial = this.parametroOficialSeleccionado();
     if (!oficial) {
-      this.mostrarErrorClienteConfig('No hay valores oficiales actuales para actualizar la configuración cliente.');
+      this.mostrarErrorClienteConfig('No hay valores oficiales actuales para actualizar la configuración de la empresa.');
       return;
     }
 
@@ -1387,7 +1387,7 @@ export class ParametrosWorkspaceOrquestador {
       'cliente_confirmado',
       'mantener_configuracion',
       OBSERVACIONES_RECONCILIACION.mantenerConfiguracion,
-      'No se sobrescribió la configuración del cliente.',
+      'No se sobrescribió la configuración de la empresa.',
       'La decisión quedó registrada para este período.',
     );
   }
@@ -1398,7 +1398,7 @@ export class ParametrosWorkspaceOrquestador {
       'revisar_despues',
       OBSERVACIONES_RECONCILIACION.revisarDespues,
       'La revisión de diferencias quedó postergada.',
-      'Nada se actualizó automáticamente. Puedes volver a revisar la configuración del cliente cuando corresponda.',
+      'Nada se actualizó automáticamente. Puedes volver a revisar la configuración de la empresa cuando corresponda.',
     );
   }
 
@@ -1411,7 +1411,7 @@ export class ParametrosWorkspaceOrquestador {
   ): Promise<void> {
     const periodo = this.selectedPeriodo();
     if (!this.clienteConfig()) {
-      this.mostrarErrorClienteConfig('No hay configuración del cliente para registrar la decisión de reconciliación.');
+      this.mostrarErrorClienteConfig('No hay configuración de la empresa para registrar la decisión de reconciliación.');
       return;
     }
 
@@ -1569,7 +1569,7 @@ export class ParametrosWorkspaceOrquestador {
       this.generalesEditando.set(true);
       this.form.markAsPristine();
     } catch (err) {
-      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible cargar la última configuración cliente.');
+      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible cargar la última configuración de la empresa.');
     } finally {
       this.isLoadingPlantilla.set(false);
       this.cdr.markForCheck();
@@ -1739,7 +1739,7 @@ export class ParametrosWorkspaceOrquestador {
       if (isDevMode()) {
         console.error('[Parametros] guardarClienteConfig', err);
       }
-      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible guardar la configuración cliente.');
+      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible guardar la configuración de la empresa.');
     } finally {
       this.guardando.set(false);
       this.cdr.markForCheck();
@@ -1872,9 +1872,9 @@ export class ParametrosWorkspaceOrquestador {
       return 'Captura valores tentativos del cliente para este período. La carga oficial de fin de mes los actualizará y te mostrará las diferencias.';
     }
     if (!this.isConfigurableTab()) {
-      return 'Modificar aplica a la configuración del cliente. Los datos oficiales se cargan por proceso normativo.';
+      return 'Modificar aplica a la configuración de la empresa. Los datos oficiales se cargan por proceso normativo.';
     }
-    return 'Abrir edición de la configuración del cliente para este período.';
+    return 'Abrir edición de la configuración de la empresa para este período.';
   }
 
   fechaActualizacionLabel(): string {
