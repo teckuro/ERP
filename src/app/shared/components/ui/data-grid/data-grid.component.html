@@ -628,7 +628,7 @@
                   <col [ngStyle]="columnSizingStyle(column)" />
                 }
               </colgroup>
-              <thead class="data-grid-head sticky top-0 z-10 bg-neutral-100 shadow-[0_1px_0_rgba(229,229,229,1)]">
+              <thead class="data-grid-head sticky top-0 z-10 bg-neutral-100">
                 <tr>
                   <th
                     scope="col"
@@ -666,7 +666,7 @@
                         <button
                           type="button"
                           class="inline-flex items-center gap-1.5 rounded-md text-left transition-colors hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                          [class.justify-end]="column.align === 'right'"
+                          [class.flex-row-reverse]="column.align === 'right'"
                           [class.justify-center]="column.align === 'center'"
                           [attr.aria-sort]="sortAriaValue(column)"
                           [disabled]="loading"
