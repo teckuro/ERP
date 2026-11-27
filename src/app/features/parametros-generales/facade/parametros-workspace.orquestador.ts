@@ -633,9 +633,11 @@ export class ParametrosWorkspaceOrquestador {
       .sort((left, right) => right.localeCompare(left))[0] ?? null;
   });
 
-  readonly periodoSeleccionadoLabel = computed(() =>
-    formatearPeriodoMesAnio(this.selectedPeriodo(), this.monthOptions),
-  );
+  /** «Noviembre 2026»: se usa dentro de frases, así que no va en mayúsculas. */
+  readonly periodoSeleccionadoLabel = computed(() => {
+    const label = formatearPeriodoMesAnio(this.selectedPeriodo(), this.monthOptions);
+    return this.capitalizarPeriodoLabel(label) ?? label;
+  });
 
   readonly periodoReferenciaAnteriorLabel = computed(() => {
     const periodo = this.periodoReferenciaAnterior();
@@ -2172,8 +2174,12 @@ export class ParametrosWorkspaceOrquestador {
     }
 
     return new Intl.DateTimeFormat('es-CL', {
-      dateStyle: 'short',
-      timeStyle: 'short',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
     }).format(date);
   }
 

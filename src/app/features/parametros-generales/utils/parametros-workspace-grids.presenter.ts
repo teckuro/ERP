@@ -1,5 +1,6 @@
 import type { DataGridColumn } from '../../../shared/components/ui/data-grid';
 import { formatearClp, formatearClpDecimal } from '../../../shared/dominio/moneda';
+import { formatoPeriodoGridParametros } from './parametros-formato';
 import type {
   AfpParametro,
   ApvApvcFormaPago,
@@ -197,7 +198,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
 
   return {
     tramosCargaColumns: [
-      { id: 'periodo', header: 'Período', field: 'periodo', sortable: true },
+      { id: 'periodo', header: 'Período', field: 'periodo', sortable: true, format: formatoPeriodoGridParametros },
       { id: 'tramo', header: 'Tramo', field: 'tramo', sortable: true },
       {
         id: 'desde',
@@ -275,7 +276,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
     ],
     tramosImpuestoColumns: [
-      { id: 'periodo', header: 'Período', field: 'periodo', sortable: true },
+      { id: 'periodo', header: 'Período', field: 'periodo', sortable: true, format: formatoPeriodoGridParametros },
       {
         id: 'desde',
         header: 'Renta desde',
@@ -319,7 +320,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       { id: 'tipo', header: 'Tipo', field: 'tipo', sortable: true },
       {
         id: 'porcentajeCotizacion',
-        header: 'Cotización (%)',
+        header: 'Cotización',
         field: 'porcentajeCotizacion',
         type: 'number',
         sortable: true,
