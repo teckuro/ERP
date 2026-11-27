@@ -38,14 +38,22 @@ as $$
     order by pg.periodo desc
     limit 2
   ),
-  afp_ref as (
-    select a.nombre, v.tasa_obligatoria, v.comision
+  -- Tasa aplicable de cada AFP: su fila más reciente al inicio del período. El ETL
+  -- inserta versiones nuevas sin cerrar las anteriores, así que una tarifa vieja y
+  -- más barata puede seguir pasando los filtros de fecha.
+  afp_actual as (
+    select distinct on (v.id_afp) v.id_afp, v.tasa_obligatoria, v.comision
     from public.afp_vigencia v
-    join public.afp a on a.id_afp = v.id_afp
     where v.vigente
       and v.vigencia_inicio <= (select (max(u.periodo) || '-01')::date from ultimos u)
       and (v.vigencia_fin is null or v.vigencia_fin >= (select (max(u.periodo) || '-01')::date from ultimos u))
-    order by v.comision asc, v.vigencia_inicio desc
+    order by v.id_afp, v.vigencia_inicio desc
+  ),
+  afp_ref as (
+    select a.nombre, x.tasa_obligatoria, x.comision
+    from afp_actual x
+    join public.afp a on a.id_afp = x.id_afp
+    order by x.comision asc, a.nombre
     limit 1
   )
   select jsonb_build_object(
