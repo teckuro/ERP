@@ -401,3 +401,44 @@ describe('DataGridComponent barra masiva', () => {
     );
   });
 });
+
+interface FilaMonto {
+  id: number;
+  nombre: string;
+  monto: number;
+}
+
+describe('DataGridComponent alineación de cifras', () => {
+  const columnasMonto: DataGridColumn<FilaMonto>[] = [
+    { id: 'nombre', header: 'Nombre', field: 'nombre', sortable: true },
+    { id: 'monto', header: 'Monto', field: 'monto', align: 'right', sortable: true },
+  ];
+
+  it('las columnas a la derecha usan tabular-nums y el texto no', () => {
+    const fixture = TestBed.createComponent(DataGridComponent<FilaMonto>);
+    fixture.componentRef.setInput('columns', columnasMonto);
+    fixture.componentRef.setInput('rows', [{ id: 1, nombre: 'Ana', monto: 1000 }]);
+    fixture.detectChanges();
+
+    const celdas = (fixture.nativeElement as HTMLElement).querySelectorAll('tbody tr.data-grid-row td.data-grid-body-cell');
+    expect(celdas[0].classList.contains('tabular-nums')).toBe(false);
+    expect(celdas[1].classList.contains('tabular-nums')).toBe(true);
+    expect(celdas[1].classList.contains('text-right')).toBe(true);
+  });
+
+  it('type number también usa tabular-nums sin alinear a la derecha', () => {
+    const fixture = TestBed.createComponent(DataGridComponent<FilaMonto>);
+    expect(fixture.componentInstance.alignmentCellClass({ id: 'x', header: 'X', type: 'number' })).toBe('text-left tabular-nums');
+  });
+
+  it('el encabezado ordenable de una columna a la derecha pone el ícono antes del título', () => {
+    const fixture = TestBed.createComponent(DataGridComponent<FilaMonto>);
+    fixture.componentRef.setInput('columns', columnasMonto);
+    fixture.componentRef.setInput('rows', [{ id: 1, nombre: 'Ana', monto: 1000 }]);
+    fixture.detectChanges();
+
+    const botones = (fixture.nativeElement as HTMLElement).querySelectorAll('thead th.data-grid-head-cell button');
+    expect(botones[0].classList.contains('flex-row-reverse')).toBe(false);
+    expect(botones[1].classList.contains('flex-row-reverse')).toBe(true);
+  });
+});

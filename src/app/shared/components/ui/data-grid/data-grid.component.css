@@ -15,7 +15,7 @@
         --data-grid-padding-block-body: 0.5rem;
         --data-grid-padding-block-head: 0.5rem;
         --data-grid-padding-num-inline: 0.45rem;
-        --data-grid-padding-skel: 0.65rem;
+        --data-grid-padding-skel: var(--data-grid-padding-block-body);
       }
 
       :host.data-grid-host--sized {
@@ -397,8 +397,8 @@
       }
 
       .data-grid-body-num {
-        padding: calc(var(--data-grid-padding-block-body) - 0.03rem)
-          var(--data-grid-padding-num-inline);
+        padding: var(--data-grid-padding-block-body) var(--data-grid-padding-num-inline);
+        line-height: 1.35;
       }
 
       .data-grid-selection-cell {
@@ -419,6 +419,16 @@
 
       .data-grid-selection-cell--locked input[type='checkbox']:disabled {
         cursor: not-allowed;
+      }
+
+      .data-grid-skeleton-row > td {
+        font-size: var(--data-grid-text-md);
+        line-height: 1.35;
+      }
+
+      .data-grid-skeleton-row .data-grid-skeleton-line,
+      .data-grid-skeleton-row .data-grid-skeleton-box {
+        vertical-align: middle;
       }
 
       .data-grid-skel-cell {

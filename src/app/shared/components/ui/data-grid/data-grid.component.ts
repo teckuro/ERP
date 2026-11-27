@@ -1128,11 +1128,14 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   alignmentCellClass(column: DataGridColumn<T>): string {
-    return column.align === 'right'
+    const align = column.align === 'right'
       ? 'text-right'
       : column.align === 'center'
         ? 'text-center'
         : 'text-left';
+    // Cifras con dígitos de ancho fijo para que los montos queden alineados.
+    const esCifra = column.align === 'right' || column.type === 'number';
+    return esCifra ? `${align} tabular-nums` : align;
   }
 
   columnSizingStyle(column: DataGridColumn<T>): Record<string, string> {
